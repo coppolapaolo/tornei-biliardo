@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% if tournament %}
+            <h1>{{ tournament.name }} {{ tournament.year }}</h1>
+
+            {% if upcoming_provas %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calendar"></i> Prossime Prove</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for prova in upcoming_provas %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>Prova {{ prova.number }}</strong> - {{ prova.discipline }}
+                                    <br><small class="text-muted">{{ prova.date.strftime('%d/%m/%Y') }}</small>
+                                </div>
+                                <div>
+                                    {% if prova.status == 'inscription' %}
+                                        <span class="badge bg-success">Iscrizioni aperte</span>
+                                    {% elif prova.status == 'setup' %}
+                                        <span class="badge bg-warning">In preparazione</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-warning">
+                <h4>Nessun torneo attivo</h4>
+                <p>Al momento non ci sono tornei attivi. Contatta l'amministratore.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        {% if top_classifications %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-trophy"></i> Classifica Generale</h5>
+                </div>
+                <div class="card-body">
+                    {% for classification in top_classifications %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>{{ classification.position }}.</strong> {{ classification.user.username }}
+                            </div>
+                            <small class="text-muted">{{ classification.total_matches_won }} vittorie</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

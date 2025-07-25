@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Partita - {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4>
+                        {{ match.player1.username }}
+                        {% if not match.is_bye %}
+                            vs {{ match.player2.username }}
+                        {% else %}
+                            (Bye)
+                        {% endif %}
+                    </h4>
+                    <div>
+                        <span class="badge bg-{% if match.status == 'pending' %}warning{% elif match.status == 'playing' %}primary{% else %}success{% endif %}">
+                            {{ match.status.title() }}
+                        </span>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Prova {{ match.prova.number }} - Turno {{ match.round_number }} - {{ match.prova.discipline }}
+                </small>
+            </div>
+            <div class="card-body">
+                {% if not match.is_bye %}
+                    <!-- Punteggio -->
+                    <div class="row text-center mb-4">
+                        <div class="col-5">
+                            <h2 class="{% if match.winner_id == match.player1_id %}text-success{% endif %}">
+                                {{ match.player1_score }}
+                            </h2>
+                            <h5>{{ match.player1.username }}</h5>
+                        </div>
+                        <div class="col-2">
+                            <h3 class="text-muted">-</h3>
+                        </div>
+                        <div class="col-5">
+                            <h2 class="{% if match.winner_id == match.player2_id %}text-success{% endif %}">
+                                {{ match.player2_score }}
+                            </h2>
+                            <h5>{{ match.player2.username }}</h5>
+                        </div>
+                    </div>
+
+                    {% if match.status != 'completed' %}
+                        <!-- Aggiungi risultato rack -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6>Aggiungi risultato rack</h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-primary w-100"
+                                                onclick="addRackWin({{ match.player1_id }})">
+                                            Punto {{ match.player1.username }}
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-primary w-100"
+                                                onclick="addRackWin({{ match.player2_id }})">
+                                            Punto {{ match.player2.username }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Dettaglio rack -->
+                    {% if racks %}
+                        <div class="card">
+                            <div class="card-header">
+                                <h6>Dettaglio Rack</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Rack</th>
+                                                <th>Vincitore</th>
+                                                <th>Segnalato da</th>
+                                                <th>Validazione</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rack in racks %}
+                                                <tr>
+                                                    <td>{{ rack.rack_number }}</td>
+                                                    <td>
+                                                        <strong>{{ rack.winner.username }}</strong>
+                                                    </td>
+                                                    <td>{{ rack.reported_by.username }}</td>
+                                                    <td>
+                                                        {% if rack.validated_by_admin %}
+                                                            <span class="badge bg-success">Validato</span>
+                                                        {% elif rack.confirmed_by_player %}
+                                                            <span class="badge bg-info">Confermato</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">In attesa</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Match bye -->
+                    <div class="alert alert-info text-center">
+                        <h5>Partita Bye</h5>
+                        <p>{{ match.player1.username }} passa automaticamente al turno successivo.</p>
+                        <strong>Risultato: {{ match.player1_score }} - 0</strong>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Info Partita</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Prova:</strong> {{ match.prova.number }}</p>
+                <p><strong>Turno:</strong> {{ match.round_number }}/3</p>
+                <p><strong>Disciplina:</strong> {{ match.prova.discipline }}</p>
+                <p><strong>Distanza:</strong> {{ match.prova.distance }} rack</p>
+                <p><strong>Data:</strong> {{ match.prova.date.strftime('%d/%m/%Y') }}</p>
+            </div>
+        </div>
+
+        {% if current_user.is_admin or current_user.id in [match.player1_id, match.player2_id] %}
+            <div class="mt-3">
+                <a href="{{ url_for('player_dashboard') if not current_user.is_admin else url_for('admin_prova_detail', prova_id=match.prova_id) }}"
+                   class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> Torna Indietro
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addRackWin(winnerId) {
+    fetch(`/match/{{ match.id }}/add_rack`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `winner_id=${winnerId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante l\'aggiornamento');
+    });
+}
+</script>
+{% endblock %>

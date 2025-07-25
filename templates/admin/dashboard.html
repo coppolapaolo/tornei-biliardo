@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Torneo Biliardo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-cog"></i> Dashboard Amministratore</h1>
+    <div>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+            <i class="fas fa-plus"></i> Nuovo Torneo
+        </button>
+    </div>
+</div>
+
+{% if tournament %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>{{ tournament.name }} {{ tournament.year }}</h5>
+                    <div>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newProvaModal">
+                            <i class="fas fa-plus"></i> Nuova Prova
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if provas %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Prova</th>
+                                        <th>Data</th>
+                                        <th>Disciplina</th>
+                                        <th>Distanza</th>
+                                        <th>Iscritti</th>
+                                        <th>Stato</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prova in provas %}
+                                        <tr>
+                                            <td><strong>{{ prova.number }}</strong></td>
+                                            <td>{{ prova.date.strftime('%d/%m/%Y') }}</td>
+                                            <td>{{ prova.discipline }}</td>
+                                            <td>{{ prova.distance }} rack</td>
+                                            <td>{{ prova.inscriptions|length }}</td>
+                                            <td>
+                                                {% if prova.status == 'setup' %}
+                                                    <span class="badge bg-warning">Setup</span>
+                                                {% elif prova.status == 'inscription' %}
+                                                    <span class="badge bg-success">Iscrizioni</span>
+                                                {% elif prova.status == 'playing' %}
+                                                    <span class="badge bg-primary">In Corso</span>
+                                                {% elif prova.status == 'completed' %}
+                                                    <span class="badge bg-secondary">Completata</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="/admin/prova/{{ prova.id }}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Nessuna prova configurata.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <h4>Benvenuto!</h4>
+        <p>Per iniziare, crea un nuovo torneo.</p>
+    </div>
+{% endif %}
+
+<!-- Modal Nuovo Torneo -->
+<div class="modal fade" id="newTournamentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuovo Torneo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/tournament/create" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Torneo</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="year" class="form-label">Anno</label>
+                        <input type="number" class="form-control" name="year" value="2025" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Crea Torneo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuova Prova -->
+<div class="modal fade" id="newProvaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuova Prova</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/prova/create" method="POST">
+                <input type="hidden" name="tournament_id" value="{{ tournament.id if tournament }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="number" class="form-label">Numero Prova</label>
+                        <select class="form-control" name="number" required>
+                            {% for i in range(1, 11) %}
+                                <option value="{{ i }}">Prova {{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Data</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discipline" class="form-label">Disciplina</label>
+                        <select class="form-control" name="discipline" required>
+                            <option value="palla 8">Palla 8</option>
+                            <option value="palla 9">Palla 9</option>
+                            <option value="palla 10">Palla 10</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="distance" class="form-label">Distanza (rack)</label>
+                        <input type="number" class="form-control" name="distance" min="1" max="15" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Crea Prova</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
