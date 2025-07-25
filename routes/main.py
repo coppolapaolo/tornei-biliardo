@@ -1,6 +1,6 @@
 # routes/main.py - Route principali (home, reset, ecc.)
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, logout_user
 from datetime import date
 from models import db, Tournament, Prova, Classification
 from utils import create_default_users, create_sample_tournament
@@ -57,6 +57,10 @@ def reset_database_confirm():
         return redirect(url_for('main.reset_database'))
     
     try:
+        # LOGOUT dell'utente corrente prima del reset
+        if current_user.is_authenticated:
+            logout_user()
+        
         # Elimina tutte le tabelle
         db.drop_all()
         
@@ -70,6 +74,7 @@ def reset_database_confirm():
         create_sample_tournament()
         
         flash('Database resettato con successo! Utenti creati: admin/admin123, mario/mario123, pino/pino123')
+        flash('Sei stato disconnesso automaticamente. Rieffettua il login.', 'info')
         return redirect(url_for('main.index'))
         
     except Exception as e:

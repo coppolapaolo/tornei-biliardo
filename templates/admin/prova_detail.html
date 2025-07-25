@@ -21,25 +21,84 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-cog"></i> Gestione Prova</h5>
-                <span class="badge bg-{% if prova.status == 'setup' %}warning{% elif prova.status == 'inscription' %}success{% elif prova.status == 'playing' %}primary{% else %}secondary{% endif %}">
-                    {{ prova.status.title() }}
-                </span>
+                {% set status_info = prova.get_status_badge_info() %}
+                <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
             </div>
             <div class="card-body">
                 {% if prova.status == 'setup' %}
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
                         <i class="fas fa-door-open"></i> Apri Iscrizioni
                     </button>
-                {% elif prova.status == 'inscription' %}
-                    <div class="d-flex gap-2">
+                    
+                {% elif prova.get_real_status() == 'inscription' %}
+                    <div class="d-flex gap-2 flex-wrap">
                         <button class="btn btn-primary" onclick="startFirstRound({{ prova.id }})"
                                 {% if inscriptions|length < 2 %}disabled{% endif %}>
                             <i class="fas fa-play"></i> Avvia Primo Turno
                         </button>
+                        
+                        {% if prova.can_modify_inscription_dates() %}
+                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+                                <i class="fas fa-edit"></i> Modifica Date
+                            </button>
+                        {% endif %}
+                        
                         <small class="text-muted align-self-center">
-                            (Servono almeno 2 iscritti)
+                            (Servono almeno 2 iscritti per avviare)
                         </small>
                     </div>
+                    
+                    {% if prova.inscription_end %}
+                        <div class="mt-2 alert alert-info">
+                            <i class="fas fa-clock"></i> 
+                            <strong>Scadenza:</strong> 
+                            <span data-utc="{{ prova.inscription_end.isoformat() }}">
+                                {{ prova.inscription_end.strftime('%d/%m/%Y %H:%M') }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    
+                {% elif prova.get_real_status() == 'inscription_closed' %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Iscrizioni scadute!</strong>
+                        
+                        {% if prova.can_modify_inscription_dates() and inscriptions|length >= 2 %}
+                            <div class="mt-2">
+                                <button class="btn btn-primary" onclick="startFirstRound({{ prova.id }})">
+                                    <i class="fas fa-play"></i> Avvia Primo Turno
+                                </button>
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+                                    <i class="fas fa-edit"></i> Estendi Iscrizioni
+                                </button>
+                            </div>
+                        {% elif prova.can_modify_inscription_dates() %}
+                            <div class="mt-2">
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+                                    <i class="fas fa-edit"></i> Estendi Iscrizioni
+                                </button>
+                                <small class="text-muted d-block">Servono almeno 2 iscritti per avviare</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                {% elif prova.get_real_status() == 'inscription_not_started' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-clock"></i>
+                        <strong>Iscrizioni inizieranno:</strong> 
+                        <span data-utc="{{ prova.inscription_start.isoformat() }}">
+                            {{ prova.inscription_start.strftime('%d/%m/%Y %H:%M') }}
+                        </span>
+                        
+                        {% if prova.can_modify_inscription_dates() %}
+                            <div class="mt-2">
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+                                    <i class="fas fa-edit"></i> Modifica Date
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
                 {% elif prova.status == 'playing' %}
                     <div class="alert alert-info">
                         <strong>Turno {{ prova.current_round }}/3 in corso</strong>
@@ -150,6 +209,36 @@
     </div>
 </div>
 
+<!-- Modal Modifica Date (aggiungere prima del modal esistente) -->
+<div class="modal fade" id="modifyDatesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifica Date Iscrizioni</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.modify_inscription_dates', prova_id=prova.id) }}" method="POST" id="modifyDatesForm">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-clock"></i> <strong>Timezone:</strong> <span id="modify-user-timezone">Caricamento...</span></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modify_inscription_start" class="form-label">Inizio Iscrizioni (Ora Locale)</label>
+                        <input type="datetime-local" class="form-control" name="inscription_start" id="modify_inscription_start" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modify_inscription_end" class="form-label">Fine Iscrizioni (Ora Locale)</label>
+                        <input type="datetime-local" class="form-control" name="inscription_end" id="modify_inscription_end" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-warning">Aggiorna Date</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- Modal Apertura Iscrizioni -->
 <div class="modal fade" id="openInscriptionsModal" tabindex="-1">
     <div class="modal-dialog">
@@ -183,6 +272,8 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Solo la parte JavaScript corretta - linee 165-200 circa -->
+
 <script>
 function startFirstRound(provaId) {
     if (confirm('Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.')) {
@@ -199,15 +290,28 @@ function startFirstRound(provaId) {
     }
 }
 
-// Gestione Timezone per iscrizioni
-document.addEventListener('DOMContentLoaded', function() {
-    // Mostra timezone utente
-    const timezoneSpan = document.getElementById('user-timezone');
-    if (timezoneSpan) {
-        timezoneSpan.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    }
+// Funzione helper per convertire Date in formato datetime-local
+function dateToLocalString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
     
-    // Imposta valori predefiniti intelligenti
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Gestione Timezone per iscrizioni - AGGIORNATO
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostra timezone utente in entrambi i modal
+    const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');
+    timezoneSpans.forEach(span => {
+        if (span) {
+            span.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+    });
+    
+    // Imposta valori predefiniti per modal apertura iscrizioni
     const inscriptionStartInput = document.getElementById('inscription_start');
     const inscriptionEndInput = document.getElementById('inscription_end');
     
@@ -215,39 +319,68 @@ document.addEventListener('DOMContentLoaded', function() {
         const now = new Date();
         const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
         
-        // Imposta valori predefiniti
-        inscriptionStartInput.value = now.toISOString().slice(0, 16);
-        inscriptionEndInput.value = tomorrow.toISOString().slice(0, 16);
+        inscriptionStartInput.value = dateToLocalString(now);
+        inscriptionEndInput.value = dateToLocalString(tomorrow);
     }
     
-    // Converti in UTC quando si invia il form
+    // Imposta valori attuali per modal modifica date
+    const modifyStartInput = document.getElementById('modify_inscription_start');
+    const modifyEndInput = document.getElementById('modify_inscription_end');
+    
+    if (modifyStartInput && modifyEndInput) {
+        // Imposta i valori attuali se disponibili (dal server)
+        {% if prova.inscription_start %}
+            const currentStart = new Date('{{ prova.inscription_start.isoformat() }}Z');
+            modifyStartInput.value = dateToLocalString(currentStart);
+        {% endif %}
+        
+        {% if prova.inscription_end %}
+            const currentEnd = new Date('{{ prova.inscription_end.isoformat() }}Z');
+            modifyEndInput.value = dateToLocalString(currentEnd);
+        {% endif %}
+    }
+    
+    // Form submit handler per apertura iscrizioni
     const inscriptionForm = document.getElementById('inscriptionForm');
     if (inscriptionForm) {
         inscriptionForm.addEventListener('submit', function(e) {
-            const startInput = document.getElementById('inscription_start');
-            const endInput = document.getElementById('inscription_end');
-            
-            if (startInput && endInput) {
-                // Converti locale in UTC
-                const startLocal = new Date(startInput.value);
-                const endLocal = new Date(endInput.value);
-                
-                // Crea campi hidden con valori UTC
-                const startHidden = document.createElement('input');
-                startHidden.type = 'hidden';
-                startHidden.name = 'inscription_start_utc';
-                startHidden.value = startLocal.toISOString().slice(0, 19); // Remove Z
-                
-                const endHidden = document.createElement('input');
-                endHidden.type = 'hidden';
-                endHidden.name = 'inscription_end_utc';
-                endHidden.value = endLocal.toISOString().slice(0, 19);
-                
-                this.appendChild(startHidden);
-                this.appendChild(endHidden);
-            }
+            addUTCFields(this, 'inscription_start', 'inscription_end');
+        });
+    }
+    
+    // Form submit handler per modifica date
+    const modifyDatesForm = document.getElementById('modifyDatesForm');
+    if (modifyDatesForm) {
+        modifyDatesForm.addEventListener('submit', function(e) {
+            addUTCFields(this, 'inscription_start', 'inscription_end');
         });
     }
 });
+
+// Funzione helper per aggiungere campi UTC
+function addUTCFields(form, startFieldName, endFieldName) {
+    const startInput = form.querySelector(`input[name="${startFieldName}"]`);
+    const endInput = form.querySelector(`input[name="${endFieldName}"]`);
+    
+    if (startInput && endInput) {
+        // Converti locale in UTC
+        const startLocal = new Date(startInput.value);
+        const endLocal = new Date(endInput.value);
+        
+        // Crea campi hidden con valori UTC
+        const startHidden = document.createElement('input');
+        startHidden.type = 'hidden';
+        startHidden.name = startFieldName + '_utc';
+        startHidden.value = startLocal.toISOString().slice(0, 19);
+        
+        const endHidden = document.createElement('input');
+        endHidden.type = 'hidden';
+        endHidden.name = endFieldName + '_utc';
+        endHidden.value = endLocal.toISOString().slice(0, 19);
+        
+        form.appendChild(startHidden);
+        form.appendChild(endHidden);
+    }
+}
 </script>
 {% endblock %}

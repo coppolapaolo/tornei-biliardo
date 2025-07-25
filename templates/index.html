@@ -19,10 +19,23 @@
                                     <br><small class="text-muted">{{ prova.date.strftime('%d/%m/%Y') }}</small>
                                 </div>
                                 <div>
-                                    {% if prova.status == 'inscription' %}
-                                        <span class="badge bg-success">Iscrizioni aperte</span>
-                                    {% elif prova.status == 'setup' %}
-                                        <span class="badge bg-warning">In preparazione</span>
+                                    {% set status_info = prova.get_status_badge_info() %}
+                                    <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                    
+                                    {% if prova.get_real_status() == 'inscription' %}
+                                        <br><small class="text-muted">
+                                            <i class="fas fa-clock"></i> 
+                                            Scade: <span data-utc="{{ prova.inscription_end.isoformat() if prova.inscription_end else '' }}">
+                                                {{ prova.inscription_end.strftime('%d/%m %H:%M') if prova.inscription_end else 'N/A' }}
+                                            </span>
+                                        </small>
+                                    {% elif prova.get_real_status() == 'inscription_not_started' %}
+                                        <br><small class="text-muted">
+                                            <i class="fas fa-clock"></i> 
+                                            Iniziano: <span data-utc="{{ prova.inscription_start.isoformat() if prova.inscription_start else '' }}">
+                                                {{ prova.inscription_start.strftime('%d/%m %H:%M') if prova.inscription_start else 'N/A' }}
+                                            </span>
+                                        </small>
                                     {% endif %}
                                 </div>
                             </div>

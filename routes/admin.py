@@ -209,6 +209,44 @@ def start_first_round(prova_id):
     flash('Primo turno avviato!')
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
+# Aggiungere questa route al file routes/admin.py
+
+@admin_bp.route('/prova/<int:prova_id>/modify_inscription_dates', methods=['POST'])
+@admin_required
+def modify_inscription_dates(prova_id):
+    """Modifica date di iscrizione per una prova"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    # Verifica che sia possibile modificare
+    if not prova.can_modify_inscription_dates():
+        flash('Impossibile modificare le date: il primo turno è già stato avviato!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Ottieni le date UTC dal JavaScript
+    inscription_start = datetime.strptime(request.form['inscription_start_utc'], '%Y-%m-%dT%H:%M:%S')
+    inscription_end = datetime.strptime(request.form['inscription_end_utc'], '%Y-%m-%dT%H:%M:%S')
+    
+    # Validazioni
+    if inscription_start > inscription_end:
+        flash('Errore: La data di inizio deve essere precedente alla data di fine!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Aggiorna le date
+    prova.inscription_start = inscription_start
+    prova.inscription_end = inscription_end
+    
+    # Se le iscrizioni ora sono nel futuro, torna a setup
+    now = datetime.utcnow()
+    if inscription_start > now:
+        prova.status = 'setup'
+    elif inscription_start <= now <= inscription_end:
+        prova.status = 'inscription'
+    # Se sono passate, lascia lo status attuale (verrà gestito dai template)
+    
+    db.session.commit()
+    flash('Date di iscrizione aggiornate con successo!')
+    return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+
 # ============ GESTIONE PARTITE ============
 
 @admin_bp.route('/match/<int:match_id>')

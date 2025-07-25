@@ -6,6 +6,8 @@ from models import db, Tournament, Prova, Inscription, Match, Rack
 
 player_bp = Blueprint('player', __name__)
 
+# Aggiornare il metodo dashboard in routes/player.py
+
 @player_bp.route('/')
 @login_required
 def dashboard():
@@ -29,17 +31,16 @@ def dashboard():
         Prova.tournament_id == tournament.id
     ).all()
     
-    # Prove disponibili per iscrizione
+    # Prove disponibili per iscrizione - LOGICA AGGIORNATA
     already_inscribed_ids = [insc.prova_id for insc in my_inscriptions]
-    current_time_utc = datetime.utcnow()
     
-    available_provas = Prova.query.filter(
+    all_provas = Prova.query.filter(
         Prova.tournament_id == tournament.id,
-        Prova.status == 'inscription',
-        Prova.inscription_start <= current_time_utc,
-        Prova.inscription_end >= current_time_utc,
-        ~Prova.id.in_(already_inscribed_ids)
+        ~Prova.id.in_(already_inscribed_ids) if already_inscribed_ids else True
     ).all()
+    
+    # Filtra usando il nuovo metodo can_inscribe()
+    available_provas = [prova for prova in all_provas if prova.can_inscribe()]
     
     # Partite in corso
     current_matches = Match.query.filter(
@@ -53,7 +54,7 @@ def dashboard():
                          my_inscriptions=my_inscriptions,
                          available_provas=available_provas,
                          current_matches=current_matches)
-
+    
 @player_bp.route('/prova/<int:prova_id>/inscribe', methods=['POST'])
 @login_required
 def inscribe_to_prova(prova_id):

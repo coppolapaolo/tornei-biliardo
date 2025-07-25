@@ -130,6 +130,60 @@ class Prova(db.Model):
     
     def __repr__(self):
         return f'<Prova {self.number} - {self.discipline}>'
+    
+    # Aggiungere questo metodo alla classe Prova in models.py
+
+    def get_real_status(self):
+        """Restituisce lo status reale considerando le date"""
+        from datetime import datetime
+        
+        if self.status == 'setup':
+            return 'setup'
+        elif self.status == 'inscription':
+            now = datetime.utcnow()
+            
+            # Verifica se le iscrizioni sono davvero aperte
+            if self.inscription_start and self.inscription_end:
+                if now < self.inscription_start:
+                    return 'inscription_not_started'  # Iscrizioni future
+                elif now > self.inscription_end:
+                    return 'inscription_closed'  # Iscrizioni scadute
+                else:
+                    return 'inscription'  # Iscrizioni aperte
+            else:
+                return 'setup'  # Date non impostate
+        elif self.status == 'playing':
+            return 'playing'
+        elif self.status == 'completed':
+            return 'completed'
+        else:
+            return self.status
+
+    def get_status_badge_info(self):
+        """Restituisce classe CSS e testo per il badge status"""
+        real_status = self.get_real_status()
+        
+        status_map = {
+            'setup': {'class': 'bg-warning', 'text': 'Setup'},
+            'inscription_not_started': {'class': 'bg-info', 'text': 'Iscrizioni Future'},
+            'inscription': {'class': 'bg-success', 'text': 'Iscrizioni Aperte'},
+            'inscription_closed': {'class': 'bg-danger', 'text': 'Iscrizioni Chiuse'},
+            'playing': {'class': 'bg-primary', 'text': 'In Corso'},
+            'completed': {'class': 'bg-secondary', 'text': 'Completata'}
+        }
+        
+        return status_map.get(real_status, {'class': 'bg-secondary', 'text': 'Sconosciuto'})
+
+    def can_inscribe(self):
+        """Verifica se è possibile iscriversi ora"""
+        return self.get_real_status() == 'inscription'
+
+    def can_modify_inscription_dates(self):
+        """Verifica se è possibile modificare le date di iscrizione"""
+        # Può modificare solo se:
+        # 1. Non è ancora stato avviato il primo turno (current_round == 0)
+        # 2. Non ci sono già iscrizioni (opzionale, ma sicuro)
+        return self.current_round == 0
 
 class Inscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
