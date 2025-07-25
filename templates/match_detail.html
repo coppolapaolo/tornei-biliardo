@@ -153,7 +153,7 @@
         
         {% if current_user.is_admin or current_user.id in [match.player1_id, match.player2_id] %}
             <div class="mt-3">
-                <a href="{{ url_for('player_dashboard') if not current_user.is_admin else url_for('admin_prova_detail', prova_id=match.prova_id) }}" 
+                <a href="{{ url_for('player.dashboard') if not current_user.is_admin else url_for('admin.prova_detail', prova_id=match.prova_id) }}" 
                    class="btn btn-outline-secondary w-100">
                     <i class="fas fa-arrow-left"></i> Torna Indietro
                 </a>
@@ -170,7 +170,14 @@ function addRackWin(winnerId) {
     const buttons = document.querySelectorAll('button[onclick^="addRackWin"]');
     buttons.forEach(btn => btn.disabled = true);
     
-    fetch(`/match/{{ match.id }}/add_rack`, {
+    // Determina l'URL corretto in base al ruolo utente
+    {% if current_user.is_admin %}
+        const url = `/admin/match/{{ match.id }}/add_rack`;
+    {% else %}
+        const url = `/player/match/{{ match.id }}/add_rack`;
+    {% endif %}
+    
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

@@ -27,7 +27,7 @@
 
                 <hr>
 
-                <form method="POST" action="{{ url_for('reset_database_confirm') }}" onsubmit="return confirm('Sei SICURO di voler resettare tutto il database?')">
+                <form method="POST" action="{{ url_for('main.reset_database_confirm') }}" onsubmit="return confirm('Sei SICURO di voler resettare tutto il database?')">
                     <div class="mb-3">
                         <label for="password" class="form-label">
                             <strong>Password di conferma:</strong>
@@ -43,7 +43,7 @@
                         <button type="submit" class="btn btn-danger">
                             <i class="fas fa-bomb"></i> RESET DATABASE
                         </button>
-                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Annulla
                         </a>
                     </div>

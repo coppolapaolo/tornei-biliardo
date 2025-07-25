@@ -13,8 +13,8 @@
 
     {% if not current_user.is_authenticated %}
         <div class="mt-4">
-            <a href="{{ url_for('register') }}" class="btn btn-primary me-2">Registrati</a>
-            <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Accedi</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary me-2">Registrati</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">Accedi</a>
         </div>
     {% endif %}
 </div>
