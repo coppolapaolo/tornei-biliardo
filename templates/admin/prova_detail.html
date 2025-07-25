@@ -158,15 +158,18 @@
                 <h5 class="modal-title">Apri Iscrizioni</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url_for('open_inscriptions', prova_id=prova.id) }}" method="POST">
+            <form action="{{ url_for('open_inscriptions', prova_id=prova.id) }}" method="POST" id="inscriptionForm">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="inscription_start" class="form-label">Inizio Iscrizioni</label>
-                        <input type="datetime-local" class="form-control" name="inscription_start" required>
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-clock"></i> <strong>Timezone:</strong> <span id="user-timezone">Caricamento...</span></small>
                     </div>
                     <div class="mb-3">
-                        <label for="inscription_end" class="form-label">Fine Iscrizioni</label>
-                        <input type="datetime-local" class="form-control" name="inscription_end" required>
+                        <label for="inscription_start" class="form-label">Inizio Iscrizioni (Ora Locale)</label>
+                        <input type="datetime-local" class="form-control" name="inscription_start" id="inscription_start" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inscription_end" class="form-label">Fine Iscrizioni (Ora Locale)</label>
+                        <input type="datetime-local" class="form-control" name="inscription_end" id="inscription_end" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -195,5 +198,56 @@ function startFirstRound(provaId) {
         });
     }
 }
+
+// Gestione Timezone per iscrizioni
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostra timezone utente
+    const timezoneSpan = document.getElementById('user-timezone');
+    if (timezoneSpan) {
+        timezoneSpan.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+    
+    // Imposta valori predefiniti intelligenti
+    const inscriptionStartInput = document.getElementById('inscription_start');
+    const inscriptionEndInput = document.getElementById('inscription_end');
+    
+    if (inscriptionStartInput && inscriptionEndInput) {
+        const now = new Date();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        
+        // Imposta valori predefiniti
+        inscriptionStartInput.value = now.toISOString().slice(0, 16);
+        inscriptionEndInput.value = tomorrow.toISOString().slice(0, 16);
+    }
+    
+    // Converti in UTC quando si invia il form
+    const inscriptionForm = document.getElementById('inscriptionForm');
+    if (inscriptionForm) {
+        inscriptionForm.addEventListener('submit', function(e) {
+            const startInput = document.getElementById('inscription_start');
+            const endInput = document.getElementById('inscription_end');
+            
+            if (startInput && endInput) {
+                // Converti locale in UTC
+                const startLocal = new Date(startInput.value);
+                const endLocal = new Date(endInput.value);
+                
+                // Crea campi hidden con valori UTC
+                const startHidden = document.createElement('input');
+                startHidden.type = 'hidden';
+                startHidden.name = 'inscription_start_utc';
+                startHidden.value = startLocal.toISOString().slice(0, 19); // Remove Z
+                
+                const endHidden = document.createElement('input');
+                endHidden.type = 'hidden';
+                endHidden.name = 'inscription_end_utc';
+                endHidden.value = endLocal.toISOString().slice(0, 19);
+                
+                this.appendChild(startHidden);
+                this.appendChild(endHidden);
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

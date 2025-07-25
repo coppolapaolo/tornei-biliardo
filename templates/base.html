@@ -31,12 +31,71 @@
         }
     </style>
     {% endif %}
+    <script>
+    // Timezone e Datetime utilities
+    window.TourneyUtils = {
+        // Ottieni timezone del browser
+        getTimezone: function() {
+            return Intl.DateTimeFormat().resolvedOptions().timeZone;
+        },
+        
+        // Converti UTC string in locale
+        utcToLocal: function(utcString) {
+            if (!utcString) return 'N/A';
+            const utcDate = new Date(utcString + 'Z'); // Force UTC
+            return utcDate.toLocaleString();
+        },
+        
+        // Converti locale in UTC per form
+        localToUtc: function(localDatetimeString) {
+            const localDate = new Date(localDatetimeString);
+            return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
+        },
+        
+        // Ottieni orario attuale locale per confronti
+        getCurrentLocal: function() {
+            return new Date();
+        },
+        
+        // Verifica se un orario UTC è nel futuro
+        isInFuture: function(utcString) {
+            if (!utcString) return false;
+            const utcDate = new Date(utcString + 'Z');
+            return utcDate > new Date();
+        },
+        
+        // Verifica se un orario UTC è nel passato
+        isInPast: function(utcString) {
+            if (!utcString) return false;
+            const utcDate = new Date(utcString + 'Z');
+            return utcDate < new Date();
+        }
+    };
+
+    // Auto-converti tutti gli orari UTC in pagina
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cerca tutti gli elementi con data-utc
+        document.querySelectorAll('[data-utc]').forEach(function(element) {
+            const utcTime = element.getAttribute('data-utc');
+            element.textContent = TourneyUtils.utcToLocal(utcTime);
+        });
+        
+        // Cerca tutti i form datetime-local e imposta valori corretti
+        document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
+            if (input.hasAttribute('data-utc-value')) {
+                const utcValue = input.getAttribute('data-utc-value');
+                const localValue = TourneyUtils.localToUtc(utcValue);
+                input.value = localValue;
+            }
+        });
+    });
+    </script>    
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-trophy"></i> Torneo Biliardo
+                <i class="fas fa-trophy"></i> 🎱 Torneo Biliardo Local
                 {% if debug_info.debug_mode %}
                     <span class="badge bg-warning text-dark ms-2">DEBUG</span>
                 {% endif %}

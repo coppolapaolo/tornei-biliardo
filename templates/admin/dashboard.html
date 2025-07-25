@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard - Torneo Biliardo{% endblock %}
+{% block title %}Dashboard Amministratore - Torneo Biliardo{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,146 +12,220 @@
     </div>
 </div>
 
-{% if tournament %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>{{ tournament.name }} {{ tournament.year }}</h5>
-                    <div>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newProvaModal">
-                            <i class="fas fa-plus"></i> Nuova Prova
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if provas %}
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Prova</th>
-                                        <th>Data</th>
-                                        <th>Disciplina</th>
-                                        <th>Distanza</th>
-                                        <th>Iscritti</th>
-                                        <th>Stato</th>
-                                        <th>Azioni</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for prova in provas %}
-                                        <tr>
-                                            <td><strong>{{ prova.number }}</strong></td>
-                                            <td>{{ prova.date.strftime('%d/%m/%Y') }}</td>
-                                            <td>{{ prova.discipline }}</td>
-                                            <td>{{ prova.distance }} rack</td>
-                                            <td>{{ prova.inscriptions|length }}</td>
-                                            <td>
-                                                {% if prova.status == 'setup' %}
-                                                    <span class="badge bg-warning">Setup</span>
-                                                {% elif prova.status == 'inscription' %}
-                                                    <span class="badge bg-success">Iscrizioni</span>
-                                                {% elif prova.status == 'playing' %}
-                                                    <span class="badge bg-primary">In Corso</span>
-                                                {% elif prova.status == 'completed' %}
-                                                    <span class="badge bg-secondary">Completata</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <a href="/admin/prova/{{ prova.id }}" class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+{% if tournaments %}
+    <!-- Lista Tornei -->
+    <div class="row">
+        {% for tournament in tournaments %}
+            <div class="col-md-6 mb-4">
+                <div class="card {% if not tournament.is_active %}border-secondary{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                {{ tournament.name }} {{ tournament.year }}
+                                {% if not tournament.is_active %}
+                                    <span class="badge bg-secondary ms-2">Inattivo</span>
+                                {% endif %}
+                            </h5>
+                            <small class="text-muted">{{ tournament.tournament_type }}</small>
                         </div>
-                    {% else %}
-                        <p class="text-muted">Nessuna prova configurata.</p>
+                        <span class="badge {{ tournament.get_status_badge_class() }}">
+                            {{ tournament.get_status_text() }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Info Torneo -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Turni per prova:</small><br>
+                                <strong>{{ tournament.rounds_per_prova }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Prove totali:</small><br>
+                                <strong>{{ tournament.provas|length }}</strong>
+                            </div>
+                        </div>
+                        
+                        <!-- Opzioni Torneo -->
+                        <div class="mb-3">
+                            <small class="text-muted">Opzioni:</small><br>
+                            {% if tournament.without_x %}
+                                <span class="badge bg-info me-1">Senza X</span>
+                            {% endif %}
+                            {% if tournament.final_playoffs %}
+                                <span class="badge bg-success me-1">Playoff</span>
+                            {% endif %}
+                            {% if tournament.challenge_mode %}
+                                <span class="badge bg-warning me-1">Challenge</span>
+                            {% endif %}
+                            {% if not (tournament.without_x or tournament.final_playoffs or tournament.challenge_mode) %}
+                                <span class="text-muted">Nessuna opzione speciale</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Azioni -->
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ url_for('admin_tournament_detail', tournament_id=tournament.id) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> Dettagli
+                            </a>
+                            {% if tournament.can_be_modified() %}
+                                <a href="{{ url_for('edit_tournament', tournament_id=tournament.id) }}" 
+                                   class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Modifica
+                                </a>
+                            {% endif %}
+                            <button class="btn btn-{% if tournament.is_active %}secondary{% else %}success{% endif %} btn-sm"
+                                    onclick="toggleActive({{ tournament.id }})">
+                                {% if tournament.is_active %}
+                                    <i class="fas fa-pause"></i> Disattiva
+                                {% else %}
+                                    <i class="fas fa-play"></i> Attiva
+                                {% endif %}
+                            </button>
+                        </div>
+                        
+                        {% if tournament.can_be_deleted() %}
+                            <button class="btn btn-danger btn-sm w-100 mt-2" 
+                                    onclick="deleteTournament({{ tournament.id }}, '{{ tournament.name }} {{ tournament.year }}')">
+                                <i class="fas fa-trash"></i> Elimina Torneo
+                            </button>
+                        {% endif %}
+                    </div>
+                    
+                    {% if debug_info.debug_mode %}
+                        <div class="card-footer">
+                            <small class="text-muted">
+                                DEBUG: ID {{ tournament.id }}, Creato {{ tournament.created_at.strftime('%d/%m/%Y') }},
+                                Can Modify: {{ tournament.can_be_modified() }}, Can Delete: {{ tournament.can_be_deleted() }}
+                            </small>
+                        </div>
                     {% endif %}
                 </div>
             </div>
-        </div>
+        {% endfor %}
     </div>
 {% else %}
-    <div class="alert alert-info">
-        <h4>Benvenuto!</h4>
-        <p>Per iniziare, crea un nuovo torneo.</p>
+    <div class="alert alert-info text-center">
+        <h4><i class="fas fa-trophy"></i> Benvenuto!</h4>
+        <p>Non ci sono ancora tornei configurati. Inizia creando il tuo primo torneo!</p>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+            <i class="fas fa-plus"></i> Crea Primo Torneo
+        </button>
     </div>
 {% endif %}
 
 <!-- Modal Nuovo Torneo -->
 <div class="modal fade" id="newTournamentModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Nuovo Torneo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="/admin/tournament/create" method="POST">
+            <form action="{{ url_for('create_tournament') }}" method="POST">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nome Torneo</label>
-                        <input type="text" class="form-control" name="name" required>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome Torneo</label>
+                                <input type="text" class="form-control" name="name" required 
+                                       placeholder="es: Torneo Primavera">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="year" class="form-label">Anno</label>
+                                <input type="number" class="form-control" name="year" value="2025" required>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tournament_type" class="form-label">Tipo Torneo</label>
+                                <select class="form-control" name="tournament_type" required>
+                                    <option value="Amalfi">Amalfi</option>
+                                    <!-- Aggiungi altri tipi in futuro -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="rounds_per_prova" class="form-label">Turni per Prova</label>
+                                <select class="form-control" name="rounds_per_prova" required>
+                                    <option value="1">1 Turno</option>
+                                    <option value="2">2 Turni</option>
+                                    <option value="3" selected>3 Turni</option>
+                                    <option value="4">4 Turni</option>
+                                    <option value="5">5 Turni</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
-                        <label for="year" class="form-label">Anno</label>
-                        <input type="number" class="form-control" name="year" value="2025" required>
+                        <label class="form-label">Opzioni Torneo</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="without_x" id="without_x">
+                            <label class="form-check-label" for="without_x">
+                                Senza X <small class="text-muted">(nessun giocatore riceve bye automatico)</small>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="final_playoffs" id="final_playoffs" checked>
+                            <label class="form-check-label" for="final_playoffs">
+                                Playoff Finali <small class="text-muted">(Elite + Academy)</small>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="challenge_mode" id="challenge_mode">
+                            <label class="form-check-label" for="challenge_mode">
+                                Modalità Challenge <small class="text-muted">(funzionalità avanzata)</small>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="submit" class="btn btn-primary">Crea Torneo</button>
+                    <button type="submit" class="btn btn-success">Crea Torneo</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Modal Nuova Prova -->
-<div class="modal fade" id="newProvaModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Nuova Prova</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="/admin/prova/create" method="POST">
-                <input type="hidden" name="tournament_id" value="{{ tournament.id if tournament }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="number" class="form-label">Numero Prova</label>
-                        <select class="form-control" name="number" required>
-                            {% for i in range(1, 11) %}
-                                <option value="{{ i }}">Prova {{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="date" class="form-label">Data</label>
-                        <input type="date" class="form-control" name="date" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="discipline" class="form-label">Disciplina</label>
-                        <select class="form-control" name="discipline" required>
-                            <option value="palla 8">Palla 8</option>
-                            <option value="palla 9">Palla 9</option>
-                            <option value="palla 10">Palla 10</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="distance" class="form-label">Distanza (rack)</label>
-                        <input type="number" class="form-control" name="distance" min="1" max="15" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="submit" class="btn btn-primary">Crea Prova</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% block scripts %}
+<script>
+function toggleActive(tournamentId) {
+    if (confirm('Sei sicuro di voler cambiare lo stato del torneo?')) {
+        fetch(`/admin/tournament/${tournamentId}/toggle_active`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function deleteTournament(tournamentId, tournamentName) {
+    if (confirm(`Sei SICURO di voler eliminare il torneo "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
+        fetch(`/admin/tournament/${tournamentId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
 {% endblock %}

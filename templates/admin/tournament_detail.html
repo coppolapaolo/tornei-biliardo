@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tournament.name }} {{ tournament.year }} - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>{{ tournament.name }} {{ tournament.year }}</h1>
+        <p class="text-muted mb-0">
+            {{ tournament.tournament_type }} • {{ tournament.rounds_per_prova }} turni per prova
+            <span class="badge {{ tournament.get_status_badge_class() }} ms-2">
+                {{ tournament.get_status_text() }}
+            </span>
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna ai Tornei
+        </a>
+        {% if tournament.can_be_modified() %}
+            <a href="{{ url_for('edit_tournament', tournament_id=tournament.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Modifica Torneo
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Info Torneo -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Informazioni Torneo</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Tipo:</strong> {{ tournament.tournament_type }}<br>
+                        <strong>Anno:</strong> {{ tournament.year }}<br>
+                        <strong>Turni:</strong> {{ tournament.rounds_per_prova }} per prova
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Opzioni:</strong><br>
+                        {% if tournament.without_x %}
+                            <span class="badge bg-info me-1">Senza X</span><br>
+                        {% endif %}
+                        {% if tournament.final_playoffs %}
+                            <span class="badge bg-success me-1">Playoff</span><br>
+                        {% endif %}
+                        {% if tournament.challenge_mode %}
+                            <span class="badge bg-warning me-1">Challenge</span><br>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Stato:</strong> 
+                        {% if tournament.is_active %}
+                            <span class="badge bg-success">Attivo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inattivo</span>
+                        {% endif %}<br>
+                        <strong>Creato:</strong> {{ tournament.created_at.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Statistiche</h5>
+            </div>
+            <div class="card-body">
+                <strong>Prove Totali:</strong> {{ provas|length }}<br>
+                <strong>Prove Setup:</strong> {{ provas|selectattr("status", "equalto", "setup")|list|length }}<br>
+                <strong>Iscrizioni Aperte:</strong> {{ provas|selectattr("status", "equalto", "inscription")|list|length }}<br>
+                <strong>In Corso:</strong> {{ provas|selectattr("status", "equalto", "playing")|list|length }}<br>
+                <strong>Completate:</strong> {{ provas|selectattr("status", "equalto", "completed")|list|length }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prove del Torneo -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-list"></i> Prove del Torneo</h5>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProvaModal">
+            <i class="fas fa-plus"></i> Nuova Prova
+        </button>
+    </div>
+    <div class="card-body">
+        {% if provas %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Prova</th>
+                            <th>Data</th>
+                            <th>Disciplina</th>
+                            <th>Distanza</th>
+                            <th>Iscritti</th>
+                            <th>Stato</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prova in provas %}
+                            <tr>
+                                <td><strong>{{ prova.number }}</strong></td>
+                                <td>{{ prova.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ prova.discipline }}</td>
+                                <td>{{ prova.distance }} rack</td>
+                                <td>
+                                    <span class="badge bg-info">{{ prova.inscriptions|length }}</span>
+                                </td>
+                                <td>
+                                    {% if prova.status == 'setup' %}
+                                        <span class="badge bg-warning">Setup</span>
+                                    {% elif prova.status == 'inscription' %}
+                                        <span class="badge bg-success">Iscrizioni</span>
+                                    {% elif prova.status == 'playing' %}
+                                        <span class="badge bg-primary">In Corso</span>
+                                    {% elif prova.status == 'completed' %}
+                                        <span class="badge bg-secondary">Completata</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_prova_detail', prova_id=prova.id) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Gestisci
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <h5><i class="fas fa-calendar-plus"></i> Nessuna Prova Configurata</h5>
+                <p>Inizia aggiungendo la prima prova al torneo.</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProvaModal">
+                    <i class="fas fa-plus"></i> Aggiungi Prima Prova
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Nuova Prova -->
+<div class="modal fade" id="newProvaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuova Prova</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('create_prova') }}" method="POST">
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="number" class="form-label">Numero Prova</label>
+                        <select class="form-control" name="number" required>
+                            {% for i in range(1, 21) %}
+                                {% if not provas|selectattr("number", "equalto", i)|list %}
+                                    <option value="{{ i }}">Prova {{ i }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Solo i numeri non ancora utilizzati sono disponibili</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Data</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discipline" class="form-label">Disciplina</label>
+                        <select class="form-control" name="discipline" required>
+                            <option value="palla 8">Palla 8</option>
+                            <option value="palla 9">Palla 9</option>
+                            <option value="palla 10">Palla 10</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="distance" class="form-label">Distanza (rack)</label>
+                        <input type="number" class="form-control" name="distance" min="1" max="15" value="7" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Crea Prova</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if debug_info.debug_mode %}
+<div class="mt-4">
+    <div class="alert alert-dark">
+        <h6><i class="fas fa-bug"></i> DEBUG - Tournament Info</h6>
+        <small>
+            Tournament ID: {{ tournament.id }}<br>
+            Can be modified: {{ tournament.can_be_modified() }}<br>
+            Can be deleted: {{ tournament.can_be_deleted() }}<br>
+            Status: {{ tournament.get_status() }}<br>
+            Provas count: {{ provas|length }}
+        </small>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

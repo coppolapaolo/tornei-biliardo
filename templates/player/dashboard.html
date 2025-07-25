@@ -141,4 +141,68 @@
     </div>
 </div>
 {% endif %}
+<!-- DEBUG SECTION -->
+{% if debug_query_info and debug_info.debug_mode %}
+<div class="mt-4">
+    <div class="alert alert-dark">
+        <h6><i class="fas fa-bug"></i> DEBUG - Analisi Query Prove Disponibili</h6>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Info Generali:</strong><br>
+                <small>
+                    Current Time: {{ debug_query_info.current_time }}<br>
+                    Tournament ID: {{ debug_query_info.tournament_id }}<br>
+                    User ID: {{ debug_query_info.user_id }}<br>
+                    Already Inscribed: {{ debug_query_info.already_inscribed_ids }}
+                </small>
+            </div>
+            <div class="col-md-6">
+                <strong>Query Steps:</strong><br>
+                <small>
+                    Step 1 (Tournament Provas): {{ debug_query_info.query_steps.step1_tournament_provas }}<br>
+                    Step 2 (Status=inscription): {{ debug_query_info.query_steps.step2_inscription_status }}<br>
+                    Step 3 (With Dates): {{ debug_query_info.query_steps.step3_with_dates }}<br>
+                    Step 4 (In Timeframe): {{ debug_query_info.query_steps.step4_in_timeframe }}<br>
+                    Step 5 (Final Available): {{ debug_query_info.query_steps.step5_not_inscribed }}
+                </small>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <strong>Dettaglio Prove:</strong>
+            <div class="table-responsive">
+                <table class="table table-sm table-dark">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Numero</th>
+                            <th>Status</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Has Times</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prova_info in debug_query_info.provas_info %}
+                        <tr>
+                            <td>{{ prova_info.id }}</td>
+                            <td>{{ prova_info.number }}</td>
+                            <td>
+                                <span class="badge bg-{% if prova_info.status == 'inscription' %}success{% elif prova_info.status == 'setup' %}warning{% else %}secondary{% endif %}">
+                                    {{ prova_info.status }}
+                                </span>
+                            </td>
+                            <td>{{ prova_info.inscription_start or 'None' }}</td>
+                            <td>{{ prova_info.inscription_end or 'None' }}</td>
+                            <td>{{ prova_info.has_times }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

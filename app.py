@@ -44,11 +44,76 @@ class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     year = db.Column(db.Integer, nullable=False)
+    
+    # Nuovi campi
+    tournament_type = db.Column(db.String(50), nullable=False, default='Amalfi')
+    rounds_per_prova = db.Column(db.Integer, nullable=False, default=3)
+    without_x = db.Column(db.Boolean, default=False)  # Opzione "senza X"
+    final_playoffs = db.Column(db.Boolean, default=True)  # Play off finali
+    challenge_mode = db.Column(db.Boolean, default=False)  # Challenge
+    
+    # Status e date
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
     # Relazioni
-    provas = db.relationship('Prova', backref='tournament', lazy=True)
+    provas = db.relationship('Prova', backref='tournament', lazy=True, cascade='all, delete-orphan')
+    
+    def can_be_modified(self):
+        """Verifica se il torneo può essere modificato"""
+        # Controlla se esiste almeno una prova con iscrizioni aperte
+        for prova in self.provas:
+            if prova.status in ['inscription', 'playing', 'completed']:
+                return False
+        return True
+    
+    def can_be_deleted(self):
+        """Verifica se il torneo può essere cancellato"""
+        # Un torneo può essere cancellato solo se non ha prove con iscrizioni
+        for prova in self.provas:
+            if prova.inscriptions:  # Se ha iscrizioni
+                return False
+        return True
+    
+    def get_status(self):
+        """Restituisce lo status del torneo"""
+        if not self.provas:
+            return 'setup'
+        
+        # Controlla lo stato delle prove
+        has_playing = any(p.status == 'playing' for p in self.provas)
+        has_completed = any(p.status == 'completed' for p in self.provas)
+        has_inscription = any(p.status == 'inscription' for p in self.provas)
+        
+        if has_playing:
+            return 'in_progress'
+        elif has_completed and not has_playing and not has_inscription:
+            return 'completed'
+        elif has_inscription:
+            return 'registration_open'
+        else:
+            return 'setup'
+    
+    def get_status_badge_class(self):
+        """Restituisce la classe CSS per il badge status"""
+        status = self.get_status()
+        return {
+            'setup': 'bg-warning',
+            'registration_open': 'bg-info', 
+            'in_progress': 'bg-primary',
+            'completed': 'bg-success'
+        }.get(status, 'bg-secondary')
+    
+    def get_status_text(self):
+        """Restituisce il testo dello status"""
+        status = self.get_status()
+        return {
+            'setup': 'Setup',
+            'registration_open': 'Iscrizioni Aperte',
+            'in_progress': 'In Corso',
+            'completed': 'Completato'
+        }.get(status, 'Sconosciuto')
 
 class Prova(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -270,11 +335,16 @@ def create_sample_tournament():
     tournament = Tournament(
         name='Torneo Test',
         year=2025,
+        tournament_type='Amalfi',
+        rounds_per_prova=3,
+        without_x=False,
+        final_playoffs=True,
+        challenge_mode=False,
         is_active=True
     )
     db.session.add(tournament)
     db.session.commit()
-
+    
     # Prova di esempio
     prova = Prova(
         tournament_id=tournament.id,
@@ -286,28 +356,34 @@ def create_sample_tournament():
     )
     db.session.add(prova)
     db.session.commit()
-
+    
 # ============ MAIN ROUTES ============
 
 @app.route('/')
 def index():
-    tournament = Tournament.query.filter_by(is_active=True).first()
-    if not tournament:
+    # Mostra tornei attivi invece di uno solo
+    active_tournaments = Tournament.query.filter_by(is_active=True).order_by(Tournament.created_at.desc()).all()
+    
+    if not active_tournaments:
         return render_template('no_tournament.html')
-
+    
+    # Per ora prendi il primo torneo attivo per la homepage
+    tournament = active_tournaments[0]
+    
     # Prossime prove
     upcoming_provas = Prova.query.filter(
         Prova.tournament_id == tournament.id,
         Prova.date >= date.today()
     ).order_by(Prova.date).limit(3).all()
-
+    
     # Classifica generale (top 10)
     top_classifications = Classification.query.filter(
         Classification.tournament_id == tournament.id
     ).order_by(Classification.position).limit(10).all()
-
-    return render_template('index.html',
+    
+    return render_template('index.html', 
                          tournament=tournament,
+                         active_tournaments=active_tournaments,
                          upcoming_provas=upcoming_provas,
                          top_classifications=top_classifications)
 
@@ -371,47 +447,123 @@ def dashboard():
     else:
         return redirect(url_for('player_dashboard'))
 
-# ============ ADMIN ROUTES ============
+# ============ ADMIN ROUTES - TOURNAMENTS ============
 
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    tournament = Tournament.query.filter_by(is_active=True).first()
-    provas = Prova.query.filter_by(tournament_id=tournament.id).order_by(Prova.number).all() if tournament else []
-
-    return render_template('admin/dashboard.html', tournament=tournament, provas=provas)
+    # Mostra TUTTI i tornei, non solo quello attivo
+    tournaments = Tournament.query.order_by(Tournament.created_at.desc()).all()
+    return render_template('admin/dashboard.html', tournaments=tournaments)
 
 @app.route('/admin/tournament/create', methods=['POST'])
 @admin_required
 def create_tournament():
     name = request.form['name']
     year = int(request.form['year'])
-
-    # Disattiva il torneo precedente
-    Tournament.query.filter_by(is_active=True).update({'is_active': False})
-
-    tournament = Tournament(name=name, year=year, is_active=True)
+    tournament_type = request.form.get('tournament_type', 'Amalfi')
+    rounds_per_prova = int(request.form.get('rounds_per_prova', 3))
+    without_x = 'without_x' in request.form
+    final_playoffs = 'final_playoffs' in request.form
+    challenge_mode = 'challenge_mode' in request.form
+    
+    # NON disattivare più i tornei precedenti
+    tournament = Tournament(
+        name=name, 
+        year=year,
+        tournament_type=tournament_type,
+        rounds_per_prova=rounds_per_prova,
+        without_x=without_x,
+        final_playoffs=final_playoffs,
+        challenge_mode=challenge_mode,
+        is_active=True
+    )
     db.session.add(tournament)
     db.session.commit()
-
+    
     flash(f'Torneo "{name} {year}" creato con successo!')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/tournament/<int:tournament_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_tournament(tournament_id):
+    tournament = Tournament.query.get_or_404(tournament_id)
+    
+    if not tournament.can_be_modified():
+        flash('Impossibile modificare il torneo: alcune prove hanno già delle iscrizioni!')
+        return redirect(url_for('admin_tournament_detail', tournament_id=tournament_id))
+    
+    if request.method == 'POST':
+        tournament.name = request.form['name']
+        tournament.year = int(request.form['year'])
+        tournament.tournament_type = request.form.get('tournament_type', 'Amalfi')
+        tournament.rounds_per_prova = int(request.form.get('rounds_per_prova', 3))
+        tournament.without_x = 'without_x' in request.form
+        tournament.final_playoffs = 'final_playoffs' in request.form
+        tournament.challenge_mode = 'challenge_mode' in request.form
+        tournament.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        flash('Torneo aggiornato con successo!')
+        return redirect(url_for('admin_tournament_detail', tournament_id=tournament_id))
+    
+    return render_template('admin/tournament_edit.html', tournament=tournament)
+
+@app.route('/admin/tournament/<int:tournament_id>/delete', methods=['POST'])
+@admin_required
+def delete_tournament(tournament_id):
+    tournament = Tournament.query.get_or_404(tournament_id)
+    
+    if not tournament.can_be_deleted():
+        flash('Impossibile cancellare il torneo: contiene prove con iscrizioni!')
+        return redirect(url_for('admin_tournament_detail', tournament_id=tournament_id))
+    
+    tournament_name = f"{tournament.name} {tournament.year}"
+    db.session.delete(tournament)
+    db.session.commit()
+    
+    flash(f'Torneo "{tournament_name}" cancellato con successo!')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/tournament/<int:tournament_id>')
+@admin_required
+def admin_tournament_detail(tournament_id):
+    tournament = Tournament.query.get_or_404(tournament_id)
+    provas = Prova.query.filter_by(tournament_id=tournament_id).order_by(Prova.number).all()
+    
+    return render_template('admin/tournament_detail.html', 
+                         tournament=tournament, 
+                         provas=provas)
+
+@app.route('/admin/tournament/<int:tournament_id>/toggle_active', methods=['POST'])
+@admin_required
+def toggle_tournament_active(tournament_id):
+    tournament = Tournament.query.get_or_404(tournament_id)
+    tournament.is_active = not tournament.is_active
+    tournament.updated_at = datetime.utcnow()
+    db.session.commit()
+    
+    status = 'attivato' if tournament.is_active else 'disattivato'
+    flash(f'Torneo "{tournament.name} {tournament.year}" {status}!')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/prova/create', methods=['POST'])
 @admin_required
 def create_prova():
     tournament_id = int(request.form['tournament_id'])
+    tournament = Tournament.query.get_or_404(tournament_id)
+    
     number = int(request.form['number'])
     date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
     discipline = request.form['discipline']
     distance = int(request.form['distance'])
-
+    
     # Verifica che il numero prova non esista già
     existing = Prova.query.filter_by(tournament_id=tournament_id, number=number).first()
     if existing:
         flash(f'La prova {number} esiste già!')
-        return redirect(url_for('admin_dashboard'))
-
+        return redirect(url_for('admin_tournament_detail', tournament_id=tournament_id))
+    
     prova = Prova(
         tournament_id=tournament_id,
         number=number,
@@ -421,9 +573,9 @@ def create_prova():
     )
     db.session.add(prova)
     db.session.commit()
-
+    
     flash(f'Prova {number} creata con successo!')
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_tournament_detail', tournament_id=tournament_id))
 
 @app.route('/admin/prova/<int:prova_id>')
 @admin_required
@@ -441,16 +593,22 @@ def admin_prova_detail(prova_id):
 @admin_required
 def open_inscriptions(prova_id):
     prova = Prova.query.get_or_404(prova_id)
-
-    inscription_start = datetime.strptime(request.form['inscription_start'], '%Y-%m-%dT%H:%M')
-    inscription_end = datetime.strptime(request.form['inscription_end'], '%Y-%m-%dT%H:%M')
-
+    
+    # Ottieni le date UTC dal JavaScript
+    inscription_start = datetime.strptime(request.form['inscription_start_utc'], '%Y-%m-%dT%H:%M:%S')
+    inscription_end = datetime.strptime(request.form['inscription_end_utc'], '%Y-%m-%dT%H:%M:%S')
+    
+    # Validazioni
+    if inscription_start > inscription_end:
+        flash('Errore: La data di inizio deve essere precedente alla data di fine!')
+        return redirect(url_for('admin_prova_detail', prova_id=prova_id))
+    
     prova.inscription_start = inscription_start
     prova.inscription_end = inscription_end
     prova.status = 'inscription'
-
+    
     db.session.commit()
-    flash('Iscrizioni aperte!')
+    flash('Iscrizioni aperte! Gli orari sono in UTC nel database ma vengono mostrati nel tuo timezone locale.')
     return redirect(url_for('admin_prova_detail', prova_id=prova_id))
 
 @app.route('/admin/prova/<int:prova_id>/start_first_round', methods=['POST'])
@@ -483,38 +641,52 @@ def start_first_round(prova_id):
 # ============ PLAYER ROUTES ============
 
 @app.route('/player')
-@login_required
+@login_required 
 def player_dashboard():
-    tournament = Tournament.query.filter_by(is_active=True).first()
-
+    # Mostra tutti i tornei attivi
+    active_tournaments = Tournament.query.filter_by(is_active=True).order_by(Tournament.created_at.desc()).all()
+    
+    if not active_tournaments:
+        return render_template('player/dashboard.html', 
+                             tournaments=[],
+                             my_inscriptions=[],
+                             available_provas=[],
+                             current_matches=[])
+    
+    # Per ora usa il primo torneo attivo (TODO: permettere selezione)
+    tournament = active_tournaments[0]
+    
     # Iscrizioni del giocatore
     my_inscriptions = Inscription.query.join(Prova).filter(
         Inscription.user_id == current_user.id,
         Prova.tournament_id == tournament.id
-    ).all() if tournament else []
-
+    ).all()
+    
     # Prove disponibili per iscrizione
     already_inscribed_ids = [insc.prova_id for insc in my_inscriptions]
+    current_time_utc = datetime.utcnow()
+    
     available_provas = Prova.query.filter(
         Prova.tournament_id == tournament.id,
         Prova.status == 'inscription',
-        Prova.inscription_start <= datetime.utcnow(),
-        Prova.inscription_end >= datetime.utcnow(),
+        Prova.inscription_start <= current_time_utc,
+        Prova.inscription_end >= current_time_utc,
         ~Prova.id.in_(already_inscribed_ids)
-    ).all() if tournament else []
-
+    ).all()
+    
     # Partite in corso
     current_matches = Match.query.filter(
         db.or_(Match.player1_id == current_user.id, Match.player2_id == current_user.id),
         Match.status.in_(['pending', 'playing'])
     ).all()
-
-    return render_template('player/dashboard.html',
+    
+    return render_template('player/dashboard.html', 
                          tournament=tournament,
+                         tournaments=active_tournaments,
                          my_inscriptions=my_inscriptions,
                          available_provas=available_provas,
                          current_matches=current_matches)
-
+    
 @app.route('/prova/<int:prova_id>/inscribe', methods=['POST'])
 @login_required
 def inscribe_to_prova(prova_id):
