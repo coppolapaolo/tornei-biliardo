@@ -21,7 +21,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="mb-0">
-                                {{ tournament.name }} {{ tournament.year }}
+                                {{ tournament.name }}
                                 {% if not tournament.is_active %}
                                     <span class="badge bg-secondary ms-2">Inattivo</span>
                                 {% endif %}
@@ -36,12 +36,12 @@
                         <!-- Info Torneo -->
                         <div class="row mb-3">
                             <div class="col-6">
-                                <small class="text-muted">Turni per prova:</small><br>
-                                <strong>{{ tournament.rounds_per_prova }}</strong>
-                            </div>
-                            <div class="col-6">
                                 <small class="text-muted">Prove totali:</small><br>
                                 <strong>{{ tournament.provas|length }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Tipo:</small><br>
+                                <strong>{{ tournament.tournament_type }}</strong>
                             </div>
                         </div>
                         
@@ -86,7 +86,7 @@
                         
                         {% if tournament.can_be_deleted() %}
                             <button class="btn btn-danger btn-sm w-100 mt-2" 
-                                    onclick="deleteTournament({{ tournament.id }}, '{{ tournament.name }} {{ tournament.year }}')">
+                                    onclick="deleteTournament({{ tournament.id }}, '{{ tournament.name }}')">
                                 <i class="fas fa-trash"></i> Elimina Torneo
                             </button>
                         {% endif %}
@@ -114,7 +114,7 @@
     </div>
 {% endif %}
 
-<!-- Modal Nuovo Torneo -->
+<!-- Modal Nuovo Torneo - AGGIORNATO senza year e rounds_per_prova -->
 <div class="modal fade" id="newTournamentModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -124,44 +124,19 @@
             </div>
             <form action="{{ url_for('admin.create_tournament') }}" method="POST">
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nome Torneo</label>
-                                <input type="text" class="form-control" name="name" required 
-                                       placeholder="es: Torneo Primavera">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="year" class="form-label">Anno</label>
-                                <input type="number" class="form-control" name="year" value="2025" required>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Torneo</label>
+                        <input type="text" class="form-control" name="name" required 
+                               placeholder="es: Torneo Primavera 2025">
+                        <small class="text-muted">Includi l'anno nel nome se necessario</small>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="tournament_type" class="form-label">Tipo Torneo</label>
-                                <select class="form-control" name="tournament_type" required>
-                                    <option value="Amalfi">Amalfi</option>
-                                    <!-- Aggiungi altri tipi in futuro -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="rounds_per_prova" class="form-label">Turni per Prova</label>
-                                <select class="form-control" name="rounds_per_prova" required>
-                                    <option value="1">1 Turno</option>
-                                    <option value="2">2 Turni</option>
-                                    <option value="3" selected>3 Turni</option>
-                                    <option value="4">4 Turni</option>
-                                    <option value="5">5 Turni</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="tournament_type" class="form-label">Tipo Torneo</label>
+                        <select class="form-control" name="tournament_type" required>
+                            <option value="Amalfi">Amalfi</option>
+                            <!-- Aggiungi altri tipi in futuro -->
+                        </select>
                     </div>
                     
                     <div class="mb-3">
@@ -184,6 +159,12 @@
                                 Modalità Challenge <small class="text-muted">(funzionalità avanzata)</small>
                             </label>
                         </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, ecc.) 
+                        vengono configurate in ogni singola prova.
                     </div>
                 </div>
                 <div class="modal-footer">

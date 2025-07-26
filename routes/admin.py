@@ -1,4 +1,4 @@
-# routes/admin.py - Route amministrative
+# routes/admin.py - STEP 1: Aggiornato per nuovi models
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from datetime import datetime, date
@@ -20,20 +20,16 @@ def dashboard():
 @admin_bp.route('/tournament/create', methods=['POST'])
 @admin_required
 def create_tournament():
-    """Crea nuovo torneo"""
+    """Crea nuovo torneo - AGGIORNATO per nuovo model"""
     name = request.form['name']
-    year = int(request.form['year'])
     tournament_type = request.form.get('tournament_type', 'Amalfi')
-    rounds_per_prova = int(request.form.get('rounds_per_prova', 3))
     without_x = 'without_x' in request.form
     final_playoffs = 'final_playoffs' in request.form
     challenge_mode = 'challenge_mode' in request.form
     
     tournament = Tournament(
-        name=name, 
-        year=year,
+        name=name,
         tournament_type=tournament_type,
-        rounds_per_prova=rounds_per_prova,
         without_x=without_x,
         final_playoffs=final_playoffs,
         challenge_mode=challenge_mode,
@@ -42,7 +38,7 @@ def create_tournament():
     db.session.add(tournament)
     db.session.commit()
     
-    flash(f'Torneo "{name} {year}" creato con successo!')
+    flash(f'Torneo "{name}" creato con successo!')
     return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route('/tournament/<int:tournament_id>')
@@ -59,7 +55,7 @@ def tournament_detail(tournament_id):
 @admin_bp.route('/tournament/<int:tournament_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_tournament(tournament_id):
-    """Modifica torneo"""
+    """Modifica torneo - AGGIORNATO per nuovo model"""
     tournament = Tournament.query.get_or_404(tournament_id)
     
     if not tournament.can_be_modified():
@@ -68,9 +64,7 @@ def edit_tournament(tournament_id):
     
     if request.method == 'POST':
         tournament.name = request.form['name']
-        tournament.year = int(request.form['year'])
         tournament.tournament_type = request.form.get('tournament_type', 'Amalfi')
-        tournament.rounds_per_prova = int(request.form.get('rounds_per_prova', 3))
         tournament.without_x = 'without_x' in request.form
         tournament.final_playoffs = 'final_playoffs' in request.form
         tournament.challenge_mode = 'challenge_mode' in request.form
@@ -92,7 +86,7 @@ def delete_tournament(tournament_id):
         flash('Impossibile cancellare il torneo: contiene prove con iscrizioni!')
         return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
     
-    tournament_name = f"{tournament.name} {tournament.year}"
+    tournament_name = tournament.name
     db.session.delete(tournament)
     db.session.commit()
     
@@ -109,7 +103,7 @@ def toggle_tournament_active(tournament_id):
     db.session.commit()
     
     status = 'attivato' if tournament.is_active else 'disattivato'
-    flash(f'Torneo "{tournament.name} {tournament.year}" {status}!')
+    flash(f'Torneo "{tournament.name}" {status}!')
     return redirect(url_for('admin.dashboard'))
 
 # ============ PROVE ============
@@ -117,14 +111,11 @@ def toggle_tournament_active(tournament_id):
 @admin_bp.route('/prova/create', methods=['POST'])
 @admin_required
 def create_prova():
-    """Crea nuova prova"""
+    """Crea nuova prova - COMPLETAMENTE AGGIORNATO per nuovi campi"""
     tournament_id = int(request.form['tournament_id'])
     tournament = Tournament.query.get_or_404(tournament_id)
     
     number = int(request.form['number'])
-    date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
-    discipline = request.form['discipline']
-    distance = int(request.form['distance'])
     
     # Verifica che il numero prova non esista già
     existing = Prova.query.filter_by(tournament_id=tournament_id, number=number).first()
@@ -132,17 +123,103 @@ def create_prova():
         flash(f'La prova {number} esiste già!')
         return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
     
+    # Campi base
+    name = request.form.get('name', f'Prova {number}')
+    date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
+    
+    # Nuovi campi
+    location = request.form.get('location', '')
+    description = request.form.get('description', '')
+    rounds_count = int(request.form.get('rounds_count', 3))
+    min_participants = int(request.form.get('min_participants', 2))
+    max_participants = request.form.get('max_participants')
+    max_participants = int(max_participants) if max_participants else None
+    entry_fee = float(request.form.get('entry_fee', 0.0))
+    
+    # Game settings
+    discipline = request.form['discipline']
+    distance = int(request.form['distance'])
+    # CORREZIONE: exact_number è il contrario di best_of
+    exact_number = 'exact_number' in request.form
+    best_of = not exact_number  # Inverti la logica
+    
+    # Crea la prova
     prova = Prova(
         tournament_id=tournament_id,
         number=number,
+        name=name,
         date=date,
+        location=location,
+        description=description,
+        rounds_count=rounds_count,
+        min_participants=min_participants,
+        max_participants=max_participants,
+        entry_fee=entry_fee,
         discipline=discipline,
-        distance=distance
+        distance=distance,
+        best_of=best_of
     )
+    
+    # Auto-popolamento da prova precedente (non serve più, è gestito lato client)
+    # Il checkbox copy_from_previous è gestito dinamicamente dal JavaScript
+    
     db.session.add(prova)
     db.session.commit()
     
     flash(f'Prova {number} creata con successo!')
+    return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
+
+@admin_bp.route('/prova/<int:prova_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_prova(prova_id):
+    """Modifica prova - AGGIORNATO per exact_number"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    if not prova.can_be_modified():
+        flash('Impossibile modificare la prova: ci sono già delle iscrizioni!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    if request.method == 'POST':
+        # Aggiorna tutti i campi
+        prova.name = request.form.get('name', prova.name)
+        prova.date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
+        prova.location = request.form.get('location', '')
+        prova.description = request.form.get('description', '')
+        prova.rounds_count = int(request.form.get('rounds_count', 3))
+        prova.min_participants = int(request.form.get('min_participants', 2))
+        
+        max_participants = request.form.get('max_participants')
+        prova.max_participants = int(max_participants) if max_participants else None
+        prova.entry_fee = float(request.form.get('entry_fee', 0.0))
+        prova.discipline = request.form['discipline']
+        prova.distance = int(request.form['distance'])
+        
+        # CORREZIONE: exact_number è il contrario di best_of
+        exact_number = 'exact_number' in request.form
+        prova.best_of = not exact_number  # Inverti la logica
+        
+        db.session.commit()
+        flash('Prova aggiornata con successo!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    return render_template('admin/prova_edit.html', prova=prova)
+
+@admin_bp.route('/prova/<int:prova_id>/delete', methods=['POST'])
+@admin_required
+def delete_prova(prova_id):
+    """Cancella prova - NUOVO"""
+    prova = Prova.query.get_or_404(prova_id)
+    tournament_id = prova.tournament_id
+    
+    if not prova.can_be_deleted():
+        flash('Impossibile cancellare la prova: ci sono già delle iscrizioni!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    prova_name = f"Prova {prova.number}"
+    db.session.delete(prova)
+    db.session.commit()
+    
+    flash(f'{prova_name} cancellata con successo!')
     return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
 
 @admin_bp.route('/prova/<int:prova_id>')
@@ -181,36 +258,6 @@ def open_inscriptions(prova_id):
     flash('Iscrizioni aperte! Gli orari sono gestiti automaticamente nel tuo timezone locale.')
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
-@admin_bp.route('/prova/<int:prova_id>/start_first_round', methods=['POST'])
-@admin_required
-def start_first_round(prova_id):
-    """Avvia primo turno della prova"""
-    prova = Prova.query.get_or_404(prova_id)
-    
-    if prova.current_round != 0:
-        flash('La prova è già iniziata!')
-        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
-    
-    # Genera il sorteggio iniziale
-    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
-    random.shuffle(inscriptions)
-    
-    # Assegna ordine sorteggio
-    for i, inscription in enumerate(inscriptions, 1):
-        inscription.initial_order = i
-    
-    # Crea abbinamenti primo turno
-    create_round_matches(prova, inscriptions, 1)
-    
-    prova.current_round = 1
-    prova.status = 'playing'
-    db.session.commit()
-    
-    flash('Primo turno avviato!')
-    return redirect(url_for('admin.prova_detail', prova_id=prova_id))
-
-# Aggiungere questa route al file routes/admin.py
-
 @admin_bp.route('/prova/<int:prova_id>/modify_inscription_dates', methods=['POST'])
 @admin_required
 def modify_inscription_dates(prova_id):
@@ -247,6 +294,39 @@ def modify_inscription_dates(prova_id):
     flash('Date di iscrizione aggiornate con successo!')
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
+@admin_bp.route('/prova/<int:prova_id>/start_first_round', methods=['POST'])
+@admin_required
+def start_first_round(prova_id):
+    """Avvia primo turno della prova - AGGIORNATO per min_participants"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    if prova.current_round != 0:
+        flash('La prova è già iniziata!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Verifica numero minimo partecipanti
+    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    if len(inscriptions) < prova.min_participants:
+        flash(f'Servono almeno {prova.min_participants} iscritti per avviare la prova!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Genera il sorteggio iniziale
+    random.shuffle(inscriptions)
+    
+    # Assegna ordine sorteggio
+    for i, inscription in enumerate(inscriptions, 1):
+        inscription.initial_order = i
+    
+    # Crea abbinamenti primo turno
+    create_round_matches(prova, inscriptions, 1)
+    
+    prova.current_round = 1
+    prova.status = 'playing'
+    db.session.commit()
+    
+    flash('Primo turno avviato!')
+    return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+
 # ============ GESTIONE PARTITE ============
 
 @admin_bp.route('/match/<int:match_id>')
@@ -261,7 +341,7 @@ def match_detail(match_id):
 @admin_bp.route('/match/<int:match_id>/add_rack', methods=['POST'])
 @admin_required
 def add_rack_result(match_id):
-    """Aggiungi risultato rack (admin)"""
+    """Aggiungi risultato rack (admin) - AGGIORNATO per nuova logica"""
     match = Match.query.get_or_404(match_id)
     winner_id = int(request.form['winner_id'])
     
@@ -284,8 +364,8 @@ def add_rack_result(match_id):
     else:
         match.player2_score += 1
     
-    # Verifica se il match è finito
-    if match.player1_score >= match.prova.distance or match.player2_score >= match.prova.distance:
+    # Verifica se il match è finito usando la nuova logica
+    if match.prova.is_match_finished(match.player1_score, match.player2_score):
         match.winner_id = match.player1_id if match.player1_score > match.player2_score else match.player2_id
         match.status = 'completed'
     

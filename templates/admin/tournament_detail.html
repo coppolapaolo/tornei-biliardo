@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}{{ tournament.name }} {{ tournament.year }} - Admin{% endblock %}
+{% block title %}{{ tournament.name }} - Admin{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1>{{ tournament.name }} {{ tournament.year }}</h1>
+        <h1>{{ tournament.name }}</h1>
         <p class="text-muted mb-0">
-            {{ tournament.tournament_type }} • {{ tournament.rounds_per_prova }} turni per prova
+            {{ tournament.tournament_type }}
             <span class="badge {{ tournament.get_status_badge_class() }} ms-2">
                 {{ tournament.get_status_text() }}
             </span>
@@ -36,8 +36,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <strong>Tipo:</strong> {{ tournament.tournament_type }}<br>
-                        <strong>Anno:</strong> {{ tournament.year }}<br>
-                        <strong>Turni:</strong> {{ tournament.rounds_per_prova }} per prova
+                        <strong>Creato:</strong> {{ tournament.created_at.strftime('%d/%m/%Y') }}
                     </div>
                     <div class="col-md-4">
                         <strong>Opzioni:</strong><br>
@@ -57,8 +56,7 @@
                             <span class="badge bg-success">Attivo</span>
                         {% else %}
                             <span class="badge bg-secondary">Inattivo</span>
-                        {% endif %}<br>
-                        <strong>Creato:</strong> {{ tournament.created_at.strftime('%d/%m/%Y') }}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -96,8 +94,10 @@
                         <tr>
                             <th>Prova</th>
                             <th>Data</th>
+                            <th>Luogo</th>
                             <th>Disciplina</th>
                             <th>Distanza</th>
+                            <th>Quota</th>
                             <th>Iscritti</th>
                             <th>Stato</th>
                             <th>Azioni</th>
@@ -108,27 +108,52 @@
                             <tr>
                                 <td><strong>{{ prova.number }}</strong></td>
                                 <td>{{ prova.date.strftime('%d/%m/%Y') }}</td>
-                                <td>{{ prova.discipline }}</td>
-                                <td>{{ prova.distance }} rack</td>
+                                <td>{{ prova.location or '-' }}</td>
                                 <td>
-                                    <span class="badge bg-info">{{ prova.inscriptions|length }}</span>
+                                    {{ prova.discipline }}
+                                    {% if prova.best_of %}
+                                        <small class="text-muted">(al meglio di {{ prova.distance }})</small>
+                                    {% else %}
+                                        <small class="text-muted">({{ prova.distance }} rack)</small>
+                                    {% endif %}
                                 </td>
+                                <td>{{ prova.distance }}</td>
                                 <td>
-                                    {% if prova.status == 'setup' %}
-                                        <span class="badge bg-warning">Setup</span>
-                                    {% elif prova.status == 'inscription' %}
-                                        <span class="badge bg-success">Iscrizioni</span>
-                                    {% elif prova.status == 'playing' %}
-                                        <span class="badge bg-primary">In Corso</span>
-                                    {% elif prova.status == 'completed' %}
-                                        <span class="badge bg-secondary">Completata</span>
+                                    {% if prova.entry_fee > 0 %}
+                                        €{{ "%.2f"|format(prova.entry_fee) }}
+                                    {% else %}
+                                        Gratuita
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('admin.prova_detail', prova_id=prova.id) }}" 
-                                       class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> Gestisci
-                                    </a>
+                                    <span class="badge bg-info">{{ prova.inscriptions|length }}</span>
+                                    {% if prova.max_participants %}
+                                        / {{ prova.max_participants }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set status_info = prova.get_status_badge_info() %}
+                                    <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.prova_detail', prova_id=prova.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if prova.can_be_modified() %}
+                                            <a href="{{ url_for('admin.edit_prova', prova_id=prova.id) }}" 
+                                               class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if prova.can_be_deleted() %}
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="deleteProva({{ prova.id }}, {{ prova.number }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -149,7 +174,7 @@
 
 <!-- Modal Nuova Prova -->
 <div class="modal fade" id="newProvaModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Nuova Prova</h5>
@@ -158,33 +183,135 @@
             <form action="{{ url_for('admin.create_prova') }}" method="POST">
                 <input type="hidden" name="tournament_id" value="{{ tournament.id }}">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="number" class="form-label">Numero Prova</label>
-                        <select class="form-control" name="number" required>
-                            {% for i in range(1, 21) %}
-                                {% if not provas|selectattr("number", "equalto", i)|list %}
-                                    <option value="{{ i }}">Prova {{ i }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                        <small class="text-muted">Solo i numeri non ancora utilizzati sono disponibili</small>
+                    <!-- Prima riga: Info base -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="number" class="form-label">Numero Prova</label>
+                                <select class="form-control" name="number" required>
+                                    {% for i in range(1, 21) %}
+                                        {% if not provas|selectattr("number", "equalto", i)|list %}
+                                            <option value="{{ i }}">Prova {{ i }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome (opzionale)</label>
+                                <input type="text" class="form-control" name="name" id="create_name"
+                                       placeholder="es: Prima Prova, Semifinale...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Data</label>
+                                <input type="date" class="form-control" name="date" id="create_date" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="date" class="form-label">Data</label>
-                        <input type="date" class="form-control" name="date" required>
+                    
+                    <!-- Seconda riga: Luogo e partecipanti -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Luogo</label>
+                                <input type="text" class="form-control" name="location" id="create_location"
+                                       placeholder="es: Circolo Biliardo Centro">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="min_participants" class="form-label">Min Iscritti</label>
+                                <input type="number" class="form-control" name="min_participants" id="create_min_participants"
+                                       min="2" max="32" value="2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="max_participants" class="form-label">Max Iscritti</label>
+                                <input type="number" class="form-control" name="max_participants" id="create_max_participants"
+                                       min="2" max="64" placeholder="Illimitato">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="entry_fee" class="form-label">Quota €</label>
+                                <input type="number" class="form-control" name="entry_fee" id="create_entry_fee"
+                                       min="0" step="0.50" value="0" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="discipline" class="form-label">Disciplina</label>
-                        <select class="form-control" name="discipline" required>
-                            <option value="palla 8">Palla 8</option>
-                            <option value="palla 9">Palla 9</option>
-                            <option value="palla 10">Palla 10</option>
-                        </select>
+                    
+                    <!-- Terza riga: Game settings -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="discipline" class="form-label">Disciplina</label>
+                                <select class="form-control" name="discipline" id="create_discipline" required>
+                                    <option value="palla 8">Palla 8</option>
+                                    <option value="palla 9" selected>Palla 9</option>
+                                    <option value="palla 10">Palla 10</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="distance" class="form-label">Rack/Distanza</label>
+                                <input type="number" class="form-control" name="distance" id="create_distance"
+                                       min="1" max="15" value="7" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="exact_number" class="form-label">Modalità</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="exact_number" id="create_exact_number">
+                                    <label class="form-check-label" for="exact_number">
+                                        Esatto numero
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    <span id="create-game-mode-text">Al meglio di 7 (vince con 4)</span>
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="rounds_count" class="form-label">Turni</label>
+                                <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
+                                       min="1" max="10" value="3" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-label">Auto-copia</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="copy_from_previous" 
+                                           id="copy_from_previous" value="true" {% if provas %}checked{% endif %}>
+                                    <label class="form-check-label" for="copy_from_previous">
+                                        Da precedente
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <!-- Descrizione -->
                     <div class="mb-3">
-                        <label for="distance" class="form-label">Distanza (rack)</label>
-                        <input type="number" class="form-control" name="distance" min="1" max="15" value="7" required>
+                        <label for="description" class="form-label">Descrizione (opzionale)</label>
+                        <textarea class="form-control" name="description" id="create_description" rows="2" 
+                                  placeholder="Note aggiuntive sulla prova..."></textarea>
                     </div>
+                    
+                    {% if provas %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Auto-popolamento:</strong> Se attivo, i campi verranno precompilati 
+                            con i valori dell'ultima prova creata.
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
@@ -209,4 +336,107 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteProva(provaId, provaNumber) {
+    if (confirm(`Sei SICURO di voler eliminare la Prova ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
+        fetch(`/admin/prova/${provaId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Auto-popolamento dinamico + logica modalità di gioco
+document.addEventListener('DOMContentLoaded', function() {
+    const copyFromPreviousCheck = document.getElementById('copy_from_previous');
+    const createDistanceInput = document.getElementById('create_distance');
+    const createExactNumberCheck = document.getElementById('create_exact_number');
+    const createGameModeText = document.getElementById('create-game-mode-text');
+    
+    // Dati dell'ultima prova per auto-popolamento
+    {% if provas %}
+    const lastProva = {{ {
+        'location': provas[-1].location or '',
+        'min_participants': provas[-1].min_participants,
+        'max_participants': provas[-1].max_participants or '',
+        'entry_fee': provas[-1].entry_fee,
+        'discipline': provas[-1].discipline,
+        'distance': provas[-1].distance,
+        'exact_number': not provas[-1].best_of,
+        'rounds_count': provas[-1].rounds_count,
+        'description': provas[-1].description or ''
+    } | tojson }};
+    {% else %}
+    const lastProva = null;
+    {% endif %}
+    
+    // Funzione per copiare valori dalla prova precedente
+    function copyFromPrevious() {
+        if (copyFromPreviousCheck.checked && lastProva) {
+            document.getElementById('create_location').value = lastProva.location;
+            document.getElementById('create_min_participants').value = lastProva.min_participants;
+            document.getElementById('create_max_participants').value = lastProva.max_participants;
+            document.getElementById('create_entry_fee').value = lastProva.entry_fee;
+            document.getElementById('create_discipline').value = lastProva.discipline;
+            document.getElementById('create_distance').value = lastProva.distance;
+            document.getElementById('create_exact_number').checked = lastProva.exact_number;
+            document.getElementById('create_rounds_count').value = lastProva.rounds_count;
+            document.getElementById('create_description').value = lastProva.description;
+            
+            updateCreateGameModeText();
+        }
+    }
+    
+    // Funzione per aggiornare testo modalità di gioco nel modal creazione
+    function updateCreateGameModeText() {
+        const distance = parseInt(createDistanceInput.value) || 7;
+        const isExactNumber = createExactNumberCheck.checked;
+        const isDistanceOdd = distance % 2 === 1;
+        
+        // Abilita/disabilita la checkbox in base al numero di rack
+        if (isDistanceOdd && distance > 1) {
+            createExactNumberCheck.disabled = false;
+            createExactNumberCheck.parentElement.parentElement.style.opacity = '1';
+        } else {
+            createExactNumberCheck.disabled = true;
+            createExactNumberCheck.checked = false;
+            createExactNumberCheck.parentElement.parentElement.style.opacity = '0.5';
+        }
+        
+        if (isExactNumber && !createExactNumberCheck.disabled) {
+            createGameModeText.textContent = `Esatto numero: ${distance} rack totali`;
+        } else {
+            const winScore = Math.floor(distance / 2) + 1;
+            createGameModeText.textContent = `Al meglio di ${distance} (vince con ${winScore})`;
+        }
+    }
+    
+    // Event listeners
+    if (copyFromPreviousCheck) {
+        copyFromPreviousCheck.addEventListener('change', copyFromPrevious);
+        
+        // Auto-copia all'apertura del modal se è checked
+        document.getElementById('newProvaModal').addEventListener('shown.bs.modal', function() {
+            if (copyFromPreviousCheck.checked) {
+                copyFromPrevious();
+            }
+        });
+    }
+    
+    if (createDistanceInput && createExactNumberCheck && createGameModeText) {
+        createDistanceInput.addEventListener('input', updateCreateGameModeText);
+        createExactNumberCheck.addEventListener('change', updateCreateGameModeText);
+        updateCreateGameModeText(); // Iniziale
+    }
+});
+</script>
 {% endblock %}

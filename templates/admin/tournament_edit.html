@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Modifica {{ tournament.name }} {{ tournament.year }} - Admin{% endblock %}
+{% block title %}Modifica {{ tournament.name }} - Admin{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1>Modifica Torneo</h1>
-        <p class="text-muted mb-0">{{ tournament.name }} {{ tournament.year }}</p>
+        <p class="text-muted mb-0">{{ tournament.name }}</p>
     </div>
     <div>
         <a href="{{ url_for('admin.tournament_detail', tournament_id=tournament.id) }}" class="btn btn-outline-secondary">
@@ -23,47 +23,21 @@
             </div>
             <div class="card-body">
                 <form action="{{ url_for('admin.edit_tournament', tournament_id=tournament.id) }}" method="POST">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nome Torneo</label>
-                                <input type="text" class="form-control" name="name" 
-                                       value="{{ tournament.name }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="year" class="form-label">Anno</label>
-                                <input type="number" class="form-control" name="year" 
-                                       value="{{ tournament.year }}" required>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Torneo</label>
+                        <input type="text" class="form-control" name="name" 
+                               value="{{ tournament.name }}" required>
+                        <small class="text-muted">Includi l'anno nel nome se necessario</small>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="tournament_type" class="form-label">Tipo Torneo</label>
-                                <select class="form-control" name="tournament_type" required>
-                                    <option value="Amalfi" {% if tournament.tournament_type == 'Amalfi' %}selected{% endif %}>
-                                        Amalfi
-                                    </option>
-                                    <!-- Aggiungi altri tipi in futuro -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="rounds_per_prova" class="form-label">Turni per Prova</label>
-                                <select class="form-control" name="rounds_per_prova" required>
-                                    {% for i in range(1, 6) %}
-                                        <option value="{{ i }}" {% if tournament.rounds_per_prova == i %}selected{% endif %}>
-                                            {{ i }} Turno{% if i > 1 %}i{% endif %}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="tournament_type" class="form-label">Tipo Torneo</label>
+                        <select class="form-control" name="tournament_type" required>
+                            <option value="Amalfi" {% if tournament.tournament_type == 'Amalfi' %}selected{% endif %}>
+                                Amalfi
+                            </option>
+                            <!-- Aggiungi altri tipi in futuro -->
+                        </select>
                     </div>
                     
                     <div class="mb-4">
@@ -102,6 +76,12 @@
                         non sarà più possibile modificare le impostazioni del torneo.
                     </div>
                     
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, quote, ecc.) 
+                        vengono configurate in ogni singola prova.
+                    </div>
+                    
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('admin.tournament_detail', tournament_id=tournament.id) }}" 
                            class="btn btn-secondary">
@@ -122,7 +102,7 @@
                     <small>
                         Tournament ID: {{ tournament.id }}<br>
                         Can be modified: {{ tournament.can_be_modified() }}<br>
-                        Current values: Type={{ tournament.tournament_type }}, Rounds={{ tournament.rounds_per_prova }}<br>
+                        Current values: Type={{ tournament.tournament_type }}<br>
                         Options: Without_X={{ tournament.without_x }}, Playoffs={{ tournament.final_playoffs }}, Challenge={{ tournament.challenge_mode }}
                     </small>
                 </div>

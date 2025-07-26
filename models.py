@@ -1,4 +1,4 @@
-# models.py - Modelli SQLAlchemy
+# models.py - STEP 1: Models aggiornati
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime, date
@@ -35,11 +35,10 @@ class User(UserMixin, db.Model):
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    year = db.Column(db.Integer, nullable=False)
+    # RIMOSSO: year, rounds_per_prova
     
     # Campi configurazione
     tournament_type = db.Column(db.String(50), nullable=False, default='Amalfi')
-    rounds_per_prova = db.Column(db.Integer, nullable=False, default=3)
     without_x = db.Column(db.Boolean, default=False)  # Opzione "senza X"
     final_playoffs = db.Column(db.Boolean, default=True)  # Play off finali
     challenge_mode = db.Column(db.Boolean, default=False)  # Challenge
@@ -105,7 +104,7 @@ class Tournament(db.Model):
         }.get(status, 'Sconosciuto')
     
     def __repr__(self):
-        return f'<Tournament {self.name} {self.year}>'
+        return f'<Tournament {self.name}>'
 
 class Prova(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -113,8 +112,19 @@ class Prova(db.Model):
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
     date = db.Column(db.Date, nullable=False)
+    
+    # NUOVI CAMPI
+    location = db.Column(db.String(200))  # Luogo della prova
+    description = db.Column(db.Text)  # Descrizione opzionale
+    rounds_count = db.Column(db.Integer, nullable=False, default=3)  # Numero di turni per questa prova
+    min_participants = db.Column(db.Integer, default=2)  # Minimo iscritti
+    max_participants = db.Column(db.Integer)  # Massimo iscritti (opzionale)
+    entry_fee = db.Column(db.Float, default=0.0)  # Quota di partecipazione
+    
+    # Game settings
     discipline = db.Column(db.String(50), nullable=False)  # palla 8, 9, 10
     distance = db.Column(db.Integer, nullable=False)  # numero rack da giocare
+    best_of = db.Column(db.Boolean, default=False)  # Se True: "al meglio di", se False: "esatto numero"
     
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
@@ -128,11 +138,6 @@ class Prova(db.Model):
     inscriptions = db.relationship('Inscription', backref='prova', lazy=True)
     matches = db.relationship('Match', backref='prova', lazy=True)
     
-    def __repr__(self):
-        return f'<Prova {self.number} - {self.discipline}>'
-    
-    # Aggiungere questo metodo alla classe Prova in models.py
-
     def get_real_status(self):
         """Restituisce lo status reale considerando le date"""
         from datetime import datetime
@@ -176,15 +181,67 @@ class Prova(db.Model):
 
     def can_inscribe(self):
         """Verifica se è possibile iscriversi ora"""
-        return self.get_real_status() == 'inscription'
+        real_status = self.get_real_status()
+        inscriptions_count = len(self.inscriptions)
+        
+        # Deve essere in periodo iscrizioni E non aver raggiunto il massimo
+        if real_status != 'inscription':
+            return False
+            
+        if self.max_participants and inscriptions_count >= self.max_participants:
+            return False
+            
+        return True
 
     def can_modify_inscription_dates(self):
         """Verifica se è possibile modificare le date di iscrizione"""
-        # Può modificare solo se:
-        # 1. Non è ancora stato avviato il primo turno (current_round == 0)
-        # 2. Non ci sono già iscrizioni (opzionale, ma sicuro)
+        # Può modificare solo se non è ancora stato avviato il primo turno
         return self.current_round == 0
+    
+    def can_be_modified(self):
+        """Verifica se la prova può essere modificata"""
+        # Può essere modificata se non ci sono iscrizioni
+        return len(self.inscriptions) == 0
+    
+    def can_be_deleted(self):
+        """Verifica se la prova può essere cancellata"""
+        # Può essere cancellata se non ci sono iscrizioni
+        return len(self.inscriptions) == 0
+    
+    def get_winning_score(self):
+        """Restituisce il punteggio necessario per vincere"""
+        if self.best_of:
+            # Al meglio di: vince chi arriva a (distance/2)+1
+            return (self.distance // 2) + 1
+        else:
+            # Esatto numero: vince chi ha più punti alla fine
+            return self.distance
+    
+    def is_match_finished(self, score1, score2):
+        """Verifica se una partita è finita dati i punteggi"""
+        if self.best_of:
+            # Al meglio di: qualcuno ha raggiunto la soglia
+            winning_score = self.get_winning_score()
+            return score1 >= winning_score or score2 >= winning_score
+        else:
+            # Esatto numero: somma dei punti raggiunge la distanza
+            return (score1 + score2) >= self.distance
+    
+    def copy_settings_from(self, source_prova):
+        """Copia le impostazioni da un'altra prova (per auto-popolamento)"""
+        self.location = source_prova.location
+        self.rounds_count = source_prova.rounds_count
+        self.min_participants = source_prova.min_participants
+        self.max_participants = source_prova.max_participants
+        self.entry_fee = source_prova.entry_fee
+        self.discipline = source_prova.discipline
+        self.distance = source_prova.distance
+        self.best_of = source_prova.best_of
+    
+    def __repr__(self):
+        return f'<Prova {self.number} - {self.discipline}>'
 
+# Resto dei models rimane uguale...
 class Inscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -231,7 +288,7 @@ class Rack(db.Model):
     rack_number = db.Column(db.Integer, nullable=False)
     winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
-    # Validazioni
+    # NUOVI CAMPI per conferma punti
     reported_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # chi ha segnato
     confirmed_by_player = db.Column(db.Boolean, default=False)  # confermato dall'altro giocatore
     validated_by_admin = db.Column(db.Boolean, default=False)
@@ -241,6 +298,27 @@ class Rack(db.Model):
     # Relazioni
     winner = db.relationship('User', foreign_keys=[winner_id])
     reported_by = db.relationship('User', foreign_keys=[reported_by_id])
+    
+    def can_be_removed(self, current_user_id):
+        """Verifica se questo rack può essere rimosso dall'utente corrente"""
+        # Può essere rimosso solo da chi l'ha segnato e se non è confermato
+        return (self.reported_by_id == current_user_id and 
+                not self.confirmed_by_player and 
+                not self.validated_by_admin)
+    
+    def can_be_confirmed(self, current_user_id):
+        """Verifica se questo rack può essere confermato dall'utente corrente"""
+        # Può essere confermato dall'altro giocatore (non da chi l'ha segnato)
+        return (self.reported_by_id != current_user_id and 
+                not self.confirmed_by_player and 
+                not self.validated_by_admin)
+    
+    def can_remove_confirmation(self, current_user_id):
+        """Verifica se può rimuovere la conferma"""
+        # Può rimuovere la conferma se l'ha confermata lui e non è validata dall'admin
+        return (self.reported_by_id != current_user_id and 
+                self.confirmed_by_player and 
+                not self.validated_by_admin)
     
     def __repr__(self):
         return f'<Rack {self.rack_number} - Winner: {self.winner.username}>'

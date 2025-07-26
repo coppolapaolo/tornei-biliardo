@@ -1,4 +1,4 @@
-# utils.py - Funzioni di utilità
+# utils.py - STEP 1: Aggiornato per nuovi models
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 from models import db, User, Tournament, Prova, Match, Inscription, Rack
@@ -31,7 +31,7 @@ def get_database_stats():
         return {'error': 'Database not accessible'}
 
 def create_round_matches(prova, players_or_inscriptions, round_number):
-    """Crea gli abbinamenti per un turno"""
+    """Crea gli abbinamenti per un turno - AGGIORNATO per nuova logica prova"""
     if isinstance(players_or_inscriptions[0], Inscription):
         players = [insc.user for insc in players_or_inscriptions]
     else:
@@ -42,12 +42,19 @@ def create_round_matches(prova, players_or_inscriptions, round_number):
     if len(players) % 2 == 1:
         # Numero dispari: ultimo giocatore ha un bye
         bye_player = players[-1]
+        
+        # Usa la nuova logica per il punteggio bye
+        if prova.best_of:
+            bye_score = prova.get_winning_score()
+        else:
+            bye_score = prova.distance
+            
         match = Match(
             prova_id=prova.id,
             round_number=round_number,
             player1_id=bye_player.id,
             is_bye=True,
-            player1_score=prova.distance,
+            player1_score=bye_score,
             winner_id=bye_player.id,
             status='completed'
         )
@@ -148,12 +155,10 @@ def create_default_users():
     return admin, mario, pino
 
 def create_sample_tournament():
-    """Crea un torneo di esempio"""
+    """Crea un torneo di esempio - AGGIORNATO per nuovo model"""
     tournament = Tournament(
         name='Torneo Test',
-        year=2025,
         tournament_type='Amalfi',
-        rounds_per_prova=3,
         without_x=False,
         final_playoffs=True,
         challenge_mode=False,
@@ -162,14 +167,22 @@ def create_sample_tournament():
     db.session.add(tournament)
     db.session.commit()
     
-    # Prova di esempio
+    # Prova di esempio con NUOVI CAMPI
     from datetime import date
     prova = Prova(
         tournament_id=tournament.id,
         number=1,
+        name='Prima Prova',
         date=date(2025, 8, 1),
+        location='Circolo Biliardo Centro',
+        description='Prima prova del torneo di esempio',
+        rounds_count=3,
+        min_participants=2,
+        max_participants=16,
+        entry_fee=10.0,
         discipline='palla 9',
         distance=7,
+        best_of=True,  # Al meglio di 7 (vince con 4)
         status='setup'
     )
     db.session.add(prova)
