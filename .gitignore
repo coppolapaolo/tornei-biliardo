@@ -82,3 +82,5 @@ instance/
 .python_history
 
 ---
+export_script.py
+repository_export_*.md

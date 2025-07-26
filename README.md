@@ -1,238 +1,270 @@
-# README.md
-
 # 🎱 Webapp Torneo Biliardo
 
-Applicazione web completa per la gestione di tornei di biliardo con sistema di abbinamenti automatici, classifiche e gestione match in tempo reale.
+Applicazione web completa per la gestione professionale di tornei di biliardo con sistema modulare, abbinamenti automatici, classifiche e gestione match avanzata.
 
-## 🚀 Funzionalità
+## ✨ Caratteristiche Principali
 
-### 👨‍💼 Per gli Amministratori:
-- ✅ Creazione e gestione tornei
-- ✅ Configurazione prove (data, disciplina, distanza)
-- ✅ Apertura/chiusura iscrizioni
-- ✅ Generazione sorteggi automatici
-- ✅ Validazione risultati partite
-- 🔄 Gestione playoff (Elite/Academy) - *in sviluppo*
+- 🏗️ **Architettura Modulare** con Blueprint Flask
+- 🎮 **Modalità di Gioco Avanzate** ("Al meglio di" vs "Esatto numero")  
+- 📍 **Gestione Completa Prove** (luogo, quota, min/max partecipanti)
+- ⏰ **Timezone-Aware** per iscrizioni e orari
+- 🔧 **Sistema Debug** integrato per sviluppatori
+- 📱 **Responsive Design** per mobile e desktop
 
-### 🎮 Per i Giocatori:
-- ✅ Registrazione e iscrizione alle prove
-- ✅ Visualizzazione abbinamenti in tempo reale
-- ✅ Inserimento risultati rack per rack
-- 🔄 Consultazione classifiche - *in sviluppo*
-- ✅ Dashboard personalizzata
+## 🚀 Funzionalità Attuali
 
-### 🛠️ Funzionalità di Sviluppo:
-- ✅ **Debug Mode**: Informazioni dettagliate nel footer
-- ✅ **Reset Database**: Pagina per resettare tutto ai dati di test
-- ✅ **Git Integration**: Workflow completo con GitHub
+### 👨‍💼 **Amministratori:**
+- ✅ **Gestione Tornei**: Creazione, modifica, attivazione/disattivazione
+- ✅ **Configurazione Prove Avanzata**:
+  - 📍 Luogo dell'evento
+  - 💰 Quota di partecipazione
+  - 👥 Numero minimo/massimo partecipanti
+  - 🎯 Modalità di gioco ("Al meglio di" o "Esatto numero")
+  - 🔄 Numero di turni personalizzabile
+  - 📝 Descrizioni opzionali
+- ✅ **Auto-popolamento**: Copia automatica impostazioni da prove precedenti
+- ✅ **Gestione Iscrizioni**: Apertura/chiusura con date timezone-aware
+- ✅ **Sorteggi Automatici** per primo turno
+- ✅ **Validazione Risultati** con sistema rack-by-rack
 
-## 🔧 Setup Locale (Mac/Windows)
+### 🎮 **Giocatori:**
+- ✅ **Dashboard Personalizzata** con prove disponibili
+- ✅ **Iscrizioni Intelligenti** con controllo date e limiti
+- ✅ **Visualizzazione Deadline** per iscrizioni in scadenza
+- ✅ **Inserimento Risultati** rack per rack
+- ✅ **Abbinamenti Real-time** per ogni turno
 
-### Requisiti:
+### 🛠️ **Sistema:**
+- ✅ **Debug Mode Avanzato** con statistiche database
+- ✅ **Reset Database** con dati di test
+- ✅ **Git Workflow** completo
+- ✅ **Status Dinamici** per prove (considerando date reali)
+
+## 📁 Struttura Progetto (Modulare)
+
+```
+tornei-biliardo/
+├── app.py                 # 🔥 App principale (factory pattern)
+├── config.py             # ⚙️ Configurazioni ambiente
+├── models.py             # 🗄️ Modelli SQLAlchemy completi
+├── utils.py              # 🛠️ Funzioni helper e decoratori
+├── routes/               # 📦 Route organizzate per funzionalità
+│   ├── __init__.py       # Blueprint registration
+│   ├── auth.py           # 🔐 Autenticazione (login/register/logout)
+│   ├── admin.py          # 👨‍💼 Gestione tornei e prove (admin)
+│   ├── player.py         # 🎮 Dashboard e iscrizioni (giocatori)
+│   └── main.py           # 🏠 Home, reset, redirects
+├── templates/            # 📄 Template HTML organizzati
+│   ├── base.html         # Template base con debug e timezone
+│   ├── index.html        # Homepage con tornei attivi
+│   ├── login.html        # Sistema login
+│   ├── register.html     # Registrazione utenti
+│   ├── match_detail.html # Dettaglio partite
+│   ├── reset.html        # Reset database (debug)
+│   ├── admin/           # 👨‍💼 Template amministratore
+│   │   ├── dashboard.html      # Dashboard tornei
+│   │   ├── tournament_detail.html  # Gestione torneo completa
+│   │   ├── tournament_edit.html    # Modifica torneo
+│   │   ├── prova_detail.html       # Gestione prova avanzata
+│   │   └── prova_edit.html         # Modifica prova
+│   └── player/          # 🎮 Template giocatore
+│       └── dashboard.html      # Dashboard personalizzata
+├── requirements.txt      # Dipendenze Python
+├── README.md            # Questa documentazione
+└── .gitignore           # File da ignorare
+```
+
+## 🎯 Modelli Database
+
+### **Tournament** (Semplificato)
+```python
+- name: str              # Nome torneo (include anno se necessario)
+- tournament_type: str   # Tipo (Amalfi, ecc.)
+- without_x: bool        # Opzione "senza X"
+- final_playoffs: bool   # Playoff finali
+- challenge_mode: bool   # Modalità challenge
+- is_active: bool        # Stato attivazione
+```
+
+### **Prova** (Molto Avanzato)
+```python
+- number: int            # Numero prova (1-20)
+- name: str             # Nome opzionale
+- date: date            # Data dell'evento
+- location: str         # 📍 Luogo
+- description: text     # 📝 Descrizione opzionale
+- rounds_count: int     # 🔄 Numero turni (1-10)
+- min_participants: int # 👥 Minimo iscritti
+- max_participants: int # 👥 Massimo iscritti (opzionale)
+- entry_fee: float      # 💰 Quota partecipazione
+- discipline: str       # Disciplina (palla 8/9/10)
+- distance: int         # Numero rack
+- best_of: bool         # 🎯 True="Al meglio di", False="Esatto numero"
+```
+
+## 🔧 Setup e Installazione
+
+### **Requisiti:**
 - Python 3.8+
 - Git
-- Account GitHub
+- Account GitHub (per deploy)
 
-### Installazione:
+### **Setup Locale:**
 ```bash
-# Clona il repository
-git clone https://github.com/TUO_USERNAME/tornei-biliardo.git
+# Clona repository
+git clone https://github.com/coppolapaolo/tornei-biliardo.git
 cd tornei-biliardo
 
-# Crea virtual environment
+# Virtual environment
 python3 -m venv venv
 source venv/bin/activate  # Mac/Linux
-# oppure
-venv\Scripts\activate  # Windows
+# oppure: venv\Scripts\activate  # Windows
 
 # Installa dipendenze
 pip install -r requirements.txt
 
-# Avvia l'app
+# Avvia applicazione
 python app.py
 ```
 
-L'app sarà disponibile su `http://localhost:5000`
+**App disponibile su:** `http://localhost:5000`
 
-## ☁️ Deploy su PythonAnywhere
-
-### Setup iniziale:
+### **Deploy PythonAnywhere:**
 ```bash
 # Console PythonAnywhere
-cd ~
-git clone https://github.com/TUO_USERNAME/tornei-biliardo.git mysite
 cd mysite
-python3.10 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+git pull origin main
+# Se modifiche Python: Web → Reload webapp
 ```
 
-### Workflow di sviluppo:
-1. **Sul Mac**: Modifica codice con VSCode
-2. **Commit e push**:
-   ```bash
-   git add .
-   git commit -m "Descrizione modifiche"
-   git push origin main
-   ```
-3. **Su PythonAnywhere**:
-   ```bash
-   cd mysite
-   git pull origin main
-   # Se hai modificato Python files:
-   # Vai su Web → Reload
-   ```
+**App produzione:** `https://coppolapaolo.pythonanywhere.com`
 
-## 🎯 Quick Start
+## 🚀 Quick Start
 
-### Primo utilizzo:
-1. **Vai su `/reset`** (solo in debug mode)
-2. **Reset database** con password `RESET_DB_CONFIRM`
-3. **Login**: `admin` / `admin123` (amministratore) o `mario` / `mario123` (giocatore)
+### **1. Reset Database (Prima volta):**
+1. Vai su `http://localhost:5000/reset`
+2. Password: `RESET_DB_CONFIRM`
+3. ✅ Crea utenti: `admin/admin123`, `mario/mario123`, `pino/pino123`
 
-### Creazione primo torneo:
-1. **Admin** → Nuovo Torneo → `Torneo Test 2025`
-2. **Nuova Prova** → Prova 1, disciplina, data, distanza
-3. **Dettaglio Prova** → Apri Iscrizioni (imposta date)
-4. **Testa come giocatore** → Iscriviti alla prova
+### **2. Test Amministratore:**
+1. **Login** → `admin/admin123`
+2. **Nuovo Torneo** → "Torneo Test 2025"
+3. **Nuova Prova** → Configura tutti i parametri
+4. **Apri Iscrizioni** → Imposta date di inizio/fine
+
+### **3. Test Giocatore:**
+1. **Login** → `mario/mario123`
+2. **Dashboard** → Vedi prove disponibili con scadenze
+3. **Iscriviti** → Conferma iscrizione
+4. **Admin** → Avvia primo turno → **Player** → Inserisci risultati
+
+## 🎮 Modalità di Gioco
+
+### **"Al Meglio Di" (Consigliato)**
+- Esempio: "Al meglio di 7" → Vince chi arriva a **4 rack**
+- La partita finisce appena qualcuno raggiunge la soglia
+- ⚡ Partite più dinamiche e veloci
+
+### **"Esatto Numero"** 
+- Esempio: "5 rack esatti" → Si giocano esattamente **5 rack**
+- Vince chi ne ha vinti di più alla fine
+- 📊 Migliori statistiche, partite più lunghe
+- 🔢 **Disponibile solo per numeri dispari > 1**
 
 ## 🐛 Debug Mode
 
-Imposta `DEBUG_MODE = True` in `app.py` per attivare:
+**Attivazione:** `DEBUG_MODE = True` in `config.py`
+
+**Funzionalità:**
 - 🟡 Badge "DEBUG" nella navbar
-- 📊 Footer con statistiche sistema
-- 🔗 Link rapidi per reset e admin
-- 🔍 Informazioni dettagliate utente/database
+- 📊 Footer con statistiche real-time
+- 🔗 Quick actions per reset e navigazione
+- 🕒 Info timezone e conversioni automatiche
+- 🔍 Dettagli tecnici su utenti e database
 
-## 📁 Struttura Progetto
+## 📋 Utenti di Test
 
-```
-tornei-biliardo/
-├── app.py                 # App principale Flask
-├── requirements.txt       # Dipendenze Python
-├── README.md             # Documentazione
-├── .gitignore           # File da ignorare in Git
-└── templates/           # Template HTML
-    ├── base.html        # Template base con debug
-    ├── index.html       # Homepage
-    ├── login.html       # Login
-    ├── register.html    # Registrazione
-    ├── reset.html       # Reset database
-    ├── admin/          # Template amministratore
-    │   ├── dashboard.html
-    │   └── prova_detail.html
-    └── player/         # Template giocatore
-        └── dashboard.html
-```
+| Username | Password | Ruolo | Descrizione |
+|----------|----------|--------|-------------|
+| `admin` | `admin123` | 👨‍💼 Admin | Gestione completa tornei |
+| `mario` | `mario123` | 🎮 Player | Giocatore test 1 |
+| `pino` | `pino123` | 🎮 Player | Giocatore test 2 |
 
 ## 🔄 Prossimi Sviluppi
 
-- [ ] **Abbinamenti turno 2 e 3** con logica skip
-- [ ] **Sistema playoff** Elite/Academy completo
-- [ ] **Classifiche** generali e per prova
-- [ ] **Aggiornamenti real-time** con WebSocket
-- [ ] **API REST** per app mobile
-- [ ] **Notifiche** email/SMS
+### **STEP 2 - Sistema Utenti Avanzato** 🚧
+- [ ] 👥 Sezione admin per gestione utenti
+- [ ] 📊 Schede dettagliate con statistiche
+- [ ] 🗑️ Auto-cancellazione account giocatori
 
-## 🤝 Contribuire
+### **STEP 3 - Partite Avanzate** 🎯
+- [ ] ✅ Sistema conferma/rimozione punti
+- [ ] 🔄 Possibilità disiscrizione tornei
+- [ ] 📈 Dashboard con ultime partite giocate
 
-1. Fork del repository
-2. Crea branch feature: `git checkout -b feature/nuova-funzionalita`
-3. Commit: `git commit -m 'Aggiunge nuova funzionalità'`
-4. Push: `git push origin feature/nuova-funzionalita`
-5. Crea Pull Request
+### **STEP 4 - Debug Potenziato** 🛠️
+- [ ] 🔐 Quick login automatico per test
+- [ ] 🎮 Switch rapido tra utenti
+- [ ] 📊 Statistiche sviluppo avanzate
 
-## 📞 Supporto
+### **STEP 5 - Abbinamenti Intelligenti** 🧠
+- [ ] 🔄 Turno 2: Skip logic (1°-3°, 2°-4°)
+- [ ] 🎯 Turno 3: Direct logic (1°-2°, 3°-4°)
+- [ ] 🚫 Controllo duplicati (evita reincontri)
+- [ ] ❌ Gestione "senza X" avanzata
 
-Per problemi o domande:
-- 📧 Email: paolo.coppola@gmail.com
-- 🐛 Issues: [GitHub Issues](https://github.com/TUO_USERNAME/tornei-biliardo/issues)
+### **STEP 6 - Playoff e Classifiche** 🏆
+- [ ] 🥇 Sistema playoff Elite/Academy
+- [ ] 📊 Classifiche generali e per prova
+- [ ] 🎖️ Statistiche giocatori avanzate
 
----
+## 🤝 Workflow Git
 
-*Webapp sviluppata per la gestione professionale di tornei di biliardo* 🎱
+```bash
+# Sviluppo locale
+git checkout -b feature/nuova-funzionalita
+# ... modifiche ...
+git add .
+git commit -m "🚀 Aggiunge nuova funzionalità"
+git push origin feature/nuova-funzionalita
 
----
+# Merge su main
+git checkout main
+git merge feature/nuova-funzionalita
+git push origin main
 
-# requirements.txt - AGGIORNATO
-Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
-Flask-Login==0.6.3
-Werkzeug==2.3.7
+# Deploy PythonAnywhere
+cd mysite && git pull origin main
+```
 
----
+## 📞 Supporto e Contributi
 
-# deploy.sh - Script per deploy rapido
-#!/bin/bash
+- 🐛 **Issues:** [GitHub Issues](https://github.com/coppolapaolo/tornei-biliardo/issues)
+- 📧 **Email:** paolo.coppola@gmail.com
+- 🔄 **Pull Requests:** Benvenute!
 
-echo "🚀 Deploy Tornei Biliardo"
-echo "========================"
+## 📊 Statistiche Progetto
 
-# Controlla se siamo in un repo git
-if [ ! -d ".git" ]; then
-    echo "❌ Non sei in un repository Git!"
-    exit 1
-fi
-
-# Status git
-echo "📊 Status Git:"
-git status --short
-
-# Chiede conferma
-read -p "🤔 Vuoi fare commit e push? (y/n): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-    # Chiede messaggio commit
-    read -p "📝 Messaggio commit: " commit_message
-
-    # Git operations
-    echo "📦 Adding files..."
-    git add .
-
-    echo "💾 Committing..."
-    git commit -m "$commit_message"
-
-    echo "🌐 Pushing to GitHub..."
-    git push origin main
-
-    echo "✅ Deploy completato!"
-    echo ""
-    echo "🔗 Ora vai su PythonAnywhere e fai:"
-    echo "   cd mysite"
-    echo "   git pull origin main"
-    echo "   # Se hai modificato app.py, fai reload della webapp"
-
-else
-    echo "❌ Deploy annullato"
-fi
+- 🏗️ **Architettura:** Modulare con Blueprint
+- 📱 **Responsive:** Bootstrap 5
+- 🗄️ **Database:** SQLAlchemy + SQLite
+- 🔐 **Auth:** Flask-Login
+- ⏰ **Timezone:** JavaScript automatico
+- 🎨 **UI/UX:** FontAwesome + Custom CSS
 
 ---
 
-# local_run.sh - Script per test locale
-#!/bin/bash
+## 🏆 Status Attuale: **STEP 1 COMPLETATO** ✅
 
-echo "🎱 Avvio Webapp Torneo Biliardo"
-echo "==============================="
+**Sistema base completo e funzionante con:**
+- ✅ Gestione tornei e prove avanzata
+- ✅ Sistema iscrizioni intelligente  
+- ✅ Modalità di gioco multiple
+- ✅ Architettura modulare scalabile
+- ✅ Debug system completo
 
-# Controlla se virtual environment esiste
-if [ ! -d "venv" ]; then
-    echo "📦 Creando virtual environment..."
-    python3 -m venv venv
-fi
+**Pronto per STEP 2: Gestione Utenti Avanzata** 🚀
 
-# Attiva virtual environment
-echo "🔄 Attivando virtual environment..."
-source venv/bin/activate
+---
 
-# Installa/aggiorna dipendenze
-echo "📥 Installando dipendenze..."
-pip install -r requirements.txt
-
-# Avvia app
-echo "🚀 Avviando applicazione..."
-echo "🌐 App disponibile su: http://localhost:5000"
-echo "🛑 Premi Ctrl+C per fermare"
-echo ""
-
-python app.py
+*Webapp professionale per tornei di biliardo - Sviluppata con ❤️ e Python* 🎱
