@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Classifica Turno {{ round_number }} - Prova {{ prova.number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="fas fa-trophy"></i> Classifica Turno {{ round_number }}</h1>
+        <p class="text-muted mb-0">
+            {{ prova.tournament.name }} - Prova {{ prova.number }} - {{ prova.date.strftime('%d/%m/%Y') }}
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.prova_detail', prova_id=prova.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Prova
+        </a>
+    </div>
+</div>
+
+<!-- Info Algoritmo Amalfi -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card border-info">
+            <div class="card-header bg-info bg-opacity-10">
+                <h5><i class="fas fa-brain"></i> Algoritmo Amalfi - Turno {{ round_number }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Formula Salto:</strong> {{ prova.rounds_count }} - {{ round_number }} = 
+                        <span class="badge bg-primary">{{ prova.rounds_count - round_number }}</span><br>
+                        
+                        <strong>Criterio Classifica:</strong><br>
+                        <small class="text-muted">1. Vittorie (desc) → 2. Diff. Rack (desc) → 3. Posizione Precedente (asc)</small>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Giocatori Totali:</strong> {{ total_players }}<br>
+                        <strong>Modalità Torneo:</strong> 
+                        {% if prova.tournament.without_x %}
+                            <span class="badge bg-info">Senza X (Trii)</span>
+                        {% else %}
+                            <span class="badge bg-warning">Con X (Bye)</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <!-- Navigation Turni -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-list-ol"></i> Navigation Turni</h6>
+            </div>
+            <div class="card-body">
+                {% for r in range(1, prova.rounds_count + 1) %}
+                    {% if r <= prova.current_round %}
+                        <a href="{{ url_for('admin.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
+                           class="btn btn-sm {% if r == round_number %}btn-primary{% else %}btn-outline-primary{% endif %} w-100 mb-1">
+                            Turno {{ r }}
+                            {% if r == round_number %}
+                                <i class="fas fa-eye ms-1"></i>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <button class="btn btn-sm btn-outline-secondary w-100 mb-1" disabled>
+                            Turno {{ r }} (Non iniziato)
+                        </button>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if round_number < prova.rounds_count and round_number == prova.current_round %}
+                    <hr>
+                    <button class="btn btn-success btn-sm w-100" 
+                            onclick="previewNextRound({{ round_number + 1 }})">
+                        <i class="fas fa-eye"></i> Anteprima Turno {{ round_number + 1 }}
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Classifica Dettagliata -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list-ol"></i> Classifica dopo Turno {{ round_number }}</h5>
+    </div>
+    <div class="card-body">
+        {% if classification %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th width="10%">Pos.</th>
+                            <th width="25%">Giocatore</th>
+                            <th width="15%">Vittorie</th>
+                            <th width="15%">Diff. Rack</th>
+                            <th width="15%">Pos. Prec.</th>
+                            <th width="20%">Movimento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player_class in classification %}
+                            <tr>
+                                <td>
+                                    <strong class="{% if player_class.position <= 3 %}text-warning{% endif %}">
+                                        {{ player_class.position }}°
+                                    </strong>
+                                    {% if player_class.position == 1 %}
+                                        🥇
+                                    {% elif player_class.position == 2 %}
+                                        🥈
+                                    {% elif player_class.position == 3 %}
+                                        🥉
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ player_class.user.username }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ player_class.matches_won }}</span>
+                                </td>
+                                <td>
+                                    {% if player_class.rack_difference > 0 %}
+                                        <span class="text-success">+{{ player_class.rack_difference }}</span>
+                                    {% elif player_class.rack_difference < 0 %}
+                                        <span class="text-danger">{{ player_class.rack_difference }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if player_class.previous_position %}
+                                        {{ player_class.previous_position }}°
+                                    {% else %}
+                                        <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if player_class.previous_position and player_class.previous_position != player_class.position %}
+                                        {% set diff = player_class.previous_position - player_class.position %}
+                                        {% if diff > 0 %}
+                                            <span class="text-success">
+                                                <i class="fas fa-arrow-up"></i> +{{ diff }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-danger">
+                                                <i class="fas fa-arrow-down"></i> {{ diff }}
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-minus"></i> =
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning text-center">
+                <h5><i class="fas fa-exclamation-triangle"></i> Classifica Non Disponibile</h5>
+                <p>La classifica per questo turno non è ancora stata calcolata.</p>
+                {% if round_number <= prova.current_round %}
+                    <p class="mb-0">Assicurati che tutte le partite del turno siano completate.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Anteprima Prossimo Turno -->
+<div id="previewNextRound" style="display: none;">
+    <div class="card mt-4 border-success">
+        <div class="card-header bg-success bg-opacity-10">
+            <h5><i class="fas fa-eye"></i> Anteprima Turno <span id="previewRoundNumber"></span></h5>
+        </div>
+        <div class="card-body">
+            <div id="previewContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Caricamento...</span>
+                    </div>
+                    <p class="mt-2">Calcolo abbinamenti...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if debug_info.debug_mode %}
+<div class="mt-4">
+    <div class="alert alert-dark">
+        <h6><i class="fas fa-bug"></i> DEBUG - Classifica Amalfi</h6>
+        <small>
+            Prova ID: {{ prova.id }}<br>
+            Round Number: {{ round_number }}<br>
+            Total Players: {{ total_players }}<br>
+            Current Round: {{ prova.current_round }}<br>
+            Rounds Count: {{ prova.rounds_count }}<br>
+            Classification items: {{ classification|length if classification else 0 }}
+        </small>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewNextRound(nextRoundNumber) {
+    const previewDiv = document.getElementById('previewNextRound');
+    const previewContent = document.getElementById('previewContent');
+    const roundSpan = document.getElementById('previewRoundNumber');
+    
+    // Mostra loading
+    previewDiv.style.display = 'block';
+    roundSpan.textContent = nextRoundNumber;
+    previewContent.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+            </div>
+            <p class="mt-2">Calcolo abbinamenti Amalfi...</p>
+        </div>
+    `;
+    
+    // Chiamata AJAX per preview
+    fetch(`/admin/prova/{{ prova.id }}/amalfi/preview_round/${nextRoundNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayPreviewResults(data);
+            } else {
+                previewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Errore:</strong> ${data.error || 'Impossibile calcolare anteprima'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            previewContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Errore di rete:</strong> Impossibile caricare l'anteprima
+                </div>
+            `;
+        });
+}
+
+function displayPreviewResults(data) {
+    const previewContent = document.getElementById('previewContent');
+    
+    let html = `
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong>Salto Applicato:</strong> <span class="badge bg-primary">${data.salto || 0}</span>
+            </div>
+            <div class="col-md-6">
+                <strong>Abbinamenti Totali:</strong> <span class="badge bg-info">${data.stats.total_matches}</span>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <small class="text-muted">Normali: <strong>${data.stats.normal_matches}</strong></small>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted">Trii: <strong>${data.stats.trio_matches}</strong></small>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted">Bye (X): <strong>${data.stats.bye_matches}</strong></small>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Giocatore 1</th>
+                        <th>vs</th>
+                        <th>Giocatore 2</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    data.matches.forEach(match => {
+        let typeContent = '';
+        let player2Content = '';
+        
+        if (match.type === 'normal') {
+            typeContent = `<span class="badge bg-primary">Normale</span>`;
+            player2Content = `<strong>${match.player2.username}</strong>`;
+        } else if (match.type === 'trio') {
+            typeContent = `<span class="badge bg-warning">Trio</span>`;
+            player2Content = `<strong>${match.player2.username}</strong><br><small>+${match.player3.username}</small>`;
+        } else if (match.type === 'bye') {
+            typeContent = `<span class="badge bg-info">Bye (X)</span>`;
+            player2Content = `<em class="text-muted">X</em>`;
+        }
+        
+        html += `
+            <tr>
+                <td><strong>${match.player1.username}</strong></td>
+                <td class="text-center">vs</td>
+                <td>${player2Content}</td>
+                <td>${typeContent}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="text-center mt-3">
+            <button class="btn btn-success" onclick="startNextRound(${data.round_number})">
+                <i class="fas fa-play"></i> Avvia Turno ${data.round_number}
+            </button>
+            <button class="btn btn-secondary ms-2" onclick="hidePreview()">
+                <i class="fas fa-times"></i> Chiudi Anteprima
+            </button>
+        </div>
+    `;
+    
+    previewContent.innerHTML = html;
+}
+
+function startNextRound(roundNumber) {
+    if (confirm(`Sei sicuro di voler avviare il Turno ${roundNumber} con gli abbinamenti mostrati?`)) {
+        fetch(`/admin/prova/{{ prova.id }}/amalfi/start_round/${roundNumber}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Redirect alla prova detail
+                window.location.href = '/admin/prova/{{ prova.id }}';
+            } else {
+                alert('Errore durante l\'avvio del turno');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Errore di rete durante l\'avvio del turno');
+        });
+    }
+}
+
+function hidePreview() {
+    document.getElementById('previewNextRound').style.display = 'none';
+}
+
+// Auto-hide preview quando si cambia turno
+document.addEventListener('DOMContentLoaded', function() {
+    const previewDiv = document.getElementById('previewNextRound');
+    if (previewDiv) {
+        previewDiv.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

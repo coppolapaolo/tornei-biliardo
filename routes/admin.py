@@ -665,3 +665,370 @@ def user_detail(user_id):
                          matches=recent_matches,
                          classifications=classifications,
                          stats=stats)
+
+from amalfi import (
+    AmalfiEngine, create_amalfi_round_matches, 
+    get_amalfi_classification, validate_amalfi_configuration
+)
+from models import RoundClassification, PlayerEncounter, TrioMatch
+
+# ============ SISTEMA AMALFI - NUOVE ROUTE ============
+
+@admin_bp.route('/prova/<int:prova_id>/amalfi/classification/<int:round_number>')
+@admin_required
+def amalfi_classification(prova_id, round_number):
+    """Visualizza classifica Amalfi dopo un turno specifico"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    # Verifica che il turno sia valido
+    if round_number < 1 or round_number > prova.rounds_count:
+        flash(f'Turno {round_number} non valido per questa prova!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Verifica che il turno sia completato
+    matches_in_round = Match.query.filter_by(
+        prova_id=prova_id, 
+        round_number=round_number
+    ).all()
+    
+    if not matches_in_round:
+        flash(f'Il turno {round_number} non è ancora iniziato!')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Controlla se tutti i match del turno sono completati
+    incomplete_matches = [m for m in matches_in_round if m.status != 'completed']
+    if incomplete_matches:
+        flash(f'Il turno {round_number} non è ancora completato! Mancano {len(incomplete_matches)} partite.')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+    
+    # Ottieni o calcola classifica
+    classification = get_amalfi_classification(prova_id, round_number)
+    if not classification:
+        # Calcola classifica se non esiste
+        classification = RoundClassification.calculate_classification_after_round(
+            prova_id, round_number
+        )
+    
+    # Statistiche aggiuntive
+    total_players = len(classification)
+    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    
+    return render_template('admin/amalfi_classification.html',
+                         prova=prova,
+                         round_number=round_number,
+                         classification=classification,
+                         total_players=total_players,
+                         inscriptions=inscriptions)
+
+@admin_bp.route('/prova/<int:prova_id>/amalfi/start_round/<int:round_number>', methods=['POST'])
+@admin_required
+def amalfi_start_round(prova_id, round_number):
+    """Avvia un turno specifico con algoritmo Amalfi"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    try:
+        # Validazioni preliminari
+        if round_number < 1 or round_number > prova.rounds_count:
+            flash(f'Turno {round_number} non valido!')
+            return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+        
+        if round_number <= prova.current_round:
+            flash(f'Il turno {round_number} è già stato avviato!')
+            return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+        
+        if round_number != prova.current_round + 1:
+            flash(f'Devi avviare prima il turno {prova.current_round + 1}!')
+            return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+        
+        # Valida configurazione Amalfi
+        validation = validate_amalfi_configuration(prova)
+        if not validation['is_valid']:
+            for error in validation['errors']:
+                flash(f'Errore Amalfi: {error}', 'error')
+            return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+        
+        # Mostra warnings se presenti
+        for warning in validation['warnings']:
+            flash(f'Attenzione: {warning}', 'warning')
+        
+        # Se non è il primo turno, verifica che il precedente sia completato
+        if round_number > 1:
+            prev_matches = Match.query.filter_by(
+                prova_id=prova_id, 
+                round_number=round_number-1
+            ).all()
+            
+            incomplete_prev = [m for m in prev_matches if m.status != 'completed']
+            if incomplete_prev:
+                flash(f'Completa prima tutte le partite del turno {round_number-1}!')
+                return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+        
+        # Crea abbinamenti con algoritmo Amalfi
+        engine = AmalfiEngine(prova)
+        matches = engine.create_round_matches(round_number)
+        
+        # Aggiorna stato prova
+        prova.current_round = round_number
+        if prova.status != 'playing':
+            prova.status = 'playing'
+        
+        db.session.commit()
+        
+        flash(f'Turno {round_number} avviato con successo! Creati {len(matches)} abbinamenti Amalfi.')
+        
+        # Mostra info abbinamenti
+        normal_matches = [m for m in matches if not m.is_bye and not m.is_trio]
+        bye_matches = [m for m in matches if m.is_bye]
+        trio_matches = [m for m in matches if m.is_trio]
+        
+        if normal_matches:
+            flash(f'Abbinamenti normali: {len(normal_matches)}', 'info')
+        if bye_matches:
+            flash(f'Partite vs X: {len(bye_matches)}', 'info')
+        if trio_matches:
+            flash(f'Trii: {len(trio_matches)}', 'info')
+        
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Errore durante la creazione del turno: {str(e)}', 'error')
+        return redirect(url_for('admin.prova_detail', prova_id=prova_id))
+
+@admin_bp.route('/prova/<int:prova_id>/amalfi/preview_round/<int:round_number>')
+@admin_required
+def amalfi_preview_round(prova_id, round_number):
+    """Anteprima abbinamenti prossimo turno senza crearli"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    try:
+        # Validazioni
+        if round_number < 1 or round_number > prova.rounds_count:
+            return jsonify({'error': f'Turno {round_number} non valido'}), 400
+        
+        if round_number <= prova.current_round:
+            return jsonify({'error': f'Il turno {round_number} è già stato avviato'}), 400
+        
+        # Verifica che il turno precedente sia completato (se non è il primo)
+        if round_number > 1:
+            prev_matches = Match.query.filter_by(
+                prova_id=prova_id, 
+                round_number=round_number-1
+            ).all()
+            
+            incomplete_prev = [m for m in prev_matches if m.status != 'completed']
+            if incomplete_prev:
+                return jsonify({
+                    'error': f'Completa prima il turno {round_number-1}',
+                    'incomplete_matches': len(incomplete_prev)
+                }), 400
+        
+        # Genera anteprima
+        engine = AmalfiEngine(prova)
+        preview_matches = engine.preview_next_round_matches(round_number)
+        
+        # Prepara dati per JSON
+        matches_data = []
+        for match in preview_matches:
+            match_data = {
+                'player1': {
+                    'id': match['player1'].id,
+                    'username': match['player1'].username
+                },
+                'type': match['type']
+            }
+            
+            if match['type'] == 'normal':
+                match_data['player2'] = {
+                    'id': match['player2'].id,
+                    'username': match['player2'].username
+                }
+                match_data['salto_applied'] = match.get('salto_applied', 0)
+            elif match['type'] == 'trio':
+                match_data['player2'] = {
+                    'id': match['player2'].id,
+                    'username': match['player2'].username
+                }
+                match_data['player3'] = {
+                    'id': match['player3'].id,
+                    'username': match['player3'].username
+                }
+            elif match['type'] == 'bye':
+                match_data['player2'] = None
+            
+            matches_data.append(match_data)
+        
+        # Calcola statistiche
+        salto = prova.rounds_count - round_number if round_number > 1 else None
+        
+        return jsonify({
+            'success': True,
+            'round_number': round_number,
+            'salto': salto,
+            'matches': matches_data,
+            'stats': {
+                'total_matches': len(matches_data),
+                'normal_matches': len([m for m in preview_matches if m['type'] == 'normal']),
+                'trio_matches': len([m for m in preview_matches if m['type'] == 'trio']),
+                'bye_matches': len([m for m in preview_matches if m['type'] == 'bye'])
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Errore anteprima: {str(e)}'}), 500
+
+@admin_bp.route('/prova/<int:prova_id>/amalfi/encounters')
+@admin_required
+def amalfi_encounters(prova_id):
+    """Visualizza matrice incontri per debug anti-reincontro"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    # Ottieni tutti i giocatori iscritti
+    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    players = [insc.user for insc in inscriptions]
+    
+    # Ottieni tutti gli incontri registrati
+    encounters = PlayerEncounter.query.filter_by(prova_id=prova_id).all()
+    
+    # Crea matrice incontri
+    encounter_matrix = {}
+    for player1 in players:
+        encounter_matrix[player1.id] = {}
+        for player2 in players:
+            encounter_matrix[player1.id][player2.id] = []
+    
+    # Popola matrice con i turni degli incontri
+    for encounter in encounters:
+        if encounter.player1_id in encounter_matrix and encounter.player2_id in encounter_matrix[encounter.player1_id]:
+            encounter_matrix[encounter.player1_id][encounter.player2_id].append(encounter.round_number)
+            encounter_matrix[encounter.player2_id][encounter.player1_id].append(encounter.round_number)
+    
+    return render_template('admin/amalfi_encounters.html',
+                         prova=prova,
+                         players=players,
+                         encounter_matrix=encounter_matrix)
+
+@admin_bp.route('/prova/<int:prova_id>/amalfi/validate')
+@admin_required
+def amalfi_validate_configuration(prova_id):
+    """Valida configurazione prova per Sistema Amalfi"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    validation = validate_amalfi_configuration(prova)
+    
+    return jsonify({
+        'success': True,
+        'validation': validation,
+        'prova_info': {
+            'rounds_count': prova.rounds_count,
+            'inscriptions_count': len(prova.inscriptions),
+            'tournament_type': prova.tournament.tournament_type,
+            'without_x': prova.tournament.without_x
+        }
+    })
+
+# ============ AGGIORNAMENTI ALLE ROUTE ESISTENTI ============
+
+# Modifica la route prova_detail esistente per includere info Amalfi
+@admin_bp.route('/prova/<int:prova_id>/amalfi_enhanced')
+@admin_required  
+def prova_detail_amalfi_enhanced(prova_id):
+    """Versione potenziata del dettaglio prova con funzionalità Amalfi"""
+    prova = Prova.query.get_or_404(prova_id)
+    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    matches = Match.query.filter_by(prova_id=prova_id).order_by(Match.round_number, Match.id).all()
+    
+    # Informazioni Amalfi
+    amalfi_info = {
+        'validation': validate_amalfi_configuration(prova),
+        'classifications': {},
+        'next_round': prova.current_round + 1 if prova.current_round < prova.rounds_count else None
+    }
+    
+    # Ottieni classifiche per ogni turno completato
+    for round_num in range(1, prova.current_round + 1):
+        round_matches = [m for m in matches if m.round_number == round_num]
+        if all(m.status == 'completed' for m in round_matches):
+            amalfi_info['classifications'][round_num] = get_amalfi_classification(
+                prova_id, round_num
+            )
+    
+    return render_template('admin/prova_detail_amalfi.html',
+                         prova=prova,
+                         inscriptions=inscriptions,
+                         matches=matches,
+                         amalfi_info=amalfi_info)
+
+# ============ GESTIONE TRII ============
+
+@admin_bp.route('/trio/<int:trio_id>/add_rack', methods=['POST'])
+@admin_required
+def trio_add_rack(trio_id):
+    """Aggiungi rack a partita trio"""
+    trio = TrioMatch.query.get_or_404(trio_id)
+    
+    try:
+        winner_id = int(request.form['winner_id'])
+        
+        # Verifica che il vincitore sia tra i giocatori del trio
+        if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
+            return jsonify({'error': 'Vincitore non valido per questo trio'}), 400
+        
+        # Aggiungi rack e gestisci rotazione
+        trio.add_rack_win(winner_id)
+        
+        db.session.commit()
+        
+        # Prepara risposta con nuovo stato
+        state = trio.get_current_state()
+        
+        return jsonify({
+            'success': True,
+            'trio_completed': trio.is_completed,
+            'winner_id': trio.winner_id,
+            'current_state': {
+                'current_players': [
+                    {'id': p.id, 'username': p.username} for p in state['current_players']
+                ],
+                'waiting_player': {
+                    'id': state['waiting_player'].id,
+                    'username': state['waiting_player'].username
+                } if state['waiting_player'] else None,
+                'scores': state['scores']
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Errore durante aggiunta rack: {str(e)}'}), 500
+
+@admin_bp.route('/trio/<int:trio_id>/reset', methods=['POST'])
+@admin_required
+def trio_reset(trio_id):
+    """Reset completo trio"""
+    trio = TrioMatch.query.get_or_404(trio_id)
+    
+    try:
+        # Reset scores
+        trio.player1_racks = 0
+        trio.player2_racks = 0
+        trio.player3_racks = 0
+        
+        # Reset state
+        trio.current_player1_id = trio.player1_id
+        trio.current_player2_id = trio.player2_id
+        trio.waiting_player_id = trio.player3_id
+        trio.is_completed = False
+        trio.winner_id = None
+        
+        # Reset match associato
+        trio.match.status = 'pending'
+        trio.match.winner_id = None
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Trio resettato con successo'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Errore durante reset trio: {str(e)}'}), 500

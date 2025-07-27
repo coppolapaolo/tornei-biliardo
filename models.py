@@ -300,6 +300,10 @@ class Match(db.Model):
     # Stato
     status = db.Column(db.String(20), default='pending')  # pending, playing, completed, validated
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
+    amalfi_round = db.Column(db.Integer)  # Turno secondo algoritmo Amalfi
+    salto_applied = db.Column(db.Integer)  # Salto utilizzato per questo abbinamento
+
     
     # Relazioni
     player1 = db.relationship('User', foreign_keys=[player1_id])
@@ -417,3 +421,276 @@ class Playoff(db.Model):
     
     def __repr__(self):
         return f'<Playoff {self.category} - {self.user.username}>'
+    
+# ============ SISTEMA AMALFI - NUOVI MODELLI ============
+
+class PlayerEncounter(db.Model):
+    """Tracking degli incontri tra giocatori per anti-reincontro"""
+    __tablename__ = 'player_encounter'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    player1_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    player2_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    prova_id = db.Column(db.Integer, db.ForeignKey('prova.id'), nullable=False)
+    round_number = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    player1 = db.relationship('User', foreign_keys=[player1_id])
+    player2 = db.relationship('User', foreign_keys=[player2_id])
+    prova = db.relationship('Prova')
+    
+    # Constraint: evita duplicati
+    __table_args__ = (
+        db.UniqueConstraint('player1_id', 'player2_id', 'prova_id', 'round_number'),
+        db.CheckConstraint('player1_id != player2_id', name='different_players')
+    )
+    
+    @staticmethod
+    def have_played_together(player1_id, player2_id, prova_id):
+        """Verifica se due giocatori hanno già giocato insieme in questa prova"""
+        return PlayerEncounter.query.filter(
+            db.or_(
+                db.and_(PlayerEncounter.player1_id == player1_id, 
+                       PlayerEncounter.player2_id == player2_id),
+                db.and_(PlayerEncounter.player1_id == player2_id, 
+                       PlayerEncounter.player2_id == player1_id)
+            ),
+            PlayerEncounter.prova_id == prova_id
+        ).first() is not None
+    
+    @staticmethod
+    def record_encounter(player1_id, player2_id, prova_id, round_number):
+        """Registra un nuovo incontro tra giocatori"""
+        # Assicura ordine consistente (id minore sempre come player1)
+        if player1_id > player2_id:
+            player1_id, player2_id = player2_id, player1_id
+            
+        encounter = PlayerEncounter(
+            player1_id=player1_id,
+            player2_id=player2_id,
+            prova_id=prova_id,
+            round_number=round_number
+        )
+        db.session.add(encounter)
+        return encounter
+    
+    def __repr__(self):
+        return f'<PlayerEncounter {self.player1.username} vs {self.player2.username} R{self.round_number}>'
+
+
+class RoundClassification(db.Model):
+    """Classifiche dinamiche dopo ogni turno per algoritmo Amalfi"""
+    __tablename__ = 'round_classification'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    prova_id = db.Column(db.Integer, db.ForeignKey('prova.id'), nullable=False)
+    round_number = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Dati classifica
+    position = db.Column(db.Integer, nullable=False)
+    matches_won = db.Column(db.Integer, default=0)
+    rack_difference = db.Column(db.Integer, default=0)  # rack_vinti - rack_persi
+    previous_position = db.Column(db.Integer)  # posizione turno precedente
+    
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    prova = db.relationship('Prova')
+    user = db.relationship('User')
+    
+    # Constraint: una sola voce per giocatore per turno
+    __table_args__ = (
+        db.UniqueConstraint('prova_id', 'round_number', 'user_id'),
+        db.UniqueConstraint('prova_id', 'round_number', 'position')
+    )
+    
+    @staticmethod
+    def calculate_classification_after_round(prova_id, round_number):
+        """Calcola e salva la classifica dopo un turno specifico"""
+        from models import Inscription, Match  # Import qui per evitare circular import
+        
+        prova = Prova.query.get(prova_id)
+        if not prova:
+            raise ValueError("Prova non trovata")
+        
+        # Ottieni tutti i giocatori iscritti
+        inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+        players_stats = {}
+        
+        # Inizializza statistiche per ogni giocatore
+        for inscription in inscriptions:
+            players_stats[inscription.user_id] = {
+                'matches_won': 0,
+                'rack_difference': 0,
+                'initial_order': inscription.initial_order or 999,
+                'previous_position': None
+            }
+        
+        # Calcola statistiche dai match completati fino a questo turno
+        matches = Match.query.filter(
+            Match.prova_id == prova_id,
+            Match.round_number <= round_number,
+            Match.status == 'completed'
+        ).all()
+        
+        for match in matches:
+            if match.is_bye:
+                # Bye: vittoria automatica
+                if match.player1_id in players_stats:
+                    players_stats[match.player1_id]['matches_won'] += 1
+                    players_stats[match.player1_id]['rack_difference'] += match.player1_score
+            else:
+                # Match normale
+                if match.winner_id:
+                    # Aggiorna vittorie
+                    if match.winner_id in players_stats:
+                        players_stats[match.winner_id]['matches_won'] += 1
+                    
+                    # Aggiorna differenza rack per entrambi
+                    if match.player1_id in players_stats:
+                        diff = match.player1_score - match.player2_score
+                        players_stats[match.player1_id]['rack_difference'] += diff
+                    
+                    if match.player2_id in players_stats:
+                        diff = match.player2_score - match.player1_score  
+                        players_stats[match.player2_id]['rack_difference'] += diff
+        
+        # Ottieni posizioni precedenti se non è il primo turno
+        if round_number > 1:
+            prev_classifications = RoundClassification.query.filter_by(
+                prova_id=prova_id, 
+                round_number=round_number-1
+            ).all()
+            for prev_class in prev_classifications:
+                if prev_class.user_id in players_stats:
+                    players_stats[prev_class.user_id]['previous_position'] = prev_class.position
+        
+        # Ordina secondo criteri Amalfi: vittorie DESC, rack_diff DESC, posizione_precedente ASC
+        sorted_players = sorted(
+            players_stats.items(),
+            key=lambda x: (
+                -x[1]['matches_won'],  # Più vittorie prima
+                -x[1]['rack_difference'],  # Miglior differenza rack prima
+                x[1]['previous_position'] or x[1]['initial_order']  # Posizione precedente migliore prima
+            )
+        )
+        
+        # Elimina classificazioni esistenti per questo turno
+        RoundClassification.query.filter_by(
+            prova_id=prova_id, 
+            round_number=round_number
+        ).delete()
+        
+        # Salva nuova classifica
+        classifications = []
+        for position, (user_id, stats) in enumerate(sorted_players, 1):
+            classification = RoundClassification(
+                prova_id=prova_id,
+                round_number=round_number,
+                user_id=user_id,
+                position=position,
+                matches_won=stats['matches_won'],
+                rack_difference=stats['rack_difference'],
+                previous_position=stats['previous_position']
+            )
+            db.session.add(classification)
+            classifications.append(classification)
+        
+        db.session.commit()
+        return classifications
+    
+    def __repr__(self):
+        return f'<RoundClassification R{self.round_number} {self.position}° {self.user.username}>'
+
+
+class TrioMatch(db.Model):
+    """Gestione partite a trio per modalità 'Senza X'"""
+    __tablename__ = 'trio_match'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(db.Integer, db.ForeignKey('match.id'), nullable=False)
+    
+    # I tre giocatori del trio
+    player1_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    player2_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    player3_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Stato corrente del trio
+    current_player1_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    current_player2_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    waiting_player_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Punteggi individuali nel trio
+    player1_racks = db.Column(db.Integer, default=0)
+    player2_racks = db.Column(db.Integer, default=0)
+    player3_racks = db.Column(db.Integer, default=0)
+    
+    # Stato del trio
+    is_completed = db.Column(db.Boolean, default=False)
+    winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    match = db.relationship('Match', backref='trio_match')
+    player1 = db.relationship('User', foreign_keys=[player1_id])
+    player2 = db.relationship('User', foreign_keys=[player2_id])
+    player3 = db.relationship('User', foreign_keys=[player3_id])
+    current_player1 = db.relationship('User', foreign_keys=[current_player1_id])
+    current_player2 = db.relationship('User', foreign_keys=[current_player2_id])
+    waiting_player = db.relationship('User', foreign_keys=[waiting_player_id])
+    winner = db.relationship('User', foreign_keys=[winner_id])
+    
+    def add_rack_win(self, winner_id):
+        """Aggiunge un rack vinto e gestisce la rotazione dei giocatori"""
+        # Aggiorna punteggio individuale
+        if winner_id == self.player1_id:
+            self.player1_racks += 1
+        elif winner_id == self.player2_id:
+            self.player2_racks += 1
+        elif winner_id == self.player3_id:
+            self.player3_racks += 1
+        else:
+            raise ValueError("Winner non appartiene al trio")
+        
+        # Verifica se qualcuno ha vinto
+        winning_score = self.match.prova.get_winning_score()
+        if (self.player1_racks >= winning_score or 
+            self.player2_racks >= winning_score or 
+            self.player3_racks >= winning_score):
+            self.is_completed = True
+            self.winner_id = winner_id
+            self.match.status = 'completed'
+            self.match.winner_id = winner_id
+        else:
+            # Gestisci rotazione: perdente esce, waiting entra
+            if winner_id == self.current_player1_id:
+                # Player1 vince, player2 esce
+                new_waiting = self.current_player2_id
+                self.current_player2_id = self.waiting_player_id
+                self.waiting_player_id = new_waiting
+            elif winner_id == self.current_player2_id:
+                # Player2 vince, player1 esce
+                new_waiting = self.current_player1_id
+                self.current_player1_id = self.waiting_player_id
+                self.waiting_player_id = new_waiting
+    
+    def get_current_state(self):
+        """Restituisce lo stato corrente del trio per l'UI"""
+        return {
+            'current_players': [self.current_player1, self.current_player2],
+            'waiting_player': self.waiting_player,
+            'scores': {
+                self.player1_id: self.player1_racks,
+                self.player2_id: self.player2_racks,
+                self.player3_id: self.player3_racks
+            },
+            'is_completed': self.is_completed,
+            'winner': self.winner
+        }
+    
+    def __repr__(self):
+        return f'<TrioMatch {self.player1.username}/{self.player2.username}/{self.player3.username}>'

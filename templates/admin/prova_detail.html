@@ -167,6 +167,147 @@
     </div>
 </div>
 
+<!-- Sistema Amalfi Section -->
+{% if prova.tournament.tournament_type == 'Amalfi' and prova.status in ['playing', 'completed'] %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary bg-opacity-10">
+                <h5><i class="fas fa-brain"></i> Sistema Amalfi</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Info Algoritmo -->
+                        <div class="mb-3">
+                            <h6>Informazioni Algoritmo</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        <strong>Turno Attuale:</strong> {{ prova.current_round }}/{{ prova.rounds_count }}<br>
+                                        <strong>Modalità:</strong> 
+                                        {% if prova.tournament.without_x %}
+                                            Senza X (Trii)
+                                        {% else %}
+                                            Con X (Bye)
+                                        {% endif %}<br>
+                                        {% if prova.current_round > 1 %}
+                                            <strong>Salto Corrente:</strong> {{ prova.rounds_count - prova.current_round }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        <strong>Criteri Classifica:</strong><br>
+                                        1. Vittorie (desc)<br>
+                                        2. Differenza rack (desc)<br>
+                                        3. Ordine precedente (asc)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Classifiche per Turno -->
+                        {% if prova.current_round > 0 %}
+                            <div class="mb-3">
+                                <h6>Classifiche per Turno</h6>
+                                <div class="btn-group" role="group">
+                                    {% for r in range(1, prova.current_round + 1) %}
+                                        <a href="{{ url_for('admin.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Turno {{ r }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <!-- Azioni Turni -->
+                        <div class="d-grid gap-2">
+                            {% if prova.current_round < prova.rounds_count %}
+                                {% set next_round = prova.current_round + 1 %}
+                                
+                                <!-- Verifica se turno precedente è completato -->
+                                {% if prova.current_round == 0 or matches|selectattr("round_number", "equalto", prova.current_round)|selectattr("status", "equalto", "completed")|list|length == matches|selectattr("round_number", "equalto", prova.current_round)|list|length %}
+                                    
+                                    <button class="btn btn-info btn-sm" 
+                                            onclick="previewAmalfiRound({{ next_round }})">
+                                        <i class="fas fa-eye"></i> Anteprima Turno {{ next_round }}
+                                    </button>
+                                    
+                                    <button class="btn btn-success btn-sm" 
+                                            onclick="startAmalfiRound({{ next_round }})">
+                                        <i class="fas fa-play"></i> Avvia Turno {{ next_round }}
+                                    </button>
+                                    
+                                {% else %}
+                                    <div class="alert alert-warning p-2">
+                                        <small>
+                                            <i class="fas fa-hourglass-half"></i>
+                                            Completa il Turno {{ prova.current_round }} per procedere
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-success p-2">
+                                    <small>
+                                        <i class="fas fa-flag-checkered"></i>
+                                        Tutti i turni completati
+                                    </small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Debug Tools -->
+                            {% if debug_info.debug_mode %}
+                                <hr>
+                                <h6 class="text-muted">Debug Tools</h6>
+                                <button class="btn btn-outline-warning btn-sm" 
+                                        onclick="validateAmalfiConfig()">
+                                    <i class="fas fa-check-circle"></i> Valida Config
+                                </button>
+                                <a href="{{ url_for('admin.amalfi_encounters', prova_id=prova.id) }}" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-network-wired"></i> Matrice Incontri
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Anteprima Amalfi -->
+<div class="modal fade" id="amalfiPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye"></i> Anteprima Turno <span id="modalRoundNumber"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="amalfiPreviewContent">
+                    <!-- Content loaded via AJAX -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Chiudi
+                </button>
+                <button type="button" class="btn btn-success" id="confirmStartRound" style="display: none;">
+                    <i class="fas fa-play"></i> Avvia Turno
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     <div class="col-md-8">
         <!-- Partite -->
@@ -463,5 +604,221 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Variabile globale per il turno in anteprima
+let previewingRound = null;
+
+function previewAmalfiRound(roundNumber) {
+    previewingRound = roundNumber;
+    const modal = new bootstrap.Modal(document.getElementById('amalfiPreviewModal'));
+    const modalTitle = document.getElementById('modalRoundNumber');
+    const content = document.getElementById('amalfiPreviewContent');
+    const confirmBtn = document.getElementById('confirmStartRound');
+    
+    // Setup modal
+    modalTitle.textContent = roundNumber;
+    confirmBtn.style.display = 'none';
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Calcolo abbinamenti...</span>
+            </div>
+            <p class="mt-2">Applicando algoritmo Amalfi...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Fetch preview data
+    fetch(`/admin/prova/{{ prova.id }}/amalfi/preview_round/${roundNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayAmalfiPreview(data);
+                confirmBtn.style.display = 'inline-block';
+                confirmBtn.onclick = () => confirmStartAmalfiRound(roundNumber);
+            } else {
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Errore:</strong> ${data.error || 'Impossibile calcolare abbinamenti'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Errore di rete:</strong> Impossibile caricare l'anteprima
+                </div>
+            `;
+        });
+}
+
+function displayAmalfiPreview(data) {
+    const content = document.getElementById('amalfiPreviewContent');
+    
+    let html = `
+        <!-- Statistiche Anteprima -->
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Salto:</strong> <span class="badge bg-primary">${data.salto || 0}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Totali:</strong> <span class="badge bg-info">${data.stats.total_matches}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Normali:</strong> <span class="badge bg-success">${data.stats.normal_matches}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Speciali:</strong> <span class="badge bg-warning">${data.stats.trio_matches + data.stats.bye_matches}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Abbinamenti Dettagliati -->
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="35%">Giocatore 1</th>
+                        <th width="10%" class="text-center">vs</th>
+                        <th width="35%">Giocatore 2</th>
+                        <th width="20%">Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    data.matches.forEach((match, index) => {
+        let player2Content = '';
+        let typeContent = '';
+        let rowClass = '';
+        
+        if (match.type === 'normal') {
+            player2Content = `<strong>${match.player2.username}</strong>`;
+            typeContent = `<span class="badge bg-primary">Normale</span>`;
+        } else if (match.type === 'trio') {
+            player2Content = `<strong>${match.player2.username}</strong><br><small class="text-muted">+ ${match.player3.username}</small>`;
+            typeContent = `<span class="badge bg-warning">Trio</span>`;
+            rowClass = 'table-warning';
+        } else if (match.type === 'bye') {
+            player2Content = `<em class="text-muted">X (Bye)</em>`;
+            typeContent = `<span class="badge bg-info">Bye</span>`;
+            rowClass = 'table-info';
+        }
+        
+        html += `
+            <tr class="${rowClass}">
+                <td><strong>${match.player1.username}</strong></td>
+                <td class="text-center"><i class="fas fa-arrows-alt-h"></i></td>
+                <td>${player2Content}</td>
+                <td>${typeContent}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Note Algoritmo -->
+        <div class="alert alert-secondary">
+            <small>
+                <i class="fas fa-info-circle"></i>
+                <strong>Algoritmo Amalfi:</strong> Gli abbinamenti rispettano la formula del salto e l'anti-reincontro.
+                {% if prova.tournament.without_x %}
+                    Modalità "Senza X": i numeri dispari generano trii.
+                {% else %}
+                    Modalità "Con X": i numeri dispari generano abbinamenti vs X (bye).
+                {% endif %}
+            </small>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+}
+
+function confirmStartAmalfiRound(roundNumber) {
+    if (confirm(`Confermi l'avvio del Turno ${roundNumber} con gli abbinamenti mostrati?\n\nQuesta azione creerà le partite e non potrà essere annullata.`)) {
+        // Chiudi modal
+        bootstrap.Modal.getInstance(document.getElementById('amalfiPreviewModal')).hide();
+        
+        // Avvia turno
+        startAmalfiRound(roundNumber);
+    }
+}
+
+function startAmalfiRound(roundNumber) {
+    // Disabilita pulsanti per evitare doppi click
+    const buttons = document.querySelectorAll('button[onclick*="startAmalfiRound"], button[onclick*="previewAmalfiRound"]');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    fetch(`/admin/prova/{{ prova.id }}/amalfi/start_round/${roundNumber}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Ricarica pagina per mostrare nuove partite
+            location.reload();
+        } else {
+            response.text().then(text => {
+                alert('Errore durante l\'avvio del turno: ' + text);
+                buttons.forEach(btn => btn.disabled = false);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore di rete durante l\'avvio del turno');
+        buttons.forEach(btn => btn.disabled = false);
+    });
+}
+
+function validateAmalfiConfig() {
+    fetch(`/admin/prova/{{ prova.id }}/amalfi/validate`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const validation = data.validation;
+                let message = 'Configurazione Amalfi:\n\n';
+                
+                if (validation.is_valid) {
+                    message += '✅ VALIDA\n\n';
+                } else {
+                    message += '❌ NON VALIDA\n\n';
+                }
+                
+                if (validation.errors.length > 0) {
+                    message += 'ERRORI:\n' + validation.errors.join('\n') + '\n\n';
+                }
+                
+                if (validation.warnings.length > 0) {
+                    message += 'AVVERTIMENTI:\n' + validation.warnings.join('\n') + '\n\n';
+                }
+                
+                message += `Info Prova:
+- Turni: ${data.prova_info.rounds_count}
+- Iscritti: ${data.prova_info.inscriptions_count}
+- Tipo: ${data.prova_info.tournament_type}
+- Senza X: ${data.prova_info.without_x ? 'Sì' : 'No'}`;
+                
+                alert(message);
+            } else {
+                alert('Errore durante la validazione');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Errore di rete durante la validazione');
+        });
+}
 </script>
 {% endblock %}

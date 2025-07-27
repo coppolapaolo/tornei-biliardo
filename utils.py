@@ -286,3 +286,49 @@ def create_admin_if_not_exists():
         db.session.commit()
         print("Admin user created: admin/admin123")
     return admin
+
+def create_round_matches_amalfi_compatible(prova, players_or_inscriptions, round_number):
+    """Versione compatibile per Amalfi della funzione create_round_matches"""
+    if isinstance(players_or_inscriptions[0], Inscription):
+        players = [insc.user for insc in players_or_inscriptions]
+    else:
+        players = players_or_inscriptions
+    
+    matches = []
+    
+    if len(players) % 2 == 1:
+        # Numero dispari: ultimo giocatore ha un bye
+        bye_player = players[-1]
+        
+        # Usa la nuova logica per il punteggio bye
+        if prova.best_of:
+            bye_score = prova.get_winning_score()
+        else:
+            bye_score = prova.distance
+            
+        match = Match(
+            prova_id=prova.id,
+            round_number=round_number,
+            player1_id=bye_player.id,
+            is_bye=True,
+            player1_score=bye_score,
+            winner_id=bye_player.id,
+            status='completed',
+            amalfi_round=round_number  # Nuovo campo
+        )
+        matches.append(match)
+        players = players[:-1]
+    
+    # Crea abbinamenti per giocatori pari
+    for i in range(0, len(players), 2):
+        match = Match(
+            prova_id=prova.id,
+            round_number=round_number,
+            player1_id=players[i].id,
+            player2_id=players[i+1].id,
+            amalfi_round=round_number  # Nuovo campo
+        )
+        matches.append(match)
+    
+    db.session.add_all(matches)
+    return matches
