@@ -24,6 +24,11 @@
                 </div>
                 <small class="text-muted">
                     Prova {{ match.prova.number }} - Turno {{ match.round_number }} - {{ match.prova.discipline }}
+                    {% if match.prova.best_of %}
+                        (Al meglio di {{ match.prova.distance }})
+                    {% else %}
+                        ({{ match.prova.distance }} rack esatti)
+                    {% endif %}
                 </small>
             </div>
             <div class="card-body">
@@ -35,6 +40,9 @@
                                 {{ match.player1_score }}
                             </h2>
                             <h5>{{ match.player1.username }}</h5>
+                            {% if match.prova.best_of %}
+                                <small class="text-muted">Vince con {{ match.prova.get_winning_score() }}</small>
+                            {% endif %}
                         </div>
                         <div class="col-2">
                             <h3 class="text-muted">-</h3>
@@ -44,14 +52,75 @@
                                 {{ match.player2_score }}
                             </h2>
                             <h5>{{ match.player2.username }}</h5>
+                            {% if match.prova.best_of %}
+                                <small class="text-muted">Vince con {{ match.prova.get_winning_score() }}</small>
+                            {% endif %}
                         </div>
                     </div>
 
-                    {% if match.status != 'completed' %}
-                        <!-- Aggiungi risultato rack -->
+                    <!-- ADMIN: Inserimento Risultato Diretto -->
+                    {% if current_user.is_admin %}
+                        <div class="card bg-warning bg-opacity-10 border-warning mb-3">
+                            <div class="card-header bg-warning bg-opacity-25">
+                                <h6><i class="fas fa-user-shield"></i> Controlli Amministratore</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if match.status != 'completed' %}
+                                    <!-- Form Risultato Diretto -->
+                                    <form action="{{ url_for('admin.set_match_result_direct', match_id=match.id) }}" 
+                                          method="POST" class="mb-3" onsubmit="return confirmSetResult()">
+                                        <h6>Imposta Risultato Diretto</h6>
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <label class="form-label">{{ match.player1.username }}</label>
+                                                <input type="number" class="form-control" name="player1_score" 
+                                                       min="0" max="{{ match.prova.distance }}" 
+                                                       value="{{ match.player1_score }}" required>
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label">{{ match.player2.username }}</label>
+                                                <input type="number" class="form-control" name="player2_score" 
+                                                       min="0" max="{{ match.prova.distance }}" 
+                                                       value="{{ match.player2_score }}" required>
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label">&nbsp;</label>
+                                                <button type="submit" class="btn btn-warning w-100">
+                                                    <i class="fas fa-save"></i> Imposta Risultato
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {% if match.prova.best_of %}
+                                                Al meglio di {{ match.prova.distance }}: uno dei giocatori deve raggiungere {{ match.prova.get_winning_score() }} punti
+                                            {% else %}
+                                                {{ match.prova.distance }} rack esatti: la somma deve essere esattamente {{ match.prova.distance }}
+                                            {% endif %}
+                                        </small>
+                                    </form>
+                                {% endif %}
+                                
+                                <!-- Reset Match -->
+                                {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
+                                    <button class="btn btn-danger" onclick="resetMatch({{ match.id }})">
+                                        <i class="fas fa-undo"></i> Reset Partita
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Inserimento Rack Singolo (Giocatori e Admin) -->
+                    {% if match.status != 'completed' and (current_user.id in [match.player1_id, match.player2_id] or current_user.is_admin) %}
                         <div class="card bg-light mb-3">
                             <div class="card-body">
-                                <h6>Aggiungi risultato rack</h6>
+                                <h6>
+                                    {% if current_user.is_admin %}
+                                        Aggiungi rack singolo
+                                    {% else %}
+                                        Aggiungi risultato rack
+                                    {% endif %}
+                                </h6>
                                 <div class="row">
                                     <div class="col-6">
                                         <button class="btn btn-outline-primary w-100" 
@@ -74,7 +143,7 @@
                     {% if racks %}
                         <div class="card">
                             <div class="card-header">
-                                <h6>Dettaglio Rack</h6>
+                                <h6>Dettaglio Rack ({{ racks|length }})</h6>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -84,30 +153,85 @@
                                                 <th>Rack</th>
                                                 <th>Vincitore</th>
                                                 <th>Segnalato da</th>
-                                                <th>Validazione</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for rack in racks %}
-                                                <tr>
+                                                <tr id="rack-{{ rack.id }}">
                                                     <td>{{ rack.rack_number }}</td>
                                                     <td>
                                                         <strong>{{ rack.winner.username }}</strong>
                                                     </td>
-                                                    <td>{{ rack.reported_by.username }}</td>
+                                                    <td>{{ rack.reported_by.username if rack.reported_by else 'Admin' }}</td>
                                                     <td>
                                                         {% if rack.validated_by_admin %}
-                                                            <span class="badge bg-success">Validato</span>
+                                                            <span class="badge bg-success">Validato Admin</span>
                                                         {% elif rack.confirmed_by_player %}
                                                             <span class="badge bg-info">Confermato</span>
                                                         {% else %}
-                                                            <span class="badge bg-warning">In attesa</span>
+                                                            <span class="badge bg-warning">In attesa conferma</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <!-- Azioni Admin -->
+                                                        {% if current_user.is_admin %}
+                                                            <div class="btn-group" role="group">
+                                                                <button class="btn btn-sm btn-danger" 
+                                                                        onclick="removeRackAdmin({{ rack.id }})">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                                {% if not rack.validated_by_admin %}
+                                                                    <button class="btn btn-sm btn-success" 
+                                                                            onclick="validateRackAdmin({{ rack.id }})">
+                                                                        <i class="fas fa-check-circle"></i> Valida
+                                                                    </button>
+                                                                {% endif %}
+                                                            </div>
+                                                        <!-- Azioni Giocatori -->
+                                                        {% elif current_user.id in [match.player1_id, match.player2_id] and not rack.validated_by_admin %}
+                                                            <div class="btn-group" role="group">
+                                                                {% if rack.can_be_removed(current_user.id) %}
+                                                                    <button class="btn btn-sm btn-danger" 
+                                                                            onclick="removeRack({{ rack.id }})">
+                                                                        <i class="fas fa-times"></i>
+                                                                    </button>
+                                                                {% endif %}
+                                                                
+                                                                {% if rack.can_be_confirmed(current_user.id) %}
+                                                                    <button class="btn btn-sm btn-success" 
+                                                                            onclick="confirmRack({{ rack.id }})">
+                                                                        <i class="fas fa-check"></i> Conferma
+                                                                    </button>
+                                                                {% endif %}
+                                                                
+                                                                {% if rack.can_remove_confirmation(current_user.id) %}
+                                                                    <button class="btn btn-sm btn-warning" 
+                                                                            onclick="unconfirmRack({{ rack.id }})">
+                                                                        <i class="fas fa-undo"></i> Rimuovi Conferma
+                                                                    </button>
+                                                                {% endif %}
+                                                            </div>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
+                                </div>
+                                
+                                <!-- Legenda -->
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <small class="text-muted">
+                                            <strong>Legenda:</strong>
+                                            <span class="badge bg-warning ms-2">In attesa conferma</span> - L'altro giocatore deve confermare
+                                            <span class="badge bg-info ms-2">Confermato</span> - Confermato da entrambi i giocatori
+                                            <span class="badge bg-success ms-2">Validato Admin</span> - Confermato dall'amministratore
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -130,11 +254,21 @@
                 <h6>Info Partita</h6>
             </div>
             <div class="card-body">
+                <p><strong>Torneo:</strong> {{ match.prova.tournament.name }}</p>
                 <p><strong>Prova:</strong> {{ match.prova.number }}</p>
-                <p><strong>Turno:</strong> {{ match.round_number }}/3</p>
+                <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.prova.rounds_count }}</p>
                 <p><strong>Disciplina:</strong> {{ match.prova.discipline }}</p>
-                <p><strong>Distanza:</strong> {{ match.prova.distance }} rack</p>
+                <p><strong>Modalità:</strong> 
+                    {% if match.prova.best_of %}
+                        Al meglio di {{ match.prova.distance }}
+                    {% else %}
+                        {{ match.prova.distance }} rack esatti
+                    {% endif %}
+                </p>
                 <p><strong>Data:</strong> {{ match.prova.date.strftime('%d/%m/%Y') }}</p>
+                {% if match.prova.location %}
+                    <p><strong>Luogo:</strong> {{ match.prova.location }}</p>
+                {% endif %}
                 
                 {% if debug_info.debug_mode %}
                     <hr>
@@ -145,20 +279,30 @@
                         Player1 ID: {{ match.player1_id }}<br>
                         Player2 ID: {{ match.player2_id }}<br>
                         Winner ID: {{ match.winner_id }}<br>
-                        Is Bye: {{ match.is_bye }}
+                        Is Bye: {{ match.is_bye }}<br>
+                        Racks count: {{ racks|length }}
                     </small>
                 {% endif %}
             </div>
         </div>
         
-        {% if current_user.is_admin or current_user.id in [match.player1_id, match.player2_id] %}
-            <div class="mt-3">
-                <a href="{{ url_for('player.dashboard') if not current_user.is_admin else url_for('admin.prova_detail', prova_id=match.prova_id) }}" 
-                   class="btn btn-outline-secondary w-100">
-                    <i class="fas fa-arrow-left"></i> Torna Indietro
+        <div class="mt-3">
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.prova_detail', prova_id=match.prova_id) }}" 
+                   class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="fas fa-arrow-left"></i> Torna alla Prova
                 </a>
-            </div>
-        {% endif %}
+                <a href="{{ url_for('admin.prova_results_overview', prova_id=match.prova_id) }}" 
+                   class="btn btn-outline-info w-100">
+                    <i class="fas fa-list-alt"></i> Overview Risultati
+                </a>
+            {% else %}
+                <a href="{{ url_for('player.dashboard') }}" 
+                   class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                </a>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -187,20 +331,132 @@ function addRackWin(winnerId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Ricarica la pagina per vedere i risultati aggiornati
             location.reload();
         } else {
             alert('Errore: ' + (data.error || 'Errore sconosciuto'));
-            // Riabilita i pulsanti
             buttons.forEach(btn => btn.disabled = false);
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('Errore durante l\'aggiornamento');
-        // Riabilita i pulsanti
         buttons.forEach(btn => btn.disabled = false);
     });
+}
+
+// Funzioni Admin
+function confirmSetResult() {
+    return confirm('Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti verranno sostituiti.');
+}
+
+function resetMatch(matchId) {
+    if (confirm('Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.')) {
+        fetch(`/admin/match/${matchId}/reset`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Errore durante il reset');
+            }
+        });
+    }
+}
+
+function removeRackAdmin(rackId) {
+    if (confirm('Sei sicuro di voler rimuovere questo rack? (Admin)')) {
+        fetch(`/admin/rack/${rackId}/remove`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Errore: ' + (data.error || 'Impossibile rimuovere il rack'));
+            }
+        });
+    }
+}
+
+function validateRackAdmin(rackId) {
+    fetch(`/admin/rack/${rackId}/validate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore durante la validazione');
+        }
+    });
+}
+
+// Funzioni Giocatori (esistenti)
+function removeRack(rackId) {
+    if (confirm('Sei sicuro di voler rimuovere questo rack?')) {
+        fetch(`/player/rack/${rackId}/remove`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Errore: ' + (data.error || 'Impossibile rimuovere il rack'));
+            }
+        });
+    }
+}
+
+function confirmRack(rackId) {
+    fetch(`/player/rack/${rackId}/confirm`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + (data.error || 'Impossibile confermare il rack'));
+        }
+    });
+}
+
+function unconfirmRack(rackId) {
+    if (confirm('Sei sicuro di voler rimuovere la conferma?')) {
+        fetch(`/player/rack/${rackId}/unconfirm`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Errore: ' + (data.error || 'Impossibile rimuovere la conferma'));
+            }
+        });
+    }
 }
 </script>
 {% endblock %}

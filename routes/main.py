@@ -1,8 +1,8 @@
-# routes/main.py - Route principali (home, reset, ecc.)
+# routes/main.py - AGGIORNATO per multi-torneo visibility
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, logout_user
 from datetime import date
-from models import db, Tournament, Prova, Classification
+from models import db, Tournament, Prova, Classification, User
 from utils import create_default_users, create_sample_tournament
 from config import Config
 
@@ -10,32 +10,36 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """Homepage con tornei attivi"""
-    # Mostra tornei attivi invece di uno solo
+    """Homepage con TUTTI i tornei attivi - AGGIORNATO"""
+    # Mostra TUTTI i tornei attivi
     active_tournaments = Tournament.query.filter_by(is_active=True).order_by(Tournament.created_at.desc()).all()
     
     if not active_tournaments:
         return render_template('no_tournament.html')
     
-    # Per ora prendi il primo torneo attivo per la homepage
-    tournament = active_tournaments[0]
-    
-    # Prossime prove
-    upcoming_provas = Prova.query.filter(
-        Prova.tournament_id == tournament.id,
-        Prova.date >= date.today()
-    ).order_by(Prova.date).limit(3).all()
-    
-    # Classifica generale (top 10)
-    top_classifications = Classification.query.filter(
-        Classification.tournament_id == tournament.id
-    ).order_by(Classification.position).limit(10).all()
+    # Raccogli dati per TUTTI i tornei attivi
+    tournaments_data = []
+    for tournament in active_tournaments:
+        # Prossime prove per questo torneo
+        upcoming_provas = Prova.query.filter(
+            Prova.tournament_id == tournament.id,
+            Prova.date >= date.today()
+        ).order_by(Prova.date).limit(3).all()
+        
+        # Classifica generale per questo torneo (top 5)
+        top_classifications = Classification.query.filter(
+            Classification.tournament_id == tournament.id
+        ).order_by(Classification.position).limit(5).all()
+        
+        tournaments_data.append({
+            'tournament': tournament,
+            'upcoming_provas': upcoming_provas,
+            'top_classifications': top_classifications
+        })
     
     return render_template('index.html', 
-                         tournament=tournament,
-                         active_tournaments=active_tournaments,
-                         upcoming_provas=upcoming_provas,
-                         top_classifications=top_classifications)
+                         tournaments_data=tournaments_data,
+                         active_tournaments=active_tournaments)
 
 @main_bp.route('/reset')
 def reset_database():
@@ -86,6 +90,29 @@ def reset_database_confirm():
 def dashboard():
     """Redirect al dashboard appropriato"""
     if current_user.is_admin:
+        return redirect(url_for('admin.dashboard'))
+    else:
+        return redirect(url_for('player.dashboard'))
+
+@main_bp.route('/debug/login/<username>')
+def quick_login(username):
+    """Quick login per debug - SOLO in modalità debug"""
+    from config import Config
+    from flask_login import login_user
+    
+    if not Config.DEBUG_MODE:
+        return "Quick login non disponibile in produzione", 403
+    
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash(f'Utente {username} non trovato!')
+        return redirect(url_for('main.index'))
+    
+    login_user(user)
+    flash(f'Quick login effettuato come {username}!')
+    
+    # Redirect appropriato
+    if user.is_admin:
         return redirect(url_for('admin.dashboard'))
     else:
         return redirect(url_for('player.dashboard'))

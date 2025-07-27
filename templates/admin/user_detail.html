@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }} - Scheda Utente{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>
+            <i class="fas fa-user"></i> {{ user.username }}
+            {% if user.is_admin %}
+                <span class="badge bg-danger ms-2">Admin</span>
+            {% endif %}
+        </h1>
+        <p class="text-muted mb-0">Scheda dettagliata giocatore</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.users_list') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Lista
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Statistiche Generali -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Statistiche Generali</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-primary">{{ stats.tournaments_played }}</h3>
+                            <small class="text-muted">Tornei Giocati</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-info">{{ stats.total_inscriptions }}</h3>
+                            <small class="text-muted">Prove Giocate</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-success">{{ stats.won_matches }}</h3>
+                            <small class="text-muted">Partite Vinte</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-warning">{{ stats.win_percentage }}%</h3>
+                            <small class="text-muted">% Vittorie</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partite Recenti -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-gamepad"></i> Partite Recenti</h5>
+            </div>
+            <div class="card-body">
+                {% if matches %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Torneo</th>
+                                    <th>Prova</th>
+                                    <th>Turno</th>
+                                    <th>Avversario</th>
+                                    <th>Risultato</th>
+                                    <th>Esito</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for match in matches %}
+                                    <tr>
+                                        <td>{{ match.prova.tournament.name }}</td>
+                                        <td>{{ match.prova.number }}</td>
+                                        <td>{{ match.round_number }}</td>
+                                        <td>
+                                            {% if match.is_bye %}
+                                                <em class="text-muted">Bye</em>
+                                            {% else %}
+                                                {% if match.player1_id == user.id %}
+                                                    {{ match.player2.username }}
+                                                {% else %}
+                                                    {{ match.player1.username }}
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ match.player1_score }} - {{ match.player2_score }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if match.is_bye %}
+                                                <span class="badge bg-info">Bye</span>
+                                            {% elif match.winner_id == user.id %}
+                                                <span class="badge bg-success">Vittoria</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Sconfitta</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Nessuna partita giocata</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Classifiche per Torneo -->
+        {% if classifications %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-trophy"></i> Classifiche per Torneo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Torneo</th>
+                                    <th>Posizione</th>
+                                    <th>Partite Vinte</th>
+                                    <th>Diff. Punti</th>
+                                    <th>Prove Giocate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for classification in classifications %}
+                                    <tr>
+                                        <td>{{ classification.tournament.name }}</td>
+                                        <td>
+                                            <strong>{{ classification.position }}°</strong>
+                                        </td>
+                                        <td>{{ classification.total_matches_won }}</td>
+                                        <td>
+                                            {% if classification.total_point_difference > 0 %}
+                                                <span class="text-success">+{{ classification.total_point_difference }}</span>
+                                            {% elif classification.total_point_difference < 0 %}
+                                                <span class="text-danger">{{ classification.total_point_difference }}</span>
+                                            {% else %}
+                                                <span class="text-muted">0</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ classification.provas_played }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <!-- Info Utente -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Informazioni</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
+                <p><strong>Ruolo:</strong> 
+                    {% if user.is_admin %}
+                        <span class="badge bg-danger">Amministratore</span>
+                    {% else %}
+                        <span class="badge bg-primary">Giocatore</span>
+                    {% endif %}
+                </p>
+                <p><strong>Registrato:</strong> {{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                
+                {% if debug_info.debug_mode %}
+                    <hr>
+                    <h6 class="text-muted">DEBUG Info:</h6>
+                    <small class="text-muted">
+                        User ID: {{ user.id }}<br>
+                        Total inscriptions: {{ inscriptions|length }}<br>
+                        Recent matches: {{ matches|length }}
+                    </small>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Iscrizioni per Torneo -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Iscrizioni per Torneo</h5>
+            </div>
+            <div class="card-body">
+                {% if inscriptions %}
+                    {% set tournaments = inscriptions|groupby('prova.tournament.name') %}
+                    {% for tournament_name, tournament_inscriptions in tournaments %}
+                        <h6>{{ tournament_name }}</h6>
+                        <ul class="list-unstyled mb-3">
+                            {% for inscription in tournament_inscriptions %}
+                                <li>
+                                    <small>
+                                        Prova {{ inscription.prova.number }} - 
+                                        {{ inscription.prova.date.strftime('%d/%m/%Y') }}
+                                        {% set status_info = inscription.prova.get_status_badge_info() %}
+                                        <span class="badge {{ status_info.class }} ms-1">{{ status_info.text }}</span>
+                                    </small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Nessuna iscrizione</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

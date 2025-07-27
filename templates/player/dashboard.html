@@ -1,26 +1,81 @@
-<!-- templates/player/dashboard.html - AGGIORNATO con scadenza iscrizioni -->
 {% extends "base.html" %}
 
 {% block title %}Dashboard Giocatore - Torneo Biliardo{% endblock %}
 
 {% block content %}
-<h1><i class="fas fa-user"></i> Dashboard Giocatore</h1>
+<!-- Header con selezione torneo -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-user"></i> Dashboard Giocatore</h1>
+    
+    {% if tournaments|length > 1 %}
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-trophy"></i> 
+                {% if selected_tournament %}
+                    {{ selected_tournament.name }}
+                {% else %}
+                    Seleziona Torneo
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                {% for tournament in tournaments %}
+                    <li>
+                        <a class="dropdown-item {% if selected_tournament and tournament.id == selected_tournament.id %}active{% endif %}" 
+                           href="{{ url_for('player.dashboard', tournament_id=tournament.id) }}">
+                            {{ tournament.name }}
+                            <span class="badge {{ tournament.get_status_badge_class() }} ms-2">
+                                {{ tournament.get_status_text() }}
+                            </span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
 
-{% if tournament %}
+{% if selected_tournament %}
+    <!-- Info Torneo Selezionato -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <strong><i class="fas fa-trophy"></i> {{ selected_tournament.name }}</strong>
+                <span class="badge {{ selected_tournament.get_status_badge_class() }} ms-2">
+                    {{ selected_tournament.get_status_text() }}
+                </span>
+                <br><small class="text-muted">{{ selected_tournament.tournament_type }}</small>
+            </div>
+            <div class="text-end">
+                <small class="text-muted">
+                    Le mie iscrizioni: <strong>{{ my_inscriptions|length }}</strong><br>
+                    Prove disponibili: <strong>{{ available_provas|length }}</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-8">
             <!-- Prove Disponibili per Iscrizione -->
             {% if available_provas %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-calendar-plus"></i> Prove Disponibili per Iscrizione</h5>
+                    <h5><i class="fas fa-calendar-plus"></i> Prove Disponibili per Iscrizione ({{ available_provas|length }})</h5>
                 </div>
                 <div class="card-body">
                     {% for prova in available_provas %}
                         <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
                             <div>
                                 <strong>Prova {{ prova.number }}</strong> - {{ prova.discipline }}
-                                <br><small class="text-muted">{{ prova.date.strftime('%d/%m/%Y') }} - {{ prova.distance }} rack</small>
+                                {% if prova.name %} ({{ prova.name }}){% endif %}
+                                <br><small class="text-muted">{{ prova.date.strftime('%d/%m/%Y') }} - 
+                                {% if prova.best_of %}
+                                    Al meglio di {{ prova.distance }}
+                                {% else %}
+                                    {{ prova.distance }} rack esatti
+                                {% endif %}
+                                </small>
+                                {% if prova.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ prova.location }}</small>{% endif %}
                                 <br><span class="badge bg-success">Iscrizioni aperte</span>
                                 <span class="badge bg-warning ms-1">
                                     <i class="fas fa-clock"></i> 
@@ -28,9 +83,12 @@
                                         {{ prova.inscription_end.strftime('%d/%m/%Y %H:%M') if prova.inscription_end else 'N/A' }}
                                     </span>
                                 </span>
-                                {% if debug_info.debug_mode %}
-                                    <br><small class="text-muted">DEBUG: Prova ID {{ prova.id }}, Status: {{ prova.status }}</small>
+                                {% if prova.entry_fee > 0 %}
+                                    <br><small class="text-muted"><i class="fas fa-euro-sign"></i> Quota: €{{ "%.2f"|format(prova.entry_fee) }}</small>
                                 {% endif %}
+                                <br><small class="text-muted">
+                                    <i class="fas fa-users"></i> Iscritti: {{ prova.inscriptions|length }}{% if prova.max_participants %}/{{ prova.max_participants }}{% endif %}
+                                </small>
                             </div>
                             <div>
                                 <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=prova.id) }}" style="display: inline;">
@@ -48,59 +106,126 @@
             <!-- Le Mie Iscrizioni -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-list"></i> Le Mie Iscrizioni</h5>
+                    <h5><i class="fas fa-list"></i> Le Mie Iscrizioni - {{ selected_tournament.name }} ({{ my_inscriptions|length }})</h5>
                 </div>
                 <div class="card-body">
                     {% if my_inscriptions %}
                         {% for inscription in my_inscriptions %}
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
                                 <div>
                                     <strong>Prova {{ inscription.prova.number }}</strong> - {{ inscription.prova.discipline }}
-                                    <br><small class="text-muted">{{ inscription.prova.date.strftime('%d/%m/%Y') }}</small>
-                                    {% if debug_info.debug_mode %}
-                                        <br><small class="text-muted">DEBUG: Inscription ID {{ inscription.id }}, Prova Status: {{ inscription.prova.status }}</small>
+                                    {% if inscription.prova.name %} ({{ inscription.prova.name }}){% endif %}
+                                    <br><small class="text-muted">{{ inscription.prova.date.strftime('%d/%m/%Y') }} - 
+                                    {% if inscription.prova.best_of %}
+                                        Al meglio di {{ inscription.prova.distance }}
+                                    {% else %}
+                                        {{ inscription.prova.distance }} rack esatti
                                     {% endif %}
+                                    </small>
+                                    {% if inscription.prova.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ inscription.prova.location }}</small>{% endif %}
+                                    {% set status_info = inscription.prova.get_status_badge_info() %}
+                                    <br><span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-users"></i> {{ inscription.prova.inscriptions|length }} iscritti
+                                    </small>
                                 </div>
                                 <div>
-                                    {% if inscription.prova.status == 'inscription' %}
-                                        <span class="badge bg-success">Iscritto</span>
+                                    {% if inscription.prova.status in ['setup', 'inscription'] %}
+                                        <button class="btn btn-outline-danger btn-sm" 
+                                                onclick="unsubscribeFromProva({{ inscription.prova.id }}, {{ inscription.prova.number }})">
+                                            <i class="fas fa-user-minus"></i> Disiscriviti
+                                        </button>
                                     {% elif inscription.prova.status == 'playing' %}
-                                        <span class="badge bg-primary">In Corso</span>
-                                    {% elif inscription.prova.status == 'completed' %}
-                                        <span class="badge bg-secondary">Completata</span>
+                                        <a href="{{ url_for('admin.prova_detail', prova_id=inscription.prova.id) }}" 
+                                           class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-eye"></i> Vedi Partite
+                                        </a>
                                     {% endif %}
                                 </div>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">Non sei iscritto a nessuna prova.</p>
-                        {% if debug_info.debug_mode %}
-                            <small class="text-muted">DEBUG: my_inscriptions count = {{ my_inscriptions|length }}</small>
-                        {% endif %}
+                        <div class="alert alert-info text-center">
+                            <h5><i class="fas fa-info-circle"></i> Nessuna Iscrizione</h5>
+                            <p>Non sei iscritto a nessuna prova di questo torneo.</p>
+                            {% if available_provas %}
+                                <p class="mb-0">Cerca le prove disponibili qui sopra!</p>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </div>
             </div>
 
+            <!-- Partite in Corso -->
             {% if current_matches %}
-                <div class="card">
+                <div class="card mb-4">
                     <div class="card-header">
-                        <h5><i class="fas fa-gamepad"></i> Partite in Corso</h5>
+                        <h5><i class="fas fa-gamepad"></i> Le Mie Partite in Corso ({{ current_matches|length }})</h5>
                     </div>
                     <div class="card-body">
                         {% for match in current_matches %}
-                            <div class="card mb-3">
+                            <div class="card mb-3 border-primary">
                                 <div class="card-body">
                                     <h6>
                                         {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
+                                        <span class="badge bg-primary ms-2">{{ match.status.title() }}</span>
                                     </h6>
-                                    <p class="mb-1">Prova {{ match.prova.number }} - Turno {{ match.round_number }}</p>
+                                    <p class="mb-1">
+                                        <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}/{{ match.prova.rounds_count }}
+                                        <br><small class="text-muted">{{ match.prova.discipline }} - 
+                                        {% if match.prova.best_of %}
+                                            Al meglio di {{ match.prova.distance }}
+                                        {% else %}
+                                            {{ match.prova.distance }} rack esatti
+                                        {% endif %}
+                                        </small>
+                                    </p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            Punteggio: {{ match.player1_score }} - {{ match.player2_score }}
+                                            Punteggio: <strong>{{ match.player1_score }} - {{ match.player2_score }}</strong>
                                         </div>
                                         <a href="{{ url_for('player.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
-                                            Inserisci Risultato
+                                            <i class="fas fa-edit"></i> Inserisci Risultato
                                         </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Ultime Partite Giocate -->
+            {% if recent_matches %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> Ultime Partite Giocate - {{ selected_tournament.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for match in recent_matches %}
+                            <div class="card mb-2 {% if match.winner_id == current_user.id %}border-success{% else %}border-danger{% endif %}">
+                                <div class="card-body py-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}
+                                            <br><small class="text-muted">
+                                                vs {% if match.is_bye %}Bye{% else %}
+                                                    {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
+                                                {% endif %}
+                                                - {{ match.prova.date.strftime('%d/%m/%Y') }}
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-info">{{ match.player1_score }} - {{ match.player2_score }}</span>
+                                            <br>
+                                            {% if match.is_bye %}
+                                                <span class="badge bg-info">Bye</span>
+                                            {% elif match.winner_id == current_user.id %}
+                                                <span class="badge bg-success">Vittoria</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Sconfitta</span>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -111,21 +236,80 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card">
+            <!-- Info Torneo -->
+            <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Info</h5>
+                    <h5><i class="fas fa-info-circle"></i> Info Torneo</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>Torneo:</strong> {{ tournament.name }} {{ tournament.year }}</p>
-                    <p><strong>Prove giocate:</strong> {{ my_inscriptions|length }}</p>
-                    {% if debug_info.debug_mode %}
+                    <p><strong>Nome:</strong> {{ selected_tournament.name }}</p>
+                    <p><strong>Tipo:</strong> {{ selected_tournament.tournament_type }}</p>
+                    <p><strong>Prove totali:</strong> {{ selected_tournament.provas|length }}</p>
+                    
+                    <hr>
+                    <h6>Opzioni Torneo</h6>
+                    {% if selected_tournament.without_x %}
+                        <span class="badge bg-info me-1">Senza X</span>
+                    {% endif %}
+                    {% if selected_tournament.final_playoffs %}
+                        <span class="badge bg-success me-1">Playoff</span>
+                    {% endif %}
+                    {% if selected_tournament.challenge_mode %}
+                        <span class="badge bg-warning me-1">Challenge</span>
+                    {% endif %}
+                    {% if not (selected_tournament.without_x or selected_tournament.final_playoffs or selected_tournament.challenge_mode) %}
+                        <span class="text-muted">Nessuna opzione speciale</span>
+                    {% endif %}
+                    
+                    {% if user_stats and user_stats.total_matches > 0 %}
                         <hr>
-                        <h6 class="text-muted">DEBUG Info:</h6>
-                        <small class="text-muted">
-                            Tournament ID: {{ tournament.id }}<br>
-                            Available provas: {{ available_provas|length }}<br>
-                            Current matches: {{ current_matches|length }}
-                        </small>
+                        <h6>Le tue Statistiche Globali</h6>
+                        <p><strong>Partite giocate:</strong> {{ user_stats.total_matches }}</p>
+                        <p><strong>Vittorie:</strong> {{ user_stats.won_matches }}</p>
+                        <p><strong>% Vittorie:</strong> {{ user_stats.win_percentage }}%</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Azioni Rapide</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('player.profile') }}" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-user"></i> Il mio Profilo Completo
+                    </a>
+                    
+                    {% if available_provas %}
+                        <div class="alert alert-success p-2 mb-2">
+                            <small>
+                                <i class="fas fa-calendar-plus"></i>
+                                <strong>{{ available_provas|length }} prova/e</strong> disponibili per iscrizione
+                            </small>
+                        </div>
+                    {% endif %}
+                    
+                    {% if current_matches %}
+                        <div class="alert alert-warning p-2 mb-2">
+                            <small>
+                                <i class="fas fa-gamepad"></i>
+                                <strong>{{ current_matches|length }} partita/e</strong> in attesa di risultato
+                            </small>
+                        </div>
+                    {% endif %}
+                    
+                    {% if tournaments|length > 1 %}
+                        <hr>
+                        <h6>Altri Tornei</h6>
+                        {% for tournament in tournaments %}
+                            {% if tournament.id != selected_tournament.id %}
+                                <a href="{{ url_for('player.dashboard', tournament_id=tournament.id) }}" 
+                                   class="btn btn-outline-secondary btn-sm w-100 mb-1">
+                                    {{ tournament.name }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
                     {% endif %}
                 </div>
             </div>
@@ -137,78 +321,28 @@
         <p>Al momento non ci sono tornei attivi.</p>
     </div>
 {% endif %}
+{% endblock %}
 
-{% if debug_info.debug_mode %}
-<div class="mt-4">
-    <div class="alert alert-info">
-        <h6><i class="fas fa-info-circle"></i> Debug - Quick Actions</h6>
-        <a href="{{ url_for('main.reset_database') }}" class="btn btn-warning btn-sm">Reset Database</a>
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-info btn-sm">Vai ad Admin</a>
-    </div>
-</div>
-{% endif %}
-<!-- DEBUG SECTION -->
-{% if debug_query_info and debug_info.debug_mode %}
-<div class="mt-4">
-    <div class="alert alert-dark">
-        <h6><i class="fas fa-bug"></i> DEBUG - Analisi Query Prove Disponibili</h6>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <strong>Info Generali:</strong><br>
-                <small>
-                    Current Time: {{ debug_query_info.current_time }}<br>
-                    Tournament ID: {{ debug_query_info.tournament_id }}<br>
-                    User ID: {{ debug_query_info.user_id }}<br>
-                    Already Inscribed: {{ debug_query_info.already_inscribed_ids }}
-                </small>
-            </div>
-            <div class="col-md-6">
-                <strong>Query Steps:</strong><br>
-                <small>
-                    Step 1 (Tournament Provas): {{ debug_query_info.query_steps.step1_tournament_provas }}<br>
-                    Step 2 (Status=inscription): {{ debug_query_info.query_steps.step2_inscription_status }}<br>
-                    Step 3 (With Dates): {{ debug_query_info.query_steps.step3_with_dates }}<br>
-                    Step 4 (In Timeframe): {{ debug_query_info.query_steps.step4_in_timeframe }}<br>
-                    Step 5 (Final Available): {{ debug_query_info.query_steps.step5_not_inscribed }}
-                </small>
-            </div>
-        </div>
-        
-        <div class="mt-3">
-            <strong>Dettaglio Prove:</strong>
-            <div class="table-responsive">
-                <table class="table table-sm table-dark">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Numero</th>
-                            <th>Status</th>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th>Has Times</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for prova_info in debug_query_info.provas_info %}
-                        <tr>
-                            <td>{{ prova_info.id }}</td>
-                            <td>{{ prova_info.number }}</td>
-                            <td>
-                                <span class="badge bg-{% if prova_info.status == 'inscription' %}success{% elif prova_info.status == 'setup' %}warning{% else %}secondary{% endif %}">
-                                    {{ prova_info.status }}
-                                </span>
-                            </td>
-                            <td>{{ prova_info.inscription_start or 'None' }}</td>
-                            <td>{{ prova_info.inscription_end or 'None' }}</td>
-                            <td>{{ prova_info.has_times }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+{% block scripts %}
+<script>
+function unsubscribeFromProva(provaId, provaNumber) {
+    if (confirm(`Sei sicuro di volerti disiscrivere dalla Prova ${provaNumber}?`)) {
+        fetch(`/player/prova/${provaId}/unsubscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Errore durante la disiscrizione');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Errore durante la disiscrizione');
+        });
+    }
+}
+</script>
 {% endblock %}

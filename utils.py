@@ -154,18 +154,100 @@ def create_default_users():
     
     return admin, mario, pino
 
+# AGGIUNGI questa funzione al utils.py esistente, sostituendo create_sample_tournament()
+
 def create_sample_tournament():
-    """Crea un torneo di esempio - AGGIORNATO per nuovo model"""
-    tournament = Tournament(
-        name='Torneo Test',
+    """Crea tornei di esempio - AGGIORNATO per multi-torneo"""
+    # Torneo 1: Torneo Principale
+    tournament1 = Tournament(
+        name='Torneo Primavera 2025',
         tournament_type='Amalfi',
         without_x=False,
         final_playoffs=True,
         challenge_mode=False,
         is_active=True
     )
-    db.session.add(tournament)
+    db.session.add(tournament1)
     db.session.commit()
+    
+    # Torneo 2: Torneo Secondario  
+    tournament2 = Tournament(
+        name='Coppa Estate 2025',
+        tournament_type='Amalfi',
+        without_x=True,
+        final_playoffs=False,
+        challenge_mode=True,
+        is_active=True
+    )
+    db.session.add(tournament2)
+    db.session.commit()
+    
+    from datetime import date, timedelta
+    today = date.today()
+    
+    # Prove per Torneo 1
+    prova1_t1 = Prova(
+        tournament_id=tournament1.id,
+        number=1,
+        name='Prima Prova',
+        date=today + timedelta(days=7),
+        location='Circolo Biliardo Centro',
+        description='Prima prova del torneo primaverile',
+        rounds_count=3,
+        min_participants=4,
+        max_participants=16,
+        entry_fee=15.0,
+        discipline='palla 9',
+        distance=7,
+        best_of=True,  # Al meglio di 7 (vince con 4)
+        status='setup'
+    )
+    db.session.add(prova1_t1)
+    
+    prova2_t1 = Prova(
+        tournament_id=tournament1.id,
+        number=2,
+        name='Seconda Prova',
+        date=today + timedelta(days=14),
+        location='Circolo Biliardo Centro',
+        description='Seconda prova del torneo primaverile',
+        rounds_count=3,
+        min_participants=4,
+        max_participants=16,
+        entry_fee=15.0,
+        discipline='palla 8',
+        distance=5,
+        best_of=False,  # 5 rack esatti
+        status='setup'
+    )
+    db.session.add(prova2_t1)
+    
+    # Prove per Torneo 2
+    prova1_t2 = Prova(
+        tournament_id=tournament2.id,
+        number=1,
+        name='Coppa Opening',
+        date=today + timedelta(days=21),
+        location='Sala Biliardo Elite',
+        description='Prova di apertura della coppa estiva',
+        rounds_count=2,
+        min_participants=6,
+        max_participants=12,
+        entry_fee=20.0,
+        discipline='palla 10',
+        distance=9,
+        best_of=True,  # Al meglio di 9 (vince con 5)
+        status='setup'
+    )
+    db.session.add(prova1_t2)
+    
+    db.session.commit()
+    
+    print(f"✅ Creati 2 tornei di esempio:")
+    print(f"   - {tournament1.name} (ID: {tournament1.id}) con 2 prove")
+    print(f"   - {tournament2.name} (ID: {tournament2.id}) con 1 prova")
+    
+    return tournament1, tournament2
     
     # Prova di esempio con NUOVI CAMPI
     from datetime import date

@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required
 from datetime import datetime, date
 import random
-from models import db, Tournament, Prova, Inscription, Match, Rack, MatchResult
+from models import db, Tournament, Prova, Inscription, Match, Rack, MatchResult, User, Classification
 from utils import admin_required, create_round_matches
 
 admin_bp = Blueprint('admin', __name__)
@@ -327,6 +327,24 @@ def start_first_round(prova_id):
     flash('Primo turno avviato!')
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
+@admin_bp.route('/prova/<int:prova_id>/results_overview')
+@admin_required
+def prova_results_overview(prova_id):
+    """Overview risultati prova per inserimento rapido (admin)"""
+    prova = Prova.query.get_or_404(prova_id)
+    
+    # Organizza partite per turno
+    matches_by_round = {}
+    for round_num in range(1, prova.rounds_count + 1):
+        matches_by_round[round_num] = Match.query.filter_by(
+            prova_id=prova_id, 
+            round_number=round_num
+        ).order_by(Match.id).all()
+    
+    return render_template('admin/prova_results_overview.html', 
+                         prova=prova, 
+                         matches_by_round=matches_by_round)
+
 # ============ GESTIONE PARTITE ============
 
 @admin_bp.route('/match/<int:match_id>')
@@ -377,3 +395,273 @@ def add_rack_result(match_id):
         'player2_score': match.player2_score,
         'status': match.status
     })
+
+# ============ GESTIONE RISULTATI DIRETTI ADMIN ============
+
+@admin_bp.route('/match/<int:match_id>/set_result', methods=['POST'])
+@admin_required
+def set_match_result_direct(match_id):
+    """Imposta risultato completo di una partita (admin)"""
+    match = Match.query.get_or_404(match_id)
+    
+    if match.is_bye:
+        flash('Non puoi modificare una partita bye!')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+    
+    try:
+        player1_score = int(request.form['player1_score'])
+        player2_score = int(request.form['player2_score'])
+        
+        # Validazione punteggi
+        if player1_score < 0 or player2_score < 0:
+            flash('I punteggi non possono essere negativi!')
+            return redirect(url_for('admin.match_detail', match_id=match_id))
+        
+        # Verifica che il risultato sia valido secondo le regole della prova
+        total_racks = player1_score + player2_score
+        max_possible = match.prova.distance
+        
+        if match.prova.best_of:
+            # Al meglio di: uno dei due deve aver raggiunto la soglia
+            winning_score = match.prova.get_winning_score()
+            if max(player1_score, player2_score) < winning_score:
+                flash(f'Nel "al meglio di {match.prova.distance}", uno dei giocatori deve raggiungere {winning_score} punti!')
+                return redirect(url_for('admin.match_detail', match_id=match_id))
+        else:
+            # Esatto numero: la somma deve essere esattamente la distanza
+            if total_racks != match.prova.distance:
+                flash(f'Nel "{match.prova.distance} rack esatti", la somma deve essere esattamente {match.prova.distance}!')
+                return redirect(url_for('admin.match_detail', match_id=match_id))
+        
+        # Determina il vincitore
+        if player1_score > player2_score:
+            winner_id = match.player1_id
+        elif player2_score > player1_score:
+            winner_id = match.player2_id
+        else:
+            flash('Non può esserci un pareggio!')
+            return redirect(url_for('admin.match_detail', match_id=match_id))
+        
+        # Elimina tutti i rack esistenti per questa partita
+        existing_racks = Rack.query.filter_by(match_id=match_id).all()
+        for rack in existing_racks:
+            db.session.delete(rack)
+        
+        # Crea i nuovi rack basati sul risultato
+        rack_number = 1
+        
+        # Crea rack per player1
+        for i in range(player1_score):
+            rack = Rack(
+                match_id=match_id,
+                rack_number=rack_number,
+                winner_id=match.player1_id,
+                reported_by_id=1,  # Admin user ID
+                validated_by_admin=True
+            )
+            db.session.add(rack)
+            rack_number += 1
+        
+        # Crea rack per player2
+        for i in range(player2_score):
+            rack = Rack(
+                match_id=match_id,
+                rack_number=rack_number,
+                winner_id=match.player2_id,
+                reported_by_id=1,  # Admin user ID
+                validated_by_admin=True
+            )
+            db.session.add(rack)
+            rack_number += 1
+        
+        # Aggiorna il match
+        match.player1_score = player1_score
+        match.player2_score = player2_score
+        match.winner_id = winner_id
+        match.status = 'completed'
+        
+        db.session.commit()
+        
+        flash('Risultato impostato con successo!')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+        
+    except ValueError:
+        flash('Errore: inserisci numeri validi per i punteggi!')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+    except Exception as e:
+        flash(f'Errore durante l\'impostazione del risultato: {str(e)}')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+
+@admin_bp.route('/match/<int:match_id>/reset', methods=['POST'])
+@admin_required
+def reset_match(match_id):
+    """Reset completo di una partita (admin)"""
+    match = Match.query.get_or_404(match_id)
+    
+    if match.is_bye:
+        flash('Non puoi resettare una partita bye!')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+    
+    try:
+        # Elimina tutti i rack
+        existing_racks = Rack.query.filter_by(match_id=match_id).all()
+        for rack in existing_racks:
+            db.session.delete(rack)
+        
+        # Reset match
+        match.player1_score = 0
+        match.player2_score = 0
+        match.winner_id = None
+        match.status = 'pending'
+        
+        db.session.commit()
+        
+        flash('Partita resettata con successo!')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+        
+    except Exception as e:
+        flash(f'Errore durante il reset: {str(e)}')
+        return redirect(url_for('admin.match_detail', match_id=match_id))
+    
+# ============ GESTIONE RACK ADMIN ============
+
+@admin_bp.route('/rack/<int:rack_id>/remove', methods=['POST'])
+@admin_required
+def remove_rack_admin(rack_id):
+    """Rimuovi un rack (admin)"""
+    rack = Rack.query.get_or_404(rack_id)
+    match = rack.match
+    
+    try:
+        # Salva il vincitore per aggiornare il punteggio
+        winner_id = rack.winner_id
+        
+        # Rimuovi il rack
+        db.session.delete(rack)
+        
+        # Aggiorna il punteggio del match
+        if winner_id == match.player1_id:
+            match.player1_score = max(0, match.player1_score - 1)
+        else:
+            match.player2_score = max(0, match.player2_score - 1)
+        
+        # Se il match era completato e ora non ha più i punti per essere vinto, rimettilo in playing
+        if match.status == 'completed':
+            if match.prova.best_of:
+                winning_score = match.prova.get_winning_score()
+                if max(match.player1_score, match.player2_score) < winning_score:
+                    match.status = 'playing'
+                    match.winner_id = None
+            else:  # esatto numero
+                if (match.player1_score + match.player2_score) < match.prova.distance:
+                    match.status = 'playing'
+                    match.winner_id = None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Rack rimosso (Admin)',
+            'player1_score': match.player1_score,
+            'player2_score': match.player2_score,
+            'status': match.status
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Errore durante la rimozione: {str(e)}'}), 500
+
+@admin_bp.route('/rack/<int:rack_id>/validate', methods=['POST'])
+@admin_required
+def validate_rack_admin(rack_id):
+    """Valida un rack (admin)"""
+    rack = Rack.query.get_or_404(rack_id)
+    
+    try:
+        # Valida il rack
+        rack.validated_by_admin = True
+        rack.confirmed_by_player = True  # Automaticamente confermato se validato dall'admin
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Rack validato dall\'amministratore'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Errore durante la validazione: {str(e)}'}), 500
+
+# ============ GESTIONE UTENTI (PUNTO 3) ============
+
+@admin_bp.route('/users')
+@admin_required
+def users_list():
+    """Lista di tutti gli utenti con statistiche - VERSIONE CORRETTA"""
+    from sqlalchemy import func, desc, case
+    
+    # Query CORRETTA per ottenere utenti con statistiche
+    users = db.session.query(
+        User,
+        func.count(Inscription.id).label('total_inscriptions'),
+        func.count(Match.id).label('total_matches'),
+        # FIX: Sintassi corretta per func.case()
+        func.sum(
+            case(
+                (Match.winner_id == User.id, 1),
+                else_=0
+            )
+        ).label('matches_won')
+    ).outerjoin(Inscription, User.id == Inscription.user_id)\
+     .outerjoin(Match, db.or_(Match.player1_id == User.id, Match.player2_id == User.id))\
+     .group_by(User.id)\
+     .order_by(desc('total_inscriptions'), User.username).all()
+    
+    return render_template('admin/users_list.html', users=users)
+
+@admin_bp.route('/user/<int:user_id>')
+@admin_required
+def user_detail(user_id):
+    """Scheda dettagliata utente"""
+    user = User.query.get_or_404(user_id)
+    
+    # Iscrizioni dell'utente
+    inscriptions = Inscription.query.filter_by(user_id=user_id)\
+                                  .join(Prova)\
+                                  .join(Tournament)\
+                                  .order_by(Tournament.created_at.desc(), Prova.number.desc()).all()
+    
+    # Partite giocate
+    matches = Match.query.filter(
+        db.or_(Match.player1_id == user_id, Match.player2_id == user_id)
+    ).join(Prova)\
+     .join(Tournament)\
+     .order_by(Tournament.created_at.desc(), Prova.number.desc(), Match.round_number.desc()).all()
+    
+    # Statistiche generali
+    total_matches = len([m for m in matches if m.status == 'completed'])
+    won_matches = len([m for m in matches if m.status == 'completed' and m.winner_id == user_id])
+    win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
+    
+    # Classifiche per torneo
+    classifications = Classification.query.filter_by(user_id=user_id)\
+                                        .join(Tournament)\
+                                        .order_by(Tournament.created_at.desc()).all()
+    
+    # Partite recenti (ultime 10)
+    recent_matches = [m for m in matches if m.status == 'completed'][:10]
+    
+    stats = {
+        'total_inscriptions': len(inscriptions),
+        'total_matches': total_matches,
+        'won_matches': won_matches,
+        'lost_matches': total_matches - won_matches,
+        'win_percentage': round(win_percentage, 1),
+        'tournaments_played': len(set([insc.prova.tournament_id for insc in inscriptions]))
+    }
+    
+    return render_template('admin/user_detail.html', 
+                         user=user, 
+                         inscriptions=inscriptions,
+                         matches=recent_matches,
+                         classifications=classifications,
+                         stats=stats)

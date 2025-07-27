@@ -1,4 +1,4 @@
-<!-- templates/base.html - AGGIORNATO con debug footer -->
+<!-- templates/base.html - AGGIORNATO con quick login debug nel footer -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -28,6 +28,11 @@
         }
         .debug-footer .debug-value {
             color: #00ffff;
+        }
+        .debug-footer .quick-login-btn {
+            font-size: 10px;
+            padding: 2px 6px;
+            margin: 1px;
         }
     </style>
     {% endif %}
@@ -114,6 +119,13 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a>
                         </li>
+                        {% if current_user.is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.users_list') }}">
+                                    <i class="fas fa-users"></i> Utenti
+                                </a>
+                            </li>
+                        {% endif %}
                     {% endif %}
                     {% if debug_info.debug_mode %}
                         <li class="nav-item">
@@ -134,11 +146,22 @@
                                 {% endif %}
                             </a>
                             <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('player.profile') }}">
+                                    <i class="fas fa-id-card"></i> Il mio Profilo
+                                </a></li>
                                 {% if current_user.is_admin %}
+                                    <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
-                                        <i class="fas fa-cog"></i> Admin
+                                        <i class="fas fa-cog"></i> Admin Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.users_list') }}">
+                                        <i class="fas fa-users"></i> Gestione Utenti
                                     </a></li>
                                 {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
+                                    <i class="fas fa-trash"></i> Elimina Account
+                                </a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -173,7 +196,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- DEBUG FOOTER -->
+    <!-- DEBUG FOOTER - AGGIORNATO con quick login (PUNTO 8) -->
     {% if debug_info.debug_mode %}
     <footer class="debug-footer">
         <div class="container">
@@ -202,7 +225,7 @@
                         <span class="debug-value">{{ debug_info.request_method }}</span>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="debug-item">
                         <strong>Database:</strong>
                         {% if debug_info.database_stats %}
@@ -215,11 +238,28 @@
                             <span class="debug-value">Not accessible</span>
                         {% endif %}
                     </div>
+                </div>
+                <div class="col-md-3">
+                    <!-- NUOVO: Quick Login Actions (PUNTO 8) -->
                     <div class="debug-item">
-                        <strong>Quick Actions:</strong>
+                        <strong>Quick Actions:</strong><br>
                         <a href="{{ url_for('main.reset_database') }}" class="text-warning">Reset DB</a> |
-                        <a href="/admin" class="text-info">Admin</a> |
-                        <a href="{{ url_for('player.dashboard') }}" class="text-success">Player</a>
+                        <a href="/admin" class="text-info">Admin Panel</a>
+                    </div>
+                    <div class="debug-item">
+                        <strong>Quick Login:</strong><br>
+                        <a href="{{ url_for('main.quick_login', username='admin') }}" 
+                           class="btn btn-danger quick-login-btn">
+                            Admin
+                        </a>
+                        <a href="{{ url_for('main.quick_login', username='mario') }}" 
+                           class="btn btn-primary quick-login-btn">
+                            Mario
+                        </a>
+                        <a href="{{ url_for('main.quick_login', username='pino') }}" 
+                           class="btn btn-secondary quick-login-btn">
+                            Pino
+                        </a>
                     </div>
                 </div>
             </div>

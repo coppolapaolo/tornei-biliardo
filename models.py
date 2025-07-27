@@ -31,6 +31,37 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+    
+    def get_statistics(self):
+        """Restituisce statistiche complete dell'utente"""
+        # Tutte le iscrizioni
+        total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
+        
+        # Tutte le partite giocate
+        all_matches = Match.query.filter(
+            db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
+            Match.status == 'completed'
+        ).all()
+        
+        total_matches = len(all_matches)
+        won_matches = len([m for m in all_matches if m.winner_id == self.id])
+        lost_matches = total_matches - won_matches
+        win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
+        
+        # Tornei giocati
+        tournaments_played = len(set([
+            insc.prova.tournament_id 
+            for insc in Inscription.query.filter_by(user_id=self.id).join(Prova).all()
+        ]))
+        
+        return {
+            'total_inscriptions': total_inscriptions,
+            'total_matches': total_matches,
+            'won_matches': won_matches,
+            'lost_matches': lost_matches,
+            'win_percentage': round(win_percentage, 1),
+            'tournaments_played': tournaments_played
+        }
 
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -322,6 +353,28 @@ class Rack(db.Model):
     
     def __repr__(self):
         return f'<Rack {self.rack_number} - Winner: {self.winner.username}>'
+    
+    def can_be_removed(self, current_user_id):
+        """Verifica se questo rack può essere rimosso dall'utente corrente"""
+        # Può essere rimosso solo da chi l'ha segnato e se non è confermato
+        return (self.reported_by_id == current_user_id and 
+                not self.confirmed_by_player and 
+                not self.validated_by_admin)
+    
+    def can_be_confirmed(self, current_user_id):
+        """Verifica se questo rack può essere confermato dall'utente corrente"""
+        # Può essere confermato dall'altro giocatore (non da chi l'ha segnato)
+        return (self.reported_by_id != current_user_id and 
+                not self.confirmed_by_player and 
+                not self.validated_by_admin)
+    
+    def can_remove_confirmation(self, current_user_id):
+        """Verifica se può rimuovere la conferma"""
+        # Può rimuovere la conferma se l'ha confermata lui e non è validata dall'admin
+        return (self.reported_by_id != current_user_id and 
+                self.confirmed_by_player and 
+                not self.validated_by_admin)
+
 
 class MatchResult(db.Model):
     """Tabella per tracking risultati inviati dai giocatori"""

@@ -1,0 +1,68 @@
+
+<!-- templates/player/delete_account.html - Cancellazione account -->
+{% extends "base.html" %}
+
+{% block title %}Elimina Account - {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4><i class="fas fa-exclamation-triangle"></i> Elimina Account</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <strong>⚠️ ATTENZIONE!</strong><br>
+                    Questa operazione eliminerà definitivamente il tuo account e tutti i dati associati.
+                </div>
+
+                <h5>Cosa verrà eliminato:</h5>
+                <ul class="mb-4">
+                    <li>❌ Il tuo account utente</li>
+                    <li>❌ Tutte le tue iscrizioni ai tornei attivi</li>
+                    <li>❌ Le tue partite non ancora giocate</li>
+                    <li>❌ I tuoi dati personali</li>
+                    <li>❌ Le tue classifiche</li>
+                    <li>ℹ️ Le partite già completate rimarranno per integrità storica</li>
+                </ul>
+
+                <div class="alert alert-warning">
+                    <strong>📝 Nota importante:</strong><br>
+                    Se sei iscritto a prove già iniziate o completate, verrai automaticamente disiscritto 
+                    ma i risultati delle partite già giocate rimarranno nel sistema per mantenere 
+                    l'integrità del torneo.
+                </div>
+
+                <hr>
+
+                <form method="POST" onsubmit="return confirm('Sei SICURO di voler eliminare definitivamente il tuo account?')">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <strong>Conferma la tua password:</strong>
+                        </label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmation" class="form-label">
+                            <strong>Digita esattamente:</strong> <code>ELIMINA IL MIO ACCOUNT</code>
+                        </label>
+                        <input type="text" class="form-control" name="confirmation" 
+                               placeholder="ELIMINA IL MIO ACCOUNT" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> ELIMINA DEFINITIVAMENTE IL MIO ACCOUNT
+                        </button>
+                        <a href="{{ url_for('player.profile') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annulla
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

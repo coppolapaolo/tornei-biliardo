@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Overview Risultati - Prova {{ prova.number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Overview Risultati - Prova {{ prova.number }}</h1>
+        <p class="text-muted mb-0">
+            {{ prova.tournament.name }} - {{ prova.date.strftime('%d/%m/%Y') }} - {{ prova.discipline }}
+            {% if prova.best_of %}
+                (Al meglio di {{ prova.distance }})
+            {% else %}
+                ({{ prova.distance }} rack esatti)
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.prova_detail', prova_id=prova.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Prova
+        </a>
+    </div>
+</div>
+
+<!-- Statistiche Rapide -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ matches_by_round.values()|sum(attribute='__len__')|default(0) }}</h3>
+                <small class="text-muted">Partite Totali</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-success">
+                    {% set completed_count = 0 %}
+                    {% for round_num, round_matches in matches_by_round.items() %}
+                        {% set completed_count = completed_count + round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                    {% endfor %}
+                    {{ completed_count }}
+                </h3>
+                <small class="text-muted">Completate</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-warning">
+                    {% set pending_count = 0 %}
+                    {% for round_num, round_matches in matches_by_round.items() %}
+                        {% set pending_count = pending_count + round_matches|selectattr("status", "in", ["pending", "playing"])|list|length %}
+                    {% endfor %}
+                    {{ pending_count }}
+                </h3>
+                <small class="text-muted">In Attesa</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ prova.rounds_count }}</h3>
+                <small class="text-muted">Turni Totali</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Partite per Turno -->
+{% for round_num in range(1, prova.rounds_count + 1) %}
+    {% set round_matches = matches_by_round.get(round_num, []) %}
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5>
+                    <i class="fas fa-gamepad"></i> Turno {{ round_num }}
+                    <span class="badge bg-info ms-2">{{ round_matches|length }} partite</span>
+                </h5>
+                <div>
+                    {% set completed = round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                    {% set total = round_matches|length %}
+                    {% if total > 0 %}
+                        <span class="badge bg-{% if completed == total %}success{% elif completed > 0 %}warning{% else %}secondary{% endif %}">
+                            {{ completed }}/{{ total }} completate
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if round_matches %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th width="25%">Giocatore 1</th>
+                                <th width="25%">Giocatore 2</th>
+                                <th width="15%">Risultato</th>
+                                <th width="15%">Stato</th>
+                                <th width="20%">Azioni Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in round_matches %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ match.player1.username }}</strong>
+                                        {% if match.winner_id == match.player1_id %}
+                                            <i class="fas fa-crown text-warning ms-1"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.is_bye %}
+                                            <em class="text-muted">Bye</em>
+                                        {% else %}
+                                            <strong>{{ match.player2.username }}</strong>
+                                            {% if match.winner_id == match.player2_id %}
+                                                <i class="fas fa-crown text-warning ms-1"></i>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.status == 'completed' %}
+                                            <span class="badge bg-info">
+                                                {{ match.player1_score }} - {{ match.player2_score }}
+                                            </span>
+                                        {% elif match.player1_score > 0 or match.player2_score > 0 %}
+                                            <span class="badge bg-warning">
+                                                {{ match.player1_score }} - {{ match.player2_score }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.is_bye %}
+                                            <span class="badge bg-info">Bye</span>
+                                        {% elif match.status == 'pending' %}
+                                            <span class="badge bg-secondary">In Attesa</span>
+                                        {% elif match.status == 'playing' %}
+                                            <span class="badge bg-primary">In Corso</span>
+                                        {% elif match.status == 'completed' %}
+                                            <span class="badge bg-success">Completata</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not match.is_bye %}
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <!-- Imposta Risultato Rapido -->
+                                                {% if match.status != 'completed' %}
+                                                    <button class="btn btn-outline-warning" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#quickResultModal"
+                                                            onclick="openQuickResult({{ match.id }}, '{{ match.player1.username }}', '{{ match.player2.username }}', {{ match.player1_score }}, {{ match.player2_score }})">
+                                                        <i class="fas fa-tachometer-alt"></i>
+                                                    </button>
+                                                {% endif %}
+                                                
+                                                <!-- Vai al Dettaglio -->
+                                                <a href="{{ url_for('admin.match_detail', match_id=match.id) }}" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                
+                                                <!-- Reset Match -->
+                                                {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
+                                                    <button class="btn btn-outline-danger" 
+                                                            onclick="resetMatchQuick({{ match.id }})">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Turno {{ round_num }}:</strong> Nessuna partita ancora creata.
+                    {% if round_num == 1 %}
+                        Vai al dettaglio prova per avviare il primo turno.
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+
+<!-- Modal Risultato Rapido -->
+<div class="modal fade" id="quickResultModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Imposta Risultato Rapido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quickResultForm" onsubmit="return submitQuickResult(event)">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Modalità:</strong> 
+                            {% if prova.best_of %}
+                                Al meglio di {{ prova.distance }} (vince chi arriva a {{ prova.get_winning_score() }})
+                            {% else %}
+                                {{ prova.distance }} rack esatti (somma deve essere {{ prova.distance }})
+                            {% endif %}
+                        </small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <label id="player1Label" class="form-label">Giocatore 1</label>
+                            <input type="number" class="form-control" id="quickPlayer1Score" 
+                                   min="0" max="{{ prova.distance }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label id="player2Label" class="form-label">Giocatore 2</label>
+                            <input type="number" class="form-control" id="quickPlayer2Score" 
+                                   min="0" max="{{ prova.distance }}" required>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="quickMatchId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Imposta Risultato
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentMatchId = null;
+
+function openQuickResult(matchId, player1Name, player2Name, player1Score, player2Score) {
+    currentMatchId = matchId;
+    document.getElementById('quickMatchId').value = matchId;
+    document.getElementById('player1Label').textContent = player1Name;
+    document.getElementById('player2Label').textContent = player2Name;
+    document.getElementById('quickPlayer1Score').value = player1Score;
+    document.getElementById('quickPlayer2Score').value = player2Score;
+}
+
+function submitQuickResult(event) {
+    event.preventDefault();
+    
+    const matchId = document.getElementById('quickMatchId').value;
+    const player1Score = document.getElementById('quickPlayer1Score').value;
+    const player2Score = document.getElementById('quickPlayer2Score').value;
+    
+    const formData = new FormData();
+    formData.append('player1_score', player1Score);
+    formData.append('player2_score', player2Score);
+    
+    fetch(`/admin/match/${matchId}/set_result`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            // Chiudi modal e ricarica pagina
+            bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+            location.reload();
+        } else {
+            alert('Errore durante l\'impostazione del risultato');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante l\'impostazione del risultato');
+    });
+    
+    return false;
+}
+
+function resetMatchQuick(matchId) {
+    if (confirm('Sei sicuro di voler resettare questa partita?')) {
+        fetch(`/admin/match/${matchId}/reset`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Errore durante il reset');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
