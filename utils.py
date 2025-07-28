@@ -7,12 +7,57 @@ from flask_login import current_user
 from flask import flash, redirect, url_for
 import random
 
-def admin_required(f):
-    """Decorator per richiedere privilegi admin"""
+# ============ PERMISSION SYSTEM ============
+
+class UserPermissions:
+    """Centralized user permission logic"""
+    
+    @staticmethod
+    def can_inscribe_to_prova():
+        """Check if user can inscribe to proves"""
+        return current_user.is_authenticated and not current_user.is_admin
+    
+    @staticmethod
+    def can_view_profile():
+        """Check if user can access personal profile"""
+        return current_user.is_authenticated and not current_user.is_admin
+    
+    @staticmethod
+    def can_delete_account():
+        """Check if user can delete own account"""
+        return current_user.is_authenticated and not current_user.is_admin
+    
+    @staticmethod
+    def show_admin_management():
+        """Check if user should see admin management features"""
+        return current_user.is_authenticated and current_user.is_admin
+    
+    @staticmethod
+    def get_default_dashboard():
+        """Get appropriate dashboard URL for user role"""
+        if current_user.is_authenticated:
+            return 'admin.dashboard' if current_user.is_admin else 'player.dashboard'
+        return 'main.index'
+
+# ============ ROUTE DECORATORS ============
+
+def player_only(f):
+    """Decorator: Block admin access to player-only routes"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
-            flash('Accesso riservato agli amministratori.')
+        if current_user.is_authenticated and current_user.is_admin:
+            flash('Funzionalità riservata ai giocatori. '
+                  'Utilizzare la dashboard amministratore.', 'warning')
+            return redirect(url_for('admin.dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    """Decorator: Require admin privileges (ENHANCED)"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not (current_user.is_authenticated and current_user.is_admin):
+            flash('Accesso negato. Privilegi amministratore richiesti.', 'error')
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function

@@ -112,9 +112,11 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
+                    {%if not current_user.is_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
                     </li>
+                    {% endif %}
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a>
@@ -136,33 +138,41 @@
                     {% endif %}
                 </ul>
 
-                <ul class="navbar-nav">
+                <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user"></i> {{ current_user.username }}
                                 {% if current_user.is_admin %}
-                                    <span class="badge bg-success">Admin</span>
+                                    <span class="badge bg-warning text-dark ms-1">Admin</span>
                                 {% endif %}
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('player.profile') }}">
-                                    <i class="fas fa-id-card"></i> Il mio Profilo
-                                </a></li>
-                                {% if current_user.is_admin %}
+                            <ul class="dropdown-menu">                                
+                                {% if can_view_profile %}
+                                    <li><a class="dropdown-item" href="{{ url_for('player.profile') }}">
+                                        <i class="fas fa-id-card"></i> Il mio Profilo
+                                    </a></li>
                                     <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+                                
+                                {% if show_admin_management %}
                                     <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
                                         <i class="fas fa-cog"></i> Admin Dashboard
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.users_list') }}">
                                         <i class="fas fa-users"></i> Gestione Utenti
                                     </a></li>
+                                    <li><hr class="dropdown-divider"></li>
                                 {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
-                                    <i class="fas fa-trash"></i> Elimina Account
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                
+                                {% if can_delete_account %}
+                                    <li><a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
+                                        <i class="fas fa-trash"></i> Elimina Account
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+                                
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                     <i class="fas fa-sign-out-alt"></i> Logout
                                 </a></li>

@@ -11,6 +11,10 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """Homepage con TUTTI i tornei attivi - AGGIORNATO"""
+    # 🔒 ADMIN AUTO-REDIRECT
+    if current_user.is_authenticated and current_user.is_admin:
+        return redirect(url_for('admin.dashboard'))
+
     # Mostra TUTTI i tornei attivi
     active_tournaments = Tournament.query.filter_by(is_active=True).order_by(Tournament.created_at.desc()).all()
     

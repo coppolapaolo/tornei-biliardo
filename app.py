@@ -6,7 +6,7 @@ import os
 # Import configurazioni e modelli
 from config import config
 from models import db, User
-from utils import get_database_stats, create_admin_if_not_exists
+from utils import get_database_stats, create_admin_if_not_exists, UserPermissions
 
 def create_app(config_name=None):
     """Factory per creare l'app Flask"""
@@ -64,6 +64,18 @@ def create_app(config_name=None):
 # Crea l'app
 app = create_app()
 
+@app.context_processor
+def inject_permissions():
+    """Inject permission helpers into all Jinja2 templates"""
+    return {
+        'can_inscribe': UserPermissions.can_inscribe_to_prova(),
+        'can_view_profile': UserPermissions.can_view_profile(),
+        'can_delete_account': UserPermissions.can_delete_account(),
+        'show_admin_management': UserPermissions.show_admin_management(),
+        'is_player': current_user.is_authenticated and not current_user.is_admin,
+        'is_admin': current_user.is_authenticated and current_user.is_admin,
+    }
+    
 if __name__ == '__main__':
     # Determina modalità debug
     debug_mode = app.config.get('DEBUG_MODE', False)

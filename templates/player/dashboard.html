@@ -57,7 +57,7 @@
     <div class="row">
         <div class="col-md-8">
             <!-- Prove Disponibili per Iscrizione -->
-            {% if available_provas %}
+            {% if can_inscribe and available_provas %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5><i class="fas fa-calendar-plus"></i> Prove Disponibili per Iscrizione ({{ available_provas|length }})</h5>
@@ -104,6 +104,7 @@
             {% endif %}
 
             <!-- Le Mie Iscrizioni -->
+            {% if can_inscribe %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5><i class="fas fa-list"></i> Le Mie Iscrizioni - {{ selected_tournament.name }} ({{ my_inscriptions|length }})</h5>
@@ -155,6 +156,7 @@
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
 
             <!-- Partite in Corso -->
             {% if current_matches %}

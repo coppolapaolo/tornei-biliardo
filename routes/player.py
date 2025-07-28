@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from datetime import datetime
 from models import db, Tournament, Prova, Inscription, Match, Rack, Classification, MatchResult
+from utils import player_only, UserPermissions 
 
 player_bp = Blueprint('player', __name__)
 
@@ -95,6 +96,7 @@ def dashboard():
 # Il resto delle route rimane uguale...
 @player_bp.route('/prova/<int:prova_id>/inscribe', methods=['POST'])
 @login_required
+@player_only
 def inscribe_to_prova(prova_id):
     """Iscriviti a una prova"""
     prova = Prova.query.get_or_404(prova_id)
@@ -181,8 +183,10 @@ def add_rack_result(match_id):
 
 @player_bp.route('/profile')
 @login_required
+@player_only
 def profile():
     """Profilo personale del giocatore"""
+    
     from sqlalchemy import func
     
     # Iscrizioni dell'utente
@@ -229,8 +233,10 @@ def profile():
 
 @player_bp.route('/delete_account', methods=['GET', 'POST'])
 @login_required
+@player_only
 def delete_account():
-    """Cancellazione account utente"""
+    """Cancellazione account utente - PROTETTA PER AMMINISTRATORI"""
+        
     if request.method == 'POST':
         password = request.form.get('password', '')
         confirmation = request.form.get('confirmation', '')
@@ -245,7 +251,7 @@ def delete_account():
             flash('Conferma non corretta!')
             return render_template('player/delete_account.html')
         
-        # Procedi con cancellazione
+        # Procedi con cancellazione (SOLO per utenti non-admin)
         username = current_user.username
         
         # 1. Rimuovi da tutte le iscrizioni attive
@@ -305,6 +311,7 @@ def delete_account():
 
 @player_bp.route('/prova/<int:prova_id>/unsubscribe', methods=['POST'])
 @login_required
+@player_only
 def unsubscribe_from_prova(prova_id):
     """Disiscrizione da una prova"""
     prova = Prova.query.get_or_404(prova_id)
