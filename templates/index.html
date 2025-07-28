@@ -6,12 +6,6 @@
 <!-- Header con lista tornei attivi -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-trophy"></i> Tornei Attivi ({{ active_tournaments|length }})</h1>
-    {% if not current_user.is_authenticated %}
-        <div>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary me-2">Accedi</a>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">Registrati</a>
-        </div>
-    {% endif %}
 </div>
 
 {% if tournaments_data %}

@@ -37,9 +37,9 @@
                         <strong>Giocatori Totali:</strong> {{ total_players }}<br>
                         <strong>Modalità Torneo:</strong> 
                         {% if prova.tournament.without_x %}
-                            <span class="badge bg-info">Senza X (Trii)</span>
+                            <span class="badge bg-info">Senza X</span>
                         {% else %}
-                            <span class="badge bg-warning">Con X (Bye)</span>
+                            <span class="badge bg-warning">Con X</span>
                         {% endif %}
                     </div>
                 </div>
@@ -271,10 +271,10 @@ function displayPreviewResults(data) {
                 <small class="text-muted">Normali: <strong>${data.stats.normal_matches}</strong></small>
             </div>
             <div class="col-md-4">
-                <small class="text-muted">Trii: <strong>${data.stats.trio_matches}</strong></small>
+                <small class="text-muted">Partite a tre: <strong>${data.stats.trio_matches}</strong></small>
             </div>
             <div class="col-md-4">
-                <small class="text-muted">Bye (X): <strong>${data.stats.bye_matches}</strong></small>
+                <small class="text-muted">X: <strong>${data.stats.bye_matches}</strong></small>
             </div>
         </div>
         
@@ -302,7 +302,7 @@ function displayPreviewResults(data) {
             typeContent = `<span class="badge bg-warning">Trio</span>`;
             player2Content = `<strong>${match.player2.username}</strong><br><small>+${match.player3.username}</small>`;
         } else if (match.type === 'bye') {
-            typeContent = `<span class="badge bg-info">Bye (X)</span>`;
+            typeContent = `<span class="badge bg-info">X</span>`;
             player2Content = `<em class="text-muted">X</em>`;
         }
         
