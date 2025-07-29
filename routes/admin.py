@@ -596,15 +596,13 @@ def validate_rack_admin(rack_id):
 @admin_bp.route('/users')
 @admin_required
 def users_list():
-    """Lista di tutti gli utenti con statistiche - VERSIONE CORRETTA"""
+    """Lista di tutti gli utenti con statistiche - VERSIONE CORRETTA, escludendo admin"""
     from sqlalchemy import func, desc, case
-    
-    # Query CORRETTA per ottenere utenti con statistiche
+
     users = db.session.query(
         User,
         func.count(Inscription.id).label('total_inscriptions'),
         func.count(Match.id).label('total_matches'),
-        # FIX: Sintassi corretta per func.case()
         func.sum(
             case(
                 (Match.winner_id == User.id, 1),
@@ -613,9 +611,10 @@ def users_list():
         ).label('matches_won')
     ).outerjoin(Inscription, User.id == Inscription.user_id)\
      .outerjoin(Match, db.or_(Match.player1_id == User.id, Match.player2_id == User.id))\
+     .filter(User.is_admin == False)\
      .group_by(User.id)\
      .order_by(desc('total_inscriptions'), User.username).all()
-    
+
     return render_template('admin/users_list.html', users=users)
 
 @admin_bp.route('/user/<int:user_id>')
