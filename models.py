@@ -223,6 +223,10 @@ class Prova(db.Model):
             return False
             
         return True
+    
+    def is_user_inscribed(self, user_id) -> bool:
+        """Verifica se un utente è già iscritto a questa prova"""
+        return Inscription.query.filter_by(user_id=user_id, prova_id=self.id).count() > 0
 
     def can_modify_inscription_dates(self):
         """Verifica se è possibile modificare le date di iscrizione"""

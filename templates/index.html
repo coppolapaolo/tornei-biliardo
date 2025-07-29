@@ -75,7 +75,7 @@
                                                     </small>
                                                 {% endif %}
                                                 
-                                                {% if current_user.is_authenticated and prova.can_inscribe() %}
+                                                {% if current_user.is_authenticated and prova.can_inscribe() and not prova.is_user_inscribed(current_user.id) %}
                                                     <br>
                                                     <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=prova.id) }}" class="mt-2">
                                                         <button type="submit" class="btn btn-primary btn-sm">
