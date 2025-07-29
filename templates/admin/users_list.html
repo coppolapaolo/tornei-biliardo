@@ -27,6 +27,7 @@
                             <th>Email</th>
                             <th>Telefono</th>
                             <th>Ruolo</th>
+                            <th>Richiesta</th>
                             <th>Iscrizioni</th>
                             <th>Partite</th>
                             <th>Vittorie</th>
@@ -43,17 +44,37 @@
                             <tr>
                                 <td>
                                     <strong>{{ user.username }}</strong>
-                                    {% if user.is_admin %}
-                                        <span class="badge bg-danger ms-1">Admin</span>
-                                    {% endif %}
                                 </td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.phone or '-' }}</td>
                                 <td>
-                                    {% if user.is_admin %}
-                                        <span class="badge bg-danger">Amministratore</span>
+                                    {% if user.is_director %}
+                                        <span class="badge bg-secondary">Direttore di gara</span>
                                     {% else %}
                                         <span class="badge bg-primary">Giocatore</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.director_request %}
+                                        {% if user.director_request.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">In attesa</span>
+                                            <form method="POST" action="{{ url_for('admin.approve_director_request', req_id=user.director_request.id) }}" style="display:inline;">
+                                            <button class="btn btn-success btn-sm" type="submit">Approva</button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('admin.reject_director_request', req_id=user.director_request.id) }}" style="display:inline;">
+                                            <button class="btn btn-danger btn-sm" type="submit">Rifiuta</button>
+                                            </form>
+                                        {% elif user.director_request.status == 'approved' %}
+                                            <span class="badge bg-success">Approvata</span>
+                                        {% elif user.director_request.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rifiutata</span>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if user.role == 'director' %}
+                                            <span class="badge bg-success">Direttore</span>
+                                        {% else %}
+                                            <span class="text-muted">Nessuna</span>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                                 <td>

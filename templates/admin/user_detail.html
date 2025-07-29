@@ -11,7 +11,7 @@
                 <span class="badge bg-danger ms-2">Admin</span>
             {% endif %}
         </h1>
-        <p class="text-muted mb-0">Scheda dettagliata giocatore</p>
+        <p class="text-muted mb-0">Scheda giocatore</p>
     </div>
     <div>
         <a href="{{ url_for('admin.users_list') }}" class="btn btn-outline-secondary">
@@ -175,8 +175,8 @@
                 <p><strong>Email:</strong> {{ user.email }}</p>
                 <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
                 <p><strong>Ruolo:</strong> 
-                    {% if user.is_admin %}
-                        <span class="badge bg-danger">Amministratore</span>
+                    {% if user.is_director %}
+                        <span class="badge bg-secondary">Direttore di gara</span>
                     {% else %}
                         <span class="badge bg-primary">Giocatore</span>
                     {% endif %}
@@ -188,6 +188,7 @@
                     <h6 class="text-muted">DEBUG Info:</h6>
                     <small class="text-muted">
                         User ID: {{ user.id }}<br>
+                        User role: {{ user.role }}<br>
                         Total inscriptions: {{ inscriptions|length }}<br>
                         Recent matches: {{ matches|length }}
                     </small>

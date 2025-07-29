@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
-from models import db, Tournament, Prova, Inscription, Match, Rack, Classification, MatchResult
+from models import db, Tournament, Prova, Inscription, Match, Rack, Classification, MatchResult, DirectorRequest
 from utils import player_only, UserPermissions 
 
 player_bp = Blueprint('player', __name__)
@@ -230,6 +230,24 @@ def profile():
                          matches=recent_matches,
                          classifications=classifications,
                          stats=stats)
+    
+@player_bp.route('/request_director', methods=['POST'])
+@login_required
+@player_only
+def request_director():
+    """Richiede la promozione a direttore di gara"""
+    if current_user.role != 'player':
+        flash('Solo i giocatori possono richiedere di diventare direttori.')
+        return redirect(url_for('player.profile'))
+    if current_user.director_request:
+        flash('Hai già una richiesta in sospeso o è stata valutata.')
+        return redirect(url_for('player.profile'))
+
+    req = DirectorRequest(user_id=current_user.id, status='pending')
+    db.session.add(req)
+    db.session.commit()
+    flash('Richiesta inviata. Sarai contattato dall’amministratore.')
+    return redirect(url_for('player.profile'))
 
 @player_bp.route('/delete_account', methods=['GET', 'POST'])
 @login_required

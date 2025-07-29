@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required
 from datetime import datetime, date
 import random
-from models import db, Tournament, Prova, Inscription, Match, Rack, MatchResult, User, Classification
+from models import db, Tournament, Prova, Inscription, Match, Rack, MatchResult, User, Classification, DirectorRequest
 from utils import admin_required, create_round_matches
 
 admin_bp = Blueprint('admin', __name__)
@@ -611,7 +611,7 @@ def users_list():
         ).label('matches_won')
     ).outerjoin(Inscription, User.id == Inscription.user_id)\
      .outerjoin(Match, db.or_(Match.player1_id == User.id, Match.player2_id == User.id))\
-     .filter(User.is_admin == False)\
+     .filter(User.role != 'admin')\
      .group_by(User.id)\
      .order_by(desc('total_inscriptions'), User.username).all()
 
@@ -622,6 +622,10 @@ def users_list():
 def user_detail(user_id):
     """Scheda dettagliata utente"""
     user = User.query.get_or_404(user_id)
+    
+    #se l'utente è admin, ritorna alla lista utenti
+    if user.role == 'admin':
+        return redirect(url_for('admin.users_list'))
     
     # Iscrizioni dell'utente
     inscriptions = Inscription.query.filter_by(user_id=user_id)\
@@ -1031,3 +1035,28 @@ def trio_reset(trio_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Errore durante reset trio: {str(e)}'}), 500
+    
+@admin_bp.route('/director_requests')
+@admin_required
+def director_requests():
+    pending = DirectorRequest.query.filter_by(status='pending').all()
+    return render_template('admin/director_requests.html', requests=pending)
+
+@admin_bp.route('/director_requests/<int:req_id>/approve', methods=['POST'])
+@admin_required
+def approve_director_request(req_id):
+    req = DirectorRequest.query.get_or_404(req_id)
+    req.status = 'approved'
+    req.user.role = 'director'
+    db.session.commit()
+    flash('Richiesta approvata.')
+    return redirect(url_for('admin.director_requests'))
+
+@admin_bp.route('/director_requests/<int:req_id>/reject', methods=['POST'])
+@admin_required
+def reject_director_request(req_id):
+    req = DirectorRequest.query.get_or_404(req_id)
+    req.status = 'rejected'
+    db.session.commit()
+    flash('Richiesta rifiutata.')
+    return redirect(url_for('admin.director_requests'))

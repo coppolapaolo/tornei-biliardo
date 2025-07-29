@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(10), nullable=False, default='player')  # NEW: 'player', 'director', 'admin'
     phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -31,6 +31,20 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+    
+    # Proprietà di ruolo per compatibilità con il codice esistente
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+
+    @property
+    def is_director(self):
+        return self.role == 'director'
+
+    @property
+    def is_player(self):
+        return self.role == 'player'
+
     
     def get_statistics(self):
         """Restituisce statistiche complete dell'utente"""
@@ -63,6 +77,16 @@ class User(UserMixin, db.Model):
             'tournaments_played': tournaments_played
         }
 
+class TournamentDirector(db.Model):
+    """Associazione m:n tra tornei e direttori"""
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'), primary_key=True)
+    assigned_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    director = db.relationship('User', foreign_keys=[user_id], backref='directed_tournaments')
+    assigned_by = db.relationship('User', foreign_keys=[assigned_by_id])
+    tournament = db.relationship('Tournament', backref='directors_association')
+
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -81,6 +105,15 @@ class Tournament(db.Model):
     
     # Relazioni
     provas = db.relationship('Prova', backref='tournament', lazy=True, cascade='all, delete-orphan')
+    directors = db.relationship(
+        'User',
+        secondary='tournament_director',
+        primaryjoin=(id == TournamentDirector.tournament_id),
+        secondaryjoin=(User.id == TournamentDirector.user_id),
+        foreign_keys=[TournamentDirector.tournament_id, TournamentDirector.user_id],        
+        viewonly=True
+    )
+
     
     def can_be_modified(self):
         """Verifica se il torneo può essere modificato"""
@@ -698,3 +731,11 @@ class TrioMatch(db.Model):
     
     def __repr__(self):
         return f'<TrioMatch {self.player1.username}/{self.player2.username}/{self.player3.username}>'
+
+class DirectorRequest(db.Model):
+    """Richiesta di promozione a direttore di gara"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending / approved / rejected
+    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref=db.backref('director_request', uselist=False))

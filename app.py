@@ -72,7 +72,9 @@ def inject_permissions():
         'can_view_profile': UserPermissions.can_view_profile(),
         'can_delete_account': UserPermissions.can_delete_account(),
         'show_admin_management': UserPermissions.show_admin_management(),
-        'is_player': current_user.is_authenticated and not current_user.is_admin,
+        'show_director_management': UserPermissions.show_director_management(),  
+        'is_player': current_user.is_authenticated and current_user.is_player,  
+        'is_director': current_user.is_authenticated and current_user.is_director, 
         'is_admin': current_user.is_authenticated and current_user.is_admin,
     }
     

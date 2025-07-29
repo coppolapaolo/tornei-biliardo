@@ -194,7 +194,22 @@
                 <p><strong>Email:</strong> {{ user.email }}</p>
                 <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
                 <p><strong>Registrato:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
-                
+                {% if current_user.role == 'player' %}
+                    {% if current_user.director_request %}
+                        {% if current_user.director_request.status == 'pending' %}
+                        <p class="text-warning mt-3">Richiesta direttore inviata. In attesa di approvazione.</p>
+                        {% elif current_user.director_request.status == 'rejected' %}
+                        <p class="text-danger mt-3">Richiesta direttore rifiutata.</p>
+                        {% endif %}
+                    {% else %}
+                        <form method="POST" action="{{ url_for('player.request_director') }}">
+                        <button type="submit" class="btn btn-warning mt-3">
+                            Attiva organizzazione nuovi tornei
+                        </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+
                 <hr>
                 <div class="alert alert-warning">
                     <small>

@@ -33,6 +33,11 @@ class UserPermissions:
         return current_user.is_authenticated and current_user.is_admin
     
     @staticmethod
+    def show_director_management():
+        """Check if user should see director management features"""
+        return current_user.is_authenticated and current_user.is_director
+    
+    @staticmethod
     def get_default_dashboard():
         """Get appropriate dashboard URL for user role"""
         if current_user.is_authenticated:
@@ -174,7 +179,7 @@ def create_default_users():
     admin = User(
         username='admin',
         email='admin@tournament.com',
-        is_admin=True
+        role ='admin'  
     )
     admin.set_password('admin123')
     
@@ -182,7 +187,7 @@ def create_default_users():
     mario = User(
         username='mario',
         email='mario@test.com',
-        is_admin=False
+        role ='player'  
     )
     mario.set_password('mario123')
     
@@ -190,7 +195,7 @@ def create_default_users():
     pino = User(
         username='pino',
         email='pino@test.com',
-        is_admin=False
+        role = 'player'
     )
     pino.set_password('pino123')
     
@@ -324,7 +329,7 @@ def create_admin_if_not_exists():
         admin = User(
             username='admin',
             email='admin@tournament.com',
-            is_admin=True
+            role = 'admin'
         )
         admin.set_password('admin123')
         db.session.add(admin)

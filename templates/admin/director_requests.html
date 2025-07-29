@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Richieste Direttore di Gara</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Utente</th>
+        <th>Data richiesta</th>
+        <th>Azione</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+        <tr>
+          <td>{{ req.user.username }}</td>
+          <td>{{ req.requested_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.approve_director_request', req_id=req.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-success btn-sm">Approva</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.reject_director_request', req_id=req.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Rifiuta</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">Nessuna richiesta.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
