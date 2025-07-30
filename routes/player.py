@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
-from models import db, Tournament, Prova, Inscription, Match, Rack, Classification, MatchResult, DirectorRequest
+from models import db, Tournament, Prova, Inscription, Match, Rack, Classification, MatchResult, DirectorRequest, User
 from utils import player_only, UserPermissions 
 
 player_bp = Blueprint('player', __name__)
@@ -25,7 +25,9 @@ def dashboard():
                              available_provas=[],
                              current_matches=[],
                              recent_matches=[],
-                             user_stats={})
+                             user_stats={},
+                             users=[],
+                             can_manage_directors=False)
     
     # Determina il torneo selezionato
     if selected_tournament_id:
@@ -34,6 +36,19 @@ def dashboard():
             selected_tournament = active_tournaments[0]
     else:
         selected_tournament = active_tournaments[0]
+
+    can_manage_directors = (
+        current_user.is_admin
+        or any(td.user_id == current_user.id
+            for td in selected_tournament.directors_association)
+    )
+    
+    if current_user.is_director:
+        managed_tournaments = [
+            assoc.tournament for assoc in current_user.directed_tournaments
+        ]
+    else:
+        managed_tournaments = []
     
     # Iscrizioni del giocatore per il torneo selezionato
     my_inscriptions = Inscription.query.join(Prova).filter(
@@ -91,7 +106,11 @@ def dashboard():
                          available_provas=available_provas,
                          current_matches=current_matches,
                          recent_matches=recent_matches,
-                         user_stats=user_stats)
+                         user_stats=user_stats,
+                         users=User.query.order_by(User.username).all(),
+                         can_manage_directors=can_manage_directors,
+                        managed_tournaments=managed_tournaments
+    ) 
 
 # Il resto delle route rimane uguale...
 @player_bp.route('/prova/<int:prova_id>/inscribe', methods=['POST'])

@@ -1,10 +1,10 @@
 # utils.py - STEP 1: Aggiornato per nuovi models
 from datetime import datetime
 from werkzeug.security import generate_password_hash
-from models import db, User, Tournament, Prova, Match, Inscription, Rack
+from models import db, User, Tournament, Prova, Match, Inscription, Rack, TrioMatch
 from functools import wraps
 from flask_login import current_user
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, abort
 import random
 
 # ============ PERMISSION SYSTEM ============
@@ -65,6 +65,101 @@ def admin_required(f):
             flash('Accesso negato. Privilegi amministratore richiesti.', 'error')
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
+    return decorated_function
+
+def tournament_manager_required(get_tournament_id):
+    """
+    Decoratore factory: richiede che l'utente sia admin oppure direttore
+    del torneo identificato da tournament_id. La funzione `get_tournament_id`
+    estrae l'ID dai parametri della rotta.
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            tournament_id = get_tournament_id(**kwargs)
+            tournament = Tournament.query.get_or_404(tournament_id)
+            
+            if current_user.is_admin:
+                # Gli admin hanno sempre accesso
+                return f(*args, **kwargs)
+
+            # Se non admin, verifica se l'utente è direttore di questo torneo
+            if current_user.is_director:
+                # directors_association contiene oggetti TournamentDirector
+                if any(td.user_id == current_user.id for td in tournament.directors_association):
+                    return f(*args, **kwargs)
+
+            # Altrimenti blocca l’accesso
+            flash('Accesso negato: non hai i permessi per gestire questo torneo.', 'error')
+            return redirect(url_for('auth.login'))
+        return decorated_function
+    return decorator
+
+def prova_manager_required(f):
+    """Richiede che l'utente possa gestire il torneo collegato alla prova."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        prova_id = kwargs.get("prova_id")
+        prova = Prova.query.get_or_404(prova_id)
+        tournament_id = prova.tournament_id
+
+        def _get_tid(**_ignored):
+            return tournament_id
+
+        return tournament_manager_required(_get_tid)(f)(*args, **kwargs)
+
+    return decorated_function
+
+
+def rack_manager_required(f):
+    """Richiede che l'utente possa gestire il torneo collegato al rack."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        rack_id = kwargs.get("rack_id")
+        rack = Rack.query.get_or_404(rack_id)
+        tournament_id = rack.match.prova.tournament_id
+
+        def _get_tid(**_ignored):
+            return tournament_id
+
+        return tournament_manager_required(_get_tid)(f)(*args, **kwargs)
+
+    return decorated_function
+
+
+def match_manager_required(f):
+    """Accesso consentito a admin o direttori del torneo del match."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        match_id = kwargs.get("match_id")
+        match = Match.query.get_or_404(match_id)
+        tournament_id = match.prova.tournament_id
+
+        def _get_tid(**_ignored):
+            return tournament_id
+
+        return tournament_manager_required(_get_tid)(f)(*args, **kwargs)
+
+    return decorated_function
+
+
+def trio_manager_required(f):
+    """Accesso a admin / direttore per trio."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        trio_id = kwargs.get("trio_id")
+        trio = TrioMatch.query.get_or_404(trio_id)
+        tournament_id = trio.match.prova.tournament_id
+
+        def _get_tid(**_ignored):
+            return tournament_id
+
+        return tournament_manager_required(_get_tid)(f)(*args, **kwargs)
+
     return decorated_function
 
 def get_database_stats():

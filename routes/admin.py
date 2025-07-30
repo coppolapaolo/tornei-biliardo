@@ -1,10 +1,11 @@
 # routes/admin.py - STEP 1: Aggiornato per nuovi models
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from datetime import datetime, date
 import random
 from models import db, Tournament, Prova, Inscription, Match, Rack, MatchResult, User, Classification, DirectorRequest
-from utils import admin_required, create_round_matches
+from utils import admin_required, create_round_matches, tournament_manager_required, prova_manager_required, rack_manager_required, match_manager_required, trio_manager_required
+from sqlalchemy import func, desc, case, not_
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -18,9 +19,13 @@ def dashboard():
     return render_template('admin/dashboard.html', tournaments=tournaments)
 
 @admin_bp.route('/tournament/create', methods=['POST'])
-@admin_required
+@login_required
 def create_tournament():
-    """Crea nuovo torneo - AGGIORNATO per nuovo model"""
+    """Crea nuovo torneo: accessibile ad admin e direttori"""
+    if not (current_user.is_admin or current_user.is_director):
+        flash('Non hai i permessi per creare un torneo.', 'error')
+        return redirect(url_for('admin.dashboard'))
+
     name = request.form['name']
     tournament_type = request.form.get('tournament_type', 'Amalfi')
     without_x = 'without_x' in request.form
@@ -37,23 +42,52 @@ def create_tournament():
     )
     db.session.add(tournament)
     db.session.commit()
+
+    # Se l'utente è un direttore (non admin), assegnalo automaticamente al torneo creato
+    if current_user.is_director and not current_user.is_admin:
+        from models import TournamentDirector
+        assignment = TournamentDirector(
+            user_id=current_user.id,
+            tournament_id=tournament.id,
+            assigned_by_id=current_user.id
+        )
+        db.session.add(assignment)
+        db.session.commit()
     
     flash(f'Torneo "{name}" creato con successo!')
     return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route('/tournament/<int:tournament_id>')
-@admin_required
+@login_required
+@tournament_manager_required(lambda tournament_id: tournament_id)
 def tournament_detail(tournament_id):
     """Dettaglio torneo con prove"""
     tournament = Tournament.query.get_or_404(tournament_id)
     provas = Prova.query.filter_by(tournament_id=tournament_id).order_by(Prova.number).all()
     
-    return render_template('admin/tournament_detail.html', 
-                         tournament=tournament, 
-                         provas=provas)
+    # ID dei direttori già assegnati a questo torneo
+    assigned_ids = [td.user_id for td in tournament.directors_association]
+
+    # Solo utenti role='director' che non sono già assegnati
+    candidate_directors = User.query.filter_by(role='director')\
+                                .filter(not_(User.id.in_(assigned_ids)))\
+                                .order_by(User.username).all()
+
+    can_manage_directors = (
+        current_user.is_admin
+        or any(td.user_id == current_user.id for td in tournament.directors_association)
+    )
+
+    return render_template(
+        'admin/tournament_detail.html', 
+        tournament=tournament, 
+        provas=provas, 
+        users=candidate_directors,
+        can_manage_directors=can_manage_directors
+    )
 
 @admin_bp.route('/tournament/<int:tournament_id>/edit', methods=['GET', 'POST'])
-@admin_required
+@tournament_manager_required(lambda tournament_id: tournament_id)
 def edit_tournament(tournament_id):
     """Modifica torneo - AGGIORNATO per nuovo model"""
     tournament = Tournament.query.get_or_404(tournament_id)
@@ -77,7 +111,7 @@ def edit_tournament(tournament_id):
     return render_template('admin/tournament_edit.html', tournament=tournament)
 
 @admin_bp.route('/tournament/<int:tournament_id>/delete', methods=['POST'])
-@admin_required
+@tournament_manager_required(lambda tournament_id: tournament_id)
 def delete_tournament(tournament_id):
     """Elimina torneo"""
     tournament = Tournament.query.get_or_404(tournament_id)
@@ -94,7 +128,7 @@ def delete_tournament(tournament_id):
     return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route('/tournament/<int:tournament_id>/toggle_active', methods=['POST'])
-@admin_required
+@tournament_manager_required(lambda tournament_id: tournament_id)
 def toggle_tournament_active(tournament_id):
     """Attiva/disattiva torneo"""
     tournament = Tournament.query.get_or_404(tournament_id)
@@ -106,6 +140,49 @@ def toggle_tournament_active(tournament_id):
     flash(f'Torneo "{tournament.name}" {status}!')
     return redirect(url_for('admin.dashboard'))
 
+@admin_bp.route('/tournament/<int:tournament_id>/add_director', methods=['POST'])
+@login_required
+@tournament_manager_required(lambda tournament_id: tournament_id)
+def add_director(tournament_id):
+    """Aggiunge un co‑direttore"""
+    new_director_id = int(request.form['user_id'])
+    user = User.query.get_or_404(new_director_id)
+
+    if user.role == 'admin':
+        flash('Gli admin non vanno assegnati come direttori.', 'warning')
+        return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
+
+    from models import TournamentDirector
+    existing = TournamentDirector.query.filter_by(user_id=new_director_id, tournament_id=tournament_id).first()
+    if existing:
+        flash('Questo utente è già un direttore.', 'warning')
+    else:
+        assignment = TournamentDirector(
+            user_id=new_director_id,
+            tournament_id=tournament_id,
+            assigned_by_id=current_user.id
+        )
+        db.session.add(assignment)
+        db.session.commit()
+        flash('Direttore aggiunto con successo.')
+    return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
+
+@admin_bp.route('/tournament/<int:tournament_id>/remove_director', methods=['POST'])
+@login_required
+@tournament_manager_required(lambda tournament_id: tournament_id)
+def remove_director(tournament_id):
+    """Rimuove un co‑direttore"""
+    director_id = int(request.form['user_id'])
+    from models import TournamentDirector
+    assignment = TournamentDirector.query.filter_by(user_id=director_id, tournament_id=tournament_id).first()
+    if assignment:
+        db.session.delete(assignment)
+        db.session.commit()
+        flash('Direttore rimosso con successo.')
+    else:
+        flash('Direttore non trovato.', 'warning')
+    return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
+
 # ============ PROVE ============
 
 @admin_bp.route('/prova/create', methods=['POST'])
@@ -114,6 +191,12 @@ def create_prova():
     """Crea nuova prova - COMPLETAMENTE AGGIORNATO per nuovi campi"""
     tournament_id = int(request.form['tournament_id'])
     tournament = Tournament.query.get_or_404(tournament_id)
+    
+    # Verifica permessi
+    if not (current_user.is_admin or
+            (current_user.is_director and any(td.user_id == current_user.id for td in tournament.directors_association))):
+        flash('Non puoi creare prove in questo torneo.', 'error')
+        return redirect(url_for('admin.dashboard'))
     
     number = int(request.form['number'])
     
@@ -170,7 +253,8 @@ def create_prova():
     return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
 
 @admin_bp.route('/prova/<int:prova_id>/edit', methods=['GET', 'POST'])
-@admin_required
+@login_required
+@prova_manager_required
 def edit_prova(prova_id):
     """Modifica prova - AGGIORNATO per exact_number"""
     prova = Prova.query.get_or_404(prova_id)
@@ -205,7 +289,8 @@ def edit_prova(prova_id):
     return render_template('admin/prova_edit.html', prova=prova)
 
 @admin_bp.route('/prova/<int:prova_id>/delete', methods=['POST'])
-@admin_required
+@login_required
+@prova_manager_required
 def delete_prova(prova_id):
     """Cancella prova - NUOVO"""
     prova = Prova.query.get_or_404(prova_id)
@@ -223,7 +308,8 @@ def delete_prova(prova_id):
     return redirect(url_for('admin.tournament_detail', tournament_id=tournament_id))
 
 @admin_bp.route('/prova/<int:prova_id>')
-@admin_required
+@login_required
+@prova_manager_required
 def prova_detail(prova_id):
     """Dettaglio prova con iscrizioni e partite"""
     prova = Prova.query.get_or_404(prova_id)
@@ -236,7 +322,8 @@ def prova_detail(prova_id):
                          matches=matches)
 
 @admin_bp.route('/prova/<int:prova_id>/open_inscriptions', methods=['POST'])
-@admin_required
+@login_required
+@prova_manager_required
 def open_inscriptions(prova_id):
     """Apri iscrizioni per una prova"""
     prova = Prova.query.get_or_404(prova_id)
@@ -259,7 +346,8 @@ def open_inscriptions(prova_id):
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
 @admin_bp.route('/prova/<int:prova_id>/modify_inscription_dates', methods=['POST'])
-@admin_required
+@login_required
+@prova_manager_required
 def modify_inscription_dates(prova_id):
     """Modifica date di iscrizione per una prova"""
     prova = Prova.query.get_or_404(prova_id)
@@ -295,7 +383,8 @@ def modify_inscription_dates(prova_id):
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
 @admin_bp.route('/prova/<int:prova_id>/start_first_round', methods=['POST'])
-@admin_required
+@login_required
+@prova_manager_required
 def start_first_round(prova_id):
     """Avvia primo turno della prova - AGGIORNATO per min_participants"""
     prova = Prova.query.get_or_404(prova_id)
@@ -328,7 +417,8 @@ def start_first_round(prova_id):
     return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
 @admin_bp.route('/prova/<int:prova_id>/results_overview')
-@admin_required
+@login_required
+@prova_manager_required
 def prova_results_overview(prova_id):
     """Overview risultati prova per inserimento rapido (admin)"""
     prova = Prova.query.get_or_404(prova_id)
@@ -348,7 +438,8 @@ def prova_results_overview(prova_id):
 # ============ GESTIONE PARTITE ============
 
 @admin_bp.route('/match/<int:match_id>')
-@admin_required  
+@login_required
+@match_manager_required
 def match_detail(match_id):
     """Dettaglio partita per admin"""
     match = Match.query.get_or_404(match_id)
@@ -357,7 +448,8 @@ def match_detail(match_id):
     return render_template('match_detail.html', match=match, racks=racks)
 
 @admin_bp.route('/match/<int:match_id>/add_rack', methods=['POST'])
-@admin_required
+@login_required
+@match_manager_required
 def add_rack_result(match_id):
     """Aggiungi risultato rack (admin) - AGGIORNATO per nuova logica"""
     match = Match.query.get_or_404(match_id)
@@ -399,7 +491,8 @@ def add_rack_result(match_id):
 # ============ GESTIONE RISULTATI DIRETTI ADMIN ============
 
 @admin_bp.route('/match/<int:match_id>/set_result', methods=['POST'])
-@admin_required
+@login_required
+@match_manager_required
 def set_match_result_direct(match_id):
     """Imposta risultato completo di una partita (admin)"""
     match = Match.query.get_or_404(match_id)
@@ -493,7 +586,8 @@ def set_match_result_direct(match_id):
         return redirect(url_for('admin.match_detail', match_id=match_id))
 
 @admin_bp.route('/match/<int:match_id>/reset', methods=['POST'])
-@admin_required
+@login_required
+@match_manager_required
 def reset_match(match_id):
     """Reset completo di una partita (admin)"""
     match = Match.query.get_or_404(match_id)
@@ -526,7 +620,8 @@ def reset_match(match_id):
 # ============ GESTIONE RACK ADMIN ============
 
 @admin_bp.route('/rack/<int:rack_id>/remove', methods=['POST'])
-@admin_required
+@login_required
+@rack_manager_required
 def remove_rack_admin(rack_id):
     """Rimuovi un rack (admin)"""
     rack = Rack.query.get_or_404(rack_id)
@@ -571,7 +666,8 @@ def remove_rack_admin(rack_id):
         return jsonify({'error': f'Errore durante la rimozione: {str(e)}'}), 500
 
 @admin_bp.route('/rack/<int:rack_id>/validate', methods=['POST'])
-@admin_required
+@login_required
+@rack_manager_required
 def validate_rack_admin(rack_id):
     """Valida un rack (admin)"""
     rack = Rack.query.get_or_404(rack_id)
@@ -597,7 +693,6 @@ def validate_rack_admin(rack_id):
 @admin_required
 def users_list():
     """Lista di tutti gli utenti con statistiche - VERSIONE CORRETTA, escludendo admin"""
-    from sqlalchemy import func, desc, case
 
     users = db.session.query(
         User,
@@ -678,7 +773,8 @@ from models import RoundClassification, PlayerEncounter, TrioMatch
 # ============ SISTEMA AMALFI - NUOVE ROUTE ============
 
 @admin_bp.route('/prova/<int:prova_id>/amalfi/classification/<int:round_number>')
-@admin_required
+@login_required
+@prova_manager_required
 def amalfi_classification(prova_id, round_number):
     """Visualizza classifica Amalfi dopo un turno specifico"""
     prova = Prova.query.get_or_404(prova_id)
@@ -724,7 +820,8 @@ def amalfi_classification(prova_id, round_number):
                          inscriptions=inscriptions)
 
 @admin_bp.route('/prova/<int:prova_id>/amalfi/start_round/<int:round_number>', methods=['POST'])
-@admin_required
+@login_required
+@prova_manager_required
 def amalfi_start_round(prova_id, round_number):
     """Avvia un turno specifico con algoritmo Amalfi"""
     prova = Prova.query.get_or_404(prova_id)
@@ -799,7 +896,8 @@ def amalfi_start_round(prova_id, round_number):
         return redirect(url_for('admin.prova_detail', prova_id=prova_id))
 
 @admin_bp.route('/prova/<int:prova_id>/amalfi/preview_round/<int:round_number>')
-@admin_required
+@login_required
+@prova_manager_required
 def amalfi_preview_round(prova_id, round_number):
     """Anteprima abbinamenti prossimo turno senza crearli"""
     prova = Prova.query.get_or_404(prova_id)
@@ -881,7 +979,8 @@ def amalfi_preview_round(prova_id, round_number):
         return jsonify({'error': f'Errore anteprima: {str(e)}'}), 500
 
 @admin_bp.route('/prova/<int:prova_id>/amalfi/encounters')
-@admin_required
+@login_required
+@prova_manager_required
 def amalfi_encounters(prova_id):
     """Visualizza matrice incontri per debug anti-reincontro"""
     prova = Prova.query.get_or_404(prova_id)
@@ -912,7 +1011,8 @@ def amalfi_encounters(prova_id):
                          encounter_matrix=encounter_matrix)
 
 @admin_bp.route('/prova/<int:prova_id>/amalfi/validate')
-@admin_required
+@login_required
+@prova_manager_required
 def amalfi_validate_configuration(prova_id):
     """Valida configurazione prova per Sistema Amalfi"""
     prova = Prova.query.get_or_404(prova_id)
@@ -934,7 +1034,8 @@ def amalfi_validate_configuration(prova_id):
 
 # Modifica la route prova_detail esistente per includere info Amalfi
 @admin_bp.route('/prova/<int:prova_id>/amalfi_enhanced')
-@admin_required  
+@login_required
+@prova_manager_required
 def prova_detail_amalfi_enhanced(prova_id):
     """Versione potenziata del dettaglio prova con funzionalità Amalfi"""
     prova = Prova.query.get_or_404(prova_id)
@@ -965,7 +1066,8 @@ def prova_detail_amalfi_enhanced(prova_id):
 # ============ GESTIONE TRII ============
 
 @admin_bp.route('/trio/<int:trio_id>/add_rack', methods=['POST'])
-@admin_required
+@login_required
+@trio_manager_required
 def trio_add_rack(trio_id):
     """Aggiungi rack a partita trio"""
     trio = TrioMatch.query.get_or_404(trio_id)
@@ -1006,7 +1108,8 @@ def trio_add_rack(trio_id):
         return jsonify({'error': f'Errore durante aggiunta rack: {str(e)}'}), 500
 
 @admin_bp.route('/trio/<int:trio_id>/reset', methods=['POST'])
-@admin_required
+@login_required
+@trio_manager_required
 def trio_reset(trio_id):
     """Reset completo trio"""
     trio = TrioMatch.query.get_or_404(trio_id)
