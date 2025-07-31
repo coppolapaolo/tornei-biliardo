@@ -3,3 +3,4 @@ flake8
 black
 pytest
 autoflake
+pytest-cov>=4.0
