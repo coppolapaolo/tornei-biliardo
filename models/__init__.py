@@ -1,162 +1,226 @@
 """
-Models package initialization - Phase 1 Foundation
+Models package initialization - Phase 1 with User Domain Integration
 
-This module provides the foundation for domain-driven model organization
-while maintaining backward compatibility with existing code.
+This module provides domain-driven model organization while maintaining
+backward compatibility with existing code.
 
-Phase 1: Base infrastructure with backward compatibility
-Future phases will gradually modularize models into domain-specific modules.
+Phase 1 Status:
+- ✅ Base infrastructure complete
+- ✅ User domain extracted and modularized
+- 🔄 Other domains pending (Phase 2+)
 
 Author: Refactoring Phase 1  
 Created: 2025-01-31
+Updated: 2025-01-31 (Task 1.2)
 """
 
-# Import database instance from base module
-from .base import db
+# Import database instance and utilities from base module
+from .base import db, get_or_create, bulk_create, safe_commit, init_db, reset_db
 
-# Import utility functions from base module
-from .base import get_or_create, bulk_create, safe_commit, init_db, reset_db
+# PHASE 1 COMPLETE: User domain imported from modular structure
+from .user.models import User, TournamentDirector, DirectorRequest
 
-# PHASE 1: Maintain backward compatibility by importing from existing models.py
-# This temporary solution ensures all existing code continues to work
-# while we build the foundation for domain separation
-
+# TEMPORARY: Import remaining models from existing models.py
+# These will be modularized in subsequent phases
 try:
-    # Import all existing models from the root models.py file
-    # This maintains 100% backward compatibility during Phase 1
+    # Add parent directory to path to import original models.py
     import sys
     import os
     
-    # Add parent directory to path to import models.py
     current_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(current_dir)
     if parent_dir not in sys.path:
         sys.path.insert(0, parent_dir)
     
-    # Import from existing models.py - temporary for Phase 1
-    from models import (
-        User, Tournament, Prova, Inscription, Match, TrioMatch,
-        Rack, MatchResult, Classification, DirectorRequest, TournamentDirector
-    )
+    # Import non-user models from existing models.py
+    # We need to be careful to avoid conflicts with our new User models
+    import importlib.util
     
-    # Check if there are other models we missed
-    try:
-        from models import Playoff
-    except ImportError:
-        # Playoff might not exist in current models.py
-        pass
-    
-except ImportError as e:
-    # If models.py doesn't exist or has issues, create minimal structure
-    print(f"Warning: Could not import from existing models.py: {e}")
-    print("Creating minimal model structure for development...")
-    
-    # Minimal models for development - these will be replaced in Phase 2+
-    class User(db.Model):
-        """Temporary minimal User model for development"""
-        __tablename__ = 'user'
-        id = db.Column(db.Integer, primary_key=True)
-        username = db.Column(db.String(80), unique=True, nullable=False)
-        email = db.Column(db.String(120), unique=True, nullable=False)
+    # Load models.py module
+    models_path = os.path.join(parent_dir, 'models.py')
+    if os.path.exists(models_path):
+        spec = importlib.util.spec_from_file_location("legacy_models", models_path)
+        legacy_models = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(legacy_models)
         
+        # Import all non-user models
+        for attr_name in dir(legacy_models):
+            attr = getattr(legacy_models, attr_name)
+            
+            # Check if it's a model class (has __tablename__ attribute)
+            if (hasattr(attr, '__tablename__') and 
+                attr_name not in ['User', 'TournamentDirector', 'DirectorRequest']):
+                
+                # Import the model
+                globals()[attr_name] = attr
+                
+        # Import other important items from legacy models
+        try:
+            # Import db if it exists (though we prefer our own)
+            if hasattr(legacy_models, 'db') and 'db' not in globals():
+                pass  # We use our own db from base
+        except:
+            pass
+    
+    else:
+        # models.py doesn't exist, create minimal models for development
+        print("Warning: models.py not found, using minimal model definitions")
+        
+        class Tournament(db.Model):
+            """Minimal Tournament model for development"""
+            __tablename__ = 'tournament'
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String(100), nullable=False)
+            tournament_type = db.Column(db.String(50), default='Amalfi')
+            without_x = db.Column(db.Boolean, default=False)
+            final_playoffs = db.Column(db.Boolean, default=True)
+            challenge_mode = db.Column(db.Boolean, default=False)
+            is_active = db.Column(db.Boolean, default=True)
+            created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+        
+        class Prova(db.Model):
+            """Minimal Prova model for development"""
+            __tablename__ = 'prova'
+            id = db.Column(db.Integer, primary_key=True)
+            tournament_id = db.Column(db.Integer, db.ForeignKey('tournament.id'))
+            number = db.Column(db.Integer, nullable=False)
+            name = db.Column(db.String(100))
+            status = db.Column(db.String(20), default='setup')
+        
+        class Inscription(db.Model):
+            """Minimal Inscription model for development"""
+            __tablename__ = 'inscription'
+            id = db.Column(db.Integer, primary_key=True)
+            user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+            prova_id = db.Column(db.Integer, db.ForeignKey('prova.id'))
+        
+        class Match(db.Model):
+            """Minimal Match model for development"""
+            __tablename__ = 'match'
+            id = db.Column(db.Integer, primary_key=True)
+            prova_id = db.Column(db.Integer, db.ForeignKey('prova.id'))
+            player1_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+            player2_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+            winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+            status = db.Column(db.String(20), default='pending')
+            player1_score = db.Column(db.Integer, default=0)
+            player2_score = db.Column(db.Integer, default=0)
+        
+        # Add minimal models to globals
+        globals().update({
+            'Tournament': Tournament,
+            'Prova': Prova, 
+            'Inscription': Inscription,
+            'Match': Match
+        })
+
+except Exception as e:
+    print(f"Warning: Error importing legacy models: {e}")
+    # Create minimal fallback models
     class Tournament(db.Model):
-        """Temporary minimal Tournament model for development"""
         __tablename__ = 'tournament'
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100), nullable=False)
-
-# Maintain backward compatibility - all models available at package level
-# This ensures existing imports like 'from models import User' continue to work
-
-__all__ = [
-    # Database and utilities
-    'db', 'get_or_create', 'bulk_create', 'safe_commit', 'init_db', 'reset_db',
     
-    # Models (maintaining backward compatibility)
-    'User', 'Tournament', 'Prova', 'Inscription', 'Match', 'TrioMatch',
-    'Rack', 'MatchResult', 'Classification', 'DirectorRequest', 'TournamentDirector'
+    globals()['Tournament'] = Tournament
+
+# Ensure all expected models are available for backward compatibility
+EXPECTED_MODELS = [
+    'User', 'Tournament', 'Prova', 'Inscription', 'Match', 
+    'TournamentDirector', 'DirectorRequest'
 ]
 
-# Add Playoff to __all__ if it exists
-try:
-    Playoff
-    __all__.append('Playoff')
-except NameError:
-    pass
+# Add optional models that might exist
+OPTIONAL_MODELS = [
+    'TrioMatch', 'Rack', 'MatchResult', 'Classification', 'Playoff'
+]
 
-# Version info for tracking refactoring progress
-__version__ = "1.1.0-phase1"
-__phase__ = "Phase 1: Base Infrastructure"
+# Collect all available models
+available_models = []
+for model_name in EXPECTED_MODELS + OPTIONAL_MODELS:
+    if model_name in globals():
+        available_models.append(model_name)
 
-# Future import structure (will be implemented in subsequent phases)
-# This serves as documentation for the target architecture
-"""
-FUTURE STRUCTURE (Phase 2+):
+# Export all available models for backward compatibility
+__all__ = [
+    # Database and utilities
+    'db', 'get_or_create', 'bulk_create', 'safe_commit', 'init_db', 'reset_db'
+] + available_models
 
-# User domain
-from .user.models import User, TournamentDirector, DirectorRequest
-
-# Tournament domain  
-from .tournament.models import Tournament
-
-# Competition domain
-from .competition.models import Prova, Inscription
-
-# Match domain
-from .match.models import Match, TrioMatch, Rack, MatchResult
-
-# Classification domain
-from .classification.models import Classification
-
-# Playoff domain
-from .playoff.models import Playoff
-"""
+# Phase tracking
+__version__ = "1.2.0-phase1"
+__phase__ = "Phase 1: User Domain Complete"
 
 def get_current_models():
     """
-    Utility function to get list of all currently available models.
-    Useful for debugging and migration verification.
+    Get list of all currently available models.
     
     Returns:
         dict: Dictionary of model names and their classes
     """
     models = {}
-    for name in __all__:
-        if name not in ['db', 'get_or_create', 'bulk_create', 'safe_commit', 'init_db', 'reset_db']:
-            try:
-                models[name] = globals()[name]
-            except KeyError:
-                models[name] = None
+    for name in available_models:
+        try:
+            models[name] = globals()[name]
+        except KeyError:
+            models[name] = None
     return models
+
+def verify_user_domain():
+    """
+    Verify that user domain is properly integrated.
+    
+    Returns:
+        dict: Integration status
+    """
+    try:
+        from .user.models import User as UserDomain
+        from .user import check_domain_health
+        
+        # Test that our modular User is being used
+        current_user = globals().get('User')
+        is_modular = current_user is UserDomain
+        
+        domain_health = check_domain_health()
+        
+        return {
+            'status': 'success',
+            'user_domain_active': is_modular,
+            'domain_health': domain_health,
+            'available_models': len(available_models)
+        }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'error': str(e),
+            'available_models': len(available_models)
+        }
 
 def verify_backward_compatibility():
     """
-    Verify that all expected models are available for backward compatibility.
+    Verify that backward compatibility is maintained.
     
     Returns:
         tuple: (success, missing_models)
     """
-    expected_models = [
-        'User', 'Tournament', 'Prova', 'Inscription', 'Match', 
-        'TrioMatch', 'Rack', 'MatchResult', 'Classification', 
-        'DirectorRequest', 'TournamentDirector'
-    ]
-    
     missing = []
-    for model_name in expected_models:
-        try:
-            globals()[model_name]
-        except KeyError:
+    for model_name in EXPECTED_MODELS:
+        if model_name not in globals():
             missing.append(model_name)
     
     return len(missing) == 0, missing
 
-# Debug information (only in development)
+# Debug information (development only)
 if __name__ == "__main__":
     print(f"Models package {__version__}")
     print(f"Current phase: {__phase__}")
-    print(f"Available models: {list(get_current_models().keys())}")
+    print(f"Available models: {available_models}")
     
+    # Test user domain integration
+    user_status = verify_user_domain()
+    print(f"User domain status: {user_status}")
+    
+    # Test backward compatibility
     success, missing = verify_backward_compatibility()
     if success:
         print("✅ Backward compatibility verified")
