@@ -61,6 +61,7 @@ source venv/bin/activate  # Mac/Linux
 
 # Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
 # Launch application
 python app.py
