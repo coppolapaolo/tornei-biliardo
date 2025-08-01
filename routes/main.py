@@ -75,13 +75,13 @@ def reset_database_confirm():
         # Ricrea tutte le tabelle
         db.create_all()
         
-        # Crea utenti predefiniti
-        create_default_users()
+        # Import enhanced reset functionality
+        from utils_reset.reset_data import reset_database_enhanced
         
-        # Crea torneo di esempio
-        create_sample_tournament()
+        # Create enhanced reset data
+        data = reset_database_enhanced()
         
-        flash('Database resettato con successo! Utenti creati: admin/admin123, mario/mario123, pino/pino123')
+        flash('Database resettato con successo! Enhanced data created with rich user examples.')
         flash('Sei stato disconnesso automaticamente. Rieffettua il login.', 'info')
         return redirect(url_for('main.index'))
         
