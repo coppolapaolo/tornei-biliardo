@@ -1,10 +1,7 @@
 # models.py - STEP 1: Models aggiornati
-from datetime import datetime
-
 # ---------------------------------------------------------------------
 #  ⚠️  User domain migrato in models/user/.  Manteniamo alias per retro-compat.
 # ---------------------------------------------------------------------
-from models.base import db  # unica istanza SQLAlchemy
 from models.user.models import (
     User as _User,
     TournamentDirector as _TournamentDirector,

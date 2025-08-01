@@ -158,8 +158,8 @@ class Prova(db.Model):
             "setup": {"class": "bg-warning", "text": "Setup"},
             "inscription": {"class": "bg-info", "text": "Iscrizioni Aperte"},
             "inscription_closed": {
-                "class": "bg-secondary", 
-                "text": "Iscrizioni Chiuse"
+                "class": "bg-secondary",
+                "text": "Iscrizioni Chiuse",
             },
             "ready_to_start": {"class": "bg-primary", "text": "Pronta per Iniziare"},
             "playing": {"class": "bg-success", "text": "In Corso"},
@@ -257,7 +257,10 @@ class Match(db.Model):
     racks = db.relationship("Rack", backref="match", lazy=True)
 
     def __repr__(self):
-        return f"<Match {self.player1_id} vs {self.player2_id} (Round {self.round_number})>"
+        return (
+            f"<Match {self.player1_id} vs {self.player2_id} "
+            f"(Round {self.round_number})>"
+        )
 
 
 class Rack(db.Model):
@@ -425,7 +428,10 @@ class PlayerEncounter(db.Model):
         return encounter
 
     def __repr__(self):
-        return f"<PlayerEncounter {self.player1_id} vs {self.player2_id} (Round {self.round_number})>"
+        return (
+            f"<PlayerEncounter {self.player1_id} vs {self.player2_id} "
+            f"(Round {self.round_number})>"
+        )
 
 
 class RoundClassification(db.Model):
@@ -499,7 +505,9 @@ class RoundClassification(db.Model):
 
         # Calcola rack_difference per ogni giocatore
         for player_id, stats in player_stats.items():
-            stats["rack_difference"] = stats["total_racks_won"] - stats["total_racks_lost"]
+            stats["rack_difference"] = (
+                stats["total_racks_won"] - stats["total_racks_lost"]
+            )
 
         # Ordina per vittorie (decrescente) e poi per rack_difference (decrescente)
         sorted_players = sorted(
@@ -550,7 +558,10 @@ class RoundClassification(db.Model):
         return sorted_players
 
     def __repr__(self):
-        return f"<RoundClassification {self.user_id} -> {self.position} (Round {self.round_number})>"
+        return (
+            f"<RoundClassification {self.user_id} -> {self.position} "
+            f"(Round {self.round_number})>"
+        )
 
 
 class TrioMatch(db.Model):
@@ -664,4 +675,4 @@ class TrioMatch(db.Model):
         }
 
     def __repr__(self):
-        return f"<TrioMatch {self.player1_id}-{self.player2_id}-{self.player3_id}>" 
+        return f"<TrioMatch {self.player1_id}-{self.player2_id}-{self.player3_id}>"
