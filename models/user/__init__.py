@@ -11,7 +11,8 @@ Domain: User Management
 - Director promotion requests
 
 Author: Refactoring Phase 1
-Created: 2025-01-31
+Created: 2025-08-01
+Updated: Task 1.4 - Added comprehensive services
 """
 
 from .models import User, TournamentDirector, DirectorRequest
@@ -21,55 +22,56 @@ from .services import UserService, DirectorRequestService, UserStatsService
 # Export all public classes and functions
 __all__ = [
     # Models
-    'User', 
-    'TournamentDirector', 
-    'DirectorRequest',
-    
+    "User",
+    "TournamentDirector",
+    "DirectorRequest",
     # Permissions
-    'PermissionChecker', 
-    'RoleRequirement',
-    
+    "PermissionChecker",
+    "RoleRequirement",
     # Services
-    'UserService', 
-    'DirectorRequestService', 
-    'UserStatsService'
+    "UserService",
+    "DirectorRequestService",
+    "UserStatsService",
 ]
 
-# Domain version
+# Domain version and metadata
 __version__ = "1.0.0"
 __domain__ = "User Management"
+__phase__ = "Phase 1 - Task 1.4 Complete"
+
 
 def get_user_models():
     """
     Get all user domain models.
-    
+
     Returns:
         dict: Dictionary mapping model names to model classes
     """
     return {
-        'User': User,
-        'TournamentDirector': TournamentDirector,
-        'DirectorRequest': DirectorRequest
+        "User": User,
+        "TournamentDirector": TournamentDirector,
+        "DirectorRequest": DirectorRequest,
     }
+
 
 def get_user_services():
     """
     Get all user domain services.
-    
+
     Returns:
         dict: Dictionary mapping service names to service classes
     """
     return {
-        'UserService': UserService,
-        'DirectorRequestService': DirectorRequestService,
-        'UserStatsService': UserStatsService
+        "UserService": UserService,
+        "DirectorRequestService": DirectorRequestService,
+        "UserStatsService": UserStatsService,
     }
 
-# Domain health check
+
 def check_domain_health():
     """
     Check if user domain is properly configured.
-    
+
     Returns:
         dict: Health status and information
     """
@@ -77,16 +79,22 @@ def check_domain_health():
         # Test model imports
         models = get_user_models()
         services = get_user_services()
-        
+
+        # Test basic functionality
+        user_count = User.query.count() if hasattr(User, "query") else 0
+
         return {
-            'status': 'healthy',
-            'models_count': len(models),
-            'services_count': len(services),
-            'version': __version__
+            "status": "healthy",
+            "models_count": len(models),
+            "services_count": len(services),
+            "total_users": user_count,
+            "version": __version__,
+            "phase": __phase__,
         }
     except Exception as e:
         return {
-            'status': 'error',
-            'error': str(e),
-            'version': __version__
+            "status": "error",
+            "error": str(e),
+            "version": __version__,
+            "phase": __phase__,
         }
