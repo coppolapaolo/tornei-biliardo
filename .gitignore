@@ -85,3 +85,5 @@ instance/
 ---
 export_script.py
 repository_export_*.md
+export_zip_md.py
+repository_export_*.zip

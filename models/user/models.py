@@ -1,27 +1,31 @@
 """
-User domain models - Clean version for Task 1.4
-
-Focuses only on core User functionality needed for services testing.
-Complex methods with external model dependencies will be added back in Task 1.5.
-
-Author: Refactoring Phase 1 - Task 1.4
-Created: 2025-08-01
+Module: models/user/models.py
+Purpose: User domain models (User, TournamentDirector, DirectorRequest) –
+    Task 1.4 completo.
+Data Structures: User, TournamentDirector, DirectorRequest
+Dependencies: models.base.db, flask_login, werkzeug.security
+ADR Reference: docs/ADR/2025-08-01-task1-4-1-6-completion.md
 """
+
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any, Dict, List, TYPE_CHECKING
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 
-from ..base import db, SimpleModel, BaseModel
+from ..base import db, BaseModel  # BaseModel for timestamps
+
+if TYPE_CHECKING:  # Avoid runtime circular imports
+    from ..legacy_models import Match, Tournament
 
 
-class User(UserMixin, SimpleModel):
-    """
-    User model with role-based permissions.
-
-    Clean version focused on core functionality for Task 1.4.
-    Complex methods with external dependencies removed temporarily.
-    """
+# ────────────────────────────────────────────────────────────────────────────────
+# USER
+# ────────────────────────────────────────────────────────────────────────────────
+class User(UserMixin, BaseModel):
+    """Core user entity with role-based permissions and rich statistics."""
 
     __tablename__ = "user"
 
@@ -30,111 +34,140 @@ class User(UserMixin, SimpleModel):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
 
-    # Role system - replaces individual boolean flags
-    role = db.Column(
-        db.String(20), nullable=False, default="player"
-    )  # admin, director, player
-
-    # Profile information
+    role = db.Column(db.String(20), nullable=False, default="player")
+    # admin|director|player
     phone = db.Column(db.String(20))
 
-    # Relationships using string references (resolved at runtime)
+    # Relationships (string names to postpone model imports)
     inscriptions = db.relationship("Inscription", backref="user", lazy=True)
     match_results = db.relationship(
-        "MatchResult", foreign_keys="MatchResult.user_id", lazy=True
+        "MatchResult",
+        foreign_keys="MatchResult.user_id",
+        lazy=True
     )
     classifications = db.relationship("Classification", backref="user", lazy=True)
     playoff_participations = db.relationship("Playoff", backref="user", lazy=True)
 
-    def set_password(self, password):
-        """Set password hash"""
+    # ───────────────────
+    # Auth helpers
+    # ───────────────────
+    def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
-        """Check password"""
+    def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
-    # Role checking properties - maintain backward compatibility
+    # ───────────────────
+    # Role shortcuts
+    # ───────────────────
     @property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self.role == "admin"
 
     @property
-    def is_director(self):
+    def is_director(self) -> bool:
         return self.role == "director"
 
     @property
-    def is_player(self):
+    def is_player(self) -> bool:
         return self.role == "player"
 
-    # Permission methods
-    def can_manage_tournament(self, tournament_id):
-        """Check if user can manage specific tournament"""
+    # ───────────────────
+    # Permission helpers
+    # ───────────────────
+    def can_manage_tournament(self, tournament_id: int) -> bool:
         from .permissions import PermissionChecker
-
         return PermissionChecker.can_manage_tournament(self, tournament_id)
 
-    def can_manage_competition(self, competition_id):
-        """Check if user can manage specific competition"""
+    def can_manage_competition(self, competition_id: int) -> bool:
         from .permissions import PermissionChecker
-
         return PermissionChecker.can_manage_competition(self, competition_id)
 
-    def can_view_admin_panel(self):
-        """Check if user can access admin panel"""
+    def can_view_admin_panel(self) -> bool:
         return self.is_admin
 
-    def can_inscribe_to_competition(self, competition_id):
-        """Check if user can inscribe to competition"""
+    def can_inscribe_to_competition(self, competition_id: int) -> bool:
         if self.is_admin:
-            return False  # Admin cannot inscribe (administrative role only)
-
+            return False
         from .permissions import PermissionChecker
-
         return not PermissionChecker.can_manage_competition(self, competition_id)
 
-    def get_managed_tournaments(self):
-        """
-        Get tournaments this user can manage.
-
-        Simplified version for Task 1.4 - returns empty list.
-        Will be enhanced in Task 1.5 when model dependencies are resolved.
-        """
-        # TODO: Implement in Task 1.5 when legacy_models.py is created
+    # ───────────────────
+    # Task 1.4 – implementations
+    # ───────────────────
+    def get_managed_tournaments(self) -> List["Tournament"]:
+        """Tornei che l’utente può gestire."""
+        if self.is_admin:
+            from ..legacy_models import Tournament
+            return Tournament.query.all()
+        if self.is_director:
+            return [assoc.tournament for assoc in self.tournament_director_associations]
         return []
 
-    def get_statistics(self):
-        """
-        Get user statistics.
+    def get_statistics(self) -> Dict[str, Any]:
+        """Statistiche complete usate da dashboard & analytics."""
+        # import locale, evita circolari
+        from ..legacy_models import (
+            Inscription,
+            Match,
+            Prova,
+        )
 
-        Simplified version for Task 1.4 - returns basic structure.
-        Will be enhanced in Task 1.5 when model dependencies are resolved.
-        """
-        # TODO: Implement full statistics in Task 1.5
+        total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
+
+        matches: List["Match"] = Match.query.filter(
+            db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
+            Match.status == "completed",
+        ).all()
+
+        total_matches = len(matches)
+        won_matches = sum(m.winner_id == self.id for m in matches)
+        lost_matches = total_matches - won_matches
+        win_percentage = (won_matches / total_matches * 100) if total_matches else 0
+
+        tournaments_played = (
+            Inscription.query.filter_by(user_id=self.id)
+            .join(Prova)
+            .with_entities(Prova.tournament_id)
+            .distinct()
+            .count()
+        )
+
+        total_racks_won = sum(self._racks_won(m) for m in matches)
+        total_racks_played = sum(m.player1_score + m.player2_score for m in matches)
+        rack_win_percentage = (
+            (total_racks_won / total_racks_played * 100) if total_racks_played else 0
+        )
+
         return {
-            "total_inscriptions": 0,
-            "total_matches": 0,
-            "won_matches": 0,
-            "lost_matches": 0,
-            "win_percentage": 0.0,
-            "tournaments_played": 0,
-            "total_racks_won": 0,
-            "total_racks_played": 0,
-            "rack_win_percentage": 0.0,
+            "total_inscriptions": total_inscriptions,
+            "total_matches": total_matches,
+            "won_matches": won_matches,
+            "lost_matches": lost_matches,
+            "win_percentage": round(win_percentage, 1),
+            "tournaments_played": tournaments_played,
+            "total_racks_won": total_racks_won,
+            "total_racks_played": total_racks_played,
+            "rack_win_percentage": round(rack_win_percentage, 1),
         }
 
-    def __repr__(self):
+    # helper ────────────────────────────────────────────────────────────────────
+    def _racks_won(self, match: "Match") -> int:
+        if match.player1_id == self.id:
+            return match.player1_score
+        if match.player2_id == self.id:
+            return match.player2_score
+        return 0
+
+    # debug ─────────────────────────────────────────────────────────────────────
+    def __repr__(self) -> str:  # pragma: no cover
         return f"<User {self.username} ({self.role})>"
 
 
+# ────────────────────────────────────────────────────────────────────────────────
+# TOURNAMENT DIRECTOR ASSOCIATION
+# ────────────────────────────────────────────────────────────────────────────────
 class TournamentDirector(BaseModel):
-    """
-    Association table between tournaments and directors.
-
-    Uses BaseModel because assignment tracking with timestamps
-    could be useful for administrative purposes.
-    """
-
     __tablename__ = "tournament_director"
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
@@ -144,59 +177,47 @@ class TournamentDirector(BaseModel):
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationships
     director = db.relationship(
-        "User", foreign_keys=[user_id], backref="tournament_director_associations"
+        "User",
+        foreign_keys=[user_id],
+        backref="tournament_director_associations"
     )
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
-    # Tournament relationship will be resolved at runtime
     tournament = db.relationship("Tournament", backref="directors_association")
 
 
+# ────────────────────────────────────────────────────────────────────────────────
+# DIRECTOR REQUEST
+# ────────────────────────────────────────────────────────────────────────────────
 class DirectorRequest(BaseModel):
-    """
-    Request for promotion to director role.
-
-    Uses BaseModel because request tracking with timestamps
-    is important for administrative workflow.
-    """
-
     __tablename__ = "director_request"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(
         db.String(20), nullable=False, default="pending"
-    )  # pending, approved, rejected
-    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    )  # pending|approved|rejected
     processed_at = db.Column(db.DateTime)
     processed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     notes = db.Column(db.Text)
 
-    # Relationships
-    user = db.relationship(
-        "User",
-        foreign_keys=[user_id],
-        backref=db.backref("director_request", uselist=False),
-    )
+    user = db.relationship("User", foreign_keys=[user_id])
     processed_by = db.relationship("User", foreign_keys=[processed_by_id])
 
-    def approve(self, admin_user):
-        """Approve director request"""
+    # state helpers ---
+    def approve(self, admin: "User") -> None:
         self.status = "approved"
         self.processed_at = datetime.utcnow()
-        self.processed_by_id = admin_user.id
-
-        # Promote user to director
+        self.processed_by = admin
         self.user.role = "director"
 
-    def reject(self, admin_user, reason=None):
-        """Reject director request"""
+    def reject(self, admin: "User", notes: str | None = None) -> None:
         self.status = "rejected"
         self.processed_at = datetime.utcnow()
-        self.processed_by_id = admin_user.id
-        if reason:
-            self.notes = reason
+        self.processed_by = admin
+        if notes:
+            self.notes = notes
 
-    def __repr__(self):
-        return f"<DirectorRequest {self.user.username} - {self.status}>"
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<DirectorRequest {self.id} {self.status}>"
