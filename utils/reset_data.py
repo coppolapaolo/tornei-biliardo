@@ -28,12 +28,16 @@ def _create_users() -> Dict[str, List[User] | User]:
         print(f"   ✅ Created admin: {admin.username} (role: {admin.role})")
 
         directors = []
-        directors.append(UserService.create_user(
-            "mario_rossi", "mario@tornei.com", "pwd12345", role="director"
-        ))
-        directors.append(UserService.create_user(
-            "lucia_verdi", "lucia@tornei.com", "pwd12345", role="director"
-        ))
+        directors.append(
+            UserService.create_user(
+                "mario_rossi", "mario@tornei.com", "pwd12345", role="director"
+            )
+        )
+        directors.append(
+            UserService.create_user(
+                "lucia_verdi", "lucia@tornei.com", "pwd12345", role="director"
+            )
+        )
         print(f"   ✅ Created {len(directors)} directors")
 
         players = []
@@ -48,7 +52,7 @@ def _create_users() -> Dict[str, List[User] | User]:
             "aspirante_director", "aspirante@tornei.com", "pwd12345"
         )
         DirectorRequestService.create_request(aspirant.id)
-        print(f"   ✅ Created aspirant with request")
+        print("   ✅ Created aspirant with request")
 
         return {
             "admin": admin,
@@ -109,16 +113,16 @@ def _reset_database_core() -> None:
     """Core reset logic that assumes Flask context is already active"""
     print("🗑️ Dropping all tables...")
     db.drop_all()
-    
+
     print("🏗️ Creating all tables...")
     db.create_all()
-    
+
     print("👥 Creating users...")
     data = _create_users()
-    
+
     print("🏆 Creating tournaments...")
     tournaments = _create_tournaments(data["admin"])  # type: ignore[arg-type]
-    
+
     print("🎯 Assigning directors...")
     _assign_directors(
         data["admin"], data["directors"], tournaments  # type: ignore[arg-type]
@@ -126,7 +130,7 @@ def _reset_database_core() -> None:
 
     print("💾 Committing to database...")
     db.session.commit()
-    
+
     # Verify results
     user_count = User.query.count()
     admin_count = User.query.filter_by(role="admin").count()
@@ -134,7 +138,7 @@ def _reset_database_core() -> None:
     player_count = User.query.filter_by(role="player").count()
     tournament_count = Tournament.query.count()
     assignment_count = TournamentDirector.query.count()
-    
+
     print("✅ Enhanced data ready!")
     print(f"   - Total Users: {user_count}")
     print(f"   - Admin users: {admin_count}")
@@ -148,20 +152,20 @@ def _reset_database_core() -> None:
 def reset_database_enhanced() -> None:
     """
     Context-aware database reset.
-    
-    If called within existing Flask app context (like in tests), 
+
+    If called within existing Flask app context (like in tests),
     uses that context. Otherwise creates its own context.
     """
     print("⚠️ RESET DATABASE (enhanced)…")
-    
+
     if has_app_context():
         print("🔧 Using existing Flask application context...")
         _reset_database_core()
     else:
         print("🔧 Creating new Flask application context...")
         from app import create_app
-        
-        app = create_app('development')
+
+        app = create_app("development")
         with app.app_context():
             _reset_database_core()
 
