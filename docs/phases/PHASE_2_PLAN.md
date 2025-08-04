@@ -4,6 +4,17 @@
 
 ---
 
+## ✅ Pre-requisiti Fase 2 (Verificati)
+
+- [x] Fase 1 completata
+- [x] User domain funzionante
+- [x] Test suite passing
+- [x] Import system pulito
+- [x] ADR documentati (0001-0008)
+- [x] Git history pulita
+
+---
+
 ## 🎯 **Obiettivi Fase 2**
 
 ### **Cosa Realizziamo**
@@ -18,6 +29,61 @@
 - ❌ Algorithm refactoring (Amalfi rimane come è)
 - ❌ Routes refactoring (admin.py rimane monolitico)
 - ❌ UI/UX changes
+
+---
+
+## 📅 Timeline Proposta
+
+### Sprint 1 (Settimana 1)
+- [ ] Task 2.1: Tournament Domain (4 ore)
+- [ ] Task 2.2: Competition Domain (5 ore)
+- [ ] Test e documentazione
+
+### Sprint 2 (Settimana 2)
+- [ ] Task 2.3: Match Domain (4 ore)
+- [ ] Task 2.4: Classification Domain (3 ore)
+- [ ] Task 2.5: Update Import System (2 ore)
+
+### Sprint 3 (Settimana 3)
+- [ ] Task 2.6: Enhanced Testing (4 ore)
+- [ ] Integration testing
+- [ ] Rimozione legacy_models.py
+- [ ] Documentazione finale
+
+---
+
+## 🔄 Ordine di Implementazione Consigliato
+
+1. **Tournament Domain FIRST** (no dependencies)
+2. **Competition Domain** (depends on Tournament)
+3. **Match Domain** (depends on Competition)
+4. **Classification Domain** (depends on all above)
+5. **Import System Update** (quando tutti i domini sono pronti)
+6. **Remove legacy_models.py** (ultimo step)
+
+⚠️ IMPORTANTE: Mantenere sempre legacy_models.py funzionante fino all'ultimo step!
+
+---
+
+## ⚠️ Rischi e Mitigazioni
+
+### Rischio 1: Breaking Changes
+**Mitigazione**: 
+- Mantenere legacy_models.py fino alla fine
+- Test di regressione dopo ogni task
+- Import aliases in `models/__init__.py`
+
+### Rischio 2: Circular Dependencies
+**Mitigazione**:
+- Usare TYPE_CHECKING per import di tipo
+- Forward references dove necessario
+- Service layer per dipendenze cross-domain
+
+### Rischio 3: Database Integrity
+**Mitigazione**:
+- Nessun cambio schema DB in Fase 2
+- Solo riorganizzazione codice
+- Test fixtures immutati
 
 ---
 
