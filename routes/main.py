@@ -1,4 +1,4 @@
-# routes/main.py - AGGIORNATO per multi-torneo visibility
+# routes/main.py - AGGIORNATO per correggere import path
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, logout_user
 from datetime import date
@@ -92,8 +92,8 @@ def reset_database_confirm():
         # Ricrea tutte le tabelle
         db.create_all()
 
-        # Import enhanced reset functionality
-        from utils_reset.reset_data import reset_database_enhanced
+        # Import enhanced reset functionality - CORREZIONE PATH
+        from utils.reset_data import reset_database_enhanced
 
         # Create enhanced reset data
         reset_database_enhanced()
