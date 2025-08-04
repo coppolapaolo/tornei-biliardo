@@ -9,16 +9,23 @@ Phase 1 Status:
 - ✅ User domain extracted and modularized
 - 🔄 Other domains pending (Phase 2+)
 
-Author: Refactoring Phase 1  
+Author: Refactoring Phase 1
 Created: 2025-01-31
 Updated: 2025-01-31 (Task 1.2)
 """
 
 # Import database instance and utilities from base module
-from .base import db, get_or_create, bulk_create, safe_commit, init_db, reset_db
+from .base import (  # noqa: F401
+    db,
+    get_or_create,
+    bulk_create,
+    safe_commit,
+    init_db,
+    reset_db,
+)
 
 # PHASE 1 COMPLETE: User domain imported from modular structure
-from .user.models import User, TournamentDirector, DirectorRequest
+from .user.models import User, TournamentDirector, DirectorRequest  # noqa: F401
 
 # TEMPORARY: Import remaining models from existing models.py
 # These will be modularized in subsequent phases
@@ -62,7 +69,7 @@ try:
             # Import db if it exists (though we prefer our own)
             if hasattr(legacy_models, "db") and "db" not in globals():
                 pass  # We use our own db from base
-        except:
+        except Exception:
             pass
 
     else:
@@ -126,6 +133,7 @@ try:
 except Exception as e:
     print(f"Warning: Error importing legacy models: {e}")
     # Create minimal fallback models
+
     class Tournament(db.Model):
         __tablename__ = "tournament"
         id = db.Column(db.Integer, primary_key=True)

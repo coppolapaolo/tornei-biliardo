@@ -41,9 +41,7 @@ class User(UserMixin, BaseModel):
     # Relationships (string names to postpone model imports)
     inscriptions = db.relationship("Inscription", backref="user", lazy=True)
     match_results = db.relationship(
-        "MatchResult",
-        foreign_keys="MatchResult.user_id",
-        lazy=True
+        "MatchResult", foreign_keys="MatchResult.user_id", lazy=True
     )
     classifications = db.relationship("Classification", backref="user", lazy=True)
     playoff_participations = db.relationship("Playoff", backref="user", lazy=True)
@@ -77,10 +75,12 @@ class User(UserMixin, BaseModel):
     # ───────────────────
     def can_manage_tournament(self, tournament_id: int) -> bool:
         from .permissions import PermissionChecker
+
         return PermissionChecker.can_manage_tournament(self, tournament_id)
 
     def can_manage_competition(self, competition_id: int) -> bool:
         from .permissions import PermissionChecker
+
         return PermissionChecker.can_manage_competition(self, competition_id)
 
     def can_view_admin_panel(self) -> bool:
@@ -90,6 +90,7 @@ class User(UserMixin, BaseModel):
         if self.is_admin:
             return False
         from .permissions import PermissionChecker
+
         return not PermissionChecker.can_manage_competition(self, competition_id)
 
     # ───────────────────
@@ -99,6 +100,7 @@ class User(UserMixin, BaseModel):
         """Tornei che l’utente può gestire."""
         if self.is_admin:
             from ..legacy_models import Tournament
+
             return Tournament.query.all()
         if self.is_director:
             return [assoc.tournament for assoc in self.tournament_director_associations]
@@ -178,9 +180,7 @@ class TournamentDirector(BaseModel):
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     director = db.relationship(
-        "User",
-        foreign_keys=[user_id],
-        backref="tournament_director_associations"
+        "User", foreign_keys=[user_id], backref="tournament_director_associations"
     )
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
     tournament = db.relationship("Tournament", backref="directors_association")
