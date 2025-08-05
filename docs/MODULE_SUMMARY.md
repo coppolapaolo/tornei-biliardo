@@ -99,17 +99,26 @@ Pattern:
 
 ## 🎯 **Planned Domain Modules** *(Fase 2-3)*
 
-### **`models/tournament/`** 🎯
+### **`models/tournament/`** 🏃
 ```python
 Purpose: Tournament management domain
-Status: 🎯 PLANNED - Fase 2
-Planned Models:
-  - Tournament: Core tournament entity
-  - TournamentSettings: Configuration
-  - TournamentStats: Analytics
-Strategy Integration:
-  - competition_strategy: "amalfi" | "round_robin" | "swiss"
-  - classification_strategy: "standard" | "weighted"
+Status: 🏃 IN PROGRESS - Fase 2 Sprint 1 (Domain Separation)
+Current Implementation:
+  - models.py: Tournament core entity (✅ estratto da legacy)
+  - services.py: TournamentService placeholder (✅ struttura base)
+  - __init__.py: Domain exports (✅)
+  
+Import Examples:
+  from models import Tournament  # Backward compatible
+  from models.tournament.models import Tournament  # New modular
+  from models.tournament.services import TournamentService
+
+Future Enhancements (Post-Sprint 1):
+  - TournamentSettings: Configuration management
+  - TournamentStats: Analytics and reporting
+  - Strategy Integration:
+    - competition_strategy: "amalfi" | "round_robin" | "swiss"
+    - classification_strategy: "standard" | "weighted"
 ```
 
 ### **`models/competition/`** 🎯

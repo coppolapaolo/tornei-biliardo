@@ -6,7 +6,7 @@ Verifica che reset_database_enhanced crei correttamente i dati demo.
 
 from utils.reset_data import reset_database_enhanced
 from models.user.models import User
-from models.legacy_models import Tournament
+from models import Tournament
 
 
 def test_enhanced_reset_functionality(app):

@@ -13,7 +13,7 @@ from typing import Dict, List
 from flask import has_app_context
 
 from models.base import db
-from models.legacy_models import Tournament
+from models import Tournament
 from models.user.models import TournamentDirector, User
 from models.user.services import UserService, DirectorRequestService
 
