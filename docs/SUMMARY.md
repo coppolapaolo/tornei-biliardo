@@ -9,13 +9,17 @@
 ### **Versione & Status**
 - **Versione Attuale**: v3.1.0 (Sistema Amalfi + Domain Separation in corso)
 - **Approccio**: 🚀 **AGILE** - Sprint settimanali con rilasci incrementali
-- **Sprint Corrente**: Fase 2 Sprint 1 - Domain Separation (refactoring puro)
+- **Sprint Corrente**: Fase 2 Sprint 1 - Domain Separation (75% completato)
 - **Architettura**: Flask MVC con Blueprints, SQLAlchemy ORM, Bootstrap 5
 - **Deployment**: PythonAnywhere (SQLite dev → PostgreSQL prod)
 
 ### **Fasi Completate**
 - ✅ **Fase 1**: User Domain modularizzato con permission system
-- 🏃 **Fase 2 Sprint 1**: IN CORSO - Separazione domini (ETA: 1 settimana)
+- 🏃 **Fase 2 Sprint 1**: Domain Separation (75% completato)
+  - ✅ Tournament domain
+  - ✅ Competition domain (Prova, Inscription)
+  - ✅ Match domain (Match, Rack, MatchResult, TrioMatch)
+  - 🎯 Classification domain (ultimo rimasto)
 
 ### **Prossimi Sprint Pianificati**
 - 📅 **Sprint 2**: StandaloneCompetition - Competizioni senza torneo
@@ -30,28 +34,40 @@
 
 ---
 
-## 📁 **Struttura Modulare Attuale** *(Post Fase 1)*
+## 📁 **Struttura Modulare Attuale** *(Post Fase 2 Sprint 1 - 75%)*
 
 ### **Directory Structure**
 ```
 models/
 ├── __init__.py           # Import aliases per backward compatibility
 ├── base.py              # ✅ BaseModel + mixins + db instance
-├── legacy_models.py     # ⚠️ Tournament, Prova, Match, etc. (da modularizzare)
-└── user/                # ✅ COMPLETATO - Dominio User
-    ├── __init__.py      # Exports pubblici dominio
-    ├── models.py        # User, TournamentDirector, DirectorRequest
-    ├── permissions.py   # PermissionChecker class + decoratori
-    └── services.py      # UserService, DirectorRequestService
+├── legacy_models.py     # ⚠️ Solo Classification, Playoff, PlayerEncounter, RoundClassification
+├── user/                # ✅ COMPLETATO - Dominio User
+│   ├── __init__.py      # Exports pubblici dominio
+│   ├── models.py        # User, TournamentDirector, DirectorRequest
+│   ├── permissions.py   # PermissionChecker class + decoratori
+│   └── services.py      # UserService, DirectorRequestService
+├── tournament/          # ✅ COMPLETATO - Dominio Tournament
+│   ├── models.py        # Tournament
+│   └── services.py      # TournamentService
+├── competition/         # ✅ COMPLETATO - Dominio Competition
+│   ├── models.py        # Prova, Inscription
+│   └── services.py      # ProvaService, InscriptionService
+└── match/               # ✅ COMPLETATO - Dominio Match
+    ├── models.py        # Match, Rack, MatchResult, TrioMatch
+    └── services.py      # MatchService, RackService, etc.
 ```
 
 ### **Import Pattern Funzionante**
 ```python
 # ✅ Existing code continua a funzionare
-from models import User, Tournament, Prova
+from models import User, Tournament, Prova, Match, Rack
 
 # ✅ Nuovi import modulari disponibili  
 from models.user.models import User
+from models.tournament.models import Tournament
+from models.competition.models import Prova, Inscription
+from models.match.models import Match, Rack, MatchResult, TrioMatch
 from models.user.permissions import PermissionChecker
 from models.user.services import UserService
 ```
@@ -109,7 +125,7 @@ Configurazioni attive:
 ## ⚠️ **Technical Debt Identificato**
 
 ### **Legacy Code (da modularizzare)**
-- 📁 `models/legacy_models.py` - 800+ righe monolitiche
+- 📁 `models/legacy_models.py` - Ridotto a 4 classi (Classification domain)
 - 📁 `routes/admin.py` - Troppe responsabilità
 - 📁 `utils.py` - Mix di funzioni eterogenee
 
@@ -127,13 +143,13 @@ Configurazioni attive:
 
 ## 🚀 **Roadmap Prossime Fasi**
 
-### **Fase 2: Tournament Domain Separation** *(In Planning)*
+### **Fase 2: Domain Separation** *(75% Completato)*
 ```
-Obiettivi:
-├── models/tournament/     # Separare Tournament logic
-├── models/competition/    # Prova, Inscription domain  
-├── models/match/         # Match, Rack domain
-└── models/classification/ # Classification domain
+Completati:
+├── models/tournament/     # ✅ Tournament logic separata
+├── models/competition/    # ✅ Prova, Inscription domain separato
+├── models/match/         # ✅ Match, Rack domain separato
+└── models/classification/ # 🎯 PROSSIMO - Classification domain
 ```
 
 ### **Fase 3: Strategy Pattern Implementation**
@@ -154,16 +170,16 @@ Obiettivi:
 
 ## 📖 **Documentazione References**
 
-### **File Chiave da Consultare** *(Post-ristrutturazione)*
-- 📄 `docs/ARCHITETTURA.md` - Overview architetturale
-- 📄 `docs/MODULE_SUMMARY.md` - Quick reference moduli
-- 📄 `docs/phases/PHASE_1_STATUS.md` - Status Fase 1 completata
-- 📄 `docs/phases/PHASE_2_PLAN.md` - Piano prossima fase
+### **File Chiave da Consultare**
+- 📄 `ARCHITETTURA.md` - Overview architetturale
+- 📄 `MODULE_SUMMARY.md` - Quick reference moduli
+- 📄 `PHASE_1_STATUS.md` - Status Fase 1 completata
+- 📄 `PHASE_2_SPRINT1_STATUS.md` - Status Sprint corrente
 
 ### **ADR Decisioni Architetturali**
 - 📄 `docs/ADR/ADR-0002-separazione_dominio_user.md` - Rationale modularizzazione
 - 📄 `docs/ADR/ADR-0003-sistema_permessi_e_decoratori.md` - Permission system
-- 📄 `docs/ADR/ADR-0006-strategia_incrementale_copertura_test.md` - Testing strategy
+- 📄 `docs/ADR/ADR-0010-domain-separation-phase2.md` - Piano separazione domini
 
 ---
 

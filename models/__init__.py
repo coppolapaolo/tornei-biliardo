@@ -8,7 +8,8 @@ Phase Status:
 - ✅ Base infrastructure complete
 - ✅ User domain extracted and modularized
 - ✅ Tournament domain extracted
-- 🏃 Competition domain extraction in progress
+- ✅ Competition domain extracted
+- 🏃 Match domain extraction in progress
 - ⚠️ Other domains in legacy_models.py (Sprint 1 target)
 
 Author: Refactoring Phase 2 - Sprint 1
@@ -31,20 +32,21 @@ from .user.models import User, TournamentDirector, DirectorRequest
 # PHASE 2 SPRINT 1: Separated domains
 from .tournament.models import Tournament
 from .competition.models import Prova, Inscription
+from .match.models import Match, Rack, MatchResult, TrioMatch
 
 # PHASE 2 TODO: Import remaining models from legacy_models.py
 from .legacy_models import (
     # Tournament,  # Now imported from tournament domain
     # Prova,       # Now imported from competition domain
     # Inscription, # Now imported from competition domain
-    Match,
-    Rack,
-    MatchResult,
+    # Match,       # Now imported from match domain
+    # Rack,        # Now imported from match domain
+    # MatchResult, # Now imported from match domain
+    # TrioMatch,   # Now imported from match domain
     Classification,
     Playoff,
     PlayerEncounter,
     RoundClassification,
-    TrioMatch,
 )
 
 # Export all available models for backward compatibility
@@ -65,15 +67,16 @@ __all__ = [
     # Competition domain models (Phase 2 Sprint 1)
     "Prova",
     "Inscription",
-    # Legacy models (Phase 2 Sprint 1 target)
+    # Match domain models (Phase 2 Sprint 1)
     "Match",
     "Rack",
     "MatchResult",
+    "TrioMatch",
+    # Legacy models (Phase 2 Sprint 1 target)
     "Classification",
     "Playoff",
     "PlayerEncounter",
     "RoundClassification",
-    "TrioMatch",
 ]
 
 # Phase tracking

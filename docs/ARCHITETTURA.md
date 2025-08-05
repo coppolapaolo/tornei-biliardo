@@ -27,14 +27,23 @@
 tornei-biliardo/
 ├── app.py                 # Flask application factory
 ├── config.py             # Environment configurations
-├── models/               # ✅ Domain models (modulari + legacy)
+├── models/               # ✅ Domain models (modulari + legacy ridotto)
 │   ├── __init__.py       # Backward compatibility imports
 │   ├── base.py          # BaseModel + db instance
-│   ├── legacy_models.py # ⚠️ Tournament, Prova, Match (monolite)
-│   └── user/            # ✅ FASE 1 COMPLETATA
-│       ├── models.py    # User, TournamentDirector, DirectorRequest
-│       ├── permissions.py # PermissionChecker + decoratori
-│       └── services.py  # UserService, DirectorRequestService
+│   ├── legacy_models.py # ⚠️ Solo Classification, Playoff, PlayerEncounter, RoundClassification
+│   ├── user/            # ✅ FASE 1 COMPLETATA
+│   │   ├── models.py    # User, TournamentDirector, DirectorRequest
+│   │   ├── permissions.py # PermissionChecker + decoratori
+│   │   └── services.py  # UserService, DirectorRequestService
+│   ├── tournament/      # ✅ FASE 2 SPRINT 1 COMPLETATO
+│   │   ├── models.py    # Tournament
+│   │   └── services.py  # TournamentService
+│   ├── competition/     # ✅ FASE 2 SPRINT 1 COMPLETATO
+│   │   ├── models.py    # Prova, Inscription
+│   │   └── services.py  # ProvaService, InscriptionService
+│   └── match/           # ✅ FASE 2 SPRINT 1 COMPLETATO
+│       ├── models.py    # Match, Rack, MatchResult, TrioMatch
+│       └── services.py  # MatchService, RackService, etc.
 ├── routes/              # Flask Blueprints per controller
 │   ├── admin.py         # ⚠️ Amministrazione (da spezzare)
 │   ├── auth.py          # Autenticazione
@@ -51,11 +60,11 @@ tornei-biliardo/
 models/
 ├── base.py              # ✅ Common base classes
 ├── user/                # ✅ COMPLETATO
-├── tournament/          # 🎯 Tournament management
-├── competition/         # 🎯 Prova, Inscription logic  
-├── match/               # 🎯 Match, Rack tracking
-├── classification/      # 🎯 Ranking & scoring
-└── strategy/            # 🎯 Pluggable algorithms
+├── tournament/          # ✅ COMPLETATO
+├── competition/         # ✅ COMPLETATO
+├── match/               # ✅ COMPLETATO
+├── classification/      # 🎯 PROSSIMO - Ranking & scoring
+└── strategy/            # 🎯 FASE 3 - Pluggable algorithms
     ├── competition/     # Amalfi, RoundRobin, Swiss
     ├── classification/  # Standard, Weighted, Custom  
     └── bye_handling/    # WithX, Rotation, Skip

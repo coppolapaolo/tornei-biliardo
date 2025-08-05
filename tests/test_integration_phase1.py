@@ -19,7 +19,8 @@ def test_modular_imports():
     """Test che i nuovi import modulari funzionano"""
     from models.user.models import User, TournamentDirector, DirectorRequest
     from models import Tournament, Prova, Inscription
-    from models.legacy_models import Match, Rack, Classification, MatchResult, Playoff
+    from models.legacy_models import Classification, Playoff
+    from models import Match, Rack, MatchResult
     assert hasattr(User, 'is_admin')
     assert hasattr(Tournament, 'get_status')
     assert hasattr(Prova, 'can_inscribe')

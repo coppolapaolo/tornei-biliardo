@@ -18,7 +18,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..base import db, BaseModel  # BaseModel for timestamps
 
 if TYPE_CHECKING:  # Avoid runtime circular imports
-    from ..legacy_models import Match
+    from ..match.models import Match
     from ..tournament.models import Tournament
 
 
@@ -114,7 +114,7 @@ class User(UserMixin, BaseModel):
             Inscription,
             Prova,
         )
-        from ..legacy_models import Match
+        from ..match.models import Match
 
         total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
 
