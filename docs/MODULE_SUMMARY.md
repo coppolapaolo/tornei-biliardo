@@ -121,18 +121,27 @@ Future Enhancements (Post-Sprint 1):
     - classification_strategy: "standard" | "weighted"
 ```
 
-### **`models/competition/`** 🎯
+### **`models/competition/`** 🏃
 ```python
 Purpose: Competition (Prova) domain  
-Status: 🎯 PLANNED - Fase 2
-Planned Models:
-  - Prova: Competition entity
-  - Inscription: Player enrollment
+Status: 🏃 IN PROGRESS - Fase 2 Sprint 1 (Domain Separation)
+Current Implementation:
+  - models.py: Prova, Inscription entities (✅ estratti da legacy)
+  - services.py: ProvaService, InscriptionService placeholders (✅)
+  - __init__.py: Domain exports (✅)
+  
+Import Examples:
+  from models import Prova, Inscription  # Backward compatible
+  from models.competition.models import Prova, Inscription  # New modular
+  from models.competition.services import ProvaService, InscriptionService
+
+Future Enhancements (Post-Sprint 1):
   - CompetitionRules: Rule configurations
-Business Logic:
-  - Registration management
-  - Competition lifecycle
-  - Rule enforcement
+  - StandaloneCompetition: Competitions without tournaments
+  - Advanced Business Logic:
+    - Registration management with waiting lists
+    - Competition lifecycle automation
+    - Rule enforcement engine
 ```
 
 ### **`models/match/`** 🎯

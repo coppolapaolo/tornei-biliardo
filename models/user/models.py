@@ -18,7 +18,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..base import db, BaseModel  # BaseModel for timestamps
 
 if TYPE_CHECKING:  # Avoid runtime circular imports
-    from ..legacy_models import Match, Tournament
+    from ..legacy_models import Match
+    from ..tournament.models import Tournament
 
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -99,7 +100,7 @@ class User(UserMixin, BaseModel):
     def get_managed_tournaments(self) -> List["Tournament"]:
         """Tornei che l’utente può gestire."""
         if self.is_admin:
-            from ..legacy_models import Tournament
+            from ..tournament.models import Tournament
 
             return Tournament.query.all()
         if self.is_director:
@@ -109,11 +110,11 @@ class User(UserMixin, BaseModel):
     def get_statistics(self) -> Dict[str, Any]:
         """Statistiche complete usate da dashboard & analytics."""
         # import locale, evita circolari
-        from ..legacy_models import (
+        from ..competition.models import (
             Inscription,
-            Match,
             Prova,
         )
+        from ..legacy_models import Match
 
         total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
 

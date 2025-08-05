@@ -7,7 +7,8 @@ backward compatibility with existing code.
 Phase Status:
 - ✅ Base infrastructure complete
 - ✅ User domain extracted and modularized
-- 🏃 Tournament domain extraction in progress
+- ✅ Tournament domain extracted
+- 🏃 Competition domain extraction in progress
 - ⚠️ Other domains in legacy_models.py (Sprint 1 target)
 
 Author: Refactoring Phase 2 - Sprint 1
@@ -27,15 +28,15 @@ from .base import (
 # PHASE 1 COMPLETE: User domain imported from modular structure
 from .user.models import User, TournamentDirector, DirectorRequest
 
-# PHASE 2 SPRINT 1: Tournament domain from modular structure
+# PHASE 2 SPRINT 1: Separated domains
 from .tournament.models import Tournament
+from .competition.models import Prova, Inscription
 
 # PHASE 2 TODO: Import remaining models from legacy_models.py
-# These will be modularized in Sprint 1
 from .legacy_models import (
     # Tournament,  # Now imported from tournament domain
-    Prova,
-    Inscription,
+    # Prova,       # Now imported from competition domain
+    # Inscription, # Now imported from competition domain
     Match,
     Rack,
     MatchResult,
@@ -61,9 +62,10 @@ __all__ = [
     "DirectorRequest",
     # Tournament domain models (Phase 2 Sprint 1)
     "Tournament",
-    # Legacy models (Phase 2 Sprint 1 target)
+    # Competition domain models (Phase 2 Sprint 1)
     "Prova",
     "Inscription",
+    # Legacy models (Phase 2 Sprint 1 target)
     "Match",
     "Rack",
     "MatchResult",
