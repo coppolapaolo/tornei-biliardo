@@ -256,3 +256,35 @@ routes/
 5. **Month 3**: Performance optimization + advanced features
 
 **🎱 Questo piano trasformerà il monolite in un sistema modulare, performante e maintainable per gestione tornei professionali.**
+
+---
+
+## 📅 **Timeline Agile (Aggiornata da ADR-0009)**
+
+### **Passaggio da Waterfall ad Agile**
+A seguito di ADR-0009, abbiamo abbandonato l'approccio waterfall delle fasi 2-6 per adottare sprint settimanali con rilasci incrementali.
+
+### **Sprint Completati**
+- ✅ **Fase 1** (4 settimane): User domain separation - COMPLETATA
+
+### **Sprint In Corso**
+- 🏃 **Fase 2 Sprint 1** (1 settimana): Domain separation pura
+  - Start: 05/08/2025
+  - Goal: Refactoring senza nuove features
+  - Deliverables: Tournament, Competition, Match, Classification domains separati
+
+### **Sprint Pianificati**
+- 📅 **Fase 2 Sprint 2** (1 settimana): StandaloneCompetition
+- 📅 **Fase 2 Sprint 3** (1 settimana): FriendlyMatch
+- 📅 **Sprint successivi**: Strategy patterns e features avanzate (priorità TBD)
+
+### **Vantaggi del Nuovo Approccio**
+- ✅ **Rilasci settimanali**: Software funzionante ogni sprint
+- ✅ **Feedback continuo**: Adattamento basato su input utenti
+- ✅ **Riduzione rischio**: Piccoli incrementi testabili
+- ✅ **Flessibilità**: Possibilità di cambiare priorità
+
+### **Note**
+- Le Fasi 3-6 del piano originale rimangono come backlog
+- Le timeline waterfall (2-3 settimane per fase) sono sostituite da sprint agili
+- Dettagli implementativi decisi just-in-time per ogni sprint

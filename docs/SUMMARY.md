@@ -7,13 +7,26 @@
 ## 🎯 **Stato Attuale Progetto**
 
 ### **Versione & Status**
-- **Versione Attuale**: v3.0.0 (Sistema Amalfi completo)
-- **Fase Refactoring**: ✅ **Fase 1 COMPLETATA** - User Domain modularizzato
+- **Versione Attuale**: v3.1.0 (Sistema Amalfi + Domain Separation in corso)
+- **Approccio**: 🚀 **AGILE** - Sprint settimanali con rilasci incrementali
+- **Sprint Corrente**: Fase 2 Sprint 1 - Domain Separation (refactoring puro)
 - **Architettura**: Flask MVC con Blueprints, SQLAlchemy ORM, Bootstrap 5
 - **Deployment**: PythonAnywhere (SQLite dev → PostgreSQL prod)
 
-### **Obiettivo Refactoring**
-Trasformare monolite in **domain-driven design modulare** mantenendo backward compatibility e implementando strategy pattern per tornei multi-formato.
+### **Fasi Completate**
+- ✅ **Fase 1**: User Domain modularizzato con permission system
+- 🏃 **Fase 2 Sprint 1**: IN CORSO - Separazione domini (ETA: 1 settimana)
+
+### **Prossimi Sprint Pianificati**
+- 📅 **Sprint 2**: StandaloneCompetition - Competizioni senza torneo
+- 📅 **Sprint 3**: FriendlyMatch - Match amichevoli tra giocatori
+- 📋 **Backlog**: Statistiche unificate, privacy granulare, strategy patterns
+
+### **Nuove Features Approvate** (ADR-0009)
+- Supporto per eventi non vincolati a tornei
+- Competizioni standalone per Directors
+- Match amichevoli per Players
+- Approccio sviluppo Agile vs Waterfall
 
 ---
 

@@ -221,6 +221,110 @@ Prova Complessa:
 
 ---
 
+## 🎯 **Competizioni Standalone (Senza Torneo)**
+
+### **Concetto di StandaloneCompetition**
+Una **StandaloneCompetition** è una competizione organizzata da un Director che non fa parte di un torneo strutturato. Perfetta per eventi singoli, dimostrazioni, o competizioni spot.
+
+### **Caratteristiche Principali**
+
+#### **Organizzazione Semplificata**
+- **Creazione Rapida**: Director può creare una competizione in pochi click
+- **Nessun Vincolo Torneo**: Non serve creare un torneo contenitore
+- **Gestione Autonoma**: Tutte le features di una Prova normale
+- **Permessi**: Solo Director e Admin possono creare/gestire
+
+#### **Funzionalità Supportate**
+- **Iscrizioni**: Sistema iscrizioni identico alle Prove
+- **Turni Multipli**: Supporto per competizioni multi-round
+- **Classifiche**: Se multi-round, classifica per turno (Amalfi, etc.)
+- **Abbinamenti**: Tutti gli algoritmi disponibili (Amalfi, Round Robin, etc.)
+- **Statistiche**: Contribuiscono alle stats globali dei giocatori
+
+#### **Casi d'Uso**
+- Gare dimostrative
+- Eventi benefici one-shot
+- Qualificazioni per tornei futuri
+- Test di nuovi formati
+- Eventi promozionali
+
+### **Differenze con Prova Tradizionale**
+
+| Aspetto | Prova (in Torneo) | StandaloneCompetition |
+|---------|-------------------|----------------------|
+| Appartenenza | Richiede Tournament | Indipendente |
+| Creazione | Admin/Director del torneo | Qualsiasi Director |
+| Numerazione | Numero progressivo nel torneo | Nome libero |
+| Classifica Torneo | Contribuisce | Non applicabile |
+| Playoff | Possibili nel torneo | Non applicabile |
+| Statistiche Player | ✅ Contano | ✅ Contano |
+
+---
+
+## 🤝 **Match Amichevoli (FriendlyMatch)**
+
+### **Concetto di FriendlyMatch**
+Un **FriendlyMatch** è una partita organizzata direttamente tra giocatori, senza struttura di torneo o competizione. Ideale per allenamenti, sfide personali, o partite informali.
+
+### **Caratteristiche Principali**
+
+#### **Organizzazione Player-Driven**
+- **Creazione da Player**: Qualsiasi giocatore può organizzare
+- **Inviti Diretti**: Sistema di inviti ad altri giocatori
+- **Conferma Partecipazione**: Entrambi devono accettare
+- **Flessibilità Regole**: Formato personalizzabile
+
+#### **Privacy e Visibilità**
+```
+Livelli di Privacy:
+├── Public: Visibile a tutti, appare nelle statistiche pubbliche
+├── Friends: Visibile solo alla cerchia di amici
+└── Private: Visibile solo ai partecipanti
+```
+
+#### **Tracking Risultati**
+- **Inserimento Collaborativo**: Entrambi possono inserire rack
+- **Conferma Reciproca**: Sistema di validazione tra giocatori
+- **Statistiche Separate**: Contano ma in categoria "amichevoli"
+- **No Classifiche**: Nessuna classifica generata
+
+### **Gestione Dispute**
+- **Auto-Risoluzione**: I giocatori gestiscono dispute tra loro
+- **Escalation**: Possibilità di coinvolgere un Director
+- **Annullamento**: Match può essere annullato di comune accordo
+
+### **Casi d'Uso**
+- Allenamenti tra amici
+- Sfide personali
+- Test di preparazione
+- Partite ricreative
+- Match di riscaldamento
+
+### **Dashboard e Visualizzazione**
+
+#### **Sezione Dedicata**
+```
+Dashboard Player:
+├── Tornei Ufficiali
+│   ├── Iscrizioni attive
+│   └── Risultati recenti
+├── Competizioni Standalone
+│   ├── Disponibili
+│   └── Partecipate
+└── Match Amichevoli
+    ├── Inviti pendenti
+    ├── In corso
+    └── Storico
+```
+
+#### **Filtri e Ricerca**
+- Filtra per tipo evento
+- Cerca per avversario
+- Filtra per periodo
+- Mostra/nascondi privati
+
+---
+
 ## 🏅 **Sistema Playoff Configurabile**
 
 ### **Concetto di Playoff**

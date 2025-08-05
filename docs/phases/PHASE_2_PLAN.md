@@ -1,379 +1,170 @@
-# 🎯 PHASE_2_PLAN.md - Tournament Domain Separation
+# 🎯 PHASE_2_PLAN.md - Domain Separation (Approccio Agile)
 
-> **Piano Dettagliato Fase 2** - Separazione domini Tournament, Competition, Match e Classification dal monolite legacy
+> **Piano Agile Fase 2** - Separazione domini con sprint settimanali e nuove features incrementali
 
 ---
 
-## ✅ Pre-requisiti Fase 2 (Verificati)
+## ✅ Pre-requisiti (Verificati)
 
 - [x] Fase 1 completata
 - [x] User domain funzionante
 - [x] Test suite passing
-- [x] Import system pulito
-- [x] ADR documentati (0001-0008)
-- [x] Git history pulita
+- [x] ADR-0009 approvato (eventi non-torneo)
 
 ---
 
-## 🎯 **Obiettivi Fase 2**
+## 🚀 **Approccio Agile - Sprint Settimanali**
 
-### **Cosa Realizziamo**
-- ✅ **Tournament Domain**: Separare `Tournament` logic da `legacy_models.py`
-- ✅ **Competition Domain**: Modularizzare `Prova` e `Inscription` 
-- ✅ **Match Domain**: Isolare `Match`, `Rack`, `MatchResult`
-- ✅ **Classification Domain**: Separare `Classification` e ranking logic
-- ✅ **Backward Compatibility**: Mantenere tutti gli import esistenti funzionanti
+### **Sprint 1: Domain Separation Pure** (Settimana 1)
+**Goal**: Separare i domini SENZA aggiungere features
 
-### **Cosa NON Facciamo (Rimandato a Fase 3)**
-- ❌ Strategy pattern implementation  
-- ❌ Algorithm refactoring (Amalfi rimane come è)
-- ❌ Routes refactoring (admin.py rimane monolitico)
-- ❌ UI/UX changes
+#### Deliverables:
+- [ ] `models/tournament/` - Tournament model separato
+- [ ] `models/competition/` - Prova, Inscription separati
+- [ ] `models/match/` - Match, Rack, MatchResult, TrioMatch separati
+- [ ] `models/classification/` - Classification, RoundClassification, PlayerEncounter
+- [ ] Rimozione `legacy_models.py`
+- [ ] 100% backward compatibility
+- [ ] Tutti test passano
+
+#### Definition of Done:
+- App funziona identica a prima
+- Import da `models` continuano a funzionare
+- Coverage ≥90% sui file modificati
+- Zero breaking changes
 
 ---
 
-## 📅 Timeline Proposta
+### **Sprint 2: StandaloneCompetition** (Settimana 2)
+**Goal**: Director può creare competizioni senza torneo
 
-### Sprint 1 (Settimana 1)
-- [ ] Task 2.1: Tournament Domain (4 ore)
-- [ ] Task 2.2: Competition Domain (5 ore)
+#### User Stories:
+```
+Come Director
+Voglio creare una competizione standalone
+Per organizzare eventi singoli senza dover creare un torneo
+```
+
+#### Deliverables:
+- [ ] Modello `StandaloneCompetition` in `models/competition/`
+- [ ] Route per creare/gestire competizioni standalone
+- [ ] UI per director dashboard
+- [ ] Classification per competizioni standalone (se multi-round)
 - [ ] Test e documentazione
 
-### Sprint 2 (Settimana 2)
-- [ ] Task 2.3: Match Domain (4 ore)
-- [ ] Task 2.4: Classification Domain (3 ore)
-- [ ] Task 2.5: Update Import System (2 ore)
+---
 
-### Sprint 3 (Settimana 3)
-- [ ] Task 2.6: Enhanced Testing (4 ore)
-- [ ] Integration testing
-- [ ] Rimozione legacy_models.py
-- [ ] Documentazione finale
+### **Sprint 3: FriendlyMatch** (Settimana 3)
+**Goal**: Player può organizzare match amichevoli
+
+#### User Stories:
+```
+Come Player
+Voglio organizzare match amichevoli
+Per giocare partite informali con tracking risultati
+```
+
+#### Deliverables:
+- [ ] Modello `FriendlyMatch` in `models/match/`
+- [ ] Sistema privacy (public/friends/private)
+- [ ] Route per creare/gestire match amichevoli
+- [ ] UI per player dashboard
+- [ ] Statistiche separate per match amichevoli
+- [ ] Test e documentazione
 
 ---
 
-## 🔄 Ordine di Implementazione Consigliato
+## 📋 **Backlog** (Da prioritizzare dopo Sprint 3)
 
-1. **Tournament Domain FIRST** (no dependencies)
-2. **Competition Domain** (depends on Tournament)
-3. **Match Domain** (depends on Competition)
-4. **Classification Domain** (depends on all above)
-5. **Import System Update** (quando tutti i domini sono pronti)
-6. **Remove legacy_models.py** (ultimo step)
+### **Epic: Statistiche Unificate**
+- [ ] Statistiche globali (tutto incluso)
+- [ ] Statistiche ufficiali (solo tornei)
+- [ ] Statistiche per tipo evento
+- [ ] Dashboard con filtri
 
-⚠️ IMPORTANTE: Mantenere sempre legacy_models.py funzionante fino all'ultimo step!
+### **Epic: Privacy Granulare**
+- [ ] Privacy per singolo match
+- [ ] Privacy per competizione
+- [ ] Visibilità profilo giocatore
 
----
-
-## ⚠️ Rischi e Mitigazioni
-
-### Rischio 1: Breaking Changes
-**Mitigazione**: 
-- Mantenere legacy_models.py fino alla fine
-- Test di regressione dopo ogni task
-- Import aliases in `models/__init__.py`
-
-### Rischio 2: Circular Dependencies
-**Mitigazione**:
-- Usare TYPE_CHECKING per import di tipo
-- Forward references dove necessario
-- Service layer per dipendenze cross-domain
-
-### Rischio 3: Database Integrity
-**Mitigazione**:
-- Nessun cambio schema DB in Fase 2
-- Solo riorganizzazione codice
-- Test fixtures immutati
+### **Epic: Classification Strategies**
+- [ ] Refactor per supportare diverse strategie
+- [ ] Strategy pattern implementation
+- [ ] Configurazione per competizione
 
 ---
 
-## 📁 **Target Directory Structure**
+## 📁 **Struttura Target Sprint 1**
 
-### **Post-Fase 2 Organization**
 ```
 models/
-├── __init__.py                    # ✅ Import aliases updated
-├── base.py                       # ✅ Existing BaseModel infrastructure
-├── user/                         # ✅ COMPLETATO in Fase 1
-│   ├── models.py                 # User, TournamentDirector, DirectorRequest
-│   ├── permissions.py            # PermissionChecker system
-│   └── services.py               # UserService, DirectorRequestService
-├── tournament/                   # 🎯 NUOVO - Tournament Domain
-│   ├── __init__.py              # Exports tournament domain
-│   ├── models.py                # Tournament model
-│   └── services.py              # TournamentService
-├── competition/                  # 🎯 NUOVO - Competition Domain  
-│   ├── __init__.py              # Exports competition domain
-│   ├── models.py                # Prova, Inscription models
-│   └── services.py              # CompetitionService, InscriptionService
-├── match/                        # 🎯 NUOVO - Match Domain
-│   ├── __init__.py              # Exports match domain
-│   ├── models.py                # Match, Rack, MatchResult models
-│   └── services.py              # MatchService
-└── classification/               # 🎯 NUOVO - Classification Domain
-    ├── __init__.py              # Exports classification domain
-    ├── models.py                # Classification, RoundClassification models
-    └── services.py              # ClassificationService
-```
-
-### **Legacy Cleanup**
-- 🗑️ **DELETE**: `models/legacy_models.py` (800+ righe eliminate)
-- ✅ **PRESERVE**: All existing functionality through new modular structure
-
----
-
-## 📋 **Task Breakdown Dettagliato**
-
-### **Task 2.1: Tournament Domain** *(Stimate: 4 ore)*
-
-#### **File: `models/tournament/models.py`**
-```python
-"""
-Tournament domain models
-
-Migrates Tournament model from legacy_models.py with enhanced
-configuration support for future strategy pattern implementation.
-"""
-from models.base import BaseModel, db
-
-class Tournament(BaseModel):
-    __tablename__ = "tournament"
-    
-    # Existing fields (migrated from legacy)
-    name = db.Column(db.String(100), nullable=False)
-    tournament_type = db.Column(db.String(50), nullable=False, default="Amalfi")
-    without_x = db.Column(db.Boolean, default=False)
-    final_playoffs = db.Column(db.Boolean, default=True)
-    challenge_mode = db.Column(db.Boolean, default=False)
-    is_active = db.Column(db.Boolean, default=True)
-    
-    # Strategy configuration fields (prepared for Phase 3)
-    competition_strategy = db.Column(db.String(50), default="amalfi")
-    classification_strategy = db.Column(db.String(50), default="standard")
-    bye_handling_strategy = db.Column(db.String(50), default="with_x")
-    
-    # Relationships (updated imports)
-    provas = db.relationship("Prova", backref="tournament", lazy=True, 
-                           cascade="all, delete-orphan")
-    directors = db.relationship("User", secondary="tournament_director",
-                              viewonly=True)
-    
-    # Existing methods preserved
-    def can_be_modified(self): # Implementation unchanged
-    def can_be_deleted(self): # Implementation unchanged  
-    def get_status(self): # Implementation unchanged
-    def get_status_badge_class(self): # Implementation unchanged
-```
-
-#### **File: `models/tournament/services.py`**
-```python
-"""
-Tournament business logic services
-"""
-from typing import List, Optional
-from models.tournament.models import Tournament
-from models.base import db, safe_commit
-
-class TournamentService:
-    @staticmethod
-    def create_tournament(name: str, config: dict) -> Tournament:
-        """Create new tournament with configuration"""
-        
-    @staticmethod  
-    def assign_director(tournament_id: int, user_id: int) -> bool:
-        """Assign director to tournament"""
-        
-    @staticmethod
-    def get_tournaments_for_director(user_id: int) -> List[Tournament]:
-        """Get tournaments managed by director"""
-```
-
-### **Task 2.2: Competition Domain** *(Stimate: 5 ore)*
-
-#### **File: `models/competition/models.py`**
-```python
-"""
-Competition domain models (Prova + Inscription)
-"""
-from models.base import BaseModel, db
-
-class Prova(BaseModel):
-    __tablename__ = "prova"
-    
-    # All existing fields preserved from legacy_models.py
-    tournament_id = db.Column(db.Integer, db.ForeignKey("tournament.id"), nullable=False)
-    number = db.Column(db.Integer, nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-    location = db.Column(db.String(200))
-    description = db.Column(db.Text)
-    # ... all other existing fields
-    
-    # Strategy override fields (for Phase 3)
-    competition_strategy_override = db.Column(db.String(50))
-    classification_strategy_override = db.Column(db.String(50))
-    bye_handling_strategy_override = db.Column(db.String(50))
-    
-    # Relationships updated with new imports
-    inscriptions = db.relationship("Inscription", backref="prova", ...)
-    matches = db.relationship("Match", backref="prova", ...)
-    
-    # All existing methods preserved
-    def can_inscribe(self): # Implementation unchanged
-    def can_be_modified(self): # Implementation unchanged
-    # ... etc
-
-class Inscription(BaseModel):
-    __tablename__ = "inscription"
-    # All existing fields and methods preserved
-```
-
-### **Task 2.3: Match Domain** *(Stimate: 4 ore)*
-
-#### **File: `models/match/models.py`**
-```python
-"""
-Match domain models (Match, Rack, MatchResult)
-"""
-from models.base import BaseModel, db
-
-class Match(BaseModel):
-    __tablename__ = "match"
-    # All existing fields preserved
-    # All existing methods preserved
-    
-class Rack(BaseModel):
-    __tablename__ = "rack"  
-    # All existing fields preserved
-    # All existing methods preserved
-
-class MatchResult(BaseModel):
-    __tablename__ = "match_result"
-    # All existing fields preserved
-    # All existing methods preserved
-```
-
-### **Task 2.4: Classification Domain** *(Stimate: 3 ore)*
-
-#### **File: `models/classification/models.py`**
-```python
-"""
-Classification and ranking models
-"""
-from models.base import BaseModel, db
-
-class Classification(BaseModel):
-    __tablename__ = "classification"
-    # All existing fields preserved
-    # All existing methods preserved
-
-class RoundClassification(BaseModel):
-    """Enhanced: Per-round classification tracking"""
-    __tablename__ = "round_classification"
-    
-    prova_id = db.Column(db.Integer, db.ForeignKey("prova.id"), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    round_number = db.Column(db.Integer, nullable=False)
-    position = db.Column(db.Integer, nullable=False)
-    matches_won = db.Column(db.Integer, default=0)
-    matches_lost = db.Column(db.Integer, default=0)
-    racks_won = db.Column(db.Integer, default=0)
-    racks_lost = db.Column(db.Integer, default=0)
-    points = db.Column(db.Float, default=0.0)
-```
-
-### **Task 2.5: Update Import System** *(Stimate: 2 ore)*
-
-#### **File: `models/__init__.py` Updated**
-```python
-"""
-Updated import aliases maintaining backward compatibility
-"""
-# Import from new modular structure
-from models.user.models import User, TournamentDirector, DirectorRequest
-from models.tournament.models import Tournament
-from models.competition.models import Prova, Inscription  
-from models.match.models import Match, Rack, MatchResult
-from models.classification.models import Classification, RoundClassification
-
-# Legacy aliases (PRESERVE existing imports)
-__all__ = [
-    'User', 'TournamentDirector', 'DirectorRequest',
-    'Tournament', 'Prova', 'Inscription', 
-    'Match', 'Rack', 'MatchResult',
-    'Classification', 'RoundClassification'
-]
-```
-
-### **Task 2.6: Enhanced Testing** *(Stimate: 4 ore)*
-
-#### **New Test Files**
-```python
-tests/
-├── test_tournament_domain.py     # Tournament model + service tests
-├── test_competition_domain.py    # Prova + Inscription tests  
-├── test_match_domain.py         # Match + Rack tests
-├── test_classification_domain.py # Classification tests
-├── test_phase2_integration.py   # Cross-domain integration
-└── test_backward_compatibility_phase2.py # Import compatibility
+├── __init__.py          # Import aliases mantenuti
+├── base.py             # BaseModel esistente
+├── user/               # ✅ Già completato
+├── tournament/         # 🎯 Sprint 1
+│   ├── __init__.py
+│   ├── models.py       # Tournament
+│   └── services.py     # TournamentService
+├── competition/        # 🎯 Sprint 1 + Sprint 2
+│   ├── __init__.py
+│   ├── models.py       # Prova, Inscription, (StandaloneCompetition)
+│   └── services.py
+├── match/              # 🎯 Sprint 1 + Sprint 3
+│   ├── __init__.py
+│   ├── models.py       # Match, Rack, MatchResult, TrioMatch, (FriendlyMatch)
+│   └── services.py
+└── classification/     # 🎯 Sprint 1
+    ├── __init__.py
+    ├── models.py       # Classification, RoundClassification, PlayerEncounter
+    └── services.py
 ```
 
 ---
 
-## 🔧 **Migration Strategy**
+## 🏃 **Execution Plan Sprint 1**
 
-### **Step-by-Step Migration Process**
-1. **Create Domain Directories**: Setup modular structure
-2. **Extract Models**: Move models from `legacy_models.py` to domains
-3. **Update Relationships**: Fix cross-domain references  
-4. **Create Services**: Business logic extraction
-5. **Update Imports**: Maintain backward compatibility
-6. **Test Everything**: Comprehensive testing
-7. **Delete Legacy**: Remove `legacy_models.py`
+### Day 1-2: Tournament + Competition domains
+- Extract Tournament → `models/tournament/`
+- Extract Prova, Inscription → `models/competition/`
+- Create basic services
+- Update imports
 
-### **Risk Mitigation**
-- **Atomic Commits**: Each domain migration is separate commit
-- **Import Testing**: Verify all existing imports work
-- **Functional Testing**: All routes continue working
-- **Rollback Plan**: Git revert per domain if issues
+### Day 3-4: Match + Classification domains
+- Extract Match, Rack, etc → `models/match/`
+- Extract Classification, etc → `models/classification/`
+- Create basic services
+- Fix circular dependencies
 
----
+### Day 5: Integration & Testing
+- Remove `legacy_models.py`
+- Run full test suite
+- Fix any broken imports
+- Verify all routes work
 
-## 📊 **Quality Gates Fase 2**
-
-### **Code Quality Requirements**
-- **Test Coverage**: ≥90% on all new modular code
-- **Import Compatibility**: 100% existing imports working
-- **Performance**: No regression on page load times
-- **Documentation**: Comprehensive docstrings per module
-
-### **Success Criteria**
-- [ ] All 4 domains successfully separated
-- [ ] `legacy_models.py` completely removed
-- [ ] All existing routes/templates working unchanged
-- [ ] Test suite passing with >90% coverage
-- [ ] Import patterns documented and tested
+### Day 6-7: Documentation & Review
+- Update ADRs
+- Code review
+- Performance testing
+- Sprint retrospective
 
 ---
 
-## 🚀 **Benefits Post-Fase 2**
+## 🎯 **Success Metrics**
 
-### **Architectural Improvements**
-✅ **Clean Domain Separation**: Each domain has single responsibility  
-✅ **Modular Development**: Teams can work on domains independently  
-✅ **Reduced Coupling**: Clear interfaces between domains  
-✅ **Enhanced Testability**: Domain-specific test suites  
+### Sprint 1:
+- [ ] Zero breaking changes
+- [ ] All tests pass
+- [ ] Performance unchanged
+- [ ] Clean domain separation
 
-### **Foundation for Fase 3**
-✅ **Strategy Pattern Ready**: Configuration fields in place  
-✅ **Service Layer**: Business logic properly abstracted  
-✅ **Clean Import Structure**: Ready for algorithm plugins  
-✅ **Comprehensive Testing**: Safety net for major changes  
+### Overall:
+- [ ] Directors can create standalone competitions (Sprint 2)
+- [ ] Players can create friendly matches (Sprint 3)
+- [ ] Clean, maintainable architecture
 
-### **Technical Debt Eliminated**
-- 🗑️ **800+ line monolite** `legacy_models.py` removed
-- ✅ **Clear responsibilities** per domain
-- ✅ **Maintainable code** structure
-- ✅ **Future-proof** architecture
+---
 
-**Fase 2 completa la modularizzazione structurale, preparando il terreno per implementazione strategy patterns in Fase 3.**
+**Agile Manifesto Applied**:
+- Working software over comprehensive documentation
+- Responding to change over following a plan
+- Customer collaboration over contract negotiation
