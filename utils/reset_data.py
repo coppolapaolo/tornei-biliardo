@@ -16,6 +16,7 @@ from models.base import db
 from models import Tournament
 from models.user.models import TournamentDirector, User
 from models.user.services import UserService, DirectorRequestService
+from models import Prova
 
 
 # ─────────────────────── USERS ────────────────────────────────────────────────
@@ -79,6 +80,37 @@ def _create_tournaments(admin: User) -> List[Tournament]:
     return tournaments
 
 
+def _create_provas(tournaments: List[Tournament]) -> None:
+    """Create sample provas for each tournament"""
+    from models import Prova
+    from datetime import date, timedelta
+
+    provas = []
+    disciplines = ["palla 8", "palla 9", "palla 10"]
+
+    for i, tournament in enumerate(tournaments):
+        for j in range(2):  # 2 provas per tournament
+            prova = Prova(
+                tournament_id=tournament.id,
+                number=j + 1,
+                name=f"{tournament.name} - Prova {j + 1}",
+                date=date.today() + timedelta(days=7 * (i * 2 + j + 1)),
+                discipline=disciplines[i % len(disciplines)],
+                distance=5 + j * 2,  # 5, 7
+                best_of=True,
+                rounds_count=3,
+                location="Sala Biliardo Centro",
+                entry_fee=15.0,
+                min_participants=4,
+                max_participants=16,
+                status="setup",
+            )
+            provas.append(prova)
+
+    db.session.add_all(provas)
+    print(f"   ✅ Created {len(provas)} provas")
+
+
 def _assign_directors(
     admin: User, directors: List[User], tournaments: List[Tournament]
 ) -> None:
@@ -128,6 +160,10 @@ def _reset_database_core() -> None:
         data["admin"], data["directors"], tournaments  # type: ignore[arg-type]
     )
 
+    # AGGIUNGI QUESTA PARTE
+    print("🎱 Creating provas...")
+    _create_provas(tournaments)
+
     print("💾 Committing to database...")
     db.session.commit()
 
@@ -138,6 +174,7 @@ def _reset_database_core() -> None:
     player_count = User.query.filter_by(role="player").count()
     tournament_count = Tournament.query.count()
     assignment_count = TournamentDirector.query.count()
+    prova_count = Prova.query.count()  # AGGIUNGI QUESTO
 
     print("✅ Enhanced data ready!")
     print(f"   - Total Users: {user_count}")
@@ -146,6 +183,7 @@ def _reset_database_core() -> None:
     print(f"   - Player users: {player_count}")
     print(f"   - Tournaments: {tournament_count}")
     print(f"   - Directors assigned: {assignment_count}")
+    print(f"   - Provas created: {prova_count}")  # AGGIUNGI QUESTO
     print("   - Admin user: admin / admin123")
 
 

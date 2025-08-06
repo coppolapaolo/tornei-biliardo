@@ -40,12 +40,35 @@ class User(UserMixin, BaseModel):
     phone = db.Column(db.String(20))
 
     # Relationships (string names to postpone model imports)
-    inscriptions = db.relationship("Inscription", backref="user", lazy=True)
+    inscriptions = db.relationship("Inscription", back_populates="user", lazy=True)
     match_results = db.relationship(
         "MatchResult", foreign_keys="MatchResult.user_id", lazy=True
     )
-    classifications = db.relationship("Classification", backref="user", lazy=True)
-    playoff_participations = db.relationship("Playoff", backref="user", lazy=True)
+    classifications = db.relationship(
+        "Classification", back_populates="user", lazy=True
+    )
+    playoff_participations = db.relationship(
+        "Playoff", back_populates="user", lazy=True
+    )
+    # Additional relationships for classification domain
+    round_classifications = db.relationship(
+        "RoundClassification", back_populates="user", lazy=True
+    )
+
+    # Player encounter relationships
+    player1_encounters = db.relationship(
+        "PlayerEncounter",
+        foreign_keys="PlayerEncounter.player1_id",
+        back_populates="player1",
+        lazy=True,
+    )
+
+    player2_encounters = db.relationship(
+        "PlayerEncounter",
+        foreign_keys="PlayerEncounter.player2_id",
+        back_populates="player2",
+        lazy=True,
+    )
 
     # ───────────────────
     # Auth helpers

@@ -88,3 +88,4 @@ repository_export_*.md
 export_zip_md.py
 repository_export_*.zip
 export_repo.py
+repository_export_*/

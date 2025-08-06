@@ -1,5 +1,5 @@
 """
-Models package initialization - Phase 2 Sprint 1 Update
+Models package initialization - Phase 2 Sprint 1 Complete
 
 This module provides domain-driven model organization while maintaining
 backward compatibility with existing code.
@@ -9,11 +9,12 @@ Phase Status:
 - ✅ User domain extracted and modularized
 - ✅ Tournament domain extracted
 - ✅ Competition domain extracted
-- 🏃 Match domain extraction in progress
-- ⚠️ Other domains in legacy_models.py (Sprint 1 target)
+- ✅ Match domain extracted
+- ✅ Classification domain extracted
+- ⚠️ Playoff still in legacy_models.py (future sprint)
 
 Author: Refactoring Phase 2 - Sprint 1
-Updated: 2025-08-05
+Updated: 2025-08-06
 """
 
 # Import database instance and utilities from base module
@@ -29,25 +30,14 @@ from .base import (
 # PHASE 1 COMPLETE: User domain imported from modular structure
 from .user.models import User, TournamentDirector, DirectorRequest
 
-# PHASE 2 SPRINT 1: Separated domains
+# PHASE 2 SPRINT 1 COMPLETE: All domains separated
 from .tournament.models import Tournament
 from .competition.models import Prova, Inscription
 from .match.models import Match, Rack, MatchResult, TrioMatch
+from .classification.models import Classification, RoundClassification, PlayerEncounter
 
-# PHASE 2 TODO: Import remaining models from legacy_models.py
-from .legacy_models import (
-    # Tournament,  # Now imported from tournament domain
-    # Prova,       # Now imported from competition domain
-    # Inscription, # Now imported from competition domain
-    # Match,       # Now imported from match domain
-    # Rack,        # Now imported from match domain
-    # MatchResult, # Now imported from match domain
-    # TrioMatch,   # Now imported from match domain
-    Classification,
-    Playoff,
-    PlayerEncounter,
-    RoundClassification,
-)
+# PHASE 2 TODO: Import remaining model from legacy_models.py
+from .legacy_models import Playoff
 
 # Export all available models for backward compatibility
 __all__ = [
@@ -72,13 +62,14 @@ __all__ = [
     "Rack",
     "MatchResult",
     "TrioMatch",
-    # Legacy models (Phase 2 Sprint 1 target)
+    # Classification domain models (Phase 2 Sprint 1)
     "Classification",
-    "Playoff",
-    "PlayerEncounter",
     "RoundClassification",
+    "PlayerEncounter",
+    # Legacy models (future sprints)
+    "Playoff",
 ]
 
 # Phase tracking
-__version__ = "2.0.0-sprint1-wip"
-__phase__ = "Phase 2 Sprint 1: Domain Separation"
+__version__ = "2.0.0-sprint1"
+__phase__ = "Phase 2 Sprint 1: Domain Separation COMPLETE"
