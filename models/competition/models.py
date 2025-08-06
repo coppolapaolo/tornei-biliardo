@@ -3,7 +3,7 @@ Module: models/competition/models.py
 Purpose: Competition domain models (Prova, Inscription)
 Data Structures: Prova, Inscription
 Dependencies: models.base.db, datetime
-ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
+ADR Reference: docs/ADR/ADR-0012-prova-nullable-tournament.md
 """
 
 from datetime import datetime
@@ -11,14 +11,18 @@ from models.base import db
 
 
 class Prova(db.Model):
-    """Competition round within a tournament."""
+    """Competition round within a tournament or standalone."""
 
     __tablename__ = "prova"
 
     id = db.Column(db.Integer, primary_key=True)
-    tournament_id = db.Column(
-        db.Integer, db.ForeignKey("tournament.id"), nullable=False
-    )
+
+    # FK nullable per supportare standalone competitions (ADR-0012)
+    tournament_id = db.Column(db.Integer, db.ForeignKey("tournament.id"), nullable=True)
+
+    # Director FK per standalone competitions
+    director_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
     date = db.Column(db.Date, nullable=False)
@@ -53,26 +57,51 @@ class Prova(db.Model):
     # Relazioni
     inscriptions = db.relationship("Inscription", backref="prova", lazy=True)
     matches = db.relationship("Match", backref="prova", lazy=True)
+    director = db.relationship(
+        "User", foreign_keys=[director_id], backref="standalone_provas"
+    )
+
+    # Property per identificare se è standalone
+    @property
+    def is_standalone(self):
+        """Check if this is a standalone competition."""
+        return self.tournament_id is None
+
+    def get_organizer(self):
+        """Get the competition organizer (director or tournament owner)."""
+        if self.is_standalone:
+            return self.director
+        if self.tournament and self.tournament.directors:
+            return self.tournament.directors[0]
+        return None
+
+    def get_display_name(self):
+        """Get display name including tournament/standalone info."""
+        if self.is_standalone:
+            return f"{self.name} (Standalone)"
+        return f"{self.name} - {self.tournament.name}"
 
     def get_real_status(self):
-        """Restituisce lo status reale della prova"""
-        if self.status == "setup":
-            return "setup"
+        """Restituisce lo status reale, considerando anche round e iscrizioni"""
+        if self.status == "playing":
+            # Se tutti i match del round corrente sono finiti
+            all_matches_finished = all(
+                m.status == "completed"
+                for m in self.matches
+                if m.round_number == self.current_round
+            )
+            if all_matches_finished:
+                if self.current_round < self.rounds_count:
+                    return "round_completed"
+                else:
+                    return "tournament_completed"
         elif self.status == "inscription":
             if self.inscription_end and datetime.utcnow() > self.inscription_end:
                 return "inscription_closed"
-            return "inscription"
-        elif self.status == "playing":
-            if self.current_round > 0:
-                return "playing"
-            else:
-                return "ready_to_start"
-        elif self.status == "completed":
-            return "completed"
-        return "setup"
+        return self.status
 
     def get_status_badge_info(self):
-        """Restituisce info per badge status"""
+        """Restituisce info per badge status nel template"""
         real_status = self.get_real_status()
         return {
             "setup": {"class": "bg-warning", "text": "Setup"},
@@ -84,7 +113,21 @@ class Prova(db.Model):
             "ready_to_start": {"class": "bg-primary", "text": "Pronta per Iniziare"},
             "playing": {"class": "bg-success", "text": "In Corso"},
             "completed": {"class": "bg-dark", "text": "Completata"},
+            "round_completed": {"class": "bg-info", "text": "Turno Completato"},
+            "tournament_completed": {"class": "bg-dark", "text": "Torneo Completato"},
         }.get(real_status, {"class": "bg-secondary", "text": "Sconosciuto"})
+
+    def can_start_new_round(self):
+        """Verifica se si può iniziare un nuovo round"""
+        if self.status != "playing":
+            return False
+        if self.current_round >= self.rounds_count:
+            return False
+        # Tutti i match del round corrente devono essere completati
+        current_round_matches = [
+            m for m in self.matches if m.round_number == self.current_round
+        ]
+        return all(m.status == "completed" for m in current_round_matches)
 
     def can_inscribe(self):
         """Verifica se si possono fare iscrizioni"""
@@ -133,6 +176,8 @@ class Prova(db.Model):
         self.entry_fee = source_prova.entry_fee
 
     def __repr__(self):
+        if self.is_standalone:
+            return f"<Prova Standalone '{self.name}'>"
         return f"<Prova {self.name} (Torneo {self.tournament_id})>"
 
 

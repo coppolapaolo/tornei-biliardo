@@ -9,20 +9,20 @@
 ### **Versione & Status**
 - **Versione Attuale**: v3.1.0 (Sistema Amalfi + Domain Separation in corso)
 - **Approccio**: 🚀 **AGILE** - Sprint settimanali con rilasci incrementali
-- **Sprint Corrente**: Fase 2 Sprint 1 - Domain Separation (75% completato)
+- **Sprint Corrente**: ✅ Fase 2 Sprint 1 - Domain Separation COMPLETATO (100%)
 - **Architettura**: Flask MVC con Blueprints, SQLAlchemy ORM, Bootstrap 5
 - **Deployment**: PythonAnywhere (SQLite dev → PostgreSQL prod)
 
 ### **Fasi Completate**
 - ✅ **Fase 1**: User Domain modularizzato con permission system
-- 🏃 **Fase 2 Sprint 1**: Domain Separation (75% completato)
+- ✅ **Fase 2 Sprint 1**: Domain Separation COMPLETATO (100%)
   - ✅ Tournament domain
   - ✅ Competition domain (Prova, Inscription)
   - ✅ Match domain (Match, Rack, MatchResult, TrioMatch)
-  - 🎯 Classification domain (ultimo rimasto)
+  - ✅ Classification domain (Classification, RoundClassification, PlayerEncounter)
 
 ### **Prossimi Sprint Pianificati**
-- 📅 **Sprint 2**: StandaloneCompetition - Competizioni senza torneo
+- 📅 **Sprint 2**: Prova Standalone - Competizioni senza torneo (FK nullable)
 - 📅 **Sprint 3**: FriendlyMatch - Match amichevoli tra giocatori
 - 📋 **Backlog**: Statistiche unificate, privacy granulare, strategy patterns
 
@@ -34,14 +34,14 @@
 
 ---
 
-## 📁 **Struttura Modulare Attuale** *(Post Fase 2 Sprint 1 - 75%)*
+## 📁 **Struttura Modulare Attuale** *(Post Fase 2 Sprint 1 - COMPLETATO)*
 
 ### **Directory Structure**
 ```
 models/
 ├── __init__.py           # Import aliases per backward compatibility
 ├── base.py              # ✅ BaseModel + mixins + db instance
-├── legacy_models.py     # ⚠️ Solo Classification, Playoff, PlayerEncounter, RoundClassification
+├── legacy_models.py     # ⚠️ Solo Playoff rimasto
 ├── user/                # ✅ COMPLETATO - Dominio User
 │   ├── __init__.py      # Exports pubblici dominio
 │   ├── models.py        # User, TournamentDirector, DirectorRequest
@@ -53,9 +53,12 @@ models/
 ├── competition/         # ✅ COMPLETATO - Dominio Competition
 │   ├── models.py        # Prova, Inscription
 │   └── services.py      # ProvaService, InscriptionService
-└── match/               # ✅ COMPLETATO - Dominio Match
-    ├── models.py        # Match, Rack, MatchResult, TrioMatch
-    └── services.py      # MatchService, RackService, etc.
+├── match/               # ✅ COMPLETATO - Dominio Match
+│   ├── models.py        # Match, Rack, MatchResult, TrioMatch
+│   └── services.py      # MatchService, RackService, etc.
+└── classification/      # ✅ COMPLETATO - Dominio Classification
+    ├── models.py        # Classification, RoundClassification, PlayerEncounter
+    └── services.py      # ClassificationService, RoundClassificationService, PlayerEncounterService
 ```
 
 ### **Import Pattern Funzionante**
@@ -70,6 +73,8 @@ from models.competition.models import Prova, Inscription
 from models.match.models import Match, Rack, MatchResult, TrioMatch
 from models.user.permissions import PermissionChecker
 from models.user.services import UserService
+from models.classification.models import Classification, RoundClassification, PlayerEncounter
+from models.classification.services import ClassificationService
 ```
 
 ---
@@ -125,7 +130,7 @@ Configurazioni attive:
 ## ⚠️ **Technical Debt Identificato**
 
 ### **Legacy Code (da modularizzare)**
-- 📁 `models/legacy_models.py` - Ridotto a 4 classi (Classification domain)
+- 📁 `models/legacy_models.py` - Ridotto a 1 classe (solo Playoff)
 - 📁 `routes/admin.py` - Troppe responsabilità
 - 📁 `utils.py` - Mix di funzioni eterogenee
 
@@ -143,13 +148,13 @@ Configurazioni attive:
 
 ## 🚀 **Roadmap Prossime Fasi**
 
-### **Fase 2: Domain Separation** *(75% Completato)*
+### **Fase 2: Domain Separation** *(Sprint 1 COMPLETATO)*
 ```
 Completati:
 ├── models/tournament/     # ✅ Tournament logic separata
 ├── models/competition/    # ✅ Prova, Inscription domain separato
 ├── models/match/         # ✅ Match, Rack domain separato
-└── models/classification/ # 🎯 PROSSIMO - Classification domain
+└── models/classification/ # ✅ Classification domain separato
 ```
 
 ### **Fase 3: Strategy Pattern Implementation**
@@ -174,12 +179,13 @@ Obiettivi:
 - 📄 `ARCHITETTURA.md` - Overview architetturale
 - 📄 `MODULE_SUMMARY.md` - Quick reference moduli
 - 📄 `PHASE_1_STATUS.md` - Status Fase 1 completata
-- 📄 `PHASE_2_SPRINT1_STATUS.md` - Status Sprint corrente
+- 📄 `PHASE_2_SPRINT1_STATUS.md` - ✅ Sprint 1 completato con successo
 
 ### **ADR Decisioni Architetturali**
 - 📄 `docs/ADR/ADR-0002-separazione_dominio_user.md` - Rationale modularizzazione
 - 📄 `docs/ADR/ADR-0003-sistema_permessi_e_decoratori.md` - Permission system
 - 📄 `docs/ADR/ADR-0010-domain-separation-phase2.md` - Piano separazione domini
+- 📄 `docs/ADR/ADR-0011-phase2-sprint1-completion.md` - Sprint 1 completato con successo
 
 ---
 

@@ -121,23 +121,26 @@ Future Enhancements (Post-Sprint 1):
     - classification_strategy: "standard" | "weighted"
 ```
 
-### **`models/competition/`** 🏃
+### **`models/competition/`** ✅
 ```python
-Purpose: Competition (Prova) domain  
-Status: 🏃 IN PROGRESS - Fase 2 Sprint 1 (Domain Separation)
-Current Implementation:
-  - models.py: Prova, Inscription entities (✅ estratti da legacy)
-  - services.py: ProvaService, InscriptionService placeholders (✅)
-  - __init__.py: Domain exports (✅)
-  
+Purpose: Competition management domain
+Status: ✅ COMPLETATO - Fase 2 Sprint 1
+Files:
+  - models.py: Prova, Inscription
+  - services.py: ProvaService, InscriptionService
+  - __init__.py: Domain exports
 Import Examples:
   from models import Prova, Inscription  # Backward compatible
-  from models.competition.models import Prova, Inscription  # New modular
-  from models.competition.services import ProvaService, InscriptionService
-
-Future Enhancements (Post-Sprint 1):
-  - CompetitionRules: Rule configurations
-  - StandaloneCompetition: Competitions without tournaments
+  from models.competition.models import Prova  # New modular
+Key Features:
+  - Competition lifecycle (setup → inscription → playing → completed)
+  - Registration management with deadlines
+  - Multi-round support with Amalfi pairing
+  - ✨ Standalone competitions (Sprint 2): tournament_id nullable
+Future Enhancements (Post-Sprint 2):
+  - Prova con tournament_id nullable per eventi standalone
+  - Property is_standalone per identificare tipo
+  - Method get_organizer() per recuperare Director/Tournament owner
   - Advanced Business Logic:
     - Registration management with waiting lists
     - Competition lifecycle automation
@@ -164,18 +167,22 @@ Key Features:
   - Admin validation capabilities
 ```
 
-### **`models/classification/`** 🎯
+### **`models/classification/`** ✅
 ```python
-Purpose: Ranking and scoring
-Status: 🎯 PLANNED - Fase 2
-Planned Models:
-  - Classification: Final rankings
-  - RoundClassification: Per-round standings
-  - PlayerStats: Performance metrics
-Algorithms:
-  - Multiple ranking strategies
-  - Configurable scoring systems
-  - Advanced analytics
+Purpose: Ranking and scoring domain
+Status: ✅ COMPLETATO - Fase 2 Sprint 1
+Files:
+  - models.py: Classification, RoundClassification, PlayerEncounter
+  - services.py: ClassificationService, RoundClassificationService, PlayerEncounterService
+  - __init__.py: Domain exports
+Import Examples:
+  from models import Classification  # Backward compatible
+  from models.classification.models import Classification  # New modular
+Key Features:
+  - Tournament-wide classification tracking
+  - Round-by-round standings (Amalfi algorithm)
+  - Player encounter tracking (anti-reincontro)
+  - Tie-breaking rules implementation
 ```
 
 ---

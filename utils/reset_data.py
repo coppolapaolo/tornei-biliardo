@@ -17,6 +17,7 @@ from models import Tournament
 from models.user.models import TournamentDirector, User
 from models.user.services import UserService, DirectorRequestService
 from models import Prova
+from datetime import date
 
 
 # ─────────────────────── USERS ────────────────────────────────────────────────
@@ -111,6 +112,60 @@ def _create_provas(tournaments: List[Tournament]) -> None:
     print(f"   ✅ Created {len(provas)} provas")
 
 
+def _create_standalone_provas(directors: List[User]) -> None:
+    """Create standalone competitions for Sprint 2 testing"""
+    from datetime import datetime, timedelta
+
+    print("🆕 Creating standalone competitions...")
+
+    # Director1 crea una competizione standalone
+    standalone1 = Prova(
+        number=1,
+        name="Memorial Rossi 2025",
+        director_id=directors[0].id,  # mario_rossi
+        tournament_id=None,  # Nessun torneo
+        date=date.today() + timedelta(days=45),
+        location="Circolo Biliardo Milano",
+        description="Competizione in memoria del maestro Rossi",
+        discipline="palla 8",
+        distance=9,
+        best_of=True,
+        rounds_count=1,  # Singolo turno
+        min_participants=8,
+        max_participants=16,
+        entry_fee=20.0,
+        inscription_start=datetime.now() + timedelta(days=5),
+        inscription_end=datetime.now() + timedelta(days=40),
+        status="setup",
+    )
+    db.session.add(standalone1)
+
+    # Director2 crea una competizione standalone multi-turno
+    standalone2 = Prova(
+        number=2,
+        name="Open Estate 2025",
+        director_id=directors[1].id,  # lucia_verdi
+        tournament_id=None,
+        date=date.today() + timedelta(days=60),
+        location="Sala Biliardo Roma",
+        description="Competizione estiva aperta a tutti",
+        discipline="palla 9",
+        distance=7,
+        best_of=True,
+        rounds_count=3,  # 3 turni come Amalfi
+        min_participants=12,
+        max_participants=32,
+        entry_fee=15.0,
+        inscription_start=datetime.now() + timedelta(days=10),
+        inscription_end=datetime.now() + timedelta(days=55),
+        status="inscription",  # Questa è già aperta
+    )
+    db.session.add(standalone2)
+
+    db.session.flush()  # Per avere gli ID
+    print("   ✅ Created 2 standalone competitions")
+
+
 def _assign_directors(
     admin: User, directors: List[User], tournaments: List[Tournament]
 ) -> None:
@@ -167,6 +222,12 @@ def _reset_database_core() -> None:
     print("💾 Committing to database...")
     db.session.commit()
 
+    print("🏁 Creating standalone provas...")
+    _create_standalone_provas(data["directors"])  # type: ignore[arg-type]
+
+    print("💾 Committing to database...")
+    db.session.commit()
+
     # Verify results
     user_count = User.query.count()
     admin_count = User.query.filter_by(role="admin").count()
@@ -174,7 +235,8 @@ def _reset_database_core() -> None:
     player_count = User.query.filter_by(role="player").count()
     tournament_count = Tournament.query.count()
     assignment_count = TournamentDirector.query.count()
-    prova_count = Prova.query.count()  # AGGIUNGI QUESTO
+    prova_count = Prova.query.count()
+    standalone_count = Prova.query.filter_by(tournament_id=None).count()  # NUOVO
 
     print("✅ Enhanced data ready!")
     print(f"   - Total Users: {user_count}")
@@ -183,7 +245,8 @@ def _reset_database_core() -> None:
     print(f"   - Player users: {player_count}")
     print(f"   - Tournaments: {tournament_count}")
     print(f"   - Directors assigned: {assignment_count}")
-    print(f"   - Provas created: {prova_count}")  # AGGIUNGI QUESTO
+    print(f"   - Provas created: {prova_count}")
+    print(f"   - Standalone provas: {standalone_count}")  # NUOVO
     print("   - Admin user: admin / admin123")
 
 

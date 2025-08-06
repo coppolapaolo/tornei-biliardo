@@ -1,22 +1,16 @@
 # 📊 Phase 2 Sprint 1 Status
 
-## ✅ Completed
+## ✅ Sprint 1 COMPLETATO - 100%
+
+### Completed (4/4 domini)
 - [x] Tournament domain separation
-- [x] Competition domain (Prova, Inscription)
+- [x] Competition domain (Prova, Inscription) 
 - [x] Match domain (Match, Rack, MatchResult, TrioMatch)
-- [x] Test backward compatibility for all separated domains
-- [x] Update all dependencies (utils/reset_data.py, models/user/models.py)
+- [x] Classification domain (Classification, RoundClassification, PlayerEncounter)
+- [x] Test backward compatibility per tutti i domini
+- [x] Aggiornamento dipendenze (utils/reset_data.py, models/user/models.py)
 
-## 🏃 In Progress
-- [ ] Classification domain (Classification, RoundClassification, PlayerEncounter)
-- [ ] Remove legacy_models.py after all domains separated
+### Rimanente in legacy_models.py
+- Playoff (da migrare in futuro sprint)
 
-## 📋 Next Steps
-1. Extract Classification, RoundClassification, PlayerEncounter to models/classification/
-2. Remove legacy_models.py completely
-3. Final testing of all domains
-4. Complete Sprint 1 documentation
-
-## 📊 Progress: 75% Complete
-- Domains separated: 3/4 (Tournament ✅, Competition ✅, Match ✅)
-- Domains remaining: 1/4 (Classification)
+### Sprint completato con successo!
