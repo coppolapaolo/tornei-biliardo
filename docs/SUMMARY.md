@@ -20,9 +20,11 @@
   - ✅ Competition domain (Prova, Inscription)
   - ✅ Match domain (Match, Rack, MatchResult, TrioMatch)
   - ✅ Classification domain (Classification, RoundClassification, PlayerEncounter)
+- ✅ **Fase 2 Sprint 2**: Prova Standalone COMPLETATO (100%)
+  - ✅ FK nullable implementation (ADR-0012)
+  - ✅ Director può creare competizioni senza torneo
 
 ### **Prossimi Sprint Pianificati**
-- 📅 **Sprint 2**: Prova Standalone - Competizioni senza torneo (FK nullable)
 - 📅 **Sprint 3**: FriendlyMatch - Match amichevoli tra giocatori
 - 📋 **Backlog**: Statistiche unificate, privacy granulare, strategy patterns
 

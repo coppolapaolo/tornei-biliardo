@@ -156,6 +156,16 @@
                                     <li><hr class="dropdown-divider"></li>
                                 {% endif %}
                                 
+                                {% if show_director_management %}
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.director_dashboard') }}">
+                                        <i class="fas fa-trophy"></i> Director Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.create_prova_standalone') }}">
+                                        <i class="fas fa-plus"></i> Nuova Competizione Standalone
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+
                                 {% if show_admin_management %}
                                     <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
                                         <i class="fas fa-cog"></i> Admin Dashboard
@@ -164,8 +174,7 @@
                                         <i class="fas fa-users"></i> Gestione Utenti
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                {% endif %}
-                                
+                                {% endif %}                                
                                 {% if can_delete_account %}
                                     <li><a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
                                         <i class="fas fa-trash"></i> Elimina Account

@@ -35,7 +35,7 @@
 
 ---
 
-### **Sprint 2: Prova Standalone** (Settimana 2)
+### **Sprint 2: Prova Standalone** ✅ COMPLETATO (Settimana 2)
 **Goal**: Director può creare competizioni senza torneo usando Prova con tournament_id nullable
 
 #### User Stories:
@@ -46,21 +46,21 @@ Per organizzare eventi singoli senza dover creare un torneo
 ```
 
 #### Deliverables:
-- [ ] Modificare modello `Prova` con `tournament_id` nullable
-- [ ] Aggiungere `director_id` FK per competizioni standalone
-- [ ] Implementare property `is_standalone` e method `get_organizer()`
-- [ ] Route per creare/gestire Prova standalone in director dashboard
-- [ ] UI condizionale: scelta torneo o standalone alla creazione
-- [ ] Reset database con nuovo schema
-- [ ] Test per entrambe le modalità (con/senza torneo)
-- [ ] Aggiornare documentazione e ADR-0012
+- [x] Modificare modello `Prova` con `tournament_id` nullable
+- [x] Aggiungere `director_id` FK per competizioni standalone
+- [x] Implementare property `is_standalone` e method `get_organizer()`
+- [x] Route per creare/gestire Prova standalone in director dashboard
+- [x] UI condizionale: scelta torneo o standalone alla creazione
+- [x] Reset database con nuovo schema
+- [x] Test per entrambe le modalità (con/senza torneo)
+- [x] Aggiornare documentazione e ADR-0012
 
 #### Definition of Done:
-- Director può creare Prova senza selezionare torneo
-- UI mostra correttamente Prove standalone nel dashboard
-- Tutte le funzionalità esistenti continuano a funzionare
-- Coverage ≥90% sui file modificati
-- Reset DB eseguito con successo
+- Director può creare Prova senza selezionare torneo ✅
+- UI mostra correttamente Prove standalone nel dashboard ✅
+- Tutte le funzionalità esistenti continuano a funzionare ✅
+- Coverage ≥90% sui file modificati ✅
+- Reset DB eseguito con successo ✅
 
 ---
 

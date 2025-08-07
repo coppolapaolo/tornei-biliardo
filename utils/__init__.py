@@ -15,7 +15,7 @@ continuano a funzionare.
 # PHASE 1 PERMISSION SYSTEM UPDATE
 from functools import wraps
 from importlib import import_module as _import_module
-from flask import abort, flash, redirect, url_for
+from flask import abort, flash, redirect, url_for, request
 from flask_login import current_user
 
 from models.user.permissions import PermissionChecker, RoleRequirement
@@ -51,14 +51,37 @@ def tournament_manager_required(tournament_id_getter):
 
 
 def prova_manager_required(f):
-    """Permette l’accesso a chi gestisce la prova indicata."""
+    """Decorator per verificare che l'utente possa gestire una prova
+    (torneo o standalone)"""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        prova_id = kwargs.get("prova_id")
-        if not PermissionChecker.can_manage_competition(current_user, prova_id):
-            abort(403)
-        return f(*args, **kwargs)
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+
+        prova_id = kwargs.get("prova_id") or request.view_args.get("prova_id")
+        prova = Prova.query.get_or_404(prova_id)
+
+        # Admin può sempre gestire
+        if current_user.is_admin:
+            return f(*args, **kwargs)
+
+        # Se è una prova standalone, verifica che sia il director che l'ha creata
+        if prova.is_standalone:
+            if prova.director_id == current_user.id:
+                return f(*args, **kwargs)
+        else:
+            # Se è una prova di torneo, verifica che sia director del torneo
+            if current_user.is_director:
+                tournament = Tournament.query.get(prova.tournament_id)
+                if tournament and any(
+                    td.user_id == current_user.id
+                    for td in tournament.directors_association
+                ):
+                    return f(*args, **kwargs)
+
+        flash("Non hai i permessi per gestire questa prova.")
+        return redirect(url_for("main.index"))
 
     return decorated_function
 

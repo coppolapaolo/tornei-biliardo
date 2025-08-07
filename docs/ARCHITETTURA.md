@@ -13,15 +13,14 @@
 - **Strategy Pattern Ready**: Estensibile per nuovi tournament formats
 - **Performance First**: < 2s per ogni operazione utente
 
-### **Current Status: Post Phase 2 Sprint 1**
+### **Current Status: Post Phase 2 Sprint 2**
 ✅ **User Domain**: Completamente modularizzato (Fase 1)
 ✅ **Tournament Domain**: Completamente modularizzato (Fase 2 Sprint 1)
 ✅ **Competition Domain**: Completamente modularizzato (Fase 2 Sprint 1)
 ✅ **Match Domain**: Completamente modularizzato (Fase 2 Sprint 1)
-✅ **Classification Domain**: Completamente modularizzato (Fase 2 Sprint 1)
+✅ **Competition Domain**: Completamente modularizzato + Standalone support (Sprint 2)
 ⚠️ **Legacy**: Solo Playoff da migrare
-🎯 **Prossimo**: Sprint 2 - Prova Standalone via FK nullable (ADR-0012)
-
+🎯 **Prossimo**: Sprint 3 - FriendlyMatch feature
 ---
 
 ## 📁 **Directory Structure Attuale**
