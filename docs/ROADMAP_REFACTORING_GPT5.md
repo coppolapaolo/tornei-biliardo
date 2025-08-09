@@ -1,6 +1,6 @@
 # Roadmap multi-sessione (WBS) con ancoraggi chiari
 
-## Sprint 0 — Fondazioni architetturali (senza cambiare comportamento)
+## Sprint 0 — Fondazioni architetturali (senza cambiare comportamento) - COMPLETATO
 
 **Obiettivi**
 
@@ -18,7 +18,7 @@
 
 ---
 
-## Sprint 1 — Amalfi come Strategy (adapter sull’engine esistente)
+## Sprint 1 — Amalfi come Strategy (adapter sull’engine esistente) - COMPLETATO
 
 **Obiettivi**
 
