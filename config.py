@@ -30,6 +30,7 @@ class TestingConfig(Config):
     """Configurazione per test"""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
 
 # Mappatura configurazioni
 config = {

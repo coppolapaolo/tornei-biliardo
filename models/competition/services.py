@@ -133,41 +133,127 @@ class ProvaService:
     def validate_prova_data(data: Dict) -> Dict[str, str]:
         """
         Validate prova creation/update data.
+        Handles both string (from HTML forms) and native types.
 
         Args:
-            data: Dictionary with prova data
+            data: Dictionary with prova data (can contain strings or native types)
 
         Returns:
             Dictionary of field -> error message (empty if valid)
         """
+        from datetime import datetime
+
         errors = {}
 
-        # Required fields
-        if not data.get("name"):
+        # Helper function to clean string input
+        def clean_string(value):
+            """Clean string input, return None if empty after strip"""
+            if value is None:
+                return None
+            if isinstance(value, str):
+                cleaned = value.strip()
+                return cleaned if cleaned else None
+            return value
+
+        # Required fields with string cleaning
+        name = clean_string(data.get("name"))
+        if not name:
             errors["name"] = "Nome richiesto"
 
-        if not data.get("discipline"):
+        discipline = clean_string(data.get("discipline"))
+        if not discipline:
             errors["discipline"] = "Disciplina richiesta"
 
-        if not data.get("distance"):
+        # Distance validation with type coercion
+        distance_raw = data.get("distance")
+        if not distance_raw and distance_raw != 0:  # Allow 0 to be validated
             errors["distance"] = "Distanza richiesta"
-        elif data["distance"] < 1:
-            errors["distance"] = "Distanza deve essere almeno 1"
+        else:
+            try:
+                # Handle both string and int inputs
+                distance = (
+                    int(distance_raw) if isinstance(distance_raw, str) else distance_raw
+                )
+                if distance < 1:
+                    errors["distance"] = "Distanza deve essere almeno 1"
+            except (ValueError, TypeError):
+                errors["distance"] = "Distanza deve essere un numero valido"
 
-        # Date validation
+        # Date validation for inscription dates if present
         if data.get("inscription_start") and data.get("inscription_end"):
-            if data["inscription_start"] >= data["inscription_end"]:
-                errors["inscription_end"] = "Data fine deve essere dopo data inizio"
+            try:
+                start = data["inscription_start"]
+                end = data["inscription_end"]
 
-        # Participants validation
-        min_p = data.get("min_participants", 2)
-        max_p = data.get("max_participants")
+                # Convert strings to dates if necessary
+                if isinstance(start, str):
+                    start = datetime.strptime(start, "%Y-%m-%d").date()
+                if isinstance(end, str):
+                    end = datetime.strptime(end, "%Y-%m-%d").date()
 
-        if min_p < 2:
-            errors["min_participants"] = "Minimo 2 partecipanti"
+                if start >= end:
+                    errors["inscription_end"] = "Data fine deve essere dopo data inizio"
+            except (ValueError, TypeError):
+                errors["inscription_end"] = "Formato date non valido"
 
-        if max_p and max_p < min_p:
-            errors["max_participants"] = "Max deve essere >= min partecipanti"
+        # Participants validation with type coercion
+        min_p_raw = data.get("min_participants", 2)
+        max_p_raw = data.get("max_participants")
+
+        # Validate min_participants
+        try:
+            # Handle both string and int, with default of 2
+            if min_p_raw is not None:
+                min_p = int(min_p_raw) if isinstance(min_p_raw, str) else min_p_raw
+                if min_p < 2:
+                    errors["min_participants"] = "Minimo 2 partecipanti"
+            else:
+                min_p = 2  # Default value
+        except (ValueError, TypeError):
+            errors["min_participants"] = "Numero partecipanti non valido"
+            min_p = None
+
+        # Validate max_participants if present
+        if max_p_raw:
+            try:
+                max_p = int(max_p_raw) if isinstance(max_p_raw, str) else max_p_raw
+                if max_p < 1:
+                    errors["max_participants"] = "Max partecipanti deve essere almeno 1"
+                elif min_p and max_p < min_p:
+                    errors["max_participants"] = "Max deve essere >= min partecipanti"
+            except (ValueError, TypeError):
+                errors["max_participants"] = "Numero partecipanti non valido"
+
+        # Optional fields validation
+        # Rounds count
+        rounds_raw = data.get("rounds_count")
+        if rounds_raw:
+            try:
+                rounds = int(rounds_raw) if isinstance(rounds_raw, str) else rounds_raw
+                if rounds < 1:
+                    errors["rounds_count"] = "Numero round deve essere almeno 1"
+            except (ValueError, TypeError):
+                errors["rounds_count"] = "Numero round non valido"
+
+        # Entry fee
+        fee_raw = data.get("entry_fee")
+        if fee_raw:
+            try:
+                fee = float(fee_raw) if isinstance(fee_raw, str) else fee_raw
+                if fee < 0:
+                    errors["entry_fee"] = "La quota non può essere negativa"
+            except (ValueError, TypeError):
+                errors["entry_fee"] = "Quota deve essere un numero valido"
+
+        # Number field (for prova number)
+        number_raw = data.get("number")
+        if number_raw:
+            try:
+                number = int(number_raw) if isinstance(number_raw, str) else number_raw
+                if number < 1:
+                    errors["number"] = "Numero prova deve essere almeno 1"
+            except (ValueError, TypeError):
+                errors["number"] = "Numero prova non valido"
 
         return errors
 

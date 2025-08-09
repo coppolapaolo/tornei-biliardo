@@ -17,14 +17,23 @@
         </p>
     </div>
     <div>
-        <a href="{{ url_for('admin.tournament_detail', tournament_id=prova.tournament_id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna al Torneo
+    {% if prova.tournament_id %}
+        <a href="{{ url_for('admin.tournament_detail', tournament_id=prova.tournament_id) }}"
+        class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Torna al Torneo
         </a>
-        {% if prova.can_be_modified() %}
-            <a href="{{ url_for('admin.edit_prova', prova_id=prova.id) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Modifica Prova
-            </a>
-        {% endif %}
+    {% else %}
+        <a href="{{ url_for('admin.director_dashboard') }}"
+        class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+        </a>
+    {% endif %}
+
+    {% if prova.can_be_modified() %}
+        <a href="{{ url_for('admin.edit_prova', prova_id=prova.id) }}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Modifica Prova
+        </a>
+    {% endif %}
     </div>
 </div>
 

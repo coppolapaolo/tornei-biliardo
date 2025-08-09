@@ -30,6 +30,7 @@ from amalfi import (
     validate_amalfi_configuration,
 )
 from models import RoundClassification, PlayerEncounter, TrioMatch
+from models.matchmaking.bootstrap import get_matchmaking_service
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -295,7 +296,7 @@ def director_dashboard():
 
     # Tornei gestiti (se director)
     if current_user.is_director:
-        tournaments = [td.tournament for td in current_user.tournament_directors]
+        tournaments = [td.tournament for td in current_user.get_managed_tournaments()]
     else:  # admin vede tutti
         tournaments = Tournament.query.all()
 
@@ -711,7 +712,7 @@ def set_match_result_direct(match_id):
             if max(player1_score, player2_score) < winning_score:
                 flash(
                     f'Nel "al meglio di {match.prova.distance}", uno dei '
-                    f'giocatori deve raggiungere {winning_score} punti!'
+                    f"giocatori deve raggiungere {winning_score} punti!"
                 )
                 return redirect(url_for("admin.match_detail", match_id=match_id))
         else:
@@ -719,7 +720,7 @@ def set_match_result_direct(match_id):
             if total_racks != match.prova.distance:
                 flash(
                     f'Nel "{match.prova.distance} rack esatti", '
-                    f'la somma deve essere esattamente {match.prova.distance}!'
+                    f"la somma deve essere esattamente {match.prova.distance}!"
                 )
                 return redirect(url_for("admin.match_detail", match_id=match_id))
 
@@ -1094,9 +1095,12 @@ def amalfi_start_round(prova_id, round_number):
                 flash(f"Completa prima tutte le partite del turno {round_number-1}!")
                 return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 
-        # Crea abbinamenti con algoritmo Amalfi
-        engine = AmalfiEngine(prova)
-        matches = engine.create_round_matches(round_number)
+        # Crea abbinamenti tramite Service/Strategy Amalfi (il legacy engine è dietro l'adapter)
+        svc = get_matchmaking_service()
+        pairings = svc.run(
+            strategy_name="Amalfi", prova=prova, round_number=round_number
+        )
+        # NB: i match sono già stati creati dal legacy engine; `pairings` li riflette come tuple di ID
 
         # Aggiorna stato prova
         prova.current_round = round_number
