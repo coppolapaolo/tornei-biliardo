@@ -1060,71 +1060,60 @@ def amalfi_start_round(prova_id, round_number):
     prova = Prova.query.get_or_404(prova_id)
 
     try:
-        # Validazioni preliminari
+        # Validazioni preliminari (invariato)
         if round_number < 1 or round_number > prova.rounds_count:
             flash(f"Turno {round_number} non valido!")
             return redirect(url_for("admin.prova_detail", prova_id=prova_id))
-
         if round_number <= prova.current_round:
             flash(f"Il turno {round_number} è già stato avviato!")
             return redirect(url_for("admin.prova_detail", prova_id=prova_id))
-
         if round_number != prova.current_round + 1:
             flash(f"Devi avviare prima il turno {prova.current_round + 1}!")
             return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 
-        # Valida configurazione Amalfi
         validation = validate_amalfi_configuration(prova)
         if not validation["is_valid"]:
             for error in validation["errors"]:
                 flash(f"Errore Amalfi: {error}", "error")
             return redirect(url_for("admin.prova_detail", prova_id=prova_id))
-
-        # Mostra warnings se presenti
         for warning in validation["warnings"]:
             flash(f"Attenzione: {warning}", "warning")
 
-        # Se non è il primo turno, verifica che il precedente sia completato
         if round_number > 1:
             prev_matches = Match.query.filter_by(
                 prova_id=prova_id, round_number=round_number - 1
             ).all()
-
             incomplete_prev = [m for m in prev_matches if m.status != "completed"]
             if incomplete_prev:
                 flash(f"Completa prima tutte le partite del turno {round_number-1}!")
                 return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 
-        # Crea abbinamenti tramite Service/Strategy Amalfi (il legacy engine è dietro l'adapter)
+        # Service/Strategy (adapter al legacy engine)
         svc = get_matchmaking_service()
-        pairings = svc.run(
-            strategy_name="Amalfi", prova=prova, round_number=round_number
-        )
-        # NB: i match sono già stati creati dal legacy engine; `pairings` li riflette come tuple di ID
+        pairings = svc.run("Amalfi", prova=prova, round_number=round_number)
 
-        # Aggiorna stato prova
+        # Stato prova
         prova.current_round = round_number
         if prova.status != "playing":
             prova.status = "playing"
-
         db.session.commit()
+
+        # Messaggi basati su pairings (tuple di id: (p1,), (p1,p2), (p1,p2,p3))
+        total = len(pairings)
+        n_trio = sum(1 for p in pairings if len(p) == 3)
+        n_bye = sum(1 for p in pairings if len(p) == 1)
+        n_normal = total - n_trio - n_bye
 
         flash(
             f"Turno {round_number} avviato con successo! "
-            f"Creati {len(matches)} abbinamenti Amalfi."
+            f"Creati {total} abbinamenti Amalfi."
         )
-
-        # Mostra info abbinamenti
-        normal_matches = [m for m in matches if not m.is_bye and not m.is_trio]
-        bye_matches = [m for m in matches if m.is_bye]
-        trio_matches = [m for m in matches if m.is_trio]
-
-        if normal_matches:
-            flash(f"Abbinamenti normali: {len(normal_matches)}", "info")
-        if bye_matches:
-            flash(f"Partite vs X: {len(bye_matches)}", "info")
-        if trio_matches:
-            flash(f"Trii: {len(trio_matches)}", "info")
+        if n_normal:
+            flash(f"Abbinamenti normali: {n_normal}", "info")
+        if n_bye:
+            flash(f"Partite vs X: {n_bye}", "info")
+        if n_trio:
+            flash(f"Trii: {n_trio}", "info")
 
         return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 

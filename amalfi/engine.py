@@ -1,74 +1,84 @@
 # amalfi/engine.py - Core algoritmi Sistema Amalfi
+from __future__ import annotations
 
-from models import db, Match, Prova, Inscription, User, PlayerEncounter, RoundClassification, TrioMatch
 import random
-from typing import List, Tuple, Optional, Dict
+from typing import List, Optional, Dict
+
+from models import (
+    db,
+    Match,
+    Prova,
+    Inscription,
+    PlayerEncounter,
+    RoundClassification,
+    TrioMatch,
+)
 
 
 class AmalfiEngine:
     """Engine principale per gestione abbinamenti Sistema Amalfi"""
-    
+
     def __init__(self, prova: Prova):
         self.prova = prova
         self.tournament = prova.tournament
-    
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Entry point
+    # ────────────────────────────────────────────────────────────────────────────
     def create_round_matches(self, round_number: int) -> List[Match]:
         """
-        Crea abbinamenti per un turno specifico secondo algoritmo Amalfi
-        
-        Args:
-            round_number: Numero del turno (1, 2, 3...)
-            
-        Returns:
-            Lista dei match creati
+        Crea abbinamenti per un turno specifico secondo algoritmo Amalfi.
+        Ritorna la lista di Match **persistiti**
+        (alcuni potrebbero avere status "pending").
         """
         if round_number == 1:
-            return self._create_first_round()
+            matches = self._create_first_round()
         else:
-            return self._create_amalfi_round(round_number)
-    
+            matches = self._create_amalfi_round(round_number)
+
+        # Persistenza atomica dei match creati (l'engine storico già aggiungeva i match)
+        db.session.commit()
+        return matches
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Primo turno
+    # ────────────────────────────────────────────────────────────────────────────
     def _create_first_round(self) -> List[Match]:
-        """Primo turno: sorteggio casuale"""
         inscriptions = Inscription.query.filter_by(prova_id=self.prova.id).all()
-        
         if len(inscriptions) < self.prova.min_participants:
             raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
-        
-        # Sorteggio casuale
+
+        # Sorteggio casuale e memorizzazione ordine
         random.shuffle(inscriptions)
-        
-        # Assegna ordine iniziale
         for i, inscription in enumerate(inscriptions, 1):
             inscription.initial_order = i
-        
-        # Crea abbinamenti primo turno (logica esistente adattata)
+
         matches = self._create_first_round_matches(inscriptions)
-        
-        # Registra incontri per anti-reincontro
+
+        # 🔧 FIX contratto: registra incontri con ordine corretto
+        # (prova_id, p1, p2, round)
         for match in matches:
-            if not match.is_bye:
+            if not getattr(match, "is_bye", False):
                 PlayerEncounter.record_encounter(
-                    match.player1_id, match.player2_id, 
-                    self.prova.id, 1
+                    self.prova.id, match.player1_id, match.player2_id, 1
                 )
-        
+
         return matches
-    
-    def _create_first_round_matches(self, inscriptions: List) -> List[Match]:
-        """Crea abbinamenti primo turno (logica esistente adattata)"""
+
+    def _create_first_round_matches(
+        self, inscriptions: List[Inscription]
+    ) -> List[Match]:
         players = [insc.user for insc in inscriptions]
-        matches = []
-        
+        matches: List[Match] = []
+
+        # Dispari → bye oppure trasformazione in trio a seconda della modalità
         if len(players) % 2 == 1:
-            # Numero dispari: ultimo giocatore ha un bye
             bye_player = players[-1]
-            
-            # Usa la nuova logica per il punteggio bye
-            if self.prova.best_of:
-                bye_score = self.prova.get_winning_score()
-            else:
-                bye_score = self.prova.distance
-                
+            bye_score = (
+                self.prova.get_winning_score()
+                if self.prova.best_of
+                else self.prova.distance
+            )
             match = Match(
                 prova_id=self.prova.id,
                 round_number=1,
@@ -76,407 +86,321 @@ class AmalfiEngine:
                 is_bye=True,
                 player1_score=bye_score,
                 winner_id=bye_player.id,
-                status='completed',
-                amalfi_round=1
+                status="completed",
+                amalfi_round=1,
             )
             matches.append(match)
             players = players[:-1]
-        
-        # Crea abbinamenti per giocatori pari
+
+        # Coppie rimanenti
         for i in range(0, len(players), 2):
             match = Match(
                 prova_id=self.prova.id,
                 round_number=1,
                 player1_id=players[i].id,
-                player2_id=players[i+1].id,
-                amalfi_round=1
+                player2_id=players[i + 1].id,
+                amalfi_round=1,
             )
             matches.append(match)
-        
+
         db.session.add_all(matches)
         return matches
-    
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Turni successivi (salto Amalfi)
+    # ────────────────────────────────────────────────────────────────────────────
     def _create_amalfi_round(self, round_number: int) -> List[Match]:
-        """Turni 2+: algoritmo Amalfi con formula salto"""
-        
-        # 1. Calcola classifica turno precedente
-        classification = RoundClassification.calculate_classification_after_round(
+        # Calcola/aggiorna classifica del turno precedente e poi carica le righe
+        RoundClassification.calculate_classification_after_round(
             self.prova.id, round_number - 1
         )
-        
-        # 2. Calcola salto secondo formula Amalfi
+        classification = (
+            RoundClassification.query.filter_by(
+                prova_id=self.prova.id, round_number=round_number - 1
+            )
+            .order_by(RoundClassification.position)
+            .all()
+        )
+
         salto = self.prova.rounds_count - round_number
-        
-        # 3. Crea abbinamenti con algoritmo Amalfi
         matches = self._apply_amalfi_algorithm(classification, round_number, salto)
-        
-        # 4. Registra incontri
+
+        # 🔧 FIX contratto: registra incontri con ordine corretto + copri i trii
         for match in matches:
-            if not match.is_bye and not match.is_trio:
-                PlayerEncounter.record_encounter(
-                    match.player1_id, match.player2_id,
-                    self.prova.id, round_number
-                )
-            elif match.is_trio:
-                # Registra tutte le combinazioni del trio
+            if getattr(match, "is_bye", False):
+                continue
+            if getattr(match, "is_trio", False):
                 trio = match.trio_match
                 PlayerEncounter.record_encounter(
-                    trio.player1_id, trio.player2_id, 
-                    self.prova.id, round_number
+                    self.prova.id, trio.player1_id, trio.player2_id, round_number
                 )
                 PlayerEncounter.record_encounter(
-                    trio.player1_id, trio.player3_id,
-                    self.prova.id, round_number
+                    self.prova.id, trio.player1_id, trio.player3_id, round_number
                 )
                 PlayerEncounter.record_encounter(
-                    trio.player2_id, trio.player3_id,
-                    self.prova.id, round_number
+                    self.prova.id, trio.player2_id, trio.player3_id, round_number
                 )
-        
+            else:
+                PlayerEncounter.record_encounter(
+                    self.prova.id, match.player1_id, match.player2_id, round_number
+                )
+
         return matches
-    
-    def _apply_amalfi_algorithm(self, classification: List[RoundClassification], 
-                               round_number: int, salto: int) -> List[Match]:
-        """Applica algoritmo Amalfi per abbinamenti"""
-        
-        matched_players = set()
-        matches = []
-        
-        print(f"🎯 AMALFI R{round_number}: Salto={salto}, Players={len(classification)}")
-        
-        for current_player_class in classification:
-            if current_player_class.user_id in matched_players:
+
+    def _apply_amalfi_algorithm(
+        self,
+        classification: List[RoundClassification],
+        round_number: int,
+        salto: int,
+    ) -> List[Match]:
+        matched_players: set[int] = set()
+        matches: List[Match] = []
+
+        for current_class in classification:
+            if current_class.user_id in matched_players:
                 continue
-            
-            print(f"🔍 Abbino {current_player_class.position}° {current_player_class.user.username}")
-            
-            # Trova target applicando salto
+
             target_class = self._find_amalfi_target(
-                current_player_class, classification, matched_players, salto
+                current_class, classification, matched_players, salto
             )
-            
+
             if target_class:
-                # Abbinamento trovato
                 match = Match(
                     prova_id=self.prova.id,
                     round_number=round_number,
-                    player1_id=current_player_class.user_id,
+                    player1_id=current_class.user_id,
                     player2_id=target_class.user_id,
                     amalfi_round=round_number,
-                    salto_applied=salto
+                    salto_applied=salto,
                 )
-                
                 db.session.add(match)
                 matches.append(match)
-                matched_players.add(current_player_class.user_id)
-                matched_players.add(target_class.user_id)
-                
-                print(f"✅ Abbinato: {current_player_class.user.username} vs {target_class.user.username}")
-            
-            else:
-                print(f"❌ Nessun target valido per {current_player_class.user.username}")
-        
-        # Gestisci giocatore rimasto (se dispari)
+                matched_players.update({current_class.user_id, target_class.user_id})
+
+        # Gestisci disparità
         unmatched = [c for c in classification if c.user_id not in matched_players]
         if unmatched:
             self._handle_unmatched_player(unmatched[0], matches, round_number)
-        
+
         return matches
-    
-    def _find_amalfi_target(self, current_class: RoundClassification, 
-                           classification: List[RoundClassification],
-                           matched_players: set, salto: int) -> Optional[RoundClassification]:
-        """Trova target per abbinamento secondo algoritmo Amalfi"""
-        
+
+    def _find_amalfi_target(
+        self,
+        current_class: RoundClassification,
+        classification: List[RoundClassification],
+        matched_players: set[int],
+        salto: int,
+    ) -> Optional[RoundClassification]:
         players_count = len(classification)
         current_position = current_class.position
-        
-        # Calcola posizione target iniziale
         target_position = current_position + salto
+
         attempts = 0
-        max_attempts = players_count * 2  # Massimo 2 giri completi
-        
+        max_attempts = players_count * 2  # due giri completi max
+
         while attempts < max_attempts:
-            # Wrap around se supera il numero di giocatori
             if target_position > players_count:
-                target_position = target_position - players_count
-            
-            # Trova giocatore in questa posizione
+                target_position -= players_count
+
             target_class = next(
-                (c for c in classification if c.position == target_position), 
-                None
+                (c for c in classification if c.position == target_position), None
             )
-            
+
             if target_class and self._is_valid_pairing(
                 current_class.user_id, target_class.user_id, matched_players
             ):
                 return target_class
-            
-            # Prova posizione successiva
+
+            # prova posizione successiva
             target_position += 1
             attempts += 1
-        
+
         return None
-    
-    def _is_valid_pairing(self, player1_id: int, player2_id: int, 
-                         matched_players: set) -> bool:
-        """Verifica se un abbinamento è valido"""
-        
-        # 1. Entrambi non devono essere già abbinati
-        if player1_id in matched_players or player2_id in matched_players:
+
+    def _is_valid_pairing(
+        self, p1_id: int, p2_id: int, matched_players: set[int]
+    ) -> bool:
+        if p1_id == p2_id:
             return False
-        
-        # 2. Non devono aver già giocato insieme (anti-reincontro)
-        if PlayerEncounter.have_played_together(player1_id, player2_id, self.prova.id):
-            print(f"    ❌ {player1_id} e {player2_id} hanno già giocato insieme")
+        if p1_id in matched_players or p2_id in matched_players:
             return False
-        
-        # 3. Non devono essere lo stesso giocatore
-        if player1_id == player2_id:
+        # 🔧 usa correttamente l’API anti‑reincontro
+        if PlayerEncounter.have_played(self.prova.id, p1_id, p2_id):
             return False
-        
         return True
-    
-    def _handle_unmatched_player(self, unmatched_class: RoundClassification,
-                                matches: List[Match], round_number: int):
-        """Gestisce giocatore rimasto senza abbinamento"""
-        
-        if self.tournament.without_x:
-            # Modalità "Senza X": converti ultimo match in trio
-            if matches:
-                last_match = matches[-1]
-                self._convert_to_trio(last_match, unmatched_class.user_id)
-                print(f"🔄 Convertito in trio: +{unmatched_class.user.username}")
-            else:
-                raise ValueError("Impossibile creare trio: nessun match disponibile")
+
+    def _handle_unmatched_player(
+        self,
+        unmatched_class: RoundClassification,
+        matches: List[Match],
+        round_number: int,
+    ) -> None:
+        """Gestisce l'ultimo giocatore rimasto (bye oppure trasformazione in trio)."""
+        if self.tournament.without_x and matches:
+            # trasforma l'ultimo match in trio
+            last_match = matches[-1]
+            self._convert_to_trio(last_match, unmatched_class.user_id, round_number)
         else:
-            # Modalità "Con X": controlla se ha già giocato con X
-            if self._has_played_with_X(unmatched_class.user_id):
-                # Tenta sostituzione
-                if not self._attempt_X_substitution(unmatched_class, matches):
-                    raise ValueError("Impossibile trovare sostituzione per X")
-            else:
-                # Crea match vs X
-                self._create_X_match(unmatched_class.user_id, round_number)
-                print(f"❌ {unmatched_class.user.username} vs X")
-    
-    def _convert_to_trio(self, match: Match, third_player_id: int):
-        """Converte un match normale in trio"""
-        match.is_trio = True
-        
+            # crea un bye (X)
+            self._create_bye_match(unmatched_class.user_id, round_number)
+
+    def _convert_to_trio(
+        self, base_match: Match, third_player_id: int, round_number: int
+    ) -> None:
+        base_match.is_trio = True
         trio = TrioMatch(
-            match_id=match.id,
-            player1_id=match.player1_id,
-            player2_id=match.player2_id,
+            match_id=base_match.id,
+            player1_id=base_match.player1_id,
+            player2_id=base_match.player2_id,
             player3_id=third_player_id,
-            current_player1_id=match.player1_id,
-            current_player2_id=match.player2_id,
-            waiting_player_id=third_player_id
+            target_score=self.prova.get_winning_score()
+            if self.prova.best_of
+            else self.prova.distance,
         )
-        
         db.session.add(trio)
-    
-    def _has_played_with_X(self, player_id: int) -> bool:
-        """Verifica se il giocatore ha già giocato con X in questa prova"""
-        x_matches = Match.query.filter(
-            Match.prova_id == self.prova.id,
-            Match.is_bye == True,
-            Match.player1_id == player_id
-        ).first()
-        
-        return x_matches is not None
-    
-    def _create_X_match(self, player_id: int, round_number: int):
-        """Crea match vs X (bye)"""
-        winning_score = self.prova.get_winning_score() if self.prova.best_of else self.prova.distance
-        
-        match = Match(
+
+    def _create_bye_match(self, player_id: int, round_number: int) -> None:
+        score = (
+            self.prova.get_winning_score()
+            if self.prova.best_of
+            else self.prova.distance
+        )
+        bye = Match(
             prova_id=self.prova.id,
             round_number=round_number,
             player1_id=player_id,
             is_bye=True,
-            player1_score=winning_score,
+            player1_score=score,
             winner_id=player_id,
-            status='completed',
-            amalfi_round=round_number
+            status="completed",
+            amalfi_round=round_number,
         )
-        
-        db.session.add(match)
-    
-    def _attempt_X_substitution(self, unmatched_class: RoundClassification,
-                               matches: List[Match]) -> bool:
-        """Tenta sostituzione per evitare secondo X"""
-        
-        # Logica sostituzione complessa - implementazione base
-        # TODO: Implementare logica completa secondo documentazione
-        
-        for match in reversed(matches):  # Dalla fine
-            if match.is_bye or match.is_trio:
-                continue
-                
-            # Prova sostituzioni
-            for current_player_id in [match.player1_id, match.player2_id]:
-                other_player_id = match.player2_id if current_player_id == match.player1_id else match.player1_id
-                
-                # Verifica sostituzione valida
-                if (not PlayerEncounter.have_played_together(
-                        unmatched_class.user_id, current_player_id, self.prova.id) and
-                    not self._has_played_with_X(other_player_id)):
-                    
-                    # Esegui sostituzione
-                    if current_player_id == match.player1_id:
-                        match.player1_id = unmatched_class.user_id
-                    else:
-                        match.player2_id = unmatched_class.user_id
-                    
-                    # Crea X match per l'altro giocatore
-                    self._create_X_match(other_player_id, match.round_number)
-                    
-                    print(f"🔄 Sostituzione: {unmatched_class.user.username} ↔ {current_player_id}")
-                    return True
-        
-        return False
-    
-    def get_classification_preview(self, round_number: int) -> List[RoundClassification]:
-        """Ottieni anteprima classifica per un turno"""
-        return RoundClassification.query.filter_by(
-            prova_id=self.prova.id,
-            round_number=round_number
-        ).order_by(RoundClassification.position).all()
-    
+        db.session.add(bye)
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Preview (solo helper legacy; migra in Strategy allo Sprint 2)
+    # ────────────────────────────────────────────────────────────────────────────
     def preview_next_round_matches(self, next_round: int) -> List[Dict]:
-        """Anteprima abbinamenti prossimo turno senza salvarli"""
-        
         if next_round == 1:
             return self._preview_first_round()
-        
-        # Simula algoritmo senza salvare
-        classification = RoundClassification.calculate_classification_after_round(
+
+        # aggiorna classifica round precedente e poi carica le righe
+        RoundClassification.calculate_classification_after_round(
             self.prova.id, next_round - 1
         )
-        
-        salto = self.prova.rounds_count - next_round
-        matched_players = set()
-        preview_matches = []
-        
-        for current_class in classification:
-            if current_class.user_id in matched_players:
-                continue
-                
-            target_class = self._find_amalfi_target(
-                current_class, classification, matched_players, salto
+        classification = (
+            RoundClassification.query.filter_by(
+                prova_id=self.prova.id, round_number=next_round - 1
             )
-            
-            if target_class:
-                preview_matches.append({
-                    'player1': current_class.user,
-                    'player2': target_class.user,
-                    'type': 'normal',
-                    'salto_applied': salto
-                })
-                matched_players.add(current_class.user_id)
-                matched_players.add(target_class.user_id)
-        
-        # Gestisci eventuale giocatore rimasto
-        unmatched = [c for c in classification if c.user_id not in matched_players]
-        if unmatched:
+            .order_by(RoundClassification.position)
+            .all()
+        )
+
+        salto = self.prova.rounds_count - next_round
+        matched: set[int] = set()
+        preview_matches: List[Dict] = []
+
+        for current in classification:
+            if current.user_id in matched:
+                continue
+            target = self._find_amalfi_target(current, classification, matched, salto)
+            if target:
+                preview_matches.append(
+                    {
+                        "player1": current.user,
+                        "player2": target.user,
+                        "type": "normal",
+                        "salto_applied": salto,
+                    }
+                )
+                matched.update({current.user_id, target.user_id})
+
+        # eventuale disparità
+        rest = [c for c in classification if c.user_id not in matched]
+        if rest:
             if self.tournament.without_x and preview_matches:
-                # Trio
-                last_match = preview_matches[-1]
-                last_match['type'] = 'trio'
-                last_match['player3'] = unmatched[0].user
+                last = preview_matches[-1]
+                last["type"] = "trio"
+                last["player3"] = rest[0].user
             else:
-                # X match
-                preview_matches.append({
-                    'player1': unmatched[0].user,
-                    'player2': None,
-                    'type': 'bye'
-                })
-        
+                preview_matches.append(
+                    {"player1": rest[0].user, "player2": None, "type": "bye"}
+                )
+
         return preview_matches
-    
+
     def _preview_first_round(self) -> List[Dict]:
-        """Anteprima primo turno"""
         inscriptions = Inscription.query.filter_by(prova_id=self.prova.id).all()
         users = [insc.user for insc in inscriptions]
-        
-        # Simula sorteggio
         users_copy = users.copy()
         random.shuffle(users_copy)
-        
-        preview_matches = []
+
+        preview_matches: List[Dict] = []
         for i in range(0, len(users_copy), 2):
             if i + 1 < len(users_copy):
-                preview_matches.append({
-                    'player1': users_copy[i],
-                    'player2': users_copy[i + 1],
-                    'type': 'normal'
-                })
+                preview_matches.append(
+                    {
+                        "player1": users_copy[i],
+                        "player2": users_copy[i + 1],
+                        "type": "normal",
+                    }
+                )
             else:
-                # Giocatore dispari
                 if self.tournament.without_x and preview_matches:
-                    last_match = preview_matches[-1]
-                    last_match['type'] = 'trio'
-                    last_match['player3'] = users_copy[i]
+                    preview_matches[-1]["type"] = "trio"
+                    preview_matches[-1]["player3"] = users_copy[i]
                 else:
-                    preview_matches.append({
-                        'player1': users_copy[i],
-                        'player2': None,
-                        'type': 'bye'
-                    })
-        
+                    preview_matches.append(
+                        {"player1": users_copy[i], "player2": None, "type": "bye"}
+                    )
         return preview_matches
 
 
-# Utility functions per integrazione con codice esistente
+# Utility functions per compat con codice esistente
+
 
 def create_amalfi_round_matches(prova: Prova, round_number: int) -> List[Match]:
-    """Wrapper function per integrazione con routes esistenti"""
     engine = AmalfiEngine(prova)
     return engine.create_round_matches(round_number)
 
 
-def get_amalfi_classification(prova_id: int, round_number: int) -> List[RoundClassification]:
-    """Ottieni classifica Amalfi per un turno"""
-    return RoundClassification.query.filter_by(
-        prova_id=prova_id,
-        round_number=round_number
-    ).order_by(RoundClassification.position).all()
-
-
-def validate_amalfi_configuration(prova: Prova) -> Dict[str, any]:
-    """Valida configurazione prova per algoritmo Amalfi"""
-    from models import Inscription  # Import qui per evitare circular import
-    
-    inscriptions = Inscription.query.filter_by(prova_id=prova.id).count()
-    
-    validation = {
-        'is_valid': True,
-        'warnings': [],
-        'errors': []
-    }
-    
-    # Controlla numero minimo partecipanti
-    if inscriptions < prova.min_participants:
-        validation['errors'].append(
-            f"Servono almeno {prova.min_participants} iscritti (attuali: {inscriptions})"
+def get_amalfi_classification(
+    prova_id: int, round_number: int
+) -> List[RoundClassification]:
+    return (
+        RoundClassification.query.filter_by(
+            prova_id=prova_id, round_number=round_number
         )
-        validation['is_valid'] = False
-    
-    # Controlla configurazione turni
+        .order_by(RoundClassification.position)
+        .all()
+    )
+
+
+def validate_amalfi_configuration(prova: Prova) -> Dict[str, object]:
+    from models import Inscription  # late import per evitare cicli
+
+    inscriptions = Inscription.query.filter_by(prova_id=prova.id).count()
+    validation: Dict[str, object] = {"is_valid": True, "warnings": [], "errors": []}
+
+    if inscriptions < prova.min_participants:
+        validation["errors"].append(
+            f"Servono almeno {prova.min_participants} "
+            f"iscritti (attuali: {inscriptions})"
+        )
+        validation["is_valid"] = False
+
     if prova.rounds_count < 2:
-        validation['warnings'].append(
+        validation["warnings"].append(
             "Con meno di 2 turni l'algoritmo Amalfi ha efficacia limitata"
         )
-    
-    # Controlla numero partecipanti vs turni
+
     max_encounters = (inscriptions * (inscriptions - 1)) // 2
     required_encounters = inscriptions * (prova.rounds_count - 1)
-    
     if required_encounters > max_encounters:
-        validation['errors'].append(
-            f"Troppi turni per {inscriptions} giocatori. Massimo consigliato: {max_encounters // inscriptions + 1}"
+        validation["errors"].append(
+            f"Troppi turni per {inscriptions} giocatori. Massimo "
+            f"consigliato: {max_encounters // inscriptions + 1}"
         )
-        validation['is_valid'] = False
-    
+        validation["is_valid"] = False
+
     return validation
