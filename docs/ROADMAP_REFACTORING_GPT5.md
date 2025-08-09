@@ -38,17 +38,16 @@
 
 ---
 
-## Sprint 2 — Policy separata (Bye/Trio, Anti-Rematch, Tiebreaker)
+### Sprint 2 — Policy separata (Bye/Trio, Anti-Rematch) + Preview senza IO  ✅ DONE
+- Estratte policy minime:
+  - `anti_rematch_allowed(prova_id, a, b)` (sola lettura su PlayerEncounter)
+  - `decide_trio_or_bye(without_x, can_trio) -> OddResolution {BYE, TRIO}`
+- Aggiunta `preview(prova, round)` a `PairingStrategy` e implementata in `AmalfiStrategy` (nessun side-effect).
+- Test unitari: policy + preview no-IO.
+- ADR-0020: “Policy minime & Preview senza IO (Amalfi)”.
 
-**Obiettivi**
-
-* Estrarre `ByePolicy`, `AntiRematchPolicy` (oggi hardcoded nell’engine e nelle util).
-* Portare la logica di preview in `AmalfiStrategy.preview()` (no side-effects).
-
-**Deliverable**
-
-* Policy pluggable + test unitari di policy.
-* ADR-0016 “Policy separabili & Preview senza IO”.
+**Deferral**
+- Tiebreaker di **fine prova** (spot-shot/head-to-head) **rinviato** a sprint Classifiche e ADR dedicata (es. ADR-0021).
 
 ---
 
