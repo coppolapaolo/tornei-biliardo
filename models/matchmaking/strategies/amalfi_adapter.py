@@ -4,7 +4,12 @@ from typing import Sequence, Callable, List, Set
 from .base import PairingStrategy, Pairing, ValidationResult
 
 # Solo letture dal dominio (nessun side‑effect)
-from models import Inscription, RoundClassification, PlayerEncounter
+from models import Inscription, RoundClassification
+from models.matchmaking.policies import (
+    anti_rematch_allowed,
+    decide_trio_or_bye,
+    OddResolution,
+)
 
 
 class AmalfiStrategy(PairingStrategy):
@@ -19,10 +24,11 @@ class AmalfiStrategy(PairingStrategy):
     l'Adapter converte in Value Objects `Pairing`.
 
     Se l'engine legacy esegue direttamente i side‑effect
-    (creazione Match, PlayerEncounter),
-    questa Strategy si limita a riflettere il risultato in `Pairing`.
+    (creazione Match, PlayerEncounter, ecc.), questa Strategy si limita a
+    riflettere il risultato in `Pairing`.
 
-    Sprint 2: aggiunta `preview()` **senza side‑effects**.
+    Sprint 2: aggiunta `preview()` **senza side‑effects**, con politica di
+    anti‑rematch e gestione disparità (trio/bye) via policy.
     """
 
     name = "Amalfi"
@@ -57,27 +63,42 @@ class AmalfiStrategy(PairingStrategy):
                 .all()
             )
             players = [insc.user_id for insc in inscriptions]
+            if not players:
+                return []
 
             pairings: List[Pairing] = []
-            for i in range(0, len(players), 2):
-                if i + 1 < len(players):
-                    pairings.append(
-                        Pairing(players=(players[i], players[i + 1]), round_number=1)
+            i = 0
+            n = len(players)
+            while i + 1 < n:
+                pairings.append(
+                    Pairing(
+                        players=(players[i], players[i + 1]),
+                        is_bye=False,
+                        round_number=1,
+                    )
+                )
+                i += 2
+
+            # Disparità → policy: TRIO se consentito e c'è almeno un match normale;
+            # altrimenti BYE
+            if i < n:
+                without_x = bool(getattr(prova.tournament, "without_x", False))
+                decision = decide_trio_or_bye(
+                    tournament_without_x=without_x,
+                    can_trio=bool(pairings),
+                )
+                if decision is OddResolution.TRIO and pairings:
+                    last = pairings[-1]
+                    pairings[-1] = Pairing(
+                        players=(last.players[0], last.players[1], players[i]),
+                        is_bye=False,
+                        round_number=1,
                     )
                 else:
-                    # disparità: se il torneo consente trio e c'è almeno
-                    # un match normale → trio
-                    without_x = bool(getattr(prova.tournament, "without_x", False))
-                    if without_x and pairings:
-                        last = pairings[-1]
-                        pairings[-1] = Pairing(
-                            players=(last.players[0], last.players[1], players[i]),
-                            round_number=1,
-                        )
-                    else:
-                        pairings.append(
-                            Pairing(players=(players[i],), is_bye=True, round_number=1)
-                        )
+                    pairings.append(
+                        Pairing(players=(players[i],), is_bye=True, round_number=1)
+                    )
+
             return pairings
 
         # Round >= 2: usa classifica round precedente (solo lettura) e applica il salto
@@ -110,7 +131,7 @@ class AmalfiStrategy(PairingStrategy):
                     candidate not in matched
                     and me not in matched
                     and candidate != me
-                    and not PlayerEncounter.have_played(prova.id, me, candidate)
+                    and anti_rematch_allowed(prova.id, me, candidate)
                 ):
                     return target
                 target = (target + 1) % n
@@ -124,14 +145,20 @@ class AmalfiStrategy(PairingStrategy):
             if tgt is not None:
                 me = rc.user_id
                 you = order[tgt].user_id
-                result.append(Pairing(players=(me, you), round_number=round_number))
                 matched.update({me, you})
+                result.append(
+                    Pairing(players=(me, you), is_bye=False, round_number=round_number)
+                )
 
         # gestisci l'eventuale disparità
         rest = [rc.user_id for rc in order if rc.user_id not in matched]
         if rest:
             without_x = bool(getattr(prova.tournament, "without_x", False))
-            if without_x and result:
+            decision = decide_trio_or_bye(
+                tournament_without_x=without_x,
+                can_trio=bool(result),
+            )
+            if decision is OddResolution.TRIO and result:
                 last = result[-1]
                 result[-1] = Pairing(
                     players=(last.players[0], last.players[1], rest[0]),

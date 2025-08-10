@@ -25,7 +25,6 @@ from utils import (
 )
 from sqlalchemy import func, desc, case, not_
 from amalfi import (
-    AmalfiEngine,
     get_amalfi_classification,
     validate_amalfi_configuration,
 )
@@ -1159,39 +1158,52 @@ def amalfi_preview_round(prova_id, round_number):
                     400,
                 )
 
-        # Genera anteprima
-        engine = AmalfiEngine(prova)
-        preview_matches = engine.preview_next_round_matches(round_number)
+        # Genera anteprima via Strategy (no IO)
+        svc = get_matchmaking_service()
+        pairings = svc.preview(
+            strategy_name="Amalfi",
+            prova=prova,
+            round_number=round_number
+        )
 
-        # Prepara dati per JSON
+        # Prepara dati per JSON (compat con struttura esistente)
         matches_data = []
-        for match in preview_matches:
-            match_data = {
-                "player1": {
-                    "id": match["player1"].id,
-                    "username": match["player1"].username,
-                },
-                "type": match["type"],
-            }
 
-            if match["type"] == "normal":
-                match_data["player2"] = {
-                    "id": match["player2"].id,
-                    "username": match["player2"].username,
-                }
-                match_data["salto_applied"] = match.get("salto_applied", 0)
-            elif match["type"] == "trio":
-                match_data["player2"] = {
-                    "id": match["player2"].id,
-                    "username": match["player2"].username,
-                }
-                match_data["player3"] = {
-                    "id": match["player3"].id,
-                    "username": match["player3"].username,
-                }
-            elif match["type"] == "bye":
-                match_data["player2"] = None
+        # Cache utenti per id
+        user_ids = set()
+        for p in pairings:
+            for uid in p.players:
+                user_ids.add(uid)
+        users = {u.id: u for u in User.query.filter(User.id.in_(list(user_ids))).all()}
 
+        def user_payload(uid: int) -> dict:
+            u = users.get(uid)
+            return {"id": uid, "username": (u.username if u else None)}
+
+        for p in pairings:
+            ps = list(p.players)
+            if len(ps) == 1 or getattr(p, "is_bye", False):
+                match_data = {
+                    "player1": user_payload(ps[0]),
+                    "type": "bye",
+                }
+            elif len(ps) == 2:
+                match_data = {
+                    "player1": user_payload(ps[0]),
+                    "player2": user_payload(ps[1]),
+                    "type": "normal",
+                    # La Strategy non espone il salto; manteniamo compat con default 0
+                    "salto_applied": 0,
+                }
+            elif len(ps) == 3:
+                match_data = {
+                    "player1": user_payload(ps[0]),
+                    "player2": user_payload(ps[1]),
+                    "player3": user_payload(ps[2]),
+                    "type": "trio",
+                }
+            else:
+                continue
             matches_data.append(match_data)
 
         # Calcola statistiche
@@ -1201,19 +1213,18 @@ def amalfi_preview_round(prova_id, round_number):
             {
                 "success": True,
                 "round_number": round_number,
+                "prova_id": prova_id,
                 "salto": salto,
                 "matches": matches_data,
-                "stats": {
-                    "total_matches": len(matches_data),
+                "counts": {
+                    "total": len(matches_data),
                     "normal_matches": len(
-                        [m for m in preview_matches if m["type"] == "normal"]
+                        [m for m in matches_data if m["type"] == "normal"]
                     ),
                     "trio_matches": len(
-                        [m for m in preview_matches if m["type"] == "trio"]
+                        [m for m in matches_data if m["type"] == "trio"]
                     ),
-                    "bye_matches": len(
-                        [m for m in preview_matches if m["type"] == "bye"]
-                    ),
+                    "bye_matches": len([m for m in matches_data if m["type"] == "bye"]),
                 },
             }
         )

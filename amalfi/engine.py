@@ -13,6 +13,11 @@ from models import (
     RoundClassification,
     TrioMatch,
 )
+from models.matchmaking.policies import (
+    anti_rematch_allowed,
+    decide_trio_or_bye,
+    OddResolution,
+)
 
 
 class AmalfiEngine:
@@ -224,8 +229,8 @@ class AmalfiEngine:
             return False
         if p1_id in matched_players or p2_id in matched_players:
             return False
-        # 🔧 usa correttamente l’API anti‑reincontro
-        if PlayerEncounter.have_played(self.prova.id, p1_id, p2_id):
+        # anti‑reincontro via policy
+        if not anti_rematch_allowed(self.prova.id, p1_id, p2_id):
             return False
         return True
 
@@ -236,7 +241,11 @@ class AmalfiEngine:
         round_number: int,
     ) -> None:
         """Gestisce l'ultimo giocatore rimasto (bye oppure trasformazione in trio)."""
-        if self.tournament.without_x and matches:
+        decision = decide_trio_or_bye(
+            tournament_without_x=bool(self.tournament.without_x),
+            can_trio=bool(matches),
+        )
+        if decision is OddResolution.TRIO and matches:
             # trasforma l'ultimo match in trio
             last_match = matches[-1]
             self._convert_to_trio(last_match, unmatched_class.user_id, round_number)
@@ -281,6 +290,13 @@ class AmalfiEngine:
     # Preview (solo helper legacy; migra in Strategy allo Sprint 2)
     # ────────────────────────────────────────────────────────────────────────────
     def preview_next_round_matches(self, next_round: int) -> List[Dict]:
+        import warnings
+
+        warnings.warn(
+            "AmalfiEngine.preview_next_round_matches è deprecato: "
+            "usare AmalfiStrategy.preview",
+            DeprecationWarning,
+        )
         if next_round == 1:
             return self._preview_first_round()
 
