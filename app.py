@@ -8,6 +8,8 @@ from config import config
 from models import db, User
 from utils import get_database_stats, create_admin_if_not_exists, UserPermissions
 
+from utils.status_ui import register_status_filters
+
 
 def create_app(config_name=None):
     """Factory per creare l'app Flask"""
@@ -71,6 +73,9 @@ def create_app(config_name=None):
             "is_director": current_user.is_authenticated and current_user.is_director,
             "is_admin": current_user.is_authenticated and current_user.is_admin,
         }
+
+    # Filtri Jinja per status
+    register_status_filters(app)
 
     # Registra blueprints
     from routes import register_blueprints

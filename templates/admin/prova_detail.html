@@ -85,8 +85,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-cog"></i> Gestione</h5>
-                {% set status_info = prova.get_status_badge_info() %}
-                <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                {{ status_badge(prova, 'prova') }}
             </div>
             <div class="card-body">
                 {% if prova.status == 'setup' %}

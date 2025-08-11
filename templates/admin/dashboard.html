@@ -28,9 +28,7 @@
                             </h5>
                             <small class="text-muted">{{ tournament.tournament_type }}</small>
                         </div>
-                        <span class="badge {{ tournament.get_status_badge_class() }}">
-                            {{ tournament.get_status_text() }}
-                        </span>
+                        <span class="badge {{ tournament | status_badge_class }}">{{ tournament | status_text }}</span>
                     </div>
                     <div class="card-body">
                         <!-- Info Torneo -->

@@ -13,7 +13,7 @@ class _FakeStrategy:
     def validate(self, prova: object) -> ValidationResult:
         return ValidationResult(
             ok=len(self.roster) >= 2,
-            messages=("min 2 players",) if len(self.roster) < 2 else ()
+            messages=("min 2 players",) if len(self.roster) < 2 else (),
         )
 
     def propose(self, prova: object, round_number: int):
@@ -24,11 +24,7 @@ class _FakeStrategy:
                 b = next(it)
             except StopIteration:
                 res.append(
-                    Pairing(
-                        players=(a,),
-                        round_number=round_number,
-                        is_bye=True
-                    )
+                    Pairing(players=(a,), round_number=round_number, is_bye=True)
                 )
                 break
             res.append(Pairing(players=(a, b), round_number=round_number))

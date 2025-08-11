@@ -212,8 +212,7 @@
                                     <small>
                                         Prova {{ inscription.prova.number }} - 
                                         {{ inscription.prova.date.strftime('%d/%m/%Y') }}
-                                        {% set status_info = inscription.prova.get_status_badge_info() %}
-                                        <span class="badge {{ status_info.class }} ms-1">{{ status_info.text }}</span>
+                                        {{ status_badge(inscription.prova, 'prova') }}
                                     </small>
                                 </li>
                             {% endfor %}

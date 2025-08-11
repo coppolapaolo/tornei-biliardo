@@ -23,9 +23,7 @@
                         <small class="text-muted">{{ tournament.tournament_type }}</small>
                     </div>
                     <div>
-                        <span class="badge {{ tournament.get_status_badge_class() }}">
-                            {{ tournament.get_status_text() }}
-                        </span>
+                        <span class="badge {{ tournament | status_badge_class }}">{{ tournament | status_text }}</span>
                         {% if not tournament.is_active %}
                             <span class="badge bg-secondary ms-1">Inattivo</span>
                         {% endif %}
@@ -56,8 +54,7 @@
                                                     </p>
                                                 {% endif %}
                                                 
-                                                {% set status_info = prova.get_status_badge_info() %}
-                                                <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                                {{ status_badge(prova, 'prova') }}
                                                 
                                                 {% if prova.get_real_status() == 'inscription' %}
                                                     <br><small class="text-success">

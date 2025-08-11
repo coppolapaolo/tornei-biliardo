@@ -17,9 +17,7 @@
                         {% endif %}
                     </h4>
                     <div>
-                        <span class="badge bg-{% if match.status == 'pending' %}warning{% elif match.status == 'playing' %}primary{% else %}success{% endif %}">
-                            {{ match.status.title() }}
-                        </span>
+                        <span class="badge {{ match | status_badge_class }}">{{ match | status_text }}</span>
                     </div>
                 </div>
                 <small class="text-muted">

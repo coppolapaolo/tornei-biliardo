@@ -195,18 +195,11 @@
                 <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
                 <p><strong>Registrato:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
                 {% if current_user.role == 'player' %}
-                    {% if current_user.director_request %}
-                        {% if current_user.director_request.status == 'pending' %}
-                        <p class="text-warning mt-3">Richiesta direttore inviata. In attesa di approvazione.</p>
-                        {% elif current_user.director_request.status == 'rejected' %}
-                        <p class="text-danger mt-3">Richiesta direttore rifiutata.</p>
-                        {% endif %}
+                    {% set dr = current_user|attr('director_request')|default(None, true) %}
+                    {% if dr %}
+                    {{ dr | status_badge('director_request') }}
                     {% else %}
-                        <form method="POST" action="{{ url_for('player.request_director') }}">
-                        <button type="submit" class="btn btn-warning mt-3">
-                            Attiva organizzazione nuovi tornei
-                        </button>
-                        </form>
+                    <span class="text-muted">Nessuna richiesta</span>
                     {% endif %}
                 {% endif %}
 
@@ -236,8 +229,7 @@
                                     <small>
                                         Prova {{ inscription.prova.number }} - 
                                         {{ inscription.prova.date.strftime('%d/%m/%Y') }}
-                                        {% set status_info = inscription.prova.get_status_badge_info() %}
-                                        <span class="badge {{ status_info.class }} ms-1">{{ status_info.text }}</span>
+                                        {{ status_badge(inscription.prova, 'prova') }}
                                     </small>
                                 </li>
                             {% endfor %}

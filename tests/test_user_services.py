@@ -20,9 +20,7 @@ pytestmark = pytest.mark.unit
 class TestUserServiceBasics:
     def test_create_user(self, app):
         with app.app_context():
-            user = UserService.create_user(
-                "alice", "alice@example.com", "password123"
-            )
+            user = UserService.create_user("alice", "alice@example.com", "password123")
             assert user.username == "alice"
             assert user.is_player
             assert user.check_password("password123")
@@ -32,9 +30,7 @@ class TestUserServiceBasics:
             admin = UserService.create_user(
                 "admin", "admin@example.com", "admin123", role="admin"
             )
-            player = UserService.create_user(
-                "bob", "bob@example.com", "player123"
-            )
+            player = UserService.create_user("bob", "bob@example.com", "player123")
 
             # promozione
             assert UserService.promote_to_director(player.id, admin) is True
@@ -83,9 +79,7 @@ class TestServiceIntegration:
             admin = UserService.create_user(
                 "admin", "admin@example.com", "admin123", role="admin"
             )
-            player = UserService.create_user(
-                "dave", "dave@example.com", "player123"
-            )
+            player = UserService.create_user("dave", "dave@example.com", "player123")
 
             # richiesta di promozione
             req = DirectorRequestService.create_request(player.id)

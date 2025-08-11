@@ -55,26 +55,11 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if user.director_request %}
-                                        {% if user.director_request.status == 'pending' %}
-                                            <span class="badge bg-warning text-dark">In attesa</span>
-                                            <form method="POST" action="{{ url_for('admin.approve_director_request', req_id=user.director_request.id) }}" style="display:inline;">
-                                            <button class="btn btn-success btn-sm" type="submit">Approva</button>
-                                            </form>
-                                            <form method="POST" action="{{ url_for('admin.reject_director_request', req_id=user.director_request.id) }}" style="display:inline;">
-                                            <button class="btn btn-danger btn-sm" type="submit">Rifiuta</button>
-                                            </form>
-                                        {% elif user.director_request.status == 'approved' %}
-                                            <span class="badge bg-success">Approvata</span>
-                                        {% elif user.director_request.status == 'rejected' %}
-                                            <span class="badge bg-danger">Rifiutata</span>
-                                        {% endif %}
+                                    {% set dr = user|attr('director_request')|default(None, true) %}
+                                    {% if dr %}
+                                    {{ dr | status_badge('director_request') }}
                                     {% else %}
-                                        {% if user.role == 'director' %}
-                                            <span class="badge bg-success">Direttore</span>
-                                        {% else %}
-                                            <span class="text-muted">Nessuna</span>
-                                        {% endif %}
+                                    <span class="text-muted">Nessuna</span>
                                     {% endif %}
                                 </td>
                                 <td>

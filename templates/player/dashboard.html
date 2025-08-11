@@ -37,8 +37,8 @@
                         <a class="dropdown-item {% if selected_tournament and tournament.id == selected_tournament.id %}active{% endif %}" 
                             href="{{ url_for('player.dashboard', tournament_id=tournament.id) }}">
                             {{ tournament.name }}
-                            <span class="badge {{ tournament.get_status_badge_class() }} ms-2">
-                                {{ tournament.get_status_text() }}
+                            <span class="badge {{ tournament | status_badge_class }} ms-2">
+                                {{ tournament | status_text }}
                             </span>
                         </a>
                     </li>
@@ -89,8 +89,8 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <strong><i class="fas fa-trophy"></i> {{ selected_tournament.name }}</strong>
-                <span class="badge {{ selected_tournament.get_status_badge_class() }} ms-2">
-                    {{ selected_tournament.get_status_text() }}
+                <span class="badge {{ selected_tournament | status_badge_class }} ms-2">
+                    {{ selected_tournament | status_text }}
                 </span>
                 <br><small class="text-muted">{{ selected_tournament.tournament_type }}</small>
             </div>
@@ -232,8 +232,7 @@
                                     {% endif %}
                                     </small>
                                     {% if inscription.prova.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ inscription.prova.location }}</small>{% endif %}
-                                    {% set status_info = inscription.prova.get_status_badge_info() %}
-                                    <br><span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                    {{ status_badge(inscription.prova, 'prova') }}
                                     <small class="text-muted ms-2">
                                         <i class="fas fa-users"></i> {{ inscription.prova.inscriptions|length }} iscritti
                                     </small>
@@ -285,8 +284,7 @@
                                             📍 {{ inscription.prova.location or 'Luogo da definire' }}
                                         </small>
                                     </p>
-                                    {% set status_info = inscription.prova.get_status_badge_info() %}
-                                    <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                    {{ status_badge(inscription.prova, 'prova') }}
                                 </div>
                                 <div>
                                     <a href="{{ url_for('player.prova_detail', prova_id=inscription.prova.id) }}" 
@@ -314,7 +312,7 @@
                                 <div class="card-body">
                                     <h6>
                                         {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
-                                        <span class="badge bg-primary ms-2">{{ match.status.title() }}</span>
+                                        <span class="badge {{ match | status_badge_class }} ms-2">{{ match | status_text }}</span>
                                     </h6>
                                     <p class="mb-1">
                                         <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}/{{ match.prova.rounds_count }}

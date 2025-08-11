@@ -8,9 +8,7 @@
         <h1>{{ tournament.name }}</h1>
         <p class="text-muted mb-0">
             {{ tournament.tournament_type }}
-            <span class="badge {{ tournament.get_status_badge_class() }} ms-2">
-                {{ tournament.get_status_text() }}
-            </span>
+            <span class="badge {{ tournament | status_badge_class }}">{{ tournament | status_text }}</span>
         </p>
     </div>
     <div>
@@ -170,8 +168,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% set status_info = prova.get_status_badge_info() %}
-                                    <span class="badge {{ status_info.class }}">{{ status_info.text }}</span>
+                                    {{ status_badge(prova, 'prova') }}
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">

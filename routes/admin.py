@@ -30,6 +30,9 @@ from amalfi import (
 )
 from models import RoundClassification, PlayerEncounter, TrioMatch
 from models.matchmaking.bootstrap import get_matchmaking_service
+from models.competition.services import ProvaService
+from models.match.services import MatchService, RackService, MatchResultService
+from models.status_enum import DirectorRequestStatus, ProvaStatus, MatchStatus
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -243,8 +246,6 @@ def create_prova_standalone():
 
     if request.method == "POST":
         # Validazione dati
-        from models.competition.services import ProvaService
-
         errors = ProvaService.validate_prova_data(request.form)
         if errors:
             for field, error in errors.items():
@@ -272,7 +273,7 @@ def create_prova_standalone():
                 best_of=not ("exact_number" in request.form),
             )
 
-            flash(f'Competizione standalone "{prova.name}" creata con successo!')
+            flash(f'Gara singola "{prova.name}" creata con successo!')
             return redirect(url_for("admin.prova_detail", prova_id=prova.id))
 
         except Exception as e:
@@ -295,7 +296,7 @@ def director_dashboard():
 
     # Tornei gestiti (se director)
     if current_user.is_director:
-        tournaments = [td.tournament for td in current_user.get_managed_tournaments()]
+        tournaments = current_user.get_managed_tournaments()
     else:  # admin vede tutti
         tournaments = Tournament.query.all()
 
@@ -503,7 +504,7 @@ def open_inscriptions(prova_id):
 
     prova.inscription_start = inscription_start
     prova.inscription_end = inscription_end
-    prova.status = "inscription"
+    ProvaService.to_inscription(prova.id)
 
     db.session.commit()
     flash(
@@ -545,9 +546,9 @@ def modify_inscription_dates(prova_id):
     # Se le iscrizioni ora sono nel futuro, torna a setup
     now = datetime.utcnow()
     if inscription_start > now:
-        prova.status = "setup"
+        ProvaService.reopen_setup(prova.id)
     elif inscription_start <= now <= inscription_end:
-        prova.status = "inscription"
+        ProvaService.to_inscription(prova.id)
     # Se sono passate, lascia lo status attuale (verrà gestito dai template)
 
     db.session.commit()
@@ -583,7 +584,7 @@ def start_first_round(prova_id):
     create_round_matches(prova, inscriptions, 1)
 
     prova.current_round = 1
-    prova.status = "playing"
+    ProvaService.start_playing(prova.id)
     db.session.commit()
 
     flash("Primo turno avviato!")
@@ -631,7 +632,7 @@ def match_detail(match_id):
 @login_required
 @match_manager_required
 def add_rack_result(match_id):
-    """Aggiungi risultato rack (admin) - AGGIORNATO per nuova logica"""
+    """Aggiungi risultato rack (admin)"""
     match = Match.query.get_or_404(match_id)
     winner_id = int(request.form["winner_id"])
 
@@ -643,14 +644,14 @@ def add_rack_result(match_id):
     )
     next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
 
-    rack = Rack(
-        match_id=match_id,
+    # Crea il rack tramite il service (reporter = admin; validazione admin attiva)
+    RackService.add_rack_result(
+        match_id=match.id,
         rack_number=next_rack_number,
         winner_id=winner_id,
         reported_by_id=1,  # Admin user ID
         validated_by_admin=True,  # Admin validation immediate
     )
-    db.session.add(rack)
 
     # Aggiorna punteggio match
     if winner_id == match.player1_id:
@@ -658,15 +659,16 @@ def add_rack_result(match_id):
     else:
         match.player2_score += 1
 
-    # Verifica se il match è finito usando la nuova logica
+    # Se il match è finito, imposta il vincitore tramite il service dedicato
     if match.prova.is_match_finished(match.player1_score, match.player2_score):
-        match.winner_id = (
+        final_winner_id = (
             match.player1_id
             if match.player1_score > match.player2_score
             else match.player2_id
         )
-        match.status = "completed"
+        MatchResultService.submit_result(match.id, final_winner_id)
 
+    # Persisti l’aggiornamento dei punteggi (il rack è già stato committato dal service)
     db.session.commit()
 
     return jsonify(
@@ -742,35 +744,25 @@ def set_match_result_direct(match_id):
 
         # Crea rack per player1
         for i in range(player1_score):
-            rack = Rack(
-                match_id=match_id,
-                rack_number=rack_number,
-                winner_id=match.player1_id,
-                reported_by_id=1,  # Admin user ID
-                validated_by_admin=True,
+            RackService.add_rack_result(
+                match_id, rack_number, match.player1_id, 1, True
             )
-            db.session.add(rack)
             rack_number += 1
 
         # Crea rack per player2
         for i in range(player2_score):
-            rack = Rack(
-                match_id=match_id,
-                rack_number=rack_number,
-                winner_id=match.player2_id,
-                reported_by_id=1,  # Admin user ID
-                validated_by_admin=True,
+            RackService.add_rack_result(
+                match_id, rack_number, match.player2_id, 1, True
             )
-            db.session.add(rack)
             rack_number += 1
 
         # Aggiorna il match
         match.player1_score = player1_score
         match.player2_score = player2_score
         match.winner_id = winner_id
-        match.status = "completed"
+        MatchService.to_completed(match.id)
 
-        db.session.commit()
+        # db.session.commit()
 
         flash("Risultato impostato con successo!")
         return redirect(url_for("admin.match_detail", match_id=match_id))
@@ -804,7 +796,7 @@ def reset_match(match_id):
         match.player1_score = 0
         match.player2_score = 0
         match.winner_id = None
-        match.status = "pending"
+        MatchService.reset_to_pending(match.id, clear_validation=True)
 
         db.session.commit()
 
@@ -842,15 +834,15 @@ def remove_rack_admin(rack_id):
 
         # Se il match era completato e ora non ha più i punti per essere vinto,
         # rimettilo in playing
-        if match.status == "completed":
+        if match.status == MatchStatus.COMPLETED.value:
             if match.prova.best_of:
                 winning_score = match.prova.get_winning_score()
                 if max(match.player1_score, match.player2_score) < winning_score:
-                    match.status = "playing"
+                    MatchService.to_playing(match.id)
                     match.winner_id = None
             else:  # esatto numero
                 if (match.player1_score + match.player2_score) < match.prova.distance:
-                    match.status = "playing"
+                    MatchService.to_playing(match.id)
                     match.winner_id = None
 
         db.session.commit()
@@ -956,9 +948,13 @@ def user_detail(user_id):
     )
 
     # Statistiche generali
-    total_matches = len([m for m in matches if m.status == "completed"])
+    total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
     won_matches = len(
-        [m for m in matches if m.status == "completed" and m.winner_id == user_id]
+        [
+            m
+            for m in matches
+            if m.status == MatchStatus.COMPLETED.value and m.winner_id == user_id
+        ]
     )
     win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
 
@@ -971,7 +967,9 @@ def user_detail(user_id):
     )
 
     # Partite recenti (ultime 10)
-    recent_matches = [m for m in matches if m.status == "completed"][:10]
+    recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
+        :10
+    ]
 
     stats = {
         "total_inscriptions": len(inscriptions),
@@ -1019,7 +1017,9 @@ def amalfi_classification(prova_id, round_number):
         return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 
     # Controlla se tutti i match del turno sono completati
-    incomplete_matches = [m for m in matches_in_round if m.status != "completed"]
+    incomplete_matches = [
+        m for m in matches_in_round if m.status != MatchStatus.COMPLETED.value
+    ]
     if incomplete_matches:
         flash(
             f"Il turno {round_number} non è ancora completato! "
@@ -1082,7 +1082,9 @@ def amalfi_start_round(prova_id, round_number):
             prev_matches = Match.query.filter_by(
                 prova_id=prova_id, round_number=round_number - 1
             ).all()
-            incomplete_prev = [m for m in prev_matches if m.status != "completed"]
+            incomplete_prev = [
+                m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
+            ]
             if incomplete_prev:
                 flash(f"Completa prima tutte le partite del turno {round_number-1}!")
                 return redirect(url_for("admin.prova_detail", prova_id=prova_id))
@@ -1093,8 +1095,8 @@ def amalfi_start_round(prova_id, round_number):
 
         # Stato prova
         prova.current_round = round_number
-        if prova.status != "playing":
-            prova.status = "playing"
+        if prova.status != ProvaStatus.PLAYING.value:
+            ProvaService.start_playing(prova.id)
         db.session.commit()
 
         # Messaggi basati su pairings (tuple di id: (p1,), (p1,p2), (p1,p2,p3))
@@ -1146,7 +1148,9 @@ def amalfi_preview_round(prova_id, round_number):
                 prova_id=prova_id, round_number=round_number - 1
             ).all()
 
-            incomplete_prev = [m for m in prev_matches if m.status != "completed"]
+            incomplete_prev = [
+                m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
+            ]
             if incomplete_prev:
                 return (
                     jsonify(
@@ -1161,9 +1165,7 @@ def amalfi_preview_round(prova_id, round_number):
         # Genera anteprima via Strategy (no IO)
         svc = get_matchmaking_service()
         pairings = svc.preview(
-            strategy_name="Amalfi",
-            prova=prova,
-            round_number=round_number
+            strategy_name="Amalfi", prova=prova, round_number=round_number
         )
 
         # Prepara dati per JSON (compat con struttura esistente)
@@ -1326,7 +1328,7 @@ def prova_detail_amalfi_enhanced(prova_id):
     # Ottieni classifiche per ogni turno completato
     for round_num in range(1, prova.current_round + 1):
         round_matches = [m for m in matches if m.round_number == round_num]
-        if all(m.status == "completed" for m in round_matches):
+        if all(m.status == MatchStatus.COMPLETED.value for m in round_matches):
             amalfi_info["classifications"][round_num] = get_amalfi_classification(
                 prova_id, round_num
             )
@@ -1412,7 +1414,7 @@ def trio_reset(trio_id):
         trio.winner_id = None
 
         # Reset match associato
-        trio.match.status = "pending"
+        MatchService.reset_to_pending(trio.match.id, clear_validation=True)
         trio.match.winner_id = None
 
         db.session.commit()
@@ -1427,7 +1429,9 @@ def trio_reset(trio_id):
 @admin_bp.route("/director_requests")
 @admin_required
 def director_requests():
-    pending = DirectorRequest.query.filter_by(status="pending").all()
+    pending = DirectorRequest.query.filter_by(
+        status=DirectorRequestStatus.PENDING.value
+    ).all()
     return render_template("admin/director_requests.html", requests=pending)
 
 
@@ -1435,7 +1439,7 @@ def director_requests():
 @admin_required
 def approve_director_request(req_id):
     req = DirectorRequest.query.get_or_404(req_id)
-    req.status = "approved"
+    req.status = DirectorRequestStatus.APPROVED.value
     req.user.role = "director"
     db.session.commit()
     flash("Richiesta approvata.")
@@ -1446,7 +1450,7 @@ def approve_director_request(req_id):
 @admin_required
 def reject_director_request(req_id):
     req = DirectorRequest.query.get_or_404(req_id)
-    req.status = "rejected"
+    req.status = DirectorRequestStatus.REJECTED.value
     db.session.commit()
     flash("Richiesta rifiutata.")
     return redirect(url_for("admin.director_requests"))

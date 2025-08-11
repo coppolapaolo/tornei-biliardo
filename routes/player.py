@@ -15,6 +15,8 @@ from models import (
     User,
 )
 from utils import player_only
+from models.match.services import MatchService, RackService, MatchResultService
+from utils.status_ui import MatchStatus, ProvaStatus, DirectorRequestStatus
 
 player_bp = Blueprint("player", __name__)
 
@@ -63,9 +65,7 @@ def dashboard():
     )
 
     if current_user.is_director:
-        managed_tournaments = [
-            assoc.tournament for assoc in current_user.directed_tournaments
-        ]
+        managed_tournaments = current_user.get_managed_tournaments()
     else:
         managed_tournaments = []
 
@@ -97,7 +97,7 @@ def dashboard():
             db.or_(
                 Match.player1_id == current_user.id, Match.player2_id == current_user.id
             ),
-            Match.status.in_(["pending", "playing"]),
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
             Prova.tournament_id == selected_tournament.id,
         )
         .all()
@@ -110,7 +110,7 @@ def dashboard():
             db.or_(
                 Match.player1_id == current_user.id, Match.player2_id == current_user.id
             ),
-            Match.status == "completed",
+            Match.status == MatchStatus.COMPLETED.value,
             Prova.tournament_id == selected_tournament.id,
         )
         .order_by(Prova.number.desc(), Match.round_number.desc())
@@ -123,7 +123,7 @@ def dashboard():
         db.or_(
             Match.player1_id == current_user.id, Match.player2_id == current_user.id
         ),
-        Match.status == "completed",
+        Match.status == MatchStatus.COMPLETED.value,
     ).all()
 
     total_matches = len(all_matches)
@@ -140,7 +140,7 @@ def dashboard():
     # Prove standalone con iscrizioni aperte
     standalone_available = Prova.query.filter(
         Prova.tournament_id.is_(None),  # Solo standalone
-        Prova.status == "inscription",
+        Prova.status == ProvaStatus.INSCRIPTION.value,
         Prova.inscription_start <= datetime.utcnow(),
         Prova.inscription_end >= datetime.utcnow(),
     ).all()
@@ -185,7 +185,7 @@ def inscribe_to_prova(prova_id):
     # Verifica che le iscrizioni siano aperte
     now = datetime.utcnow()
     if (
-        prova.status != "inscription"
+        prova.status != ProvaStatus.INSCRIPTION.value
         or now < prova.inscription_start
         or now > prova.inscription_end
     ):
@@ -244,30 +244,29 @@ def add_rack_result(match_id):
     )
     next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
 
-    rack = Rack(
-        match_id=match_id,
+    # ↳ Service: crea il rack (reporter = giocatore; non validato da admin)
+    RackService.add_rack_result(
+        match_id=match.id,
         rack_number=next_rack_number,
         winner_id=winner_id,
         reported_by_id=current_user.id,
+        validated_by_admin=False,
     )
-    db.session.add(rack)
 
-    # Aggiorna punteggio match
+    # Aggiorna punteggio match (come fa già oggi la route)
     if winner_id == match.player1_id:
         match.player1_score += 1
     else:
         match.player2_score += 1
 
-    # Verifica se il match è finito usando la nuova logica
+    # Se il match è finito, imposta il vincitore tramite il service dedicato
     if match.prova.is_match_finished(match.player1_score, match.player2_score):
-        match.winner_id = (
+        final_winner_id = (
             match.player1_id
             if match.player1_score > match.player2_score
             else match.player2_id
         )
-        match.status = "completed"
-
-    db.session.commit()
+        MatchResultService.submit_result(match.id, final_winner_id)
 
     return jsonify(
         {
@@ -277,7 +276,6 @@ def add_rack_result(match_id):
             "status": match.status,
         }
     )
-
 
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
 
@@ -313,12 +311,13 @@ def profile():
     )
 
     # Statistiche generali
-    total_matches = len([m for m in matches if m.status == "completed"])
+    total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
     won_matches = len(
         [
             m
             for m in matches
-            if m.status == "completed" and m.winner_id == current_user.id
+            if m.status == MatchStatus.COMPLETED.value
+            and m.winner_id == current_user.id
         ]
     )
     win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
@@ -332,7 +331,9 @@ def profile():
     )
 
     # Partite recenti (ultime 10)
-    recent_matches = [m for m in matches if m.status == "completed"][:10]
+    recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
+        :10
+    ]
 
     stats = {
         "total_inscriptions": len(inscriptions),
@@ -367,7 +368,9 @@ def request_director():
         flash("Hai già una richiesta in sospeso o è stata valutata.")
         return redirect(url_for("player.profile"))
 
-    req = DirectorRequest(user_id=current_user.id, status="pending")
+    req = DirectorRequest(
+        user_id=current_user.id, status=DirectorRequestStatus.PENDING.value
+    )
     db.session.add(req)
     db.session.commit()
     flash("Richiesta inviata. Sarai contattato dall’amministratore.")
@@ -401,7 +404,11 @@ def delete_account():
         active_inscriptions = (
             Inscription.query.filter_by(user_id=current_user.id)
             .join(Prova)
-            .filter(Prova.status.in_(["setup", "inscription"]))
+            .filter(
+                Prova.status.in_(
+                    [ProvaStatus.SETUP.value, ProvaStatus.INSCRIPTION.value]
+                )
+            )
             .all()
         )
 
@@ -413,7 +420,7 @@ def delete_account():
             db.or_(
                 Match.player1_id == current_user.id, Match.player2_id == current_user.id
             ),
-            Match.status == "pending",
+            Match.status == MatchStatus.PENDING.value,
         ).all()
 
         for match in pending_matches:
@@ -479,7 +486,7 @@ def unsubscribe_from_prova(prova_id):
         return redirect(url_for("player.dashboard"))
 
     # Verifica che la prova non sia ancora iniziata
-    if prova.status not in ["setup", "inscription"]:
+    if prova.status not in [ProvaStatus.SETUP.value, ProvaStatus.INSCRIPTION.value]:
         flash("Impossibile disiscreversi: la prova è già iniziata!")
         return redirect(url_for("player.dashboard"))
 
@@ -535,8 +542,8 @@ def remove_rack(rack_id):
         match.player2_score = max(0, match.player2_score - 1)
 
     # Se il match era completato, rimettilo in playing
-    if match.status == "completed":
-        match.status = "playing"
+    if match.status == MatchStatus.COMPLETED.value:
+        MatchService.to_playing(match.id)
         match.winner_id = None
 
     db.session.commit()
