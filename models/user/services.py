@@ -13,6 +13,7 @@ Services:
 Author: Refactoring Phase 1 - Task 1.4
 Created: 2025-08-01
 """
+from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 from sqlalchemy import func, desc, or_
@@ -20,6 +21,12 @@ from datetime import datetime, timedelta
 
 from ..base import db
 from .models import User, TournamentDirector, DirectorRequest
+
+from models.match import Match
+from models.competition.models import Prova, Inscription
+from models.competition.models import WithdrawPolicy
+from models.status_enum import MatchStatus, DirectorRequestStatus
+from models.user.role_enum import UserRole
 
 
 class UserService:
@@ -666,6 +673,120 @@ class UserStatsService:
             )
 
         return user_stats[:limit]
+
+
+class UserDeletionService:
+    @staticmethod
+    def _get_admin_user() -> User:
+        # policy: primo utente con ruolo 'admin'
+        admin = User.query.filter_by(role=UserRole.ADMIN.value).first()
+        if not admin:
+            raise RuntimeError("Nessun utente admin trovato per riassegnazioni")
+        return admin
+
+    @staticmethod
+    def _remove_director_requests(user: User) -> None:
+        DirectorRequest.query.filter_by(
+            user_id=user.id, status=DirectorRequestStatus.PENDING.value
+        ).delete(synchronize_session=False)
+        # se approvata, la gestione avviene in _reassign_directorships
+
+    @staticmethod
+    def _reassign_directorships(user: User) -> None:
+        admin = UserDeletionService._get_admin_user()
+        # Tornei dove è unico direttore → assegna ad admin
+        td_rows = db.session.query(TournamentDirector).filter_by(user_id=user.id).all()
+        tournament_ids = {r.tournament_id for r in td_rows}
+        for tid in tournament_ids:
+            # conta co-direttori diversi da user
+            others = (
+                db.session.query(TournamentDirector)
+                .filter(
+                    TournamentDirector.tournament_id == tid,
+                    TournamentDirector.user_id != user.id,
+                )
+                .count()
+            )
+            if others == 0:
+                # aggiungi admin come direttore, se non già presente
+                exists = (
+                    db.session.query(TournamentDirector)
+                    .filter_by(tournament_id=tid, user_id=admin.id)
+                    .first()
+                )
+                if not exists:
+                    db.session.add(
+                        TournamentDirector(tournament_id=tid, user_id=admin.id,
+                                           assigned_by_id=admin.id)
+                    )
+        # rimuovi user dal ruolo direttore in tutti i tornei
+        db.session.query(TournamentDirector).filter_by(user_id=user.id).delete(
+            synchronize_session=False
+        )
+        # Prove standalone con director_id=user.id → assegna ad admin
+        db.session.query(Prova).filter_by(director_id=user.id).update(
+            {"director_id": admin.id}, synchronize_session=False
+        )
+
+    @staticmethod
+    def _handle_inscriptions(user: User) -> None:
+        # Prove non iniziate → disiscrizione; iniziate → withdraw con policy default
+        inscriptions = Inscription.query.filter_by(user_id=user.id).all()
+        for ins in inscriptions:
+            prova = db.session.get(Prova, ins.prova_id)
+            if not prova:
+                continue
+            if (prova.current_round or 0) == 0:  # non iniziata
+                db.session.delete(ins)
+            else:
+                if not ins.is_withdrawn:
+                    ins.is_withdrawn = True
+                    ins.withdrawn_at = datetime.utcnow()
+                    ins.withdraw_policy = WithdrawPolicy.X_POINTS_ONLY.value
+
+    @staticmethod
+    def _forfeit_playing_matches(user: User) -> None:
+        # chiusura immediata di match in corso: assegna i rack restanti all'avversario
+        playing = Match.query.filter(
+            Match.status == MatchStatus.PLAYING.value,
+            ((Match.player1_id == user.id) | (Match.player2_id == user.id)),
+        ).all()
+        for m in playing:
+            # determina avversario
+            opponent_id = m.player2_id if m.player1_id == user.id else m.player1_id
+            # assegna rack restanti all'avversario
+            to_win = m.max_racks or 0
+            # calcola rack già assegnati
+            p1 = m.score_p1 or 0
+            p2 = m.score_p2 or 0
+            if m.player1_id == opponent_id:
+                m.score_p1 = to_win
+                m.score_p2 = p2 if p2 > 0 else 0
+            else:
+                m.score_p2 = to_win
+                m.score_p1 = p1 if p1 > 0 else 0
+            m.status = MatchStatus.COMPLETED.value
+            m.result_reason = "forfeit"  # campo statistico/tassonomico
+            # eventuale creazione MatchResult/Rack sintetici
+            # se richiesto dal dominio → omesso per ora
+
+    @staticmethod
+    def delete_user(user: User) -> None:
+        """Soft delete + orchestrazione dominio. No bulk-ops ORM mixate
+        con stateful objects.
+        Solleva in caso manchino precondizioni (es. admin assente).
+        """
+        # 1) richieste direttore
+        UserDeletionService._remove_director_requests(user)
+        # 2) riassegnazioni di direzione
+        UserDeletionService._reassign_directorships(user)
+        # 3) iscrizioni e forfait
+        UserDeletionService._handle_inscriptions(user)
+        UserDeletionService._forfeit_playing_matches(user)
+        # 4) anonimizzazione e blocco
+        user.anonymize()
+        db.session.flush()  # forza validazione UoW qui
+        db.session.commit()
 
 
 @staticmethod

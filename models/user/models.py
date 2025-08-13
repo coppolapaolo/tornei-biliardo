@@ -21,23 +21,28 @@ if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
     from ..tournament.models import Tournament
 
+from models.base import TimestampMixin, SoftDeleteMixin
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # USER
 # ────────────────────────────────────────────────────────────────────────────────
-class User(UserMixin, BaseModel):
+class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     """Core user entity with role-based permissions and rich statistics."""
 
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
     password_hash = db.Column(db.String(120), nullable=False)
 
     role = db.Column(db.String(20), nullable=False, default="player")
     # admin|director|player
-    phone = db.Column(db.String(20))
+    phone = db.Column(db.String(20), nullable=True)
+
+    # per utenti cancellati
+    previous_username = db.Column(db.String(80), nullable=True)
 
     # Relationships (string names to postpone model imports)
     inscriptions = db.relationship("Inscription", back_populates="user", lazy=True)
@@ -93,6 +98,29 @@ class User(UserMixin, BaseModel):
     @property
     def is_player(self) -> bool:
         return self.role == "player"
+
+    # Flask-Login integration: utente attivo solo se non soft-deleted
+    @property
+    def is_active(self) -> bool:  # type: ignore[override]
+        return not self.is_deleted
+
+    # Operazioni di anonimizzazione (PII → NULL, username tecnico)
+    def anonymize(self) -> None:
+        if not self.is_deleted:
+            self.deleted_at = datetime.utcnow()
+        if not self.previous_username:
+            self.previous_username = self.username
+        # Username tecnico e univoco; UI mostrerà una versione "accattivante"
+        stamp = (
+            self.deleted_at.strftime("%Y%m%d")
+            if self.deleted_at
+            else datetime.utcnow().strftime("%Y%m%d")
+        )
+        self.username = f"deleted-{self.id}-{stamp}"
+        self.email = None
+        self.phone = None
+        # opzionale: invalidare la password
+        self.password_hash = "!deleted!"
 
     # ───────────────────
     # Permission helpers

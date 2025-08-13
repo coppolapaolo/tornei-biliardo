@@ -2,10 +2,8 @@
 Test routes for Prova standalone functionality (Sprint 2)
 """
 
-import pytest
 from datetime import datetime, timedelta
-from models import db, User, Prova
-from models.user.models import TournamentDirector
+from models import User, Prova
 
 
 class TestProvaStandaloneRoutes:
@@ -21,7 +19,7 @@ class TestProvaStandaloneRoutes:
 
         response = client.get("/admin/prova/create_standalone")
         assert response.status_code == 200
-        assert b"Crea Competizione Standalone" in response.data
+        assert b"Crea Gara Singola" in response.data
 
     def test_create_prova_standalone_post(self, client, director_user):
         """Test POST request to create standalone prova."""

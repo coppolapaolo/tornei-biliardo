@@ -1,6 +1,6 @@
 # routes/player.py - AGGIORNATO dashboard per multi-torneo
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
 from datetime import datetime
 from models import (
     db,
@@ -10,12 +10,12 @@ from models import (
     Match,
     Rack,
     Classification,
-    MatchResult,
     DirectorRequest,
     User,
 )
 from utils import player_only
 from models.match.services import MatchService, RackService, MatchResultService
+from models.user.services import UserDeletionService
 from utils.status_ui import MatchStatus, ProvaStatus, DirectorRequestStatus
 
 player_bp = Blueprint("player", __name__)
@@ -381,90 +381,36 @@ def request_director():
 @login_required
 @player_only
 def delete_account():
-    """Cancellazione account utente - PROTETTA PER AMMINISTRATORI"""
+    """Cancellazione account utente (self-service).
+    Conserva lo storico tramite soft delete."""
+    if request.method == "GET":
+        return render_template("player/delete_account.html")
 
-    if request.method == "POST":
-        password = request.form.get("password", "")
-        confirmation = request.form.get("confirmation", "")
+    password = request.form.get("password", "")
+    confirmation = request.form.get("confirmation", "").strip()
 
-        # Verifica password
-        if not current_user.check_password(password):
-            flash("Password errata!")
-            return render_template("player/delete_account.html")
+    # Verifica password
+    if not current_user.check_password(password):
+        flash("Password errata!", "danger")
+        return render_template("player/delete_account.html")
 
-        # Verifica conferma
-        if confirmation != "ELIMINA IL MIO ACCOUNT":
-            flash("Conferma non corretta!")
-            return render_template("player/delete_account.html")
+    # Verifica conferma
+    if confirmation != "ELIMINA IL MIO ACCOUNT":
+        flash("Conferma non corretta!", "warning")
+        return render_template("player/delete_account.html")
 
-        # Procedi con cancellazione (SOLO per utenti non-admin)
-        username = current_user.username
-
-        # 1. Rimuovi da tutte le iscrizioni attive
-        active_inscriptions = (
-            Inscription.query.filter_by(user_id=current_user.id)
-            .join(Prova)
-            .filter(
-                Prova.status.in_(
-                    [ProvaStatus.SETUP.value, ProvaStatus.INSCRIPTION.value]
-                )
-            )
-            .all()
+    try:
+        UserDeletionService.delete_user(current_user)
+        logout_user()  # Disconnette l'utente dopo la cancellazione
+        flash(
+            "Account eliminato. I tuoi dati restano anonimizzati nei registri.",
+            "success"
         )
-
-        for inscription in active_inscriptions:
-            db.session.delete(inscription)
-
-        # 2. Rimuovi da partite non ancora giocate (pending)
-        pending_matches = Match.query.filter(
-            db.or_(
-                Match.player1_id == current_user.id, Match.player2_id == current_user.id
-            ),
-            Match.status == MatchStatus.PENDING.value,
-        ).all()
-
-        for match in pending_matches:
-            # Se la partita non è iniziata, rimuovila completamente
-            db.session.delete(match)
-
-        # 3. Per partite completate, manteniamo i dati storici ma anonimizziamo
-        # (Le partite completate rimangono per integrità storica)
-
-        # 4. Rimuovi classifiche
-        classifications = Classification.query.filter_by(user_id=current_user.id).all()
-        for classification in classifications:
-            db.session.delete(classification)
-
-        # 5. Rimuovi rack results
-        rack_results = Rack.query.filter(
-            db.or_(
-                Rack.winner_id == current_user.id,
-                Rack.reported_by_id == current_user.id,
-            )
-        ).all()
-        for rack in rack_results:
-            db.session.delete(rack)
-
-        # 6. Rimuovi match results
-        match_results = MatchResult.query.filter_by(user_id=current_user.id).all()
-        for result in match_results:
-            db.session.delete(result)
-
-        # 7. Rimuovi l'utente
-        db.session.delete(current_user)
-
-        # Logout prima del commit
-        from flask_login import logout_user
-
-        logout_user()
-
-        # Commit delle modifiche
-        db.session.commit()
-
-        flash(f'Account "{username}" eliminato con successo!')
         return redirect(url_for("main.index"))
-
-    return render_template("player/delete_account.html")
+    except Exception:
+        db.session.rollback()
+        flash("Errore durante l'eliminazione dell'account.", "danger")
+        raise
 
 
 # ============ DISISCRIZIONE TORNEI ============

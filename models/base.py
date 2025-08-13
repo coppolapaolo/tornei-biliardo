@@ -83,29 +83,15 @@ class SoftDeleteMixin:
     """
 
     deleted_at = db.Column(db.DateTime, nullable=True)
-    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
 
-    def soft_delete(self):
+    def soft_delete(self) -> None:
         """Mark the record as soft deleted"""
-        self.is_deleted = True
         self.deleted_at = datetime.utcnow()
-        db.session.commit()
 
-    def restore(self):
-        """Restore a soft deleted record"""
-        self.is_deleted = False
-        self.deleted_at = None
-        db.session.commit()
-
-    @classmethod
-    def active_only(cls):
-        """Query filter to get only non-deleted records"""
-        return cls.query.filter(cls.is_deleted.is_(False))
-
-    @classmethod
-    def deleted_only(cls):
-        """Query filter to get only soft-deleted records"""
-        return cls.query.filter(cls.is_deleted.is_(True))
+    @property
+    def is_deleted(self) -> bool:
+        """Check if the record is soft deleted"""
+        return self.deleted_at is not None
 
 
 class AuditMixin:

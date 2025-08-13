@@ -8,6 +8,14 @@ ADR Reference: docs/ADR/ADR-0012-prova-nullable-tournament.md
 
 from datetime import datetime
 from models.base import db
+from enum import Enum
+
+
+class WithdrawPolicy(str, Enum):
+    # mantiene negli abbinamenti, assegna vittoria massima agli avversari
+    KEEP_FORFEIT = "KeepForfeit"
+    X_POINTS_ONLY = "XPointsOnly"     # default: tratta come X solo nel punteggio
+    X_WITH_PAIRING = "XWithPairing"   # tratta come X anche nel pairing
 
 
 class Prova(db.Model):
@@ -193,6 +201,12 @@ class Inscription(db.Model):
     initial_order = db.Column(db.Integer)  # ordine sorteggio iniziale
 
     user = db.relationship("User", back_populates="inscriptions")
+
+    is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
+    withdrawn_at = db.Column(db.DateTime, nullable=True)
+    withdraw_policy = db.Column(  # valore di WithdrawPolicy
+        db.String(20), nullable=True
+    )
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.prova_id}>"
