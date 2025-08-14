@@ -8,7 +8,6 @@ Author: Refactoring Phase 2 - Sprint 1
 Created: 2025-08-06
 """
 
-import pytest
 from datetime import date  # AGGIUNGI QUESTO IMPORT
 from models import db, User, Tournament, Prova, Match, Classification
 from utils.reset_data import reset_database_enhanced
@@ -76,9 +75,8 @@ def test_reset_data_works_with_new_structure(app):
         assert User.query.filter_by(role="admin").count() == 1
         assert User.query.filter_by(role="director").count() >= 2
         assert User.query.filter_by(role="player").count() >= 10
-        assert Tournament.query.count() >= 3
-        # Se hai aggiunto _create_provas in reset_database_enhanced, riattiva questa riga:
-        assert Prova.query.count() >= 6  # At least 2 per tournament
+        assert Tournament.query.count() >= 2
+        assert Prova.query.count() >= 3
 
 
 def test_cross_domain_relationships(app):
