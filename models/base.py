@@ -9,6 +9,7 @@ Created: 2025-08-01
 """
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect as sa_inspect
 from datetime import datetime
 
 # Initialize SQLAlchemy instance
@@ -90,8 +91,25 @@ class SoftDeleteMixin:
 
     @property
     def is_deleted(self) -> bool:
-        """Check if the record is soft deleted"""
-        return self.deleted_at is not None
+        """
+        Safe anche su istanze detached: evita lazy-load se l'oggetto
+        non è legato a una Session.
+        - Se l'istanza è detached, legge dal __dict__ senza I/O DB.
+        - Se l'attributo è già presente, evita refresh.
+        - Se l'istanza è session-bound ma l'attributo è expired, l'accesso è lecito.
+        """
+        state = sa_inspect(self)
+
+        # Oggetto non legato a nessuna sessione → non fare I/O
+        if state.session is None:
+            return self.__dict__.get("deleted_at") is not None
+
+        # Attributo già materializzato → non forzare refresh
+        if "deleted_at" in self.__dict__:
+            return self.__dict__["deleted_at"] is not None
+
+        # Session-bound: accesso lecito (se expired, SQLAlchemy gestisce il refresh)
+        return bool(getattr(self, "deleted_at", None))
 
 
 class AuditMixin:
