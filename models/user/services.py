@@ -24,7 +24,6 @@ from .models import User, TournamentDirector, DirectorRequest
 
 from models.match import Match
 from models.competition.models import Prova, Inscription
-from models.competition.models import WithdrawPolicy
 from models.status_enum import MatchStatus, DirectorRequestStatus
 from models.user.role_enum import UserRole
 
@@ -716,8 +715,9 @@ class UserDeletionService:
                 )
                 if not exists:
                     db.session.add(
-                        TournamentDirector(tournament_id=tid, user_id=admin.id,
-                                           assigned_by_id=admin.id)
+                        TournamentDirector(
+                            tournament_id=tid, user_id=admin.id, assigned_by_id=admin.id
+                        )
                     )
         # rimuovi user dal ruolo direttore in tutti i tornei
         db.session.query(TournamentDirector).filter_by(user_id=user.id).delete(
@@ -729,46 +729,64 @@ class UserDeletionService:
         )
 
     @staticmethod
-    def _handle_inscriptions(user: User) -> None:
-        # Prove non iniziate → disiscrizione; iniziate → withdraw con policy default
+    def _handle_inscriptions(user: "User") -> None:
+        """Prove non iniziate → disiscrizione; iniziate → marca withdrawn
+        (policy è su Prova)."""
         inscriptions = Inscription.query.filter_by(user_id=user.id).all()
         for ins in inscriptions:
             prova = db.session.get(Prova, ins.prova_id)
             if not prova:
                 continue
-            if (prova.current_round or 0) == 0:  # non iniziata
+            # Prova non iniziata: rimuoviamo l'iscrizione
+            if (prova.current_round or 0) == 0:
                 db.session.delete(ins)
             else:
+                # Prova iniziata: marca come ritirato (policy gestita a livello Prova)
                 if not ins.is_withdrawn:
                     ins.is_withdrawn = True
                     ins.withdrawn_at = datetime.utcnow()
-                    ins.withdraw_policy = WithdrawPolicy.X_POINTS_ONLY.value
 
     @staticmethod
-    def _forfeit_playing_matches(user: User) -> None:
-        # chiusura immediata di match in corso: assegna i rack restanti all'avversario
-        playing = Match.query.filter(
-            Match.status == MatchStatus.PLAYING.value,
+    def _forfeit_playing_matches(user: "User") -> None:
+        """Quando un utente si cancella:
+        - vs X (bye) → elimina match
+        - vs cancellato/ritirato anch'esso → elimina match se non completato
+        - vs avversario attivo → chiudi a tavolino (punteggio massimo all'avversario)
+        """
+        in_progress = Match.query.filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
             ((Match.player1_id == user.id) | (Match.player2_id == user.id)),
         ).all()
-        for m in playing:
-            # determina avversario
-            opponent_id = m.player2_id if m.player1_id == user.id else m.player1_id
-            # assegna rack restanti all'avversario
-            to_win = m.max_racks or 0
-            # calcola rack già assegnati
-            p1 = m.score_p1 or 0
-            p2 = m.score_p2 or 0
-            if m.player1_id == opponent_id:
-                m.score_p1 = to_win
-                m.score_p2 = p2 if p2 > 0 else 0
+
+        withdrawn_ids = {
+            ins.user_id for ins in Inscription.query.filter_by(is_withdrawn=True).all()
+        }
+        deleted_ids = {
+            u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()
+        }
+        cancelled_ids = withdrawn_ids | deleted_ids
+
+        for m in in_progress:
+            # BYE (X) → elimina subito
+            if m.player1_id is None or m.player2_id is None:
+                db.session.delete(m)
+                continue
+
+            opp_id = m.player2_id if m.player1_id == user.id else m.player1_id
+            opp_cancelled = opp_id in cancelled_ids
+
+            # entrambi cancellati → elimina (qui siamo in pending/playing)
+            if opp_cancelled:
+                db.session.delete(m)
+                continue
+
+            # avversario attivo → forfait
+            to_win = Prova.query.get(m.prova_id).get_winning_score()
+            if m.player1_id == user.id:
+                m.player2_score = to_win
             else:
-                m.score_p2 = to_win
-                m.score_p1 = p1 if p1 > 0 else 0
+                m.player1_score = to_win
             m.status = MatchStatus.COMPLETED.value
-            m.result_reason = "forfeit"  # campo statistico/tassonomico
-            # eventuale creazione MatchResult/Rack sintetici
-            # se richiesto dal dominio → omesso per ora
 
     @staticmethod
     def delete_user(user: User) -> None:

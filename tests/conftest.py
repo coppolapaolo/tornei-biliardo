@@ -144,14 +144,14 @@ def started_prova(db_session):
 
     # Prova 'avviata' con i campi obbligatori della codebase
     p = Prova(
-        tournament_id=t.id,        # puoi ometterlo se vuoi una prova standalone
+        tournament_id=t.id,  # puoi ometterlo se vuoi una prova standalone
         number=1,
         name="Prova started",
         date=_dt.date.today(),
-        discipline="palla 9",      # ammessi: palla 8/9/10
-        distance=7,                # numero rack da giocare
-        status="playing",          # nomenclatura attuale (non 'started')
-        current_round=1,         # round corrente
+        discipline="palla 9",  # ammessi: palla 8/9/10
+        distance=7,  # numero rack da giocare
+        status="playing",  # nomenclatura attuale (non 'started')
+        current_round=1,  # round corrente
     )
     _db.session.add(p)
     _db.session.commit()

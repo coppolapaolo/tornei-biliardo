@@ -14,4 +14,6 @@ def test_withdraw_marks_started_prova(player_user, started_prova, admin_user):
 
     db.session.refresh(ins)
     assert ins.is_withdrawn is True
-    assert ins.withdraw_policy == "XPointsOnly"
+    assert (
+        ins.withdrawn_at is not None
+    )  # policy ora è a livello Prova, non su Inscription

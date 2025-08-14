@@ -18,6 +18,7 @@ from models.user.models import TournamentDirector, User
 from models.user.services import UserService, DirectorRequestService
 from models import Prova
 from datetime import date
+from models.competition.services import ProvaService
 
 
 # ─────────────────────── USERS ────────────────────────────────────────────────
@@ -83,15 +84,14 @@ def _create_tournaments(admin: User) -> List[Tournament]:
 
 def _create_provas(tournaments: List[Tournament]) -> None:
     """Create sample provas for each tournament"""
-    from models import Prova
     from datetime import date, timedelta
 
-    provas = []
+    provas = 0
     disciplines = ["palla 8", "palla 9", "palla 10"]
 
     for i, tournament in enumerate(tournaments):
         for j in range(2):  # 2 provas per tournament
-            prova = Prova(
+            ProvaService.create_prova(
                 tournament_id=tournament.id,
                 number=j + 1,
                 name=f"{tournament.name} - Prova {j + 1}",
@@ -106,10 +106,9 @@ def _create_provas(tournaments: List[Tournament]) -> None:
                 max_participants=16,
                 status="setup",
             )
-            provas.append(prova)
+            provas += 1
 
-    db.session.add_all(provas)
-    print(f"   ✅ Created {len(provas)} provas")
+    print(f"   ✅ Created {provas} provas")
 
 
 def _create_standalone_provas(directors: List[User]) -> None:
@@ -119,7 +118,7 @@ def _create_standalone_provas(directors: List[User]) -> None:
     print("🆕 Creating standalone competitions...")
 
     # Director1 crea una competizione standalone
-    standalone1 = Prova(
+    ProvaService.create_prova(
         number=1,
         name="Memorial Rossi 2025",
         director_id=directors[0].id,  # mario_rossi
@@ -138,10 +137,9 @@ def _create_standalone_provas(directors: List[User]) -> None:
         inscription_end=datetime.now() + timedelta(days=40),
         status="setup",
     )
-    db.session.add(standalone1)
 
     # Director2 crea una competizione standalone multi-turno
-    standalone2 = Prova(
+    ProvaService.create_prova(
         number=2,
         name="Open Estate 2025",
         director_id=directors[1].id,  # lucia_verdi
@@ -160,7 +158,6 @@ def _create_standalone_provas(directors: List[User]) -> None:
         inscription_end=datetime.now() + timedelta(days=55),
         status="inscription",  # Questa è già aperta
     )
-    db.session.add(standalone2)
 
     db.session.flush()  # Per avere gli ID
     print("   ✅ Created 2 standalone competitions")

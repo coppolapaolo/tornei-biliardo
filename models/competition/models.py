@@ -9,13 +9,13 @@ ADR Reference: docs/ADR/ADR-0012-prova-nullable-tournament.md
 from datetime import datetime
 from models.base import db
 from enum import Enum
+from models.status_enum import ProvaStatus, MatchStatus
 
 
 class WithdrawPolicy(str, Enum):
     # mantiene negli abbinamenti, assegna vittoria massima agli avversari
-    KEEP_FORFEIT = "KeepForfeit"
-    X_POINTS_ONLY = "XPointsOnly"     # default: tratta come X solo nel punteggio
-    X_WITH_PAIRING = "XWithPairing"   # tratta come X anche nel pairing
+    FORFEIT = "Forfeit"
+    EXCLUDE = "Exclude"  # default: tratta come X
 
 
 class Prova(db.Model):
@@ -58,9 +58,13 @@ class Prova(db.Model):
 
     # Stato della prova
     status = db.Column(
-        db.String(20), default="setup"
+        db.String(20), default=ProvaStatus.SETUP.value
     )  # setup, inscription, playing, completed
     current_round = db.Column(db.Integer, default=0)  # 0=non iniziata, 1,2,3=turni
+
+    withdraw_policy = db.Column(
+        db.String(10), nullable=False, default=WithdrawPolicy.EXCLUDE.value
+    )
 
     # Relazioni
     inscriptions = db.relationship("Inscription", backref="prova", lazy=True)
@@ -91,10 +95,10 @@ class Prova(db.Model):
 
     def get_real_status(self):
         """Restituisce lo status reale, considerando anche round e iscrizioni"""
-        if self.status == "playing":
+        if self.status == ProvaStatus.PLAYING.value:
             # Se tutti i match del round corrente sono finiti
             all_matches_finished = all(
-                m.status == "completed"
+                m.status == MatchStatus.COMPLETED.value
                 for m in self.matches
                 if m.round_number == self.current_round
             )
@@ -103,7 +107,7 @@ class Prova(db.Model):
                     return "round_completed"
                 else:
                     return "tournament_completed"
-        elif self.status == "inscription":
+        elif self.status == ProvaStatus.INSCRIPTION.value:
             if self.inscription_end and datetime.utcnow() > self.inscription_end:
                 return "inscription_closed"
         return self.status
@@ -112,22 +116,25 @@ class Prova(db.Model):
         """Restituisce info per badge status nel template"""
         real_status = self.get_real_status()
         return {
-            "setup": {"class": "bg-warning", "text": "Setup"},
-            "inscription": {"class": "bg-info", "text": "Iscrizioni Aperte"},
+            ProvaStatus.SETUP.value: {"class": "bg-warning", "text": "Setup"},
+            ProvaStatus.INSCRIPTION.value: {
+                "class": "bg-info",
+                "text": "Iscrizioni Aperte",
+            },
             "inscription_closed": {
                 "class": "bg-secondary",
                 "text": "Iscrizioni Chiuse",
             },
             "ready_to_start": {"class": "bg-primary", "text": "Pronta per Iniziare"},
-            "playing": {"class": "bg-success", "text": "In Corso"},
-            "completed": {"class": "bg-dark", "text": "Completata"},
+            ProvaStatus.PLAYING.value: {"class": "bg-success", "text": "In Corso"},
+            ProvaStatus.COMPLETED.value: {"class": "bg-dark", "text": "Completata"},
             "round_completed": {"class": "bg-info", "text": "Turno Completato"},
             "tournament_completed": {"class": "bg-dark", "text": "Torneo Completato"},
         }.get(real_status, {"class": "bg-secondary", "text": "Sconosciuto"})
 
     def can_start_new_round(self):
         """Verifica se si può iniziare un nuovo round"""
-        if self.status != "playing":
+        if self.status != ProvaStatus.PLAYING.value:
             return False
         if self.current_round >= self.rounds_count:
             return False
@@ -135,11 +142,13 @@ class Prova(db.Model):
         current_round_matches = [
             m for m in self.matches if m.round_number == self.current_round
         ]
-        return all(m.status == "completed" for m in current_round_matches)
+        return all(
+            m.status == MatchStatus.COMPLETED.value for m in current_round_matches
+        )
 
     def can_inscribe(self):
         """Verifica se si possono fare iscrizioni"""
-        if self.status != "inscription":
+        if self.status != ProvaStatus.INSCRIPTION.value:
             return False
         if self.inscription_end and datetime.utcnow() > self.inscription_end:
             return False
@@ -151,15 +160,15 @@ class Prova(db.Model):
 
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
-        return self.status == "setup"
+        return self.status == ProvaStatus.SETUP.value
 
     def can_be_modified(self):
         """Verifica se la prova può essere modificata"""
-        return self.status == "setup"
+        return self.status == ProvaStatus.SETUP.value
 
     def can_be_deleted(self):
         """Verifica se la prova può essere cancellata"""
-        return not self.inscriptions and self.status == "setup"
+        return not self.inscriptions and self.status == ProvaStatus.SETUP.value
 
     def get_winning_score(self):
         """Restituisce il punteggio per vincere"""
@@ -204,9 +213,6 @@ class Inscription(db.Model):
 
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)
-    withdraw_policy = db.Column(  # valore di WithdrawPolicy
-        db.String(20), nullable=True
-    )
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.prova_id}>"

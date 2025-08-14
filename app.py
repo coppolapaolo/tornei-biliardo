@@ -10,6 +10,9 @@ from utils import get_database_stats, create_admin_if_not_exists, UserPermission
 
 from utils.status_ui import register_status_filters
 
+from sqlalchemy.orm import Session as SASession
+from models.user.soft_delete_filter import register_soft_delete_filter_for
+
 
 def create_app(config_name=None):
     """Factory per creare l'app Flask"""
@@ -24,6 +27,8 @@ def create_app(config_name=None):
 
     # Inizializza estensioni
     db.init_app(app)
+
+    register_soft_delete_filter_for(SASession)
 
     # Setup Login Manager
     login_manager = LoginManager()

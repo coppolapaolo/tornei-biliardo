@@ -19,6 +19,7 @@ from flask import abort, flash, redirect, url_for, request
 from flask_login import current_user
 
 from models.user.permissions import PermissionChecker, RoleRequirement
+from models.competition.services import ProvaService
 from models import (
     db,
     User,
@@ -344,7 +345,7 @@ def create_sample_tournament():
 
     today = date.today()
 
-    prova1_t1 = Prova(
+    ProvaService.create_prova(
         tournament_id=tournament1.id,
         number=1,
         name="Prima Prova",
@@ -360,9 +361,8 @@ def create_sample_tournament():
         best_of=True,
         status="setup",
     )
-    db.session.add(prova1_t1)
 
-    prova2_t1 = Prova(
+    ProvaService.create_prova(
         tournament_id=tournament1.id,
         number=2,
         name="Seconda Prova",
@@ -378,9 +378,8 @@ def create_sample_tournament():
         best_of=False,
         status="setup",
     )
-    db.session.add(prova2_t1)
 
-    prova1_t2 = Prova(
+    ProvaService.create_prova(
         tournament_id=tournament2.id,
         number=1,
         name="Coppa Opening",
@@ -396,7 +395,6 @@ def create_sample_tournament():
         best_of=True,
         status="setup",
     )
-    db.session.add(prova1_t2)
 
     db.session.commit()
     print("✅ Creati 2 tornei di esempio:")

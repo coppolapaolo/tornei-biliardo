@@ -64,6 +64,16 @@
                                        min="2" max="64" value="{{ prova.max_participants or '' }}" placeholder="Illimitato">
                             </div>
                         </div>
+                        <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Gestione ritiri</label>
+                            <select class="form-select" name="withdraw_policy" required>
+                            <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>Exclude (X/Trio)</option>
+                            <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if prova.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>Forfeit (vittoria avversario)</option>
+                            </select>
+                        </div>
+                        </div>
+
                         <div class="col-md-2">
                             <div class="mb-3">
                                 <label for="entry_fee" class="form-label">Quota €</label>

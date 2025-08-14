@@ -10,6 +10,8 @@ ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
 from typing import List, Tuple, Optional, Dict
 from models.base import db
 from .models import Classification, RoundClassification, PlayerEncounter
+from models.competition.models import Inscription
+from models.user.models import User
 
 
 class ClassificationService:
@@ -299,6 +301,19 @@ class PlayerEncounterService:
             matrix[(encounter.player2_id, encounter.player1_id)] = True
 
         return matrix
+
+
+def visible_user_ids_for_prova(prova_id: int) -> set[int]:
+    # iscritti non ritirati
+    active = {
+        ins.user_id
+        for ins in Inscription.query.filter_by(
+            prova_id=prova_id, is_withdrawn=False
+            ).all()
+    }
+    # utenti soft-deleted
+    deleted = {u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()}
+    return active - deleted
 
 
 __all__ = [

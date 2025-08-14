@@ -267,7 +267,7 @@ class ProvaService:
         else:
             start_dt = None
 
-        # Valida formato data di fine  
+        # Valida formato data di fine
         if end_raw:  # Se è fornita, deve essere valida
             end_dt = _parse_date(end_raw)
             if end_dt is None:

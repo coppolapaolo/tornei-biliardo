@@ -33,6 +33,7 @@ from models.matchmaking.bootstrap import get_matchmaking_service
 from models.competition.services import ProvaService
 from models.match.services import MatchService, RackService, MatchResultService
 from models.status_enum import DirectorRequestStatus, ProvaStatus, MatchStatus
+from models.competition.models import WithdrawPolicy
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -250,10 +251,15 @@ def create_prova_standalone():
         if errors:
             for field, error in errors.items():
                 flash(f"{field}: {error}", "error")
-            return render_template("admin/prova_create_standalone.html")
+            return render_template(
+                "admin/prova_create_standalone.html", WithdrawPolicy=WithdrawPolicy
+            )
 
         # Creazione Prova standalone
         try:
+            withdraw_policy = request.form.get(
+                "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+            )
             prova = ProvaService.create_prova(
                 number=int(request.form.get("number", 1)),
                 name=request.form["name"],
@@ -271,6 +277,7 @@ def create_prova_standalone():
                 else None,
                 entry_fee=float(request.form.get("entry_fee", 0.0)),
                 best_of=not ("exact_number" in request.form),
+                withdraw_policy=withdraw_policy,
             )
 
             flash(f'Gara singola "{prova.name}" creata con successo!')
@@ -278,10 +285,14 @@ def create_prova_standalone():
 
         except Exception as e:
             flash(f"Errore nella creazione: {str(e)}", "error")
-            return render_template("admin/prova_create_standalone.html")
+            return render_template(
+                "admin/prova_create_standalone.html", WithdrawPolicy=WithdrawPolicy
+            )
 
     # GET request - mostra form
-    return render_template("admin/prova_create_standalone.html")
+    return render_template(
+        "admin/prova_create_standalone.html", WithdrawPolicy=WithdrawPolicy
+    )
 
 
 @admin_bp.route("/director/dashboard")
@@ -378,7 +389,10 @@ def create_prova():
     best_of = not exact_number  # Inverti la logica
 
     # Crea la prova
-    prova = Prova(
+    withdraw_policy = request.form.get(
+        "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+    )
+    ProvaService.create_prova(
         tournament_id=tournament_id,
         number=number,
         name=name,
@@ -392,12 +406,12 @@ def create_prova():
         discipline=discipline,
         distance=distance,
         best_of=best_of,
+        withdraw_policy=withdraw_policy,
     )
 
     # Auto-popolamento da prova precedente (non serve più, è gestito lato client)
     # Il checkbox copy_from_previous è gestito dinamicamente dal JavaScript
 
-    db.session.add(prova)
     db.session.commit()
 
     flash(f"Prova {number} creata con successo!")
@@ -433,6 +447,9 @@ def edit_prova(prova_id):
         # CORREZIONE: exact_number è il contrario di best_of
         exact_number = "exact_number" in request.form
         prova.best_of = not exact_number  # Inverti la logica
+        prova.withdraw_policy = request.form.get(
+            "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+        )
 
         db.session.commit()
         flash("Prova aggiornata con successo!")

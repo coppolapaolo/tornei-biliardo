@@ -21,6 +21,9 @@ def test_director_reassigned_to_admin(
     assert td_admin is not None
 
     # Verifica: il director_user non è più direttore di quel torneo
-    assert TournamentDirector.query.filter_by(
-        tournament_id=tournament.id, user_id=director_user.id
-    ).count() == 0
+    assert (
+        TournamentDirector.query.filter_by(
+            tournament_id=tournament.id, user_id=director_user.id
+        ).count()
+        == 0
+    )

@@ -13,11 +13,14 @@ from models import (
     RoundClassification,
     TrioMatch,
 )
+from models.user.models import User
 from models.matchmaking.policies import (
     anti_rematch_allowed,
     decide_trio_or_bye,
     OddResolution,
 )
+from models.competition.models import WithdrawPolicy
+from models.status_enum import MatchStatus
 
 
 class AmalfiEngine:
@@ -41,6 +44,10 @@ class AmalfiEngine:
         else:
             matches = self._create_amalfi_round(round_number)
 
+        # Applica regole dominio aggiornate
+        self._cleanup_cancelled_matches(matches)
+        self._finalize_forfeit_matches(matches)
+
         # Persistenza atomica dei match creati (l'engine storico già aggiungeva i match)
         db.session.commit()
         return matches
@@ -49,7 +56,7 @@ class AmalfiEngine:
     # Primo turno
     # ────────────────────────────────────────────────────────────────────────────
     def _create_first_round(self) -> List[Match]:
-        inscriptions = Inscription.query.filter_by(prova_id=self.prova.id).all()
+        inscriptions = self._inscriptions_for_pairing()
         if len(inscriptions) < self.prova.min_participants:
             raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
 
@@ -127,6 +134,18 @@ class AmalfiEngine:
             .all()
         )
 
+        # escludi i ritirati se EXCLUDE
+        if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
+            excluded_ids = {
+                ins.user_id
+                for ins in Inscription.query.filter_by(
+                    prova_id=self.prova.id, is_withdrawn=True
+                ).all()
+            }
+            classification = [
+                c for c in classification if c.user_id not in excluded_ids
+            ]
+
         salto = self.prova.rounds_count - round_number
         matches = self._apply_amalfi_algorithm(classification, round_number, salto)
 
@@ -150,6 +169,7 @@ class AmalfiEngine:
                     self.prova.id, match.player1_id, match.player2_id, round_number
                 )
 
+        self._finalize_forfeit_matches(matches)
         return matches
 
     def _apply_amalfi_algorithm(
@@ -286,6 +306,90 @@ class AmalfiEngine:
         )
         db.session.add(bye)
 
+    def _inscriptions_for_pairing(self) -> list[Inscription]:
+        q = Inscription.query.filter_by(prova_id=self.prova.id)
+        if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
+            q = q.filter_by(is_withdrawn=False)
+        return q.all()
+
+    def _finalize_forfeit_matches(self, matches: list["Match"]) -> None:
+        """Chiude a tavolino i match con esattamente un
+        cancellato/ritirato, SOLO se policy FORFEIT."""
+        if self.prova.withdraw_policy != WithdrawPolicy.FORFEIT.value:
+            return
+
+        withdrawn_ids = {
+            ins.user_id
+            for ins in Inscription.query.filter_by(
+                prova_id=self.prova.id, is_withdrawn=True
+            ).all()
+        }
+        deleted_ids = {
+            u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()
+        }
+        cancelled_ids = withdrawn_ids | deleted_ids
+        if not cancelled_ids:
+            return
+
+        to_win = self.prova.get_winning_score()
+
+        for m in matches:
+            # Salta match già completati e BYE (il cleanup li ha già gestiti)
+            if m.status == MatchStatus.COMPLETED.value:
+                continue
+            if m.player1_id is None or m.player2_id is None:
+                continue
+
+            p1_cancel = m.player1_id in cancelled_ids
+            p2_cancel = m.player2_id in cancelled_ids
+
+            # Esattamente uno cancellato/ritirato → vittoria massima all'altro
+            if p1_cancel ^ p2_cancel:
+                if p1_cancel:
+                    m.player2_score = to_win
+                else:
+                    m.player1_score = to_win
+                m.status = MatchStatus.COMPLETED.value
+
+    def _cleanup_cancelled_matches(self, matches: list["Match"]) -> None:
+        """Elimina:
+        - match contro X (uno dei due player è None) se l'altro è cancellato/ritirato
+            (sempre, anche se 'completed')
+        - match tra due cancellati/ritirati se NON completati
+        """
+        withdrawn_ids = {
+            ins.user_id
+            for ins in Inscription.query.filter_by(
+                prova_id=self.prova.id, is_withdrawn=True
+            ).all()
+        }
+        deleted_ids = {
+            u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()
+        }
+        cancelled_ids = withdrawn_ids | deleted_ids
+
+        to_delete = []
+        for m in matches:
+            p1, p2 = m.player1_id, m.player2_id
+
+            # BYE/X: uno dei due è None → se l'altro è cancellato, elimina SEMPRE
+            if p1 is None or p2 is None:
+                other = p2 if p1 is None else p1
+                if other in cancelled_ids:
+                    to_delete.append(m)
+                continue
+
+            # Entrambi cancellati/ritirati → elimina se non completato
+            if (
+                (p1 in cancelled_ids)
+                and (p2 in cancelled_ids)
+                and m.status != MatchStatus.COMPLETED.value
+            ):
+                to_delete.append(m)
+
+        for m in to_delete:
+            db.session.delete(m)
+
     # ────────────────────────────────────────────────────────────────────────────
     # Preview (solo helper legacy; migra in Strategy allo Sprint 2)
     # ────────────────────────────────────────────────────────────────────────────
@@ -311,6 +415,18 @@ class AmalfiEngine:
             .order_by(RoundClassification.position)
             .all()
         )
+
+        # escludi i ritirati se EXCLUDE
+        if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
+            excluded_ids = {
+                ins.user_id
+                for ins in Inscription.query.filter_by(
+                    prova_id=self.prova.id, is_withdrawn=True
+                ).all()
+            }
+            classification = [
+                c for c in classification if c.user_id not in excluded_ids
+            ]
 
         salto = self.prova.rounds_count - next_round
         matched: set[int] = set()
@@ -346,7 +462,7 @@ class AmalfiEngine:
         return preview_matches
 
     def _preview_first_round(self) -> List[Dict]:
-        inscriptions = Inscription.query.filter_by(prova_id=self.prova.id).all()
+        inscriptions = self._inscriptions_for_pairing()
         users = [insc.user for insc in inscriptions]
         users_copy = users.copy()
         random.shuffle(users_copy)
