@@ -7,13 +7,15 @@ utils/reset_data.py — Dataset demo v2 (agosto 2025)
 from datetime import date, timedelta
 from typing import Dict, List
 
-from flask import has_app_context
+from flask import has_app_context, current_app
 from utils import create_admin_if_not_exists
 
+from models import User
 from models.base import db
 from models.tournament.models import Tournament
 from models.user.models import TournamentDirector
 from models.user.services import UserService
+from models.user.role_enum import UserRole
 from models.competition.services import (
     ProvaService,
     ProvaStateMachine,
@@ -43,8 +45,28 @@ def reset_database_enhanced_cli() -> None:
 
 def _reset_database_core() -> Dict[str, object]:
 
-    # Utenti
+    # Utenti: garantisci un admin per il seed.
     admin = create_admin_if_not_exists()
+    if admin is None:
+        cfg = current_app.config if has_app_context() else {}
+        # In produzione pretendiamo le credenziali esplicite
+        if cfg.get("ADMIN_PASSWORD_REQUIRED", False):
+            raise RuntimeError(
+                "Variabili ADMIN_USERNAME/ADMIN_PASSWORD "
+                "richieste per il seed in produzione."
+            )
+        # Siamo in sviluppo: fallback locale sicuro per il SOLO seed
+        username = (cfg.get("ADMIN_USERNAME") or "admin").strip()
+        email = (cfg.get("ADMIN_EMAIL") or f"{username}@tournament.local").strip()
+        password = (cfg.get("ADMIN_PASSWORD") or "admin123").strip()
+        existing = (
+            User.query.filter_by(role=UserRole.ADMIN.value)
+            .filter(User.deleted_at.is_(None))
+            .first()
+        )
+        admin = existing or UserService.create_user(
+            username=username, email=email, password=password, role=UserRole.ADMIN.value
+        )
     maxdir = UserService.create_user("max", "max@tornei.com", "123456", role="director")
     paolodir = UserService.create_user(
         "paolo", "paolo@tornei.com", "123456", role="director"

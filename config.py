@@ -13,7 +13,8 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    DEBUG_MODE = os.environ.get("DEBUG_MODE", "false").lower() in ("1", "true", "yes")
+    # DEBUG_MODE = os.environ.get("DEBUG_MODE", "false").lower() in ("1", "true", "yes")
+    DEBUG_MODE = True
 
     # Admin bootstrap (ENV-first)
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME")
