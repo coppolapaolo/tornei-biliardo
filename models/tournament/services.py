@@ -10,6 +10,7 @@ ADR Reference: docs/ADR/ADR-0018-state-machine-and-status-enums.md
 from __future__ import annotations
 
 from typing import List
+from sqlalchemy.exc import IntegrityError
 
 from models.base import db
 from models.status_enum import TournamentStatus, ProvaStatus
@@ -31,6 +32,26 @@ class TournamentService:
     def get_active_tournaments() -> List[Tournament]:
         """Restituisce i tornei attivi (campo booleano `is_active`)."""
         return Tournament.query.filter_by(is_active=True).all()
+
+    @staticmethod
+    def delete_tournament(tournament_id: int) -> None:
+        """
+        Cancella un torneo rispettando le regole di dominio e garantendo atomicità.
+        - Blocca se esistono iscrizioni (regola attuale in Tournament.can_be_deleted()).
+        - Esegue il delete con cascade ORM/DB.
+        """
+        tournament = Tournament.query.get_or_404(tournament_id)
+        if not tournament.can_be_deleted():
+            # Regola di dominio esistente: iscrizioni presenti ⇒ non cancellabile
+            raise ValueError("Torneo non cancellabile: esistono iscrizioni.")
+
+        db.session.delete(tournament)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            # Propaga: la route mapperà su HTTP 409 con messaggio user-friendly
+            raise
 
 
 # -----------------------------

@@ -24,6 +24,7 @@ from utils import (
     trio_manager_required,
 )
 from sqlalchemy import func, desc, case, not_
+from sqlalchemy.exc import IntegrityError
 from amalfi import (
     get_amalfi_classification,
     validate_amalfi_configuration,
@@ -34,6 +35,7 @@ from models.competition.services import ProvaService
 from models.match.services import MatchService, RackService, MatchResultService
 from models.status_enum import DirectorRequestStatus, ProvaStatus, MatchStatus
 from models.competition.models import WithdrawPolicy
+from models.tournament.services import TournamentService
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -154,19 +156,17 @@ def edit_tournament(tournament_id):
 @admin_bp.route("/tournament/<int:tournament_id>/delete", methods=["POST"])
 @tournament_manager_required(lambda tournament_id: tournament_id)
 def delete_tournament(tournament_id):
-    """Elimina torneo"""
-    tournament = Tournament.query.get_or_404(tournament_id)
-
-    if not tournament.can_be_deleted():
-        flash("Impossibile cancellare il torneo: contiene prove con iscrizioni!")
+    """Elimina torneo (service layer, gestione errori user-friendly)"""
+    try:
+        TournamentService.delete_tournament(tournament_id)
+        flash("Torneo cancellato con successo!")
+        return redirect(url_for("admin.dashboard"))
+    except ValueError as ve:
+        flash(str(ve))
         return redirect(url_for("admin.tournament_detail", tournament_id=tournament_id))
-
-    tournament_name = tournament.name
-    db.session.delete(tournament)
-    db.session.commit()
-
-    flash(f'Torneo "{tournament_name}" cancellato con successo!')
-    return redirect(url_for("admin.dashboard"))
+    except IntegrityError:
+        flash("Cancellazione bloccata da vincoli di integrità.")
+        return redirect(url_for("admin.tournament_detail", tournament_id=tournament_id))
 
 
 @admin_bp.route("/tournament/<int:tournament_id>/toggle_active", methods=["POST"])

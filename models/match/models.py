@@ -16,7 +16,11 @@ class Match(db.Model):
     __tablename__ = "match"
 
     id = db.Column(db.Integer, primary_key=True)
-    prova_id = db.Column(db.Integer, db.ForeignKey("prova.id"), nullable=False)
+    prova_id = db.Column(
+        db.Integer,
+        db.ForeignKey("prova.id", ondelete="CASCADE"),
+        nullable=False
+    )
     round_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3
 
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -41,7 +45,13 @@ class Match(db.Model):
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
-    racks = db.relationship("Rack", backref="match", lazy=True)
+    racks = db.relationship(
+        "Rack",
+        backref="match",
+        lazy=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return (
@@ -56,7 +66,11 @@ class Rack(db.Model):
     __tablename__ = "rack"
 
     id = db.Column(db.Integer, primary_key=True)
-    match_id = db.Column(db.Integer, db.ForeignKey("match.id"), nullable=False)
+    match_id = db.Column(
+        db.Integer,
+        db.ForeignKey("match.id", ondelete="CASCADE"),
+        nullable=False
+    )
     rack_number = db.Column(db.Integer, nullable=False)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 

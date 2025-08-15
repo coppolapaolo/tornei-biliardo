@@ -227,7 +227,9 @@ class TournamentDirector(BaseModel):
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
     tournament_id = db.Column(
-        db.Integer, db.ForeignKey("tournament.id"), primary_key=True
+        db.Integer,
+        db.ForeignKey("tournament.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -238,7 +240,11 @@ class TournamentDirector(BaseModel):
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
     tournament = db.relationship(
         "Tournament",
-        backref=backref("directors_association", cascade="all, delete-orphan"),
+        backref=backref(
+            "directors_association",
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
     )
 
 

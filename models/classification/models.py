@@ -9,6 +9,7 @@ ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
 
 from datetime import datetime
 from models.base import db
+from sqlalchemy.orm import backref
 
 
 class Classification(db.Model):
@@ -23,7 +24,9 @@ class Classification(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     tournament_id = db.Column(
-        db.Integer, db.ForeignKey("tournament.id"), nullable=False
+        db.Integer,
+        db.ForeignKey("tournament.id", ondelete="CASCADE"),
+        nullable=False
     )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     position = db.Column(db.Integer)
@@ -32,7 +35,14 @@ class Classification(db.Model):
     provas_played = db.Column(db.Integer, default=0)
 
     # Relations
-    tournament = db.relationship("Tournament", backref="classifications")
+    tournament = db.relationship(
+        "Tournament",
+        backref=backref(
+            "classifications",
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
+    )
     user = db.relationship("User", back_populates="classifications")
 
     def __repr__(self):
@@ -50,7 +60,11 @@ class RoundClassification(db.Model):
     __tablename__ = "round_classification"
 
     id = db.Column(db.Integer, primary_key=True)
-    prova_id = db.Column(db.Integer, db.ForeignKey("prova.id"), nullable=False)
+    prova_id = db.Column(
+        db.Integer,
+        db.ForeignKey("prova.id", ondelete="CASCADE"),
+        nullable=False
+    )
     round_number = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
@@ -64,7 +78,14 @@ class RoundClassification(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
-    prova = db.relationship("Prova")
+    prova = db.relationship(
+        "Prova",
+        backref=backref(
+            "round_classifications",
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
+    )
     user = db.relationship("User", back_populates="round_classifications")
 
     # Constraint: one entry per player per round
@@ -200,14 +221,25 @@ class PlayerEncounter(db.Model):
     __tablename__ = "player_encounter"
 
     id = db.Column(db.Integer, primary_key=True)
-    prova_id = db.Column(db.Integer, db.ForeignKey("prova.id"), nullable=False)
+    prova_id = db.Column(
+        db.Integer,
+        db.ForeignKey("prova.id", ondelete="CASCADE"),
+        nullable=False
+    )
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     round_number = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
-    prova = db.relationship("Prova", backref="player_encounters")
+    prova = db.relationship(
+        "Prova",
+        backref=backref(
+            "player_encounters",
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
+    )
     player1 = db.relationship(
         "User", foreign_keys=[player1_id], back_populates="player1_encounters"
     )

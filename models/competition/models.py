@@ -26,7 +26,11 @@ class Prova(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # FK nullable per supportare standalone competitions (ADR-0012)
-    tournament_id = db.Column(db.Integer, db.ForeignKey("tournament.id"), nullable=True)
+    tournament_id = db.Column(
+        db.Integer,
+        db.ForeignKey("tournament.id", ondelete="CASCADE"),
+        nullable=True
+    )
 
     # Director FK per standalone competitions
     director_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
@@ -67,8 +71,20 @@ class Prova(db.Model):
     )
 
     # Relazioni
-    inscriptions = db.relationship("Inscription", backref="prova", lazy=True)
-    matches = db.relationship("Match", backref="prova", lazy=True)
+    inscriptions = db.relationship(
+        "Inscription",
+        backref="prova",
+        lazy=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    matches = db.relationship(
+        "Match",
+        backref="prova",
+        lazy=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
     director = db.relationship(
         "User", foreign_keys=[director_id], backref="standalone_provas"
     )
@@ -205,7 +221,11 @@ class Inscription(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    prova_id = db.Column(db.Integer, db.ForeignKey("prova.id"), nullable=False)
+    prova_id = db.Column(
+        db.Integer,
+        db.ForeignKey("prova.id", ondelete="CASCADE"),
+        nullable=False
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     initial_order = db.Column(db.Integer)  # ordine sorteggio iniziale
 
