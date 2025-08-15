@@ -455,7 +455,11 @@ def edit_prova(prova_id):
         flash("Prova aggiornata con successo!")
         return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 
-    return render_template("admin/prova_edit.html", prova=prova)
+    return render_template(
+        "admin/prova_edit.html",
+        prova=prova,
+        WithdrawPolicy=WithdrawPolicy
+    )
 
 
 @admin_bp.route("/prova/<int:prova_id>/delete", methods=["POST"])

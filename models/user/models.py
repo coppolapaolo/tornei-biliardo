@@ -14,6 +14,7 @@ from typing import Any, Dict, List, TYPE_CHECKING
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel  # BaseModel for timestamps
 
@@ -235,7 +236,10 @@ class TournamentDirector(BaseModel):
         "User", foreign_keys=[user_id], backref="tournament_director_associations"
     )
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
-    tournament = db.relationship("Tournament", backref="directors_association")
+    tournament = db.relationship(
+        "Tournament",
+        backref=backref("directors_association", cascade="all, delete-orphan"),
+    )
 
 
 # ────────────────────────────────────────────────────────────────────────────────
