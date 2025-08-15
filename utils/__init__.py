@@ -15,10 +15,11 @@ continuano a funzionare.
 # PHASE 1 PERMISSION SYSTEM UPDATE
 from functools import wraps
 from importlib import import_module as _import_module
-from flask import abort, flash, redirect, url_for, request
+from flask import abort, flash, redirect, url_for, request, current_app
 from flask_login import current_user
 
 from models.user.permissions import PermissionChecker, RoleRequirement
+from models.user.role_enum import UserRole
 from models.competition.services import ProvaService
 from models import (
     db,
@@ -404,14 +405,47 @@ def create_sample_tournament():
 
 
 def create_admin_if_not_exists():
-    """Garantisce la presenza di un admin nel DB."""
-    admin = User.query.filter_by(username="admin").first()
-    if not admin:
-        admin = User(username="admin", email="admin@tournament.com", role="admin")
-        admin.set_password("admin123")
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin user created: admin/admin123")
+    """Garantisce la presenza di un admin nel DB, leggendo credenziali da config/env.
+
+    Regole:
+    - Se ADMIN_PASSWORD_REQUIRED=True (produzione) e
+        mancano ADMIN_USERNAME/ADMIN_PASSWORD → errore.
+    - Crea l'admin solo se assente (idempotente).
+    - Non stampa mai la password.
+    - NON crea un secondo admin.
+    """
+    cfg = current_app.config
+    require_pwd = bool(cfg.get("ADMIN_PASSWORD_REQUIRED", False))
+    username = (cfg.get("ADMIN_USERNAME") or "").strip() or None
+    password = (cfg.get("ADMIN_PASSWORD") or "").strip() or None
+    email = (cfg.get("ADMIN_EMAIL") or "").strip() or None
+
+    if require_pwd and (not username or not password):
+        raise RuntimeError(
+            "Admin bootstrap richiede ADMIN_USERNAME"
+            "e ADMIN_PASSWORD in configurazione."
+        )
+
+    existing_admin = (
+        User.query.filter_by(role=UserRole.ADMIN.value)
+        .filter(User.deleted_at.is_(None))
+        .first()
+    )
+    if existing_admin:
+        return existing_admin
+
+    if not username or not password:
+        # in sviluppo senza variabili non creiamo nulla
+        return None
+
+    admin = User(
+        username=username,
+        email=email or f"{username}@tournament.local",
+        role=UserRole.ADMIN.value,
+    )
+    admin.set_password(password)
+    db.session.add(admin)
+    db.session.commit()
     return admin
 
 

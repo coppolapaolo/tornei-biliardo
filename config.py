@@ -13,8 +13,13 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Debug Mode - Cambia qui per attivare/disattivare
-    DEBUG_MODE = True
+    DEBUG_MODE = os.environ.get("DEBUG_MODE", "false").lower() in ("1", "true", "yes")
+
+    # Admin bootstrap (ENV-first)
+    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME")
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+    ADMIN_PASSWORD_REQUIRED = False
 
     # App Info
     APP_NAME = "Torneo Biliardo"
@@ -34,6 +39,7 @@ class ProductionConfig(Config):
     DEBUG = False
     DEBUG_MODE = False  # Sempre False in produzione
     TESTING = False
+    ADMIN_PASSWORD_REQUIRED = True
 
 
 class TestingConfig(Config):
@@ -42,6 +48,10 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
+    ADMIN_USERNAME = "admin"
+    ADMIN_EMAIL = "admin@tournament.local"
+    ADMIN_PASSWORD = "admin123"
+    ADMIN_PASSWORD_REQUIRED = False
 
 
 # Mappatura configurazioni

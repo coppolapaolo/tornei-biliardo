@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from typing import Dict, List
 
 from flask import has_app_context
+from utils import create_admin_if_not_exists
 
 from models.base import db
 from models.tournament.models import Tournament
@@ -43,9 +44,7 @@ def reset_database_enhanced_cli() -> None:
 def _reset_database_core() -> Dict[str, object]:
 
     # Utenti
-    admin = UserService.create_user(
-        "admin", "admin@tornei.com", "admin123", role="admin"
-    )
+    admin = create_admin_if_not_exists()
     maxdir = UserService.create_user("max", "max@tornei.com", "123456", role="director")
     paolodir = UserService.create_user(
         "paolo", "paolo@tornei.com", "123456", role="director"

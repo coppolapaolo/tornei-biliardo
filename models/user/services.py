@@ -60,6 +60,15 @@ class UserService:
         Raises:
             ValueError: If validation fails or user already exists
         """
+        # Invariante: singolo amministratore attivo
+        if role == UserRole.ADMIN.value:
+            exists_active_admin = (
+                User.query.filter_by(role=UserRole.ADMIN.value)
+                .filter(User.deleted_at.is_(None))
+                .count()
+            )
+            if exists_active_admin > 0:
+                raise ValueError("Esiste già un amministratore attivo.")
         # Validate role
         if role not in ["admin", "director", "player"]:
             raise ValueError(
@@ -794,6 +803,16 @@ class UserDeletionService:
         con stateful objects.
         Solleva in caso manchino precondizioni (es. admin assente).
         """
+        # Guard: impedisci eliminazione dell'ultimo admin
+        if user.role == UserRole.ADMIN.value:
+            active_admins = (
+                User.query.filter_by(role=UserRole.ADMIN.value)
+                .filter(User.deleted_at.is_(None))
+                .count()
+            )
+            if active_admins <= 1:
+                raise ValueError("Non è possibile eliminare l’ultimo amministratore.")
+
         # 1) richieste direttore
         UserDeletionService._remove_director_requests(user)
         # 2) riassegnazioni di direzione
