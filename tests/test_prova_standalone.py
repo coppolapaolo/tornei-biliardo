@@ -222,7 +222,7 @@ class TestProvaStandalone:
             assert "Torneo" in repr(prova_tournament)
             assert "Standalone" in repr(prova_standalone)
 
-    def test_display_name(self, app):
+    def test_display_name(self, app, admin_user):
         """Test get_display_name method."""
         with app.app_context():
             tournament = Tournament(name="Summer Tournament")
@@ -240,7 +240,7 @@ class TestProvaStandalone:
 
             prova_standalone = Prova(
                 name="Memorial 2025",
-                director_id=1,
+                director_id=admin_user.id,
                 number=2,
                 date=datetime.now().date(),
                 discipline="palla_8",
