@@ -58,6 +58,7 @@ class TournamentService:
 # Funzione *pura* per lo stato derivato del Torneo
 # -----------------------------
 
+
 def compute_tournament_status(tournament: Tournament) -> str:
     """Calcola lo stato derivato del torneo in base agli stati delle Prove.
 

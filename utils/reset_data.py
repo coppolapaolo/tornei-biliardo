@@ -18,7 +18,6 @@ from models.user.services import UserService
 from models.user.role_enum import UserRole
 from models.competition.services import (
     ProvaService,
-    ProvaStateMachine,
     InscriptionService,
 )
 
@@ -122,7 +121,11 @@ def _reset_database_core() -> Dict[str, object]:
     )
 
     # Apertura iscrizioni + 8 iscritti su La Garetta
-    ProvaStateMachine.to_inscription(prova_garetta)
+    ProvaService.to_inscription(
+        prova_garetta,
+        date.today(),
+        date.today() + timedelta(days=3)
+    )
     for u in players[:8]:
         InscriptionService.inscribe_user(u.id, prova_garetta.id)
 

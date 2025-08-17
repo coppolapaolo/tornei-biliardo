@@ -14,7 +14,7 @@ Nota sprint 4 (migrazione soft):
 from __future__ import annotations
 
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy import select
 
 from models.base import db
@@ -160,13 +160,10 @@ class ProvaService:
             .subquery()
         )
 
-        q = (
-            Prova.query.filter(
-                (Prova.director_id == director_id)
-                | (Prova.tournament_id.in_(select(td_subq)))
-            )
-            .order_by(Prova.date.desc(), Prova.number.asc())
-        )
+        q = Prova.query.filter(
+            (Prova.director_id == director_id)
+            | (Prova.tournament_id.in_(select(td_subq)))
+        ).order_by(Prova.date.desc(), Prova.number.asc())
         return q.all()
 
     # -----------------------------
@@ -277,9 +274,9 @@ class ProvaService:
 
         if start_dt and end_dt and end_dt < start_dt:
             # test verifica presenza della chiave 'inscription_end'
-            errors["inscription_end"] = (
-                "La data di fine iscrizioni deve essere >= della data di inizio"
-            )
+            errors[
+                "inscription_end"
+            ] = "La data di fine iscrizioni deve essere >= della data di inizio"
 
         # rounds_count (opzionale): >= 1
         rounds_raw = data.get("rounds_count")
@@ -297,11 +294,30 @@ class ProvaService:
     # STATE MACHINE FACADE
     # -----------------------------
     @staticmethod
-    def to_inscription(prova_id: int) -> Prova:
+    def to_inscription(
+        prova_id: int,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None
+    ) -> Prova:
         prova = db.session.get(Prova, prova_id)
         if not prova:
             raise ValueError(f"Prova {prova_id} non trovata")
-        return ProvaStateMachine.to_inscription(prova)
+
+        prova = ProvaStateMachine.to_inscription(prova)
+
+        # Validazione finestra (se entrambe presenti)
+        if start is not None and end is not None and start > end:
+            raise ValueError(
+                "La data di inizio deve essere precedente alla data di fine!"
+            )
+
+        # Imposta campi data se forniti (parte della stessa transazione)
+        if start is not None:
+            prova.inscription_start = start
+        if end is not None:
+            prova.inscription_end = end
+
+        return prova
 
     @staticmethod
     def reopen_setup(prova_id: int) -> Prova:

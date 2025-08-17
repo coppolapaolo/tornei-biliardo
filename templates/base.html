@@ -100,7 +100,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-trophy"></i> 🎱 Torneo Biliardo Local
+                <i class="fas fa-trophy"></i> 🎱 Tornei Biliardo
                 {% if debug_info.debug_mode %}
                     <span class="badge bg-warning text-dark ms-2">DEBUG</span>
                 {% endif %}
@@ -157,7 +157,7 @@
                                 {% endif %}
                                 
                                 {% if show_director_management %}
-                                    <li><a class="dropdown-item" href="{{ url_for('admin.director_dashboard') }}">
+                                    <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
                                         <i class="fas fa-trophy"></i> Director Dashboard
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.create_prova_standalone') }}">

@@ -27,9 +27,7 @@ class Prova(db.Model):
 
     # FK nullable per supportare standalone competitions (ADR-0012)
     tournament_id = db.Column(
-        db.Integer,
-        db.ForeignKey("tournament.id", ondelete="CASCADE"),
-        nullable=True
+        db.Integer, db.ForeignKey("tournament.id", ondelete="CASCADE"), nullable=True
     )
 
     # Director FK per standalone competitions
@@ -222,9 +220,7 @@ class Inscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     prova_id = db.Column(
-        db.Integer,
-        db.ForeignKey("prova.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
     )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     initial_order = db.Column(db.Integer)  # ordine sorteggio iniziale

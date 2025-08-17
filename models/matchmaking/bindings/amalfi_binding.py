@@ -34,9 +34,7 @@ def _extract_pairing_from_match(m: Any) -> tuple[int, ...]:
             if trio is not None:
                 p3 = getattr(trio, "player3_id", None)
         if p3 is None:
-            raise RuntimeError(
-                "Trio match senza player3_id non supportato dal binding"
-            )
+            raise RuntimeError("Trio match senza player3_id non supportato dal binding")
         return (int(m.player1_id), int(m.player2_id), int(p3))
 
     # Match standard 1v1

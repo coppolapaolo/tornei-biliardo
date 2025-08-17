@@ -36,6 +36,7 @@ from models.match.services import MatchService, RackService, MatchResultService
 from models.status_enum import DirectorRequestStatus, ProvaStatus, MatchStatus
 from models.competition.models import WithdrawPolicy
 from models.tournament.services import TournamentService
+from models.dashboard.services import DashboardService
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -46,9 +47,8 @@ admin_bp = Blueprint("admin", __name__)
 @admin_bp.route("/")
 @admin_required
 def dashboard():
-    """Dashboard amministratore con tutti i tornei"""
-    tournaments = Tournament.query.order_by(Tournament.created_at.desc()).all()
-    return render_template("admin/dashboard.html", tournaments=tournaments)
+    vm = DashboardService.for_admin()
+    return render_template("dashboard/admin.html", vm=vm)
 
 
 @admin_bp.route("/tournament/create", methods=["POST"])
@@ -295,40 +295,6 @@ def create_prova_standalone():
     )
 
 
-@admin_bp.route("/director/dashboard")
-@login_required
-def director_dashboard():
-    """Dashboard per Director con tornei e prove standalone"""
-    if not (current_user.is_admin or current_user.is_director):
-        flash("Accesso non autorizzato", "error")
-        return redirect(url_for("main.index"))
-
-    from models.competition.services import ProvaService
-
-    # Tornei gestiti (se director)
-    if current_user.is_director:
-        tournaments = current_user.get_managed_tournaments()
-    else:  # admin vede tutti
-        tournaments = Tournament.query.all()
-
-    # Prove standalone del director
-    standalone_provas = (
-        Prova.query.filter_by(director_id=current_user.id, tournament_id=None)
-        .order_by(Prova.date.desc())
-        .all()
-    )
-
-    # Tutte le prove del director (tornei + standalone)
-    all_director_provas = ProvaService.get_director_provas(current_user.id)
-
-    return render_template(
-        "admin/director_dashboard.html",
-        tournaments=tournaments,
-        standalone_provas=standalone_provas,
-        all_provas=all_director_provas,
-    )
-
-
 # Modifica la route create_prova esistente per supportare entrambi i casi
 @admin_bp.route("/prova/create", methods=["POST"])
 @login_required  # Rimosso @admin_required per permettere ai director
@@ -389,9 +355,7 @@ def create_prova():
     best_of = not exact_number  # Inverti la logica
 
     # Crea la prova
-    withdraw_policy = request.form.get(
-        "withdraw_policy", WithdrawPolicy.EXCLUDE.value
-    )
+    withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
     ProvaService.create_prova(
         tournament_id=tournament_id,
         number=number,
@@ -456,9 +420,7 @@ def edit_prova(prova_id):
         return redirect(url_for("admin.prova_detail", prova_id=prova_id))
 
     return render_template(
-        "admin/prova_edit.html",
-        prova=prova,
-        WithdrawPolicy=WithdrawPolicy
+        "admin/prova_edit.html", prova=prova, WithdrawPolicy=WithdrawPolicy
     )
 
 

@@ -309,7 +309,7 @@ def visible_user_ids_for_prova(prova_id: int) -> set[int]:
         ins.user_id
         for ins in Inscription.query.filter_by(
             prova_id=prova_id, is_withdrawn=False
-            ).all()
+        ).all()
     }
     # utenti soft-deleted
     deleted = {u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()}

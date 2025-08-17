@@ -207,6 +207,7 @@ class MatchResultService:
         # transizione centralizzata
         # import locale per evitare cicli
         from models.match.services import MatchService
+
         MatchService.to_completed(match.id)
 
         # ricarica o restituisci l'oggetto aggiornato

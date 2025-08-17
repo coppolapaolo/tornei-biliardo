@@ -24,9 +24,7 @@ class Classification(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     tournament_id = db.Column(
-        db.Integer,
-        db.ForeignKey("tournament.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False
     )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     position = db.Column(db.Integer)
@@ -61,9 +59,7 @@ class RoundClassification(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     prova_id = db.Column(
-        db.Integer,
-        db.ForeignKey("prova.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
     )
     round_number = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -222,9 +218,7 @@ class PlayerEncounter(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     prova_id = db.Column(
-        db.Integer,
-        db.ForeignKey("prova.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
     )
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

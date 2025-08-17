@@ -6,6 +6,7 @@ from typing import Protocol, Sequence, Tuple
 @dataclass(frozen=True)
 class Pairing:
     """Value Object di output del matchmaking (preview/propose)."""
+
     players: Tuple[int, ...]
     is_bye: bool = False
     round_number: int | None = None
@@ -18,6 +19,11 @@ class ValidationResult:
 
 
 class PairingStrategy(Protocol):
-    def validate(self, prova: object) -> ValidationResult: ...
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]: ...
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]: ...
+    def validate(self, prova: object) -> ValidationResult:
+        ...
+
+    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+        ...
+
+    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+        ...

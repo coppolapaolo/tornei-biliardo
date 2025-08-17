@@ -4,6 +4,18 @@ from flask_login import current_user, login_required, logout_user
 from datetime import date
 from models import db, Tournament, Prova, Classification, User
 from config import Config
+from models.dashboard.services import DashboardService
+
+
+def _role_truthy(user, attr_name: str) -> bool:
+    val = getattr(user, attr_name, None)
+    if val is None:
+        return False
+    try:
+        return bool(val() if callable(val) else val)
+    except TypeError:
+        return bool(val)
+
 
 main_bp = Blueprint("main", __name__)
 
@@ -113,11 +125,22 @@ def reset_database_confirm():
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    """Redirect al dashboard appropriato"""
-    if current_user.is_admin:
-        return redirect(url_for("admin.dashboard"))
-    else:
-        return redirect(url_for("player.dashboard"))
+    tournament_id = request.args.get("tournament_id", type=int)
+
+    if _role_truthy(current_user, "is_admin"):
+        vm = DashboardService.for_admin()
+        return render_template("dashboard/admin.html", vm=vm)
+
+    if _role_truthy(current_user, "is_director"):
+        vm = DashboardService.for_director(
+            current_user.id, selected_tournament_id=tournament_id
+        )
+        return render_template("dashboard/director.html", vm=vm)
+
+    vm = DashboardService.for_player(
+        current_user.id, selected_tournament_id=tournament_id
+    )
+    return render_template("dashboard/player.html", vm=vm)
 
 
 @main_bp.route("/debug/login/<username>")

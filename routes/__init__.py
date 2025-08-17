@@ -7,9 +7,11 @@ def register_blueprints(app):
     from .auth import auth_bp
     from .admin import admin_bp
     from .player import player_bp
+    from .dashboard import dashboard_bp
 
     # Registrazione blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(player_bp, url_prefix="/player")
+    app.register_blueprint(dashboard_bp)

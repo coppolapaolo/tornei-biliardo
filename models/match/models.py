@@ -17,9 +17,7 @@ class Match(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     prova_id = db.Column(
-        db.Integer,
-        db.ForeignKey("prova.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
     )
     round_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3
 
@@ -67,9 +65,7 @@ class Rack(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     match_id = db.Column(
-        db.Integer,
-        db.ForeignKey("match.id", ondelete="CASCADE"),
-        nullable=False
+        db.Integer, db.ForeignKey("match.id", ondelete="CASCADE"), nullable=False
     )
     rack_number = db.Column(db.Integer, nullable=False)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"))

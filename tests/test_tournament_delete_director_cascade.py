@@ -23,6 +23,4 @@ def test_delete_tournament_with_director_cascade(
 
     # Verifica: il torneo è stato rimosso e l'associazione director è stata cascata
     assert db.session.get(Tournament, tournament.id) is None
-    assert (
-        TournamentDirector.query.filter_by(tournament_id=tournament.id).count() == 0
-    )
+    assert TournamentDirector.query.filter_by(tournament_id=tournament.id).count() == 0

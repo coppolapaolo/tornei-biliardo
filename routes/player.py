@@ -277,6 +277,7 @@ def add_rack_result(match_id):
         }
     )
 
+
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
 
 
@@ -404,7 +405,7 @@ def delete_account():
         logout_user()  # Disconnette l'utente dopo la cancellazione
         flash(
             "Account eliminato. I tuoi dati restano anonimizzati nei registri.",
-            "success"
+            "success",
         )
         return redirect(url_for("main.index"))
     except Exception:

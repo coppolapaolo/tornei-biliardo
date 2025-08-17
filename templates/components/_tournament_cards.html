@@ -1,0 +1,82 @@
+{# templates/components/_tournament_cards.html #}
+{% if tournaments and tournaments|length %}
+  <div class="row">
+    {% for t in tournaments %}
+      <div class="col-md-6 mb-4">
+        <div class="card {% if not t.is_active %}border-secondary{% endif %}">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">
+                {{ t.name }}
+                {% if not t.is_active %}
+                  <span class="badge bg-secondary ms-2">Inattivo</span>
+                {% endif %}
+              </h5>
+              <small class="text-muted">{{ t.tournament_type }}</small>
+            </div>
+            <span class="badge {{ t | status_badge_class }}">{{ t | status_text }}</span>
+          </div>
+
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-6">
+                <small class="text-muted">Prove totali:</small><br>
+                <strong>{{ t.provas|length }}</strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Tipo:</small><br>
+                <strong>{{ t.tournament_type }}</strong>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <small class="text-muted">Opzioni:</small><br>
+              {% if t.without_x %}<span class="badge bg-info me-1">Senza X</span>{% endif %}
+              {% if t.final_playoffs %}<span class="badge bg-success me-1">Playoff</span>{% endif %}
+              {% if t.challenge_mode %}<span class="badge bg-warning me-1">Challenge</span>{% endif %}
+              {% if not (t.without_x or t.final_playoffs or t.challenge_mode) %}
+                <span class="text-muted">Nessuna opzione speciale</span>
+              {% endif %}
+            </div>
+
+            <div class="btn-group w-100" role="group">
+              <a href="{{ url_for('admin.tournament_detail', tournament_id=t.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-eye"></i> Dettagli
+              </a>
+              {% if t.can_be_modified() %}
+              <a href="{{ url_for('admin.edit_tournament', tournament_id=t.id) }}" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i> Modifica
+              </a>
+              {% endif %}
+              <button class="btn btn-{% if t.is_active %}secondary{% else %}success{% endif %} btn-sm"
+                      onclick="toggleActive({{ t.id }})">
+                {% if t.is_active %}
+                  <i class="fas fa-pause"></i> Disattiva
+                {% else %}
+                  <i class="fas fa-play"></i> Attiva
+                {% endif %}
+              </button>
+            </div>
+
+            {% if t.can_be_deleted() %}
+            <button class="btn btn-danger btn-sm w-100 mt-2"
+                    onclick="deleteTournament({{ t.id }}, '{{ t.name|e }}')">
+              <i class="fas fa-trash"></i> Elimina Torneo
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">
+    <h4><i class="fas fa-trophy"></i> Benvenuto!</h4>
+    <p>Non ci sono ancora tornei configurati. Inizia creando il tuo primo torneo!</p>
+    {% if vm.caps and vm.caps.can_create_tournament %}
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+      <i class="fas fa-plus"></i> Crea Primo Torneo
+    </button>
+    {% endif %}
+  </div>
+{% endif %}

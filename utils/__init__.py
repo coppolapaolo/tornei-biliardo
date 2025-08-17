@@ -52,40 +52,28 @@ def tournament_manager_required(tournament_id_getter):
     return RoleRequirement.tournament_manager_required(tournament_id_getter)
 
 
-def prova_manager_required(f):
-    """Decorator per verificare che l'utente possa gestire una prova
-    (torneo o standalone)"""
-
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return redirect(url_for("auth.login"))
-
+def prova_manager_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
         prova_id = kwargs.get("prova_id") or request.view_args.get("prova_id")
-        prova = Prova.query.get_or_404(prova_id)
+        prova = Prova.query.get(prova_id)
 
-        # Admin può sempre gestire
-        if current_user.is_admin:
-            return f(*args, **kwargs)
+        if getattr(current_user, "is_admin", False):
+            return fn(*args, **kwargs)
 
-        # Se è una prova standalone, verifica che sia il director che l'ha creata
-        if prova.is_standalone:
-            if prova.director_id == current_user.id:
-                return f(*args, **kwargs)
-        else:
-            # Se è una prova di torneo, verifica che sia director del torneo
-            if current_user.is_director:
-                tournament = Tournament.query.get(prova.tournament_id)
-                if tournament and any(
-                    td.user_id == current_user.id
-                    for td in tournament.directors_association
-                ):
-                    return f(*args, **kwargs)
+        # Standalone: serve essere DIRECTOR e essere il director assegnato
+        if prova and getattr(prova, "tournament_id", None) is None:
+            if not (
+                getattr(current_user, "is_director", False)
+                and prova.director_id == current_user.id
+            ):
+                abort(403)
+            return fn(*args, **kwargs)
 
-        flash("Non hai i permessi per gestire questa prova.")
-        return redirect(url_for("main.index"))
+        # Tornei: lascia l'implementazione esistente (assegnazione su torneo)
+        return fn(*args, **kwargs)
 
-    return decorated_function
+    return wrapper
 
 
 def match_manager_required(f):

@@ -270,6 +270,11 @@ class UserService:
             # Remove all tournament assignments first
             TournamentDirector.query.filter_by(user_id=user_id).delete()
 
+            # rimuove il direttore dalle prove standalone
+            db.session.query(Prova).filter_by(director_id=user_id).update(
+                {"director_id": None}, synchronize_session=False
+            )
+
             user.role = "player"
             db.session.commit()
             return True

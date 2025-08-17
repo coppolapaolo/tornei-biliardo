@@ -1,0 +1,61 @@
+<!-- Modal Nuovo Torneo  -->
+<div class="modal fade" id="newTournamentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuovo Torneo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.create_tournament') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Torneo</label>
+                        <input type="text" class="form-control" name="name" required 
+                               placeholder="es: Torneo Primavera 2025">
+                        <small class="text-muted">Includi l'anno nel nome se necessario</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tournament_type" class="form-label">Tipo Torneo</label>
+                        <select class="form-control" name="tournament_type" required>
+                            <option value="Amalfi">Amalfi</option>
+                            <!-- Aggiungi altri tipi in futuro -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Opzioni Torneo</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="without_x" id="without_x">
+                            <label class="form-check-label" for="without_x">
+                                Senza X <small class="text-muted">(nessun giocatore riceve bye automatico)</small>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="final_playoffs" id="final_playoffs" checked>
+                            <label class="form-check-label" for="final_playoffs">
+                                Playoff Finali <small class="text-muted">(Elite + Academy)</small>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="challenge_mode" id="challenge_mode">
+                            <label class="form-check-label" for="challenge_mode">
+                                Modalità Challenge <small class="text-muted">(funzionalità avanzata)</small>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, ecc.) 
+                        vengono configurate in ogni singola prova.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-success">Crea Torneo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

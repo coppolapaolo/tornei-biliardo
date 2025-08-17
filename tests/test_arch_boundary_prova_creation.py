@@ -30,7 +30,7 @@ def _has_prova_constructor_call(code: str) -> bool:
         tokenize.NEWLINE,
         tokenize.INDENT,
         tokenize.DEDENT,
-        tokenize.COMMENT
+        tokenize.COMMENT,
     }
 
     while i < n:

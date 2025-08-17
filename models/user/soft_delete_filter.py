@@ -8,11 +8,13 @@ from models.user.models import User
 
 def _user_not_deleted_clause() -> Callable[[type[User]], Any]:
     """Condizione SQLA 'utente NON cancellato' (schema: SoftDeleteMixin.deleted_at)."""
+
     def clause(UserCls: type[User]):
         if hasattr(UserCls, "deleted_at"):
             return UserCls.deleted_at.is_(None)  # SQL expression
         # Fallback: nessun filtro se lo schema fosse diverso
         return True
+
     return clause
 
 
