@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Iterable, Tuple
+from datetime import date as date_cls
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
@@ -74,6 +75,10 @@ class DashboardVM:
 
     # selezione
     selected_tournament: Optional[Tournament] = None
+    selected_prova: Optional[Prova] = None
+    # lista mista per il dropdown unico, già ordinata per data
+    selector_items: Optional[List[dict]] = None
+    # [{"kind":"t"|"p","id":int,"label":str,"selected":bool}]
 
     # sezioni admin/director
     standalone_provas: Optional[
@@ -130,8 +135,72 @@ class DashboardService:
         return (
             db.session.query(Prova)
             .filter(Prova.tournament_id.is_(None))
-            .order_by(Prova.date.desc().nullslast(), Prova.date.desc())
+            .order_by(Prova.date.desc().nullslast(), Prova.name.asc())
         )
+
+    @staticmethod
+    def _standalone_available_for_user(user_id: int) -> list[Prova]:
+        subq_all_my_prova_ids = (
+            select(Inscription.prova_id)
+            .where(Inscription.user_id == user_id)
+            .scalar_subquery()
+        )
+        q = DashboardService._standalone_q().filter(
+            Prova.status == ProvaStatus.INSCRIPTION.value,
+            Prova.id.notin_(subq_all_my_prova_ids),
+        )
+        return q.all()
+
+    # ---- selector unico (tornei + standalone) ------------------------
+    @staticmethod
+    def _build_selector_items(
+        tournaments: Iterable[Tournament],
+        standalones: Iterable[Prova],
+        selected_tournament_id: Optional[int],
+        selected_prova_id: Optional[int],
+    ) -> List[dict]:
+        """
+        Costruisce lista mista ordinata per data crescente:
+        - Tornei: data = min(data delle Prove con data non nulla), se presente;
+            altrimenti None (in coda).
+        - Standalone: data = p.date (può essere None).
+        """
+
+        def _t_date(t: Tournament) -> Optional[date_cls]:
+            dates = [p.date for p in t.provas or [] if getattr(p, "date", None)]
+            return min(dates) if dates else None
+
+        items: List[Tuple[Optional[date_cls], dict]] = []
+        for t in tournaments:
+            items.append(
+                (
+                    _t_date(t),
+                    {
+                        "kind": "t",
+                        "id": t.id,
+                        "label": f"🏆 {t.name}",
+                        "selected": (
+                            selected_tournament_id == t.id and selected_prova_id is None
+                        ),
+                    },
+                )
+            )
+        for p in standalones:
+            items.append(
+                (
+                    getattr(p, "date", None),
+                    {
+                        "kind": "p",
+                        "id": p.id,
+                        "label": f"🎯 {p.name}"
+                        + (f" ({p.date.strftime('%d/%m')})" if p.date else ""),
+                        "selected": (selected_prova_id == p.id),
+                    },
+                )
+            )
+        # ordina per data (None alla fine)
+        items.sort(key=lambda tup: (tup[0] is None, tup[0]))
+        return [d for _, d in items]
 
     @staticmethod
     def _caps_for(user: User) -> CapabilityVM:
@@ -175,7 +244,9 @@ class DashboardService:
     # ---- DIRECTOR -----------------------------------------------------
     @staticmethod
     def for_director(
-        user_id: int, selected_tournament_id: Optional[int] = None
+        user_id: int,
+        selected_tournament_id: Optional[int] = None,
+        selected_prova_id: Optional[int] = None,
     ) -> DashboardVM:
         user = db.session.get(User, user_id)
         if not user:
@@ -197,6 +268,14 @@ class DashboardService:
         if not selected:
             selected = DashboardService._tournaments_q().first()
 
+        # Selezione Prova standalone (solo se standalone)
+        selected_prova = (
+            db.session.get(Prova, selected_prova_id) if selected_prova_id else None
+        )
+        if selected_prova and selected_prova.tournament_id is not None:
+            # non è standalone: non considerarla come "selected_prova"
+            selected_prova = None
+
         # --- sezioni player-like ---------------------------------------
         available_provas: List[Prova] = []
         my_regs: List[Inscription] = []
@@ -207,9 +286,9 @@ class DashboardService:
 
         if selected:
             # prove con iscrizioni aperte nel torneo selezionato e non già iscritto
-            subq_my_prova_ids = select(
-                Inscription.prova_id
-            ).where(Inscription.user_id == user_id)
+            subq_my_prova_ids = select(Inscription.prova_id).where(
+                Inscription.user_id == user_id
+            )
 
             available_provas = (
                 db.session.query(Prova)
@@ -262,17 +341,12 @@ class DashboardService:
             )
 
         # standalone disponibili (come giocatore), non ancora iscritto
-        subq_all_my_prova_ids = db.session.query(Inscription.prova_id).filter(
-            Inscription.user_id == user_id
-        )
-        standalone_available = (
-            DashboardService._standalone_q()
-            .filter(
-                Prova.status == ProvaStatus.INSCRIPTION.value,
-                ~Prova.id.in_(subq_all_my_prova_ids),
-            )
-            .all()
-        )
+        standalone_available = DashboardService._standalone_available_for_user(user_id)
+        # evita duplicazione: non mostrare qui quelle che gestisco
+        if hasattr(Prova, "director_id"):
+            standalone_available = [
+                p for p in standalone_available if p.director_id != user_id
+            ]
 
         # mie iscrizioni a standalone (come giocatore)
         my_standalone_regs = (
@@ -309,6 +383,13 @@ class DashboardService:
             title="Dashboard Direttore",
             tournaments=tournaments,
             selected_tournament=selected,
+            selected_prova=selected_prova,
+            selector_items=DashboardService._build_selector_items(
+                tournaments=tournaments,
+                standalones=DashboardService._standalone_q().all(),
+                selected_tournament_id=selected.id if selected else None,
+                selected_prova_id=selected_prova.id if selected_prova else None,
+            ),
             standalone_provas=standalone_owned,
             available_provas=available_provas,
             standalone_available=standalone_available,
@@ -326,7 +407,9 @@ class DashboardService:
     # ---- PLAYER -------------------------------------------------------
     @staticmethod
     def for_player(
-        user_id: int, selected_tournament_id: Optional[int] = None
+        user_id: int,
+        selected_tournament_id: Optional[int] = None,
+        selected_prova_id: Optional[int] = None,
     ) -> DashboardVM:
         user = db.session.get(User, user_id)
         if not user:
@@ -343,6 +426,12 @@ class DashboardService:
         if not selected:
             selected = tournaments[0] if tournaments else None
 
+        selected_prova = (
+            db.session.get(Prova, selected_prova_id) if selected_prova_id else None
+        )
+        if selected_prova and selected_prova.tournament_id is not None:
+            selected_prova = None
+
         # ri-uso della logica director per costruire le sezioni "player-like"
         tmp = DashboardService.for_director(
             user_id, selected_tournament_id=selected.id if selected else None
@@ -352,6 +441,15 @@ class DashboardService:
             title="Dashboard Giocatore",
             tournaments=tournaments,
             selected_tournament=tmp.selected_tournament,
+            selected_prova=selected_prova,
+            selector_items=DashboardService._build_selector_items(
+                tournaments=tournaments,
+                standalones=DashboardService._standalone_q().all(),
+                selected_tournament_id=tmp.selected_tournament.id
+                if tmp.selected_tournament
+                else None,
+                selected_prova_id=selected_prova.id if selected_prova else None,
+            ),
             standalone_provas=None,  # non usata su player
             available_provas=tmp.available_provas,
             standalone_available=tmp.standalone_available,

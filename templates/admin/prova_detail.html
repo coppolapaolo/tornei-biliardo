@@ -16,7 +16,7 @@
             {% if prova.location %} - {{ prova.location }}{% endif %}
         </p>
     </div>
-    <div>
+    <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
     {% if prova.tournament_id %}
         <a href="{{ url_for('admin.tournament_detail', tournament_id=prova.tournament_id) }}"
         class="btn btn-outline-secondary">

@@ -80,6 +80,7 @@ class TestProvaStandaloneRoutes:
 
         response = client.get("/dashboard", follow_redirects=True)
         assert response.status_code == 200
+        print(f'#######DEBUG##########{response.data}')
         assert (
             b"Standalone" in response.data
             or b"gare singole" in response.data

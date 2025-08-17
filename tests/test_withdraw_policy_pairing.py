@@ -133,6 +133,28 @@ def test_run_forfeit_policy_chiude_match_contro_ritirati(app):
         ),
         None,
     )
+    if m_w is None:
+        # Guardia BYE: con numero dispari può capitare che il ritirato prenda il BYE.
+        # Verifichiamo che l’unico giocatore senza match sia proprio il ritirato.
+        all_participants_ids = {
+            ins.user_id for ins in Inscription.query.filter_by(prova_id=p.id).all()
+        }
+        in_matches_ids = {
+            pid
+            for m in matches_round1
+            for pid in (m.player1_id, m.player2_id)
+            if pid is not None
+        }
+        missing = all_participants_ids - in_matches_ids
+        # Con FORFEIT i ritirati restano "pairabili": se manca solo il ritirato,
+        # ha preso il BYE.
+        assert withdrawn_user.id in missing and len(missing) == 1, (
+            "Il ritirato non ha match ma non risulta l’unico senza accoppiamento: "
+            "atteso BYE assegnato al ritirato oppure bug nel pairing."
+        )
+        return  # BYE al ritirato: test soddisfatto
+
+    # Altrimenti è accoppiato: deve essere chiuso a tavolino (FORFEIT)
     assert (
         m_w is not None
     ), "Nessun match del round 1 coinvolge il ritirato (controlla setup del pairing)"

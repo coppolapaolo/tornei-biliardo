@@ -1,0 +1,28 @@
+<div class="mb-3" id="resource-selector">
+   <select class="form-select" id="resourceSelect">
+    {% for it in vm.selector_items or [] %}
+      <option
+        value="{{ it.kind }}:{{ it.id }}"
+        {% if it.selected %}selected{% endif %}
+      >{{ it.label }}</option>
+    {% endfor %}
+  </select>
+</div>
+<script>
+(function(){
+  const sel = document.getElementById('resourceSelect');
+  if(!sel) return;
+  sel.addEventListener('change', function(){
+    const [kind, id] = this.value.split(':');
+    const params = new URLSearchParams(window.location.search);
+    if (kind === 'p') {
+      params.set('prova_id', id);
+      params.delete('tournament_id');
+    } else {
+      params.set('tournament_id', id);
+      params.delete('prova_id');
+    }
+    window.location.search = params.toString();
+  });
+})();
+</script>
