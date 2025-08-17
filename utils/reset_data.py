@@ -122,7 +122,7 @@ def _reset_database_core() -> Dict[str, object]:
 
     # Apertura iscrizioni + 8 iscritti su La Garetta
     ProvaService.to_inscription(
-        prova_garetta,
+        prova_garetta.id,
         date.today(),
         date.today() + timedelta(days=3)
     )
