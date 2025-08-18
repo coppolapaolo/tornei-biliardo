@@ -1,0 +1,101 @@
+{# templates/components/_prova_cards.html #}
+{% if provas and provas|length %}
+  <div class="row">
+    {% for p in provas %}
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">
+                {{ p.name or ('Prova ' ~ (p.number or '')) }}
+              </h5>
+              {% if p.discipline %}
+                <small class="text-muted">{{ p.discipline|replace('_',' ')|title }}</small>
+              {% endif %}
+            </div>
+            {# destra header: distanza (niente badge di stato) #}
+            {% set distance_label = (('Al meglio di ' ~ p.distance) if p.best_of else (p.distance ~ ' rack esatti')) %}
+            <small class="text-muted">{{ distance_label }}</small>
+          </div>
+
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded w-100">
+              <div>
+                <div class="mb-1">
+                  <span class="badge {{ p | status_badge_class }}">{{ p | status_text }}</span>
+                </div>
+
+                <small class="text-muted d-block">
+                  {% if p.date %}📅 {{ p.date.strftime('%d/%m/%Y') }}{% else %}-{% endif %}
+                  {% if p.location %} – 📍 {{ p.location }}{% endif %}
+                </small>
+
+                {% if p.entry_fee and p.entry_fee > 0 %}
+                  <small class="text-muted d-block mt-1">Quota: €{{ "%.2f"|format(p.entry_fee) }}</small>
+                {% endif %}
+
+                {% if p.is_inscription_open %}
+                  <div class="mt-2">
+                    <span class="badge bg-success">Iscrizioni aperte</span>
+                    <span class="badge bg-warning ms-1">
+                      <i class="fas fa-clock"></i>
+                      Scade: {{ p.inscription_end.strftime('%d/%m/%Y %H:%M') if p.inscription_end else 'N/D' }}
+                    </span>
+                  </div>
+                  <small class="text-muted d-block mt-1">
+                    <i class="fas fa-users"></i>
+                    Iscritti: {{ p.inscriptions|length }}{% if p.max_participants %}/{{ p.max_participants }}{% endif %}
+                  </small>
+                {% else %}
+                  <small class="text-muted d-block mt-2">
+                    <i class="fas fa-users"></i>
+                    Iscritti: {{ p.inscriptions|length }}{% if p.max_participants %}/{{ p.max_participants }}{% endif %}
+                  </small>
+                {% endif %}
+              </div>
+
+              {# pulsante Iscriviti (solo se iscrizioni aperte e utente non iscritto) #}
+              {% set ns = namespace(inscribed=false) %}
+              {% for ins in p.inscriptions %}
+                {% if ins.user_id == current_user.id %}{% set ns.inscribed = true %}{% endif %}
+              {% endfor %}
+              {% if p.is_inscription_open and not ns.inscribed %}
+                <form class="ms-3" method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=p.id) }}">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Iscriviti
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+
+            <div class="btn-group w-100" role="group">
+              <a href="{{ url_for('admin.prova_detail', prova_id=p.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-eye"></i> Dettagli
+              </a>
+              {% if p.can_be_modified() %}
+                <a href="{{ url_for('admin.edit_prova', prova_id=p.id) }}" class="btn btn-warning btn-sm">
+                  <i class="fas fa-edit"></i> Modifica
+                </a>
+              {% endif %}
+            </div>
+
+            {% if p.can_be_deleted() %}
+              <form class="mt-2" method="POST"
+                    action="{{ url_for('admin.delete_prova', prova_id=p.id) }}"
+                    onsubmit="return confirm('Sei SICURO di voler eliminare definitivamente questa prova?');">
+                <button type="submit" class="btn btn-danger btn-sm w-100">
+                  <i class="fas fa-trash"></i> Elimina Prova
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">
+    <h4>Nessuna Prova</h4>
+    <p>Non ci sono competizioni standalone da mostrare.</p>
+  </div>
+{% endif %}

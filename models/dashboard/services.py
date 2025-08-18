@@ -140,6 +140,18 @@ class DashboardService:
         )
 
     @staticmethod
+    def _annotate_provas_with_flags(provas: Optional[List[Prova]]) -> List[Prova]:
+        """Arricchisce le Prove per la UI con flag derivati (no logica in Jinja)."""
+        if not provas:
+            return []
+        for p in provas:
+            # True se le iscrizioni sono aperte (enum centralizzato)
+            p.is_inscription_open = (
+                getattr(p, "status", None) == ProvaStatus.INSCRIPTION.value
+            )
+        return provas
+
+    @staticmethod
     def _standalone_available_for_user(
         user_id: int, *, exclude_director_id: Optional[int] = None
     ) -> List[Prova]:
@@ -315,7 +327,9 @@ class DashboardService:
     @staticmethod
     def for_admin() -> DashboardVM:
         tournaments = DashboardService._tournaments_q().all()
-        standalone = DashboardService._standalone_q().all()
+        standalone = DashboardService._annotate_provas_with_flags(
+            DashboardService._standalone_q().all()
+        )
         caps = CapabilityVM(
             can_create_tournament=True,
             can_create_standalone=True,
@@ -405,6 +419,9 @@ class DashboardService:
         standalone_owned: List[Prova] = [
             p for p in standalones_all if has_director and p.director_id == user_id
         ]
+        standalone_owned = DashboardService._annotate_provas_with_flags(
+            standalone_owned
+        )
 
         # permesso gestione director nel torneo selezionato
         can_manage_directors = False
