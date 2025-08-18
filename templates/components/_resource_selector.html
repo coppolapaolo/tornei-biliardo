@@ -1,28 +1,64 @@
+<!-- templates/components/_resource_selector.html -->
 <div class="mb-3" id="resource-selector">
-   <select class="form-select" id="resourceSelect">
-    {% for it in vm.selector_items or [] %}
-      <option
-        value="{{ it.kind }}:{{ it.id }}"
-        {% if it.selected %}selected{% endif %}
-      >{{ it.label }}</option>
-    {% endfor %}
-  </select>
+  <div class="dropdown">
+    <button
+      class="btn btn-outline-primary dropdown-toggle d-flex align-items-center"
+      type="button"
+      id="resourceSelect"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+    >
+      {% if vm.selected_prova %}
+        <i class="fas fa-bullseye me-2"></i>
+        {{ vm.selected_prova.name }}{% if vm.selected_prova.date %} ({{ vm.selected_prova.date.strftime('%d/%m') }}){% endif %}
+      {% elif vm.selected_tournament %}
+        <i class="fas fa-trophy me-2"></i>
+        {{ vm.selected_tournament.name }}
+      {% else %}
+        <i class="fas fa-trophy me-2"></i> Seleziona…
+      {% endif %}
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="resourceSelect">
+      {% for it in vm.selector_items or [] %}
+        <li>
+          <button
+            type="button"
+            class="dropdown-item d-flex align-items-center {% if it.selected %}active{% endif %}"
+            data-kind="{{ it.kind }}"
+            data-id="{{ it.id }}"
+          >
+            {% if it.kind == 't' %}
+              <i class="fas fa-trophy me-2"></i>
+            {% else %}
+              <i class="fas fa-bullseye me-2"></i>
+            {% endif %}
+            {{ it.label }}
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 </div>
+
 <script>
 (function(){
-  const sel = document.getElementById('resourceSelect');
-  if(!sel) return;
-  sel.addEventListener('change', function(){
-    const [kind, id] = this.value.split(':');
-    const params = new URLSearchParams(window.location.search);
-    if (kind === 'p') {
-      params.set('prova_id', id);
-      params.delete('tournament_id');
-    } else {
-      params.set('tournament_id', id);
-      params.delete('prova_id');
-    }
-    window.location.search = params.toString();
+  const container = document.getElementById('resource-selector');
+  if (!container) return;
+  container.querySelectorAll('.dropdown-item').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const kind = this.dataset.kind;
+      const id = this.dataset.id;
+      const params = new URLSearchParams(window.location.search);
+      if (kind === 'p') {
+        params.set('prova_id', id);
+        params.delete('tournament_id');
+      } else {
+        params.set('tournament_id', id);
+        params.delete('prova_id');
+      }
+      window.location.search = params.toString();
+    });
   });
 })();
 </script>
