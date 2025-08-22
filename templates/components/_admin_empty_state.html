@@ -1,0 +1,14 @@
+<div class="alert alert-info d-flex align-items-center justify-content-between">
+  <div>
+    <h5 class="mb-1"><i class="fas fa-trophy"></i> Benvenuto!</h5>
+    <div class="text-muted">Non ci sono ancora tornei o competizioni standalone.</div>
+  </div>
+  <div class="ms-3">
+    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+      <i class="fas fa-plus"></i> Crea Primo Torneo
+    </button>
+    <a class="btn btn-success me-2" href="{{ url_for('admin.create_prova_standalone') }}">
+      <i class="fas fa-plus"></i> Crea Prima Prova
+    </a>
+  </div>
+</div>

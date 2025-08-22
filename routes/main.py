@@ -1,10 +1,9 @@
 # routes/main.py - AGGIORNATO per correggere import path
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import current_user, login_required, logout_user
+from flask_login import current_user, logout_user
 from datetime import date
 from models import db, Tournament, Prova, Classification, User
 from config import Config
-from models.dashboard.services import DashboardService
 
 
 def _role_truthy(user, attr_name: str) -> bool:
@@ -22,10 +21,9 @@ main_bp = Blueprint("main", __name__)
 
 @main_bp.route("/")
 def index():
-    """Homepage con TUTTI i tornei attivi - AGGIORNATO"""
-    # 🔒 ADMIN AUTO-REDIRECT
-    if current_user.is_authenticated and current_user.is_admin:
-        return redirect(url_for("admin.dashboard"))
+    """Homepage pubblica; se autenticato → dashboard utente"""
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.dashboard"))
 
     # Mostra TUTTI i tornei attivi
     active_tournaments = (
@@ -122,27 +120,6 @@ def reset_database_confirm():
         return redirect(url_for("main.reset_database"))
 
 
-@main_bp.route("/dashboard")
-@login_required
-def dashboard():
-    tournament_id = request.args.get("tournament_id", type=int)
-
-    if _role_truthy(current_user, "is_admin"):
-        vm = DashboardService.for_admin()
-        return render_template("dashboard/admin.html", vm=vm)
-
-    if _role_truthy(current_user, "is_director"):
-        vm = DashboardService.for_director(
-            current_user.id, selected_tournament_id=tournament_id
-        )
-        return render_template("dashboard/director.html", vm=vm)
-
-    vm = DashboardService.for_player(
-        current_user.id, selected_tournament_id=tournament_id
-    )
-    return render_template("dashboard/player.html", vm=vm)
-
-
 @main_bp.route("/debug/login/<username>")
 def quick_login(username):
     """Quick login per debug - SOLO in modalità debug"""
@@ -160,8 +137,4 @@ def quick_login(username):
     login_user(user)
     flash(f"Quick login effettuato come {username}!")
 
-    # Redirect appropriato
-    if user.is_admin:
-        return redirect(url_for("admin.dashboard"))
-    else:
-        return redirect(url_for("player.dashboard"))
+    return redirect(url_for("dashboard.dashboard"))

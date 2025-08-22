@@ -36,8 +36,6 @@ from models.match.services import MatchService, RackService, MatchResultService
 from models.status_enum import DirectorRequestStatus, ProvaStatus, MatchStatus
 from models.competition.models import WithdrawPolicy
 from models.tournament.services import TournamentService
-from models.dashboard.services import DashboardService
-
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -47,8 +45,7 @@ admin_bp = Blueprint("admin", __name__)
 @admin_bp.route("/")
 @admin_required
 def dashboard():
-    vm = DashboardService.for_admin()
-    return render_template("dashboard/admin.html", vm=vm)
+    return redirect(url_for("dashboard.dashboard"))
 
 
 @admin_bp.route("/tournament/create", methods=["POST"])

@@ -1,6 +1,6 @@
 # routes/auth.py - Route di autenticazione
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required
 from models import db, User
 
 auth_bp = Blueprint("auth", __name__)
@@ -16,7 +16,7 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for("main.dashboard"))
+            return redirect(url_for("dashboard.dashboard"))
         else:
             flash("Username o password errati.")
 
@@ -48,7 +48,7 @@ def register():
 
         login_user(user)
         flash("Registrazione completata!")
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for("dashboard.dashboard"))
 
     return render_template("register.html")
 

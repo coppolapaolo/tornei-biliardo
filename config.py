@@ -17,9 +17,9 @@ class Config:
     DEBUG_MODE = True
 
     # Admin bootstrap (ENV-first)
-    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME")
-    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
-    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME") or "admin"
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL") or "admin@nowhere.it"
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or "admin123"
     ADMIN_PASSWORD_REQUIRED = False
 
     # App Info
