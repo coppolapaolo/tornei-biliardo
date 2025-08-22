@@ -168,8 +168,8 @@
     {% endfor %}
 {% else %}
     <div class="alert alert-warning text-center">
-        <h4><i class="fas fa-trophy"></i> Nessun Torneo Attivo</h4>
-        <p>Al momento non ci sono tornei attivi. Contatta l'amministratore per maggiori informazioni.</p>
+        <h4><i class="fas fa-trophy"></i> Nessun Torneo</h4>
+        <p>Al momento non ci sono tornei organizzati.</p>
         
         {% if not current_user.is_authenticated %}
             <div class="mt-4">

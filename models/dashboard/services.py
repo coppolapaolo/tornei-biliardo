@@ -147,7 +147,7 @@ class DashboardService:
         for p in provas:
             # True se le iscrizioni sono aperte (enum centralizzato)
             p.is_inscription_open = (
-                getattr(p, "status", None) == ProvaStatus.INSCRIPTION.value
+                p.get_real_status() == ProvaStatus.INSCRIPTION.value
             )
         return provas
 
