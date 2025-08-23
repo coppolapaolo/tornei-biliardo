@@ -438,6 +438,8 @@ def delete_prova(prova_id):
     db.session.commit()
 
     flash(f"{prova_name} cancellata con successo!")
+    if not tournament_id:
+        return redirect(url_for("dashboard.dashboard"))
     return redirect(url_for("admin.tournament_detail", tournament_id=tournament_id))
 
 
