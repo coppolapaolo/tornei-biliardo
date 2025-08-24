@@ -102,6 +102,11 @@ class DashboardVM:
     managed_tournaments: Optional[List[Tournament]] = None
     can_manage_directors: bool = False
     debug_mode: bool = False
+    
+    # Individual match proposals
+    match_proposals: Optional[dict[str, Any]] = None  # {"created": [], "received": [], "available": []}
+    individual_matches: Optional[List[Any]] = None  # Recent individual matches
+    match_opportunities: Optional[List[Any]] = None  # Available match opportunities
 
 
 # -----------------------
@@ -322,6 +327,54 @@ class DashboardService:
             "current_matches": my_upcoming,
             "recent_matches": my_recent,
         }
+    
+    @staticmethod
+    def _build_individual_match_sections(user_id: int) -> dict:
+        """Build individual match proposal sections for user."""
+        from ..individual_match.services import IndividualMatchService
+        from ..individual_match.models import IndividualMatch
+        
+        # Get user's match proposals
+        proposals = IndividualMatchService.get_user_proposals(user_id, include_expired=False)
+        
+        # Get recent individual matches
+        recent_individual_matches = (
+            db.session.query(IndividualMatch)
+            .filter(
+                or_(
+                    IndividualMatch.player1_id == user_id,
+                    IndividualMatch.player2_id == user_id
+                )
+            )
+            .order_by(IndividualMatch.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        
+        # Calculate match opportunities (open proposals in user's locations)
+        from ..location.models import BilliardHall
+        from ..individual_match.models import PlayerAvailability
+        
+        user_locations = {
+            av.location for av in 
+            PlayerAvailability.query.filter_by(user_id=user_id, is_available=True).all()
+        }
+        
+        # Also include locations where user has played before
+        played_locations = {
+            match.location for match in recent_individual_matches
+        }
+        
+        eligible_locations = user_locations.union(played_locations)
+        
+        # Get opportunities - open proposals in eligible locations
+        opportunities = proposals.get("available", [])
+        
+        return {
+            "match_proposals": proposals,
+            "individual_matches": recent_individual_matches,
+            "match_opportunities": opportunities[:5]  # Limit to top 5 opportunities
+        }
 
     # ---- ADMIN --------------------------------------------------------
     @staticmethod
@@ -335,6 +388,10 @@ class DashboardService:
             can_create_standalone=True,
             can_register_self=False,
         )
+        
+        # Note: Admin dashboard doesn't include individual match proposals
+        # as it's focused on tournament/prova management
+        
         return DashboardVM(
             title="Dashboard Amministratore",
             tournaments=tournaments,
@@ -359,6 +416,9 @@ class DashboardService:
             can_manage_directors=True,
             caps=caps,
             debug_mode=False,
+            match_proposals=None,
+            individual_matches=None,
+            match_opportunities=None,
         )
 
     # ---- DIRECTOR -----------------------------------------------------
@@ -399,6 +459,9 @@ class DashboardService:
 
         # sezioni player-like per torneo selezionato
         player_sections = DashboardService._build_player_sections(user_id, selected)
+        
+        # Individual match sections
+        individual_sections = DashboardService._build_individual_match_sections(user_id)
 
         # standalone disponibili (come player) evitando duplicati con le "owned"
         standalone_available = DashboardService._standalone_available_for_user(
@@ -456,6 +519,9 @@ class DashboardService:
             managed_tournaments=managed,
             can_manage_directors=can_manage_directors,
             caps=caps,
+            match_proposals=individual_sections["match_proposals"],
+            individual_matches=individual_sections["individual_matches"],
+            match_opportunities=individual_sections["match_opportunities"],
         )
 
     # ---- PLAYER -------------------------------------------------------
@@ -489,6 +555,9 @@ class DashboardService:
             selected_prova = None
 
         player_sections = DashboardService._build_player_sections(user_id, selected)
+        
+        # Individual match sections
+        individual_sections = DashboardService._build_individual_match_sections(user_id)
 
         standalone_available = DashboardService._standalone_available_for_user(user_id)
 
@@ -524,4 +593,7 @@ class DashboardService:
             managed_tournaments=None,
             can_manage_directors=False,
             caps=caps,
+            match_proposals=individual_sections["match_proposals"],
+            individual_matches=individual_sections["individual_matches"],
+            match_opportunities=individual_sections["match_opportunities"],
         )

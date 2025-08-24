@@ -15,6 +15,8 @@ Created: 2025-08-05
 """
 
 from .models import Match, Rack, MatchResult, TrioMatch
+from .set_models import Set, SetRack
+from .multi_discipline_service import MultiDisciplineService
 
 # Export all public classes and functions
 __all__ = [
@@ -23,6 +25,11 @@ __all__ = [
     "Rack",
     "MatchResult",
     "TrioMatch",
+    # Multi-set models
+    "Set",
+    "SetRack",
+    # Services
+    "MultiDisciplineService",
 ]
 
 # Domain version and metadata

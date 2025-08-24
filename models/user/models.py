@@ -4,6 +4,7 @@ Purpose: User domain models (User, TournamentDirector, DirectorRequest) –
     Task 1.4 completo.
 Data Structures: User, TournamentDirector, DirectorRequest
 Dependencies: models.base.db, flask_login, werkzeug.security
+Updated: Added encryption for personal data (email, phone) per SPECIFICHE.md
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel  # BaseModel for timestamps
+from ..fields import EncryptedString  # Encrypted field types
 
 if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
@@ -34,12 +36,12 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=True)
+    email = db.Column(EncryptedString(200), unique=True, nullable=True)  # Encrypted personal data
     password_hash = db.Column(db.String(120), nullable=False)
 
     role = db.Column(db.String(20), nullable=False, default="player")
     # admin|director|player
-    phone = db.Column(db.String(20), nullable=True)
+    phone = db.Column(EncryptedString(100), nullable=True)  # Encrypted personal data
 
     # per utenti cancellati
     previous_username = db.Column(db.String(80), nullable=True)

@@ -34,10 +34,39 @@ from .user.models import User, TournamentDirector, DirectorRequest
 from .tournament.models import Tournament
 from .competition.models import Prova, Inscription
 from .match.models import Match, Rack, MatchResult, TrioMatch
+from .match.set_models import Set, SetRack
+from .match.multi_discipline_service import MultiDisciplineService
 from .classification.models import Classification, RoundClassification, PlayerEncounter
 
+# PHASE 3: New domains for specification compliance
+from .challenge.models import Challenge, ChallengeAttempt, ChallengeFavorite
+from .exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from .individual_match.models import (
+    MatchProposal, ProposalInvitation, IndividualMatch, IndividualRack,
+    PlayerAvailability, ProposalType, ProposalStatus, MatchStatus, InvitationStatus
+)
+from .playoff.models import (
+    PlayoffConfiguration, PlayoffQualification, PlayoffTournament,
+    PlayoffType, QualificationStatus
+)
+from .rating.models import (
+    PlayerCategory, PlayerRating, HandicapRule, CategoryHandicapRule,
+    RatingHandicapRule, CategoryLevel, RatingSystem
+)
+from .notification.models import (
+    Notification, NotificationPreference, NotificationTemplate,
+    NotificationType, NotificationPriority, NotificationStatus
+)
+from .location.models import (
+    BilliardHall, UserLocationAvailability, LocationReview, DayOfWeek
+)
+from .tiebreaker.models import (
+    Tiebreaker, SpotShot, RallyAttempt, PlayoffMatch, TiebreakerConfiguration,
+    TiebreakerType, TiebreakerStatus, SpotShotResult
+)
+
 # PHASE 2 TODO: Import remaining model from legacy_models.py
-from .legacy_models import Playoff
+# Legacy Playoff model replaced by new Playoff domain
 
 # Export all available models for backward compatibility
 __all__ = [
@@ -62,12 +91,69 @@ __all__ = [
     "Rack",
     "MatchResult",
     "TrioMatch",
+    # Multi-set models (Phase 3)
+    "Set",
+    "SetRack",
+    # Services
+    "MultiDisciplineService",
     # Classification domain models (Phase 2 Sprint 1)
     "Classification",
     "RoundClassification",
     "PlayerEncounter",
-    # Legacy models (future sprints)
-    "Playoff",
+    # Challenge domain models (Phase 3)
+    "Challenge",
+    "ChallengeAttempt",
+    "ChallengeFavorite",
+    # Exam domain models (Phase 3)
+    "Exam",
+    "ExamChallenge",
+    "ExamAttempt",
+    "ExamChallengeResult",
+    # Individual Match domain models (Phase 3)
+    "MatchProposal",
+    "ProposalInvitation",
+    "IndividualMatch",
+    "IndividualRack",
+    "PlayerAvailability",
+    "ProposalType",
+    "ProposalStatus",
+    "MatchStatus",
+    "InvitationStatus",
+    # Playoff domain models (Phase 3)
+    "PlayoffConfiguration",
+    "PlayoffQualification",
+    "PlayoffTournament",
+    "PlayoffType",
+    "QualificationStatus",
+    # Rating domain models (Phase 3)
+    "PlayerCategory",
+    "PlayerRating",
+    "HandicapRule",
+    "CategoryHandicapRule",
+    "RatingHandicapRule",
+    "CategoryLevel",
+    "RatingSystem",
+    # Notification domain models (Phase 3)
+    "Notification",
+    "NotificationPreference",
+    "NotificationTemplate",
+    "NotificationType",
+    "NotificationPriority",
+    "NotificationStatus",
+    # Location domain models (Phase 3)
+    "BilliardHall",
+    "UserLocationAvailability",
+    "LocationReview",
+    "DayOfWeek",
+    # Tiebreaker domain models (Phase 4)
+    "Tiebreaker",
+    "SpotShot",
+    "RallyAttempt",
+    "PlayoffMatch",
+    "TiebreakerConfiguration",
+    "TiebreakerType",
+    "TiebreakerStatus",
+    "SpotShotResult",
 ]
 
 # Phase tracking

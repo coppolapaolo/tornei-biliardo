@@ -29,8 +29,8 @@ class TournamentService:
 
     @staticmethod
     def get_active_tournaments() -> List[Tournament]:
-        """Restituisce i tornei attivi (campo booleano `is_active`)."""
-        return Tournament.query.filter_by(is_active=True).all()
+        """Restituisce i tornei attivi (non soft-deleted)."""
+        return Tournament.get_active_tournaments().all()
 
     @staticmethod
     def delete_tournament(tournament_id: int) -> None:
@@ -50,6 +50,61 @@ class TournamentService:
         except IntegrityError:
             db.session.rollback()
             # Propaga: la route mapperà su HTTP 409 con messaggio user-friendly
+            raise
+    
+    @staticmethod
+    def soft_delete_tournament(tournament_id: int, reason: str = None) -> bool:
+        """
+        Perform soft delete on tournament with played matches.
+        Returns True if successful, False if already deleted.
+        """
+        tournament = Tournament.query.get_or_404(tournament_id)
+        
+        if tournament.is_deleted:
+            return False
+            
+        success = tournament.soft_delete(reason)
+        if success:
+            db.session.commit()
+        return success
+    
+    @staticmethod
+    def restore_tournament(tournament_id: int) -> bool:
+        """
+        Restore a soft-deleted tournament.
+        Returns True if successful, False if not deleted.
+        """
+        tournament = Tournament.query.get_or_404(tournament_id)
+        
+        if not tournament.is_deleted:
+            return False
+            
+        success = tournament.restore()
+        if success:
+            db.session.commit()
+        return success
+    
+    @staticmethod
+    def get_deleted_tournaments() -> List[Tournament]:
+        """Get all soft-deleted tournaments."""
+        return Tournament.get_deleted_tournaments().all()
+    
+    @staticmethod
+    def permanently_delete_tournament(tournament_id: int) -> None:
+        """
+        Permanently delete a tournament (hard delete).
+        Only allowed if no matches have been played.
+        """
+        tournament = Tournament.query.get_or_404(tournament_id)
+        
+        if not tournament.can_be_hard_deleted():
+            raise ValueError("Cannot permanently delete tournament with played matches")
+            
+        db.session.delete(tournament)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
             raise
 
 

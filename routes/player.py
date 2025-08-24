@@ -20,6 +20,128 @@ from utils.status_ui import MatchStatus, ProvaStatus, DirectorRequestStatus
 player_bp = Blueprint("player", __name__)
 
 
+# Individual Match Proposal Routes
+@player_bp.route("/match-proposals")
+@login_required
+@player_only
+def match_proposals():
+    """View and manage individual match proposals"""
+    from models.individual_match.services import IndividualMatchService
+    
+    proposals = IndividualMatchService.get_user_proposals(current_user.id)
+    return render_template("player/match_proposals.html", proposals=proposals)
+
+
+@player_bp.route("/match-proposals/create", methods=["GET", "POST"])
+@login_required
+@player_only
+def create_match_proposal():
+    """Create a new match proposal"""
+    if request.method == "POST":
+        from models.individual_match.services import IndividualMatchService
+        from datetime import datetime
+        
+        try:
+            proposal_type = request.form.get("proposal_type")
+            location = request.form.get("location")
+            scheduled_str = request.form.get("scheduled_at")
+            scheduled_at = datetime.fromisoformat(scheduled_str.replace("Z", "+00:00"))
+            discipline = request.form.get("discipline", "palla_8")
+            distance = int(request.form.get("distance", 5))
+            best_of = "best_of" in request.form
+            break_rule = request.form.get("break_rule", "alternate")
+            description = request.form.get("description")
+            entry_fee = float(request.form.get("entry_fee", 0)) if request.form.get("entry_fee") else None
+            
+            if proposal_type == "direct":
+                invited_ids = [int(x) for x in request.form.getlist("invited_users") if x]
+                proposal = IndividualMatchService.create_direct_proposal(
+                    proposer_id=current_user.id,
+                    invited_user_ids=invited_ids,
+                    location=location,
+                    scheduled_at=scheduled_at,
+                    discipline=discipline,
+                    distance=distance,
+                    best_of=best_of,
+                    break_rule=break_rule,
+                    description=description,
+                    entry_fee=entry_fee
+                )
+            else:  # open
+                proposal = IndividualMatchService.create_open_proposal(
+                    proposer_id=current_user.id,
+                    location=location,
+                    scheduled_at=scheduled_at,
+                    discipline=discipline,
+                    distance=distance,
+                    best_of=best_of,
+                    break_rule=break_rule,
+                    description=description,
+                    entry_fee=entry_fee
+                )
+            
+            flash(f"Match proposal created successfully! ID: {proposal.id}")
+            return redirect(url_for("player.match_proposals"))
+            
+        except Exception as e:
+            flash(f"Error creating proposal: {str(e)}", "error")
+    
+    # Get available users and locations for the form
+    from models.location.models import BilliardHall
+    users = User.query.filter(User.id != current_user.id).all()
+    locations = BilliardHall.query.all()
+    
+    return render_template("player/create_match_proposal.html", users=users, locations=locations)
+
+
+@player_bp.route("/match-proposals/<int:proposal_id>/accept", methods=["POST"])
+@login_required
+@player_only
+def accept_match_proposal(proposal_id):
+    """Accept a match proposal"""
+    from models.individual_match.services import IndividualMatchService
+    
+    try:
+        match = IndividualMatchService.accept_proposal(current_user.id, proposal_id)
+        flash(f"Match proposal accepted! Match ID: {match.id}")
+    except Exception as e:
+        flash(f"Error accepting proposal: {str(e)}", "error")
+    
+    return redirect(url_for("player.match_proposals"))
+
+
+@player_bp.route("/match-proposals/<int:proposal_id>/reject", methods=["POST"])
+@login_required
+@player_only
+def reject_match_proposal(proposal_id):
+    """Reject a match proposal"""
+    from models.individual_match.services import IndividualMatchService
+    
+    try:
+        IndividualMatchService.reject_invitation(current_user.id, proposal_id)
+        flash("Match proposal rejected.")
+    except Exception as e:
+        flash(f"Error rejecting proposal: {str(e)}", "error")
+    
+    return redirect(url_for("player.match_proposals"))
+
+
+@player_bp.route("/match-proposals/<int:proposal_id>/cancel", methods=["POST"])
+@login_required
+@player_only
+def cancel_match_proposal(proposal_id):
+    """Cancel a match proposal"""
+    from models.individual_match.services import IndividualMatchService
+    
+    try:
+        IndividualMatchService.cancel_proposal(current_user.id, proposal_id)
+        flash("Match proposal cancelled.")
+    except Exception as e:
+        flash(f"Error cancelling proposal: {str(e)}", "error")
+    
+    return redirect(url_for("player.match_proposals"))
+
+
 @player_bp.route("/")
 @login_required
 def dashboard():

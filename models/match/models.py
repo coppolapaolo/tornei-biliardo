@@ -25,9 +25,14 @@ class Match(db.Model):
     is_bye = db.Column(db.Boolean, default=False)  # partita contro X
 
     # Risultati
-    player1_score = db.Column(db.Integer, default=0)
-    player2_score = db.Column(db.Integer, default=0)
+    player1_score = db.Column(db.Integer, default=0)  # Current racks won (legacy) or sets won
+    player2_score = db.Column(db.Integer, default=0)  # Current racks won (legacy) or sets won
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    
+    # Multi-set configuration
+    match_distance = db.Column(db.Integer, default=1)  # Number of sets to win the match
+    is_multi_set = db.Column(db.Boolean, default=False)  # Whether this match has multiple sets
+    current_set_number = db.Column(db.Integer, default=1)  # Current set being played
 
     # Stato
     status = db.Column(
@@ -37,11 +42,19 @@ class Match(db.Model):
     is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
     amalfi_round = db.Column(db.Integer)  # Turno secondo algoritmo Amalfi
     salto_applied = db.Column(db.Integer)  # Salto utilizzato per questo abbinamento
+    
+    # Handicap system
+    has_handicap = db.Column(db.Boolean, default=False)
+    player1_handicap = db.Column(db.Integer, default=0)  # Starting advantage for player1
+    player2_handicap = db.Column(db.Integer, default=0)  # Starting advantage for player2
+    handicap_rule_id = db.Column(db.Integer, db.ForeignKey("handicap_rule.id"), nullable=True)
+    handicap_explanation = db.Column(db.String(255), nullable=True)
 
     # Relazioni
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
+    handicap_rule = db.relationship("HandicapRule", foreign_keys=[handicap_rule_id])
     racks = db.relationship(
         "Rack",
         backref="match",
@@ -49,12 +62,221 @@ class Match(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    
+    # Sets relationship for multi-set matches
+    sets = db.relationship(
+        "Set",
+        back_populates="match",
+        lazy=True,
+        cascade="all, delete-orphan",
+        order_by="Set.set_number"
+    )
+    
+    # Tiebreaker relationships
+    tiebreakers = db.relationship(
+        "Tiebreaker",
+        back_populates="match",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return (
             f"<Match {self.player1_id} vs {self.player2_id} "
             f"(Round {self.round_number})>"
         )
+    
+    def apply_handicap(self, handicap_data: dict) -> None:
+        """Apply handicap to the match."""
+        self.has_handicap = handicap_data.get("handicap", 0) > 0
+        self.player1_handicap = handicap_data.get("player1_handicap", 0)
+        self.player2_handicap = handicap_data.get("player2_handicap", 0)
+        self.handicap_explanation = handicap_data.get("explanation")
+        
+        # Update scores with handicap
+        self.player1_score += self.player1_handicap
+        self.player2_score += self.player2_handicap
+    
+    def get_effective_score(self, player_id: int) -> int:
+        """Get effective score including handicap for a player."""
+        if player_id == self.player1_id:
+            return self.player1_score
+        elif player_id == self.player2_id:
+            return self.player2_score
+        return 0
+    
+    def get_handicap_info(self) -> dict:
+        """Get handicap information for this match."""
+        return {
+            "has_handicap": self.has_handicap,
+            "player1_handicap": self.player1_handicap,
+            "player2_handicap": self.player2_handicap,
+            "explanation": self.handicap_explanation
+        }
+    
+    def is_completed(self) -> bool:
+        """Check if match is completed."""
+        return self.status == "completed"
+    
+    def start_next_set(self) -> 'Set':
+        """Start the next set in a multi-set match."""
+        if not self.is_multi_set:
+            raise ValueError("This is not a multi-set match")
+        
+        # Check if current set is completed
+        current_set = self.get_current_set()
+        if current_set and not current_set.is_completed():
+            raise ValueError("Current set must be completed before starting next set")
+        
+        # Check if match is already completed
+        if self.is_completed():
+            raise ValueError("Match is already completed")
+        
+        # Create new set
+        from .set_models import Set
+        new_set = Set(
+            match_id=self.id,
+            set_number=self.current_set_number,
+            distance=getattr(current_set, 'distance', 5) if current_set else 5,
+            best_of=getattr(current_set, 'best_of', True) if current_set else True
+        )
+        
+        from ..base import db
+        db.session.add(new_set)
+        
+        return new_set
+    
+    def get_current_set(self) -> Optional['Set']:
+        """Get the current set being played."""
+        if not self.is_multi_set:
+            return None
+        
+        return next((s for s in self.sets if s.set_number == self.current_set_number), None)
+    
+    def complete_set(self, set_number: int, winner_id: int) -> None:
+        """Complete a set and check if match is finished."""
+        if not self.is_multi_set:
+            raise ValueError("This is not a multi-set match")
+        
+        # Update match scores (sets won)
+        if winner_id == self.player1_id:
+            self.player1_score += 1
+        elif winner_id == self.player2_id:
+            self.player2_score += 1
+        else:
+            raise ValueError("Winner must be one of the match players")
+        
+        # Check if match is won
+        if self.player1_score >= self.match_distance:
+            self.winner_id = self.player1_id
+            self.status = "completed"
+        elif self.player2_score >= self.match_distance:
+            self.winner_id = self.player2_id
+            self.status = "completed"
+        else:
+            # Move to next set
+            self.current_set_number += 1
+    
+    def get_match_summary(self) -> dict:
+        """Get comprehensive match summary."""
+        if self.is_multi_set:
+            sets_summary = []
+            for match_set in self.sets:
+                sets_summary.append({
+                    "set_number": match_set.set_number,
+                    "player1_racks": match_set.player1_racks,
+                    "player2_racks": match_set.player2_racks,
+                    "winner_id": match_set.winner_id,
+                    "is_completed": match_set.is_completed()
+                })
+            
+            return {
+                "is_multi_set": True,
+                "match_distance": self.match_distance,
+                "sets_won": {"player1": self.player1_score, "player2": self.player2_score},
+                "current_set": self.current_set_number,
+                "sets": sets_summary,
+                "is_completed": self.is_completed(),
+                "winner_id": self.winner_id
+            }
+        else:
+            # Legacy single-set match
+            return {
+                "is_multi_set": False,
+                "racks_won": {"player1": self.player1_score, "player2": self.player2_score},
+                "is_completed": self.is_completed(),
+                "winner_id": self.winner_id
+            }
+    
+    def needs_tiebreaker(self) -> bool:
+        """Check if match needs a tiebreaker (tied scores)."""
+        if self.status != "completed":
+            return False
+        
+        # For multi-set matches, check set scores
+        if self.is_multi_set:
+            return self.player1_score == self.player2_score and self.player1_score > 0
+        
+        # For single matches, check rack scores  
+        return self.player1_score == self.player2_score and self.player1_score > 0
+    
+    def has_active_tiebreaker(self) -> bool:
+        """Check if match has an active tiebreaker."""
+        return any(tb.status in ["pending", "in_progress"] for tb in self.tiebreakers)
+    
+    def get_active_tiebreaker(self):
+        """Get the active tiebreaker for this match."""
+        return next((tb for tb in self.tiebreakers if tb.status in ["pending", "in_progress"]), None)
+    
+    def can_start_tiebreaker(self) -> bool:
+        """Check if a tiebreaker can be started for this match."""
+        return self.needs_tiebreaker() and not self.has_active_tiebreaker()
+    
+    def supports_multi_discipline(self) -> bool:
+        """Check if match supports multi-discipline play."""
+        return self.is_multi_set  # Only multi-set matches support multi-discipline for now
+    
+    def configure_set_disciplines(self, set_disciplines: Dict[int, str]) -> None:
+        """Configure specific disciplines for sets.
+        
+        Args:
+            set_disciplines: Dict mapping set number to discipline name
+        """
+        if not self.supports_multi_discipline():
+            raise ValueError("Match must support multi-discipline mode")
+        
+        for set_number, discipline in set_disciplines.items():
+            match_set = next((s for s in self.sets if s.set_number == set_number), None)
+            if match_set:
+                match_set.discipline = discipline
+    
+    def get_multi_discipline_summary(self) -> Dict[str, Any]:
+        """Get summary of disciplines used across all sets."""
+        if not self.is_multi_set:
+            return {
+                "is_multi_discipline": False,
+                "primary_discipline": getattr(self, 'discipline', 'palla_8'),
+                "sets": []
+            }
+        
+        sets_summary = []
+        all_disciplines = set()
+        
+        for match_set in self.sets:
+            set_discipline_info = match_set.get_discipline_summary()
+            sets_summary.append({
+                "set_number": match_set.set_number,
+                "discipline_info": set_discipline_info
+            })
+            
+            if set_discipline_info.get("disciplines_used"):
+                all_disciplines.update(set_discipline_info["disciplines_used"])
+        
+        return {
+            "is_multi_discipline": len(all_disciplines) > 1,
+            "disciplines_used": list(all_disciplines),
+            "total_disciplines": len(all_disciplines),
+            "sets": sets_summary
+        }
 
 
 class Rack(db.Model):
