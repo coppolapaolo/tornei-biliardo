@@ -6,8 +6,11 @@ Requirements: SPECIFICHE.md - Individual match proposals and management
 
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
 from datetime import datetime, timedelta
+
+if TYPE_CHECKING:
+    from ..user.models import User
 
 from ..base import db
 from .models import (
@@ -15,6 +18,90 @@ from .models import (
     PlayerAvailability, ProposalType, ProposalStatus, MatchStatus,
     InvitationStatus
 )
+
+
+class MatchProposalService:
+    """Service for match proposal specific operations."""
+    
+    @staticmethod
+    def create_proposal(
+        proposer_id: int,
+        proposal_type: ProposalType,
+        location: str,
+        scheduled_at: datetime,
+        expires_at: datetime,
+        discipline: str = "palla_8",
+        distance: int = 5,
+        best_of: bool = True,
+        break_rule: str = "alternate",
+        description: Optional[str] = None,
+        entry_fee: Optional[float] = None,
+        invited_user_ids: Optional[List[int]] = None
+    ) -> MatchProposal:
+        """Create a match proposal with invitations if needed."""
+        
+        if proposal_type == ProposalType.DIRECT:
+            return IndividualMatchService.create_direct_proposal(
+                proposer_id=proposer_id,
+                invited_user_ids=invited_user_ids or [],
+                location=location,
+                scheduled_at=scheduled_at,
+                expires_at=expires_at,
+                discipline=discipline,
+                distance=distance,
+                best_of=best_of,
+                break_rule=break_rule,
+                description=description,
+                entry_fee=entry_fee
+            )
+        else:
+            return IndividualMatchService.create_open_proposal(
+                proposer_id=proposer_id,
+                location=location,
+                scheduled_at=scheduled_at,
+                expires_at=expires_at,
+                discipline=discipline,
+                distance=distance,
+                best_of=best_of,
+                break_rule=break_rule,
+                description=description,
+                entry_fee=entry_fee
+            )
+    
+    @staticmethod
+    def get_user_proposals(user_id: int) -> Dict[str, List[MatchProposal]]:
+        """Get proposals organized by user relationship."""
+        return IndividualMatchService.get_user_proposals(user_id)
+    
+    @staticmethod
+    def accept_proposal(proposal_id: int, user_id: int) -> IndividualMatch:
+        """Accept a match proposal."""
+        return IndividualMatchService.accept_proposal(user_id, proposal_id)
+    
+    @staticmethod
+    def cancel_proposal(proposal_id: int, user_id: int) -> None:
+        """Cancel a proposal."""
+        return IndividualMatchService.cancel_proposal(user_id, proposal_id)
+    
+    @staticmethod
+    def expire_proposals() -> int:
+        """Mark expired proposals as expired. Returns count of expired proposals."""
+        now = datetime.utcnow()
+        
+        expired_proposals = MatchProposal.query.filter(
+            MatchProposal.status == ProposalStatus.PENDING,
+            MatchProposal.expires_at <= now
+        ).all()
+        
+        count = 0
+        for proposal in expired_proposals:
+            proposal.expire()
+            count += 1
+        
+        if count > 0:
+            db.session.commit()
+        
+        return count
 
 
 class IndividualMatchService:
@@ -186,17 +273,163 @@ class IndividualMatchService:
     
     @staticmethod
     def cancel_proposal(user_id: int, proposal_id: int) -> None:
-        """Cancel a proposal (only by the proposer)."""
-        proposal = MatchProposal.query.filter_by(
-            id=proposal_id,
-            proposer_id=user_id
-        ).first_or_404()
+        """Cancel a match proposal."""
+        proposal = MatchProposal.query.get_or_404(proposal_id)
         
+        # Verify user is the proposer
+        if proposal.proposer_id != user_id:
+            raise ValueError("Only the proposer can cancel the proposal")
+        
+        # Verify proposal can be cancelled
         if proposal.status != ProposalStatus.PENDING:
-            raise ValueError("Can only cancel pending proposals")
+            raise ValueError("Proposal cannot be cancelled - it's not pending")
         
         proposal.cancel()
         db.session.commit()
+    
+    @staticmethod
+    def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
+        """Get comprehensive dashboard data for user."""
+        proposals = IndividualMatchService.get_user_proposals(user_id)
+        matches = IndividualMatchService.get_user_matches(user_id)
+        availability = IndividualMatchService.get_user_availability(user_id)
+        stats = IndividualMatchService.get_user_statistics(user_id)
+        
+        return {
+            "proposals": proposals,
+            "matches": matches,
+            "availability": availability,
+            "statistics": stats
+        }
+    
+
+    
+    @staticmethod
+    def get_user_availability(user_id: int) -> Dict[str, Any]:
+        """Get user's availability settings and schedule."""
+        availability_records = PlayerAvailability.query.filter_by(user_id=user_id).all()
+        
+        # Organize by location
+        by_location = {}
+        for record in availability_records:
+            if record.location not in by_location:
+                by_location[record.location] = []
+            by_location[record.location].append(record)
+        
+        return {
+            "availability_records": availability_records,
+            "by_location": by_location,
+            "available_locations": [r.location for r in availability_records if r.is_available]
+        }
+    
+
+    
+
+    
+    @staticmethod
+    def submit_rack_result(match_id: int, user_id: int, winner_id: int, rack_number: int) -> IndividualRack:
+        """Submit result for a rack in individual match."""
+        match = IndividualMatch.query.get_or_404(match_id)
+        
+        # Verify user is part of this match
+        if user_id not in (match.player1_id, match.player2_id):
+            raise ValueError("User is not part of this match")
+        
+        # Verify winner is valid
+        if winner_id not in (match.player1_id, match.player2_id):
+            raise ValueError("Invalid winner ID")
+        
+        # Check if rack already exists
+        existing_rack = IndividualRack.query.filter_by(
+            match_id=match_id,
+            rack_number=rack_number
+        ).first()
+        
+        if existing_rack:
+            raise ValueError(f"Rack {rack_number} already recorded")
+        
+        # Create rack record
+        rack = IndividualRack(
+            match_id=match_id,
+            rack_number=rack_number,
+            winner_id=winner_id
+        )
+        
+        db.session.add(rack)
+        
+        # Update match scores
+        if winner_id == match.player1_id:
+            match.player1_score += 1
+        else:
+            match.player2_score += 1
+        
+        # Check if match is complete
+        if match.is_complete():
+            match.status = MatchStatus.COMPLETED
+            match.completed_at = datetime.utcnow()
+            match.winner_id = winner_id if match.player1_score != match.player2_score else None
+        
+        db.session.commit()
+        return rack
+    
+
+    
+
+    
+    @staticmethod
+    def update_user_availability(user_id: int, availability_data: List[Dict[str, Any]]) -> None:
+        """Update user's availability settings."""
+        # Clear existing availability
+        PlayerAvailability.query.filter_by(user_id=user_id).delete()
+        
+        # Add new availability records
+        for data in availability_data:
+            availability = PlayerAvailability(
+                user_id=user_id,
+                location=data['location'],
+                day_of_week=data['day_of_week'],
+                start_time=data['start_time'],
+                end_time=data['end_time'],
+                is_available=data.get('is_available', True)
+            )
+            db.session.add(availability)
+        
+        db.session.commit()
+    
+    @staticmethod
+    def get_admin_overview() -> Dict[str, Any]:
+        """Get admin overview of all individual matches."""
+        # Get counts by status
+        status_counts = {}
+        for status in MatchStatus:
+            count = IndividualMatch.query.filter_by(status=status).count()
+            status_counts[status.value] = count
+        
+        # Get recent matches
+        recent_matches = (IndividualMatch.query
+                         .order_by(IndividualMatch.created_at.desc())
+                         .limit(10)
+                         .all())
+        
+        # Get proposal counts
+        proposal_counts = {}
+        for status in ProposalStatus:
+            count = MatchProposal.query.filter_by(status=status).count()
+            proposal_counts[status.value] = count
+        
+        # Get active locations
+        active_locations = (db.session.query(PlayerAvailability.location)
+                           .filter_by(is_available=True)
+                           .distinct()
+                           .all())
+        
+        return {
+            "status_counts": status_counts,
+            "recent_matches": recent_matches,
+            "proposal_counts": proposal_counts,
+            "active_locations": [loc[0] for loc in active_locations],
+            "total_users_with_availability": PlayerAvailability.query.with_entities(PlayerAvailability.user_id).distinct().count()
+        }
     
     @staticmethod
     def get_user_matches(user_id: int, status_filter: Optional[MatchStatus] = None) -> List[IndividualMatch]:
@@ -303,7 +536,7 @@ class IndividualMatchService:
         return PlayerAvailability.query.filter_by(user_id=user_id).all()
     
     @staticmethod
-    def get_eligible_players_for_location(location: str, exclude_user_id: Optional[int] = None) -> List['User']:
+    def get_eligible_players_for_location(location: str, exclude_user_id: Optional[int] = None) -> List[User]:
         """Get players available for matches at a specific location."""
         from ..user.models import User
         

@@ -1,0 +1,351 @@
+"""
+Module: routes/rating.py
+Purpose: Rating domain HTTP routes for player categories and handicap system
+Requirements: Rating and handicap system for fair play and skill-based matching
+"""
+
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask_login import login_required, current_user
+
+from models.rating.services import RatingService, CategoryService, HandicapService
+from models.rating.models import PlayerCategory, PlayerRating, RatingSystem, CategoryLevel
+from utils import admin_required, director_required
+
+# Blueprint initialization
+rating_bp = Blueprint('rating', __name__)
+
+
+@rating_bp.route('/')
+@login_required
+def rating_dashboard():
+    """Player rating and category dashboard."""
+    try:
+        user_data = RatingService.get_user_rating_profile(current_user.id)
+        return render_template('rating/dashboard.html', **user_data)
+    except Exception as e:
+        flash(f"Error loading rating dashboard: {str(e)}", "danger")
+        return redirect(url_for('dashboard.index'))
+
+
+@rating_bp.route('/category')
+@login_required
+def view_category():
+    """View current player category and history."""
+    try:
+        category_data = CategoryService.get_user_category_info(current_user.id)
+        return render_template('rating/category.html', **category_data)
+    except Exception as e:
+        flash(f"Error loading category information: {str(e)}", "danger")
+        return redirect(url_for('rating.rating_dashboard'))
+
+
+@rating_bp.route('/ratings')
+@login_required
+def view_ratings():
+    """View all player ratings in different systems."""
+    try:
+        ratings_data = RatingService.get_user_all_ratings(current_user.id)
+        return render_template('rating/ratings.html', **ratings_data)
+    except Exception as e:
+        flash(f"Error loading ratings: {str(e)}", "danger")
+        return redirect(url_for('rating.rating_dashboard'))
+
+
+@rating_bp.route('/ratings/update', methods=['POST'])
+@login_required
+def update_rating():
+    """Update player rating (self-reported, requires verification)."""
+    try:
+        data = request.get_json() if request.is_json else request.form
+        
+        rating = RatingService.update_user_rating(
+            user_id=current_user.id,
+            rating_system=RatingSystem(data['rating_system']),
+            rating_value=int(data['rating_value']),
+            external_id=data.get('external_id'),
+            confidence=float(data.get('confidence', 0.5))
+        )
+        
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "rating_id": rating.id,
+                "verified": rating.verified,
+                "message": "Rating updated successfully. Verification pending."
+            })
+        else:
+            flash("Rating updated successfully. Verification pending.", "success")
+            return redirect(url_for('rating.view_ratings'))
+            
+    except ValueError as e:
+        error_msg = f"Error updating rating: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for('rating.view_ratings'))
+
+
+@rating_bp.route('/handicap/calculator')
+@login_required
+def handicap_calculator():
+    """Handicap calculator for match planning."""
+    try:
+        return render_template('rating/handicap_calculator.html')
+    except Exception as e:
+        flash(f"Error loading handicap calculator: {str(e)}", "danger")
+        return redirect(url_for('rating.rating_dashboard'))
+
+
+@rating_bp.route('/handicap/calculate', methods=['POST'])
+@login_required
+def calculate_handicap():
+    """Calculate handicap between two players."""
+    try:
+        data = request.get_json() if request.is_json else request.form
+        
+        handicap_info = HandicapService.calculate_handicap(
+            player1_id=int(data['player1_id']),
+            player2_id=int(data['player2_id']),
+            rule_id=data.get('rule_id', type=int)
+        )
+        
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "handicap": handicap_info
+            })
+        else:
+            return render_template('rating/handicap_result.html', 
+                                 handicap=handicap_info)
+            
+    except ValueError as e:
+        error_msg = f"Error calculating handicap: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for('rating.handicap_calculator'))
+
+
+# Director routes
+@rating_bp.route('/manage')
+@director_required
+def manage_ratings():
+    """Manage player ratings and categories (directors only)."""
+    try:
+        management_data = RatingService.get_management_overview()
+        return render_template('rating/manage.html', **management_data)
+    except Exception as e:
+        flash(f"Error loading management interface: {str(e)}", "danger")
+        return redirect(url_for('dashboard.index'))
+
+
+@rating_bp.route('/category/assign', methods=['POST'])
+@director_required
+def assign_category():
+    """Assign category to player (directors only)."""
+    try:
+        data = request.get_json() if request.is_json else request.form
+        
+        category = CategoryService.assign_category(
+            user_id=int(data['user_id']),
+            category=CategoryLevel(data['category']),
+            assigned_by_id=current_user.id,
+            reason=data.get('reason')
+        )
+        
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "category_id": category.id,
+                "message": "Category assigned successfully"
+            })
+        else:
+            flash("Category assigned successfully!", "success")
+            return redirect(url_for('rating.manage_ratings'))
+            
+    except ValueError as e:
+        error_msg = f"Error assigning category: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for('rating.manage_ratings'))
+
+
+@rating_bp.route('/ratings/<int:rating_id>/verify', methods=['POST'])
+@director_required
+def verify_rating(rating_id):
+    """Verify a player's rating (directors only)."""
+    try:
+        data = request.get_json() if request.is_json else request.form
+        
+        rating = RatingService.verify_rating(
+            rating_id=rating_id,
+            verified_by_id=current_user.id,
+            verified=data.get('verified', 'true').lower() == 'true'
+        )
+        
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "verified": rating.verified,
+                "message": "Rating verification updated"
+            })
+        else:
+            flash("Rating verification updated!", "success")
+            return redirect(url_for('rating.manage_ratings'))
+            
+    except ValueError as e:
+        error_msg = f"Error verifying rating: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for('rating.manage_ratings'))
+
+
+# Admin routes
+@rating_bp.route('/admin/rules')
+@admin_required
+def manage_handicap_rules():
+    """Manage handicap rules (admin only)."""
+    try:
+        rules_data = HandicapService.get_all_rules()
+        return render_template('rating/admin_rules.html', **rules_data)
+    except Exception as e:
+        flash(f"Error loading handicap rules: {str(e)}", "danger")
+        return redirect(url_for('admin.dashboard'))
+
+
+@rating_bp.route('/admin/rules/create', methods=['POST'])
+@admin_required
+def create_handicap_rule():
+    """Create new handicap rule (admin only)."""
+    try:
+        data = request.get_json() if request.is_json else request.form
+        
+        rule = HandicapService.create_handicap_rule(
+            name=data['name'],
+            description=data.get('description'),
+            applies_to_tournaments=data.get('applies_to_tournaments', 'true').lower() == 'true',
+            applies_to_individual_matches=data.get('applies_to_individual_matches', 'true').lower() == 'true',
+            category_rules=data.get('category_rules', []),
+            rating_rules=data.get('rating_rules', [])
+        )
+        
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "rule_id": rule.id,
+                "message": "Handicap rule created successfully"
+            })
+        else:
+            flash("Handicap rule created successfully!", "success")
+            return redirect(url_for('rating.manage_handicap_rules'))
+            
+    except ValueError as e:
+        error_msg = f"Error creating handicap rule: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for('rating.manage_handicap_rules'))
+
+
+@rating_bp.route('/admin/statistics')
+@admin_required
+def rating_statistics():
+    """View rating system statistics (admin only)."""
+    try:
+        stats = RatingService.get_system_statistics()
+        
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "statistics": stats
+            })
+        else:
+            return render_template('rating/admin_statistics.html', statistics=stats)
+            
+    except Exception as e:
+        error_msg = f"Error loading statistics: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for('admin.dashboard'))
+
+
+@rating_bp.route('/leaderboard')
+def public_leaderboard():
+    """Public leaderboard showing top players by category."""
+    try:
+        leaderboard_data = RatingService.get_public_leaderboard()
+        return render_template('rating/leaderboard.html', **leaderboard_data)
+    except Exception as e:
+        flash(f"Error loading leaderboard: {str(e)}", "danger")
+        return redirect(url_for('main.index'))
+
+
+# API endpoints for integration
+@rating_bp.route('/api/user/<int:user_id>/category')
+@login_required
+def get_user_category_api(user_id):
+    """API endpoint to get user's current category."""
+    try:
+        category = CategoryService.get_user_current_category(user_id)
+        
+        if category:
+            return jsonify({
+                "success": True,
+                "category": {
+                    "level": category.category.value,
+                    "assigned_at": category.assigned_at.isoformat(),
+                    "is_active": category.is_active
+                }
+            })
+        else:
+            return jsonify({
+                "success": True,
+                "category": None
+            })
+            
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@rating_bp.route('/api/handicap/<int:player1_id>/<int:player2_id>')
+@login_required
+def get_handicap_api(player1_id, player2_id):
+    """API endpoint to get handicap between two players."""
+    try:
+        handicap = HandicapService.calculate_handicap(player1_id, player2_id)
+        return jsonify({
+            "success": True,
+            "handicap": handicap
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+# Error handlers
+@rating_bp.errorhandler(404)
+def rating_not_found(error):
+    """Handle 404 errors in rating blueprint."""
+    if request.is_json:
+        return jsonify({"success": False, "error": "Resource not found"}), 404
+    else:
+        flash("Resource not found.", "danger")
+        return redirect(url_for('rating.rating_dashboard'))
+
+
+@rating_bp.errorhandler(403)
+def rating_access_denied(error):
+    """Handle 403 errors in rating blueprint."""
+    if request.is_json:
+        return jsonify({"success": False, "error": "Access denied"}), 403
+    else:
+        flash("Access denied.", "danger")
+        return redirect(url_for('rating.rating_dashboard'))

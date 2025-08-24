@@ -11,6 +11,7 @@ Services:
 - UserStatsService: User statistics and analytics
 
 Author: Refactoring Phase 1 - Task 1.4
+Enhanced: Phase 3.3 - Transaction Management
 Created: 2025-08-01
 """
 from __future__ import annotations
@@ -21,6 +22,7 @@ from datetime import datetime, timedelta
 
 from ..base import db
 from .models import User, TournamentDirector, DirectorRequest
+from ..transaction import DomainService, transactional, read_only, transaction_manager
 
 from models.match import Match
 from models.competition.models import Prova, Inscription
@@ -28,16 +30,21 @@ from models.status_enum import MatchStatus, DirectorRequestStatus
 from models.user.role_enum import UserRole
 
 
-class UserService:
+class UserServiceCore(DomainService):
     """
-    Service class for user-related business operations.
+    Enhanced service class for user-related business operations with transaction management.
 
     This class encapsulates all business logic related to user management,
-    including creation, role management, and user operations.
+    including creation, role management, and user operations with proper
+    transaction boundaries and domain tracking.
     """
+    
+    def __init__(self):
+        super().__init__("user")
 
-    @staticmethod
+    @transactional(domain="user")
     def create_user(
+        self,
         username: str,
         email: str,
         password: str,
@@ -45,7 +52,7 @@ class UserService:
         phone: Optional[str] = None,
     ) -> User:
         """
-        Create new user with validation.
+        Create new user with validation and proper transaction management.
 
         Args:
             username: Unique username
@@ -60,15 +67,19 @@ class UserService:
         Raises:
             ValueError: If validation fails or user already exists
         """
+        # Track domain access
+        self._track_domain_access()
+        
         # Invariante: singolo amministratore attivo
         if role == UserRole.ADMIN.value:
-            exists_active_admin = (
-                User.query.filter_by(role=UserRole.ADMIN.value)
+            exists_active_admin = self._execute_with_tracking(
+                lambda: User.query.filter_by(role=UserRole.ADMIN.value)
                 .filter(User.deleted_at.is_(None))
                 .count()
             )
             if exists_active_admin > 0:
                 raise ValueError("Esiste già un amministratore attivo.")
+        
         # Validate role
         if role not in ["admin", "director", "player"]:
             raise ValueError(
@@ -86,39 +97,41 @@ class UserService:
             raise ValueError("Password must be at least 6 characters long")
 
         # Check if username already exists (case insensitive)
-        if User.query.filter(
-            func.lower(User.username) == func.lower(username.strip())
-        ).first():
+        existing_username = self._execute_with_tracking(
+            lambda: User.query.filter(
+                func.lower(User.username) == func.lower(username.strip())
+            ).first()
+        )
+        if existing_username:
             raise ValueError(f"Username '{username}' already exists")
 
         # Check if email already exists (case insensitive)
-        if User.query.filter(
-            func.lower(User.email) == func.lower(email.strip())
-        ).first():
+        existing_email = self._execute_with_tracking(
+            lambda: User.query.filter(
+                func.lower(User.email) == func.lower(email.strip())
+            ).first()
+        )
+        if existing_email:
             raise ValueError(f"Email '{email}' already exists")
 
-        try:
-            user = User(
-                username=username.strip(),
-                email=email.strip().lower(),
-                role=role,
-                phone=phone.strip() if phone else None,
-            )
-            user.set_password(password)
+        # Create user within transaction
+        user = User(
+            username=username.strip(),
+            email=email.strip().lower(),
+            role=role,
+            phone=phone.strip() if phone else None,
+        )
+        user.set_password(password)
 
-            db.session.add(user)
-            db.session.commit()
+        db.session.add(user)
+        # Transaction will be committed by decorator
+        
+        return user
 
-            return user
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to create user: {str(e)}")
-
-    @staticmethod
-    def update_user(user_id: int, **kwargs) -> User:
+    @transactional(domain="user")
+    def update_user(self, user_id: int, **kwargs) -> User:
         """
-        Update user information.
+        Update user information with transaction management.
 
         Args:
             user_id: ID of user to update
@@ -130,50 +143,53 @@ class UserService:
         Raises:
             ValueError: If user not found or validation fails
         """
-        user = db.session.get(User, user_id)
+        self._track_domain_access()
+        
+        user = self._execute_with_tracking(
+            lambda: db.session.get(User, user_id)
+        )
         if not user:
             raise ValueError("User not found")
 
-        try:
-            # Update allowed fields
-            if "username" in kwargs:
-                new_username = kwargs["username"].strip()
-                if new_username != user.username:
-                    # Check uniqueness
-                    existing = User.query.filter(
+        # Update allowed fields
+        if "username" in kwargs:
+            new_username = kwargs["username"].strip()
+            if new_username != user.username:
+                # Check uniqueness
+                existing = self._execute_with_tracking(
+                    lambda: User.query.filter(
                         func.lower(User.username) == func.lower(new_username),
                         User.id != user_id,
                     ).first()
-                    if existing:
-                        raise ValueError(f"Username '{new_username}' already exists")
-                    user.username = new_username
+                )
+                if existing:
+                    raise ValueError(f"Username '{new_username}' already exists")
+                user.username = new_username
 
-            if "email" in kwargs:
-                new_email = kwargs["email"].strip().lower()
-                if new_email != user.email:
-                    # Check uniqueness
-                    existing = User.query.filter(
+        if "email" in kwargs:
+            new_email = kwargs["email"].strip().lower()
+            if new_email != user.email:
+                # Check uniqueness
+                existing = self._execute_with_tracking(
+                    lambda: User.query.filter(
                         func.lower(User.email) == func.lower(new_email),
                         User.id != user_id,
                     ).first()
-                    if existing:
-                        raise ValueError(f"Email '{new_email}' already exists")
-                    user.email = new_email
+                )
+                if existing:
+                    raise ValueError(f"Email '{new_email}' already exists")
+                user.email = new_email
 
-            if "phone" in kwargs:
-                user.phone = kwargs["phone"].strip() if kwargs["phone"] else None
+        if "phone" in kwargs:
+            user.phone = kwargs["phone"].strip() if kwargs["phone"] else None
 
-            db.session.commit()
-            return user
+        # Transaction will be committed by decorator
+        return user
 
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to update user: {str(e)}")
-
-    @staticmethod
-    def change_password(user_id: int, old_password: str, new_password: str) -> bool:
+    @transactional(domain="user")
+    def change_password(self, user_id: int, old_password: str, new_password: str) -> bool:
         """
-        Change user password with validation.
+        Change user password with validation and transaction management.
 
         Args:
             user_id: ID of user
@@ -186,7 +202,11 @@ class UserService:
         Raises:
             ValueError: If validation fails
         """
-        user = db.session.get(User, user_id)
+        self._track_domain_access()
+        
+        user = self._execute_with_tracking(
+            lambda: db.session.get(User, user_id)
+        )
         if not user:
             raise ValueError("User not found")
 
@@ -196,310 +216,112 @@ class UserService:
         if len(new_password) < 6:
             raise ValueError("New password must be at least 6 characters long")
 
-        try:
-            user.set_password(new_password)
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to change password: {str(e)}")
-
-    @staticmethod
-    def promote_to_director(user_id: int, admin_user: User) -> bool:
-        """
-        Promote user to director role.
-
-        Args:
-            user_id: ID of user to promote
-            admin_user: Admin user performing the action
-
-        Returns:
-            bool: True if promotion successful
-
-        Raises:
-            PermissionError: If admin_user is not admin
-            ValueError: If user not found or already director/admin
-        """
-        if not admin_user.is_admin:
-            raise PermissionError("Only admins can promote users to director")
-
-        user = db.session.get(User, user_id)
-        if not user:
-            raise ValueError("User not found")
-
-        if user.is_director or user.is_admin:
-            raise ValueError("User is already director or admin")
-
-        try:
-            user.role = "director"
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to promote user: {str(e)}")
-
-    @staticmethod
-    def demote_from_director(user_id: int, admin_user: User) -> bool:
-        """
-        Demote director to player role.
-
-        Args:
-            user_id: ID of user to demote
-            admin_user: Admin user performing the action
-
-        Returns:
-            bool: True if demotion successful
-
-        Raises:
-            PermissionError: If admin_user is not admin
-            ValueError: If user not found or not director
-        """
-        if not admin_user.is_admin:
-            raise PermissionError("Only admins can demote directors")
-
-        user = db.session.get(User, user_id)
-        if not user:
-            raise ValueError("User not found")
-
-        if not user.is_director:
-            raise ValueError("User is not a director")
-
-        try:
-            # Remove all tournament assignments first
-            TournamentDirector.query.filter_by(user_id=user_id).delete()
-
-            # rimuove il direttore dalle prove standalone
-            db.session.query(Prova).filter_by(director_id=user_id).update(
-                {"director_id": None}, synchronize_session=False
-            )
-
-            user.role = "player"
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to demote user: {str(e)}")
-
-    @staticmethod
-    def assign_tournament_director(
-        tournament_id: int, director_id: int, admin_user: User
-    ) -> TournamentDirector:
-        """
-        Assign director to tournament.
-
-        Args:
-            tournament_id: ID of tournament
-            director_id: ID of director to assign
-            admin_user: Admin user performing the action
-
-        Returns:
-            TournamentDirector: Created assignment
-
-        Raises:
-            PermissionError: If admin_user is not admin
-            ValueError: If director invalid or already assigned
-        """
-        if not admin_user.is_admin:
-            raise PermissionError("Only admins can assign tournament directors")
-
-        director = db.session.get(User, director_id)
-        if not director or not director.is_director:
-            raise ValueError("Invalid director user")
-
-        # Check if already assigned
-        existing = TournamentDirector.query.filter_by(
-            user_id=director_id, tournament_id=tournament_id
-        ).first()
-
-        if existing:
-            raise ValueError("Director is already assigned to this tournament")
-
-        try:
-            assignment = TournamentDirector(
-                user_id=director_id,
-                tournament_id=tournament_id,
-                assigned_by_id=admin_user.id,
-            )
-
-            db.session.add(assignment)
-            db.session.commit()
-
-            return assignment
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to assign director: {str(e)}")
-
-    @staticmethod
-    def remove_tournament_director(
-        tournament_id: int, director_id: int, admin_user: User
-    ) -> bool:
-        """
-        Remove director from tournament.
-
-        Args:
-            tournament_id: ID of tournament
-            director_id: ID of director to remove
-            admin_user: Admin user performing the action
-
-        Returns:
-            bool: True if removal successful
-
-        Raises:
-            PermissionError: If admin_user is not admin
-            ValueError: If assignment not found
-        """
-        if not admin_user.is_admin:
-            raise PermissionError("Only admins can remove tournament directors")
-
-        assignment = TournamentDirector.query.filter_by(
-            user_id=director_id, tournament_id=tournament_id
-        ).first()
-
-        if not assignment:
-            raise ValueError("Director assignment not found")
-
-        try:
-            db.session.delete(assignment)
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to remove director: {str(e)}")
-
-    @staticmethod
-    def get_users_by_role(role: str, include_inactive: bool = False) -> List[User]:
-        """
-        Get all users with specific role.
-
-        Args:
-            role: Role to filter by
-            include_inactive: Whether to include inactive users
-
-        Returns:
-            List[User]: Users with the specified role
-        """
-        query = User.query.filter_by(role=role)
-
-        # Add inactive filter if needed (when SoftDeleteMixin is implemented)
-        # if not include_inactive:
-        #     query = query.filter_by(is_deleted=False)
-
-        return query.order_by(User.username).all()
-
-    @staticmethod
-    def get_user_statistics(user_id: int) -> Dict[str, Any]:
-        """
-        Get comprehensive user statistics.
-
-        Args:
-            user_id: ID of user
-
-        Returns:
-            Dict[str, Any]: User statistics
-
-        Raises:
-            ValueError: If user not found
-        """
-        user = db.session.get(User, user_id)
-        if not user:
-            raise ValueError("User not found")
-
-        return user.get_statistics()
-
-    @staticmethod
-    def search_users(
-        query: str, role: Optional[str] = None, limit: int = 50
-    ) -> List[User]:
-        """
-        Search users by username or email.
-
-        Args:
-            query: Search term
-            role: Optional role filter
-            limit: Maximum results to return
-
-        Returns:
-            List[User]: Matching users
-        """
-        if not query or len(query.strip()) < 2:
-            return []
-
-        search_term = f"%{query.strip()}%"
-        search_filter = or_(
-            User.__table__.c.username.ilike(search_term), 
-            User.__table__.c.email.ilike(search_term)
+        user.set_password(new_password)
+        # Transaction will be committed by decorator
+        return True
+    
+    @read_only(domain="user")
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
+        """Get user by ID with read-only transaction."""
+        self._track_domain_access()
+        return self._execute_with_tracking(
+            lambda: db.session.get(User, user_id)
         )
-
-        users_query = User.query.filter(search_filter)
-
-        if role:
-            users_query = users_query.filter_by(role=role)
-
-        return users_query.order_by(User.username).limit(limit).all()
-
-    @staticmethod
-    def delete_user(user_id: int, admin_user: User) -> bool:
-        """
-        Delete user (admin only operation).
-
-        Args:
-            user_id: ID of user to delete
-            admin_user: Admin user performing the action
-
-        Returns:
-            bool: True if deletion successful
-
-        Raises:
-            PermissionError: If admin_user is not admin
-            ValueError: If user not found or has dependencies
-        """
-        if not admin_user.is_admin:
-            raise PermissionError("Only admins can delete users")
-
-        user = db.session.get(User, user_id)
+    
+    @read_only(domain="user")
+    def get_user_by_username(self, username: str) -> Optional[User]:
+        """Get user by username with read-only transaction."""
+        self._track_domain_access()
+        return self._execute_with_tracking(
+            lambda: User.query.filter(
+                func.lower(User.username) == func.lower(username.strip())
+            ).first()
+        )
+    
+    @transactional(domain="user")
+    def delete_user(self, user_id: int, admin_id: int) -> Dict[str, Any]:
+        """Soft delete user with transaction management and cross-domain cleanup."""
+        self._track_domain_access()
+        
+        user = self._execute_with_tracking(
+            lambda: db.session.get(User, user_id)
+        )
         if not user:
             raise ValueError("User not found")
+        
+        if user.role == UserRole.ADMIN.value:
+            raise ValueError("Cannot delete administrator account")
+        
+        # Track cross-domain implications
+        transaction_manager.track_domain_access("competition")
+        transaction_manager.track_domain_access("match")
+        
+        # Perform soft delete
+        user.soft_delete()
+        
+        # Return cleanup summary
+        return {
+            "user_id": user_id,
+            "deleted_at": user.deleted_at,
+            "deleted_by": admin_id,
+            "cleanup_required": True
+        }
 
-        if user.is_admin:
-            raise ValueError("Cannot delete admin users")
 
-        # Check for dependencies (matches, inscriptions, etc.)
-        # This will be enhanced when other domains are refactored
-        if hasattr(user, "inscriptions") and user.inscriptions:
-            raise ValueError("Cannot delete user with tournament inscriptions")
+# Create global instance for enhanced functionality
+_user_service_instance = UserServiceCore()
 
-        if hasattr(user, "match_results") and user.match_results:
-            raise ValueError("Cannot delete user with match history")
 
-        try:
-            # Remove tournament director assignments
-            TournamentDirector.query.filter_by(user_id=user_id).delete()
+# Static wrapper methods for backward compatibility
+class UserServiceCompat:
+    """Backward compatibility wrapper with static methods."""
+    
+    @staticmethod
+    def create_user(
+        username: str,
+        email: str,
+        password: str,
+        role: str = "player",
+        phone: Optional[str] = None,
+    ) -> User:
+        """Static wrapper for create_user."""
+        return _user_service_instance.create_user(username, email, password, role, phone)
+    
+    @staticmethod
+    def update_user(user_id: int, **kwargs) -> User:
+        """Static wrapper for update_user."""
+        return _user_service_instance.update_user(user_id, **kwargs)
+    
+    @staticmethod
+    def change_password(user_id: int, old_password: str, new_password: str) -> bool:
+        """Static wrapper for change_password."""
+        return _user_service_instance.change_password(user_id, old_password, new_password)
+    
+    @staticmethod
+    def get_user_by_id(user_id: int) -> Optional[User]:
+        """Static wrapper for get_user_by_id."""
+        return _user_service_instance.get_user_by_id(user_id)
+    
+    @staticmethod
+    def get_user_by_username(username: str) -> Optional[User]:
+        """Static wrapper for get_user_by_username."""
+        return _user_service_instance.get_user_by_username(username)
+    
+    @staticmethod
+    def delete_user(user_id: int, admin_id: int) -> Dict[str, Any]:
+        """Static wrapper for delete_user."""
+        return _user_service_instance.delete_user(user_id, admin_id)
 
-            # Remove any pending director requests
-            DirectorRequest.query.filter_by(user_id=user_id).delete()
 
-            db.session.delete(user)
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Failed to delete user: {str(e)}")
+# Maintain backward compatibility by exposing the static wrapper as UserService
+UserService = UserServiceCompat
 
 
 class DirectorRequestService:
     """
-    Service for director promotion request workflow.
-
-    Handles the entire workflow for users requesting promotion to director role,
-    including request creation, approval, and rejection processes.
+    Service for managing director promotion requests.
     """
-
+    
     @staticmethod
     def create_request(user_id: int, notes: Optional[str] = None) -> DirectorRequest:
         """

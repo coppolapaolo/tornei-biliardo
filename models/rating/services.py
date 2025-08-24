@@ -20,6 +20,197 @@ class RatingService:
     """Service for rating and handicap management."""
     
     @staticmethod
+    def get_user_rating_profile(user_id: int) -> Dict[str, Any]:
+        """Get comprehensive rating profile for user."""
+        # Get current category
+        current_category = PlayerCategory.get_user_current_category(user_id)
+        
+        # Get all ratings
+        ratings = PlayerRating.query.filter_by(user_id=user_id).all()
+        
+        # Get effective category
+        effective_category = RatingService.get_player_effective_category(user_id)
+        
+        # Get category history
+        category_history = (PlayerCategory.query
+                           .filter_by(user_id=user_id)
+                           .order_by(PlayerCategory.assigned_at.desc())
+                           .all())
+        
+        return {
+            "user_id": user_id,
+            "current_category": current_category,
+            "effective_category": effective_category,
+            "ratings": ratings,
+            "category_history": category_history,
+            "has_verified_rating": any(r.verified for r in ratings)
+        }
+    
+    @staticmethod
+    def get_user_all_ratings(user_id: int) -> Dict[str, Any]:
+        """Get all ratings for a user organized by system."""
+        ratings = PlayerRating.query.filter_by(user_id=user_id).all()
+        
+        organized = {}
+        for rating in ratings:
+            organized[rating.rating_system.value] = {
+                "rating": rating,
+                "category_equivalent": rating.get_category_equivalent(),
+                "last_updated": rating.last_updated
+            }
+        
+        # Add missing systems with None
+        for system in RatingSystem:
+            if system.value not in organized:
+                organized[system.value] = None
+        
+        return {
+            "ratings_by_system": organized,
+            "total_systems": len([r for r in organized.values() if r is not None]),
+            "verified_count": len([r for r in ratings if r.verified])
+        }
+    
+    @staticmethod
+    def update_user_rating(
+        user_id: int,
+        rating_system: RatingSystem,
+        rating_value: int,
+        external_id: Optional[str] = None,
+        confidence: float = 0.5
+    ) -> PlayerRating:
+        """Update user rating (unverified by default)."""
+        return RatingService.update_player_rating(
+            user_id=user_id,
+            rating_system=rating_system,
+            new_rating=rating_value,
+            verified=False,
+            external_id=external_id
+        )
+    
+    @staticmethod
+    def verify_rating(rating_id: int, verified_by_id: int, verified: bool = True) -> PlayerRating:
+        """Verify or unverify a player's rating."""
+        rating = PlayerRating.query.get_or_404(rating_id)
+        
+        rating.verified = verified
+        rating.verified_by_id = verified_by_id if verified else None
+        
+        db.session.commit()
+        return rating
+    
+    @staticmethod
+    def get_management_overview() -> Dict[str, Any]:
+        """Get overview data for rating management."""
+        # Unverified ratings needing review
+        unverified_ratings = (PlayerRating.query
+                             .filter_by(verified=False)
+                             .order_by(PlayerRating.last_updated.desc())
+                             .all())
+        
+        # Players without categories
+        users_without_categories = db.session.query(
+            PlayerRating.user_id
+        ).outerjoin(
+            PlayerCategory,
+            db.and_(
+                PlayerCategory.user_id == PlayerRating.user_id,
+                PlayerCategory.is_active == True
+            )
+        ).filter(PlayerCategory.id.is_(None)).distinct().all()
+        
+        # Recent rating updates
+        recent_updates = (PlayerRating.query
+                         .order_by(PlayerRating.last_updated.desc())
+                         .limit(20)
+                         .all())
+        
+        return {
+            "unverified_ratings": unverified_ratings,
+            "users_without_categories": [uid[0] for uid in users_without_categories],
+            "recent_updates": recent_updates,
+            "total_unverified": len(unverified_ratings)
+        }
+    
+    @staticmethod
+    def get_system_statistics() -> Dict[str, Any]:
+        """Get system-wide rating statistics."""
+        stats = {}
+        
+        # Statistics per rating system
+        for system in RatingSystem:
+            ratings = PlayerRating.query.filter_by(rating_system=system).all()
+            
+            if ratings:
+                values = [r.rating_value for r in ratings]
+                stats[system.value] = {
+                    "total_players": len(ratings),
+                    "verified_players": len([r for r in ratings if r.verified]),
+                    "average_rating": sum(values) / len(values),
+                    "min_rating": min(values),
+                    "max_rating": max(values),
+                    "recent_updates": len([r for r in ratings if 
+                                          (datetime.utcnow() - r.last_updated).days <= 30])
+                }
+            else:
+                stats[system.value] = {
+                    "total_players": 0,
+                    "verified_players": 0,
+                    "average_rating": 0,
+                    "min_rating": 0,
+                    "max_rating": 0,
+                    "recent_updates": 0
+                }
+        
+        # Category distribution
+        category_counts = {}
+        for category in CategoryLevel:
+            count = PlayerCategory.query.filter_by(
+                category=category,
+                is_active=True
+            ).count()
+            category_counts[category.value] = count
+        
+        return {
+            "rating_systems": stats,
+            "category_distribution": category_counts,
+            "total_active_categories": sum(category_counts.values()),
+            "total_handicap_rules": HandicapRule.query.filter_by(is_active=True).count()
+        }
+    
+    @staticmethod
+    def get_public_leaderboard() -> Dict[str, Any]:
+        """Get public leaderboard data."""
+        leaderboards = {}
+        
+        # Create leaderboard for each rating system
+        for system in RatingSystem:
+            top_players = (PlayerRating.query
+                          .filter_by(rating_system=system, verified=True)
+                          .order_by(PlayerRating.rating_value.desc())
+                          .limit(20)
+                          .all())
+            
+            leaderboards[system.value] = top_players
+        
+        # Category-based leaderboard (by number of tournament wins, etc.)
+        # This would need integration with tournament results
+        category_leaders = {}
+        for category in CategoryLevel:
+            # For now, just show most recent assignments
+            leaders = (PlayerCategory.query
+                      .filter_by(category=category, is_active=True)
+                      .order_by(PlayerCategory.assigned_at.desc())
+                      .limit(10)
+                      .all())
+            category_leaders[category.value] = leaders
+        
+        return {
+            "rating_leaderboards": leaderboards,
+            "category_leaders": category_leaders,
+            "last_updated": datetime.utcnow()
+        }
+    
+    @staticmethod
     def assign_player_category(
         user_id: int,
         category: CategoryLevel,
@@ -141,6 +332,139 @@ class RatingService:
         )
         
         return rating_result
+
+
+class CategoryService:
+    """Service for player category management."""
+    
+    @staticmethod
+    def get_user_category_info(user_id: int) -> Dict[str, Any]:
+        """Get comprehensive category information for user."""
+        current_category = PlayerCategory.get_user_current_category(user_id)
+        category_history = (PlayerCategory.query
+                           .filter_by(user_id=user_id)
+                           .order_by(PlayerCategory.assigned_at.desc())
+                           .all())
+        
+        # Get effective category (including rating-derived)
+        effective_category = RatingService.get_player_effective_category(user_id)
+        
+        return {
+            "current_category": current_category,
+            "effective_category": effective_category,
+            "category_history": category_history,
+            "is_rating_derived": current_category is None,
+            "has_category_history": len(category_history) > 0
+        }
+    
+    @staticmethod
+    def assign_category(
+        user_id: int,
+        category: CategoryLevel,
+        assigned_by_id: int,
+        reason: Optional[str] = None,
+        expires_at: Optional[datetime] = None
+    ) -> PlayerCategory:
+        """Assign category to player."""
+        return RatingService.assign_player_category(
+            user_id=user_id,
+            category=category,
+            assigned_by_id=assigned_by_id,
+            reason=reason,
+            expires_at=expires_at
+        )
+    
+    @staticmethod
+    def get_user_current_category(user_id: int) -> Optional[PlayerCategory]:
+        """Get user's current active category."""
+        return PlayerCategory.get_user_current_category(user_id)
+    
+    @staticmethod
+    def expire_category(category_id: int) -> None:
+        """Manually expire a category assignment."""
+        category = PlayerCategory.query.get_or_404(category_id)
+        category.expire_category()
+        db.session.commit()
+
+
+class HandicapService:
+    """Service for handicap calculation and rule management."""
+    
+    @staticmethod
+    def calculate_handicap(
+        player1_id: int,
+        player2_id: int,
+        rule_id: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Calculate handicap between two players."""
+        return RatingService.calculate_match_handicap(player1_id, player2_id, rule_id)
+    
+    @staticmethod
+    def get_all_rules() -> Dict[str, Any]:
+        """Get all handicap rules for management."""
+        active_rules = HandicapRule.query.filter_by(is_active=True).all()
+        inactive_rules = HandicapRule.query.filter_by(is_active=False).all()
+        
+        return {
+            "active_rules": active_rules,
+            "inactive_rules": inactive_rules,
+            "total_rules": len(active_rules) + len(inactive_rules)
+        }
+    
+    @staticmethod
+    def create_handicap_rule(
+        name: str,
+        description: Optional[str] = None,
+        applies_to_tournaments: bool = True,
+        applies_to_individual_matches: bool = True,
+        category_rules: Optional[List[Dict[str, Any]]] = None,
+        rating_rules: Optional[List[Dict[str, Any]]] = None
+    ) -> HandicapRule:
+        """Create new handicap rule with associated category and rating rules."""
+        
+        rule = HandicapRule(
+            name=name,
+            description=description,
+            applies_to_tournaments=applies_to_tournaments,
+            applies_to_individual_matches=applies_to_individual_matches
+        )
+        
+        db.session.add(rule)
+        db.session.flush()  # Get the ID
+        
+        # Add category rules
+        if category_rules:
+            for cat_rule_data in category_rules:
+                cat_rule = CategoryHandicapRule(
+                    rule_id=rule.id,
+                    higher_category=CategoryLevel(cat_rule_data['higher_category']),
+                    lower_category=CategoryLevel(cat_rule_data['lower_category']),
+                    handicap_value=cat_rule_data['handicap_value']
+                )
+                db.session.add(cat_rule)
+        
+        # Add rating rules
+        if rating_rules:
+            for rating_rule_data in rating_rules:
+                rating_rule = RatingHandicapRule(
+                    rule_id=rule.id,
+                    rating_system=RatingSystem(rating_rule_data['rating_system']),
+                    rating_difference_threshold=rating_rule_data['rating_difference_threshold'],
+                    handicap_per_point=rating_rule_data['handicap_per_point'],
+                    max_handicap=rating_rule_data.get('max_handicap')
+                )
+                db.session.add(rating_rule)
+        
+        db.session.commit()
+        return rule
+    
+    @staticmethod
+    def update_rule_status(rule_id: int, is_active: bool) -> HandicapRule:
+        """Update handicap rule active status."""
+        rule = HandicapRule.query.get_or_404(rule_id)
+        rule.is_active = is_active
+        db.session.commit()
+        return rule
     
     @staticmethod
     def _calculate_category_handicap(

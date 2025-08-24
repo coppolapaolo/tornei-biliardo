@@ -138,10 +138,10 @@ def reject_match_proposal(proposal_id):
 @player_only
 def cancel_match_proposal(proposal_id):
     """Cancel a match proposal"""
-    from models.individual_match.services import IndividualMatchService
+    from models.individual_match.services import MatchProposalService
     
     try:
-        IndividualMatchService.cancel_proposal(current_user.id, proposal_id)
+        MatchProposalService.cancel_proposal(proposal_id, current_user.id)
         flash("Match proposal cancelled.")
     except Exception as e:
         flash(f"Error cancelling proposal: {str(e)}", "error")
