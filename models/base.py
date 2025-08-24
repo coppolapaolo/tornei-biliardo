@@ -50,22 +50,29 @@ class UtilityMixin:
     def to_dict(self):
         """Convert model instance to dictionary"""
         result = {}
-        for column in self.__table__.columns:
-            value = getattr(self, column.name)
-            if isinstance(value, datetime):
-                value = value.isoformat()
-            result[column.name] = value
+        # Only process if the model has a __table__ attribute (i.e., inherits from db.Model)
+        table = getattr(self, '__table__', None)
+        if table is not None:
+            for column in table.columns:
+                value = getattr(self, column.name)
+                if isinstance(value, datetime):
+                    value = value.isoformat()
+                result[column.name] = value
         return result
 
     @classmethod
     def find_by_id(cls, id):
         """Find model instance by ID"""
-        return cls.query.get(id)
+        return db.session.get(cls, id)
 
     @classmethod
     def find_all(cls):
         """Find all instances of the model"""
-        return cls.query.all()
+        # Only process if the model has a query attribute (i.e., inherits from db.Model)
+        query = getattr(cls, 'query', None)
+        if query is not None:
+            return query.all()
+        return []
 
     def refresh(self):
         """Refresh model instance from database"""
@@ -112,8 +119,8 @@ class SoftDeleteMixin:
         """
         state = sa_inspect(self)
 
-        # Oggetto non legato a nessuna sessione → non fare I/O
-        if state.session is None:
+        # Se l'oggetto non ha stato o non è legato a nessuna sessione → non fare I/O
+        if state is None or state.session is None:
             return self.__dict__.get("deleted_at") is not None
 
         # Attributo già materializzato → non forzare refresh
@@ -171,7 +178,15 @@ class ValidationMixin:
     def save_with_validation(self):
         """Save the model after validation"""
         if self.validate():
-            return self.save() if hasattr(self, "save") else None
+            # Check if save method exists and call it safely
+            save_method = getattr(self, "save", None)
+            if save_method and callable(save_method):
+                return save_method()
+            else:
+                # Fallback: manual save to database if no save method
+                db.session.add(self)
+                db.session.commit()
+                return self
         return None
 
 
@@ -218,7 +233,7 @@ class BaseModel(db.Model):
     @classmethod
     def find_by_id(cls, id):
         """Find model instance by ID"""
-        return cls.query.get(id)
+        return db.session.get(cls, id)
 
     @classmethod
     def find_all(cls):

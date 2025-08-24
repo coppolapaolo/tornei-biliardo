@@ -383,7 +383,7 @@ def delete_account():
 
     try:
         # Ensure current_user is properly typed as User
-        user_to_delete = User.query.get(current_user.id)
+        user_to_delete = db.session.get(User, current_user.id)
         if not user_to_delete:
             flash("Errore: utente non trovato.", "danger")
             return render_template("player/delete_account.html")

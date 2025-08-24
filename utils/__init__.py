@@ -44,10 +44,10 @@ def tournament_manager_required(tournament_id_getter):
 def prova_manager_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        from models import Prova  # Local import to avoid circular dependency
+        from models import Prova, db  # Local import to avoid circular dependency
         
         prova_id = kwargs.get("prova_id") or (request.view_args.get("prova_id") if request.view_args else None)
-        prova = Prova.query.get(prova_id)
+        prova = db.session.get(Prova, prova_id)
 
         if getattr(current_user, "is_admin", False):
             return fn(*args, **kwargs)

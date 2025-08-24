@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from sqlalchemy import text
 
 from ..base import db
 from .models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
@@ -162,7 +163,7 @@ class ExamService:
         db.session.commit()
         
         # Check if all challenges are completed
-        attempt = ExamAttempt.query.get(exam_attempt_id)
+        attempt = ExamAttempt.query.get_or_404(exam_attempt_id)
         progress = attempt.get_progress()
         
         if progress["is_complete"] and not attempt.completed:
@@ -187,7 +188,7 @@ class ExamService:
         """Get all exam attempts for a user."""
         return (ExamAttempt.query
                 .filter_by(user_id=user_id)
-                .order_by(ExamAttempt.started_at.desc())
+                .order_by(text('started_at DESC'))
                 .all())
     
     @staticmethod
@@ -266,7 +267,7 @@ class ExamService:
         """Check if a user can take an exam (no recent completed attempts)."""
         recent_attempt = (ExamAttempt.query
                          .filter_by(user_id=user_id, exam_id=exam_id, completed=True)
-                         .order_by(ExamAttempt.completed_at.desc())
+                         .order_by(text('completed_at DESC'))
                          .first())
         
         # For now, allow retakes (could add time restrictions later)

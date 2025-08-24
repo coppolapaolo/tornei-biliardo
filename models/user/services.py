@@ -42,7 +42,7 @@ class UserService:
         email: str,
         password: str,
         role: str = "player",
-        phone: str = None,
+        phone: Optional[str] = None,
     ) -> User:
         """
         Create new user with validation.
@@ -431,7 +431,8 @@ class UserService:
 
         search_term = f"%{query.strip()}%"
         search_filter = or_(
-            User.username.ilike(search_term), User.email.ilike(search_term)
+            User.__table__.c.username.ilike(search_term), 
+            User.__table__.c.email.ilike(search_term)
         )
 
         users_query = User.query.filter(search_filter)
@@ -768,7 +769,7 @@ class UserDeletionService:
         - vs avversario attivo → chiudi a tavolino (punteggio massimo all'avversario)
         """
         in_progress = Match.query.filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
+            Match.__table__.c.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
             ((Match.player1_id == user.id) | (Match.player2_id == user.id)),
         ).all()
 
@@ -795,7 +796,13 @@ class UserDeletionService:
                 continue
 
             # avversario attivo → forfait
-            to_win = Prova.query.get(m.prova_id).get_winning_score()
+            prova = db.session.get(Prova, m.prova_id)
+            if not prova:
+                # Se la prova non esiste, elimina il match
+                db.session.delete(m)
+                continue
+            
+            to_win = prova.get_winning_score()
             if m.player1_id == user.id:
                 m.player2_score = to_win
             else:

@@ -59,9 +59,15 @@ def session(_database):
     yield Session
 
     # Rollback transaction and cleanup
-    Session.remove()
-    transaction.rollback()
-    connection.close()
+    try:
+        Session.remove()
+        if transaction.is_active:
+            transaction.rollback()
+    except Exception:
+        # Transaction may already be rolled back due to exceptions in tests
+        pass
+    finally:
+        connection.close()
 
 
 @pytest.fixture(scope="function", autouse=True)
