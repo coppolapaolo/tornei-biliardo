@@ -6,7 +6,12 @@ Dependencies: models.base.db, datetime
 """
 
 from datetime import datetime
+from typing import Optional, Dict, Any, TYPE_CHECKING, List
 from models.base import db
+from sqlalchemy.orm import relationship
+
+if TYPE_CHECKING:
+    from .set_models import Set
 
 
 class Match(db.Model):
@@ -150,7 +155,12 @@ class Match(db.Model):
         if not self.is_multi_set:
             return None
         
-        return next((s for s in self.sets if s.set_number == self.current_set_number), None)
+        # Query the database directly to avoid relationship loading issues
+        from .set_models import Set
+        return Set.query.filter_by(
+            match_id=self.id, 
+            set_number=self.current_set_number
+        ).first()
     
     def complete_set(self, set_number: int, winner_id: int) -> None:
         """Complete a set and check if match is finished."""
@@ -180,7 +190,11 @@ class Match(db.Model):
         """Get comprehensive match summary."""
         if self.is_multi_set:
             sets_summary = []
-            for match_set in self.sets:
+            # Query sets directly from database
+            from .set_models import Set
+            match_sets = Set.query.filter_by(match_id=self.id).order_by(Set.set_number).all()
+            
+            for match_set in match_sets:
                 sets_summary.append({
                     "set_number": match_set.set_number,
                     "player1_racks": match_set.player1_racks,
@@ -221,11 +235,39 @@ class Match(db.Model):
     
     def has_active_tiebreaker(self) -> bool:
         """Check if match has an active tiebreaker."""
-        return any(tb.status in ["pending", "in_progress"] for tb in self.tiebreakers)
+        # Query tiebreakers directly from database
+        from models.tiebreaker.models import Tiebreaker
+        pending_count = Tiebreaker.query.filter(
+            Tiebreaker.match_id == self.id,
+            Tiebreaker.status == "pending"
+        ).count()
+        
+        in_progress_count = Tiebreaker.query.filter(
+            Tiebreaker.match_id == self.id,
+            Tiebreaker.status == "in_progress"
+        ).count()
+        
+        return (pending_count + in_progress_count) > 0
     
     def get_active_tiebreaker(self):
         """Get the active tiebreaker for this match."""
-        return next((tb for tb in self.tiebreakers if tb.status in ["pending", "in_progress"]), None)
+        # Query tiebreakers directly from database
+        from models.tiebreaker.models import Tiebreaker
+        
+        # Check for pending tiebreaker first
+        pending_tb = Tiebreaker.query.filter(
+            Tiebreaker.match_id == self.id,
+            Tiebreaker.status == "pending"
+        ).first()
+        
+        if pending_tb:
+            return pending_tb
+            
+        # Check for in-progress tiebreaker
+        return Tiebreaker.query.filter(
+            Tiebreaker.match_id == self.id,
+            Tiebreaker.status == "in_progress"
+        ).first()
     
     def can_start_tiebreaker(self) -> bool:
         """Check if a tiebreaker can be started for this match."""
@@ -244,8 +286,11 @@ class Match(db.Model):
         if not self.supports_multi_discipline():
             raise ValueError("Match must support multi-discipline mode")
         
+        # Query sets directly from database
+        from .set_models import Set
+        
         for set_number, discipline in set_disciplines.items():
-            match_set = next((s for s in self.sets if s.set_number == set_number), None)
+            match_set = Set.query.filter_by(match_id=self.id, set_number=set_number).first()
             if match_set:
                 match_set.discipline = discipline
     
@@ -261,7 +306,11 @@ class Match(db.Model):
         sets_summary = []
         all_disciplines = set()
         
-        for match_set in self.sets:
+        # Query sets directly from database
+        from .set_models import Set
+        match_sets = Set.query.filter_by(match_id=self.id).order_by(Set.set_number).all()
+        
+        for match_set in match_sets:
             set_discipline_info = match_set.get_discipline_summary()
             sets_summary.append({
                 "set_number": match_set.set_number,
@@ -386,7 +435,7 @@ class TrioMatch(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relations
+    # Relations  
     match = db.relationship("Match", backref="trio_match")
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
@@ -424,11 +473,14 @@ class TrioMatch(db.Model):
 
             self.is_completed = True
             # Aggiorna anche il match associato
-            if self.match:
-                self.match.winner_id = self.winner_id
-                self.match.status = "completed"
-                self.match.player1_score = self.player1_racks
-                self.match.player2_score = self.player2_racks
+            # Query the match directly to avoid relationship property issues
+            from typing import cast
+            match_obj = db.session.get(Match, self.match_id)
+            if match_obj:
+                match_obj.winner_id = self.winner_id
+                match_obj.status = "completed"
+                match_obj.player1_score = self.player1_racks
+                match_obj.player2_score = self.player2_racks
 
         # Ruota i giocatori per il prossimo rack
         self._rotate_players()

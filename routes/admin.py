@@ -269,7 +269,7 @@ def create_prova_standalone():
                 description=request.form.get("description", ""),
                 rounds_count=int(request.form.get("rounds_count", 3)),
                 min_participants=int(request.form.get("min_participants", 2)),
-                max_participants=int(request.form.get("max_participants"))
+                max_participants=int(request.form["max_participants"])
                 if request.form.get("max_participants")
                 else None,
                 entry_fee=float(request.form.get("entry_fee", 0.0)),
@@ -307,6 +307,10 @@ def create_prova():
         return redirect(url_for("admin.create_prova_standalone"))
 
     # Codice esistente per prove con torneo...
+    if not tournament_id:
+        flash("Tournament ID mancante!", "error")
+        return redirect(url_for("admin.dashboard"))
+    
     tournament_id = int(tournament_id)
     tournament = Tournament.query.get_or_404(tournament_id)
 
@@ -590,7 +594,7 @@ def prova_results_overview(prova_id):
         )
 
     return render_template(
-        "admin/prova_results_overview.html",
+        "admin/prova_result_overview.html",
         prova=prova,
         matches_by_round=matches_by_round,
     )
@@ -727,14 +731,14 @@ def set_match_result_direct(match_id):
         # Crea rack per player1
         for i in range(player1_score):
             RackService.add_rack_result(
-                match_id, rack_number, match.player1_id, 1, True
+                match_id, rack_number, match.player1_id, 1, validated_by_admin=True
             )
             rack_number += 1
 
         # Crea rack per player2
         for i in range(player2_score):
             RackService.add_rack_result(
-                match_id, rack_number, match.player2_id, 1, True
+                match_id, rack_number, match.player2_id, 1, validated_by_admin=True
             )
             rack_number += 1
 
@@ -1073,7 +1077,7 @@ def amalfi_start_round(prova_id, round_number):
 
         # Service/Strategy (adapter al legacy engine)
         svc = get_matchmaking_service()
-        pairings = svc.run("Amalfi", prova=prova, round_number=round_number)
+        pairings = svc.run(strategy_name="Amalfi", prova=prova, round_number=round_number)
 
         # Stato prova
         prova.current_round = round_number
@@ -1083,8 +1087,8 @@ def amalfi_start_round(prova_id, round_number):
 
         # Messaggi basati su pairings (tuple di id: (p1,), (p1,p2), (p1,p2,p3))
         total = len(pairings)
-        n_trio = sum(1 for p in pairings if len(p) == 3)
-        n_bye = sum(1 for p in pairings if len(p) == 1)
+        n_trio = sum(1 for p in pairings if len(p.players) == 3)
+        n_bye = sum(1 for p in pairings if len(p.players) == 1)
         n_normal = total - n_trio - n_bye
 
         flash(

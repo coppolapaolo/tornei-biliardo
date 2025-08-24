@@ -261,7 +261,7 @@
                   <p class="mb-1"><small>📅 {{ ins.prova.date.strftime('%d/%m/%Y') if ins.prova.date else '-' }} – 📍 {{ ins.prova.location or 'Luogo da definire' }}</small></p>
                   {{ status_badge(ins.prova, 'prova') }}
                 </div>
-                <a href="{{ url_for('player.prova_detail', prova_id=ins.prova.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
+                <a href="{{ url_for('admin.prova_detail', prova_id=ins.prova.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
               </div>
             </div>
             {% endfor %}

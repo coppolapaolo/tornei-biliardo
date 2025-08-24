@@ -7,10 +7,12 @@ Requirements: SPECIFICHE.md - Random pairing with rematch prevention
 from __future__ import annotations
 
 import random
-from typing import Sequence, List, Tuple, Optional, Set
+from typing import Sequence, List, Tuple, Optional, Set, TYPE_CHECKING
 
 from .base import Pairing, ValidationResult
-from ..policies import calculate_anti_rematch_constraint
+
+if TYPE_CHECKING:
+    from ...competition.models import Prova, Inscription
 
 
 class RandomAntiRematchStrategy:
@@ -22,11 +24,12 @@ class RandomAntiRematchStrategy:
         self.strategy_name = "random_anti_rematch"
         self.max_attempts = max_attempts  # Max attempts to find valid pairing
     
-    def validate(self, prova: object) -> ValidationResult:
+    def validate(self, prova: "Prova") -> ValidationResult:
         """Validate if Random Anti-Rematch can be used for this prova."""
         try:
             # Get active inscriptions
-            active_inscriptions = [i for i in prova.inscriptions if i.status == "confirmed"]
+            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            active_inscriptions = [i for i in inscriptions if not getattr(i, 'is_withdrawn', False)]
             player_count = len(active_inscriptions)
             
             if player_count < 2:
@@ -54,19 +57,20 @@ class RandomAntiRematchStrategy:
                 messages=(f"Validation error: {str(e)}",)
             )
     
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
         return self._generate_round_pairings(prova, round_number)
     
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
         return self._generate_round_pairings(prova, round_number)
     
-    def _generate_round_pairings(self, prova: object, round_number: int) -> List[Pairing]:
+    def _generate_round_pairings(self, prova: "Prova", round_number: int) -> List[Pairing]:
         """Generate random pairings while avoiding rematches."""
         try:
             # Get active players
-            active_inscriptions = [i for i in prova.inscriptions if i.status == "confirmed"]
+            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            active_inscriptions = [i for i in inscriptions if not getattr(i, 'is_withdrawn', False)]
             player_ids = [i.user_id for i in active_inscriptions]
             
             if len(player_ids) < 2:
@@ -86,7 +90,7 @@ class RandomAntiRematchStrategy:
             print(f"Error generating Random Anti-Rematch pairings: {e}")
             return []
     
-    def _get_previous_pairings(self, prova: object, current_round: int) -> Set[Tuple[int, int]]:
+    def _get_previous_pairings(self, prova: "Prova", current_round: int) -> Set[Tuple[int, int]]:
         """Get all previous pairings to avoid rematches."""
         from ...match.models import Match
         
@@ -215,9 +219,10 @@ class RandomAntiRematchStrategy:
         # For larger odd numbers, use bye instead
         return len(player_ids) in [3, 5, 7]
     
-    def can_generate_all_rounds(self, prova: object) -> bool:
+    def can_generate_all_rounds(self, prova: "Prova") -> bool:
         """Check if all rounds can be generated without rematches."""
-        active_inscriptions = [i for i in prova.inscriptions if i.status == "confirmed"]
+        inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+        active_inscriptions = [i for i in inscriptions if not getattr(i, 'is_withdrawn', False)]
         player_count = len(active_inscriptions)
         
         if player_count < 2:
@@ -233,9 +238,10 @@ class RandomAntiRematchStrategy:
         rounds_count = getattr(prova, 'rounds_count', 1)
         return rounds_count <= max_rounds_without_rematch
     
-    def get_rematch_probability(self, prova: object, round_number: int) -> float:
+    def get_rematch_probability(self, prova: "Prova", round_number: int) -> float:
         """Calculate probability of rematches in the given round."""
-        active_inscriptions = [i for i in prova.inscriptions if i.status == "confirmed"]
+        inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+        active_inscriptions = [i for i in inscriptions if not getattr(i, 'is_withdrawn', False)]
         player_count = len(active_inscriptions)
         
         if player_count < 2:

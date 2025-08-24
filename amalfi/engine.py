@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import random
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union, TypedDict, TypedDict
 
 from models import (
     db,
@@ -21,6 +21,12 @@ from models.matchmaking.policies import (
 )
 from models.competition.models import WithdrawPolicy
 from models.status_enum import MatchStatus
+
+
+class ValidationResult(TypedDict):
+    is_valid: bool
+    warnings: List[str]
+    errors: List[str]
 
 
 class AmalfiEngine:
@@ -508,11 +514,11 @@ def get_amalfi_classification(
     )
 
 
-def validate_amalfi_configuration(prova: Prova) -> Dict[str, object]:
+def validate_amalfi_configuration(prova: Prova) -> ValidationResult:
     from models import Inscription  # late import per evitare cicli
 
     inscriptions = Inscription.query.filter_by(prova_id=prova.id).count()
-    validation: Dict[str, object] = {"is_valid": True, "warnings": [], "errors": []}
+    validation: ValidationResult = {"is_valid": True, "warnings": [], "errors": []}
 
     if inscriptions < prova.min_participants:
         validation["errors"].append(

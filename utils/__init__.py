@@ -14,23 +14,12 @@ continuano a funzionare.
 
 # PHASE 1 PERMISSION SYSTEM UPDATE
 from functools import wraps
-from importlib import import_module as _import_module
 from flask import abort, flash, redirect, url_for, request, current_app
 from flask_login import current_user
 
 from models.user.permissions import PermissionChecker, RoleRequirement
 from models.user.role_enum import UserRole
 from models.competition.services import ProvaService
-from models import (
-    db,
-    User,
-    Tournament,
-    Prova,
-    Match,
-    Inscription,
-    Rack,
-    TrioMatch,
-)
 
 # --------------------------------------------------------------------------
 # Decorator aggiornati con il nuovo permission system
@@ -55,7 +44,9 @@ def tournament_manager_required(tournament_id_getter):
 def prova_manager_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        prova_id = kwargs.get("prova_id") or request.view_args.get("prova_id")
+        from models import Prova  # Local import to avoid circular dependency
+        
+        prova_id = kwargs.get("prova_id") or (request.view_args.get("prova_id") if request.view_args else None)
         prova = Prova.query.get(prova_id)
 
         if getattr(current_user, "is_admin", False):
@@ -82,6 +73,8 @@ def match_manager_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         match_id = kwargs.get("match_id")
+        if match_id is None:
+            abort(400)  # Bad request if match_id is missing
         if not PermissionChecker.can_insert_match_results(current_user, match_id):
             abort(403)
         return f(*args, **kwargs)
@@ -147,6 +140,8 @@ def rack_manager_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        from models import Rack  # Local import to avoid circular dependency
+        
         rack_id = kwargs.get("rack_id")
         rack = Rack.query.get_or_404(rack_id)
         tournament_id = rack.match.prova.tournament_id
@@ -164,6 +159,8 @@ def trio_manager_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        from models import TrioMatch  # Local import to avoid circular dependency
+        
         trio_id = kwargs.get("trio_id")
         trio = TrioMatch.query.get_or_404(trio_id)
         tournament_id = trio.match.prova.tournament_id
@@ -179,18 +176,7 @@ def trio_manager_required(f):
 # --------------------------------------------------------------------------
 # Utility varie
 # --------------------------------------------------------------------------
-def get_database_stats():
-    """Restituisce conteggio rapido entità DB (per debug)."""
-    try:
-        return {
-            "users": User.query.count(),
-            "tournaments": Tournament.query.count(),
-            "provas": Prova.query.count(),
-            "inscriptions": Inscription.query.count(),
-            "matches": Match.query.count(),
-        }
-    except Exception:
-        return {"error": "Database not accessible"}
+# get_database_stats moved to utils.database_utils to avoid circular imports
 
 
 # --------------------------------------------------------------------------
@@ -198,6 +184,8 @@ def get_database_stats():
 # --------------------------------------------------------------------------
 def create_round_matches(prova, players_or_inscriptions, round_number):
     """Crea gli abbinamenti per un turno (logica standard)."""
+    from models import Inscription, Match, db  # Local import to avoid circular dependency
+    
     if isinstance(players_or_inscriptions[0], Inscription):
         players = [insc.user for insc in players_or_inscriptions]
     else:
@@ -238,6 +226,8 @@ def create_round_matches(prova, players_or_inscriptions, round_number):
 
 def calculate_round_classification(prova_id, round_number):
     """Calcola la classifica dopo un turno."""
+    from models import Match, Inscription  # Local import to avoid circular dependency
+    
     matches = Match.query.filter_by(prova_id=prova_id, round_number=round_number).all()
     players_stats = {}
 
@@ -292,6 +282,8 @@ def calculate_round_classification(prova_id, round_number):
 # --------------------------------------------------------------------------
 def create_default_users():
     """Crea tre utenti di base (admin + 2 player)."""
+    from models import User, db  # Local import to avoid circular dependency
+    
     admin = User(username="admin", email="admin@tournament.com", role="admin")
     admin.set_password("admin123")
 
@@ -308,6 +300,8 @@ def create_default_users():
 
 def create_sample_tournament():
     """Crea due tornei di esempio con prove collegate."""
+    from models import Tournament, db  # Local import to avoid circular dependency
+    
     tournament1 = Tournament(
         name="Torneo Primavera 2025",
         tournament_type="Amalfi",
@@ -402,6 +396,8 @@ def create_admin_if_not_exists():
     - Non stampa mai la password.
     - NON crea un secondo admin.
     """
+    from models import User, db  # Local import to avoid circular dependency
+    
     cfg = current_app.config
     require_pwd = bool(cfg.get("ADMIN_PASSWORD_REQUIRED", False))
     username = (cfg.get("ADMIN_USERNAME") or "").strip() or None
@@ -441,6 +437,8 @@ def create_round_matches_amalfi_compatible(
     prova, players_or_inscriptions, round_number
 ):
     """Versione compatibile 'Amalfi'. Differisce per campo ``amalfi_round``."""
+    from models import Inscription, Match, db  # Local import to avoid circular dependency
+    
     if isinstance(players_or_inscriptions[0], Inscription):
         players = [insc.user for insc in players_or_inscriptions]
     else:
@@ -479,7 +477,6 @@ def create_round_matches_amalfi_compatible(
 
 
 # ============================================================================
-#  ESPONI SUB-MODULE reset_data (lazy)  –  consente `import utils.reset_data`
+#  Note: reset_data module available for direct import (utils.reset_data)
+#  Removed automatic import to avoid circular dependencies
 # ============================================================================
-_reset_data = _import_module("utils.reset_data")
-del _import_module  # pulizia namespace

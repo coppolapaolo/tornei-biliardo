@@ -27,7 +27,13 @@
     <div class="col-md-3">
         <div class="card bg-info bg-opacity-10">
             <div class="card-body text-center">
-                <h3 class="text-info">{{ matches_by_round.values()|sum(attribute='__len__')|default(0) }}</h3>
+                <h3 class="text-info">
+                    {% set total_matches = 0 %}
+                    {% for round_matches in matches_by_round.values() %}
+                        {% set total_matches = total_matches + round_matches|length %}
+                    {% endfor %}
+                    {{ total_matches }}
+                </h3>
                 <small class="text-muted">Partite Totali</small>
             </div>
         </div>

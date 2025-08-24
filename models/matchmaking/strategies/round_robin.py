@@ -7,10 +7,12 @@ Requirements: SPECIFICHE.md - Round Robin tournament format
 from __future__ import annotations
 
 import itertools
-from typing import Sequence, List, Tuple, Optional
+from typing import Sequence, List, Tuple, Optional, TYPE_CHECKING
 
 from .base import Pairing, ValidationResult
-from ..policies import calculate_anti_rematch_constraint
+
+if TYPE_CHECKING:
+    from models.competition.models import Prova
 
 
 class RoundRobinStrategy:
@@ -21,11 +23,12 @@ class RoundRobinStrategy:
     def __init__(self):
         self.strategy_name = "round_robin"
     
-    def validate(self, prova: object) -> ValidationResult:
+    def validate(self, prova: "Prova") -> ValidationResult:
         """Validate if Round Robin can be used for this prova."""
         try:
             # Get active inscriptions
-            active_inscriptions = [i for i in prova.inscriptions if i.status == "confirmed"]
+            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_count = len(active_inscriptions)
             
             if player_count < 3:
@@ -57,19 +60,20 @@ class RoundRobinStrategy:
                 messages=(f"Validation error: {str(e)}",)
             )
     
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
         return self._generate_round_pairings(prova, round_number)
     
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
         return self._generate_round_pairings(prova, round_number)
     
-    def _generate_round_pairings(self, prova: object, round_number: int) -> List[Pairing]:
+    def _generate_round_pairings(self, prova: "Prova", round_number: int) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
         try:
             # Get active players
-            active_inscriptions = [i for i in prova.inscriptions if i.status == "confirmed"]
+            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_ids = [i.user_id for i in active_inscriptions]
             
             if len(player_ids) < 2:

@@ -6,7 +6,8 @@ import os
 # Import configurazioni e modelli
 from config import config
 from models import db, User
-from utils import get_database_stats, create_admin_if_not_exists, UserPermissions
+from utils import create_admin_if_not_exists, UserPermissions
+from utils.database_utils import get_database_stats
 
 from utils.status_ui import register_status_filters
 
@@ -33,7 +34,7 @@ def create_app(config_name=None):
     # Setup Login Manager
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"
+    setattr(login_manager, 'login_view', 'auth.login')
 
     @login_manager.user_loader
     def load_user(user_id):

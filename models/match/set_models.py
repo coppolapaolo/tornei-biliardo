@@ -1,3 +1,59 @@
+"""
+Set models for multi-set matches.
+"""
+
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from sqlalchemy import func
+
+from models.base import db, BaseModel, TimestampMixin
+
+
+class Set(BaseModel, TimestampMixin):
+    """A set within a multi-set match."""
+    
+    __tablename__ = "set"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(db.Integer, db.ForeignKey("match.id", ondelete="CASCADE"), nullable=False)
+    set_number = db.Column(db.Integer, nullable=False)
+    
+    # Scoring configuration
+    distance = db.Column(db.Integer, nullable=False, default=5)
+    best_of = db.Column(db.Boolean, nullable=False, default=True)
+    
+    # Current scores
+    player1_racks = db.Column(db.Integer, nullable=False, default=0)
+    player2_racks = db.Column(db.Integer, nullable=False, default=0)
+    
+    # Status and result
+    status = db.Column(db.String(20), nullable=False, default="pending")  # pending, playing, completed
+    winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    started_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Multi-discipline support
+    discipline = db.Column(db.String(50), nullable=True)  # Primary discipline
+    is_multi_discipline = db.Column(db.Boolean, nullable=False, default=False)
+    discipline_rotation = db.Column(db.JSON, nullable=True)  # List of disciplines for rotation
+    discipline_assignment = db.Column(db.JSON, nullable=True)  # Specific rack->discipline mapping
+    
+    # Relationships
+    match = db.relationship("Match", back_populates="sets")
+    winner = db.relationship("User", foreign_keys=[winner_id])
+    racks = db.relationship(
+        "SetRack",
+        back_populates="set",
+        lazy=True,
+        cascade="all, delete-orphan",
+        order_by="SetRack.rack_number"
+    )
+    
+    # Unique constraint: one set per number per match
+    __table_args__ = (
+        db.UniqueConstraint('match_id', 'set_number', name='uq_match_set_number'),
+    )
+
     def can_be_modified(self) -> bool:
         """Check if set can be modified (racks added/removed)."""
         return self.status == "playing"
@@ -33,7 +89,8 @@
         if not self.is_multi_discipline:
             raise ValueError("Set must be in multi-discipline mode")
         
-        self.discipline_assignment = rack_disciplines
+        # Convert integer keys to strings for consistent JSON storage
+        self.discipline_assignment = {str(k): v for k, v in rack_disciplines.items()}
     
     def get_discipline_for_rack(self, rack_number: int) -> str:
         """Get the discipline that should be played for a specific rack."""
@@ -65,7 +122,7 @@
         disciplines_played = []
         discipline_counts = {}
         
-        for rack in self.racks:
+        for rack in self.racks:  # type: ignore
             rack_discipline = rack.discipline_override or self.get_discipline_for_rack(rack.rack_number)
             if rack_discipline not in disciplines_played:
                 disciplines_played.append(rack_discipline)
@@ -77,7 +134,7 @@
             "assignment": self.discipline_assignment,
             "disciplines_played": disciplines_played,
             "discipline_counts": discipline_counts,
-            "total_racks": len(self.racks)
+            "total_racks": len(self.racks)  # type: ignore
         }
     
     def __repr__(self) -> str:
@@ -104,6 +161,9 @@
             from sqlalchemy import func
             max_rack = db.session.query(func.max(SetRack.rack_number)).filter_by(set_id=self.id).scalar()
             rack_number = (max_rack or 0) + 1
+        
+        # At this point, rack_number is guaranteed to be an int
+        assert rack_number is not None
         
         # Determine discipline for this rack
         rack_discipline = discipline_override or self.get_discipline_for_rack(rack_number)
@@ -188,7 +248,7 @@
                 "discipline": rack.discipline_override or self.get_discipline_for_rack(rack.rack_number),
                 "created_at": rack.created_at
             }
-            for rack in self.racks
+            for rack in self.racks  # type: ignore
         ]
 
 

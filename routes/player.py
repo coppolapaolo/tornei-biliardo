@@ -4,6 +4,7 @@ from flask_login import login_required, current_user, logout_user
 from datetime import datetime
 from models import (
     db,
+    User,
     Tournament,
     Prova,
     Inscription,
@@ -44,7 +45,13 @@ def create_match_proposal():
         try:
             proposal_type = request.form.get("proposal_type")
             location = request.form.get("location")
+            if not location:
+                flash("Location is required", "error")
+                raise ValueError("Location is required")
             scheduled_str = request.form.get("scheduled_at")
+            if not scheduled_str:
+                flash("Scheduled time is required", "error")
+                raise ValueError("Scheduled time is required")
             scheduled_at = datetime.fromisoformat(scheduled_str.replace("Z", "+00:00"))
             discipline = request.form.get("discipline", "palla_8")
             distance = int(request.form.get("distance", 5))
@@ -375,7 +382,13 @@ def delete_account():
         return render_template("player/delete_account.html")
 
     try:
-        UserDeletionService.delete_user(current_user)
+        # Ensure current_user is properly typed as User
+        user_to_delete = User.query.get(current_user.id)
+        if not user_to_delete:
+            flash("Errore: utente non trovato.", "danger")
+            return render_template("player/delete_account.html")
+        
+        UserDeletionService.delete_user(user_to_delete)
         logout_user()  # Disconnette l'utente dopo la cancellazione
         flash(
             "Account eliminato. I tuoi dati restano anonimizzati nei registri.",
