@@ -4,7 +4,6 @@ Purpose: Business logic services for classification domain
 Data Structures: ClassificationService, RoundClassificationService,
                 PlayerEncounterService
 Dependencies: models.classification.models, models.base.db
-ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
 """
 
 from typing import List, Tuple, Optional, Dict

@@ -4,7 +4,6 @@ Purpose: Service layer per il dominio Tournament + funzione pura di calcolo
          dello stato derivato del torneo.
 Data Structures: TournamentService, compute_tournament_status
 Dependencies: models.base.db, models.tournament.models, models.status_enum
-ADR Reference: docs/ADR/ADR-0018-state-machine-and-status-enums.md
 """
 
 from __future__ import annotations

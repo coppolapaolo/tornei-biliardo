@@ -3,7 +3,6 @@ Module: models/competition/models.py
 Purpose: Competition domain models (Prova, Inscription)
 Data Structures: Prova, Inscription
 Dependencies: models.base.db, datetime
-ADR Reference: docs/ADR/ADR-0012-prova-nullable-tournament.md
 """
 
 from datetime import datetime
@@ -25,7 +24,7 @@ class Prova(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # FK nullable per supportare standalone competitions (ADR-0012)
+    # FK nullable per supportare standalone competitions
     tournament_id = db.Column(
         db.Integer, db.ForeignKey("tournament.id", ondelete="CASCADE"), nullable=True
     )

@@ -3,7 +3,6 @@ Module: models/tournament/models.py
 Purpose: Tournament domain model
 Data Structures: Tournament
 Dependencies: models.base.db, models.user.models
-ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
 """
 
 from datetime import datetime

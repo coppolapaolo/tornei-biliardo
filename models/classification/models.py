@@ -4,7 +4,6 @@ Purpose: Classification domain models
 (Classification, RoundClassification, PlayerEncounter)
 Data Structures: Classification, RoundClassification, PlayerEncounter
 Dependencies: models.base.db, datetime
-ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
 """
 
 from datetime import datetime

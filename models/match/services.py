@@ -4,7 +4,6 @@ Purpose: Service layer per il dominio Match (Match, Rack, MatchResult, TrioMatch
          + state machine centralizzata per gli stati del Match.
 Data Structures: MatchService, RackService, MatchResultService
 Dependencies: models.base.db, models.match.models, models.status_enum
-ADR Reference: docs/ADR/ADR-0018-state-machine-and-status-enums.md
 
 Nota sprint 4: aggiunte API di transizione di stato; preservati nomi/classi esistenti
 per compatibilità con i test di separazione.

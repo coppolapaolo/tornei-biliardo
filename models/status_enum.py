@@ -4,7 +4,6 @@ Purpose: Definizione centralizzata degli *status* applicativi come Enum string-b
 Data Structures: ProvaStatus, ProvaDerivedStatus, TournamentStatus, MatchStatus,
                  DirectorRequestStatus, PlayoffConfirmationStatus
 Dependencies: Solo stdlib (enum, typing)
-ADR Reference: docs/ADR/ADR-0018-state-machine-and-status-enums.md
 
 Note di migrazione (soft):
 - Gli Enum ereditano da `str` per mantenere piena retrocompatibilità con il DB

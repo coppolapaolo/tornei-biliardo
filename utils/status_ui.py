@@ -4,7 +4,7 @@ Purpose: Presenter + registrazione filtri Jinja per visualizzare gli *status*
          (badge CSS e testo) senza logica nei model.
 Data Structures: StatusPresenter
 Dependencies: Flask (jinja_env), markupsafe.Markup, models.status_enum
-ADR Reference: docs/ADR/ADR-0018-state-machine-and-status-enums.md
+
 
 Copertura ambito Sprint 4 estesa:
 - Prova (persistito + real_status derivato)

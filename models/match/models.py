@@ -3,7 +3,6 @@ Module: models/match/models.py
 Purpose: Match domain models (Match, Rack, MatchResult, TrioMatch)
 Data Structures: Match, Rack, MatchResult, TrioMatch
 Dependencies: models.base.db, datetime
-ADR Reference: docs/ADR/ADR-0010-domain-separation-phase2.md
 """
 
 from datetime import datetime

@@ -4,7 +4,6 @@ Purpose: User domain models (User, TournamentDirector, DirectorRequest) –
     Task 1.4 completo.
 Data Structures: User, TournamentDirector, DirectorRequest
 Dependencies: models.base.db, flask_login, werkzeug.security
-ADR Reference: docs/ADR/2025-08-01-task1-4-1-6-completion.md
 """
 
 from __future__ import annotations

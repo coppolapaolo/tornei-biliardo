@@ -4,7 +4,6 @@ Purpose: Service layer per il dominio Competition (Prova, Inscription) +
          state machine per le transizioni di stato di Prova.
 Data Structures: ProvaService, ProvaStateMachine, InscriptionService
 Dependencies: models.base.db, models.competition.models, models.status_enum
-ADR Reference: docs/ADR/ADR-0018-state-machine-and-status-enums.md
 
 Nota sprint 4 (migrazione soft):
 - Le colonne DB restano VARCHAR; gli Enum sono string-based (compatibili).
