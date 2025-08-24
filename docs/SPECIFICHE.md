@@ -86,21 +86,23 @@ Di solito la disciplina dei rack che compongono un set è la stessa, ma una vari
 Un **match** può essere con handicap o no. Se c'è l'handicap allora dipende dalla differenza di categoria dei giocatori o dalla differenza di rating (fargo o elo) dei giocatori. Un esempio di handicap può essere questo: se un giocatore di categoria A è abbinato con uno di categoria C, parte da -2, se è abbinato con uno di categoria B parte da -1 come pure un giocatore di categoria B abbinato con uno di C.
 
 La app permette anche agli utenti ``player`` di organizzare **match _standalone_** con un altro utente.
+I match standalone di solito sono privati e quindi gli uid dei giocatori vengono anonimizzati per tutti gli altri che non siano i giocatori stessi. Gli pseudonimi mostrati sono sempre ``player1`` e ``player2``. Inoltre le statistiche dei match standalone non compaiono nel profilo dell'utente per tutti quelli che accedono e non sono l'utente stesso. 
+Un utente può decidere di rendere pubblico un suo match standalone e in quel caso il suo uid non viene nascosto (quello dell'altro rimane anonimizzato a meno che anche l'altro non decida per suo conto di rendere pubblico il match) e il match compare nelle statistiche individuali dell'utente. 
 
 ## Rack
 
 Un **rack** è relativo ad una disciplina come, ad esempio, "palla 8", "palla 9", "palla 10", "pool continuo", "one pocket". Il valore di default della disciplina viene dal set, che a sua volta prende il valore di default del match, che lo prende da turno, che lo prende come valore di default da prova.
 
-### Classifica
+## Classifica
 
 Una **classifica** può essere collegata ad un turno, una **prova** o ad un **torneo**.
 
-### Playoff
+## Playoff
 
 I **playoff** sono una **prova** speciale a cui per iscriversi occorre avere alcune caratteristiche. Ad esempio un torneo può definire un playoff per i primi 6 classificati. Oppure un playoff Elite per i primi 6 e Academy per i secondi 6. Oppure, ancora, un playoff solo per i giocatori dal terzo posto in giù che hanno partecipato ad almeno 5 prove del torneo.
 Alla fine del torneo i giocatori che soddisfano i criteri del playoff ricevono una notifica di accesso ai playoff e possono iscriversi o rifiutare. Nei playoff con un numero limitato di partecipanti (ad esempio i primi 6), se un giocatore rifiuta, la notifica passa al primo degli esclusi e così via fino a quando un numero di giocatori pari ai posti disponibili ha dato l'ok oppure sono finiti i giocatori. 
 
-### Challenge (to do)
+## Challenge (to do)
 
 Una **challenge** è una prova di abilità che un giocatore può affrontare da solo. Consiste in una immagine, che mostra la disposizione delle biglie sul tavolo e un testo di spiegazione. È identificata da un nome. 
 Ha un punteggio minimo e massimo oppure un superato/non superato. 
@@ -109,11 +111,21 @@ I risultati delle **challenge** compaiono nelle statistiche individuali dei gioc
 Un giocatore può scegliere una **challenge** da un elenco generale o da quelle che ha già provato o dalle sue preferite.
 Un giocatore può aggiungere/togliere una **challenge** dalle sue preferite.
 
-### Esame (to do)
+Un utente ``director`` può aggiungere una o più challenge ad una prova, al posto di un turno o come meccanismo per definire gli spareggi in classifica. Ad esempio potrebbe organizzare una prova standalone con strategia di abbinamento casuale, policy X con trii, distanza un set al 5 esatto, il primo turno a palla 9, il secondo turno composto da due challenge, il terzo e quarto turno a palla 8. La classifica finale della prova è data dalla somma di rack vinti nei turni 1, 3 e 4 e lo spareggio viene fatto con una challege spot shot solo per le prime tre posizioni. Le challenge del secondo turno danno una seconda classifica separata e gli spareggi avvengono tramite un match di un solo rack a palla 10. 
+
+## Esame (to do)
 
 Un **esame** è formato da più **challenge** e una griglia di valutazione che associa i punteggi ottenuti a i livelli per l'esame.
 Un utente ``director`` o ``admin`` può creare un **esame**.
 Gli esami compaiono nelle statitiche di ``admin`` e dell'utente ``director`` che l'ha creato.
+
+## Statistica
+
+Una statistica raccoglie i kpi di successo per un determinato oggetto. Le statistiche permettono di accedere alle serie storiche. 
+
+### statistiche di torneo per admin/director
+
+Una statistica di torneo rivolta ad utente `admin` o `director` riporta in numero di prove totali, il numero di iscritti unici che hanno giocato almeno una prova, il numero di match e di rack giocati, il totale quote versate. 
 
 ## Casi d'uso
 
@@ -141,7 +153,7 @@ Scegliendo una prova può vedere l'elenco dei giocatori iscritti (username), i t
 
 ### Utente player
 
-#### Cancellazione
+#### Cancellazione {#soft-delete-player}
 
 Soft delete con pseudonimizzazione. Vengono cancellati i dati dell'anagrafica e l'utente non può più loggarsi. Vengono mantenute le partite già giocate. 
 Il vecchio userid viene mostrato solo nelle statistiche personali degli utenti `player` che hanno giocato con lui. 
@@ -156,11 +168,13 @@ La home mostra le attività in corso: tornei in corso, prove standalone in corso
 
 #### Profilo
 
-L'utente ha la possiblità di rendersi disponibile a giocare match individuali in una o più sale biliardo. Nell'elenco di tutte le sale disponibili imposta per quali vuole gli vengano mostrate le opportunità di match individuali.
+L'utente ha la possiblità di rendersi disponibile a giocare match standalone in una o più sale biliardo. Nell'elenco di tutte le sale disponibili imposta per quali vuole gli vengano mostrate le opportunità di match standalone.
+L'utente può modificare il suo profilo.
+L'utente può cancellare il suo profilo. In questo caso viene operato un soft delete con pseudonimizzazione ([vedi sezione Cancellazione](soft-delete-player))
 
-#### Proposta di match
+#### Proposta di match standalone
 
-##### Proposta con invito per match individuale
+##### Proposta con invito per match standalone
 
 Dal profilo utente, invia una proposta di match. Definisce il luogo, data/ora, uno o più giocatori selezionati tra i giocatori "_amici_" o quelli con cui l'utente ha già giocato in passato, una data/ora di scadenza della proposta. 
 I giocatori che hanno ricevuto la proposta di match ricevono una notifica via app. La proposta viene mostrata nella dashboard e nel profilo.
@@ -168,12 +182,16 @@ Se un giocatore rifiuta la proposta prima della scadenza, vinee inviata una noti
 Se un giocatore accetta la proposta prima della scadenza, viene inviata una notifica all'utente che ha inviato la proposta, tutte le notifiche inviate agli altri giocatori che non hanno risposto vengono cancellate. I due giocatori, quello che ha inviato la proposta e quello che ha accettato vedono il match nella loro dashboard.
 Allo scadere della poposta, tutte le notifiche inviate ai giocatori che ancora non hanno risposto vengono cancellate e al proponente viene notificato che la proposta è scaduta e nessuno ha accettato.
 
-##### Proposta aperta di match individuale
+##### Proposta aperta di match standalone
 
 Dal profilo utente, invia una proposta di match aperta a tutti. Definisce il luogo, data/ora e una scadenza. 
 Tutti i giocatori che hanno già giocato almeno una volta in quel luogo e quelli che hanno impostato nel loro profilo la disponibilità a giocare in quel luogo, ricevono la notifica e vedono la proposta nella dashboard. 
 Se un giocatore accetta entro la scadenza, il proponente viene notificato e il match compare nella dashboard di entrambi. La proposta e le notifiche spariscono dalle dashboard di tutti gli altri.
 Allo scadere della proposta, tutte le notifiche inviate ai giocatori che ancora non hanno risposto vengono cancellate e al proponente viene notificato che la proposta è scaduta e nessuno ha accettato.
+
+#### Richiesta di diventare director
+
+L'utente player può chiedere di diventare `director` tramite il menù di login/logout e tramite la sua pagina di profilo. 
 
 ### Utente director
 
@@ -198,6 +216,10 @@ Creare una nuova prova significa definire:
 - la distanza di default per i turni
 
 Quando un utente crea una nuova prova in un torneo, tutti i valori vengono precompilati. Ad esempio il numero di prova è incrementale, la data viene precompilata con quella di oggi per la prima prova o con quella di una settimana più avanti rispetto all'ultima prova aggiunta al torneo, gli altri valori vengono precompilati con i valori delle prove precedenti o con valori di default per la prima prova. 
+
+#### Visualizza le statistiche di un proprio torneo
+
+L'utente può visualizzare le statistiche del torneo e navigare all'interno delle statistiche. Ad esempio dal valore del numero di prove totali può cliccare e vedere l'elenco delle singole prove e accedere alle relative statistiche. Oppure dal numero di iscritti unici che hanno partecipato almeno ad una prova del torneo può vedere l'elenco e accedere alle loro statistiche pubbliche o relative ai suoi tornei e prove standalone. 
 
 ## Scelte architetturali
 
