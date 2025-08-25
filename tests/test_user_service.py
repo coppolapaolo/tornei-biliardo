@@ -184,30 +184,30 @@ class TestUserService:
         """Test that updating to duplicate username is rejected."""
         # Create two users
         user1 = UserService.create_user(
-            username="user1",
-            email="user1@example.com",
+            username="user1_unique_update",
+            email="user1_update@example.com",
             password="password123"
         )
         user2 = UserService.create_user(
-            username="user2",
-            email="user2@example.com",
+            username="user2_unique_update",
+            email="user2_update@example.com",
             password="password123"
         )
         
         # Try to update user2 to have user1's username
         with pytest.raises(ValueError, match="already exists"):
-            UserService.update_user(user2.id, username="user1")
+            UserService.update_user(user2.id, username="user1_unique_update")
 
     def test_update_user_duplicate_email(self, db_session):
         """Test that updating to duplicate email is rejected."""
         # Create two users
         user1 = UserService.create_user(
-            username="user1",
+            username="user1_unique",
             email="user1@example.com",
             password="password123"
         )
         user2 = UserService.create_user(
-            username="user2",
+            username="user2_unique",
             email="user2@example.com",
             password="password123"
         )
@@ -330,13 +330,13 @@ class TestUserService:
         """Test retrieving all users."""
         # Create a few users
         user1 = UserService.create_user(
-            username="user1",
-            email="user1@example.com",
+            username="user1_get_all",
+            email="user1_get_all@example.com",
             password="password123"
         )
         user2 = UserService.create_user(
-            username="user2",
-            email="user2@example.com",
+            username="user2_get_all",
+            email="user2_get_all@example.com",
             password="password123"
         )
         

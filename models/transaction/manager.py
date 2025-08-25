@@ -204,8 +204,19 @@ class TransactionManager:
             
             # Commit the transaction/savepoint
             if is_nested:
-                # Nested transaction or savepoint commits automatically with parent
-                logger.debug(f"Nested transaction {transaction_id} completed")
+                # For nested transactions (savepoints), we need to explicitly release the savepoint
+                # This ensures the changes are preserved within the parent transaction
+                try:
+                    db.session.commit()  # This releases the savepoint in SQLAlchemy
+                    logger.debug(f"Nested transaction (savepoint) {transaction_id} released")
+                except Exception as e:
+                    logger.warning(f"Failed to release nested transaction {transaction_id}: {e}")
+                    # If we can't release the savepoint, we should rollback to it
+                    try:
+                        db.session.rollback()
+                        logger.warning(f"Rolled back to savepoint {transaction_id} due to release failure")
+                    except Exception as rollback_error:
+                        logger.error(f"Failed to rollback to savepoint {transaction_id}: {rollback_error}")
             else:
                 try:
                     db.session.commit()
@@ -244,7 +255,6 @@ class TransactionManager:
                 logger.error(f"Failed to rollback transaction {transaction_id}: {rollback_error}")
             logger.error(f"Transaction {transaction_id} failed with unexpected error")
             raise
-            
         finally:
             # Restore parent context
             self.current_transaction = parent_context
