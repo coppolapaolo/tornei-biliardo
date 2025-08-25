@@ -59,7 +59,7 @@ class ClassificationService:
         scoring_policy = ClassificationService._get_scoring_policy(tournament)
 
         # Get all provas for this tournament with optimized loading
-        provas_query = Prova.query.filter_by(tournament_id=tournament_id)
+        provas_query = db.session.query(Prova).filter_by(tournament_id=tournament_id)
         provas = bulk_load_relationships(
             provas_query,
             "matches",
@@ -89,7 +89,7 @@ class ClassificationService:
                 })
 
         # Get player objects
-        players = User.query.filter(User.id.in_(player_ids)).all()
+        players = db.session.query(User).filter(User.id.in_(player_ids)).all()
 
         # Calculate standings using scoring policy
         standings = scoring_policy.calculate_standings(players, match_results)
@@ -97,7 +97,7 @@ class ClassificationService:
         # Batch load existing classifications to avoid N+1
         existing_classifications = {
             c.user_id: c for c in 
-            Classification.query.filter_by(tournament_id=tournament_id).all()
+            db.session.query(Classification).filter_by(tournament_id=tournament_id).all()
         }
 
         # Update or create Classification records
@@ -144,7 +144,7 @@ class ClassificationService:
             List of Classification objects ordered by position
         """
         return (
-            Classification.query
+            db.session.query(Classification)
             .filter_by(tournament_id=tournament_id)
             .options(joinedload(getattr(Classification, 'user')))  # Eager load user data
             .order_by(Classification.position)
@@ -167,7 +167,7 @@ class ClassificationService:
             Classification object or None if not found
         """
         return (
-            Classification.query
+            db.session.query(Classification)
             .options(joinedload(getattr(Classification, 'user')))
             .filter_by(tournament_id=tournament_id, user_id=user_id)
             .first()
@@ -226,7 +226,7 @@ class RoundClassificationService:
             List of RoundClassification objects ordered by position
         """
         return (
-            RoundClassification.query
+            db.session.query(RoundClassification)
             .filter_by(prova_id=prova_id, round_number=round_number)
             .options(joinedload(getattr(RoundClassification, 'user')))
             .order_by(RoundClassification.position)
@@ -249,7 +249,7 @@ class RoundClassificationService:
             List of RoundClassification objects ordered by round
         """
         return (
-            RoundClassification.query
+            db.session.query(RoundClassification)
             .filter_by(prova_id=prova_id, user_id=user_id)
             .order_by(RoundClassification.round_number)
             .all()
@@ -296,7 +296,7 @@ class PlayerEncounterService:
         Returns:
             List of PlayerEncounter objects
         """
-        return PlayerEncounter.query.filter(
+        return db.session.query(PlayerEncounter).filter(
             PlayerEncounter.prova_id == prova_id,
             db.or_(
                 PlayerEncounter.player1_id == player_id,
@@ -363,7 +363,7 @@ class PlayerEncounterService:
         Returns:
             Dictionary mapping player pairs to encounter status
         """
-        encounters = PlayerEncounter.query.filter_by(prova_id=prova_id).all()
+        encounters = db.session.query(PlayerEncounter).filter_by(prova_id=prova_id).all()
 
         matrix = {}
         for encounter in encounters:
@@ -376,7 +376,7 @@ class PlayerEncounterService:
     @cached(ttl_seconds=1200, tags=['encounter', 'prova'])
     def get_encounter_statistics(prova_id: int) -> Dict[str, Any]:
         """Get comprehensive encounter statistics for the prova."""
-        encounters = PlayerEncounter.query.filter_by(prova_id=prova_id).all()
+        encounters = db.session.query(PlayerEncounter).filter_by(prova_id=prova_id).all()
         
         if not encounters:
             return {"total_encounters": 0, "unique_players": 0}
@@ -401,12 +401,12 @@ def visible_user_ids_for_prova(prova_id: int) -> set[int]:
     # iscritti non ritirati
     active = {
         ins.user_id
-        for ins in Inscription.query.filter_by(
-            prova_id=prova_id, is_withdrawn=False
+        for ins in db.session.query(Inscription).filter_by(
+            prova_id=prova_id
         ).all()
     }
     # utenti soft-deleted
-    deleted = {u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()}
+    deleted = {u.id for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()}
     return active - deleted
 
 

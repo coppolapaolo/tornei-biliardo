@@ -68,11 +68,7 @@ class UtilityMixin:
     @classmethod
     def find_all(cls):
         """Find all instances of the model"""
-        # Only process if the model has a query attribute (i.e., inherits from db.Model)
-        query = getattr(cls, 'query', None)
-        if query is not None:
-            return query.all()
-        return []
+        return db.session.query(cls).all()
 
     def refresh(self):
         """Refresh model instance from database"""
@@ -238,7 +234,7 @@ class BaseModel(db.Model):
     @classmethod
     def find_all(cls):
         """Find all instances of the model"""
-        return cls.query.all()
+        return db.session.query(cls).all()
 
 
 class SimpleModel(UtilityMixin, db.Model):
@@ -276,7 +272,7 @@ def get_or_create(model_class, **kwargs):
     Returns:
         tuple: (instance, created) where created is boolean
     """
-    instance = model_class.query.filter_by(**kwargs).first()
+    instance = db.session.query(model_class).filter_by(**kwargs).first()
     if instance:
         return instance, False
     else:

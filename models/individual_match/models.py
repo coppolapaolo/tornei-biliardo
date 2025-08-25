@@ -108,7 +108,7 @@ class MatchProposal(BaseModel, TimestampMixin):
         
         # For direct proposals, check if user was invited
         if self.proposal_type == ProposalType.DIRECT:
-            invitation = ProposalInvitation.query.filter_by(
+            invitation = db.session.query(ProposalInvitation).filter_by(
                 proposal_id=self.id,
                 invited_user_id=user_id
             ).first()

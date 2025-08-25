@@ -252,7 +252,7 @@ class ProvaService:
             raise ValueError("La prova è già iniziata!")
         
         # Verifica numero minimo partecipanti
-        inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+        inscriptions = db.session.query(Inscription).filter_by(prova_id=prova_id).all()
         if len(inscriptions) < prova.min_participants:
             raise ValueError(f"Servono almeno {prova.min_participants} iscritti per avviare la prova!")
         
@@ -291,10 +291,10 @@ class ProvaService:
             results = create_amalfi_round_matches(prova, round_number)
             
             # Conta i risultati
-            matches = Match.query.filter_by(prova_id=prova_id, round_number=round_number).all()
+            matches = db.session.query(Match).filter_by(prova_id=prova_id, round_number=round_number).all()
             normal_matches = sum(1 for m in matches if not m.is_bye and not m.is_trio)
             bye_matches = sum(1 for m in matches if m.is_bye)
-            trio_matches = TrioMatch.query.join(Match).filter(
+            trio_matches = db.session.query(TrioMatch).join(Match).filter(
                 Match.prova_id == prova_id, 
                 Match.round_number == round_number
             ).count()
@@ -316,7 +316,10 @@ class ProvaService:
         """
         from models.match.models import TrioMatch
         
-        trio = TrioMatch.query.get_or_404(trio_id)
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+            abort(404)
         
         # Verifica che il vincitore sia tra i giocatori del trio
         if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
@@ -355,10 +358,13 @@ class ProvaService:
     @staticmethod
     def reset_trio(trio_id: int) -> None:
         """Reset completo di una partita trio."""
-        from models.match.models import TrioMatch
+        from models.match.models import TrioMatch, Match
         from models.match.services import MatchService
         
-        trio = TrioMatch.query.get_or_404(trio_id)
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+            abort(404)
         
         try:
             # Reset scores
@@ -375,7 +381,10 @@ class ProvaService:
             
             # Reset match associato
             MatchService.reset_to_pending(trio.match.id, clear_validation=True)
-            trio.match.winner_id = None
+            # Access the match object directly using db.session.get to avoid relationship property issues
+            match_obj = db.session.get(Match, trio.match_id)
+            if match_obj:
+                match_obj.winner_id = None
             
             db.session.commit()
         except Exception as e:
@@ -399,7 +408,7 @@ class ProvaService:
             .subquery()
         )
 
-        q = Prova.query.filter(
+        q = db.session.query(Prova).filter(
             (Prova.director_id == director_id)
             | (Prova.tournament_id.in_(select(td_subq)))
         ).order_by(Prova.date.desc(), Prova.number.asc())
@@ -589,7 +598,7 @@ class InscriptionService:
     @staticmethod
     def inscribe_user(user_id: int, prova_id: int) -> Optional[Inscription]:
         """Registra un utente a una prova se non già iscritto."""
-        existing = Inscription.query.filter_by(
+        existing = db.session.query(Inscription).filter_by(
             user_id=user_id, prova_id=prova_id
         ).first()
         if existing:
@@ -605,7 +614,7 @@ class InscriptionService:
 
         Returns: True se rimossa, False se non trovata.
         """
-        inscription = Inscription.query.filter_by(
+        inscription = db.session.query(Inscription).filter_by(
             user_id=user_id, prova_id=prova_id
         ).first()
         if inscription:

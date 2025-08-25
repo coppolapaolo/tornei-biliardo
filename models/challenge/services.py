@@ -43,9 +43,14 @@ class ChallengeService:
         return challenge
     
     @staticmethod
+    def get_all_challenges() -> List[Challenge]:
+        """Get all challenges."""
+        return db.session.query(Challenge).all()
+    
+    @staticmethod
     def get_active_challenges() -> List[Challenge]:
         """Get all active challenges."""
-        return Challenge.query.filter_by(is_active=True).all()
+        return db.session.query(Challenge).filter_by(is_active=True).all()
     
     @staticmethod
     def get_user_challenges(user_id: int) -> Dict[str, List[Challenge]]:
@@ -55,12 +60,12 @@ class ChallengeService:
         
         # User's favorites
         favorite_ids = {fav.challenge_id for fav in 
-                       ChallengeFavorite.query.filter_by(user_id=user_id).all()}
+                       db.session.query(ChallengeFavorite).filter_by(user_id=user_id).all()}
         favorites = [c for c in all_challenges if c.id in favorite_ids]
         
         # Challenges user has attempted
         attempted_ids = {att.challenge_id for att in 
-                        ChallengeAttempt.query.filter_by(user_id=user_id).all()}
+                        db.session.query(ChallengeAttempt).filter_by(user_id=user_id).all()}
         attempted = [c for c in all_challenges if c.id in attempted_ids]
         
         # General catalog (not attempted)
@@ -111,7 +116,7 @@ class ChallengeService:
     @staticmethod
     def toggle_favorite(user_id: int, challenge_id: int) -> bool:
         """Toggle challenge as favorite for user. Returns True if added, False if removed."""
-        favorite = ChallengeFavorite.query.filter_by(
+        favorite = db.session.query(ChallengeFavorite).filter_by(
             user_id=user_id, 
             challenge_id=challenge_id
         ).first()
@@ -130,7 +135,7 @@ class ChallengeService:
     def get_challenge_for_x_replacement(prova_id: int) -> Optional[Challenge]:
         """Get a suitable challenge for X replacement in tournament."""
         # Find challenges that can be used for X replacement
-        suitable_challenges = Challenge.query.filter_by(
+        suitable_challenges = db.session.query(Challenge).filter_by(
             is_active=True,
             pass_fail_only=False
         ).all()
@@ -141,7 +146,7 @@ class ChallengeService:
         # Prefer challenges that haven't been used much in this prova
         challenge_usage = {}
         for challenge in suitable_challenges:
-            usage_count = ChallengeAttempt.query.filter_by(
+            usage_count = db.session.query(ChallengeAttempt).filter_by(
                 challenge_id=challenge.id,
                 prova_id=prova_id
             ).count()
@@ -213,7 +218,7 @@ class ChallengeService:
         from ..match.models import Match
         
         # Find or create a match for this X replacement
-        match = Match.query.filter_by(
+        match = db.session.query(Match).filter_by(
             prova_id=attempt.prova_id,
             round_number=attempt.round_number,
             player1_id=attempt.user_id,

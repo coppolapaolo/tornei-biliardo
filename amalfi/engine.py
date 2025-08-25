@@ -89,6 +89,33 @@ class AmalfiEngine:
         players = [insc.user for insc in inscriptions]
         matches: List[Match] = []
 
+        # Classifica iniziale: prendi RoundClassification esistenti o crea nuovi
+        existing_classifications = db.session.query(RoundClassification).filter_by(
+            prova_id=self.prova.id, round_number=1
+        ).all()
+
+        # Aggiorna o crea nuove classifiche
+        for position, ins in enumerate(inscriptions, 1):
+            # Cerca classifica esistente
+            existing = db.session.query(RoundClassification).filter_by(
+                prova_id=self.prova.id,
+                round_number=1,
+                user_id=ins.user_id
+            ).first()
+
+            if existing:
+                # Aggiorna posizione
+                existing.position = position
+            else:
+                # Crea nuova classifica
+                classification = RoundClassification(
+                    prova_id=self.prova.id,
+                    round_number=1,
+                    user_id=ins.user_id,
+                    position=position
+                )
+                db.session.add(classification)
+
         # Dispari → bye oppure trasformazione in trio a seconda della modalità
         if len(players) % 2 == 1:
             bye_player = players[-1]
@@ -133,7 +160,7 @@ class AmalfiEngine:
             self.prova.id, round_number - 1
         )
         classification = (
-            RoundClassification.query.filter_by(
+            db.session.query(RoundClassification).filter_by(
                 prova_id=self.prova.id, round_number=round_number - 1
             )
             .order_by(RoundClassification.position)
@@ -144,7 +171,7 @@ class AmalfiEngine:
         if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             excluded_ids = {
                 ins.user_id
-                for ins in Inscription.query.filter_by(
+                for ins in db.session.query(Inscription).filter_by(
                     prova_id=self.prova.id, is_withdrawn=True
                 ).all()
             }
@@ -313,7 +340,7 @@ class AmalfiEngine:
         db.session.add(bye)
 
     def _inscriptions_for_pairing(self) -> list[Inscription]:
-        q = Inscription.query.filter_by(prova_id=self.prova.id)
+        q = db.session.query(Inscription).filter_by(prova_id=self.prova.id)
         if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             q = q.filter_by(is_withdrawn=False)
         return q.all()
@@ -331,7 +358,7 @@ class AmalfiEngine:
             ).all()
         }
         deleted_ids = {
-            u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()
+            u.id for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()
         }
         cancelled_ids = withdrawn_ids | deleted_ids
         if not cancelled_ids:
@@ -365,7 +392,7 @@ class AmalfiEngine:
         """
         withdrawn_ids = {
             ins.user_id
-            for ins in Inscription.query.filter_by(
+            for ins in db.session.query(Inscription).filter_by(
                 prova_id=self.prova.id, is_withdrawn=True
             ).all()
         }
@@ -415,7 +442,7 @@ class AmalfiEngine:
             self.prova.id, next_round - 1
         )
         classification = (
-            RoundClassification.query.filter_by(
+            db.session.query(RoundClassification).filter_by(
                 prova_id=self.prova.id, round_number=next_round - 1
             )
             .order_by(RoundClassification.position)
@@ -506,7 +533,7 @@ def get_amalfi_classification(
     prova_id: int, round_number: int
 ) -> List[RoundClassification]:
     return (
-        RoundClassification.query.filter_by(
+        db.session.query(RoundClassification).filter_by(
             prova_id=prova_id, round_number=round_number
         )
         .order_by(RoundClassification.position)
@@ -517,7 +544,7 @@ def get_amalfi_classification(
 def validate_amalfi_configuration(prova: Prova) -> ValidationResult:
     from models import Inscription  # late import per evitare cicli
 
-    inscriptions = Inscription.query.filter_by(prova_id=prova.id).count()
+    inscriptions = db.session.query(Inscription).filter_by(prova_id=prova.id).count()
     validation: ValidationResult = {"is_valid": True, "warnings": [], "errors": []}
 
     if inscriptions < prova.min_participants:

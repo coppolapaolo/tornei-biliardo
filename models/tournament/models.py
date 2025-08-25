@@ -6,8 +6,13 @@ Dependencies: models.base.db, models.user.models
 """
 
 from datetime import datetime
+from typing import List, TYPE_CHECKING
 from models.base import db
 from models.user.models import User, TournamentDirector
+
+if TYPE_CHECKING:
+    from models.competition.models import Prova
+    from models.playoff.models import PlayoffConfiguration
 
 
 class Tournament(db.Model):
@@ -60,7 +65,7 @@ class Tournament(db.Model):
     def can_be_modified(self):
         """Verifica se il torneo può essere modificato"""
         # Fix: Properly access the relationship collection
-        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        provas = getattr(self, 'provas', [])
         for prova in provas:
             if prova.status in ["inscription", "playing", "completed"]:
                 return False
@@ -69,19 +74,17 @@ class Tournament(db.Model):
     def can_be_deleted(self):
         """Verifica se il torneo può essere cancellato"""
         # Fix: Properly access the relationship collection
-        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        provas = getattr(self, 'provas', [])
         for prova in provas:
-            if prova.inscriptions:  # Se ha iscrizioni
+            if getattr(prova, 'inscriptions', []):  # Se ha iscrizioni
                 return False
         return True
 
     def get_status(self):
         """Restituisce lo status del torneo"""
-        if not self.provas:
+        provas = getattr(self, 'provas', [])
+        if not provas:
             return "setup"
-        
-        # Fix: Properly access the relationship collection
-        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
 
         has_playing = any(p.status == "playing" for p in provas)
         has_completed = any(p.status == "completed" for p in provas)
@@ -99,9 +102,9 @@ class Tournament(db.Model):
     def can_be_hard_deleted(self) -> bool:
         """Check if tournament can be permanently deleted (no matches played)."""
         # Fix: Properly access the relationship collections
-        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        provas = getattr(self, 'provas', [])
         for prova in provas:
-            matches = prova.matches if hasattr(prova, 'matches') and prova.matches is not None else []
+            matches = getattr(prova, 'matches', [])
             for match in matches:
                 if match.status in ['completed', 'playing']:
                     return False
@@ -129,7 +132,8 @@ class Tournament(db.Model):
     
     def has_playoff_configurations(self) -> bool:
         """Check if tournament has playoff configurations."""
-        return len(self.playoff_configurations) > 0
+        configurations = getattr(self, 'playoff_configurations', [])
+        return len(configurations) > 0
     
     def can_generate_playoffs(self) -> bool:
         """Check if tournament is ready for playoff generation."""
@@ -150,7 +154,7 @@ class Tournament(db.Model):
         from ..playoff.services import PlayoffService
         return PlayoffService.get_tournament_playoff_status(self.id)
     
-    def soft_delete(self, reason: str = None) -> bool:
+    def soft_delete(self, reason: str = "") -> bool:
         """Perform soft delete on tournament with played matches."""
         if self.is_deleted:
             return False
@@ -161,7 +165,7 @@ class Tournament(db.Model):
         self.is_active = False
         
         # Also soft delete related provas
-        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        provas = getattr(self, 'provas', [])
         for prova in provas:
             if hasattr(prova, 'soft_delete'):
                 # Fix: Ensure we pass a string to prova.soft_delete()

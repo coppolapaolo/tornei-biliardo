@@ -388,7 +388,7 @@ class TestUserService:
         
         assert request is not None
         assert request.user_id == player.id
-        assert request.reason == "I want to be a director"
+        assert request.notes == "I want to be a director"
         assert request.status == DirectorRequestStatus.PENDING.value
 
     def test_request_director_promotion_already_director(self, db_session):

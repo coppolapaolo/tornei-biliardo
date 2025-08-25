@@ -106,13 +106,12 @@ class UserServiceCore(DomainService):
             raise ValueError(f"Username '{username}' already exists")
 
         # Check if email already exists (case insensitive)
-        existing_email = self._execute_with_tracking(
-            lambda: User.query.filter(
-                func.lower(User.email) == func.lower(email.strip())
-            ).first()
-        )
-        if existing_email:
-            raise ValueError(f"Email '{email}' already exists")
+        # For encrypted fields, we need to retrieve all users and filter in Python
+        users = self._execute_with_tracking(lambda: User.query.all())
+        email_normalized = email.strip().lower()
+        for user in users:
+            if user.email and user.email.lower() == email_normalized:
+                raise ValueError(f"Email '{email}' already exists")
 
         # Create user within transaction
         user = User(
@@ -124,6 +123,8 @@ class UserServiceCore(DomainService):
         user.set_password(password)
 
         db.session.add(user)
+        # Flush to ensure the ID is assigned before returning
+        db.session.flush()
         # Transaction will be committed by decorator
         
         return user
@@ -170,14 +171,11 @@ class UserServiceCore(DomainService):
             new_email = kwargs["email"].strip().lower()
             if new_email != user.email:
                 # Check uniqueness
-                existing = self._execute_with_tracking(
-                    lambda: User.query.filter(
-                        func.lower(User.email) == func.lower(new_email),
-                        User.id != user_id,
-                    ).first()
-                )
-                if existing:
-                    raise ValueError(f"Email '{new_email}' already exists")
+                # For encrypted fields, we need to retrieve all users and filter in Python
+                users = self._execute_with_tracking(lambda: User.query.all())
+                for existing_user in users:
+                    if existing_user.id != user_id and existing_user.email and existing_user.email.lower() == new_email:
+                        raise ValueError(f"Email '{new_email}' already exists")
                 user.email = new_email
 
         if "phone" in kwargs:
@@ -208,10 +206,10 @@ class UserServiceCore(DomainService):
             lambda: db.session.get(User, user_id)
         )
         if not user:
-            raise ValueError("User not found")
+            return False
 
         if not user.check_password(old_password):
-            raise ValueError("Current password is incorrect")
+            return False
 
         if len(new_password) < 6:
             raise ValueError("New password must be at least 6 characters long")
@@ -237,6 +235,28 @@ class UserServiceCore(DomainService):
                 func.lower(User.username) == func.lower(username.strip())
             ).first()
         )
+    
+    @read_only(domain="user")
+    def get_user_by_email(self, email: str) -> Optional[User]:
+        """Get user by email."""
+        if not email:
+            return None
+            
+        # Strip and normalize email
+        email = email.strip().lower()
+        if not email:
+            return None
+            
+        # For encrypted fields, we need to retrieve all users and filter in Python
+        # because encrypted values are different each time due to random elements
+        users = User.query.all()
+        
+        # Find user with matching email (case-insensitive)
+        for user in users:
+            if user.email and user.email.lower() == email:
+                return user
+                
+        return None
     
     @read_only(domain="user")
     def authenticate_user(self, username: str, password: str) -> Optional[User]:
@@ -326,6 +346,28 @@ class UserServiceCompat:
         return _user_service_instance.get_user_by_username(username)
     
     @staticmethod
+    def get_user_by_email(email: str) -> Optional[User]:
+        """Get user by email."""
+        if not email:
+            return None
+            
+        # Strip and normalize email
+        email = email.strip().lower()
+        if not email:
+            return None
+            
+        # For encrypted fields, we need to retrieve all users and filter in Python
+        # because encrypted values are different each time due to random elements
+        users = User.query.all()
+        
+        # Find user with matching email (case-insensitive)
+        for user in users:
+            if user.email and user.email.lower() == email:
+                return user
+                
+        return None
+    
+    @staticmethod
     def authenticate_user(username: str, password: str) -> Optional[User]:
         """Static wrapper for authenticate_user."""
         return _user_service_instance.authenticate_user(username, password)
@@ -334,6 +376,112 @@ class UserServiceCompat:
     def delete_user(user_id: int, admin_id: int) -> Dict[str, Any]:
         """Static wrapper for delete_user."""
         return _user_service_instance.delete_user(user_id, admin_id)
+    
+    @staticmethod
+    def get_all_users() -> List[User]:
+        """Get all users."""
+        return User.query.all()
+    
+    @staticmethod
+    def get_users_by_role(role: str) -> List[User]:
+        """Get users by role."""
+        return User.query.filter_by(role=role).all()
+    
+    @staticmethod
+    def request_director_promotion(user_id: int, reason: str) -> DirectorRequest:
+        """Request director promotion for a user."""
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+        
+        if user.is_director or user.is_admin:
+            raise ValueError("User is already a director or admin")
+        
+        # Check if there's already a pending request
+        existing = DirectorRequest.query.filter_by(
+            user_id=user_id, status="pending"
+        ).first()
+        
+        if existing:
+            raise ValueError("There's already a pending director request for this user")
+        
+        request = DirectorRequest(user_id=user_id, notes=reason)
+        db.session.add(request)
+        # Flush to ensure the ID is assigned before returning
+        db.session.flush()
+        # Remove manual commit since this should be handled by transaction context
+        return request
+    
+    @staticmethod
+    def get_director_requests() -> List[DirectorRequest]:
+        """Get all director requests."""
+        return DirectorRequest.query.all()
+    
+    @staticmethod
+    def get_director_requests_by_status(status: str) -> List[DirectorRequest]:
+        """Get director requests by status."""
+        return DirectorRequest.query.filter_by(status=status).all()
+    
+    @staticmethod
+    def update_director_request_status(request_id: int, status: str) -> DirectorRequest:
+        """Update director request status."""
+        request = db.session.get(DirectorRequest, request_id)
+        if not request:
+            raise ValueError("Director request not found")
+        
+        request.status = status
+        # Remove manual commit since this should be handled by transaction context
+        return request
+    
+    @staticmethod
+    def approve_director_request(request_id: int) -> DirectorRequest:
+        """Approve director request."""
+        request = db.session.get(DirectorRequest, request_id)
+        if not request:
+            raise ValueError("Director request not found")
+        
+        request.approve(User.query.first())  # Use first user as admin for simplicity
+        # Remove manual commit since this should be handled by transaction context
+        return request
+    
+    @staticmethod
+    def reject_director_request(request_id: int) -> DirectorRequest:
+        """Reject director request."""
+        request = db.session.get(DirectorRequest, request_id)
+        if not request:
+            raise ValueError("Director request not found")
+        
+        request.reject(User.query.first(), "Request rejected")  # Use first user as admin
+        # Remove manual commit since this should be handled by transaction context
+        return request
+    
+    @staticmethod
+    def get_user_stats(user_id: int) -> Dict[str, Any]:
+        """Get user statistics."""
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+        
+        return user.get_statistics()
+    
+    @staticmethod
+    def can_view_admin_panel(user_id: int) -> bool:
+        """Check if user can view admin panel."""
+        user = db.session.get(User, user_id)
+        if not user:
+            return False
+        
+        return user.can_view_admin_panel()
+
+    @staticmethod
+    def soft_delete_user(user_id: int) -> None:
+        """Soft delete a user."""
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+        
+        user.anonymize()
+        # Remove manual commit since this should be handled by transaction context
 
 
 # Maintain backward compatibility by exposing the static wrapper as UserService

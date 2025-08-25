@@ -369,7 +369,7 @@ class DashboardService:
         
         user_locations = {
             av.location for av in 
-            PlayerAvailability.query.filter_by(user_id=user_id, is_available=True).all()
+            db.session.query(PlayerAvailability).filter_by(user_id=user_id, is_available=True).all()
         }
         
         # Also include locations where user has played before
