@@ -78,7 +78,7 @@ class MatchProposal(BaseModel, TimestampMixin):
     accepted_by = db.relationship("User", foreign_keys=[accepted_by_id])
     
     # Direct invitations (for DIRECT proposals)
-    invitations = db.relationship(
+    invitations = db.relationship(  # type: ignore[assignment]
         "ProposalInvitation",
         back_populates="proposal",
         cascade="all, delete-orphan"
@@ -144,7 +144,8 @@ class MatchProposal(BaseModel, TimestampMixin):
         
         # Cancel/reject other pending invitations
         if self.proposal_type == ProposalType.DIRECT:
-            for invitation in self.invitations:
+            from typing import cast
+            for invitation in cast(List['ProposalInvitation'], self.invitations):
                 if invitation.status == InvitationStatus.PENDING and invitation.invited_user_id != user_id:
                     invitation.status = InvitationStatus.REJECTED
         
@@ -156,7 +157,8 @@ class MatchProposal(BaseModel, TimestampMixin):
             self.status = ProposalStatus.CANCELLED
             
             # Mark all pending invitations as cancelled
-            for invitation in self.invitations:
+            from typing import cast
+            for invitation in cast(List['ProposalInvitation'], self.invitations):
                 if invitation.status == InvitationStatus.PENDING:
                     invitation.status = InvitationStatus.CANCELLED
     
@@ -166,7 +168,8 @@ class MatchProposal(BaseModel, TimestampMixin):
             self.status = ProposalStatus.EXPIRED
             
             # Mark all pending invitations as expired
-            for invitation in self.invitations:
+            from typing import cast
+            for invitation in cast(List['ProposalInvitation'], self.invitations):
                 if invitation.status == InvitationStatus.PENDING:
                     invitation.status = InvitationStatus.EXPIRED
     
@@ -262,7 +265,7 @@ class IndividualMatch(BaseModel, TimestampMixin):
     winner = db.relationship("User", foreign_keys=[winner_id])
     
     # Individual racks within this match
-    racks = db.relationship(
+    racks = db.relationship(  # type: ignore[assignment]
         "IndividualRack",
         back_populates="match",
         cascade="all, delete-orphan",
@@ -343,10 +346,11 @@ class IndividualMatch(BaseModel, TimestampMixin):
     
     def get_opponent(self, user_id: int) -> Optional['User']:
         """Get the opponent for a given user."""
+        from typing import cast
         if user_id == self.player1_id:
-            return self.player2
+            return cast('User', self.player2)
         elif user_id == self.player2_id:
-            return self.player1
+            return cast('User', self.player1)
         return None
     
     def get_user_score(self, user_id: int) -> int:

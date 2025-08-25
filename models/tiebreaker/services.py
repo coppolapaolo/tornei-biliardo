@@ -6,7 +6,7 @@ Requirements: SPECIFICHE.md - Tiebreaker system management
 
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, cast
 from datetime import datetime
 
 from ..base import db
@@ -132,7 +132,7 @@ class TiebreakerService:
         if tiebreaker.status != TiebreakerStatus.IN_PROGRESS.value:
             raise ValueError("Tiebreaker must be in progress to record shots")
         
-        if player_id not in [tiebreaker.player1_id, tiebreaker.player2_id]:
+        if player_id not in [cast(int, tiebreaker.player1_id), cast(int, tiebreaker.player2_id)]:
             raise ValueError("Player must be one of the tiebreaker participants")
         
         spot_shot = SpotShot(
@@ -314,8 +314,12 @@ class TiebreakerService:
         # Check each completed round
         for round_num, shots in rounds.items():
             if len(shots) == 2:  # Both players shot
-                p1_shots = [s for s in shots if s.player_id == tiebreaker.player1_id]
-                p2_shots = [s for s in shots if s.player_id == tiebreaker.player2_id]
+                # Store player IDs as local variables to avoid SQLAlchemy type issues
+                player1_id = cast(int, tiebreaker.player1_id)
+                player2_id = cast(int, tiebreaker.player2_id)
+                
+                p1_shots = [s for s in shots if s.player_id == player1_id]
+                p2_shots = [s for s in shots if s.player_id == player2_id]
                 
                 if len(p1_shots) == 1 and len(p2_shots) == 1:
                     p1_made = p1_shots[0].result == SpotShotResult.MADE.value
@@ -323,10 +327,10 @@ class TiebreakerService:
                     
                     # Check for winner
                     if p1_made and not p2_made:
-                        tiebreaker.complete(tiebreaker.player1_id)
+                        tiebreaker.complete(player1_id)
                         return
                     elif p2_made and not p1_made:
-                        tiebreaker.complete(tiebreaker.player2_id)
+                        tiebreaker.complete(player2_id)
                         return
                     # If both made or both missed, continue to next round
         
@@ -342,17 +346,25 @@ class TiebreakerService:
         
         target_score = tiebreaker.configuration.get("target_score", 15)
         
+        # Store player IDs as local variables to avoid SQLAlchemy type issues
+        player1_id = cast(int, tiebreaker.player1_id)
+        player2_id = cast(int, tiebreaker.player2_id)
+        
         # Calculate current scores
-        p1_score = sum(attempt.points_scored for attempt in tiebreaker.rally_attempts 
-                      if attempt.player_id == tiebreaker.player1_id)
-        p2_score = sum(attempt.points_scored for attempt in tiebreaker.rally_attempts 
-                      if attempt.player_id == tiebreaker.player2_id)
+        p1_score: int = 0
+        p2_score: int = 0
+        for attempt in tiebreaker.rally_attempts:
+            attempt_player_id = cast(int, attempt.player_id)
+            if attempt_player_id == player1_id:
+                p1_score += cast(int, attempt.points_scored)
+            elif attempt_player_id == player2_id:
+                p2_score += cast(int, attempt.points_scored)
         
         # Check for winner
         if p1_score >= target_score and p1_score > p2_score:
-            tiebreaker.complete(tiebreaker.player1_id)
+            tiebreaker.complete(player1_id)
         elif p2_score >= target_score and p2_score > p1_score:
-            tiebreaker.complete(tiebreaker.player2_id)
+            tiebreaker.complete(player2_id)
     
     @staticmethod
     def _check_playoff_completion(tiebreaker: Tiebreaker) -> None:
@@ -361,17 +373,25 @@ class TiebreakerService:
         best_of = tiebreaker.configuration.get("best_of", 3)
         wins_needed = (best_of // 2) + 1
         
+        # Store player IDs as local variables to avoid SQLAlchemy type issues
+        player1_id = cast(int, tiebreaker.player1_id)
+        player2_id = cast(int, tiebreaker.player2_id)
+        
         # Count wins
-        p1_wins = sum(1 for match in tiebreaker.playoff_matches 
-                     if match.winner_id == tiebreaker.player1_id)
-        p2_wins = sum(1 for match in tiebreaker.playoff_matches 
-                     if match.winner_id == tiebreaker.player2_id)
+        p1_wins = 0
+        p2_wins = 0
+        for match in tiebreaker.playoff_matches:
+            match_winner_id = cast(int, match.winner_id) if match.winner_id is not None else None
+            if match_winner_id == player1_id:
+                p1_wins += 1
+            elif match_winner_id == player2_id:
+                p2_wins += 1
         
         # Check for winner
         if p1_wins >= wins_needed:
-            tiebreaker.complete(tiebreaker.player1_id)
+            tiebreaker.complete(player1_id)
         elif p2_wins >= wins_needed:
-            tiebreaker.complete(tiebreaker.player2_id)
+            tiebreaker.complete(player2_id)
 
 
 class TiebreakerConfigurationService:

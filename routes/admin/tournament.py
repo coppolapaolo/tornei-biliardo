@@ -3,12 +3,10 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from datetime import datetime
 from sqlalchemy import not_
 from sqlalchemy.exc import IntegrityError
 
 from models import (
-    db,
     Tournament,
     Prova,
     User,
@@ -36,28 +34,16 @@ def create_tournament():
     final_playoffs = "final_playoffs" in request.form
     challenge_mode = "challenge_mode" in request.form
 
-    tournament = Tournament(
+    # Usa il service layer invece del direct database access
+    tournament = TournamentService.create_tournament_with_director(
         name=name,
+        creator_user_id=current_user.id,
         tournament_type=tournament_type,
         without_x=without_x,
         final_playoffs=final_playoffs,
         challenge_mode=challenge_mode,
         is_active=True,
     )
-    db.session.add(tournament)
-    db.session.commit()
-
-    # Se l'utente è un direttore (non admin), assegnalo automaticamente al torneo creato
-    if current_user.is_director and not current_user.is_admin:
-        from models import TournamentDirector
-
-        assignment = TournamentDirector(
-            user_id=current_user.id,
-            tournament_id=tournament.id,
-            assigned_by_id=current_user.id,
-        )
-        db.session.add(assignment)
-        db.session.commit()
 
     flash(f'Torneo "{name}" creato con successo!')
     return redirect(url_for("dashboard.dashboard"))
@@ -110,15 +96,20 @@ def edit_tournament(tournament_id):
         return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
 
     if request.method == "POST":
-        tournament.name = request.form["name"]
-        tournament.tournament_type = request.form.get("tournament_type", "Amalfi")
-        tournament.without_x = "without_x" in request.form
-        tournament.final_playoffs = "final_playoffs" in request.form
-        tournament.challenge_mode = "challenge_mode" in request.form
-        tournament.updated_at = datetime.utcnow()
-
-        db.session.commit()
-        flash("Torneo aggiornato con successo!")
+        # Usa il service layer invece del direct database access
+        try:
+            TournamentService.update_tournament(
+                tournament_id=tournament_id,
+                name=request.form["name"],
+                tournament_type=request.form.get("tournament_type", "Amalfi"),
+                without_x="without_x" in request.form,
+                final_playoffs="final_playoffs" in request.form,
+                challenge_mode="challenge_mode" in request.form,
+            )
+            flash("Torneo aggiornato con successo!")
+        except ValueError as ve:
+            flash(str(ve), "error")
+        
         return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
 
     return render_template("admin/tournament_edit.html", tournament=tournament)
@@ -144,11 +135,9 @@ def delete_tournament(tournament_id):
 @tournament_manager_required(lambda tournament_id: tournament_id)
 def toggle_tournament_active(tournament_id):
     """Attiva/disattiva torneo"""
-    tournament = Tournament.query.get_or_404(tournament_id)
-    tournament.is_active = not tournament.is_active
-    tournament.updated_at = datetime.utcnow()
-    db.session.commit()
-
+    # Usa il service layer invece del direct database access
+    tournament = TournamentService.toggle_active_status(tournament_id)
+    
     status = "attivato" if tournament.is_active else "disattivato"
     flash(f'Torneo "{tournament.name}" {status}!')
     return redirect(url_for("dashboard.dashboard"))
@@ -160,28 +149,23 @@ def toggle_tournament_active(tournament_id):
 def add_director(tournament_id):
     """Aggiunge un co‑direttore"""
     new_director_id = int(request.form["user_id"])
-    user = User.query.get_or_404(new_director_id)
-
-    if user.role == "admin":
-        flash("Gli admin non vanno assegnati come direttori.", "warning")
-        return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
-
-    from models import TournamentDirector
-
-    existing = TournamentDirector.query.filter_by(
-        user_id=new_director_id, tournament_id=tournament_id
-    ).first()
-    if existing:
-        flash("Questo utente è già un direttore.", "warning")
-    else:
-        assignment = TournamentDirector(
-            user_id=new_director_id,
+    
+    # Usa il service layer invece del direct database access
+    try:
+        success = TournamentService.add_director(
             tournament_id=tournament_id,
-            assigned_by_id=current_user.id,
+            user_id=new_director_id,
+            assigned_by_id=current_user.id
         )
-        db.session.add(assignment)
-        db.session.commit()
-        flash("Direttore aggiunto con successo.")
+        
+        if success:
+            flash("Direttore aggiunto con successo.")
+        else:
+            flash("Questo utente è già un direttore.", "warning")
+            
+    except ValueError as ve:
+        flash(str(ve), "warning")
+    
     return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
 
 
@@ -191,15 +175,16 @@ def add_director(tournament_id):
 def remove_director(tournament_id):
     """Rimuove un co‑direttore"""
     director_id = int(request.form["user_id"])
-    from models import TournamentDirector
-
-    assignment = TournamentDirector.query.filter_by(
-        user_id=director_id, tournament_id=tournament_id
-    ).first()
-    if assignment:
-        db.session.delete(assignment)
-        db.session.commit()
+    
+    # Usa il service layer invece del direct database access
+    success = TournamentService.remove_director(
+        tournament_id=tournament_id,
+        user_id=director_id
+    )
+    
+    if success:
         flash("Direttore rimosso con successo.")
     else:
         flash("Direttore non trovato.", "warning")
+    
     return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))

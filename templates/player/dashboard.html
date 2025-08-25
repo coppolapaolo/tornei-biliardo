@@ -209,7 +209,7 @@
                                             <i class="fas fa-user-minus"></i> Disiscriviti
                                         </button>
                                     {% elif inscription.prova.status == 'playing' %}
-                                        <a href="{{ url_for('admin.prova_detail', prova_id=inscription.prova.id) }}" 
+                                        <a href="{{ url_for('admin.competition.prova_detail', prova_id=inscription.prova.id) }}" 
                                            class="btn btn-outline-info btn-sm">
                                             <i class="fas fa-eye"></i> Vedi Partite
                                         </a>
@@ -252,7 +252,7 @@
                                     {{ status_badge(inscription.prova, 'prova') }}
                                 </div>
                                 <div>
-                                    <a href="{{ url_for('admin.prova_detail', prova_id=inscription.prova.id) }}" 
+                                    <a href="{{ url_for('admin.competition.prova_detail', prova_id=inscription.prova.id) }}" 
                                        class="btn btn-sm btn-outline-primary">
                                         Dettagli
                                     </a>

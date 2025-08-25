@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from sqlalchemy import func
+from sqlalchemy import func, desc
 from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel, TimestampMixin
@@ -98,7 +98,7 @@ class Challenge(BaseModel, TimestampMixin):
         """Get user's best attempt for this challenge."""
         return (self.attempts
                 .filter_by(user_id=user_id, completed=True)
-                .order_by(ChallengeAttempt.score.desc())
+                .order_by(desc('score'))
                 .first())
     
     def can_be_used_for_x_replacement(self) -> bool:

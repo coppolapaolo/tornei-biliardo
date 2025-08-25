@@ -12,7 +12,7 @@
       </button>
       {% endif %}
       {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_tournament) %}
-      <a class="btn btn-outline-primary" href="{{ url_for('admin.create_prova_standalone') }}">
+      <a class="btn btn-outline-primary" href="{{ url_for('admin.competition.create_prova_standalone') }}">
         <i class="fas fa-bullseye"></i> Nuova Prova
       </a>
       {% endif %}
@@ -34,7 +34,7 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0"><i class="fas fa-bullseye"></i> Prove Standalone</h5>
       {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_tournament) %}
-      <a class="btn btn-sm btn-success" href="{{ url_for('admin.create_prova_standalone') }}">
+      <a class="btn btn-sm btn-success" href="{{ url_for('admin.competition.create_prova_standalone') }}">
         <i class="fas fa-plus"></i> Nuova Prova
       </a>
       {% endif %}

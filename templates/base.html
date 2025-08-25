@@ -123,7 +123,7 @@
                         </li>
                         {% if current_user.is_admin %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.users_list') }}">
+                                <a class="nav-link" href="{{ url_for('admin.user.users_list') }}">
                                     <i class="fas fa-users"></i> Utenti
                                 </a>
                             </li>
@@ -160,7 +160,7 @@
                                     <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
                                         <i class="fas fa-trophy"></i> Director Dashboard
                                     </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin.create_prova_standalone') }}">
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.competition.create_prova_standalone') }}">
                                         <i class="fas fa-plus"></i> Nuova Gara Singola
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
@@ -170,7 +170,7 @@
                                     <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
                                         <i class="fas fa-cog"></i> Admin Dashboard
                                     </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin.users_list') }}">
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.user.users_list') }}">
                                         <i class="fas fa-users"></i> Gestione Utenti
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>

@@ -104,7 +104,7 @@ class RatingService:
         # Unverified ratings needing review
         unverified_ratings = (PlayerRating.query
                              .filter_by(verified=False)
-                             .order_by(PlayerRating.last_updated.desc())
+                             .order_by(PlayerRating.last_updated.desc())  # type: ignore[attr-defined]
                              .all())
         
         # Players without categories
@@ -120,7 +120,7 @@ class RatingService:
         
         # Recent rating updates
         recent_updates = (PlayerRating.query
-                         .order_by(PlayerRating.last_updated.desc())
+                         .order_by(PlayerRating.last_updated.desc())  # type: ignore[attr-defined]
                          .limit(20)
                          .all())
         
@@ -186,7 +186,7 @@ class RatingService:
         for system in RatingSystem:
             top_players = (PlayerRating.query
                           .filter_by(rating_system=system, verified=True)
-                          .order_by(PlayerRating.rating_value.desc())
+                          .order_by(PlayerRating.rating_value.desc())  # type: ignore[attr-defined]
                           .limit(20)
                           .all())
             
@@ -319,7 +319,7 @@ class RatingService:
         rule = HandicapRule.query.get_or_404(handicap_rule_id)
         
         # Try category-based handicap first
-        category_result = RatingService._calculate_category_handicap(
+        category_result = HandicapService._calculate_category_handicap(
             player1_id, player2_id, rule
         )
         
@@ -327,7 +327,7 @@ class RatingService:
             return category_result
         
         # Fall back to rating-based handicap
-        rating_result = RatingService._calculate_rating_handicap(
+        rating_result = HandicapService._calculate_rating_handicap(
             player1_id, player2_id, rule
         )
         

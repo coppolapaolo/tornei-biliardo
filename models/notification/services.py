@@ -109,7 +109,7 @@ class NotificationService:
         query = Notification.query.filter_by(user_id=user_id)
         
         if unread_only:
-            query = query.filter(Notification.status.in_([
+            query = query.filter(Notification.status.in_([  # type: ignore
                 NotificationStatus.PENDING,
                 NotificationStatus.SENT
             ]))
@@ -155,7 +155,7 @@ class NotificationService:
     def mark_all_read(user_id: int) -> int:
         """Mark all notifications as read for a user."""
         notifications = Notification.query.filter_by(user_id=user_id).filter(
-            Notification.status.in_([
+            Notification.status.in_([  # type: ignore
                 NotificationStatus.PENDING,
                 NotificationStatus.SENT
             ])
@@ -173,7 +173,7 @@ class NotificationService:
     def get_unread_count(user_id: int) -> int:
         """Get count of unread notifications for user."""
         return Notification.query.filter_by(user_id=user_id).filter(
-            Notification.status.in_([
+            Notification.status.in_([  # type: ignore
                 NotificationStatus.PENDING,
                 NotificationStatus.SENT
             ])
@@ -239,7 +239,7 @@ class NotificationService:
         """Expire old notifications that have passed their expiry time."""
         expired_notifications = Notification.query.filter(
             Notification.expires_at <= datetime.utcnow(),
-            Notification.status.in_([
+            Notification.status.in_([  # type: ignore
                 NotificationStatus.PENDING,
                 NotificationStatus.SENT
             ])
@@ -260,7 +260,7 @@ class NotificationService:
         
         old_notifications = Notification.query.filter(
             Notification.created_at <= cutoff_date,
-            Notification.status.in_([
+            Notification.status.in_([  # type: ignore
                 NotificationStatus.READ,
                 NotificationStatus.DISMISSED,
                 NotificationStatus.EXPIRED

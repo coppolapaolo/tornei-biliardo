@@ -4,7 +4,7 @@ from __future__ import annotations
 utils/reset_data.py — Dataset demo v2 (agosto 2025)
 """
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Dict, List
 
 from flask import has_app_context, current_app
@@ -70,7 +70,7 @@ def _reset_database_core() -> Dict[str, object]:
     paolodir = UserService.create_user(
         "paolo", "paolo@tornei.com", "123456", role="director"
     )
-    players: List[object] = []
+    players: List[User] = []
     for n in range(1, 21):
         uname = f"player{n:02d}"
         player = UserService.create_user(
@@ -123,8 +123,8 @@ def _reset_database_core() -> Dict[str, object]:
     # Apertura iscrizioni + 8 iscritti su La Garetta
     ProvaService.to_inscription(
         prova_garetta.id,
-        date.today(),
-        date.today() + timedelta(days=3)
+        datetime.now(),
+        datetime.now() + timedelta(days=3)
     )
     for u in players[:8]:
         InscriptionService.inscribe_user(u.id, prova_garetta.id)

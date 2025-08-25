@@ -273,7 +273,12 @@ class DirectorRequest(BaseModel):
         self.status = "approved"
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
-        self.user.role = "director"
+        # Get the user object and update role
+        from sqlalchemy.orm import Session
+        session = db.session
+        user = session.get(User, self.user_id)
+        if user:
+            user.role = "director"
 
     def reject(self, admin: "User", notes: str | None = None) -> None:
         self.status = "rejected"

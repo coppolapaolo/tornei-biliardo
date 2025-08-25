@@ -65,7 +65,7 @@
                             <div class="card-body">
                                 {% if match.status != 'completed' %}
                                     <!-- Form Risultato Diretto -->
-                                    <form action="{{ url_for('admin.set_match_result_direct', match_id=match.id) }}" 
+                                    <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" 
                                           method="POST" class="mb-3" onsubmit="return confirmSetResult()">
                                         <h6>Imposta Risultato Diretto</h6>
                                         <div class="row">
@@ -286,11 +286,11 @@
         
         <div class="mt-3">
             {% if current_user.is_admin %}
-                <a href="{{ url_for('admin.prova_detail', prova_id=match.prova_id) }}" 
+                <a href="{{ url_for('admin.competition.prova_detail', prova_id=match.prova_id) }}" 
                    class="btn btn-outline-secondary w-100 mb-2">
                     <i class="fas fa-arrow-left"></i> Torna alla Prova
                 </a>
-                <a href="{{ url_for('admin.prova_results_overview', prova_id=match.prova_id) }}" 
+                <a href="{{ url_for('admin.competition.prova_results_overview', prova_id=match.prova_id) }}" 
                    class="btn btn-outline-info w-100">
                     <i class="fas fa-list-alt"></i> Overview Risultati
                 </a>

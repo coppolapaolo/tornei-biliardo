@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Sequence, Dict, Any, Optional, List
+from typing import Sequence, Dict, Any, Optional, List, TYPE_CHECKING
 from datetime import datetime, timedelta
 from functools import lru_cache
 import hashlib
@@ -12,6 +12,9 @@ from ..classification.services import ClassificationService
 from ..match.services import MatchService
 from ..rating.services import RatingService, HandicapService
 from ..challenge.services import ChallengeService
+
+if TYPE_CHECKING:
+    from ..competition.models import Prova
 
 
 class MatchmakingOrchestrator:
@@ -52,7 +55,7 @@ class MatchmakingOrchestrator:
                 "suggested_format": self._suggest_match_format(pairing)
             }
             
-            if apply_handicaps and not pairing.is_bye:
+            if apply_handicaps and not pairing.is_bye and pairing.player1_id is not None and pairing.player2_id is not None:
                 handicap = HandicapService.calculate_handicap(
                     player1_id=pairing.player1_id,
                     player2_id=pairing.player2_id,
@@ -143,8 +146,13 @@ class MatchmakingOrchestrator:
             return {"format": "bye", "reason": "No opponent"}
         
         # Get player categories
-        cat1 = RatingService.get_player_effective_category(pairing.player1_id)
-        cat2 = RatingService.get_player_effective_category(pairing.player2_id)
+        cat1 = None
+        cat2 = None
+        
+        if pairing.player1_id is not None:
+            cat1 = RatingService.get_player_effective_category(pairing.player1_id)
+        if pairing.player2_id is not None:
+            cat2 = RatingService.get_player_effective_category(pairing.player2_id)
         
         # Default format
         suggested_format = {
@@ -240,7 +248,10 @@ class MatchmakingOrchestrator:
                 Match.player1_id == user_id,
                 Match.player2_id == user_id
             ),
-            Match.status.in_(["created", "in_progress"])
+            db.or_(
+                Match.status == "created",
+                Match.status == "in_progress"
+            )
         ).all()
         
         return [{
@@ -277,7 +288,7 @@ class MatchmakingService:
         return {
             "cache_hits": self._cache_hits,
             "cache_misses": self._cache_misses,
-            "hit_rate_percent": round(hit_rate, 1),
+            "hit_rate_percent": int(round(hit_rate, 1)),
             "cached_previews": len(self._preview_cache)
         }
     
@@ -288,7 +299,7 @@ class MatchmakingService:
         self._cache_misses = 0
 
     def preview(
-        self, *, strategy_name: str, prova: object, round_number: int, use_cache: bool = True
+        self, *, strategy_name: str, prova: 'Prova', round_number: int, use_cache: bool = True
     ) -> Sequence[Pairing]:
         """Calcola la preview degli abbinamenti con caching opzionale."""
         
@@ -341,7 +352,7 @@ class MatchmakingService:
         return result
 
     def run(
-        self, *, strategy_name: str, prova: object, round_number: int
+        self, *, strategy_name: str, prova: 'Prova', round_number: int
     ) -> Sequence[Pairing]:
         """Esegue il pairing *effettivo* con invalidazione cache."""
         
@@ -386,7 +397,7 @@ class MatchmakingService:
         
         return strategies
     
-    def _get_inscriptions_hash(self, prova) -> str:
+    def _get_inscriptions_hash(self, prova: 'Prova') -> str:
         """Generate hash of current inscriptions for cache invalidation."""
         from ..competition.models import Inscription
         

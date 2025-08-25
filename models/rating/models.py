@@ -70,7 +70,7 @@ class PlayerCategory(BaseModel, TimestampMixin):
             is_active=True
         ).filter(
             db.or_(
-                cls.expires_at.is_(None),
+                cls.expires_at == None,
                 cls.expires_at > datetime.utcnow()
             )
         ).first()

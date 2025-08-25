@@ -228,7 +228,7 @@
                     <i class="fas fa-user-minus"></i> Disiscriviti
                   </button>
                 {% elif ins.prova.status == 'playing' %}
-                  <a class="btn btn-outline-info btn-sm" href="{{ url_for('admin.prova_detail', prova_id=ins.prova.id) }}">
+                  <a class="btn btn-outline-info btn-sm" href="{{ url_for('admin.competition.prova_detail', prova_id=ins.prova.id) }}">
                     <i class="fas fa-eye"></i> Vedi Partite
                   </a>
                 {% endif %}
@@ -261,7 +261,7 @@
                   <p class="mb-1"><small>📅 {{ ins.prova.date.strftime('%d/%m/%Y') if ins.prova.date else '-' }} – 📍 {{ ins.prova.location or 'Luogo da definire' }}</small></p>
                   {{ status_badge(ins.prova, 'prova') }}
                 </div>
-                <a href="{{ url_for('admin.prova_detail', prova_id=ins.prova.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
+                <a href="{{ url_for('admin.competition.prova_detail', prova_id=ins.prova.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
               </div>
             </div>
             {% endfor %}

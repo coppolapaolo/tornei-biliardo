@@ -179,8 +179,8 @@ def cancel_proposal(proposal_id):
 def match_list():
     """List individual matches for current user."""
     try:
-        matches_data = IndividualMatchService.get_user_matches(current_user.id)
-        return render_template('individual_match/matches.html', **matches_data)
+        matches = IndividualMatchService.get_user_matches(current_user.id)
+        return render_template('individual_match/matches.html', matches=matches)
     except Exception as e:
         flash(f"Error loading matches: {str(e)}", "danger")
         return redirect(url_for('individual_match.dashboard'))
@@ -274,8 +274,7 @@ def complete_match(match_id):
         match = IndividualMatchService.complete_match(
             match_id=match_id,
             user_id=current_user.id,
-            winner_id=int(data['winner_id']),
-            notes=data.get('notes')
+            winner_id=int(data['winner_id'])
         )
         
         if request.is_json:
@@ -334,9 +333,13 @@ def manage_availability():
     try:
         data = request.get_json() if request.is_json else request.form
         
+        availability_data = data.get('availability', [])
+        if not isinstance(availability_data, list):
+            raise ValueError("Availability data must be a list")
+        
         IndividualMatchService.update_user_availability(
             user_id=current_user.id,
-            availability_data=data.get('availability', [])
+            availability_data=availability_data
         )
         
         if request.is_json:

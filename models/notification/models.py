@@ -266,7 +266,7 @@ class NotificationTemplate(BaseModel, TimestampMixin):
     action_text_template = db.Column(db.String(100), nullable=True)
     action_url_template = db.Column(db.String(255), nullable=True)
     
-    def render_notification(self, context: Dict[str, Any]) -> Dict[str, str]:
+    def render_notification(self, context: Dict[str, Any]) -> Dict[str, Optional[str]]:
         """Render notification content using context variables."""
         import re
         

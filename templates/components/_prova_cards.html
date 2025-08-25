@@ -70,7 +70,7 @@
 
             {% if mode == 'director' %}
               <div class="btn-group w-100" role="group">
-                <a href="{{ url_for('admin.prova_detail', prova_id=p.id) }}" class="btn btn-primary btn-sm">
+                <a href="{{ url_for('admin.competition.prova_detail', prova_id=p.id) }}" class="btn btn-primary btn-sm">
                   <i class="fas fa-eye"></i> Dettagli
                 </a>
                 {% if p.can_be_modified() %}

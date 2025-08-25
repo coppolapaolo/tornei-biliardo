@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from sqlalchemy import desc
 
 from ..base import db
 from .models import Challenge, ChallengeAttempt, ChallengeFavorite
@@ -95,7 +96,10 @@ class ChallengeService:
         notes: Optional[str] = None
     ) -> ChallengeAttempt:
         """Complete a challenge attempt with results."""
-        attempt = ChallengeAttempt.query.get_or_404(attempt_id)
+        attempt = db.session.get(ChallengeAttempt, attempt_id)
+        if not attempt:
+            from flask import abort
+            abort(404)
         
         attempt.complete_attempt(score=score, passed=passed)
         if notes:
@@ -160,15 +164,18 @@ class ChallengeService:
     ) -> ChallengeAttempt:
         """Create a challenge attempt to replace X in tournament."""
         
-        if not challenge_id:
+        final_challenge_id: int
+        if challenge_id is None:
             challenge = ChallengeService.get_challenge_for_x_replacement(prova_id)
             if not challenge:
                 raise ValueError("No suitable challenge available for X replacement")
-            challenge_id = challenge.id
+            final_challenge_id = challenge.id
+        else:
+            final_challenge_id = challenge_id
         
         attempt = ChallengeService.start_challenge_attempt(
             user_id=user_id,
-            challenge_id=challenge_id,
+            challenge_id=final_challenge_id,
             prova_id=prova_id,
             round_number=round_number
         )
@@ -183,10 +190,17 @@ class ChallengeService:
     ) -> ChallengeAttempt:
         """Complete X replacement challenge and return match-equivalent result."""
         
-        attempt = ChallengeAttempt.query.get_or_404(attempt_id)
+        attempt = db.session.get(ChallengeAttempt, attempt_id)
+        if not attempt:
+            from flask import abort
+            abort(404)
         
         # Complete the attempt
-        attempt.complete_attempt(score=score, passed=None, notes=notes)
+        attempt.complete_attempt(score=score, passed=None)
+        
+        # Set notes separately if provided
+        if notes:
+            attempt.notes = notes
         
         # Create equivalent match result for tournament classification
         ChallengeService._create_x_replacement_match_result(attempt)
@@ -242,7 +256,7 @@ class ChallengeService:
         """Get user's complete challenge attempt history."""
         return (ChallengeAttempt.query
                 .filter_by(user_id=user_id, completed=True)
-                .order_by(ChallengeAttempt.attempted_at.desc())
+                .order_by(desc('attempted_at'))
                 .all())
     
     @staticmethod
@@ -254,7 +268,10 @@ class ChallengeService:
         is_active: Optional[bool] = None
     ) -> Challenge:
         """Update challenge details."""
-        challenge = Challenge.query.get_or_404(challenge_id)
+        challenge = db.session.get(Challenge, challenge_id)
+        if not challenge:
+            from flask import abort
+            abort(404)
         
         if name is not None:
             challenge.name = name
@@ -271,6 +288,9 @@ class ChallengeService:
     @staticmethod
     def delete_challenge(challenge_id: int) -> None:
         """Delete a challenge (soft delete by marking inactive)."""
-        challenge = Challenge.query.get_or_404(challenge_id)
+        challenge = db.session.get(Challenge, challenge_id)
+        if not challenge:
+            from flask import abort
+            abort(404)
         challenge.is_active = False
         db.session.commit()

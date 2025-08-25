@@ -482,6 +482,8 @@ def optimized_query(
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args, **kwargs) -> T:
+            cache_key = None
+            
             # Apply caching if specified
             if cache_ttl:
                 cache_key = f"{func.__name__}:{hash(str(args) + str(sorted(kwargs.items())))}"
@@ -493,7 +495,7 @@ def optimized_query(
             result = func(*args, **kwargs)
             
             # Cache result if specified
-            if cache_ttl:
+            if cache_ttl and cache_key is not None:
                 cache_manager.set(
                     key=cache_key,
                     value=result,
@@ -508,15 +510,31 @@ def optimized_query(
 
 
 def bulk_load_relationships(query: Query, *relationships) -> Query:
-    """Helper to bulk load relationships and avoid N+1 problems."""
+    """Helper to bulk load relationships and avoid N+1 problems.
+    
+    Args:
+        query: SQLAlchemy Query object
+        *relationships: Relationship attributes (not strings) or option objects
+    
+    Example:
+        query = bulk_load_relationships(
+            session.query(User),
+            User.profile,
+            User.orders
+        )
+    """
     from sqlalchemy.orm import joinedload, selectinload
+    from sqlalchemy.orm.attributes import InstrumentedAttribute
     
     for relationship in relationships:
-        if isinstance(relationship, str):
-            # Simple relationship name
+        if isinstance(relationship, InstrumentedAttribute):
+            # SQLAlchemy relationship attribute
+            query = query.options(selectinload(relationship))
+        elif hasattr(relationship, '_sa_class_manager'):
+            # Another type of SQLAlchemy attribute
             query = query.options(selectinload(relationship))
         else:
-            # Complex relationship (already an option)
+            # Assume it's already an option object (joinedload, selectinload, etc.)
             query = query.options(relationship)
     
     return query

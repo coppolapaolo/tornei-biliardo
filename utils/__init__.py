@@ -31,6 +31,11 @@ def admin_required(f):
     return RoleRequirement.admin_required(f)
 
 
+def director_required(f):
+    """Permette l'accesso solo a direttori."""
+    return RoleRequirement.director_required(f)
+
+
 def director_or_admin_required(f):
     """Permette l’accesso a direttore o admin."""
     return RoleRequirement.director_or_admin_required(f)

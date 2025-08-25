@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from typing import Any, List, Optional, Iterable, Tuple
 from datetime import date as date_cls
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, text
 from sqlalchemy.orm import joinedload
 
 from models.base import db
 from models.tournament.models import Tournament, TournamentDirector
 from models.competition.models import Prova, Inscription
-from models.match.models import Match
+from models.match.models import Match as TournamentMatch
 from models.user.models import User
 from models.status_enum import ProvaStatus, MatchStatus
 
@@ -35,15 +35,15 @@ def _role_truthy(user: User, attr_name: str) -> bool:
 
 def _compute_user_stats(user_id: int) -> dict[str, Any]:
     total_matches = (
-        db.session.query(Match)
-        .filter(or_(Match.player1_id == user_id, Match.player2_id == user_id))
+        db.session.query(TournamentMatch)
+        .filter(or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id))
         .count()
     )
     won_matches = (
-        db.session.query(Match)
+        db.session.query(TournamentMatch)
         .filter(
-            or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.winner_id == user_id,
+            or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id),
+            TournamentMatch.winner_id == user_id,
         )
         .count()
     )
@@ -93,8 +93,8 @@ class DashboardVM:
     ] = None  # standalone aperte (come giocatore)
     my_inscriptions: Optional[List[Inscription]] = None
     my_standalone_inscriptions: Optional[List[Inscription]] = None
-    current_matches: Optional[List[Match]] = None
-    recent_matches: Optional[List[Match]] = None
+    current_matches: Optional[List[TournamentMatch]] = None
+    recent_matches: Optional[List[TournamentMatch]] = None
     can_inscribe: bool = False
 
     # extra
@@ -121,7 +121,7 @@ class DashboardService:
         # joinedload per poter calcolare la prima data utile nel selector
         return (
             db.session.query(Tournament)
-            .options(joinedload(Tournament.provas))
+            .options(joinedload(getattr(Tournament, 'provas')))
             .order_by(Tournament.created_at.desc())
         )
 
@@ -131,7 +131,7 @@ class DashboardService:
             db.session.query(Tournament)
             .join(TournamentDirector, TournamentDirector.tournament_id == Tournament.id)
             .filter(TournamentDirector.user_id == user_id)
-            .options(joinedload(Tournament.provas))
+            .options(joinedload(getattr(Tournament, 'provas')))
             .order_by(Tournament.created_at.desc())
         )
 
@@ -205,7 +205,19 @@ class DashboardService:
         """
 
         def _t_date(t: Tournament) -> Optional[date_cls]:
-            dates = [p.date for p in (t.provas or []) if getattr(p, "date", None)]
+            # Safely access the provas relationship
+            try:
+                # Get the provas - either already loaded or load them
+                provas_attr = getattr(t, 'provas', None)
+                if provas_attr is None:
+                    return None
+                
+                # Convert to list to handle both collections and query objects
+                provas_list = list(provas_attr) if hasattr(provas_attr, '__iter__') else []
+                dates = [p.date for p in provas_list if getattr(p, "date", None)]
+            except (AttributeError, TypeError):
+                # Fallback if relationship access fails
+                dates = []
             return min(dates) if dates else None
 
         items: List[Tuple[Optional[date_cls], dict]] = []
@@ -259,8 +271,8 @@ class DashboardService:
         recent_matches per il torneo selezionato."""
         available_provas: List[Prova] = []
         my_regs: List[Inscription] = []
-        my_upcoming: List[Match] = []
-        my_recent: List[Match] = []
+        my_upcoming: List[TournamentMatch] = []
+        my_recent: List[TournamentMatch] = []
 
         if not selected:
             return {
@@ -297,26 +309,26 @@ class DashboardService:
         )
 
         my_upcoming = (
-            db.session.query(Match)
-            .join(Prova, Prova.id == Match.prova_id)
+            db.session.query(TournamentMatch)
+            .join(Prova, Prova.id == TournamentMatch.prova_id)
             .filter(
                 Prova.tournament_id == selected.id,
-                Match.status == MatchStatus.PLAYING.value,
-                or_(Match.player1_id == user_id, Match.player2_id == user_id),
+                TournamentMatch.status == "playing",  # type: ignore[operator]
+                or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id),
             )
-            .order_by(Match.created_at.desc().nullslast(), Match.id.desc())
+            .order_by(TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc())
             .all()
         )
 
         my_recent = (
-            db.session.query(Match)
-            .join(Prova, Prova.id == Match.prova_id)
+            db.session.query(TournamentMatch)
+            .join(Prova, Prova.id == TournamentMatch.prova_id)
             .filter(
                 Prova.tournament_id == selected.id,
-                Match.status == MatchStatus.COMPLETED.value,
-                or_(Match.player1_id == user_id, Match.player2_id == user_id),
+                TournamentMatch.status == "completed",  # type: ignore[operator]
+                or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id),
             )
-            .order_by(Match.created_at.desc().nullslast(), Match.id.desc())
+            .order_by(TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc())
             .limit(10)
             .all()
         )

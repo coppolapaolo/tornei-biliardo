@@ -7,7 +7,6 @@ from datetime import datetime
 import random
 
 from models import (
-    db,
     Tournament,
     Prova,
     Inscription,
@@ -155,7 +154,7 @@ def create_prova():
     exact_number = "exact_number" in request.form
     best_of = not exact_number
 
-    # Crea la prova
+    # Crea la prova usando il service layer
     withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
     ProvaService.create_prova(
         tournament_id=tournament_id,
@@ -174,8 +173,6 @@ def create_prova():
         withdraw_policy=withdraw_policy,
     )
 
-    db.session.commit()
-
     flash(f"Prova {number} creata con successo!")
     return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
 
@@ -192,28 +189,33 @@ def edit_prova(prova_id):
         return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
     if request.method == "POST":
-        # Aggiorna tutti i campi
-        prova.name = request.form.get("name", prova.name)
-        prova.date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
-        prova.location = request.form.get("location", "")
-        prova.description = request.form.get("description", "")
-        prova.rounds_count = int(request.form.get("rounds_count", 3))
-        prova.min_participants = int(request.form.get("min_participants", 2))
-
-        max_participants = request.form.get("max_participants")
-        prova.max_participants = int(max_participants) if max_participants else None
-        prova.entry_fee = float(request.form.get("entry_fee", 0.0))
-        prova.discipline = request.form["discipline"]
-        prova.distance = int(request.form["distance"])
-
-        exact_number = "exact_number" in request.form
-        prova.best_of = not exact_number
-        prova.withdraw_policy = request.form.get(
-            "withdraw_policy", WithdrawPolicy.EXCLUDE.value
-        )
-
-        db.session.commit()
-        flash("Prova aggiornata con successo!")
+        # Usa il service layer invece del direct database access
+        try:
+            max_participants = request.form.get("max_participants")
+            max_participants = int(max_participants) if max_participants else None
+            
+            exact_number = "exact_number" in request.form
+            best_of = not exact_number
+            
+            ProvaService.update_prova(
+                prova_id=prova_id,
+                name=request.form.get("name", prova.name),
+                date_str=request.form["date"],
+                location=request.form.get("location", ""),
+                description=request.form.get("description", ""),
+                rounds_count=int(request.form.get("rounds_count", 3)),
+                min_participants=int(request.form.get("min_participants", 2)),
+                max_participants=max_participants,
+                entry_fee=float(request.form.get("entry_fee", 0.0)),
+                discipline=request.form["discipline"],
+                distance=int(request.form["distance"]),
+                best_of=best_of,
+                withdraw_policy=request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value),
+            )
+            flash("Prova aggiornata con successo!")
+        except ValueError as ve:
+            flash(str(ve), "error")
+        
         return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
     return render_template(
@@ -228,16 +230,16 @@ def delete_prova(prova_id):
     """Cancella prova"""
     prova = Prova.query.get_or_404(prova_id)
     tournament_id = prova.tournament_id
-
-    if not prova.can_be_deleted():
-        flash("Impossibile cancellare la prova: ci sono già delle iscrizioni!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-
     prova_name = f"Prova {prova.number}"
-    db.session.delete(prova)
-    db.session.commit()
-
-    flash(f"{prova_name} cancellata con successo!")
+    
+    # Usa il service layer invece del direct database access
+    try:
+        ProvaService.delete_prova(prova_id)
+        flash(f"{prova_name} cancellata con successo!")
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    
     if not tournament_id:
         return redirect(url_for("dashboard.dashboard"))
     return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
@@ -269,8 +271,6 @@ def prova_detail(prova_id):
 @prova_manager_required
 def open_inscriptions(prova_id):
     """Apri iscrizioni per una prova"""
-    prova = Prova.query.get_or_404(prova_id)
-
     # Ottieni le date UTC dal JavaScript
     inscription_start = datetime.strptime(
         request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
@@ -279,20 +279,16 @@ def open_inscriptions(prova_id):
         request.form["inscription_end_utc"], "%Y-%m-%dT%H:%M:%S"
     )
 
-    # Validazioni
-    if inscription_start > inscription_end:
-        flash("Errore: La data di inizio deve essere precedente alla data di fine!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-
-    prova.inscription_start = inscription_start
-    prova.inscription_end = inscription_end
-    ProvaService.to_inscription(prova.id)
-
-    db.session.commit()
-    flash(
-        "Iscrizioni aperte! Gli orari sono gestiti "
-        "automaticamente nel tuo timezone locale."
-    )
+    # Usa il service layer invece del direct database access
+    try:
+        ProvaService.open_inscriptions(prova_id, inscription_start, inscription_end)
+        flash(
+            "Iscrizioni aperte! Gli orari sono gestiti "
+            "automaticamente nel tuo timezone locale."
+        )
+    except ValueError as ve:
+        flash(str(ve), "error")
+    
     return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
 
@@ -301,12 +297,6 @@ def open_inscriptions(prova_id):
 @prova_manager_required
 def modify_inscription_dates(prova_id):
     """Modifica date di iscrizione per una prova"""
-    prova = Prova.query.get_or_404(prova_id)
-
-    if not prova.can_modify_inscription_dates():
-        flash("Impossibile modificare le date: il primo turno è già stato avviato!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-
     inscription_start = datetime.strptime(
         request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
     )
@@ -314,21 +304,13 @@ def modify_inscription_dates(prova_id):
         request.form["inscription_end_utc"], "%Y-%m-%dT%H:%M:%S"
     )
 
-    if inscription_start > inscription_end:
-        flash("Errore: La data di inizio deve essere precedente alla data di fine!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-
-    prova.inscription_start = inscription_start
-    prova.inscription_end = inscription_end
-
-    now = datetime.utcnow()
-    if inscription_start > now:
-        ProvaService.reopen_setup(prova.id)
-    elif inscription_start <= now <= inscription_end:
-        ProvaService.to_inscription(prova.id)
-
-    db.session.commit()
-    flash("Date di iscrizione aggiornate con successo!")
+    # Usa il service layer invece del direct database access
+    try:
+        ProvaService.modify_inscription_dates(prova_id, inscription_start, inscription_end)
+        flash("Date di iscrizione aggiornate con successo!")
+    except ValueError as ve:
+        flash(str(ve), "error")
+    
     return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
 
@@ -337,33 +319,13 @@ def modify_inscription_dates(prova_id):
 @prova_manager_required
 def start_first_round(prova_id):
     """Avvia primo turno della prova"""
-    prova = Prova.query.get_or_404(prova_id)
-
-    if prova.current_round != 0:
-        flash("La prova è già iniziata!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-
-    # Verifica numero minimo partecipanti
-    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
-    if len(inscriptions) < prova.min_participants:
-        flash(f"Servono almeno {prova.min_participants} iscritti per avviare la prova!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-
-    # Genera il sorteggio iniziale
-    random.shuffle(inscriptions)
-
-    # Assegna ordine sorteggio
-    for i, inscription in enumerate(inscriptions, 1):
-        inscription.initial_order = i
-
-    # Crea abbinamenti primo turno
-    create_round_matches(prova, inscriptions, 1)
-
-    prova.current_round = 1
-    ProvaService.start_playing(prova.id)
-    db.session.commit()
-
-    flash("Primo turno avviato!")
+    # Usa il service layer invece del direct database access
+    try:
+        ProvaService.start_first_round(prova_id)
+        flash("Primo turno avviato!")
+    except ValueError as ve:
+        flash(str(ve), "error")
+    
     return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
 
@@ -487,22 +449,15 @@ def amalfi_start_round(prova_id, round_number):
                 flash(f"Completa prima tutte le partite del turno {round_number-1}!")
                 return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
-        # Service/Strategy (adapter al legacy engine)
-        svc = get_matchmaking_service()
-        pairings = svc.run(strategy_name="Amalfi", prova=prova, round_number=round_number)
-
-        # Stato prova
+        # Crea il turno Amalfi usando il service layer
+        total, n_normal, n_bye, n_trio = ProvaService.create_amalfi_round(prova_id, round_number)
+        
+        # Aggiorna lo stato della prova
         prova.current_round = round_number
         if prova.status != ProvaStatus.PLAYING.value:
             ProvaService.start_playing(prova.id)
-        db.session.commit()
 
-        # Messaggi basati su pairings
-        total = len(pairings)
-        n_trio = sum(1 for p in pairings if len(p.players) == 3)
-        n_bye = sum(1 for p in pairings if len(p.players) == 1)
-        n_normal = total - n_trio - n_bye
-
+        # Messaggi basati sui risultati
         flash(
             f"Turno {round_number} avviato con successo! "
             f"Creati {total} abbinamenti Amalfi."
@@ -516,8 +471,10 @@ def amalfi_start_round(prova_id, round_number):
 
         return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
     except Exception as e:
-        db.session.rollback()
         flash(f"Errore durante la creazione del turno: {str(e)}", "error")
         return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
@@ -530,46 +487,16 @@ def amalfi_start_round(prova_id, round_number):
 @trio_manager_required
 def trio_add_rack(trio_id):
     """Aggiungi rack a partita trio"""
-    trio = TrioMatch.query.get_or_404(trio_id)
-
     try:
         winner_id = int(request.form["winner_id"])
-
-        # Verifica che il vincitore sia tra i giocatori del trio
-        if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
-            return jsonify({"error": "Vincitore non valido per questo trio"}), 400
-
-        # Aggiungi rack e gestisci rotazione
-        trio.add_rack_win(winner_id)
-
-        db.session.commit()
-
-        # Prepara risposta con nuovo stato
-        state = trio.get_current_state()
-
-        return jsonify(
-            {
-                "success": True,
-                "trio_completed": trio.is_completed,
-                "winner_id": trio.winner_id,
-                "current_state": {
-                    "current_players": [
-                        {"id": p.id, "username": p.username}
-                        for p in state["current_players"]
-                    ],
-                    "waiting_player": {
-                        "id": state["waiting_player"].id,
-                        "username": state["waiting_player"].username,
-                    }
-                    if state["waiting_player"]
-                    else None,
-                    "scores": state["scores"],
-                },
-            }
-        )
-
+        
+        # Usa il service layer invece del direct database access
+        result = ProvaService.add_trio_rack(trio_id, winner_id)
+        return jsonify(result)
+        
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
 
 
@@ -578,29 +505,12 @@ def trio_add_rack(trio_id):
 @trio_manager_required
 def trio_reset(trio_id):
     """Reset completo trio"""
-    trio = TrioMatch.query.get_or_404(trio_id)
-
     try:
-        # Reset scores
-        trio.player1_racks = 0
-        trio.player2_racks = 0
-        trio.player3_racks = 0
-
-        # Reset state
-        trio.current_player1_id = trio.player1_id
-        trio.current_player2_id = trio.player2_id
-        trio.waiting_player_id = trio.player3_id
-        trio.is_completed = False
-        trio.winner_id = None
-
-        # Reset match associato
-        MatchService.reset_to_pending(trio.match.id, clear_validation=True)
-        trio.match.winner_id = None
-
-        db.session.commit()
-
+        # Usa il service layer invece del direct database access
+        ProvaService.reset_trio(trio_id)
         return jsonify({"success": True, "message": "Trio resettato con successo"})
-
+        
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 500
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Errore durante reset trio: {str(e)}"}), 500

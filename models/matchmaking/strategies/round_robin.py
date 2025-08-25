@@ -9,25 +9,32 @@ from __future__ import annotations
 import itertools
 from typing import Sequence, List, Tuple, Optional, TYPE_CHECKING
 
-from .base import Pairing, ValidationResult
+from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
     from models.competition.models import Prova
 
 
-class RoundRobinStrategy:
+class RoundRobinStrategy(PairingStrategy):
     """Round Robin pairing strategy where everyone plays everyone else."""
     
-    name = "Round Robin"
+    # PairingStrategy metadata
+    name = "round_robin"
+    display_name = "Round Robin"
+    description = "Round Robin tournament where everyone plays everyone else"
+    min_players = 3
+    max_players = 16
+    supports_byes = True
+    requires_classification = False
     
     def __init__(self):
         self.strategy_name = "round_robin"
     
-    def validate(self, prova: "Prova") -> ValidationResult:
+    def validate(self, prova: object) -> ValidationResult:
         """Validate if Round Robin can be used for this prova."""
         try:
             # Get active inscriptions
-            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            inscriptions = getattr(prova, 'inscriptions', [])
             active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_count = len(active_inscriptions)
             
@@ -46,10 +53,11 @@ class RoundRobinStrategy:
             # Calculate required rounds
             required_rounds = player_count - 1 if player_count % 2 == 0 else player_count
             
-            if hasattr(prova, 'rounds_count') and prova.rounds_count < required_rounds:
+            # Check if prova has rounds_count and validate
+            if hasattr(prova, 'rounds_count') and getattr(prova, 'rounds_count', 0) < required_rounds:
                 return ValidationResult(
                     ok=False,
-                    messages=(f"Round Robin requires {required_rounds} rounds, but prova has {prova.rounds_count}",)
+                    messages=(f"Round Robin requires {required_rounds} rounds, but prova has {getattr(prova, 'rounds_count', 0)}",)
                 )
             
             return ValidationResult(ok=True)
@@ -60,19 +68,19 @@ class RoundRobinStrategy:
                 messages=(f"Validation error: {str(e)}",)
             )
     
-    def preview(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
+    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
         return self._generate_round_pairings(prova, round_number)
     
-    def propose(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
+    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
         return self._generate_round_pairings(prova, round_number)
     
-    def _generate_round_pairings(self, prova: "Prova", round_number: int) -> List[Pairing]:
+    def _generate_round_pairings(self, prova: object, round_number: int) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
         try:
             # Get active players
-            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            inscriptions = getattr(prova, 'inscriptions', [])
             active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_ids = [i.user_id for i in active_inscriptions]
             
@@ -145,6 +153,10 @@ class RoundRobinStrategy:
     def get_matches_per_player(self, player_count: int) -> int:
         """Calculate matches per player in Round Robin."""
         return max(0, player_count - 1)
+    
+    def get_metrics(self) -> Optional[StrategyMetrics]:
+        """Get performance metrics from last execution."""
+        return None  # No metrics collection implemented yet
 
 
 class RoundRobinPairingStrategy(RoundRobinStrategy):

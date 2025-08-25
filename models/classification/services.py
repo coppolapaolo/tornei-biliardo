@@ -7,7 +7,7 @@ Dependencies: models.classification.models, models.base.db
 Enhanced: Phase 3.4 - Performance Optimization
 """
 
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Any
 from sqlalchemy.orm import selectinload, joinedload
 from models.base import db
 from .models import Classification, RoundClassification, PlayerEncounter
@@ -41,8 +41,8 @@ class ClassificationService:
         provas_query = Prova.query.filter_by(tournament_id=tournament_id)
         provas = bulk_load_relationships(
             provas_query,
-            selectinload(Prova.matches),
-            selectinload(Prova.inscriptions)
+            "matches",
+            "inscriptions"
         ).all()
 
         # Aggregate stats across all provas
@@ -135,7 +135,7 @@ class ClassificationService:
         return (
             Classification.query
             .filter_by(tournament_id=tournament_id)
-            .options(joinedload(Classification.user))  # Eager load user data
+            .options(joinedload(getattr(Classification, 'user')))  # Eager load user data
             .order_by(Classification.position)
             .all()
         )
@@ -157,7 +157,7 @@ class ClassificationService:
         """
         return (
             Classification.query
-            .options(joinedload(Classification.user))
+            .options(joinedload(getattr(Classification, 'user')))
             .filter_by(tournament_id=tournament_id, user_id=user_id)
             .first()
         )
@@ -171,7 +171,7 @@ class ClassificationService:
     
     @staticmethod
     @cached(ttl_seconds=1800, tags=['classification', 'tournament'])
-    def get_player_statistics_summary(tournament_id: int) -> Dict[str, any]:
+    def get_player_statistics_summary(tournament_id: int) -> Dict[str, Any]:
         """Get comprehensive statistics summary for the tournament."""
         standings = ClassificationService.get_tournament_standings(tournament_id)
         
@@ -217,7 +217,7 @@ class RoundClassificationService:
         return (
             RoundClassification.query
             .filter_by(prova_id=prova_id, round_number=round_number)
-            .options(joinedload(RoundClassification.user))
+            .options(joinedload(getattr(RoundClassification, 'user')))
             .order_by(RoundClassification.position)
             .all()
         )
@@ -363,7 +363,7 @@ class PlayerEncounterService:
     
     @staticmethod
     @cached(ttl_seconds=1200, tags=['encounter', 'prova'])
-    def get_encounter_statistics(prova_id: int) -> Dict[str, any]:
+    def get_encounter_statistics(prova_id: int) -> Dict[str, Any]:
         """Get comprehensive encounter statistics for the prova."""
         encounters = PlayerEncounter.query.filter_by(prova_id=prova_id).all()
         

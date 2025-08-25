@@ -61,7 +61,7 @@ class ValidationResult:
         return len(self.errors) > 0
     
     @classmethod
-    def success(cls, messages: List[str] = None, warnings: List[str] = None) -> 'ValidationResult':
+    def success(cls, messages: Optional[List[str]] = None, warnings: Optional[List[str]] = None) -> 'ValidationResult':
         """Create successful validation result."""
         return cls(
             ok=True,
@@ -70,7 +70,7 @@ class ValidationResult:
         )
     
     @classmethod
-    def failure(cls, errors: List[str], warnings: List[str] = None) -> 'ValidationResult':
+    def failure(cls, errors: List[str], warnings: Optional[List[str]] = None) -> 'ValidationResult':
         """Create failed validation result."""
         return cls(
             ok=False,
@@ -96,29 +96,34 @@ class StrategyMetrics:
         return self.execution_time_ms + self.validation_time_ms
 
 
-class PairingStrategy(Protocol):
-    """Enhanced protocol for pairing strategies."""
+class PairingStrategy(ABC):
+    """Enhanced abstract base class for pairing strategies."""
     
-    # Strategy metadata
-    display_name: str
-    description: str
-    min_players: int
-    max_players: Optional[int]
-    supports_byes: bool
-    requires_classification: bool
+    # Strategy metadata (with default values)
+    name: str = "base_strategy"
+    display_name: str = "Base Strategy"
+    description: str = "Base strategy implementation"
+    min_players: int = 2
+    max_players: Optional[int] = None
+    supports_byes: bool = True
+    requires_classification: bool = False
     
+    @abstractmethod
     def validate(self, prova: object) -> ValidationResult:
         """Validate prova state for this strategy."""
         ...
 
+    @abstractmethod
     def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
         """Generate preview without side effects."""
         ...
 
+    @abstractmethod
     def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
         """Generate actual pairings with side effects."""
         ...
     
+    @abstractmethod
     def get_metrics(self) -> Optional[StrategyMetrics]:
         """Get performance metrics from last execution."""
         ...
@@ -128,6 +133,7 @@ class BaseStrategy(ABC):
     """Abstract base class implementing template method pattern for strategies."""
     
     # Strategy metadata (to be overridden)
+    name: str = "base"
     display_name: str = "Base Strategy"
     description: str = "Abstract base strategy"
     min_players: int = 2
@@ -284,9 +290,8 @@ class BaseStrategy(ABC):
     
     def _get_active_inscriptions(self, prova: object) -> List[Any]:
         """Get active inscriptions for the prova."""
-        if hasattr(prova, 'inscriptions'):
-            return [i for i in prova.inscriptions if i.status == 'confirmed']
-        return []
+        inscriptions = getattr(prova, 'inscriptions', [])
+        return [i for i in inscriptions if hasattr(i, 'status') and i.status == 'confirmed']
     
     def _calculate_pairing_quality(
         self, 

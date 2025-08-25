@@ -9,6 +9,10 @@ from datetime import datetime
 from models.base import db
 from enum import Enum
 from models.status_enum import ProvaStatus, MatchStatus
+from typing import List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.match.models import Match
 
 
 class WithdrawPolicy(str, Enum):
@@ -110,10 +114,14 @@ class Prova(db.Model):
         """Restituisce lo status reale, considerando anche round e iscrizioni"""
         if self.status == ProvaStatus.PLAYING.value:
             # Se tutti i match del round corrente sono finiti
+            matches_list = getattr(self, 'matches', []) or []
+            current_round_matches = [
+                m for m in matches_list
+                if hasattr(m, 'round_number') and m.round_number == self.current_round
+            ]
             all_matches_finished = all(
                 m.status == MatchStatus.COMPLETED.value
-                for m in self.matches
-                if m.round_number == self.current_round
+                for m in current_round_matches
             )
             if all_matches_finished:
                 if self.current_round < self.rounds_count:
@@ -152,8 +160,10 @@ class Prova(db.Model):
         if self.current_round >= self.rounds_count:
             return False
         # Tutti i match del round corrente devono essere completati
+        matches_list = getattr(self, 'matches', []) or []
         current_round_matches = [
-            m for m in self.matches if m.round_number == self.current_round
+            m for m in matches_list
+            if hasattr(m, 'round_number') and m.round_number == self.current_round
         ]
         return all(
             m.status == MatchStatus.COMPLETED.value for m in current_round_matches
@@ -169,7 +179,8 @@ class Prova(db.Model):
 
     def is_user_inscribed(self, user_id) -> bool:
         """Verifica se un utente è iscritto"""
-        return any(insc.user_id == user_id for insc in self.inscriptions)
+        inscriptions_list = getattr(self, 'inscriptions', []) or []
+        return any(insc.user_id == user_id for insc in inscriptions_list)
 
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
@@ -181,7 +192,8 @@ class Prova(db.Model):
 
     def can_be_deleted(self):
         """Verifica se la prova può essere cancellata"""
-        return not self.inscriptions and self.status == ProvaStatus.SETUP.value
+        inscriptions_list = getattr(self, 'inscriptions', []) or []
+        return not inscriptions_list and self.status == ProvaStatus.SETUP.value
 
     def get_winning_score(self):
         """Restituisce il punteggio per vincere"""

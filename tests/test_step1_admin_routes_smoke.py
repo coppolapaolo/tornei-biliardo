@@ -19,7 +19,10 @@ class TestAdminRoutesSmokeTests:
         with app.app_context():
             # Test that the admin blueprint is registered
             from routes import register_blueprints
-            register_blueprints(app)
+            
+            # Only register if not already registered (avoid duplicate registration)
+            if 'admin' not in [bp.name for bp in app.blueprints.values()]:
+                register_blueprints(app)
             
             # Verify blueprint registration worked
             assert any(bp.name == 'admin' for bp in app.blueprints.values())
@@ -91,21 +94,26 @@ class TestAdminRoutesSmokeTests:
     def test_url_preservation(self, app):
         """Test that all expected admin URLs are preserved."""
         with app.app_context():
-            # Test that URL generation works for all major admin routes
-            urls_to_test = [
-                ('admin.dashboard.dashboard',),
-                ('admin.tournament.create_tournament',),
-                ('admin.competition.create_prova_standalone',),
-                ('admin.user.users_list',),
-                ('admin.user.director_requests',),
-            ]
+            # Configure SERVER_NAME for URL generation outside request context
+            app.config['SERVER_NAME'] = 'localhost'
             
-            for url_args in urls_to_test:
-                try:
-                    url = url_for(*url_args)
-                    assert url.startswith('/admin/')
-                except Exception as e:
-                    pytest.fail(f"URL generation failed for {url_args}: {e}")
+            # Create test client and request context for URL generation
+            with app.test_request_context('/'):
+                # Test that URL generation works for all major admin routes
+                urls_to_test = [
+                    ('admin.dashboard.dashboard',),
+                    ('admin.tournament.create_tournament',),
+                    ('admin.competition.create_prova_standalone',),
+                    ('admin.user.users_list',),
+                    ('admin.user.director_requests',),
+                ]
+                
+                for url_args in urls_to_test:
+                    try:
+                        url = url_for(*url_args)
+                        assert url.startswith('/admin/')
+                    except Exception as e:
+                        pytest.fail(f"URL generation failed for {url_args}: {e}")
 
     def test_blueprint_structure_exists(self):
         """Test that all domain-specific blueprint files exist."""
@@ -150,7 +158,7 @@ class TestAdminRoutesSmokeTests:
 
 # Pytest fixtures for testing
 @pytest.fixture
-def admin_user(db):
+def admin_user(db_session):
     """Create an admin user for testing."""
     user = User(
         username='test_admin',
@@ -158,21 +166,22 @@ def admin_user(db):
         role='admin'
     )
     user.set_password('password123')
-    db.session.add(user)
-    db.session.commit()
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
     return user
 
 
 @pytest.fixture  
-def sample_match(db, admin_user):
+def sample_match(db_session, admin_user):
     """Create a sample match for testing."""
     from models import Tournament, Prova, Match, Inscription
     from datetime import date
     
     # Create test data
     tournament = Tournament(name='Test Tournament', is_active=True)
-    db.session.add(tournament)
-    db.session.flush()
+    db_session.add(tournament)
+    db_session.flush()
     
     prova = Prova(
         tournament_id=tournament.id,
@@ -183,16 +192,16 @@ def sample_match(db, admin_user):
         distance=5,
         rounds_count=3
     )
-    db.session.add(prova)
-    db.session.flush()
+    db_session.add(prova)
+    db_session.flush()
     
     # Create test players
     player1 = User(username='player1', email='p1@test.com', role='player')
     player2 = User(username='player2', email='p2@test.com', role='player')
     player1.set_password('pass')
     player2.set_password('pass')
-    db.session.add_all([player1, player2])
-    db.session.flush()
+    db_session.add_all([player1, player2])
+    db_session.flush()
     
     match = Match(
         prova_id=prova.id,
@@ -200,7 +209,8 @@ def sample_match(db, admin_user):
         player2_id=player2.id,
         round_number=1
     )
-    db.session.add(match)
-    db.session.commit()
+    db_session.add(match)
+    db_session.commit()
+    db_session.refresh(match)
     
     return match

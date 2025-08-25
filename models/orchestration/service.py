@@ -56,7 +56,7 @@ class OperationResult:
         data: Dict[str, Any],
         execution_time_ms: float,
         affected_domains: List[str],
-        warnings: List[str] = None
+        warnings: Optional[List[str]] = None
     ) -> 'OperationResult':
         return cls(
             success=True,
@@ -75,8 +75,8 @@ class OperationResult:
         errors: List[str],
         execution_time_ms: float,
         affected_domains: List[str],
-        warnings: List[str] = None,
-        data: Dict[str, Any] = None
+        warnings: Optional[List[str]] = None,
+        data: Optional[Dict[str, Any]] = None
     ) -> 'OperationResult':
         return cls(
             success=False,
@@ -216,7 +216,7 @@ class DomainOrchestrator:
                 category_assignment = CategoryService.assign_category(
                     user_id=user.id,
                     category=CategoryLevel.D,  # Start with beginner
-                    assigned_by_id=None,  # System assignment
+                    assigned_by_id=user.id,  # Self-assignment for new player
                     reason="Automatic assignment for new player"
                 )
                 onboarding_steps.append("category_assigned")

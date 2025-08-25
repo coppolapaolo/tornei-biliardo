@@ -108,7 +108,7 @@ class Tiebreaker(db.Model):
     
     def start(self) -> None:
         """Start the tiebreaker."""
-        if self.status != TiebreakerStatus.PENDING.value:
+        if str(self.status) != TiebreakerStatus.PENDING.value:
             raise ValueError("Tiebreaker must be pending to start")
         
         self.status = TiebreakerStatus.IN_PROGRESS.value
@@ -116,7 +116,7 @@ class Tiebreaker(db.Model):
     
     def complete(self, winner_id: int) -> None:
         """Complete the tiebreaker with a winner."""
-        if self.status != TiebreakerStatus.IN_PROGRESS.value:
+        if str(self.status) != TiebreakerStatus.IN_PROGRESS.value:
             raise ValueError("Tiebreaker must be in progress to complete")
         
         if winner_id not in [self.player1_id, self.player2_id]:
@@ -126,7 +126,7 @@ class Tiebreaker(db.Model):
         self.winner_id = winner_id
         self.completed_at = datetime.utcnow()
     
-    def cancel(self, reason: str = None) -> None:
+    def cancel(self, reason: Optional[str] = None) -> None:
         """Cancel the tiebreaker."""
         self.status = TiebreakerStatus.CANCELLED.value
         if reason:
@@ -134,21 +134,23 @@ class Tiebreaker(db.Model):
     
     def get_score_summary(self) -> dict:
         """Get current score summary based on tiebreaker type."""
-        if self.tiebreaker_type == TiebreakerType.SPOT_SHOT.value:
+        if str(self.tiebreaker_type) == TiebreakerType.SPOT_SHOT.value:
             return self._get_spot_shot_score()
-        elif self.tiebreaker_type == TiebreakerType.RALLY.value:
+        elif str(self.tiebreaker_type) == TiebreakerType.RALLY.value:
             return self._get_rally_score()
-        elif self.tiebreaker_type == TiebreakerType.PLAYOFF_MATCH.value:
+        elif str(self.tiebreaker_type) == TiebreakerType.PLAYOFF_MATCH.value:
             return self._get_playoff_score()
         else:
             return {"player1_score": 0, "player2_score": 0}
     
     def _get_spot_shot_score(self) -> dict:
         """Calculate spot shot scores."""
+        player1_id = self.player1_id
+        player2_id = self.player2_id
         p1_made = sum(1 for shot in self.spot_shots 
-                     if shot.player_id == self.player1_id and shot.result == SpotShotResult.MADE.value)
+                     if shot.player_id == player1_id and str(shot.result) == SpotShotResult.MADE.value)  # type: ignore
         p2_made = sum(1 for shot in self.spot_shots 
-                     if shot.player_id == self.player2_id and shot.result == SpotShotResult.MADE.value)
+                     if shot.player_id == player2_id and str(shot.result) == SpotShotResult.MADE.value)  # type: ignore
         
         return {
             "player1_score": p1_made,
@@ -158,10 +160,12 @@ class Tiebreaker(db.Model):
     
     def _get_rally_score(self) -> dict:
         """Calculate rally scores."""
+        player1_id = self.player1_id
+        player2_id = self.player2_id
         p1_score = sum(attempt.points_scored for attempt in self.rally_attempts 
-                      if attempt.player_id == self.player1_id)
+                      if attempt.player_id == player1_id)  # type: ignore
         p2_score = sum(attempt.points_scored for attempt in self.rally_attempts 
-                      if attempt.player_id == self.player2_id)
+                      if attempt.player_id == player2_id)  # type: ignore
         
         return {
             "player1_score": p1_score,
@@ -170,15 +174,17 @@ class Tiebreaker(db.Model):
     
     def _get_playoff_score(self) -> dict:
         """Calculate playoff match scores."""
+        player1_id = self.player1_id
+        player2_id = self.player2_id
         p1_wins = sum(1 for match in self.playoff_matches 
-                     if match.winner_id == self.player1_id)
+                     if match.winner_id is not None and match.winner_id == player1_id)  # type: ignore
         p2_wins = sum(1 for match in self.playoff_matches 
-                     if match.winner_id == self.player2_id)
+                     if match.winner_id is not None and match.winner_id == player2_id)  # type: ignore
         
         return {
             "player1_score": p1_wins,
             "player2_score": p2_wins,
-            "total_matches": len([m for m in self.playoff_matches if m.winner_id])
+            "total_matches": len([m for m in self.playoff_matches if m.winner_id is not None])
         }
 
 
@@ -295,7 +301,7 @@ class PlayoffMatch(db.Model):
     
     def start_match(self) -> None:
         """Start the playoff match."""
-        if self.status != "pending":
+        if str(self.status) != "pending":
             raise ValueError("Match must be pending to start")
         
         self.status = "in_progress"
@@ -303,7 +309,7 @@ class PlayoffMatch(db.Model):
     
     def complete_match(self, winner_id: int, p1_score: int, p2_score: int) -> None:
         """Complete the playoff match."""
-        if self.status != "in_progress":
+        if str(self.status) != "in_progress":
             raise ValueError("Match must be in progress to complete")
         
         if winner_id not in [self.player1_id, self.player2_id]:

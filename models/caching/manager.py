@@ -122,6 +122,10 @@ class CacheBackend(ABC):
     def get_stats(self) -> CacheStats:
         """Get cache statistics."""
         pass
+    
+    def invalidate_by_tags(self, tags: List[str]) -> int:
+        """Invalidate entries by tags. Default implementation does nothing."""
+        return 0
 
 
 class MemoryCacheBackend(CacheBackend):
@@ -329,7 +333,7 @@ class HierarchicalCacheManager:
         key: str, 
         value: Any,
         ttl_seconds: Optional[int] = None,
-        tags: List[str] = None,
+        tags: Optional[List[str]] = None,
         levels: Optional[List[CacheLevel]] = None
     ) -> bool:
         """Set value in cache hierarchy."""
@@ -454,7 +458,7 @@ cache_manager.register_level(
 
 def cached(
     ttl_seconds: Optional[int] = None,
-    tags: List[str] = None,
+    tags: Optional[List[str]] = None,
     key_generator: Optional[str] = None,
     levels: Optional[List[CacheLevel]] = None
 ):
@@ -499,8 +503,9 @@ def cache_invalidate(tags: List[str], levels: Optional[List[CacheLevel]] = None)
             result = func(*args, **kwargs)
             
             # Invalidate cache after successful execution
-            cache_manager.invalidate_by_tags(tags, levels)
-            logger.debug(f"Invalidated cache tags: {tags}")
+            if tags:  # Only invalidate if tags are provided
+                cache_manager.invalidate_by_tags(tags, levels)
+                logger.debug(f"Invalidated cache tags: {tags}")
             
             return result
         

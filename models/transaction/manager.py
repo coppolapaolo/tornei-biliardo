@@ -16,6 +16,7 @@ import time
 from threading import local
 
 from ..base import db
+from sqlalchemy import text
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -165,12 +166,12 @@ class TransactionManager:
                 
                 # Set isolation level if specified
                 if isolation_level:
-                    db.session.execute(f"SET TRANSACTION ISOLATION LEVEL {isolation_level.value}")
+                    db.session.execute(text(f"SET TRANSACTION ISOLATION LEVEL {isolation_level.value}"))
                     logger.debug(f"Set isolation level to {isolation_level.value}")
                 
                 # Set read-only if specified
                 if read_only:
-                    db.session.execute("SET TRANSACTION READ ONLY")
+                    db.session.execute(text("SET TRANSACTION READ ONLY"))
                     logger.debug("Set transaction to read-only")
             
             # Set as current transaction
@@ -276,10 +277,10 @@ class TransactionManager:
         
         # Calculate average duration
         completed_transactions = [m for m in self._metrics_history if m.duration_ms is not None]
-        avg_duration = sum(m.duration_ms for m in completed_transactions) / len(completed_transactions) if completed_transactions else 0
+        avg_duration = sum(m.duration_ms for m in completed_transactions if m.duration_ms is not None) / len(completed_transactions) if completed_transactions else 0
         
         # Find slowest transactions
-        slowest = sorted(completed_transactions, key=lambda m: m.duration_ms, reverse=True)[:5]
+        slowest = sorted(completed_transactions, key=lambda m: m.duration_ms or 0, reverse=True)[:5]
         
         return {
             "total_transactions": total,

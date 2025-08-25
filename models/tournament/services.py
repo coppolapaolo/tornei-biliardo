@@ -8,7 +8,8 @@ Dependencies: models.base.db, models.tournament.models, models.status_enum
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db
@@ -26,6 +27,126 @@ class TournamentService:
         db.session.add(tournament)
         db.session.commit()
         return tournament
+    
+    @staticmethod
+    def create_tournament_with_director(
+        name: str, 
+        creator_user_id: int,
+        tournament_type: str = "Amalfi",
+        without_x: bool = False,
+        final_playoffs: bool = False,
+        challenge_mode: bool = False,
+        is_active: bool = True
+    ) -> Tournament:
+        """Crea torneo e assegna automaticamente il direttore se necessario."""
+        # Import locale per evitare import circolari
+        from models.user.models import User, TournamentDirector
+        
+        user = User.query.get_or_404(creator_user_id)
+        
+        tournament = Tournament(
+            name=name,
+            tournament_type=tournament_type,
+            without_x=without_x,
+            final_playoffs=final_playoffs,
+            challenge_mode=challenge_mode,
+            is_active=is_active,
+        )
+        db.session.add(tournament)
+        db.session.flush()  # Per ottenere l'ID senza commit completo
+        
+        # Se l'utente è un direttore (non admin), assegnalo automaticamente
+        if user.is_director and not user.is_admin:
+            assignment = TournamentDirector(
+                user_id=creator_user_id,
+                tournament_id=tournament.id,
+                assigned_by_id=creator_user_id,
+            )
+            db.session.add(assignment)
+        
+        db.session.commit()
+        return tournament
+    
+    @staticmethod
+    def update_tournament(tournament_id: int, **kwargs) -> Tournament:
+        """Aggiorna un torneo con i campi forniti."""
+        tournament = Tournament.query.get_or_404(tournament_id)
+        
+        if not tournament.can_be_modified():
+            raise ValueError("Impossibile modificare il torneo: alcune prove hanno già delle iscrizioni!")
+        
+        # Aggiorna solo i campi forniti
+        for field, value in kwargs.items():
+            if hasattr(tournament, field):
+                setattr(tournament, field, value)
+        
+        tournament.updated_at = datetime.utcnow()
+        db.session.commit()
+        return tournament
+    
+    @staticmethod
+    def toggle_active_status(tournament_id: int) -> Tournament:
+        """Attiva/disattiva un torneo."""
+        tournament = Tournament.query.get_or_404(tournament_id)
+        tournament.is_active = not tournament.is_active
+        tournament.updated_at = datetime.utcnow()
+        db.session.commit()
+        return tournament
+    
+    @staticmethod
+    def add_director(tournament_id: int, user_id: int, assigned_by_id: int) -> bool:
+        """Aggiunge un co-direttore al torneo. 
+        
+        Returns:
+            True se aggiunto con successo, False se già esistente
+            
+        Raises:
+            ValueError se l'utente è admin
+        """
+        # Import locale per evitare import circolari
+        from models.user.models import User, TournamentDirector
+        
+        user = User.query.get_or_404(user_id)
+        
+        if user.role == "admin":
+            raise ValueError("Gli admin non vanno assegnati come direttori.")
+        
+        existing = TournamentDirector.query.filter_by(
+            user_id=user_id, tournament_id=tournament_id
+        ).first()
+        
+        if existing:
+            return False  # Già esistente
+        
+        assignment = TournamentDirector(
+            user_id=user_id,
+            tournament_id=tournament_id,
+            assigned_by_id=assigned_by_id,
+        )
+        db.session.add(assignment)
+        db.session.commit()
+        return True
+    
+    @staticmethod
+    def remove_director(tournament_id: int, user_id: int) -> bool:
+        """Rimuove un co-direttore dal torneo.
+        
+        Returns:
+            True se rimosso con successo, False se non trovato
+        """
+        # Import locale per evitare import circolari
+        from models.user.models import TournamentDirector
+        
+        assignment = TournamentDirector.query.filter_by(
+            user_id=user_id, tournament_id=tournament_id
+        ).first()
+        
+        if assignment:
+            db.session.delete(assignment)
+            db.session.commit()
+            return True
+        
+        return False
 
     @staticmethod
     def get_active_tournaments() -> List[Tournament]:
@@ -53,7 +174,7 @@ class TournamentService:
             raise
     
     @staticmethod
-    def soft_delete_tournament(tournament_id: int, reason: str = None) -> bool:
+    def soft_delete_tournament(tournament_id: int, reason: Optional[str] = None) -> bool:
         """
         Perform soft delete on tournament with played matches.
         Returns True if successful, False if already deleted.

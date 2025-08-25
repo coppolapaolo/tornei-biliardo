@@ -6,7 +6,6 @@ from flask_login import login_required
 from sqlalchemy import func, desc, case
 
 from models import (
-    db,
     User,
     Inscription,
     Match,
@@ -27,6 +26,8 @@ user_bp = Blueprint("user", __name__)
 def users_list():
     """Lista di tutti gli utenti con statistiche"""
 
+    from models.base import db  # Import locally for specific query needs
+    
     users = (
         db.session.query(
             User,
@@ -53,7 +54,11 @@ def users_list():
 @admin_required
 def user_detail(user_id):
     """Scheda dettagliata utente"""
-    user = User.query.get_or_404(user_id)
+    from models.base import db
+    user = db.session.get(User, user_id)
+    if not user:
+        from flask import abort
+        abort(404)
 
     # se l'utente è admin, ritorna alla lista utenti
     if user.role == "admin":
@@ -69,6 +74,8 @@ def user_detail(user_id):
     )
 
     # Partite giocate
+    from models.base import db  # Import locally for query needs
+    
     matches = (
         Match.query.filter(
             db.or_(Match.player1_id == user_id, Match.player2_id == user_id)
@@ -140,11 +147,19 @@ def director_requests():
 @admin_required
 def approve_director_request(req_id):
     """Approva richiesta di promozione a direttore"""
-    req = DirectorRequest.query.get_or_404(req_id)
-    req.status = DirectorRequestStatus.APPROVED.value
-    req.user.role = "director"
-    db.session.commit()
-    flash("Richiesta approvata.")
+    from models.user.services import DirectorRequestService
+    from flask_login import current_user
+    
+    try:
+        # Usa il service layer invece del direct database access
+        # Cast current_user to User type since @admin_required ensures it's a valid admin User
+        from models.base import db
+        admin_user = db.session.get(User, current_user.id)
+        DirectorRequestService.process_request(req_id, admin_user, approve=True)
+        flash("Richiesta approvata.")
+    except (PermissionError, ValueError) as e:
+        flash(str(e), "error")
+    
     return redirect(url_for("admin.user.director_requests"))
 
 
@@ -152,8 +167,17 @@ def approve_director_request(req_id):
 @admin_required
 def reject_director_request(req_id):
     """Rifiuta richiesta di promozione a direttore"""
-    req = DirectorRequest.query.get_or_404(req_id)
-    req.status = DirectorRequestStatus.REJECTED.value
-    db.session.commit()
-    flash("Richiesta rifiutata.")
+    from models.user.services import DirectorRequestService
+    from flask_login import current_user
+    
+    try:
+        # Usa il service layer invece del direct database access
+        # Cast current_user to User type since @admin_required ensures it's a valid admin User
+        from models.base import db
+        admin_user = db.session.get(User, current_user.id)
+        DirectorRequestService.process_request(req_id, admin_user, approve=False)
+        flash("Richiesta rifiutata.")
+    except (PermissionError, ValueError) as e:
+        flash(str(e), "error")
+    
     return redirect(url_for("admin.user.director_requests"))

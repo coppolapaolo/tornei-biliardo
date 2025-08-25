@@ -17,6 +17,7 @@ class EncryptionManager:
     
     _instance: Optional['EncryptionManager'] = None
     _cipher_suite: Optional[Fernet] = None
+    _initialized: bool = False
     
     def __new__(cls) -> 'EncryptionManager':
         if cls._instance is None:
@@ -24,8 +25,9 @@ class EncryptionManager:
         return cls._instance
     
     def __init__(self):
-        if self._cipher_suite is None:
+        if not self._initialized:
             self._initialize_cipher()
+            EncryptionManager._initialized = True
     
     def _initialize_cipher(self) -> None:
         """Initialize encryption cipher from server configuration."""
@@ -50,12 +52,15 @@ class EncryptionManager:
         )
         
         key = base64.urlsafe_b64encode(kdf.derive(key_bytes))
-        self._cipher_suite = Fernet(key)
+        EncryptionManager._cipher_suite = Fernet(key)
     
     def encrypt(self, data: str) -> str:
         """Encrypt a string value."""
         if not data:
             return ""
+        
+        if self._cipher_suite is None:
+            raise RuntimeError("Encryption manager not properly initialized")
         
         encrypted_bytes = self._cipher_suite.encrypt(data.encode())
         return base64.urlsafe_b64encode(encrypted_bytes).decode()
@@ -64,6 +69,9 @@ class EncryptionManager:
         """Decrypt an encrypted string value."""
         if not encrypted_data:
             return ""
+        
+        if self._cipher_suite is None:
+            raise RuntimeError("Encryption manager not properly initialized")
         
         try:
             encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())

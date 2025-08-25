@@ -144,7 +144,7 @@ class Exam(BaseModel, TimestampMixin):
     def get_max_possible_score(self) -> int:
         """Calculate maximum possible score for this exam."""
         total = 0
-        for exam_challenge in self.challenges:
+        for exam_challenge in self.challenges.all():
             total += exam_challenge.challenge.max_score
         return total
     
@@ -222,7 +222,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
         self.started_at = datetime.utcnow()
         
         # Create placeholder results for each challenge in the exam
-        for exam_challenge in self.exam.challenges:
+        for exam_challenge in self.exam.challenges.all():
             result = ExamChallengeResult(
                 exam_attempt_id=self.id,
                 exam_challenge_id=exam_challenge.id
@@ -241,7 +241,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
         total = 0
         max_total = 0
         
-        for result in self.challenge_results:
+        for result in self.challenge_results.all():
             if result.score is not None:
                 total += int(result.score * result.exam_challenge.weight)
             max_total += result.exam_challenge.get_weighted_max_score()
@@ -254,7 +254,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
         """Get exam progress information."""
         total_challenges = self.exam.challenges.count()
         completed_challenges = self.challenge_results.filter(
-            ExamChallengeResult.score.isnot(None)
+            ExamChallengeResult.score != None
         ).count()
         
         return {

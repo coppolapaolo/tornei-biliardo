@@ -519,6 +519,26 @@ class RoleRequirement:
         return decorated_function
 
     @staticmethod
+    def director_required(f):
+        """
+        Decorator for director-only functions.
+
+        Args:
+            f: Function to decorate
+
+        Returns:
+            function: Decorated function with director check
+        """
+
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated or not current_user.is_director:
+                abort(403)
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    @staticmethod
     def director_or_admin_required(f):
         """
         Decorator for director/admin functions.

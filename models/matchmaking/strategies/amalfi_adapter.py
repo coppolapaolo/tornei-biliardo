@@ -1,12 +1,13 @@
 from __future__ import annotations
-from typing import Sequence, Callable
+from typing import Sequence, Callable, cast, Optional, Dict, Any, List
 
-from .base import PairingStrategy, Pairing, ValidationResult
+from .base import BaseStrategy, Pairing, ValidationResult, StrategyMetrics
+from models.competition.models import Prova
 
 from amalfi.engine import AmalfiEngine
 
 
-class AmalfiStrategy(PairingStrategy):
+class AmalfiStrategy(BaseStrategy):
     """Adapter per l'engine Amalfi esistente.
 
     Il costruttore accetta due callable iniettati per evitare dipendenze forti:
@@ -25,6 +26,14 @@ class AmalfiStrategy(PairingStrategy):
     anti‑rematch e gestione disparità (trio/bye) via policy.
     """
 
+    # Strategy metadata (required by PairingStrategy protocol)
+    display_name = "Amalfi"
+    description = "Adaptive tournament pairing algorithm with anti-rematch intelligence"
+    min_players = 3
+    max_players = None
+    supports_byes = True
+    requires_classification = True
+    
     name = "Amalfi"
 
     def __init__(
@@ -33,18 +42,34 @@ class AmalfiStrategy(PairingStrategy):
         validate_fn: Callable[[object], tuple[bool, tuple[str, ...]]],
         propose_fn: Callable[[object, int], list[tuple[int, ...]]],
     ) -> None:
+        super().__init__()
         self._validate_fn = validate_fn
         self._propose_fn = propose_fn
 
-    # ── validate ──────────────────────────────────────────────────────────────
+    # ── validate (override to use injected function) ──────────────────────────
     def validate(self, prova: object) -> ValidationResult:
         ok, messages = self._validate_fn(prova)
         return ValidationResult(ok=ok, messages=messages)
 
-    # ── preview (no IO) ──────────────────────────────────────────────────────
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
-        """Calcola anteprima abbinamenti usando l'engine di preview (no side-effect)."""
-        engine = AmalfiEngine(prova)  # rispetta WithdrawPolicy via patch in engine
+    # ── _generate_pairings (abstract method implementation) ──────────────────
+    def _generate_pairings(
+        self, 
+        processed_data: Dict[str, Any], 
+        round_number: int, 
+        preview_mode: bool = True
+    ) -> Sequence[Pairing]:
+        """Generate pairings using the Amalfi engine."""
+        prova = processed_data["prova"]
+        
+        if preview_mode:
+            return self._generate_preview_pairings(prova, round_number)
+        else:
+            return self._generate_actual_pairings(prova, round_number)
+    
+    def _generate_preview_pairings(self, prova: object, round_number: int) -> Sequence[Pairing]:
+        """Generate preview pairings without side effects."""
+        prova_typed = cast(Prova, prova)
+        engine = AmalfiEngine(prova_typed)  # rispetta WithdrawPolicy via patch in engine
         raw = (
             engine._preview_first_round()
             if int(round_number) == 1
@@ -68,9 +93,9 @@ class AmalfiStrategy(PairingStrategy):
                 )
             )
         return result
-
-    # ── propose (side‑effects via engine) ─────────────────────────────────────
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    
+    def _generate_actual_pairings(self, prova: object, round_number: int) -> Sequence[Pairing]:
+        """Generate actual pairings with side effects."""
         raw = self._propose_fn(prova, round_number)
         result: list[Pairing] = []
         for players in raw:
@@ -83,3 +108,4 @@ class AmalfiStrategy(PairingStrategy):
                 )
             )
         return result
+

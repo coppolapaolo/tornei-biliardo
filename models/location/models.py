@@ -162,13 +162,26 @@ class BilliardHall(BaseModel, TimestampMixin):
                     UserLocationAvailability.is_available == True
                 ))
         
-        if day:
-            # Filter by day availability if specified
-            query = query.filter(
-                UserLocationAvailability.available_days.contains(str(day.value))
-            )
+        # Get all available users first, then filter by day in application code if needed
+        all_users = query.all()
         
-        return query.all()
+        if day:
+            # Filter by day availability at application level
+            filtered_users = []
+            for user in all_users:
+                # Query the user's availability record for this location directly
+                availability = UserLocationAvailability.query.filter_by(
+                    user_id=user.id,
+                    billiard_hall_id=self.id
+                ).first()
+                
+                if availability:
+                    available_days = availability.get_available_days()
+                    if day in available_days:
+                        filtered_users.append(user)
+            return filtered_users
+        
+        return all_users
     
     def get_full_address(self) -> str:
         """Get formatted full address."""

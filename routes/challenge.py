@@ -6,6 +6,7 @@ Requirements: Challenge system for individual skill testing with RESTful interfa
 
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
+from sqlalchemy import desc
 
 from models.challenge.services import ChallengeService
 from models.challenge.models import Challenge, ChallengeAttempt
@@ -79,7 +80,7 @@ def challenge_detail(challenge_id):
             challenge_id=challenge_id,
             user_id=current_user.id,
             completed=True
-        ).order_by(ChallengeAttempt.attempted_at.desc()).all()
+        ).order_by(desc('attempted_at')).all()
         
         return render_template('challenge/detail.html',
                              challenge=challenge,
@@ -101,8 +102,8 @@ def start_attempt(challenge_id):
         attempt = ChallengeService.start_challenge_attempt(
             user_id=current_user.id,
             challenge_id=challenge_id,
-            prova_id=data.get('prova_id'),
-            round_number=data.get('round_number')
+            prova_id=int(data['prova_id']) if data.get('prova_id') else None,
+            round_number=int(data['round_number']) if data.get('round_number') else None
         )
         
         if request.is_json:

@@ -9,7 +9,7 @@
         <p class="text-muted mb-0">{{ prova.tournament.name }}</p>
     </div>
     <div>
-        <a href="{{ url_for('admin.prova_detail', prova_id=prova.id) }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('admin.competition.prova_detail', prova_id=prova.id) }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Annulla
         </a>
     </div>
@@ -141,7 +141,7 @@
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{{ url_for('admin.prova_detail', prova_id=prova.id) }}" 
+                        <a href="{{ url_for('admin.competition.prova_detail', prova_id=prova.id) }}" 
                            class="btn btn-secondary">
                             <i class="fas fa-times"></i> Annulla
                         </a>

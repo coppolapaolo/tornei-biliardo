@@ -9,22 +9,29 @@ from __future__ import annotations
 import random
 from typing import Sequence, List, Tuple, Optional, Set, TYPE_CHECKING
 
-from .base import Pairing, ValidationResult
+from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
     from ...competition.models import Prova, Inscription
 
 
-class RandomAntiRematchStrategy:
+class RandomAntiRematchStrategy(PairingStrategy):
     """Random pairing strategy that prevents rematches."""
     
-    name = "Random Anti-Rematch"
+    # PairingStrategy metadata
+    name = "random_anti_rematch"
+    display_name = "Random Anti-Rematch"
+    description = "Random pairing strategy with anti-rematch logic"
+    min_players = 2
+    max_players = None
+    supports_byes = True
+    requires_classification = False
     
     def __init__(self, max_attempts: int = 100):
         self.strategy_name = "random_anti_rematch"
         self.max_attempts = max_attempts  # Max attempts to find valid pairing
     
-    def validate(self, prova: "Prova") -> ValidationResult:
+    def validate(self, prova: object) -> ValidationResult:
         """Validate if Random Anti-Rematch can be used for this prova."""
         try:
             # Get active inscriptions
@@ -43,10 +50,11 @@ class RandomAntiRematchStrategy:
                 # With more than 2 players, anti-rematch should be feasible for reasonable round counts
                 max_possible_unique_matches = (player_count * (player_count - 1)) // 2
                 
-                if hasattr(prova, 'rounds_count') and prova.rounds_count > max_possible_unique_matches:
+                rounds_count = getattr(prova, 'rounds_count', None)
+                if rounds_count and rounds_count > max_possible_unique_matches:
                     return ValidationResult(
                         ok=False,
-                        messages=(f"With {player_count} players, only {max_possible_unique_matches} unique matches possible, but {prova.rounds_count} rounds planned",)
+                        messages=(f"With {player_count} players, only {max_possible_unique_matches} unique matches possible, but {rounds_count} rounds planned",)
                     )
             
             return ValidationResult(ok=True)
@@ -57,15 +65,15 @@ class RandomAntiRematchStrategy:
                 messages=(f"Validation error: {str(e)}",)
             )
     
-    def preview(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
+    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(prova, round_number)
+        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
     
-    def propose(self, prova: "Prova", round_number: int) -> Sequence[Pairing]:
+    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
-        return self._generate_round_pairings(prova, round_number)
+        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
     
-    def _generate_round_pairings(self, prova: "Prova", round_number: int) -> List[Pairing]:
+    def _generate_round_pairings(self, prova: object, round_number: int) -> List[Pairing]:
         """Generate random pairings while avoiding rematches."""
         try:
             # Get active players
@@ -90,11 +98,11 @@ class RandomAntiRematchStrategy:
             print(f"Error generating Random Anti-Rematch pairings: {e}")
             return []
     
-    def _get_previous_pairings(self, prova: "Prova", current_round: int) -> Set[Tuple[int, int]]:
+    def _get_previous_pairings(self, prova: object, current_round: int) -> Set[Tuple[int, int]]:
         """Get all previous pairings to avoid rematches."""
         from ...match.models import Match
         
-        previous_matches = Match.query.filter_by(prova_id=prova.id).filter(
+        previous_matches = Match.query.filter_by(prova_id=prova.id).filter(  # type: ignore[attr-defined]
             Match.round_number < current_round
         ).all()
         
@@ -219,7 +227,7 @@ class RandomAntiRematchStrategy:
         # For larger odd numbers, use bye instead
         return len(player_ids) in [3, 5, 7]
     
-    def can_generate_all_rounds(self, prova: "Prova") -> bool:
+    def can_generate_all_rounds(self, prova: object) -> bool:
         """Check if all rounds can be generated without rematches."""
         inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [i for i in inscriptions if not getattr(i, 'is_withdrawn', False)]
@@ -238,7 +246,7 @@ class RandomAntiRematchStrategy:
         rounds_count = getattr(prova, 'rounds_count', 1)
         return rounds_count <= max_rounds_without_rematch
     
-    def get_rematch_probability(self, prova: "Prova", round_number: int) -> float:
+    def get_rematch_probability(self, prova: object, round_number: int) -> float:
         """Calculate probability of rematches in the given round."""
         inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [i for i in inscriptions if not getattr(i, 'is_withdrawn', False)]
@@ -258,6 +266,10 @@ class RandomAntiRematchStrategy:
         # Simple approximation
         remaining_pairings = total_possible_pairings - used_pairings
         return max(0.0, 1.0 - (remaining_pairings / pairings_per_round))
+    
+    def get_metrics(self) -> Optional[StrategyMetrics]:
+        """Get performance metrics from last execution."""
+        return None  # No metrics collection implemented yet
 
 
 class RandomAntiRematchPairingStrategy(RandomAntiRematchStrategy):

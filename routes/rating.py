@@ -224,15 +224,42 @@ def manage_handicap_rules():
 def create_handicap_rule():
     """Create new handicap rule (admin only)."""
     try:
+        import json
         data = request.get_json() if request.is_json else request.form
+        
+        # Handle category_rules - convert from string if needed
+        category_rules = data.get('category_rules')
+        if category_rules is not None:
+            if isinstance(category_rules, str):
+                try:
+                    category_rules = json.loads(category_rules)
+                except (json.JSONDecodeError, ValueError):
+                    category_rules = []
+            elif not isinstance(category_rules, list):
+                category_rules = []
+        else:
+            category_rules = None
+        
+        # Handle rating_rules - convert from string if needed
+        rating_rules = data.get('rating_rules')
+        if rating_rules is not None:
+            if isinstance(rating_rules, str):
+                try:
+                    rating_rules = json.loads(rating_rules)
+                except (json.JSONDecodeError, ValueError):
+                    rating_rules = []
+            elif not isinstance(rating_rules, list):
+                rating_rules = []
+        else:
+            rating_rules = None
         
         rule = HandicapService.create_handicap_rule(
             name=data['name'],
             description=data.get('description'),
             applies_to_tournaments=data.get('applies_to_tournaments', 'true').lower() == 'true',
             applies_to_individual_matches=data.get('applies_to_individual_matches', 'true').lower() == 'true',
-            category_rules=data.get('category_rules', []),
-            rating_rules=data.get('rating_rules', [])
+            category_rules=category_rules,
+            rating_rules=rating_rules
         )
         
         if request.is_json:
