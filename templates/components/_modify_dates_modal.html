@@ -1,0 +1,30 @@
+<!-- Modify Dates Modal Component -->
+<div class="modal fade" id="modifyDatesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifica Date Iscrizioni</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.modify_inscription_dates', prova_id=prova.id) }}" method="POST" id="modifyDatesForm">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-clock"></i> <strong>Timezone:</strong> <span id="modify-user-timezone">Caricamento...</span></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modify_inscription_start" class="form-label">Inizio Iscrizioni (Ora Locale)</label>
+                        <input type="datetime-local" class="form-control" name="inscription_start" id="modify_inscription_start" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modify_inscription_end" class="form-label">Fine Iscrizioni (Ora Locale)</label>
+                        <input type="datetime-local" class="form-control" name="inscription_end" id="modify_inscription_end" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-warning">Aggiorna Date</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

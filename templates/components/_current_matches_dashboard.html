@@ -1,0 +1,39 @@
+{# templates/components/_current_matches_dashboard.html #}
+<!-- Partite in Corso -->
+{% if current_matches %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-gamepad"></i> Le Mie Partite in Corso ({{ current_matches|length }})</h5>
+        </div>
+        <div class="card-body">
+            {% for match in current_matches %}
+                <div class="card mb-3 border-primary">
+                    <div class="card-body">
+                        <h6>
+                            {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
+                            <span class="badge {{ match | status_badge_class }} ms-2">{{ match | status_text }}</span>
+                        </h6>
+                        <p class="mb-1">
+                            <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}/{{ match.prova.rounds_count }}
+                            <br><small class="text-muted">{{ match.prova.discipline }} - 
+                            {% if match.prova.best_of %}
+                                Al meglio di {{ match.prova.distance }}
+                            {% else %}
+                                {{ match.prova.distance }} rack esatti
+                            {% endif %}
+                            </small>
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                Punteggio: <strong>{{ match.player1_score }} - {{ match.player2_score }}</strong>
+                            </div>
+                            <a href="{{ url_for('player.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit"></i> Inserisci Risultato
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

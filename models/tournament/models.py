@@ -23,6 +23,7 @@ class Tournament(db.Model):
     without_x = db.Column(db.Boolean, default=False)  # Opzione "senza X"
     final_playoffs = db.Column(db.Boolean, default=True)  # Play off finali
     challenge_mode = db.Column(db.Boolean, default=False)  # Challenge
+    scoring_policy = db.Column(db.String(50), nullable=False, default="classic")  # Scoring policy
 
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
@@ -58,14 +59,18 @@ class Tournament(db.Model):
 
     def can_be_modified(self):
         """Verifica se il torneo può essere modificato"""
-        for prova in self.provas:
+        # Fix: Properly access the relationship collection
+        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        for prova in provas:
             if prova.status in ["inscription", "playing", "completed"]:
                 return False
         return True
 
     def can_be_deleted(self):
         """Verifica se il torneo può essere cancellato"""
-        for prova in self.provas:
+        # Fix: Properly access the relationship collection
+        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        for prova in provas:
             if prova.inscriptions:  # Se ha iscrizioni
                 return False
         return True
@@ -74,10 +79,13 @@ class Tournament(db.Model):
         """Restituisce lo status del torneo"""
         if not self.provas:
             return "setup"
+        
+        # Fix: Properly access the relationship collection
+        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
 
-        has_playing = any(p.status == "playing" for p in self.provas)
-        has_completed = any(p.status == "completed" for p in self.provas)
-        has_inscription = any(p.status == "inscription" for p in self.provas)
+        has_playing = any(p.status == "playing" for p in provas)
+        has_completed = any(p.status == "completed" for p in provas)
+        has_inscription = any(p.status == "inscription" for p in provas)
 
         if has_playing:
             return "in_progress"
@@ -87,7 +95,18 @@ class Tournament(db.Model):
             return "registration_open"
         else:
             return "setup"
-
+    
+    def can_be_hard_deleted(self) -> bool:
+        """Check if tournament can be permanently deleted (no matches played)."""
+        # Fix: Properly access the relationship collections
+        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        for prova in provas:
+            matches = prova.matches if hasattr(prova, 'matches') and prova.matches is not None else []
+            for match in matches:
+                if match.status in ['completed', 'playing']:
+                    return False
+        return True
+    
     def get_status_badge_class(self):
         """Restituisce la classe CSS per il badge status"""
         status = self.get_status()
@@ -131,14 +150,6 @@ class Tournament(db.Model):
         from ..playoff.services import PlayoffService
         return PlayoffService.get_tournament_playoff_status(self.id)
     
-    def can_be_hard_deleted(self) -> bool:
-        """Check if tournament can be permanently deleted (no matches played)."""
-        for prova in self.provas:
-            for match in prova.matches:
-                if match.status in ['completed', 'playing']:
-                    return False
-        return True
-    
     def soft_delete(self, reason: str = None) -> bool:
         """Perform soft delete on tournament with played matches."""
         if self.is_deleted:
@@ -150,9 +161,12 @@ class Tournament(db.Model):
         self.is_active = False
         
         # Also soft delete related provas
-        for prova in self.provas:
+        provas = self.provas if hasattr(self, 'provas') and self.provas is not None else []
+        for prova in provas:
             if hasattr(prova, 'soft_delete'):
-                prova.soft_delete(f"Tournament deleted: {reason or 'Administrator action'}")
+                # Fix: Ensure we pass a string to prova.soft_delete()
+                delete_reason = f"Tournament deleted: {reason}" if reason else "Tournament deleted: Administrator action"
+                prova.soft_delete(delete_reason)
         
         return True
     
@@ -167,6 +181,17 @@ class Tournament(db.Model):
         self.is_active = True
         
         return True
+    
+    def get_scoring_policy_name(self) -> str:
+        """Get the name of the scoring policy for this tournament."""
+        return self.scoring_policy or "classic"
+    
+    def set_scoring_policy(self, policy_name: str) -> None:
+        """Set the scoring policy for this tournament."""
+        valid_policies = ["classic", "fargo", "elo"]
+        if policy_name not in valid_policies:
+            raise ValueError(f"Invalid scoring policy: {policy_name}. Valid options: {valid_policies}")
+        self.scoring_policy = policy_name
     
     @classmethod
     def get_active_tournaments(cls):

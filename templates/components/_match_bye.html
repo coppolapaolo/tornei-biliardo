@@ -1,0 +1,9 @@
+<!-- Match Bye Component -->
+{% if match.is_bye %}
+<!-- Match bye -->
+<div class="alert alert-info text-center">
+    <h5>Partita Bye</h5>
+    <p>{{ match.player1.username }} passa automaticamente al turno successivo.</p>
+    <strong>Risultato: {{ match.player1_score }} - 0</strong>
+</div>
+{% endif %}

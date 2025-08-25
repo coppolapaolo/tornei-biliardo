@@ -1,0 +1,41 @@
+{# templates/components/_prova_info.html #}
+<div class="col-md-8">
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-info-circle"></i> Informazioni Prova</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Data:</strong> {{ prova.date.strftime('%d/%m/%Y') }}<br>
+                    <strong>Disciplina:</strong> {{ prova.discipline }}<br>
+                    <strong>Distanza:</strong> 
+                    {% if prova.best_of %}
+                        Al meglio di {{ prova.distance }} (vince con {{ prova.get_winning_score() }})
+                    {% else %}
+                        {{ prova.distance }} rack esatti
+                    {% endif %}<br>
+                    <strong>Turni:</strong> {{ prova.rounds_count }}
+                </div>
+                <div class="col-md-6">
+                    {% if prova.location %}
+                        <strong>Luogo:</strong> {{ prova.location }}<br>
+                    {% endif %}
+                    <strong>Partecipanti:</strong> {{ prova.min_participants }}{% if prova.max_participants %} - {{ prova.max_participants }}{% else %} - illimitati{% endif %}<br>
+                    <strong>Quota:</strong> 
+                    {% if prova.entry_fee > 0 %}
+                        €{{ "%.2f"|format(prova.entry_fee) }}
+                    {% else %}
+                        Gratuita
+                    {% endif %}<br>
+                    <strong>Iscritti:</strong> {{ inscriptions|length }}{% if prova.max_participants %}/{{ prova.max_participants }}{% endif %}
+                </div>
+            </div>
+            {% if prova.description %}
+                <hr>
+                <strong>Descrizione:</strong><br>
+                <p class="mb-0">{{ prova.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

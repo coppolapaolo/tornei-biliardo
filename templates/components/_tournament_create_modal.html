@@ -45,6 +45,22 @@
                         </div>
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="scoring_policy" class="form-label">Sistema di Punteggio</label>
+                        <select class="form-control" name="scoring_policy" id="scoring_policy">
+                            <option value="classic" selected>
+                                Classico (Vittorie → Differenza rack → Ordine precedente)
+                            </option>
+                            <option value="fargo">
+                                Fargo Rating (Rating → Vittorie → Differenza rack)
+                            </option>
+                            <option value="elo">
+                                Elo Rating (Rating → Vittorie → Differenza rack)
+                            </option>
+                        </select>
+                        <small class="text-muted">Determina come vengono calcolate le classifiche del torneo</small>
+                    </div>
+                    
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
                         <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, ecc.) 

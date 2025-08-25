@@ -21,8 +21,7 @@ from models.status_enum import ProvaStatus
 from .models import Prova, Inscription
 
 
-class InvalidTransitionError(ValueError):
-    """Errore per transizioni di stato non ammesse."""
+from models.exceptions import InvalidTransitionError
 
 
 class ProvaStateMachine:
@@ -141,6 +140,18 @@ class ProvaService:
         db.session.add(prova)
         db.session.commit()
         return prova
+    
+    @staticmethod
+    def get_prova_by_id(prova_id: int) -> Optional[Prova]:
+        """Retrieve a Prova by ID using service layer.
+        
+        Args:
+            prova_id: ID of the prova to retrieve
+            
+        Returns:
+            Prova: The prova instance if found, None otherwise
+        """
+        return db.session.get(Prova, prova_id)
     
     @staticmethod
     def update_prova(prova_id: int, **kwargs) -> Prova:

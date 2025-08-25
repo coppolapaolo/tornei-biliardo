@@ -1,0 +1,10 @@
+<!-- Unified Dashboard Empty State Component -->
+<div class="alert alert-info text-center">
+  <h4><i class="fas fa-trophy"></i> Benvenuto!</h4>
+  <p>Non ci sono ancora tornei configurati. Inizia creando il tuo primo torneo!</p>
+  {% if vm.caps and vm.caps.can_create_tournament %}
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+      <i class="fas fa-plus"></i> Crea Primo Torneo
+    </button>
+  {% endif %}
+</div>

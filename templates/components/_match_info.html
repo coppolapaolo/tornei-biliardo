@@ -1,0 +1,37 @@
+<!-- Match Info Sidebar Component -->
+<div class="card">
+    <div class="card-header">
+        <h6>Info Partita</h6>
+    </div>
+    <div class="card-body">
+        <p><strong>Torneo:</strong> {{ match.prova.tournament.name }}</p>
+        <p><strong>Prova:</strong> {{ match.prova.number }}</p>
+        <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.prova.rounds_count }}</p>
+        <p><strong>Disciplina:</strong> {{ match.prova.discipline }}</p>
+        <p><strong>Modalità:</strong> 
+            {% if match.prova.best_of %}
+                Al meglio di {{ match.prova.distance }}
+            {% else %}
+                {{ match.prova.distance }} rack esatti
+            {% endif %}
+        </p>
+        <p><strong>Data:</strong> {{ match.prova.date.strftime('%d/%m/%Y') }}</p>
+        {% if match.prova.location %}
+            <p><strong>Luogo:</strong> {{ match.prova.location }}</p>
+        {% endif %}
+        
+        {% if debug_info.debug_mode %}
+            <hr>
+            <h6 class="text-muted">DEBUG Info:</h6>
+            <small class="text-muted">
+                Match ID: {{ match.id }}<br>
+                Status: {{ match.status }}<br>
+                Player1 ID: {{ match.player1_id }}<br>
+                Player2 ID: {{ match.player2_id }}<br>
+                Winner ID: {{ match.winner_id }}<br>
+                Is Bye: {{ match.is_bye }}<br>
+                Racks count: {{ racks|length }}
+            </small>
+        {% endif %}
+    </div>
+</div>

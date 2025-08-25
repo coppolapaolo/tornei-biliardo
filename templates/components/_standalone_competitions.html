@@ -1,0 +1,53 @@
+{# templates/components/_standalone_competitions.html #}
+<!-- Competizioni Standalone Disponibili -->
+{% if standalone_available %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">🎯 Competizioni Standalone Disponibili</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+<th>Data</th>
+<th>Luogo</th>
+<th>Organizzatore</th>
+<th>Disciplina</th>
+<th>Scadenza Iscrizioni</th>
+<th>Azione</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prova in standalone_available %}
+                    <tr>
+                        <td>
+                            <strong>{{ prova.name }}</strong>
+                            <span class="badge bg-info ms-2">Standalone</span>
+                        </td>
+                        <td>{{ prova.date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ prova.location or '-' }}</td>
+                        <td>{{ prova.get_organizer().username }}</td>
+                        <td>{{ prova.discipline|replace('_', ' ')|title }}</td>
+                        <td>
+                            <span class="text-danger">
+                                {{ prova.inscription_end.strftime('%d/%m %H:%M') }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=prova.id) }}" 
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-user-plus"></i> Iscriviti
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}

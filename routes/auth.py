@@ -1,7 +1,8 @@
 # routes/auth.py - Route di autenticazione
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
-from models import db, User
+from models.user.services import UserService
+from models.user.models import User
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -12,9 +13,11 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        user = User.query.filter_by(username=username).first()
+        
+        # Use service layer for authentication
+        user = UserService.authenticate_user(username, password)
 
-        if user and user.check_password(password):
+        if user:
             login_user(user)
             return redirect(url_for("dashboard.dashboard"))
         else:
@@ -32,23 +35,22 @@ def register():
         password = request.form["password"]
         phone = request.form.get("phone", "")
 
-        if User.query.filter_by(username=username).first():
-            flash("Username già esistente.")
+        # Use service layer for user creation
+        try:
+            user = UserService.create_user(
+                username=username,
+                email=email,
+                password=password,
+                phone=phone if phone else None
+            )
+            
+            login_user(user)
+            flash("Registrazione completata!")
+            return redirect(url_for("dashboard.dashboard"))
+            
+        except ValueError as e:
+            flash(str(e))
             return render_template("register.html")
-
-        if User.query.filter_by(email=email).first():
-            flash("Email già registrata.")
-            return render_template("register.html")
-
-        user = User(username=username, email=email, phone=phone)
-        user.set_password(password)
-
-        db.session.add(user)
-        db.session.commit()
-
-        login_user(user)
-        flash("Registrazione completata!")
-        return redirect(url_for("dashboard.dashboard"))
 
     return render_template("register.html")
 

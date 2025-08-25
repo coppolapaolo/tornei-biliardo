@@ -238,6 +238,24 @@ class UserServiceCore(DomainService):
             ).first()
         )
     
+    @read_only(domain="user")
+    def authenticate_user(self, username: str, password: str) -> Optional[User]:
+        """Authenticate user with username and password.
+        
+        Args:
+            username: Username to authenticate
+            password: Plain text password to verify
+            
+        Returns:
+            User: Authenticated user if successful, None if failed
+        """
+        self._track_domain_access()
+        
+        user = self.get_user_by_username(username)
+        if user and user.check_password(password):
+            return user
+        return None
+    
     @transactional(domain="user")
     def delete_user(self, user_id: int, admin_id: int) -> Dict[str, Any]:
         """Soft delete user with transaction management and cross-domain cleanup."""
@@ -306,6 +324,11 @@ class UserServiceCompat:
     def get_user_by_username(username: str) -> Optional[User]:
         """Static wrapper for get_user_by_username."""
         return _user_service_instance.get_user_by_username(username)
+    
+    @staticmethod
+    def authenticate_user(username: str, password: str) -> Optional[User]:
+        """Static wrapper for authenticate_user."""
+        return _user_service_instance.authenticate_user(username, password)
     
     @staticmethod
     def delete_user(user_id: int, admin_id: int) -> Dict[str, Any]:

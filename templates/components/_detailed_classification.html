@@ -1,0 +1,90 @@
+<!-- Detailed Classification Component -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list-ol"></i> Classifica dopo Turno {{ round_number }}</h5>
+    </div>
+    <div class="card-body">
+        {% if classification %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th width="10%">Pos.</th>
+                            <th width="25%">Giocatore</th>
+                            <th width="15%">Vittorie</th>
+                            <th width="15%">Diff. Rack</th>
+                            <th width="15%">Pos. Prec.</th>
+                            <th width="20%">Movimento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player_class in classification %}
+                            <tr>
+                                <td>
+                                    <strong class="{% if player_class.position <= 3 %}text-warning{% endif %}">
+                                        {{ player_class.position }}°
+                                    </strong>
+                                    {% if player_class.position == 1 %}
+                                        🥇
+                                    {% elif player_class.position == 2 %}
+                                        🥈
+                                    {% elif player_class.position == 3 %}
+                                        🥉
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ player_class.user.username }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ player_class.matches_won }}</span>
+                                </td>
+                                <td>
+                                    {% if player_class.rack_difference > 0 %}
+                                        <span class="text-success">+{{ player_class.rack_difference }}</span>
+                                    {% elif player_class.rack_difference < 0 %}
+                                        <span class="text-danger">{{ player_class.rack_difference }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if player_class.previous_position %}
+                                        {{ player_class.previous_position }}°
+                                    {% else %}
+                                        <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if player_class.previous_position and player_class.previous_position != player_class.position %}
+                                        {% set diff = player_class.previous_position - player_class.position %}
+                                        {% if diff > 0 %}
+                                            <span class="text-success">
+                                                <i class="fas fa-arrow-up"></i> +{{ diff }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-danger">
+                                                <i class="fas fa-arrow-down"></i> {{ diff }}
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-minus"></i> =
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning text-center">
+                <h5><i class="fas fa-exclamation-triangle"></i> Classifica Non Disponibile</h5>
+                <p>La classifica per questo turno non è ancora stata calcolata.</p>
+                {% if round_number <= prova.current_round %}
+                    <p class="mb-0">Assicurati che tutte le partite del turno siano completate.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>

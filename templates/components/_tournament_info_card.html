@@ -1,0 +1,35 @@
+{# templates/components/_tournament_info_card.html #}
+<!-- Info Torneo -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Info Torneo</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Nome:</strong> {{ selected_tournament.name }}</p>
+        <p><strong>Tipo:</strong> {{ selected_tournament.tournament_type }}</p>
+        <p><strong>Prove totali:</strong> {{ selected_tournament.provas|length }}</p>
+        
+        <hr>
+        <h6>Opzioni Torneo</h6>
+        {% if selected_tournament.without_x %}
+            <span class="badge bg-info me-1">Senza X</span>
+        {% endif %}
+        {% if selected_tournament.final_playoffs %}
+            <span class="badge bg-success me-1">Playoff</span>
+        {% endif %}
+        {% if selected_tournament.challenge_mode %}
+            <span class="badge bg-warning me-1">Challenge</span>
+        {% endif %}
+        {% if not (selected_tournament.without_x or selected_tournament.final_playoffs or selected_tournament.challenge_mode) %}
+            <span class="text-muted">Nessuna opzione speciale</span>
+        {% endif %}
+        
+        {% if user_stats and user_stats.total_matches > 0 %}
+            <hr>
+            <h6>Le tue Statistiche Globali</h6>
+            <p><strong>Partite giocate:</strong> {{ user_stats.total_matches }}</p>
+            <p><strong>Vittorie:</strong> {{ user_stats.won_matches }}</p>
+            <p><strong>% Vittorie:</strong> {{ user_stats.win_percentage }}%</p>
+        {% endif %}
+    </div>
+</div>

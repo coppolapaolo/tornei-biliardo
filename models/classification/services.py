@@ -15,10 +15,22 @@ from models.competition.models import Inscription
 from models.user.models import User
 from ..caching import cached, cache_invalidate, cache_manager
 from ..optimization import optimized_query, bulk_load_relationships
+from ..scoring.policies import ScoringPolicy
+from ..scoring.strategies import ClassicScoringPolicy, FargoRatingScoringPolicy, EloRatingScoringPolicy
 
 
 class ClassificationService:
     """Service for managing tournament classifications with caching and optimization."""
+
+    @staticmethod
+    def _get_scoring_policy(tournament) -> ScoringPolicy:
+        """Get the appropriate scoring policy for a tournament."""
+        policy_map = {
+            "classic": ClassicScoringPolicy(),
+            "fargo": FargoRatingScoringPolicy(),
+            "elo": EloRatingScoringPolicy(),
+        }
+        return policy_map.get(tournament.scoring_policy, ClassicScoringPolicy())
 
     @staticmethod
     @cached(ttl_seconds=300, tags=['classification', 'tournament'], key_generator='tournament')
@@ -36,6 +48,15 @@ class ClassificationService:
         """
         from models.competition.models import Prova
         from models.match.models import Match
+        from models.tournament.models import Tournament
+
+        # Get tournament to determine scoring policy
+        tournament = db.session.get(Tournament, tournament_id)
+        if not tournament:
+            raise ValueError(f"Tournament {tournament_id} not found")
+
+        # Get scoring policy based on tournament configuration
+        scoring_policy = ClassificationService._get_scoring_policy(tournament)
 
         # Get all provas for this tournament with optimized loading
         provas_query = Prova.query.filter_by(tournament_id=tournament_id)
@@ -45,8 +66,9 @@ class ClassificationService:
             "inscriptions"
         ).all()
 
-        # Aggregate stats across all provas
-        player_stats = {}
+        # Get all players in the tournament
+        player_ids = set()
+        match_results = []
 
         for prova in provas:
             # Get completed matches - already loaded via selectinload
@@ -55,42 +77,22 @@ class ClassificationService:
                 if match.status == "completed" and not match.is_bye
             ]
 
-            # Process each match
+            # Collect player IDs and match results
             for match in matches:
-                # Initialize players if not seen
-                for player_id in [match.player1_id, match.player2_id]:
-                    if player_id not in player_stats:
-                        player_stats[player_id] = {
-                            "matches_won": 0,
-                            "point_difference": 0,
-                            "provas_played": set(),
-                        }
+                player_ids.add(match.player1_id)
+                player_ids.add(match.player2_id)
+                match_results.append({
+                    "player1_id": match.player1_id,
+                    "player2_id": match.player2_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score
+                })
 
-                # Update winner stats
-                if match.player1_score > match.player2_score:
-                    player_stats[match.player1_id]["matches_won"] += 1
-                    point_diff = match.player1_score - match.player2_score
-                    player_stats[match.player1_id]["point_difference"] += point_diff
-                    player_stats[match.player2_id]["point_difference"] -= point_diff
-                else:
-                    player_stats[match.player2_id]["matches_won"] += 1
-                    point_diff = match.player2_score - match.player1_score
-                    player_stats[match.player2_id]["point_difference"] += point_diff
-                    player_stats[match.player1_id]["point_difference"] -= point_diff
+        # Get player objects
+        players = User.query.filter(User.id.in_(player_ids)).all()
 
-                # Track prova participation
-                player_stats[match.player1_id]["provas_played"].add(prova.id)
-                player_stats[match.player2_id]["provas_played"].add(prova.id)
-
-        # Sort players by classification criteria
-        sorted_players = sorted(
-            player_stats.items(),
-            key=lambda x: (
-                -x[1]["matches_won"],
-                -x[1]["point_difference"],
-                x[0],  # Player ID for stability
-            ),
-        )
+        # Calculate standings using scoring policy
+        standings = scoring_policy.calculate_standings(players, match_results)
 
         # Batch load existing classifications to avoid N+1
         existing_classifications = {
@@ -100,7 +102,8 @@ class ClassificationService:
 
         # Update or create Classification records
         classifications = []
-        for position, (player_id, stats) in enumerate(sorted_players, 1):
+        for position, (player, score_data) in enumerate(standings, 1):
+            player_id = player.id
             classification = existing_classifications.get(player_id)
 
             if not classification:
@@ -109,9 +112,17 @@ class ClassificationService:
                 )
 
             classification.position = position
-            classification.total_matches_won = stats["matches_won"]
-            classification.total_point_difference = stats["point_difference"]
-            classification.provas_played = len(stats["provas_played"])
+            # Extract stats from score_data based on the scoring policy used
+            if isinstance(score_data, dict) and "matches_won" in score_data:
+                # Classic scoring policy
+                classification.total_matches_won = score_data["matches_won"]
+                classification.total_point_difference = score_data["rack_diff"]
+                classification.provas_played = len(score_data.get("provas_played", []))
+            else:
+                # For other policies, use default values
+                classification.total_matches_won = getattr(score_data, "wins", 0) or 0
+                classification.total_point_difference = getattr(score_data, "rack_diff", 0) or 0
+                classification.provas_played = 0
 
             db.session.add(classification)
             classifications.append(classification)

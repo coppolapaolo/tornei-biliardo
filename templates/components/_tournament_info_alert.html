@@ -1,0 +1,24 @@
+<!-- Tournament Info Alert Component -->
+<div class="alert alert-info mb-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <strong><i class="fas fa-trophy"></i> {{ vm.selected_tournament.name }}</strong>
+      <span class="badge {{ vm.selected_tournament | status_badge_class }} ms-2">
+        {{ vm.selected_tournament | status_text }}
+      </span>
+      <br><small class="text-muted">{{ vm.selected_tournament.tournament_type }}</small>
+    </div>
+    <div class="text-end">
+      <small class="text-muted">
+        Le mie iscrizioni: <strong>{{ vm.my_inscriptions|length if vm.my_inscriptions else 0 }}</strong><br>
+        Prove disponibili: <strong>{{ vm.available_provas|length if vm.available_provas else 0 }}</strong>
+        {% if vm.can_manage_directors %}
+          <a href="{{ url_for('admin.tournament_detail', tournament_id=vm.selected_tournament.id) }}"
+             class="btn btn-outline-warning btn-sm mt-2">
+            <i class="fas fa-cog"></i> Gestisci
+          </a>
+        {% endif %}
+      </small>
+    </div>
+  </div>
+</div>

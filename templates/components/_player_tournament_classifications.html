@@ -1,0 +1,50 @@
+{# templates/components/_player_tournament_classifications.html #}
+<!-- Classifiche per Torneo -->
+{% if classifications %}
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-trophy"></i> Le mie Classifiche</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Torneo</th>
+                            <th>Posizione</th>
+                            <th>Partite Vinte</th>
+                            <th>Diff. Punti</th>
+                            <th>Prove Giocate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for classification in classifications %}
+                            <tr>
+                                <td>{{ classification.tournament.name }}</td>
+                                <td>
+                                    {% if classification.position <= 3 %}
+                                        <strong class="text-warning">{{ classification.position }}°</strong>
+                                        {% if classification.position == 1 %}🥇{% elif classification.position == 2 %}🥈{% elif classification.position == 3 %}🥉{% endif %}
+                                    {% else %}
+                                        <strong>{{ classification.position }}°</strong>
+                                    {% endif %}
+                                </td>
+                                <td>{{ classification.total_matches_won }}</td>
+                                <td>
+                                    {% if classification.total_point_difference > 0 %}
+                                        <span class="text-success">+{{ classification.total_point_difference }}</span>
+                                    {% elif classification.total_point_difference < 0 %}
+                                        <span class="text-danger">{{ classification.total_point_difference }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ classification.provas_played }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}

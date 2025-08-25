@@ -2,6 +2,6 @@
 {% block title %}{{ vm.title }}{% endblock %}
 
 {% block content %}
-  <h1 class="mb-4">{{ vm.title }}</h1>
+  {% include "components/_dashboard_header.html" %}
   {% block dashboard_content %}{% endblock %}
 {% endblock %}

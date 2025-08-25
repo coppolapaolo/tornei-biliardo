@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request
 from flask_login import login_required, current_user
 
 from models.dashboard.services import DashboardService
-from models.base import db
+from models.competition.services import ProvaService
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -20,8 +20,8 @@ def dashboard() -> str:
     # - se prova è standalone, consideriamo quella e ignoriamo il torneo
     # - se prova NON è standalone, usiamo il suo tournament_id (se non presente)
     if tournament_id and prova_id:
-        from models.competition.models import Prova
-        p = db.session.get(Prova, prova_id)
+        # Use service layer instead of direct database access
+        p = ProvaService.get_prova_by_id(prova_id)
         if p is not None:
             if p.tournament_id is None:
                 tournament_id = None  # standalone: mostra come prova

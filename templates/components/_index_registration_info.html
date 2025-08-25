@@ -1,0 +1,29 @@
+{# templates/components/_index_registration_info.html #}
+<!-- Info App per utenti non registrati -->
+{% if not current_user.is_authenticated %}
+    <div class="card bg-light mt-4">
+        <div class="card-body text-center">
+            <h5><i class="fas fa-info-circle"></i> Come Partecipare</h5>
+            <p class="mb-3">Registrati per iscriverti ai tornei, giocare partite e scalare le classifiche!</p>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <a  href="{{ url_for('auth.register') }}">
+                        <i class="fas fa-user-plus fa-2x text-primary mb-2"></i>
+                        <h6>1. Registrati</h6>
+                        <small class="text-muted">Crea il tuo account gratuito</small>
+                     </a>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-calendar-plus fa-2x text-success mb-2"></i>
+                    <h6>2. Iscriviti</h6>
+                    <small class="text-muted">Partecipa alle prove aperte</small>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                    <h6>3. Gioca</h6>
+                    <small class="text-muted">Competi e scala le classifiche</small>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

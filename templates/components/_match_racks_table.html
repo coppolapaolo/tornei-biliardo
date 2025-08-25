@@ -1,0 +1,97 @@
+<!-- Racks Table Component -->
+{% if racks %}
+<div class="card">
+    <div class="card-header">
+        <h6>Dettaglio Rack ({{ racks|length }})</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Rack</th>
+                        <th>Vincitore</th>
+                        <th>Segnalato da</th>
+                        <th>Stato</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rack in racks %}
+                        <tr id="rack-{{ rack.id }}">
+                            <td>{{ rack.rack_number }}</td>
+                            <td>
+                                <strong>{{ rack.winner.username }}</strong>
+                            </td>
+                            <td>{{ rack.reported_by.username if rack.reported_by else 'Admin' }}</td>
+                            <td>
+                                {% if rack.validated_by_admin %}
+                                    <span class="badge bg-success">Validato Admin</span>
+                                {% elif rack.confirmed_by_player %}
+                                    <span class="badge bg-info">Confermato</span>
+                                {% else %}
+                                    <span class="badge bg-warning">In attesa conferma</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Azioni Admin -->
+                                {% if current_user.is_admin %}
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-danger" 
+                                                onclick="removeRackAdmin({{ rack.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% if not rack.validated_by_admin %}
+                                            <button class="btn btn-sm btn-success" 
+                                                    onclick="validateRackAdmin({{ rack.id }})">
+                                                <i class="fas fa-check-circle"></i> Valida
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                <!-- Azioni Giocatori -->
+                                {% elif current_user.id in [match.player1_id, match.player2_id] and not rack.validated_by_admin %}
+                                    <div class="btn-group" role="group">
+                                        {% if rack.can_be_removed(current_user.id) %}
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="removeRack({{ rack.id }})">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        {% endif %}
+                                        
+                                        {% if rack.can_be_confirmed(current_user.id) %}
+                                            <button class="btn btn-sm btn-success" 
+                                                    onclick="confirmRack({{ rack.id }})">
+                                                <i class="fas fa-check"></i> Conferma
+                                            </button>
+                                        {% endif %}
+                                        
+                                        {% if rack.can_remove_confirmation(current_user.id) %}
+                                            <button class="btn btn-sm btn-warning" 
+                                                    onclick="unconfirmRack({{ rack.id }})">
+                                                <i class="fas fa-undo"></i> Rimuovi Conferma
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Legenda -->
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <small class="text-muted">
+                    <strong>Legenda:</strong>
+                    <span class="badge bg-warning ms-2">In attesa conferma</span> - L'altro giocatore deve confermare
+                    <span class="badge bg-info ms-2">Confermato</span> - Confermato da entrambi i giocatori
+                    <span class="badge bg-success ms-2">Validato Admin</span> - Confermato dall'amministratore
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

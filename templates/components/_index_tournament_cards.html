@@ -1,0 +1,158 @@
+{# templates/components/_index_tournament_cards.html #}
+<!-- Loop per ogni torneo attivo -->
+{% for data in tournaments_data %}
+    {% set tournament = data.tournament %}
+    {% set upcoming_provas = data.upcoming_provas %}
+    {% set top_classifications = data.top_classifications %}
+    
+    <div class="card mb-4 {% if not tournament.is_active %}border-secondary{% endif %}">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0">{{ tournament.name }}</h3>
+                    <small class="text-muted">{{ tournament.tournament_type }}</small>
+                </div>
+                <div>
+                    <span class="badge {{ tournament | status_badge_class }}">{{ tournament | status_text }}</span>
+                    {% if not tournament.is_active %}
+                        <span class="badge bg-secondary ms-1">Inattivo</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Prossime Prove -->
+                    {% if upcoming_provas %}
+                        <h5><i class="fas fa-calendar"></i> Prossime Prove</h5>
+                        <div class="row">
+                            {% for prova in upcoming_provas %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title">Prova {{ prova.number }}</h6>
+                                            <p class="card-text mb-1">
+                                                <strong>{{ prova.discipline }}</strong><br>
+                                                <small class="text-muted">{{ prova.date.strftime('%d/%m/%Y') }}</small>
+                                            </p>
+                                            {% if prova.location %}
+                                                <p class="card-text mb-2">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-map-marker-alt"></i> {{ prova.location }}
+                                                    </small>
+                                                </p>
+                                            {% endif %}
+                                            
+                                            {{ status_badge(prova, 'prova') }}
+                                            
+                                            {% if prova.get_real_status() == 'inscription' %}
+                                                <br><small class="text-success">
+                                                    <i class="fas fa-clock"></i> 
+                                                    Scade: <span data-utc="{{ prova.inscription_end.isoformat() if prova.inscription_end else '' }}">
+                                                        {{ prova.inscription_end.strftime('%d/%m %H:%M') if prova.inscription_end else 'N/A' }}
+                                                    </span>
+                                                </small>
+                                            {% elif prova.get_real_status() == 'inscription_not_started' %}
+                                                <br><small class="text-info">
+                                                    <i class="fas fa-clock"></i> 
+                                                    Iniziano: <span data-utc="{{ prova.inscription_start.isoformat() if prova.inscription_start else '' }}">
+                                                        {{ prova.inscription_start.strftime('%d/%m %H:%M') if prova.inscription_start else 'N/A' }}
+                                                    </span>
+                                                </small>
+                                            {% endif %}
+                                            
+                                            {% if current_user.is_authenticated and prova.can_inscribe() and not prova.is_user_inscribed(current_user.id) %}
+                                                <br>
+                                                <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=prova.id) }}" class="mt-2">
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-user-plus"></i> Iscriviti
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-calendar-times"></i> Nessuna Prova Programmata</h5>
+                            <p class="mb-0">Al momento non ci sono prove programmate per questo torneo.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Info Torneo -->
+                    <div class="mt-3">
+                        <h6>Informazioni Torneo</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Tipo:</strong> {{ tournament.tournament_type }}<br>
+                                    <strong>Prove totali:</strong> {{ tournament.provas|length }}
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    {% if tournament.without_x %}
+                                        <span class="badge bg-info me-1">Senza X</span>
+                                    {% endif %}
+                                    {% if tournament.final_playoffs %}
+                                        <span class="badge bg-success me-1">Playoff</span>
+                                    {% endif %}
+                                    {% if tournament.challenge_mode %}
+                                        <span class="badge bg-warning me-1">Challenge</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Classifica Generale -->
+                    {% if top_classifications %}
+                        <h5><i class="fas fa-trophy"></i> Classifica Generale (Top 5)</h5>
+                        <div class="list-group">
+                            {% for classification in top_classifications %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                    <div>
+                                        <strong>
+                                            {% if classification.position <= 3 %}
+                                                {% if classification.position == 1 %}🥇{% elif classification.position == 2 %}🥈{% elif classification.position == 3 %}🥉{% endif %}
+                                            {% endif %}
+                                            {{ classification.position }}. {{ classification.user.username }}
+                                        </strong>
+                                    </div>
+                                    <small class="text-muted">{{ classification.total_matches_won }} vittorie</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            <h6><i class="fas fa-chart-bar"></i> Classifica</h6>
+                            <p class="mb-0">Nessuna classifica disponibile ancora.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Quick Actions -->
+                    {% if current_user.is_authenticated %}
+                        <div class="mt-3">
+                            {% if current_user.is_admin %}
+                                <a href="{{ url_for('admin.tournament_detail', tournament_id=tournament.id) }}" 
+                                   class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="fas fa-cog"></i> Gestisci Torneo
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('player.dashboard', tournament_id=tournament.id) }}" 
+                                   class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="fas fa-user"></i> Vai al Torneo
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}

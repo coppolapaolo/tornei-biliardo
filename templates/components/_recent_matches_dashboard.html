@@ -1,0 +1,39 @@
+{# templates/components/_recent_matches_dashboard.html #}
+<!-- Ultime Partite Giocate -->
+{% if recent_matches %}
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-history"></i> Ultime Partite Giocate - {{ selected_tournament.name }}</h5>
+        </div>
+        <div class="card-body">
+            {% for match in recent_matches %}
+                <div class="card mb-2 {% if match.winner_id == current_user.id %}border-success{% else %}border-danger{% endif %}">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}
+                                <br><small class="text-muted">
+                                    vs {% if match.is_bye %}Bye{% else %}
+                                        {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
+                                    {% endif %}
+                                    - {{ match.prova.date.strftime('%d/%m/%Y') }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-info">{{ match.player1_score }} - {{ match.player2_score }}</span>
+                                <br>
+                                {% if match.is_bye %}
+                                    <span class="badge bg-info">Bye</span>
+                                {% elif match.winner_id == current_user.id %}
+                                    <span class="badge bg-success">Vittoria</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Sconfitta</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

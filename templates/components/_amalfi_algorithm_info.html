@@ -1,0 +1,26 @@
+<!-- Amalfi Algorithm Info Component -->
+<div class="card border-info">
+    <div class="card-header bg-info bg-opacity-10">
+        <h5><i class="fas fa-brain"></i> Algoritmo Amalfi - Turno {{ round_number }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Formula Salto:</strong> {{ prova.rounds_count }} - {{ round_number }} = 
+                <span class="badge bg-primary">{{ prova.rounds_count - round_number }}</span><br>
+                
+                <strong>Criterio Classifica:</strong><br>
+                <small class="text-muted">1. Vittorie (desc) → 2. Diff. Rack (desc) → 3. Posizione Precedente (asc)</small>
+            </div>
+            <div class="col-md-6">
+                <strong>Giocatori Totali:</strong> {{ total_players }}<br>
+                <strong>Modalità Torneo:</strong> 
+                {% if prova.tournament.without_x %}
+                    <span class="badge bg-info">Senza X</span>
+                {% else %}
+                    <span class="badge bg-warning">Con X</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

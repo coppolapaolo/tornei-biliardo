@@ -1,0 +1,43 @@
+{# templates/components/_quick_actions_dashboard.html #}
+<!-- Quick Actions -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-bolt"></i> Azioni Rapide</h5>
+    </div>
+    <div class="card-body">
+        <a href="{{ url_for('player.profile') }}" class="btn btn-outline-primary w-100 mb-2">
+            <i class="fas fa-user"></i> Il mio Profilo Completo
+        </a>
+        
+        {% if available_provas %}
+            <div class="alert alert-success p-2 mb-2">
+                <small>
+                    <i class="fas fa-calendar-plus"></i>
+                    <strong>{{ available_provas|length }} prova/e</strong> disponibili per iscrizione
+                </small>
+            </div>
+        {% endif %}
+        
+        {% if current_matches %}
+            <div class="alert alert-warning p-2 mb-2">
+                <small>
+                    <i class="fas fa-gamepad"></i>
+                    <strong>{{ current_matches|length }} partita/e</strong> in attesa di risultato
+                </small>
+            </div>
+        {% endif %}
+        
+        {% if tournaments|length > 1 %}
+            <hr>
+            <h6>Altri Tornei</h6>
+            {% for tournament in tournaments %}
+                {% if tournament.id != selected_tournament.id %}
+                    <a href="{{ url_for('player.dashboard', tournament_id=tournament.id) }}" 
+                       class="btn btn-outline-secondary btn-sm w-100 mb-1">
+                        {{ tournament.name }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

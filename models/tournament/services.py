@@ -36,6 +36,7 @@ class TournamentService:
         without_x: bool = False,
         final_playoffs: bool = False,
         challenge_mode: bool = False,
+        scoring_policy: str = "classic",
         is_active: bool = True
     ) -> Tournament:
         """Crea torneo e assegna automaticamente il direttore se necessario."""
@@ -50,6 +51,7 @@ class TournamentService:
             without_x=without_x,
             final_playoffs=final_playoffs,
             challenge_mode=challenge_mode,
+            scoring_policy=scoring_policy,
             is_active=is_active,
         )
         db.session.add(tournament)

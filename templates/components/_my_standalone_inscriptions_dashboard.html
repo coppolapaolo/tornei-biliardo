@@ -1,0 +1,35 @@
+{# templates/components/_my_standalone_inscriptions_dashboard.html #}
+<!-- Le Mie Iscrizioni a Competizioni Standalone -->
+{% if my_standalone_inscriptions %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">🏁 Le Mie Competizioni Standalone</h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            {% for inscription in my_standalone_inscriptions %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ inscription.prova.name }}</h6>
+                        <p class="mb-1">
+                            <small>
+                                📅 {{ inscription.prova.date.strftime('%d/%m/%Y') }} - 
+                                📍 {{ inscription.prova.location or 'Luogo da definire' }}
+                            </small>
+                        </p>
+                        {{ status_badge(inscription.prova, 'prova') }}
+                    </div>
+                    <div>
+                        <a href="{{ url_for('admin.competition.prova_detail', prova_id=inscription.prova.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            Dettagli
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}

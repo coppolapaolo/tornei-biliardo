@@ -1,0 +1,54 @@
+{# templates/components/_my_inscriptions_dashboard.html #}
+<!-- Le Mie Iscrizioni -->
+{% if can_inscribe %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Le Mie Iscrizioni - {{ selected_tournament.name }} ({{ my_inscriptions|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if my_inscriptions %}
+            {% for inscription in my_inscriptions %}
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                    <div>
+                        <strong>Prova {{ inscription.prova.number }}</strong> - {{ inscription.prova.discipline }}
+                        {% if inscription.prova.name %} ({{ inscription.prova.name }}){% endif %}
+                        <br><small class="text-muted">{{ inscription.prova.date.strftime('%d/%m/%Y') }} - 
+                        {% if inscription.prova.best_of %}
+                            Al meglio di {{ inscription.prova.distance }}
+                        {% else %}
+                            {{ inscription.prova.distance }} rack esatti
+                        {% endif %}
+                        </small>
+                        {% if inscription.prova.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ inscription.prova.location }}</small>{% endif %}
+                        {{ status_badge(inscription.prova, 'prova') }}
+                        <small class="text-muted ms-2">
+                            <i class="fas fa-users"></i> {{ inscription.prova.inscriptions|length }} iscritti
+                        </small>
+                    </div>
+                    <div>
+                        {% if inscription.prova.status in ['setup', 'inscription'] %}
+                            <button class="btn btn-outline-danger btn-sm" 
+                                    onclick="unsubscribeFromProva({{ inscription.prova.id }}, {{ inscription.prova.number }})">
+                                <i class="fas fa-user-minus"></i> Disiscriviti
+                            </button>
+                        {% elif inscription.prova.status == 'playing' %}
+                            <a href="{{ url_for('admin.competition.prova_detail', prova_id=inscription.prova.id) }}" 
+                               class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-eye"></i> Vedi Partite
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info text-center">
+                <h5><i class="fas fa-info-circle"></i> Nessuna Iscrizione</h5>
+                <p>Non sei iscritto a nessuna prova di questo torneo.</p>
+                {% if available_provas %}
+                    <p class="mb-0">Cerca le prove disponibili qui sopra!</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

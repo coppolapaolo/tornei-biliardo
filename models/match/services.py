@@ -18,8 +18,7 @@ from models.status_enum import MatchStatus
 from .models import Match, Rack, TrioMatch
 
 
-class InvalidTransitionError(ValueError):
-    """Errore per transizioni di stato non ammesse."""
+from models.exceptions import InvalidTransitionError
 
 
 class MatchService:

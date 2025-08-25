@@ -1,0 +1,22 @@
+<!-- My Standalone Inscriptions Component -->
+{% if vm.my_standalone_inscriptions and vm.my_standalone_inscriptions|length %}
+<div class="card mb-4">
+  <div class="card-header"><h5 class="mb-0">🏁 Le Mie Competizioni Standalone</h5></div>
+  <div class="card-body">
+    <div class="list-group">
+      {% for ins in vm.my_standalone_inscriptions %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1">{{ ins.prova.name }}</h6>
+            <p class="mb-1"><small>📅 {{ ins.prova.date.strftime('%d/%m/%Y') if ins.prova.date else '-' }} – 📍 {{ ins.prova.location or 'Luogo da definire' }}</small></p>
+            {{ status_badge(ins.prova, 'prova') }}
+          </div>
+          <a href="{{ url_for('admin.competition.prova_detail', prova_id=ins.prova.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
