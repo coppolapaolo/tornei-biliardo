@@ -1,0 +1,40 @@
+{# templates/components/_director_my_inscriptions.html #}
+<!-- LE MIE ISCRIZIONI -->
+{% if vm.can_inscribe %}
+<div class="card mt-4">
+  <div class="card-header"><h5 class="mb-0"><i class="fas fa-list"></i> Le Mie Iscrizioni – {{ vm.selected_tournament.name }}</h5></div>
+  <div class="card-body">
+    {% if vm.my_inscriptions and vm.my_inscriptions|length %}
+      {% for ins in vm.my_inscriptions %}
+      <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+        <div>
+          <strong>Prova {{ ins.prova.number }}</strong> - {{ ins.prova.discipline }}{% if ins.prova.name %} ({{ ins.prova.name }}){% endif %}
+          <br><small class="text-muted">
+            {{ ins.prova.date.strftime('%d/%m/%Y') if ins.prova.date else '-' }} –
+            {% if ins.prova.best_of %}Al meglio di {{ ins.prova.distance }}{% else %}{{ ins.prova.distance }} rack esatti{% endif %}
+          </small>
+          {% if ins.prova.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ ins.prova.location }}</small>{% endif %}
+          {{ status_badge(ins.prova, 'prova') }}
+          <small class="text-muted ms-2"><i class="fas fa-users"></i> {{ ins.prova.inscriptions|length }} iscritti</small>
+        </div>
+        <div>
+          {% if ins.prova.status in ['setup','inscription'] %}
+            <button class="btn btn-outline-danger btn-sm" onclick="unsubscribeFromProva({{ ins.prova.id }}, {{ ins.prova.number }})">
+              <i class="fas fa-user-minus"></i> Disiscriviti
+            </button>
+          {% elif ins.prova.status == 'playing' %}
+            <a class="btn btn-outline-info btn-sm" href="{{ url_for('admin.competition.prova_detail', prova_id=ins.prova.id) }}">
+              <i class="fas fa-eye"></i> Vedi Partite
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info mb-0 text-center">
+        Nessuna iscrizione nel torneo selezionato.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

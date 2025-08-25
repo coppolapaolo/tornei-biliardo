@@ -1,0 +1,29 @@
+{# templates/components/_admin_dashboard_content.html #}
+{% set has_any = (vm.tournaments and vm.tournaments|length) or (vm.standalone_provas and vm.standalone_provas|length) %}
+
+{% if not has_any %}
+  {% include "components/_dashboard_empty_state.html" %}
+{% endif %}
+
+{% if vm.tournaments and vm.tournaments|length %}
+  {% set tournaments = vm.tournaments %}
+  {% include "components/_tournament_cards.html" %}
+{% endif %}
+
+{% if vm.standalone_provas and vm.standalone_provas|length %}
+  <div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Prove Standalone</h5>
+      {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_tournament) %}
+      <a class="btn btn-sm btn-success" href="{{ url_for('admin.competition.create_prova_standalone') }}">
+        <i class="fas fa-plus"></i> Nuova Prova
+      </a>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      {% set provas = vm.standalone_provas %}
+      {% set mode = 'director' %}
+      {% include "components/_prova_cards.html" %}
+    </div>
+  </div>
+{% endif %}

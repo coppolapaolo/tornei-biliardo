@@ -16,6 +16,10 @@ from models import (
 )
 from utils import admin_required
 from models.status_enum import DirectorRequestStatus, MatchStatus
+from models.user.services import UserService
+
+# Initialize the UserService
+user_service = UserService()
 
 # User management blueprint
 user_bp = Blueprint("user", __name__)
@@ -25,28 +29,9 @@ user_bp = Blueprint("user", __name__)
 @admin_required
 def users_list():
     """Lista di tutti gli utenti con statistiche"""
-
-    from models.base import db  # Import locally for specific query needs
+    # Use the service layer instead of direct database access
+    users = user_service.get_users_with_stats()
     
-    users = (
-        db.session.query(
-            User,
-            func.count(Inscription.id).label("total_inscriptions"),
-            func.count(Match.id).label("total_matches"),
-            func.sum(case((Match.winner_id == User.id, 1), else_=0)).label(
-                "matches_won"
-            ),
-        )
-        .outerjoin(Inscription, User.id == Inscription.user_id)
-        .outerjoin(
-            Match, db.or_(Match.player1_id == User.id, Match.player2_id == User.id)
-        )
-        .filter(User.role != "admin")
-        .group_by(User.id)
-        .order_by(desc("total_inscriptions"), User.username)
-        .all()
-    )
-
     return render_template("admin/users_list.html", users=users)
 
 
@@ -54,80 +39,30 @@ def users_list():
 @admin_required
 def user_detail(user_id):
     """Scheda dettagliata utente"""
-    from models.base import db
-    user = db.session.get(User, user_id)
-    if not user:
+    try:
+        # Use the service layer instead of direct database access
+        user_data = user_service.get_user_detail_data(user_id)
+        user = user_data["user"]
+        
+        # se l'utente è admin, ritorna alla lista utenti
+        if user.role == "admin":
+            return redirect(url_for("admin.user.users_list"))
+        
+        # Get additional data through service methods
+        inscriptions = user_data["inscriptions"]
+        matches = user_service.get_user_matches(user_id)
+        classifications = user_service.get_user_classifications(user_id)
+        stats = user_service.get_user_statistics(user_id)
+        
+    except ValueError:
         from flask import abort
         abort(404)
-
-    # se l'utente è admin, ritorna alla lista utenti
-    if user.role == "admin":
-        return redirect(url_for("admin.user.users_list"))
-
-    # Iscrizioni dell'utente
-    inscriptions = (
-        Inscription.query.filter_by(user_id=user_id)
-        .join(Prova)
-        .join(Tournament)
-        .order_by(Tournament.created_at.desc(), Prova.number.desc())
-        .all()
-    )
-
-    # Partite giocate
-    from models.base import db  # Import locally for query needs
-    
-    matches = (
-        Match.query.filter(
-            db.or_(Match.player1_id == user_id, Match.player2_id == user_id)
-        )
-        .join(Prova)
-        .join(Tournament)
-        .order_by(
-            Tournament.created_at.desc(), Prova.number.desc(), Match.round_number.desc()
-        )
-        .all()
-    )
-
-    # Statistiche generali
-    total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
-    won_matches = len(
-        [
-            m
-            for m in matches
-            if m.status == MatchStatus.COMPLETED.value and m.winner_id == user_id
-        ]
-    )
-    win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
-
-    # Classifiche per torneo
-    classifications = (
-        Classification.query.filter_by(user_id=user_id)
-        .join(Tournament)
-        .order_by(Tournament.created_at.desc())
-        .all()
-    )
-
-    # Partite recenti (ultime 10)
-    recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
-        :10
-    ]
-
-    stats = {
-        "total_inscriptions": len(inscriptions),
-        "total_matches": total_matches,
-        "won_matches": won_matches,
-        "lost_matches": total_matches - won_matches,
-        "win_percentage": round(win_percentage, 1),
-        "tournaments_played": len(
-            set([insc.prova.tournament_id for insc in inscriptions])
-        ),
-    }
 
     return render_template(
         "admin/user_detail.html",
         user=user,
         inscriptions=inscriptions,
-        matches=recent_matches,
+        matches=matches,
         classifications=classifications,
         stats=stats,
     )

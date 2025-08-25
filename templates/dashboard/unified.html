@@ -2,12 +2,23 @@
 {% block dashboard_content %}
 
 {% include "components/_unified_dashboard_header.html" %}
-{% include "components/_director_dashboard_content.html" %}
+
+{% if current_user.is_admin %}
+  {% include "components/_admin_dashboard_content.html" %}
+{% elif current_user.is_director %}
+  {% include "components/_director_dashboard_content.html" %}
+{% else %}
+  {% include "components/_player_dashboard_content.html" %}
+{% endif %}
 
 {% endblock %}
 
-{% if vm.caps and vm.caps.can_create_tournament %}
+{% if vm.caps and (vm.caps.can_create_tournament or vm.caps.can_create_standalone) %}
   {% include "components/_tournament_create_modal.html" %}
+{% endif %}
+
+{% if current_user.is_director and vm.caps and vm.caps.can_create_standalone %}
+  {% include "components/_admin_new_tournament_modal.html" %}
 {% endif %}
 
 {% block scripts %}

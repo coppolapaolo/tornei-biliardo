@@ -13,6 +13,10 @@ from ..match.services import MatchService
 from ..rating.services import RatingService, HandicapService
 from ..challenge.services import ChallengeService
 
+# Import the new advanced strategy
+from .strategies.advanced_amalfi import AdvancedAmalfiStrategy
+from .strategies.amalfi_adapter import AmalfiStrategy
+
 if TYPE_CHECKING:
     from ..competition.models import Prova
 
@@ -198,213 +202,141 @@ class MatchmakingOrchestrator:
         from ..user.models import User
         
         # Get all players in prova
-        prova_players = (db.session.query(User)
-                        .join(Inscription, User.id == Inscription.user_id)
-                        .filter(Inscription.prova_id == prova_id)
-                        .filter(User.id != user_id)
-                        .all())
+        inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+        player_ids = [i.user_id for i in inscriptions if not i.is_withdrawn]
         
+        # Get players who are not currently playing
+        playing_matches = Match.query.filter(
+            Match.prova_id == prova_id,
+            Match.round_number == round_number,
+            Match.status.in_(["pending", "playing"])
+        ).all()
+        
+        playing_player_ids = set()
+        for match in playing_matches:
+            if match.player1_id:
+                playing_player_ids.add(match.player1_id)
+            if match.player2_id:
+                playing_player_ids.add(match.player2_id)
+        
+        available_player_ids = [pid for pid in player_ids if pid not in playing_player_ids and pid != user_id]
+        
+        # Get player details
         available_players = []
+        for pid in available_player_ids[:5]:  # Limit to 5 for performance
+            user = User.query.get(pid)
+            if user:
+                available_players.append({
+                    "id": user.id,
+                    "username": user.username,
+                    "rating": getattr(user, 'fargo_rating', 0) or getattr(user, 'elo_rating', 0) or 0
+                })
         
-        for player in prova_players:
-            # Check if player has bye or finished match early
-            player_match = Match.query.filter_by(
-                prova_id=prova_id,
-                round_number=round_number
-            ).filter(
-                db.or_(
-                    Match.player1_id == player.id,
-                    Match.player2_id == player.id
-                )
-            ).first()
-            
-            if player_match:
-                # Check if bye or completed quickly
-                if (player_match.is_bye or 
-                    (player_match.status == "completed" and 
-                     player_match.completed_at and 
-                     (datetime.utcnow() - player_match.completed_at).total_seconds() < 1800)):  # 30 min
-                    
-                    # Get player rating/category for matchmaking
-                    category = RatingService.get_player_effective_category(player.id)
-                    
-                    available_players.append({
-                        "user_id": player.id,
-                        "username": player.username,
-                        "category": category.value if category else "Unrated",
-                        "match_status": "bye" if player_match.is_bye else "completed_early",
-                        "estimated_availability": "immediate" if player_match.is_bye else "5-10 minutes"
-                    })
+        # Sort by rating similarity to user
+        user_obj = User.query.get(user_id)
+        if user_obj:
+            user_rating = getattr(user_obj, 'fargo_rating', 0) or getattr(user_obj, 'elo_rating', 0) or 0
+            available_players.sort(key=lambda p: abs(p["rating"] - user_rating))
         
         return available_players
     
     def _get_user_incomplete_matches(self, prova_id: int, user_id: int) -> List[Dict[str, Any]]:
-        """Get user's incomplete matches in the prova."""
+        """Get user's incomplete matches."""
         from ..match.models import Match
         
-        incomplete = Match.query.filter(
+        incomplete_matches = Match.query.filter(
             Match.prova_id == prova_id,
-            db.or_(
-                Match.player1_id == user_id,
-                Match.player2_id == user_id
-            ),
-            db.or_(
-                Match.status == "created",
-                Match.status == "in_progress"
-            )
+            Match.status.in_(["pending", "playing"]),
+            db.or_(Match.player1_id == user_id, Match.player2_id == user_id)
         ).all()
         
-        return [{
-            "match_id": match.id,
-            "round_number": match.round_number,
-            "opponent_id": match.player2_id if match.player1_id == user_id else match.player1_id,
-            "status": match.status,
-            "created_at": match.created_at
-        } for match in incomplete]
+        return [
+            {
+                "id": match.id,
+                "round_number": match.round_number,
+                "opponent": match.player2.username if match.player1_id == user_id else match.player1.username if match.player2_id else "Bye",
+                "status": match.status
+            }
+            for match in incomplete_matches
+            if match.player1 and match.player2
+        ]
 
 
 class MatchmakingService:
-    """Enhanced orchestrator with caching and cross-domain integration.
-    Sprint 3: Advanced patterns with handicaps and X-replacement strategies.
-    """
-
-    def __init__(self, registry: EngineRegistry) -> None:
-        self._registry = registry
+    """Enhanced service for tournament pairing with strategy pattern."""
+    
+    def __init__(self, registry: Optional[EngineRegistry] = None):
+        self._registry = registry or EngineRegistry()
         self._orchestrator = MatchmakingOrchestrator(self)
-        self._preview_cache = {}
-        self._cache_hits = 0
-        self._cache_misses = 0
+        
+        # Register the advanced Amalfi strategy
+        self._register_advanced_strategies()
     
-    @property
-    def orchestrator(self) -> MatchmakingOrchestrator:
-        """Access to advanced orchestration features."""
-        return self._orchestrator
+    def _register_advanced_strategies(self):
+        """Register advanced pairing strategies."""
+        # Register the advanced Amalfi strategy
+        try:
+            base_amalfi = self._registry.get("amalfi")
+            if base_amalfi:
+                advanced_amalfi = AdvancedAmalfiStrategy(base_amalfi)
+                self._registry.register(advanced_amalfi)
+        except KeyError:
+            # If base amalfi strategy is not available, we can't register advanced one
+            pass
     
-    def get_cache_stats(self) -> Dict[str, int]:
-        """Get caching performance statistics."""
-        total = self._cache_hits + self._cache_misses
-        hit_rate = (self._cache_hits / total * 100) if total > 0 else 0
-        
-        return {
-            "cache_hits": self._cache_hits,
-            "cache_misses": self._cache_misses,
-            "hit_rate_percent": int(round(hit_rate, 1)),
-            "cached_previews": len(self._preview_cache)
-        }
-    
-    def clear_cache(self) -> None:
-        """Clear preview cache."""
-        self._preview_cache.clear()
-        self._cache_hits = 0
-        self._cache_misses = 0
-
-    def preview(
-        self, *, strategy_name: str, prova: 'Prova', round_number: int, use_cache: bool = True
-    ) -> Sequence[Pairing]:
-        """Calcola la preview degli abbinamenti con caching opzionale."""
-        
-        # Generate cache key
-        cache_key = None
-        if use_cache:
-            cache_data = {
-                "strategy": strategy_name,
-                "prova_id": prova.id,
-                "round_number": round_number,
-                "inscriptions_hash": self._get_inscriptions_hash(prova)
-            }
-            cache_key = hashlib.md5(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
-            
-            # Check cache
-            if cache_key in self._preview_cache:
-                cache_entry = self._preview_cache[cache_key]
-                if datetime.utcnow() - cache_entry["timestamp"] < timedelta(minutes=5):
-                    self._cache_hits += 1
-                    return cache_entry["result"]
-        
-        self._cache_misses += 1
-        
-        # Execute strategy
-        strategy = self._registry.get(strategy_name)
-        validation = strategy.validate(prova)
-        if not validation.ok:
-            msgs = "; ".join(validation.messages) or "Validazione pairing fallita"
-            raise ValueError(msgs)
-        
-        result = strategy.preview(prova, round_number)
-        
-        # Cache result
-        if use_cache and cache_key:
-            self._preview_cache[cache_key] = {
-                "result": result,
-                "timestamp": datetime.utcnow()
-            }
-            
-            # Limit cache size
-            if len(self._preview_cache) > 100:
-                # Remove oldest entries
-                sorted_cache = sorted(
-                    self._preview_cache.items(),
-                    key=lambda x: x[1]["timestamp"]
-                )
-                for old_key, _ in sorted_cache[:20]:  # Remove 20 oldest
-                    del self._preview_cache[old_key]
-        
-        return result
-
     def run(
-        self, *, strategy_name: str, prova: 'Prova', round_number: int
+        self,
+        strategy_name: str,
+        prova: object,
+        round_number: int,
+        preview: bool = False
     ) -> Sequence[Pairing]:
-        """Esegue il pairing *effettivo* con invalidazione cache."""
+        """Execute pairing strategy with enhanced features."""
+        try:
+            strategy = self._registry.get(strategy_name)
+        except KeyError:
+            raise ValueError(f"Unknown strategy: {strategy_name}")
         
-        # Clear relevant cache entries
-        keys_to_remove = []
-        for key, entry in self._preview_cache.items():
-            if f'"prova_id": {prova.id}' in key:
-                keys_to_remove.append(key)
+        if preview:
+            return strategy.preview(prova, round_number)
+        else:
+            return strategy.propose(prova, round_number)
+    
+    def validate(self, strategy_name: str, prova: object) -> Dict[str, Any]:
+        """Validate prova for specific strategy."""
+        try:
+            strategy = self._registry.get(strategy_name)
+        except KeyError:
+            raise ValueError(f"Unknown strategy: {strategy_name}")
         
-        for key in keys_to_remove:
-            del self._preview_cache[key]
-        
-        # Execute strategy
-        strategy = self._registry.get(strategy_name)
-        validation = strategy.validate(prova)
-        if not validation.ok:
-            msgs = "; ".join(validation.messages) or "Validazione pairing fallita"
-            raise ValueError(msgs)
-        
-        return strategy.propose(prova, round_number)
+        result = strategy.validate(prova)
+        return {
+            "valid": result.ok,
+            "messages": result.messages,
+            "warnings": result.warnings,
+            "errors": result.errors
+        }
     
     def get_available_strategies(self) -> List[Dict[str, Any]]:
         """Get list of available strategies with metadata."""
         strategies = []
-        
-        for name in self._registry.available():
-            strategy = self._registry.get(name)
-            
-            # Get strategy metadata
-            metadata = {
+        for name, strategy in self._registry.list().items():
+            strategies.append({
                 "name": name,
-                "display_name": getattr(strategy, 'display_name', name.title()),
-                "description": getattr(strategy, 'description', f"{name} pairing strategy"),
-                "supports_preview": hasattr(strategy, 'preview'),
-                "requires_classification": getattr(strategy, 'requires_classification', True),
-                "min_players": getattr(strategy, 'min_players', 2),
-                "max_players": getattr(strategy, 'max_players', None),
-                "supports_byes": getattr(strategy, 'supports_byes', True)
-            }
-            
-            strategies.append(metadata)
-        
+                "display_name": getattr(strategy, "display_name", name),
+                "description": getattr(strategy, "description", ""),
+                "min_players": getattr(strategy, "min_players", 2),
+                "max_players": getattr(strategy, "max_players", None),
+                "supports_byes": getattr(strategy, "supports_byes", True),
+                "requires_classification": getattr(strategy, "requires_classification", False)
+            })
         return strategies
     
-    def _get_inscriptions_hash(self, prova: 'Prova') -> str:
-        """Generate hash of current inscriptions for cache invalidation."""
-        from ..competition.models import Inscription
-        
-        inscriptions = (Inscription.query
-                       .filter_by(prova_id=prova.id)
-                       .order_by(Inscription.user_id)
-                       .all())
-        
-        inscription_data = [(i.user_id, i.status) for i in inscriptions]
-        return hashlib.md5(str(inscription_data).encode()).hexdigest()
+    @property
+    def orchestrator(self) -> MatchmakingOrchestrator:
+        """Get the matchmaking orchestrator."""
+        return self._orchestrator
+
+
+# Global instance
+matchmaking_service = MatchmakingService()

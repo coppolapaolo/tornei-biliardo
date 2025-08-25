@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict
+from typing import Dict, Tuple
 from .strategies.base import PairingStrategy
 
 
@@ -20,6 +20,9 @@ class EngineRegistry:
             return self._strategies[name.lower()]
         except KeyError as exc:
             raise KeyError(f"Strategy non trovata: {name}") from exc
+
+    def list(self) -> Dict[str, PairingStrategy]:
+        return self._strategies.copy()
 
     def available(self) -> list[str]:
         return sorted(self._strategies.keys())

@@ -54,9 +54,6 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     classifications = db.relationship(
         "Classification", back_populates="user", lazy=True
     )
-    playoff_participations = db.relationship(
-        "Playoff", back_populates="user", lazy=True
-    )
     # Additional relationships for classification domain
     round_classifications = db.relationship(
         "RoundClassification", back_populates="user", lazy=True

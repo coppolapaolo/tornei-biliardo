@@ -22,12 +22,13 @@ from datetime import datetime, timedelta
 
 from ..base import db
 from .models import User, TournamentDirector, DirectorRequest
-from ..transaction import DomainService, transactional, read_only, transaction_manager
+from ..transaction.manager import DomainService, transactional, read_only, transaction_manager
 
 from models.match import Match
 from models.competition.models import Prova, Inscription
 from models.status_enum import MatchStatus, DirectorRequestStatus
 from models.user.role_enum import UserRole
+from models.classification.models import Classification
 
 
 class UserServiceCore(DomainService):
@@ -249,7 +250,7 @@ class UserServiceCore(DomainService):
             
         # For encrypted fields, we need to retrieve all users and filter in Python
         # because encrypted values are different each time due to random elements
-        users = User.query.all()
+        users = self._execute_with_tracking(lambda: User.query.all())
         
         # Find user with matching email (case-insensitive)
         for user in users:
@@ -484,8 +485,7 @@ class UserServiceCompat:
         # Remove manual commit since this should be handled by transaction context
 
 
-# Maintain backward compatibility by exposing the static wrapper as UserService
-UserService = UserServiceCompat
+
 
 
 class DirectorRequestService:
@@ -1008,3 +1008,302 @@ def get_registration_trends(days: int = 30) -> Dict[str, Any]:
         "note": "Registration trends unavailable - User model has no timestamp fields",
         "total_users_in_system": total_users,
     }
+
+
+class UserService(UserServiceCore):
+    """
+    Enhanced UserService that extends UserServiceCore with additional business logic methods.
+    This class consolidates complex queries from routes into the service layer.
+    """
+    
+    # Instance for static method delegation
+    _instance = None
+    
+    def __init__(self):
+        super().__init__()
+    
+    @classmethod
+    def _get_instance(cls):
+        """Get or create singleton instance."""
+        if cls._instance is None:
+            cls._instance = UserServiceCore()
+        return cls._instance
+    
+    @classmethod
+    def create_user(cls, username: str, email: str, password: str, role: str = "player", phone: Optional[str] = None) -> User:
+        """Static wrapper for create_user instance method."""
+        return cls._get_instance().create_user(username, email, password, role, phone)
+    
+    @classmethod
+    def update_user(cls, user_id: int, **kwargs) -> User:
+        """Static wrapper for update_user instance method."""
+        return cls._get_instance().update_user(user_id, **kwargs)
+    
+    @classmethod
+    def change_password(cls, user_id: int, old_password: str, new_password: str) -> bool:
+        """Static wrapper for change_password instance method."""
+        return cls._get_instance().change_password(user_id, old_password, new_password)
+    
+    @classmethod
+    def authenticate_user(cls, username: str, password: str) -> Optional[User]:
+        """Static wrapper for authenticate_user instance method."""
+        return cls._get_instance().authenticate_user(username, password)
+    
+    @classmethod
+    def get_user_by_id(cls, user_id: int) -> Optional[User]:
+        """Static wrapper for get_user_by_id instance method."""
+        return cls._get_instance().get_user_by_id(user_id)
+    
+    @classmethod
+    def get_user_by_username(cls, username: str) -> Optional[User]:
+        """Static wrapper for get_user_by_username instance method."""
+        return cls._get_instance().get_user_by_username(username)
+    
+    @classmethod
+    def get_user_by_email(cls, email: str) -> Optional[User]:
+        """Static wrapper for get_user_by_email instance method."""
+        return cls._get_instance().get_user_by_email(email)
+    
+    @classmethod
+    def get_all_users(cls) -> List[User]:
+        """Static wrapper for get_all_users."""
+        return UserServiceCompat.get_all_users()
+    
+    @classmethod
+    def get_users_by_role(cls, role: str) -> List[User]:
+        """Static wrapper for get_users_by_role."""
+        return UserServiceCompat.get_users_by_role(role)
+    
+    @classmethod
+    def delete_user(cls, user_id: int, admin_id: int) -> Dict[str, Any]:
+        """Static wrapper for delete_user instance method."""
+        return cls._get_instance().delete_user(user_id, admin_id)
+    
+    @classmethod
+    def request_director_promotion(cls, user_id: int, reason: str) -> DirectorRequest:
+        """Static wrapper for request_director_promotion."""
+        return UserServiceCompat.request_director_promotion(user_id, reason)
+    
+    @classmethod
+    def get_director_requests(cls) -> List[DirectorRequest]:
+        """Static wrapper for get_director_requests."""
+        return UserServiceCompat.get_director_requests()
+    
+    @classmethod
+    def get_director_requests_by_status(cls, status: str) -> List[DirectorRequest]:
+        """Static wrapper for get_director_requests_by_status."""
+        return UserServiceCompat.get_director_requests_by_status(status)
+    
+    @classmethod
+    def update_director_request_status(cls, request_id: int, status: str) -> DirectorRequest:
+        """Static wrapper for update_director_request_status."""
+        return UserServiceCompat.update_director_request_status(request_id, status)
+    
+    @classmethod
+    def approve_director_request(cls, request_id: int) -> DirectorRequest:
+        """Static wrapper for approve_director_request."""
+        return UserServiceCompat.approve_director_request(request_id)
+    
+    @classmethod
+    def reject_director_request(cls, request_id: int) -> DirectorRequest:
+        """Static wrapper for reject_director_request."""
+        return UserServiceCompat.reject_director_request(request_id)
+    
+    @classmethod
+    def get_user_stats(cls, user_id: int) -> Dict[str, Any]:
+        """Static wrapper for get_user_stats."""
+        return UserServiceCompat.get_user_stats(user_id)
+    
+    @classmethod
+    def can_view_admin_panel(cls, user_id: int) -> bool:
+        """Static wrapper for can_view_admin_panel."""
+        return UserServiceCompat.can_view_admin_panel(user_id)
+    
+    @classmethod
+    def soft_delete_user(cls, user_id: int) -> None:
+        """Static wrapper for soft_delete_user."""
+        return UserServiceCompat.soft_delete_user(user_id)
+
+    @read_only(domain="user")
+    def get_users_with_stats(self) -> List[tuple]:
+        """
+        Get all users with their statistics for the users list page.
+        This consolidates the complex query from the users_list route.
+        
+        Returns:
+            List of tuples containing (User, total_inscriptions, total_matches, matches_won)
+        """
+        from sqlalchemy import case
+        
+        # Track domain access
+        self._track_domain_access()
+        
+        users = self._execute_with_tracking(
+            lambda: db.session.query(
+                User,
+                func.count(Inscription.id).label("total_inscriptions"),
+                func.count(Match.id).label("total_matches"),
+                func.sum(case((Match.winner_id == User.id, 1), else_=0)).label(
+                    "matches_won"
+                ),
+            )
+            .outerjoin(Inscription, User.id == Inscription.user_id)
+            .outerjoin(
+                Match, db.or_(Match.player1_id == User.id, Match.player2_id == User.id)
+            )
+            .filter(User.role != "admin")
+            .group_by(User.id)
+            .order_by(desc("total_inscriptions"), User.username)
+            .all()
+        )
+        
+        return users
+    
+    @read_only(domain="user")
+    def get_user_detail_data(self, user_id: int) -> Dict[str, Any]:
+        """
+        Get all data needed for the user detail page.
+        This consolidates the complex queries from the user_detail route.
+        
+        Args:
+            user_id: ID of the user to get data for
+            
+        Returns:
+            Dictionary containing all user detail data
+        """
+        # Track domain access
+        self._track_domain_access()
+        
+        user = self._execute_with_tracking(
+            lambda: db.session.get(User, user_id)
+        )
+        if not user:
+            raise ValueError("User not found")
+        
+        # Iscrizioni dell'utente
+        inscriptions = self._execute_with_tracking(
+            lambda: (
+                Inscription.query.filter_by(user_id=user_id)
+                .join(Prova)
+                .join(Tournament)
+                .order_by(Tournament.created_at.desc(), Prova.number.desc())
+                .all()
+            )
+        )
+        
+        # Partite giocate
+        matches = self._execute_with_tracking(
+            lambda: (
+                Match.query.filter(
+                    db.or_(Match.player1_id == user_id, Match.player2_id == user_id)
+                )
+                .join(Prova)
+                .join(Tournament)
+                .order_by(
+                    Tournament.created_at.desc(), Prova.number.desc(), Match.round_number.desc()
+                )
+                .all()
+            )
+        )
+        
+        # Classifiche per torneo
+        classifications = self._execute_with_tracking(
+            lambda: (
+                Classification.query.filter_by(user_id=user_id)
+                .join(Tournament)
+                .order_by(Tournament.created_at.desc())
+                .all()
+            )
+        )
+        
+        return {
+            "user": user,
+            "inscriptions": inscriptions,
+            "matches": matches,
+            "classifications": classifications
+        }
+    
+    @read_only(domain="user")
+    def get_user_statistics(self, user_id: int) -> Dict[str, Any]:
+        """
+        Calculate user statistics for display on the user detail page.
+        
+        Args:
+            user_id: ID of the user to calculate statistics for
+            
+        Returns:
+            Dictionary containing user statistics
+        """
+        # Track domain access
+        self._track_domain_access()
+        
+        user_data = self.get_user_detail_data(user_id)
+        matches = user_data["matches"]
+        inscriptions = user_data["inscriptions"]
+        
+        total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
+        won_matches = len(
+            [
+                m
+                for m in matches
+                if m.status == MatchStatus.COMPLETED.value and m.winner_id == user_id
+            ]
+        )
+        win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
+        
+        stats = {
+            "total_inscriptions": len(inscriptions),
+            "total_matches": total_matches,
+            "won_matches": won_matches,
+            "lost_matches": total_matches - won_matches,
+            "win_percentage": round(win_percentage, 1),
+            "tournaments_played": len(
+                set([insc.prova.tournament_id for insc in inscriptions])
+            ),
+        }
+        
+        return stats
+    
+    @read_only(domain="user")
+    def get_user_matches(self, user_id: int, limit: int = 10) -> List[Match]:
+        """
+        Get user matches with proper ordering, limited to recent matches.
+        
+        Args:
+            user_id: ID of the user to get matches for
+            limit: Maximum number of matches to return
+            
+        Returns:
+            List of recent matches
+        """
+        # Track domain access
+        self._track_domain_access()
+        
+        user_data = self.get_user_detail_data(user_id)
+        matches = user_data["matches"]
+        
+        # Partite recenti (ultime 10)
+        recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
+            :limit
+        ]
+        
+        return recent_matches
+    
+    @read_only(domain="user")
+    def get_user_classifications(self, user_id: int) -> List[Classification]:
+        """
+        Get user classifications ordered by date.
+        
+        Args:
+            user_id: ID of the user to get classifications for
+            
+        Returns:
+            List of user classifications
+        """
+        # Track domain access
+        self._track_domain_access()
+        
+        user_data = self.get_user_detail_data(user_id)
+        return user_data["classifications"]
+
+

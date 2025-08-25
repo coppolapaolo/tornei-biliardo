@@ -16,6 +16,9 @@ from utils import (
 )
 from models.tournament.services import TournamentService
 
+# Initialize the TournamentService
+tournament_service = TournamentService()
+
 # Tournament management blueprint
 tournament_bp = Blueprint("tournament", __name__)
 
@@ -35,7 +38,7 @@ def create_tournament():
     challenge_mode = "challenge_mode" in request.form
 
     # Usa il service layer invece del direct database access
-    tournament = TournamentService.create_tournament_with_director(
+    tournament = tournament_service.create_tournament_with_director(
         name=name,
         creator_user_id=current_user.id,
         tournament_type=tournament_type,
@@ -54,21 +57,11 @@ def create_tournament():
 @tournament_manager_required(lambda tournament_id: tournament_id)
 def tournament_detail(tournament_id):
     """Dettaglio torneo con prove"""
-    tournament = Tournament.query.get_or_404(tournament_id)
-    provas = (
-        Prova.query.filter_by(tournament_id=tournament_id).order_by(Prova.number).all()
-    )
-
-    # ID dei direttori già assegnati a questo torneo
-    assigned_ids = [td.user_id for td in tournament.directors_association]
-
-    # Solo utenti role='director' che non sono già assegnati
-    candidate_directors = (
-        User.query.filter_by(role="director")
-        .filter(not_(User.id.in_(assigned_ids)))
-        .order_by(User.username)
-        .all()
-    )
+    # Use the service layer instead of direct database access
+    tournament_data = tournament_service.get_tournament_detail_data(tournament_id)
+    tournament = tournament_data["tournament"]
+    provas = tournament_data["provas"]
+    candidate_directors = tournament_data["candidate_directors"]
 
     can_manage_directors = current_user.is_admin or any(
         td.user_id == current_user.id for td in tournament.directors_association
@@ -98,7 +91,7 @@ def edit_tournament(tournament_id):
     if request.method == "POST":
         # Usa il service layer invece del direct database access
         try:
-            TournamentService.update_tournament(
+            tournament_service.update_tournament(
                 tournament_id=tournament_id,
                 name=request.form["name"],
                 tournament_type=request.form.get("tournament_type", "Amalfi"),
@@ -120,7 +113,7 @@ def edit_tournament(tournament_id):
 def delete_tournament(tournament_id):
     """Elimina torneo (service layer, gestione errori user-friendly)"""
     try:
-        TournamentService.delete_tournament(tournament_id)
+        tournament_service.delete_tournament(tournament_id)
         flash("Torneo cancellato con successo!")
         return redirect(url_for("dashboard.dashboard"))
     except ValueError as ve:
@@ -136,7 +129,7 @@ def delete_tournament(tournament_id):
 def toggle_tournament_active(tournament_id):
     """Attiva/disattiva torneo"""
     # Usa il service layer invece del direct database access
-    tournament = TournamentService.toggle_active_status(tournament_id)
+    tournament = tournament_service.toggle_active_status(tournament_id)
     
     status = "attivato" if tournament.is_active else "disattivato"
     flash(f'Torneo "{tournament.name}" {status}!')
@@ -152,7 +145,7 @@ def add_director(tournament_id):
     
     # Usa il service layer invece del direct database access
     try:
-        success = TournamentService.add_director(
+        success = tournament_service.add_director(
             tournament_id=tournament_id,
             user_id=new_director_id,
             assigned_by_id=current_user.id
@@ -177,7 +170,7 @@ def remove_director(tournament_id):
     director_id = int(request.form["user_id"])
     
     # Usa il service layer invece del direct database access
-    success = TournamentService.remove_director(
+    success = tournament_service.remove_director(
         tournament_id=tournament_id,
         user_id=director_id
     )

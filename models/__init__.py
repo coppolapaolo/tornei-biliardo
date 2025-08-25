@@ -68,10 +68,6 @@ from .tiebreaker.models import (
 # PHASE 3.2: Cross-domain orchestration
 from .orchestration import DomainOrchestrator, OperationResult, OperationType
 
-# PHASE 2 TODO: Import remaining model from legacy_models.py
-# Legacy Playoff model replaced by new Playoff domain
-from .legacy_models import Playoff
-
 # Export all available models for backward compatibility
 __all__ = [
     # Database and utilities
@@ -162,8 +158,6 @@ __all__ = [
     "DomainOrchestrator",
     "OperationResult",
     "OperationType",
-    # Legacy models
-    "Playoff",
 ]
 
 # Phase tracking

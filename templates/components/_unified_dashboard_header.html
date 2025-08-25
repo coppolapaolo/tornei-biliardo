@@ -1,0 +1,45 @@
+{# templates/components/_unified_dashboard_header.html #}
+<!-- Unified Dashboard Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="h5 mb-0">
+      {% if current_user.is_admin %}
+        <i class="fas fa-user-shield"></i> Dashboard Amministratore
+      {% elif current_user.is_director %}
+        <i class="fas fa-briefcase"></i> Dashboard Direttore
+      {% else %}
+        <i class="fas fa-user"></i> Dashboard Giocatore
+      {% endif %}
+    </h2>
+  </div>
+  
+  <div class="d-flex gap-2">
+    {% if current_user.is_admin or current_user.is_director %}
+      {% if vm.caps and vm.caps.can_create_tournament %}
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+          <i class="fas fa-plus"></i> Nuovo Torneo
+        </button>
+      {% endif %}
+      
+      {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_tournament) %}
+        {% if current_user.is_admin %}
+          <a class="btn btn-outline-primary" href="{{ url_for('admin.competition.create_prova_standalone') }}">
+            <i class="fas fa-bullseye"></i> Nuova Prova
+          </a>
+        {% else %}
+          <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newStandaloneModal">
+            <i class="fas fa-plus"></i> Nuova Standalone
+          </button>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    
+    {% if current_user.is_player and not current_user.is_director and not current_user.is_admin %}
+      {% if vm.caps and vm.caps.can_create_match_proposal %}
+        <a class="btn btn-outline-primary" href="{{ url_for('player.create_match_proposal') }}">
+          <i class="fas fa-plus-circle"></i> Crea Match
+        </a>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>

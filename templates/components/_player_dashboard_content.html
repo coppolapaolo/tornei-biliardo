@@ -1,0 +1,84 @@
+{# templates/components/_player_dashboard_content.html #}
+<!-- Standalone Available Competitions -->
+{% if vm.standalone_available and vm.standalone_available|length %}
+<div class="card mb-4" id="standalone-available" data-test="player-standalone-available">
+  <div class="card-header"><h5 class="mb-0">🎯 Competizioni Standalone Disponibili</h5></div>
+  <div class="card-body table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Nome</th><th>Data</th><th>Luogo</th><th>Organizzatore</th>
+          <th>Disciplina</th><th>Scadenza Iscrizioni</th><th>Azione</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in vm.standalone_available %}
+        <tr class="{% if vm.selected_prova and vm.selected_prova.id == p.id %}table-active{% endif %}">
+          <td><strong>{{ p.name }}</strong> <span class="badge bg-info ms-2">Standalone</span></td>
+          <td>{{ p.date.strftime('%d/%m/%Y') if p.date else '-' }}</td>
+          <td>{{ p.location or '-' }}</td>
+          <td>{{ p.get_organizer().username if p.get_organizer else '-' }}</td>
+          <td>{{ p.discipline|replace('_', ' ')|title }}</td>
+          <td><span class="text-danger">{{ p.inscription_end.strftime('%d/%m %H:%M') if p.inscription_end else '-' }}</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=p.id) }}">
+             <button type="submit" class="btn btn-sm btn-success">
+                <i class="fas fa-user-plus"></i> Iscriviti
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if vm.selected_tournament %}
+  <!-- Info torneo selezionato -->
+  {% include "components/_tournament_info_alert.html" %}
+
+  <div class="row">
+    <!-- COLONNA SINISTRA -->
+    <div class="col-md-8">
+
+      <!-- Individual Match Opportunities -->
+      {% include "components/_match_opportunities.html" %}
+      
+      <!-- Recent Individual Matches -->
+      {% include "components/_individual_matches.html" %}
+
+      <!-- Prove disponibili per iscrizione -->
+      {% include "components/_available_provas.html" %}
+
+      <!-- Le mie iscrizioni -->
+      {% include "components/_my_inscriptions.html" %}
+
+      <!-- Le mie iscrizioni a Standalone -->
+      {% include "components/_my_standalone_inscriptions.html" %}
+
+      <!-- Partite in corso -->
+      {% include "components/_current_matches.html" %}
+
+      <!-- Ultime partite giocate -->
+      {% include "components/_recent_matches.html" %}
+
+    </div>
+
+    <!-- COLONNA DESTRA -->
+    <div class="col-md-4">
+      <!-- Tournament Info -->
+      {% include "components/_tournament_info.html" %}
+
+      <!-- Managed Tournaments -->
+      {% include "components/_managed_tournaments.html" %}
+
+      <!-- Quick Actions -->
+      {% include "components/_quick_actions.html" %}
+    </div>
+  </div>
+
+{% else %}
+  {% include "components/_dashboard_empty_state.html" %}
+{% endif %}

@@ -1,0 +1,35 @@
+{# templates/components/_user_general_stats.html #}
+<!-- Statistiche Generali -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-chart-bar"></i> Statistiche Generali</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h3 class="text-primary">{{ stats.tournaments_played }}</h3>
+                    <small class="text-muted">Tornei Giocati</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h3 class="text-info">{{ stats.total_inscriptions }}</h3>
+                    <small class="text-muted">Prove Giocate</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h3 class="text-success">{{ stats.won_matches }}</h3>
+                    <small class="text-muted">Partite Vinte</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h3 class="text-warning">{{ stats.win_percentage }}%</h3>
+                    <small class="text-muted">% Vittorie</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

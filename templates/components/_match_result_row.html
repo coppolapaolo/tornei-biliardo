@@ -1,0 +1,72 @@
+{# templates/components/_match_result_row.html #}
+<tr>
+    <td>
+        <strong>{{ match.player1.username }}</strong>
+        {% if match.winner_id == match.player1_id %}
+            <i class="fas fa-crown text-warning ms-1"></i>
+        {% endif %}
+    </td>
+    <td>
+        {% if match.is_bye %}
+            <em class="text-muted">Bye</em>
+        {% else %}
+            <strong>{{ match.player2.username }}</strong>
+            {% if match.winner_id == match.player2_id %}
+                <i class="fas fa-crown text-warning ms-1"></i>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if match.status == 'completed' %}
+            <span class="badge bg-info">
+                {{ match.player1_score }} - {{ match.player2_score }}
+            </span>
+        {% elif match.player1_score > 0 or match.player2_score > 0 %}
+            <span class="badge bg-warning">
+                {{ match.player1_score }} - {{ match.player2_score }}
+            </span>
+        {% else %}
+            <span class="text-muted">-</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if match.is_bye %}
+            <span class="badge bg-info">Bye</span>
+        {% elif match.status == 'pending' %}
+            <span class="badge bg-secondary">In Attesa</span>
+        {% elif match.status == 'playing' %}
+            <span class="badge bg-primary">In Corso</span>
+        {% elif match.status == 'completed' %}
+            <span class="badge bg-success">Completata</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if not match.is_bye %}
+            <div class="btn-group btn-group-sm" role="group">
+                <!-- Imposta Risultato Rapido -->
+                {% if match.status != 'completed' %}
+                    <button class="btn btn-outline-warning" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#quickResultModal"
+                            onclick="openQuickResult({{ match.id }}, '{{ match.player1.username }}', '{{ match.player2.username }}', {{ match.player1_score }}, {{ match.player2_score }})">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </button>
+                {% endif %}
+                
+                <!-- Vai al Dettaglio -->
+                <a href="{{ url_for('admin.match_detail', match_id=match.id) }}" 
+                   class="btn btn-outline-primary">
+                    <i class="fas fa-edit"></i>
+                </a>
+                
+                <!-- Reset Match -->
+                {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
+                    <button class="btn btn-outline-danger" 
+                            onclick="resetMatchQuick({{ match.id }})">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </td>
+</tr>

@@ -1,0 +1,54 @@
+{# templates/components/_prova_results_stats.html #}
+<!-- Statistiche Rapide -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-info">
+                    {% set total_matches = 0 %}
+                    {% for round_matches in matches_by_round.values() %}
+                        {% set total_matches = total_matches + round_matches|length %}
+                    {% endfor %}
+                    {{ total_matches }}
+                </h3>
+                <small class="text-muted">Partite Totali</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-success">
+                    {% set completed_count = 0 %}
+                    {% for round_num, round_matches in matches_by_round.items() %}
+                        {% set completed_count = completed_count + round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                    {% endfor %}
+                    {{ completed_count }}
+                </h3>
+                <small class="text-muted">Completate</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-warning">
+                    {% set pending_count = 0 %}
+                    {% for round_num, round_matches in matches_by_round.items() %}
+                        {% set pending_count = pending_count + round_matches|selectattr("status", "in", ["pending", "playing"])|list|length %}
+                    {% endfor %}
+                    {{ pending_count }}
+                </h3>
+                <small class="text-muted">In Attesa</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary bg-opacity-10">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ prova.rounds_count }}</h3>
+                <small class="text-muted">Turni Totali</small>
+            </div>
+        </div>
+    </div>
+</div>
