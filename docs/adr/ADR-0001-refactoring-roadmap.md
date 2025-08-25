@@ -1,6 +1,6 @@
 # ADR-0001: Comprehensive Refactoring Roadmap
 
-**Status**: Proposed  
+**Status**: Accepted  
 **Date**: 2025-08-24  
 **Deciders**: Senior Engineering Team  
 **Technical Story**: Major refactoring to address technical debt and establish maintainable architecture
@@ -55,7 +55,7 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 
 ## Implementation Plan
 
-### Milestone 1: Route Blueprint Decomposition
+### Milestone 1: Route Blueprint Decomposition ✅ COMPLETED
 **Objective**: Split monolithic route files into domain-specific blueprints
 
 **Scope**:
@@ -64,12 +64,12 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 - Eliminate circular import risks
 
 **Success Criteria**:
-- [ ] All existing tests pass
-- [ ] URL endpoint compatibility maintained (verified by smoke tests)
-- [ ] No nested blueprint registrations
-- [ ] Zero new `db.session` calls in routes (temporary exception for existing calls)
+- [x] All existing tests pass
+- [x] URL endpoint compatibility maintained (verified by smoke tests)
+- [x] No nested blueprint registrations
+- [x] Zero new `db.session` calls in routes (temporary exception for existing calls)
 
-### Milestone 2: Dashboard Unification & Component System
+### Milestone 2: Dashboard Unification & Component System ✅ COMPLETED
 **Objective**: Create unified template architecture with reusable components
 
 **Scope**:
@@ -78,12 +78,12 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 - Reduce template files >400 lines by componentization
 
 **Success Criteria**:
-- [ ] Single unified dashboard template
-- [ ] Reusable macro library (`_badges.jinja`, `_cards.jinja`, etc.)
-- [ ] All templates ≤400 lines
-- [ ] Template rendering tests pass
+- [x] Single unified dashboard template
+- [x] Reusable macro library (`_badges.jinja`, `_cards.jinja`, etc.)
+- [x] All templates ≤400 lines
+- [x] Template rendering tests pass
 
-### Milestone 3: Service Layer Implementation
+### Milestone 3: Service Layer Implementation ✅ COMPLETED
 **Objective**: Extract business logic from routes into dedicated service classes
 
 **Scope**:
@@ -92,12 +92,12 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 - Eliminate all `db.session` usage from routes
 
 **Success Criteria**:
-- [ ] Zero `db.session` calls in route files
-- [ ] All domain logic moved to services
-- [ ] Transaction boundaries properly managed
-- [ ] Service contract tests implemented
+- [x] Zero `db.session` calls in route files
+- [x] All domain logic moved to services
+- [x] Transaction boundaries properly managed
+- [x] Service contract tests implemented
 
-### Milestone 4: Scoring Strategy Pattern
+### Milestone 4: Scoring Strategy Pattern ✅ COMPLETED
 **Objective**: Implement configurable scoring policies for tournaments
 
 **Scope**:
@@ -106,11 +106,11 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 - Enable per-tournament scoring configuration
 
 **Success Criteria**:
-- [ ] Strategy pattern implementation
-- [ ] Backward compatibility maintained
-- [ ] All scoring variations tested
+- [x] Strategy pattern implementation
+- [x] Backward compatibility maintained
+- [x] All scoring variations tested
 
-### Milestone 5: Core Cleanup & Shared Utilities
+### Milestone 5: Core Cleanup & Shared Utilities ✅ COMPLETED
 **Objective**: Centralize shared concerns and eliminate code duplication
 
 **Scope**:
@@ -119,9 +119,9 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 - Remove dead code and deprecated features
 
 **Success Criteria**:
-- [ ] Single source of truth for exceptions
-- [ ] Dead code removed or marked `@deprecated`
-- [ ] Shared utilities centralized in `core/`
+- [x] Single source of truth for exceptions
+- [x] Dead code removed or marked `@deprecated`
+- [x] Shared utilities centralized in `core/`
 
 ## Alternatives Considered
 
@@ -151,19 +151,19 @@ We will implement a comprehensive 5-milestone refactoring plan to establish a cl
 Each milestone must meet strict quality criteria before proceeding:
 
 ### Code Quality
-- [ ] **Coverage**: ≥90% test coverage on all modified files
-- [ ] **Linting**: `flake8` and `black --check` pass without warnings
-- [ ] **Performance**: p95 response times <2s for user-facing operations
+- [x] **Coverage**: ≥90% test coverage on all modified files
+- [x] **Linting**: `flake8` and `black --check` pass without warnings
+- [x] **Performance**: p95 response times <2s for user-facing operations
 
 ### Architecture Quality  
-- [ ] **Separation of Concerns**: No business logic in route handlers
-- [ ] **Transaction Management**: Proper database transaction boundaries
-- [ ] **Error Handling**: Consistent exception handling with user-friendly messages
+- [x] **Separation of Concerns**: No business logic in route handlers
+- [x] **Transaction Management**: Proper database transaction boundaries
+- [x] **Error Handling**: Consistent exception handling with user-friendly messages
 
 ### Compatibility
-- [ ] **URL Preservation**: All existing endpoints maintain compatibility
-- [ ] **Behavior Preservation**: No changes to user-visible functionality
-- [ ] **Database**: No foreign key violations or data inconsistencies
+- [x] **URL Preservation**: All existing endpoints maintain compatibility
+- [x] **Behavior Preservation**: No changes to user-visible functionality
+- [x] **Database**: No foreign key violations or data inconsistencies
 
 ## Migration Strategy
 

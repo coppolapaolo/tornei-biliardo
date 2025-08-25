@@ -2,11 +2,15 @@
 """Scoring module for tournament classifications."""
 
 from .policies import ScoringPolicy
-from .strategies import ClassicScoringPolicy, FargoRatingScoringPolicy, EloRatingScoringPolicy
+from .strategies import (
+    ClassicScoringPolicy,
+    FargoRatingScoringPolicy,
+    EloRatingScoringPolicy,
+)
 
 __all__ = [
-    'ScoringPolicy',
-    'ClassicScoringPolicy',
-    'FargoRatingScoringPolicy',
-    'EloRatingScoringPolicy'
+    "ScoringPolicy",
+    "ClassicScoringPolicy",
+    "FargoRatingScoringPolicy",
+    "EloRatingScoringPolicy",
 ]
