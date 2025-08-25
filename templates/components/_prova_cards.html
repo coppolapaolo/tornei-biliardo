@@ -74,7 +74,7 @@
                   <i class="fas fa-eye"></i> Dettagli
                 </a>
                 {% if p.can_be_modified() %}
-                  <a href="{{ url_for('admin.edit_prova', prova_id=p.id) }}" class="btn btn-warning btn-sm">
+                  <a href="{{ url_for('admin.competition.edit_prova', prova_id=p.id) }}" class="btn btn-warning btn-sm">
                     <i class="fas fa-edit"></i> Modifica
                   </a>
                 {% endif %}
@@ -82,7 +82,7 @@
 
               {% if p.can_be_deleted() %}
                 <form class="mt-2" method="POST"
-                      action="{{ url_for('admin.delete_prova', prova_id=p.id) }}"
+                      action="{{ url_for('admin.competition.delete_prova', prova_id=p.id) }}"
                       onsubmit="return confirm('Sei SICURO di voler eliminare definitivamente questa prova?');">
                   <button type="submit" class="btn btn-danger btn-sm w-100">
                     <i class="fas fa-trash"></i> Elimina Prova

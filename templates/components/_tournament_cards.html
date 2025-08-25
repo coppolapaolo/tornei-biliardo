@@ -40,11 +40,11 @@
             </div>
 
             <div class="btn-group w-100" role="group">
-              <a href="{{ url_for('admin.tournament_detail', tournament_id=t.id) }}" class="btn btn-primary btn-sm">
+              <a href="{{ url_for('admin.tournament.tournament_detail', tournament_id=t.id) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-eye"></i> Dettagli
               </a>
               {% if t.can_be_modified() %}
-              <a href="{{ url_for('admin.edit_tournament', tournament_id=t.id) }}" class="btn btn-warning btn-sm">
+              <a href="{{ url_for('admin.tournament.edit_tournament', tournament_id=t.id) }}" class="btn btn-warning btn-sm">
                 <i class="fas fa-edit"></i> Modifica
               </a>
               {% endif %}

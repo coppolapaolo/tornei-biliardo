@@ -9,7 +9,7 @@
         <p class="text-muted mb-0">{{ tournament.name }}</p>
     </div>
     <div>
-        <a href="{{ url_for('admin.tournament_detail', tournament_id=tournament.id) }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('admin.tournament.tournament_detail', tournament_id=tournament.id) }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Annulla
         </a>
     </div>

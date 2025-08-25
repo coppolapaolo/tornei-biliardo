@@ -61,7 +61,7 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         {% if prova.can_be_modified() %}
-                                            <a href="{{ url_for('admin.edit_prova', prova_id=prova.id) }}" 
+                                            <a href="{{ url_for('admin.competition.edit_prova', prova_id=prova.id) }}" 
                                                class="btn btn-sm btn-warning">
                                                 <i class="fas fa-edit"></i>
                                             </a>

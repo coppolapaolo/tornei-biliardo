@@ -48,12 +48,12 @@
                     
                     <!-- Azioni -->
                     <div class="btn-group w-100" role="group">
-                        <a href="{{ url_for('admin.tournament_detail', tournament_id=tournament.id) }}" 
+                        <a href="{{ url_for('admin.tournament.tournament_detail', tournament_id=tournament.id) }}" 
                            class="btn btn-primary btn-sm">
                             <i class="fas fa-eye"></i> Dettagli
                         </a>
                         {% if tournament.can_be_modified() %}
-                            <a href="{{ url_for('admin.edit_tournament', tournament_id=tournament.id) }}" 
+                            <a href="{{ url_for('admin.tournament.edit_tournament', tournament_id=tournament.id) }}" 
                                class="btn btn-warning btn-sm">
                                 <i class="fas fa-edit"></i> Modifica
                             </a>

@@ -13,7 +13,7 @@
         Le mie iscrizioni: <strong>{{ vm.my_inscriptions|length if vm.my_inscriptions else 0 }}</strong><br>
         Prove disponibili: <strong>{{ vm.available_provas|length if vm.available_provas else 0 }}</strong>
         {% if vm.can_manage_directors %}
-          <a href="{{ url_for('admin.tournament_detail', tournament_id=vm.selected_tournament.id) }}"
+          <a href="{{ url_for('admin.tournament.tournament_detail', tournament_id=vm.selected_tournament.id) }}"
              class="btn btn-outline-warning btn-sm mt-2">
             <i class="fas fa-cog"></i> Gestisci
           </a>

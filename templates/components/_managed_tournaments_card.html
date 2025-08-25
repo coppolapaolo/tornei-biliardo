@@ -8,7 +8,7 @@
     <div class="card-body p-2">
         {% if managed_tournaments %}
         {% for t in managed_tournaments %}
-            <a href="{{ url_for('admin.tournament_detail', tournament_id=t.id) }}"
+            <a href="{{ url_for('admin.tournament.tournament_detail', tournament_id=t.id) }}"
             class="btn btn-outline-secondary btn-sm w-100 mb-1">
             {{ t.name }}
             </a>
