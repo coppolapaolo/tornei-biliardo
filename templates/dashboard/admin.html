@@ -1,9 +1,10 @@
 {% extends "dashboard/base.html" %}
-{% block dashboard_content %}
-
+{% block dashboard_header %}
 {% include "components/_unified_dashboard_header.html" %}
-{% include "components/_admin_dashboard_content.html" %}
+{% endblock %}
 
+{% block dashboard_content %}
+{% include "components/_admin_dashboard_content.html" %}
 {% endblock %}
 
 {% include "components/_tournament_create_modal.html" %}

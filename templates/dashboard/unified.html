@@ -1,7 +1,9 @@
 {% extends "dashboard/base.html" %}
-{% block dashboard_content %}
-
+{% block dashboard_header %}
 {% include "components/_unified_dashboard_header.html" %}
+{% endblock %}
+
+{% block dashboard_content %}
 
 {% if current_user.is_admin %}
   {% include "components/_admin_dashboard_content.html" %}

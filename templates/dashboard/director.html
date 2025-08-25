@@ -1,9 +1,10 @@
 {% extends "dashboard/base.html" %}
-{% block dashboard_content %}
-
+{% block dashboard_header %}
 {% include "components/_unified_dashboard_header.html" %}
-{% include "components/_director_dashboard_content.html" %}
+{% endblock %}
 
+{% block dashboard_content %}
+{% include "components/_director_dashboard_content.html" %}
 {% endblock %}
 
 {% if vm.caps and vm.caps.can_create_tournament %}
