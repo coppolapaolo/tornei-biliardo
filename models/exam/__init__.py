@@ -10,10 +10,9 @@ from .services import ExamService
 __all__ = [
     # Models
     "Exam",
-    "ExamChallenge", 
+    "ExamChallenge",
     "ExamAttempt",
     "ExamChallengeResult",
-    
     # Services
     "ExamService",
 ]

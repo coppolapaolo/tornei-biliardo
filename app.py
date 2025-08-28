@@ -34,7 +34,7 @@ def create_app(config_name=None):
     # Setup Login Manager
     login_manager = LoginManager()
     login_manager.init_app(app)
-    setattr(login_manager, 'login_view', 'auth.login')
+    setattr(login_manager, "login_view", "auth.login")
 
     @login_manager.user_loader
     def load_user(user_id):

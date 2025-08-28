@@ -19,6 +19,7 @@ from models import db as _db  # noqa: E402
 from models import User  # noqa: E402
 from models.tournament.models import Tournament  # noqa: E402
 from models.competition.models import Prova  # noqa: E402
+from models.caching import cache_manager  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -74,6 +75,14 @@ def session(_database):
 def db_session(session):
     """Auto-use fixture to ensure session is available"""
     yield session
+
+
+@pytest.fixture(scope="function", autouse=True)
+def clear_cache():
+    """Clear cache before each test to avoid caching issues"""
+    cache_manager.clear_all()
+    yield
+    cache_manager.clear_all()
 
 
 @pytest.fixture

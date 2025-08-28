@@ -31,7 +31,7 @@ def users_list():
     """Lista di tutti gli utenti con statistiche"""
     # Use the service layer instead of direct database access
     users = user_service.get_users_with_stats()
-    
+
     return render_template("admin/users_list.html", users=users)
 
 
@@ -43,19 +43,20 @@ def user_detail(user_id):
         # Use the service layer instead of direct database access
         user_data = user_service.get_user_detail_data(user_id)
         user = user_data["user"]
-        
+
         # se l'utente è admin, ritorna alla lista utenti
         if user.role == "admin":
             return redirect(url_for("admin.user.users_list"))
-        
+
         # Get additional data through service methods
         inscriptions = user_data["inscriptions"]
         matches = user_service.get_user_matches(user_id)
         classifications = user_service.get_user_classifications(user_id)
         stats = user_service.get_user_statistics(user_id)
-        
+
     except ValueError:
         from flask import abort
+
         abort(404)
 
     return render_template(
@@ -84,17 +85,18 @@ def approve_director_request(req_id):
     """Approva richiesta di promozione a direttore"""
     from models.user.services import DirectorRequestService
     from flask_login import current_user
-    
+
     try:
         # Usa il service layer invece del direct database access
         # Cast current_user to User type since @admin_required ensures it's a valid admin User
         from models.base import db
+
         admin_user = db.session.get(User, current_user.id)
         DirectorRequestService.process_request(req_id, admin_user, approve=True)
         flash("Richiesta approvata.")
     except (PermissionError, ValueError) as e:
         flash(str(e), "error")
-    
+
     return redirect(url_for("admin.user.director_requests"))
 
 
@@ -104,15 +106,16 @@ def reject_director_request(req_id):
     """Rifiuta richiesta di promozione a direttore"""
     from models.user.services import DirectorRequestService
     from flask_login import current_user
-    
+
     try:
         # Usa il service layer invece del direct database access
         # Cast current_user to User type since @admin_required ensures it's a valid admin User
         from models.base import db
+
         admin_user = db.session.get(User, current_user.id)
         DirectorRequestService.process_request(req_id, admin_user, approve=False)
         flash("Richiesta rifiutata.")
     except (PermissionError, ValueError) as e:
         flash(str(e), "error")
-    
+
     return redirect(url_for("admin.user.director_requests"))

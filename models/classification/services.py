@@ -16,7 +16,11 @@ from models.user.models import User
 from ..caching import cached, cache_invalidate, cache_manager
 from ..optimization import optimized_query, bulk_load_relationships
 from ..scoring.policies import ScoringPolicy
-from ..scoring.strategies import ClassicScoringPolicy, FargoRatingScoringPolicy, EloRatingScoringPolicy
+from ..scoring.strategies import (
+    ClassicScoringPolicy,
+    FargoRatingScoringPolicy,
+    EloRatingScoringPolicy,
+)
 
 
 class ClassificationService:
@@ -33,8 +37,12 @@ class ClassificationService:
         return policy_map.get(tournament.scoring_policy, ClassicScoringPolicy())
 
     @staticmethod
-    @cached(ttl_seconds=300, tags=['classification', 'tournament'], key_generator='tournament')
-    @optimized_query(cache_ttl=300, cache_tags=['tournament_classification'])
+    @cached(
+        ttl_seconds=300,
+        tags=["classification", "tournament"],
+        key_generator="tournament",
+    )
+    @optimized_query(cache_ttl=300, cache_tags=["tournament_classification"])
     def update_tournament_classification(tournament_id: int) -> List[Classification]:
         """
         Update overall tournament classification based on all completed provas.
@@ -60,11 +68,7 @@ class ClassificationService:
 
         # Get all provas for this tournament with optimized loading
         provas_query = db.session.query(Prova).filter_by(tournament_id=tournament_id)
-        provas = bulk_load_relationships(
-            provas_query,
-            "matches",
-            "inscriptions"
-        ).all()
+        provas = bulk_load_relationships(provas_query, "matches", "inscriptions").all()
 
         # Get all players in the tournament
         player_ids = set()
@@ -73,7 +77,8 @@ class ClassificationService:
         for prova in provas:
             # Get completed matches - already loaded via selectinload
             matches = [
-                match for match in prova.matches
+                match
+                for match in prova.matches
                 if match.status == "completed" and not match.is_bye
             ]
 
@@ -81,12 +86,14 @@ class ClassificationService:
             for match in matches:
                 player_ids.add(match.player1_id)
                 player_ids.add(match.player2_id)
-                match_results.append({
-                    "player1_id": match.player1_id,
-                    "player2_id": match.player2_id,
-                    "player1_score": match.player1_score,
-                    "player2_score": match.player2_score
-                })
+                match_results.append(
+                    {
+                        "player1_id": match.player1_id,
+                        "player2_id": match.player2_id,
+                        "player1_score": match.player1_score,
+                        "player2_score": match.player2_score,
+                    }
+                )
 
         # Get player objects
         players = db.session.query(User).filter(User.id.in_(player_ids)).all()
@@ -96,8 +103,10 @@ class ClassificationService:
 
         # Batch load existing classifications to avoid N+1
         existing_classifications = {
-            c.user_id: c for c in 
-            db.session.query(Classification).filter_by(tournament_id=tournament_id).all()
+            c.user_id: c
+            for c in db.session.query(Classification)
+            .filter_by(tournament_id=tournament_id)
+            .all()
         }
 
         # Update or create Classification records
@@ -121,7 +130,9 @@ class ClassificationService:
             else:
                 # For other policies, use default values
                 classification.total_matches_won = getattr(score_data, "wins", 0) or 0
-                classification.total_point_difference = getattr(score_data, "rack_diff", 0) or 0
+                classification.total_point_difference = (
+                    getattr(score_data, "rack_diff", 0) or 0
+                )
                 classification.provas_played = 0
 
             db.session.add(classification)
@@ -131,7 +142,11 @@ class ClassificationService:
         return classifications
 
     @staticmethod
-    @cached(ttl_seconds=600, tags=['classification', 'tournament'], key_generator='tournament')
+    @cached(
+        ttl_seconds=600,
+        tags=["classification", "tournament"],
+        key_generator="tournament",
+    )
     def get_tournament_standings(tournament_id: int) -> List[Classification]:
         """
         Get current tournament standings with caching.
@@ -146,13 +161,15 @@ class ClassificationService:
         return (
             db.session.query(Classification)
             .filter_by(tournament_id=tournament_id)
-            .options(joinedload(getattr(Classification, 'user')))  # Eager load user data
+            .options(
+                joinedload(getattr(Classification, "user"))
+            )  # Eager load user data
             .order_by(Classification.position)
             .all()
         )
 
     @staticmethod
-    @cached(ttl_seconds=300, tags=['classification', 'user'])
+    @cached(ttl_seconds=300, tags=["classification", "user"])
     def get_player_ranking(
         tournament_id: int, user_id: int
     ) -> Optional[Classification]:
@@ -168,41 +185,45 @@ class ClassificationService:
         """
         return (
             db.session.query(Classification)
-            .options(joinedload(getattr(Classification, 'user')))
+            .options(joinedload(getattr(Classification, "user")))
             .filter_by(tournament_id=tournament_id, user_id=user_id)
             .first()
         )
-    
+
     @staticmethod
-    @cache_invalidate(tags=['classification', 'tournament'])
+    @cache_invalidate(tags=["classification", "tournament"])
     def invalidate_tournament_cache(tournament_id: int) -> None:
         """Invalidate all classification caches for a tournament."""
         # Additional specific cache invalidation
-        cache_manager.invalidate_by_tags([f'tournament:{tournament_id}'])
-    
+        cache_manager.invalidate_by_tags([f"tournament:{tournament_id}"])
+
     @staticmethod
-    @cached(ttl_seconds=1800, tags=['classification', 'tournament'])
+    @cached(ttl_seconds=1800, tags=["classification", "tournament"])
     def get_player_statistics_summary(tournament_id: int) -> Dict[str, Any]:
         """Get comprehensive statistics summary for the tournament."""
         standings = ClassificationService.get_tournament_standings(tournament_id)
-        
+
         if not standings:
             return {"total_players": 0, "completed": False}
-        
+
         total_matches = sum(c.total_matches_won for c in standings)
         avg_matches_per_player = total_matches / len(standings) if standings else 0
-        
+
         return {
             "total_players": len(standings),
             "total_matches_played": total_matches,
             "average_matches_per_player": round(avg_matches_per_player, 1),
             "leader": {
                 "user_id": standings[0].user_id,
-                "username": standings[0].user.username if standings[0].user else "Unknown",
+                "username": standings[0].user.username
+                if standings[0].user
+                else "Unknown",
                 "matches_won": standings[0].total_matches_won,
-                "point_difference": standings[0].total_point_difference
-            } if standings else None,
-            "completed": all(c.total_matches_won > 0 for c in standings)
+                "point_difference": standings[0].total_point_difference,
+            }
+            if standings
+            else None,
+            "completed": all(c.total_matches_won > 0 for c in standings),
         }
 
 
@@ -210,7 +231,7 @@ class RoundClassificationService:
     """Service for managing round-by-round classifications with caching."""
 
     @staticmethod
-    @cached(ttl_seconds=900, tags=['classification', 'prova'], key_generator='prova')
+    @cached(ttl_seconds=900, tags=["classification", "prova"], key_generator="prova")
     def get_round_standings(
         prova_id: int, round_number: int
     ) -> List[RoundClassification]:
@@ -228,13 +249,13 @@ class RoundClassificationService:
         return (
             db.session.query(RoundClassification)
             .filter_by(prova_id=prova_id, round_number=round_number)
-            .options(joinedload(getattr(RoundClassification, 'user')))
+            .options(joinedload(getattr(RoundClassification, "user")))
             .order_by(RoundClassification.position)
             .all()
         )
 
     @staticmethod
-    @cached(ttl_seconds=600, tags=['classification', 'user', 'prova'])
+    @cached(ttl_seconds=600, tags=["classification", "user", "prova"])
     def get_player_progression(
         prova_id: int, user_id: int
     ) -> List[RoundClassification]:
@@ -256,7 +277,7 @@ class RoundClassificationService:
         )
 
     @staticmethod
-    @cache_invalidate(tags=['classification', 'prova'])
+    @cache_invalidate(tags=["classification", "prova"])
     def calculate_and_save_round_classification(
         prova_id: int, round_number: int
     ) -> List[RoundClassification]:
@@ -284,7 +305,7 @@ class PlayerEncounterService:
     """Service for managing player encounter tracking with optimization."""
 
     @staticmethod
-    @cached(ttl_seconds=300, tags=['encounter', 'prova'])
+    @cached(ttl_seconds=300, tags=["encounter", "prova"])
     def get_player_encounters(prova_id: int, player_id: int) -> List[PlayerEncounter]:
         """
         Get all encounters for a player in a prova with caching.
@@ -296,13 +317,17 @@ class PlayerEncounterService:
         Returns:
             List of PlayerEncounter objects
         """
-        return db.session.query(PlayerEncounter).filter(
-            PlayerEncounter.prova_id == prova_id,
-            db.or_(
-                PlayerEncounter.player1_id == player_id,
-                PlayerEncounter.player2_id == player_id,
-            ),
-        ).all()
+        return (
+            db.session.query(PlayerEncounter)
+            .filter(
+                PlayerEncounter.prova_id == prova_id,
+                db.or_(
+                    PlayerEncounter.player1_id == player_id,
+                    PlayerEncounter.player2_id == player_id,
+                ),
+            )
+            .all()
+        )
 
     @staticmethod
     def get_available_opponents(
@@ -321,15 +346,16 @@ class PlayerEncounterService:
         """
         # Use cached encounter matrix for efficiency
         encounter_matrix = PlayerEncounterService.get_encounter_matrix(prova_id)
-        
+
         # Return candidates who haven't been played
         return [
-            cid for cid in candidate_ids 
+            cid
+            for cid in candidate_ids
             if not encounter_matrix.get((player_id, cid), False)
         ]
 
     @staticmethod
-    @cache_invalidate(tags=['encounter', 'prova'])
+    @cache_invalidate(tags=["encounter", "prova"])
     def record_match_encounters(match) -> None:
         """
         Record player encounters from a match with cache invalidation.
@@ -348,7 +374,7 @@ class PlayerEncounterService:
         )
 
     @staticmethod
-    @cached(ttl_seconds=600, tags=['encounter', 'prova'], key_generator='prova')
+    @cached(ttl_seconds=600, tags=["encounter", "prova"], key_generator="prova")
     def get_encounter_matrix(prova_id: int) -> Dict[Tuple[int, int], bool]:
         """
         Get encounter matrix for all players in a prova with caching.
@@ -363,7 +389,9 @@ class PlayerEncounterService:
         Returns:
             Dictionary mapping player pairs to encounter status
         """
-        encounters = db.session.query(PlayerEncounter).filter_by(prova_id=prova_id).all()
+        encounters = (
+            db.session.query(PlayerEncounter).filter_by(prova_id=prova_id).all()
+        )
 
         matrix = {}
         for encounter in encounters:
@@ -371,29 +399,33 @@ class PlayerEncounterService:
             matrix[(encounter.player2_id, encounter.player1_id)] = True
 
         return matrix
-    
+
     @staticmethod
-    @cached(ttl_seconds=1200, tags=['encounter', 'prova'])
+    @cached(ttl_seconds=1200, tags=["encounter", "prova"])
     def get_encounter_statistics(prova_id: int) -> Dict[str, Any]:
         """Get comprehensive encounter statistics for the prova."""
-        encounters = db.session.query(PlayerEncounter).filter_by(prova_id=prova_id).all()
-        
+        encounters = (
+            db.session.query(PlayerEncounter).filter_by(prova_id=prova_id).all()
+        )
+
         if not encounters:
             return {"total_encounters": 0, "unique_players": 0}
-        
+
         unique_players = set()
         for encounter in encounters:
             unique_players.add(encounter.player1_id)
             unique_players.add(encounter.player2_id)
-        
+
         total_possible = len(unique_players) * (len(unique_players) - 1) // 2
-        completion_rate = (len(encounters) / total_possible * 100) if total_possible > 0 else 0
-        
+        completion_rate = (
+            (len(encounters) / total_possible * 100) if total_possible > 0 else 0
+        )
+
         return {
             "total_encounters": len(encounters),
             "unique_players": len(unique_players),
             "total_possible_encounters": total_possible,
-            "completion_rate_percent": round(completion_rate, 1)
+            "completion_rate_percent": round(completion_rate, 1),
         }
 
 
@@ -401,12 +433,12 @@ def visible_user_ids_for_prova(prova_id: int) -> set[int]:
     # iscritti non ritirati
     active = {
         ins.user_id
-        for ins in db.session.query(Inscription).filter_by(
-            prova_id=prova_id
-        ).all()
+        for ins in db.session.query(Inscription).filter_by(prova_id=prova_id).all()
     }
     # utenti soft-deleted
-    deleted = {u.id for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()}
+    deleted = {
+        u.id for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()
+    }
     return active - deleted
 
 

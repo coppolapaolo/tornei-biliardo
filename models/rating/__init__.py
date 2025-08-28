@@ -5,8 +5,13 @@ Requirements: SPECIFICHE.md - Handicap system
 """
 
 from .models import (
-    PlayerCategory, PlayerRating, HandicapRule, CategoryHandicapRule,
-    RatingHandicapRule, CategoryLevel, RatingSystem
+    PlayerCategory,
+    PlayerRating,
+    HandicapRule,
+    CategoryHandicapRule,
+    RatingHandicapRule,
+    CategoryLevel,
+    RatingSystem,
 )
 from .services import RatingService
 
@@ -17,11 +22,9 @@ __all__ = [
     "HandicapRule",
     "CategoryHandicapRule",
     "RatingHandicapRule",
-    
     # Enums
     "CategoryLevel",
     "RatingSystem",
-    
     # Services
     "RatingService",
 ]

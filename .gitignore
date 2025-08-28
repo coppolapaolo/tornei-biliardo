@@ -64,6 +64,7 @@ instance/
 *.swo
 *~
 .VSCodeCounter/
+.qoder/
 
 # OS
 .DS_Store

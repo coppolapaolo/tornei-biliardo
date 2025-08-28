@@ -1,0 +1,41 @@
+[run]
+# Le cartelle DA CUI calcolare la coverage (il tuo codice sorgente principale)
+source = 
+    routes
+    models
+    utils
+    amalfi
+
+# Le cartelle e i file da ESCLUDERE ESPLICITAMENTE dal calcolo
+omit =
+    */tests/*              # Esclude tutta la cartella dei test
+    */venv/*               # Ambiente virtuale - DA ESCLUDERE ASSOLUTAMENTE
+    */__pycache__/*        # Cache di Python
+    */.pytest_cache/*      # Cache di pytest
+    */.coverage            # File di coverage stesso
+    */docs/*               # Documentazione
+    */templates/*          # Template HTML (non codice Python)
+    */instance/*           # Istanza Flask (configurazioni locali)
+    */.vscode/*            # Configurazioni IDE
+    */.qoder/*             # Configurazioni IDE
+    */.VSCodeCounter/*     # Configurazioni IDE
+    */.github/*            # Configurazioni CI/CD (se presente)
+    app.py                 # File principale dell'app (spesso solo avvio)
+    config.py              # File di configurazione
+    export_*.py            # Script di export vari
+    */repository_export_*.zip  # File di export del repository
+
+[report]
+# Esclude queste linee dai report finali
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    if self\.debug
+    raise NotImplementedError
+    @property.*\n.*def.*\(self\):
+    # type: ignore
+
+[html]
+# Directory dove generare il report HTML
+directory = htmlcov

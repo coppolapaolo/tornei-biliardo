@@ -33,7 +33,7 @@ class AmalfiStrategy(BaseStrategy):
     max_players = None
     supports_byes = True
     requires_classification = True
-    
+
     name = "Amalfi"
 
     def __init__(
@@ -53,23 +53,27 @@ class AmalfiStrategy(BaseStrategy):
 
     # ── _generate_pairings (abstract method implementation) ──────────────────
     def _generate_pairings(
-        self, 
-        processed_data: Dict[str, Any], 
-        round_number: int, 
-        preview_mode: bool = True
+        self,
+        processed_data: Dict[str, Any],
+        round_number: int,
+        preview_mode: bool = True,
     ) -> Sequence[Pairing]:
         """Generate pairings using the Amalfi engine."""
         prova = processed_data["prova"]
-        
+
         if preview_mode:
             return self._generate_preview_pairings(prova, round_number)
         else:
             return self._generate_actual_pairings(prova, round_number)
-    
-    def _generate_preview_pairings(self, prova: object, round_number: int) -> Sequence[Pairing]:
+
+    def _generate_preview_pairings(
+        self, prova: object, round_number: int
+    ) -> Sequence[Pairing]:
         """Generate preview pairings without side effects."""
         prova_typed = cast(Prova, prova)
-        engine = AmalfiEngine(prova_typed)  # rispetta WithdrawPolicy via patch in engine
+        engine = AmalfiEngine(
+            prova_typed
+        )  # rispetta WithdrawPolicy via patch in engine
         raw = (
             engine._preview_first_round()
             if int(round_number) == 1
@@ -93,8 +97,10 @@ class AmalfiStrategy(BaseStrategy):
                 )
             )
         return result
-    
-    def _generate_actual_pairings(self, prova: object, round_number: int) -> Sequence[Pairing]:
+
+    def _generate_actual_pairings(
+        self, prova: object, round_number: int
+    ) -> Sequence[Pairing]:
         """Generate actual pairings with side effects."""
         raw = self._propose_fn(prova, round_number)
         result: list[Pairing] = []
@@ -108,4 +114,3 @@ class AmalfiStrategy(BaseStrategy):
                 )
             )
         return result
-

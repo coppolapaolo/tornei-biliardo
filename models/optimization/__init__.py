@@ -11,7 +11,7 @@ from .query_optimizer import (
     OptimizationSuggestion,
     query_optimizer,
     optimized_query,
-    bulk_load_relationships
+    bulk_load_relationships,
 )
 
 __all__ = [
@@ -22,5 +22,5 @@ __all__ = [
     "OptimizationSuggestion",
     "query_optimizer",
     "optimized_query",
-    "bulk_load_relationships"
+    "bulk_load_relationships",
 ]

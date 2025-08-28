@@ -14,65 +14,67 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 class EncryptionManager:
     """Handles encryption/decryption of sensitive user data."""
-    
-    _instance: Optional['EncryptionManager'] = None
+
+    _instance: Optional["EncryptionManager"] = None
     _cipher_suite: Optional[Fernet] = None
     _initialized: bool = False
-    
-    def __new__(cls) -> 'EncryptionManager':
+
+    def __new__(cls) -> "EncryptionManager":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def __init__(self):
         if not self._initialized:
             self._initialize_cipher()
             EncryptionManager._initialized = True
-    
+
     def _initialize_cipher(self) -> None:
         """Initialize encryption cipher from server configuration."""
         # Get encryption key from environment or config
-        key_string = os.environ.get('ENCRYPTION_KEY')
-        
+        key_string = os.environ.get("ENCRYPTION_KEY")
+
         if not key_string:
             # For development, generate a default key
             # In production, this should be set in server configuration
-            key_string = 'default-development-key-change-in-production'
-            print("WARNING: Using default encryption key. Set ENCRYPTION_KEY environment variable in production.")
-        
+            key_string = "default-development-key-change-in-production"
+            print(
+                "WARNING: Using default encryption key. Set ENCRYPTION_KEY environment variable in production."
+            )
+
         # Derive encryption key from the key string
         key_bytes = key_string.encode()
-        salt = b'tornei-biliardo-salt'  # Should be random in production
-        
+        salt = b"tornei-biliardo-salt"  # Should be random in production
+
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
             iterations=100000,
         )
-        
+
         key = base64.urlsafe_b64encode(kdf.derive(key_bytes))
         EncryptionManager._cipher_suite = Fernet(key)
-    
+
     def encrypt(self, data: str) -> str:
         """Encrypt a string value."""
         if not data:
             return ""
-        
+
         if self._cipher_suite is None:
             raise RuntimeError("Encryption manager not properly initialized")
-        
+
         encrypted_bytes = self._cipher_suite.encrypt(data.encode())
         return base64.urlsafe_b64encode(encrypted_bytes).decode()
-    
+
     def decrypt(self, encrypted_data: str) -> str:
         """Decrypt an encrypted string value."""
         if not encrypted_data:
             return ""
-        
+
         if self._cipher_suite is None:
             raise RuntimeError("Encryption manager not properly initialized")
-        
+
         try:
             encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())
             decrypted_bytes = self._cipher_suite.decrypt(encrypted_bytes)

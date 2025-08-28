@@ -140,199 +140,218 @@ class ProvaService:
         db.session.add(prova)
         db.session.commit()
         return prova
-    
+
     @staticmethod
     def get_prova_by_id(prova_id: int) -> Optional[Prova]:
         """Retrieve a Prova by ID using service layer.
-        
+
         Args:
             prova_id: ID of the prova to retrieve
-            
+
         Returns:
             Prova: The prova instance if found, None otherwise
         """
         return db.session.get(Prova, prova_id)
-    
+
     @staticmethod
     def update_prova(prova_id: int, **kwargs) -> Prova:
         """Aggiorna una prova con i campi forniti."""
         prova = db.session.get(Prova, prova_id)
         if not prova:
             raise ValueError(f"Prova {prova_id} non trovata")
-        
+
         if not prova.can_be_modified():
-            raise ValueError("Impossibile modificare la prova: ci sono già delle iscrizioni!")
-        
+            raise ValueError(
+                "Impossibile modificare la prova: ci sono già delle iscrizioni!"
+            )
+
         # Aggiorna solo i campi forniti
         for field, value in kwargs.items():
             if hasattr(prova, field):
                 setattr(prova, field, value)
-        
+
         # Gestione speciale per date
-        if 'date_str' in kwargs:
+        if "date_str" in kwargs:
             from datetime import datetime
-            prova.date = datetime.strptime(kwargs['date_str'], "%Y-%m-%d").date()
-        
+
+            prova.date = datetime.strptime(kwargs["date_str"], "%Y-%m-%d").date()
+
         db.session.commit()
         return prova
-    
+
     @staticmethod
     def delete_prova(prova_id: int) -> None:
         """Cancella una prova se possibile."""
         prova = db.session.get(Prova, prova_id)
         if not prova:
             raise ValueError(f"Prova {prova_id} non trovata")
-        
+
         if not prova.can_be_deleted():
-            raise ValueError("Impossibile cancellare la prova: ci sono già delle iscrizioni!")
-        
+            raise ValueError(
+                "Impossibile cancellare la prova: ci sono già delle iscrizioni!"
+            )
+
         db.session.delete(prova)
         db.session.commit()
-    
+
     @staticmethod
     def open_inscriptions(
-        prova_id: int, 
-        inscription_start: datetime, 
-        inscription_end: datetime
+        prova_id: int, inscription_start: datetime, inscription_end: datetime
     ) -> Prova:
         """Apre le iscrizioni per una prova con validazione delle date."""
         if inscription_start > inscription_end:
-            raise ValueError("La data di inizio deve essere precedente alla data di fine!")
-        
+            raise ValueError(
+                "La data di inizio deve essere precedente alla data di fine!"
+            )
+
         prova = db.session.get(Prova, prova_id)
         if not prova:
             raise ValueError(f"Prova {prova_id} non trovata")
-        
+
         prova.inscription_start = inscription_start
         prova.inscription_end = inscription_end
         prova = ProvaStateMachine.to_inscription(prova)
-        
+
         return prova
-    
+
     @staticmethod
     def modify_inscription_dates(
-        prova_id: int, 
-        inscription_start: datetime, 
-        inscription_end: datetime
+        prova_id: int, inscription_start: datetime, inscription_end: datetime
     ) -> Prova:
         """Modifica le date di iscrizione per una prova."""
         prova = db.session.get(Prova, prova_id)
         if not prova:
             raise ValueError(f"Prova {prova_id} non trovata")
-        
+
         if not prova.can_modify_inscription_dates():
-            raise ValueError("Impossibile modificare le date: il primo turno è già stato avviato!")
-        
+            raise ValueError(
+                "Impossibile modificare le date: il primo turno è già stato avviato!"
+            )
+
         if inscription_start > inscription_end:
-            raise ValueError("La data di inizio deve essere precedente alla data di fine!")
-        
+            raise ValueError(
+                "La data di inizio deve essere precedente alla data di fine!"
+            )
+
         prova.inscription_start = inscription_start
         prova.inscription_end = inscription_end
-        
+
         # Gestione automatica dello stato in base alle date
         now = datetime.utcnow()
         if inscription_start > now:
             prova = ProvaStateMachine.reopen_setup(prova)
         elif inscription_start <= now <= inscription_end:
             prova = ProvaStateMachine.to_inscription(prova)
-        
+
         return prova
-    
+
     @staticmethod
     def start_first_round(prova_id: int) -> Prova:
         """Avvia il primo turno della prova con controlli e sorteggio."""
         from models.competition.models import Inscription
         import random
-        
+
         prova = db.session.get(Prova, prova_id)
         if not prova:
             raise ValueError(f"Prova {prova_id} non trovata")
-        
+
         if prova.current_round != 0:
             raise ValueError("La prova è già iniziata!")
-        
+
         # Verifica numero minimo partecipanti
         inscriptions = db.session.query(Inscription).filter_by(prova_id=prova_id).all()
         if len(inscriptions) < prova.min_participants:
-            raise ValueError(f"Servono almeno {prova.min_participants} iscritti per avviare la prova!")
-        
+            raise ValueError(
+                f"Servono almeno {prova.min_participants} iscritti per avviare la prova!"
+            )
+
         # Genera il sorteggio iniziale
         random.shuffle(inscriptions)
-        
+
         # Assegna ordine sorteggio
         for i, inscription in enumerate(inscriptions, 1):
             inscription.initial_order = i
-        
+
         # Crea abbinamenti primo turno
-        from routes.admin.competition import create_round_matches  # Import locale
+        from utils import create_round_matches  # Import locale
+
         create_round_matches(prova, inscriptions, 1)
-        
+
         prova.current_round = 1
         prova = ProvaStateMachine.start_playing(prova)
-        
+
         return prova
-    
+
     @staticmethod
-    def create_amalfi_round(prova_id: int, round_number: int) -> tuple[int, int, int, int]:
+    def create_amalfi_round(
+        prova_id: int, round_number: int
+    ) -> tuple[int, int, int, int]:
         """Crea un turno Amalfi con gestione degli errori.
-        
+
         Returns:
             Tuple con (total_matches, normal_matches, bye_matches, trio_matches)
         """
         from models.match.models import Match, TrioMatch
         from amalfi import create_amalfi_round_matches
-        
+
         try:
             prova = db.session.get(Prova, prova_id)
             if not prova:
                 raise ValueError(f"Prova {prova_id} non trovata")
-            
+
             # Usa il binding Amalfi esistente
             results = create_amalfi_round_matches(prova, round_number)
-            
+
             # Conta i risultati
-            matches = db.session.query(Match).filter_by(prova_id=prova_id, round_number=round_number).all()
+            matches = (
+                db.session.query(Match)
+                .filter_by(prova_id=prova_id, round_number=round_number)
+                .all()
+            )
             normal_matches = sum(1 for m in matches if not m.is_bye and not m.is_trio)
             bye_matches = sum(1 for m in matches if m.is_bye)
-            trio_matches = db.session.query(TrioMatch).join(Match).filter(
-                Match.prova_id == prova_id, 
-                Match.round_number == round_number
-            ).count()
+            trio_matches = (
+                db.session.query(TrioMatch)
+                .join(Match)
+                .filter(Match.prova_id == prova_id, Match.round_number == round_number)
+                .count()
+            )
             total_matches = len(matches)
-            
+
             db.session.commit()
             return (total_matches, normal_matches, bye_matches, trio_matches)
-            
+
         except Exception as e:
             db.session.rollback()
             raise ValueError(f"Errore durante la creazione del turno: {str(e)}")
-    
+
     @staticmethod
     def add_trio_rack(trio_id: int, winner_id: int) -> dict:
         """Aggiunge un rack a una partita trio con validazione.
-        
+
         Returns:
             Dict con stato aggiornato del trio
         """
         from models.match.models import TrioMatch
-        
+
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
             from flask import abort
+
             abort(404)
-        
+
         # Verifica che il vincitore sia tra i giocatori del trio
         if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
             raise ValueError("Vincitore non valido per questo trio")
-        
+
         try:
             # Aggiungi rack e gestisci rotazione
             trio.add_rack_win(winner_id)
             db.session.commit()
-            
+
             # Prepara risposta con nuovo stato
             state = trio.get_current_state()
-            
+
             return {
                 "success": True,
                 "trio_completed": trio.is_completed,
@@ -354,38 +373,39 @@ class ProvaService:
         except Exception as e:
             db.session.rollback()
             raise ValueError(f"Errore durante aggiunta rack: {str(e)}")
-    
+
     @staticmethod
     def reset_trio(trio_id: int) -> None:
         """Reset completo di una partita trio."""
         from models.match.models import TrioMatch, Match
         from models.match.services import MatchService
-        
+
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
             from flask import abort
+
             abort(404)
-        
+
         try:
             # Reset scores
             trio.player1_racks = 0
             trio.player2_racks = 0
             trio.player3_racks = 0
-            
+
             # Reset state
             trio.current_player1_id = trio.player1_id
             trio.current_player2_id = trio.player2_id
             trio.waiting_player_id = trio.player3_id
             trio.is_completed = False
             trio.winner_id = None
-            
+
             # Reset match associato
             MatchService.reset_to_pending(trio.match.id, clear_validation=True)
             # Access the match object directly using db.session.get to avoid relationship property issues
             match_obj = db.session.get(Match, trio.match_id)
             if match_obj:
                 match_obj.winner_id = None
-            
+
             db.session.commit()
         except Exception as e:
             db.session.rollback()
@@ -408,10 +428,14 @@ class ProvaService:
             .subquery()
         )
 
-        q = db.session.query(Prova).filter(
-            (Prova.director_id == director_id)
-            | (Prova.tournament_id.in_(select(td_subq)))
-        ).order_by(Prova.date.desc(), Prova.number.asc())
+        q = (
+            db.session.query(Prova)
+            .filter(
+                (Prova.director_id == director_id)
+                | (Prova.tournament_id.in_(select(td_subq)))
+            )
+            .order_by(Prova.date.desc(), Prova.number.asc())
+        )
         return q.all()
 
     # -----------------------------
@@ -546,9 +570,7 @@ class ProvaService:
     # -----------------------------
     @staticmethod
     def to_inscription(
-        prova_id: int,
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None
+        prova_id: int, start: Optional[datetime] = None, end: Optional[datetime] = None
     ) -> Prova:
         prova = db.session.get(Prova, prova_id)
         if not prova:
@@ -598,9 +620,11 @@ class InscriptionService:
     @staticmethod
     def inscribe_user(user_id: int, prova_id: int) -> Optional[Inscription]:
         """Registra un utente a una prova se non già iscritto."""
-        existing = db.session.query(Inscription).filter_by(
-            user_id=user_id, prova_id=prova_id
-        ).first()
+        existing = (
+            db.session.query(Inscription)
+            .filter_by(user_id=user_id, prova_id=prova_id)
+            .first()
+        )
         if existing:
             return existing
         ins = Inscription(user_id=user_id, prova_id=prova_id)
@@ -614,9 +638,11 @@ class InscriptionService:
 
         Returns: True se rimossa, False se non trovata.
         """
-        inscription = db.session.query(Inscription).filter_by(
-            user_id=user_id, prova_id=prova_id
-        ).first()
+        inscription = (
+            db.session.query(Inscription)
+            .filter_by(user_id=user_id, prova_id=prova_id)
+            .first()
+        )
         if inscription:
             db.session.delete(inscription)
             db.session.commit()

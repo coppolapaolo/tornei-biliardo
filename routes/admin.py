@@ -27,7 +27,7 @@ from routes.admin import admin_bp
 
 # URLs preserved:
 # /admin/ -> dashboard (routes/admin/dashboard.py)
-# /admin/tournament/* -> tournament management (routes/admin/tournament.py)  
+# /admin/tournament/* -> tournament management (routes/admin/tournament.py)
 # /admin/prova/* -> competition management (routes/admin/competition.py)
 # /admin/match/* -> match management (routes/admin/match.py)
 # /admin/rack/* -> rack management (routes/admin/match.py)

@@ -108,12 +108,16 @@ class RoundClassification(db.Model):
         from models.match.models import Match
 
         # Get all completed matches up to this round
-        completed_matches = db.session.query(Match).filter(
-            Match.prova_id == prova_id,
-            Match.round_number <= round_number,
-            Match.status == "completed",  # type: ignore[operator]
-            Match.is_bye.is_(False),
-        ).all()
+        completed_matches = (
+            db.session.query(Match)
+            .filter(
+                Match.prova_id == prova_id,
+                Match.round_number <= round_number,
+                Match.status == "completed",  # type: ignore[operator]
+                Match.is_bye.is_(False),
+            )
+            .all()
+        )
 
         # Calculate stats per player
         player_stats = {}
@@ -160,21 +164,29 @@ class RoundClassification(db.Model):
         # Create/update round classifications
         for position, (player_id, stats) in enumerate(sorted_players, 1):
             # Get previous position if exists
-            previous_classification = db.session.query(RoundClassification).filter_by(
-                prova_id=prova_id,
-                round_number=round_number - 1,
-                user_id=player_id,
-            ).first()
+            previous_classification = (
+                db.session.query(RoundClassification)
+                .filter_by(
+                    prova_id=prova_id,
+                    round_number=round_number - 1,
+                    user_id=player_id,
+                )
+                .first()
+            )
             previous_position = (
                 previous_classification.position if previous_classification else None
             )
 
             # Create or update classification
-            classification = db.session.query(RoundClassification).filter_by(
-                prova_id=prova_id,
-                round_number=round_number,
-                user_id=player_id,
-            ).first()
+            classification = (
+                db.session.query(RoundClassification)
+                .filter_by(
+                    prova_id=prova_id,
+                    round_number=round_number,
+                    user_id=player_id,
+                )
+                .first()
+            )
 
             if classification:
                 # Update existing
@@ -266,9 +278,11 @@ class PlayerEncounter(db.Model):
         # Ensure consistent ordering
         p1, p2 = min(player1_id, player2_id), max(player1_id, player2_id)
 
-        encounter = db.session.query(PlayerEncounter).filter_by(
-            prova_id=prova_id, player1_id=p1, player2_id=p2
-        ).first()
+        encounter = (
+            db.session.query(PlayerEncounter)
+            .filter_by(prova_id=prova_id, player1_id=p1, player2_id=p2)
+            .first()
+        )
 
         return encounter is not None
 

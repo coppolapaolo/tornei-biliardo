@@ -1,35 +1,44 @@
 # routes/admin/competition.py
 """Competition (Prova) management blueprint for admin interface."""
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+    abort,
+    current_app,
+)
 from flask_login import login_required, current_user
 from datetime import datetime
-import random
 
 from models import (
+    db,
     Tournament,
     Prova,
     Inscription,
     Match,
     User,
-    RoundClassification,
-    PlayerEncounter,
-    TrioMatch,
 )
+from models.status_enum import (
+    ProvaStatus,
+    MatchStatus,
+)
+from models.competition.models import WithdrawPolicy
 from utils import (
     prova_manager_required,
+    tournament_manager_required,
+    admin_required,
     trio_manager_required,
-    create_round_matches,
 )
-from amalfi import (
-    get_amalfi_classification,
-    validate_amalfi_configuration,
-)
-from models.matchmaking.bootstrap import get_matchmaking_service
 from models.competition.services import ProvaService
 from models.match.services import MatchService
-from models.status_enum import ProvaStatus, MatchStatus
-from models.competition.models import WithdrawPolicy
+from models.matchmaking.service import MatchmakingService
+from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
+from models.classification.models import RoundClassification
 
 # Competition management blueprint
 competition_bp = Blueprint("competition", __name__)
@@ -37,59 +46,99 @@ competition_bp = Blueprint("competition", __name__)
 
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
 @login_required
+@admin_required
 def create_prova_standalone():
-    """Crea nuova prova standalone - Solo per Director"""
-    if not (current_user.is_admin or current_user.is_director):
-        flash("Non hai i permessi per creare una competizione standalone.", "error")
-        return redirect(url_for("main.index"))
-
+    """Crea prova standalone (solo admin)"""
     if request.method == "POST":
-        # Validazione dati
-        errors = ProvaService.validate_prova_data(request.form)
-        if errors:
-            for field, error in errors.items():
-                flash(f"{field}: {error}", "error")
-            return render_template(
-                "admin/prova_create_standalone.html", WithdrawPolicy=WithdrawPolicy
+        tournament_id = request.form.get("tournament_id")
+        if not tournament_id:
+            flash("Tournament ID mancante!", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        tournament_id = int(tournament_id)
+        tournament = db.session.get(Tournament, tournament_id)
+        if tournament is None:
+            abort(404)
+
+        # Verifica permessi sul torneo
+        if not (
+            current_user.is_admin
+            or (
+                current_user.is_director
+                and any(
+                    td.user_id == current_user.id
+                    for td in tournament.directors_association
+                )
+            )
+        ):
+            flash("Non puoi creare prove in questo torneo.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        number = int(request.form["number"])
+
+        # Verifica che il numero prova non esista già
+        existing = Prova.query.filter_by(
+            tournament_id=tournament_id, number=number
+        ).first()
+        if existing:
+            flash(f"La prova {number} esiste già!")
+            return redirect(
+                url_for(
+                    "admin.tournament.tournament_detail", tournament_id=tournament_id
+                )
             )
 
-        # Creazione Prova standalone
-        try:
-            withdraw_policy = request.form.get(
-                "withdraw_policy", WithdrawPolicy.EXCLUDE.value
-            )
-            prova = ProvaService.create_prova(
-                number=int(request.form.get("number", 1)),
-                name=request.form["name"],
-                date=datetime.strptime(request.form["date"], "%Y-%m-%d").date(),
-                discipline=request.form["discipline"],
-                distance=int(request.form["distance"]),
-                director_id=current_user.id,  # Standalone con director
-                tournament_id=None,  # Nessun torneo
-                location=request.form.get("location", ""),
-                description=request.form.get("description", ""),
-                rounds_count=int(request.form.get("rounds_count", 3)),
-                min_participants=int(request.form.get("min_participants", 2)),
-                max_participants=int(request.form["max_participants"])
-                if request.form.get("max_participants")
-                else None,
-                entry_fee=float(request.form.get("entry_fee", 0.0)),
-                best_of=not ("exact_number" in request.form),
-                withdraw_policy=withdraw_policy,
-            )
+        # Campi base
+        name = request.form.get("name", f"Prova {number}")
+        date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
 
-            flash(f'Gara singola "{prova.name}" creata con successo!')
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova.id))
+        # Nuovi campi
+        location = request.form.get("location", "")
+        description = request.form.get("description", "")
+        rounds_count = int(request.form.get("rounds_count", 3))
+        min_participants = int(request.form.get("min_participants", 2))
+        max_participants = request.form.get("max_participants")
+        max_participants = int(max_participants) if max_participants else None
+        entry_fee = float(request.form.get("entry_fee", 0.0))
 
-        except Exception as e:
-            flash(f"Errore nella creazione: {str(e)}", "error")
-            return render_template(
-                "admin/prova_create_standalone.html", WithdrawPolicy=WithdrawPolicy
-            )
+        # Game settings
+        discipline = request.form["discipline"]
+        distance = int(request.form["distance"])
+        exact_number = "exact_number" in request.form
+        best_of = not exact_number
 
-    # GET request - mostra form
+        # Crea la prova usando il service layer
+        withdraw_policy = request.form.get(
+            "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+        )
+        ProvaService.create_prova(
+            tournament_id=tournament_id,
+            number=number,
+            name=name,
+            date=date,
+            location=location,
+            description=description,
+            rounds_count=rounds_count,
+            min_participants=min_participants,
+            max_participants=max_participants,
+            entry_fee=entry_fee,
+            discipline=discipline,
+            distance=distance,
+            best_of=best_of,
+            withdraw_policy=withdraw_policy,
+        )
+
+        flash(f"Prova {number} creata con successo!")
+        return redirect(
+            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        )
+
+    # GET request - show form
+    tournaments = Tournament.query.filter_by(is_active=True).all()
     return render_template(
-        "admin/prova_create_standalone.html", WithdrawPolicy=WithdrawPolicy
+        "admin/prova_create_standalone.html",
+        tournaments=tournaments,
+        WithdrawPolicy=WithdrawPolicy,
     )
 
 
@@ -110,9 +159,11 @@ def create_prova():
     if not tournament_id:
         flash("Tournament ID mancante!", "error")
         return redirect(url_for("dashboard.dashboard"))
-    
+
     tournament_id = int(tournament_id)
-    tournament = Tournament.query.get_or_404(tournament_id)
+    tournament = db.session.get(Tournament, tournament_id)
+    if tournament is None:
+        abort(404)
 
     # Verifica permessi sul torneo
     if not (
@@ -133,7 +184,9 @@ def create_prova():
     existing = Prova.query.filter_by(tournament_id=tournament_id, number=number).first()
     if existing:
         flash(f"La prova {number} esiste già!")
-        return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+        return redirect(
+            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        )
 
     # Campi base
     name = request.form.get("name", f"Prova {number}")
@@ -174,7 +227,9 @@ def create_prova():
     )
 
     flash(f"Prova {number} creata con successo!")
-    return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+    return redirect(
+        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+    )
 
 
 @competition_bp.route("/<int:prova_id>/edit", methods=["GET", "POST"])
@@ -182,7 +237,9 @@ def create_prova():
 @prova_manager_required
 def edit_prova(prova_id):
     """Modifica prova"""
-    prova = Prova.query.get_or_404(prova_id)
+    prova = db.session.get(Prova, prova_id)
+    if prova is None:
+        abort(404)
 
     if not prova.can_be_modified():
         flash("Impossibile modificare la prova: ci sono già delle iscrizioni!")
@@ -193,10 +250,10 @@ def edit_prova(prova_id):
         try:
             max_participants = request.form.get("max_participants")
             max_participants = int(max_participants) if max_participants else None
-            
+
             exact_number = "exact_number" in request.form
             best_of = not exact_number
-            
+
             ProvaService.update_prova(
                 prova_id=prova_id,
                 name=request.form.get("name", prova.name),
@@ -210,12 +267,14 @@ def edit_prova(prova_id):
                 discipline=request.form["discipline"],
                 distance=int(request.form["distance"]),
                 best_of=best_of,
-                withdraw_policy=request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value),
+                withdraw_policy=request.form.get(
+                    "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+                ),
             )
             flash("Prova aggiornata con successo!")
         except ValueError as ve:
             flash(str(ve), "error")
-        
+
         return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
     return render_template(
@@ -228,10 +287,12 @@ def edit_prova(prova_id):
 @prova_manager_required
 def delete_prova(prova_id):
     """Cancella prova"""
-    prova = Prova.query.get_or_404(prova_id)
+    prova = db.session.get(Prova, prova_id)
+    if prova is None:
+        abort(404)
     tournament_id = prova.tournament_id
     prova_name = f"Prova {prova.number}"
-    
+
     # Usa il service layer invece del direct database access
     try:
         ProvaService.delete_prova(prova_id)
@@ -239,10 +300,12 @@ def delete_prova(prova_id):
     except ValueError as ve:
         flash(str(ve), "error")
         return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
-    
+
     if not tournament_id:
         return redirect(url_for("dashboard.dashboard"))
-    return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+    return redirect(
+        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+    )
 
 
 @competition_bp.route("/<int:prova_id>")
@@ -250,7 +313,9 @@ def delete_prova(prova_id):
 @prova_manager_required
 def prova_detail(prova_id):
     """Dettaglio prova con iscrizioni e partite"""
-    prova = Prova.query.get_or_404(prova_id)
+    prova = db.session.get(Prova, prova_id)
+    if prova is None:
+        abort(404)
     inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
     matches = (
         Match.query.filter_by(prova_id=prova_id)
@@ -288,7 +353,7 @@ def open_inscriptions(prova_id):
         )
     except ValueError as ve:
         flash(str(ve), "error")
-    
+
     return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
 
@@ -306,11 +371,13 @@ def modify_inscription_dates(prova_id):
 
     # Usa il service layer invece del direct database access
     try:
-        ProvaService.modify_inscription_dates(prova_id, inscription_start, inscription_end)
+        ProvaService.modify_inscription_dates(
+            prova_id, inscription_start, inscription_end
+        )
         flash("Date di iscrizione aggiornate con successo!")
     except ValueError as ve:
         flash(str(ve), "error")
-    
+
     return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
 
@@ -325,7 +392,7 @@ def start_first_round(prova_id):
         flash("Primo turno avviato!")
     except ValueError as ve:
         flash(str(ve), "error")
-    
+
     return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
 
 
@@ -422,19 +489,27 @@ def amalfi_start_round(prova_id, round_number):
         # Validazioni preliminari
         if round_number < 1 or round_number > prova.rounds_count:
             flash(f"Turno {round_number} non valido!")
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+            return redirect(
+                url_for("admin.competition.prova_detail", prova_id=prova_id)
+            )
         if round_number <= prova.current_round:
             flash(f"Il turno {round_number} è già stato avviato!")
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+            return redirect(
+                url_for("admin.competition.prova_detail", prova_id=prova_id)
+            )
         if round_number != prova.current_round + 1:
             flash(f"Devi avviare prima il turno {prova.current_round + 1}!")
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+            return redirect(
+                url_for("admin.competition.prova_detail", prova_id=prova_id)
+            )
 
         validation = validate_amalfi_configuration(prova)
         if not validation["is_valid"]:
             for error in validation["errors"]:
                 flash(f"Errore Amalfi: {error}", "error")
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+            return redirect(
+                url_for("admin.competition.prova_detail", prova_id=prova_id)
+            )
         for warning in validation["warnings"]:
             flash(f"Attenzione: {warning}", "warning")
 
@@ -447,11 +522,15 @@ def amalfi_start_round(prova_id, round_number):
             ]
             if incomplete_prev:
                 flash(f"Completa prima tutte le partite del turno {round_number-1}!")
-                return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+                return redirect(
+                    url_for("admin.competition.prova_detail", prova_id=prova_id)
+                )
 
         # Crea il turno Amalfi usando il service layer
-        total, n_normal, n_bye, n_trio = ProvaService.create_amalfi_round(prova_id, round_number)
-        
+        total, n_normal, n_bye, n_trio = ProvaService.create_amalfi_round(
+            prova_id, round_number
+        )
+
         # Aggiorna lo stato della prova
         prova.current_round = round_number
         if prova.status != ProvaStatus.PLAYING.value:
@@ -489,11 +568,11 @@ def trio_add_rack(trio_id):
     """Aggiungi rack a partita trio"""
     try:
         winner_id = int(request.form["winner_id"])
-        
+
         # Usa il service layer invece del direct database access
         result = ProvaService.add_trio_rack(trio_id, winner_id)
         return jsonify(result)
-        
+
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
@@ -509,7 +588,7 @@ def trio_reset(trio_id):
         # Usa il service layer invece del direct database access
         ProvaService.reset_trio(trio_id)
         return jsonify({"success": True, "message": "Trio resettato con successo"})
-        
+
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 500
     except Exception as e:

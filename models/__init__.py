@@ -42,27 +42,55 @@ from .classification.models import Classification, RoundClassification, PlayerEn
 from .challenge.models import Challenge, ChallengeAttempt, ChallengeFavorite
 from .exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
 from .individual_match.models import (
-    MatchProposal, ProposalInvitation, IndividualMatch, IndividualRack,
-    PlayerAvailability, ProposalType, ProposalStatus, MatchStatus, InvitationStatus
+    MatchProposal,
+    ProposalInvitation,
+    IndividualMatch,
+    IndividualRack,
+    PlayerAvailability,
+    ProposalType,
+    ProposalStatus,
+    MatchStatus,
+    InvitationStatus,
 )
 from .playoff.models import (
-    PlayoffConfiguration, PlayoffQualification, PlayoffTournament,
-    PlayoffType, QualificationStatus
+    PlayoffConfiguration,
+    PlayoffQualification,
+    PlayoffTournament,
+    PlayoffType,
+    QualificationStatus,
 )
 from .rating.models import (
-    PlayerCategory, PlayerRating, HandicapRule, CategoryHandicapRule,
-    RatingHandicapRule, CategoryLevel, RatingSystem
+    PlayerCategory,
+    PlayerRating,
+    HandicapRule,
+    CategoryHandicapRule,
+    RatingHandicapRule,
+    CategoryLevel,
+    RatingSystem,
 )
 from .notification.models import (
-    Notification, NotificationPreference, NotificationTemplate,
-    NotificationType, NotificationPriority, NotificationStatus
+    Notification,
+    NotificationPreference,
+    NotificationTemplate,
+    NotificationType,
+    NotificationPriority,
+    NotificationStatus,
 )
 from .location.models import (
-    BilliardHall, UserLocationAvailability, LocationReview, DayOfWeek
+    BilliardHall,
+    UserLocationAvailability,
+    LocationReview,
+    DayOfWeek,
 )
 from .tiebreaker.models import (
-    Tiebreaker, SpotShot, RallyAttempt, PlayoffMatch, TiebreakerConfiguration,
-    TiebreakerType, TiebreakerStatus, SpotShotResult
+    Tiebreaker,
+    SpotShot,
+    RallyAttempt,
+    PlayoffMatch,
+    TiebreakerConfiguration,
+    TiebreakerType,
+    TiebreakerStatus,
+    SpotShotResult,
 )
 
 # PHASE 3.2: Cross-domain orchestration

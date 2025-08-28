@@ -66,11 +66,13 @@ def _reset_database_core() -> Dict[str, object]:
         admin = existing or UserService.create_user(
             username=username, email=email, password=password, role=UserRole.ADMIN.value
         )
-    
+
     # Create the specific users requested: mario and pino
-    mario = UserService.create_user("mario", "mario@pippo.it", "mario123", role="player")
+    mario = UserService.create_user(
+        "mario", "mario@pippo.it", "mario123", role="player"
+    )
     pino = UserService.create_user("pino", "pino@pippo.it", "pino123", role="player")
-    
+
     maxdir = UserService.create_user("max", "max@tornei.com", "123456", role="director")
     paolodir = UserService.create_user(
         "paolo", "paolo@tornei.com", "123456", role="director"
@@ -127,9 +129,7 @@ def _reset_database_core() -> Dict[str, object]:
 
     # Apertura iscrizioni + 8 iscritti su La Garetta
     ProvaService.to_inscription(
-        prova_garetta.id,
-        datetime.now(),
-        datetime.now() + timedelta(days=3)
+        prova_garetta.id, datetime.now(), datetime.now() + timedelta(days=3)
     )
     for u in players[:8]:
         InscriptionService.inscribe_user(u.id, prova_garetta.id)

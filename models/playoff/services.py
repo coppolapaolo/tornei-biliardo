@@ -11,14 +11,17 @@ from datetime import datetime, timedelta
 
 from ..base import db
 from .models import (
-    PlayoffConfiguration, PlayoffQualification, PlayoffTournament,
-    PlayoffType, QualificationStatus
+    PlayoffConfiguration,
+    PlayoffQualification,
+    PlayoffTournament,
+    PlayoffType,
+    QualificationStatus,
 )
 
 
 class PlayoffService:
     """Service for playoff management and business logic."""
-    
+
     @staticmethod
     def create_playoff_configuration(
         tournament_id: int,
@@ -31,10 +34,10 @@ class PlayoffService:
         location: Optional[str] = None,
         scheduled_date: Optional[datetime] = None,
         entry_fee: Optional[float] = None,
-        response_deadline: Optional[datetime] = None
+        response_deadline: Optional[datetime] = None,
     ) -> PlayoffConfiguration:
         """Create a new playoff configuration."""
-        
+
         configuration = PlayoffConfiguration(
             tournament_id=tournament_id,
             name=name,
@@ -45,20 +48,22 @@ class PlayoffService:
             location=location,
             scheduled_date=scheduled_date,
             entry_fee=entry_fee,
-            response_deadline=response_deadline
+            response_deadline=response_deadline,
         )
-        
+
         configuration.set_qualification_criteria(qualification_criteria)
-        
+
         db.session.add(configuration)
         db.session.commit()
         return configuration
-    
+
     @staticmethod
-    def create_standard_playoff_configurations(tournament_id: int) -> List[PlayoffConfiguration]:
+    def create_standard_playoff_configurations(
+        tournament_id: int,
+    ) -> List[PlayoffConfiguration]:
         """Create standard playoff configurations for a tournament."""
         configurations = []
-        
+
         # Elite Playoff (Top 6)
         elite_config = PlayoffService.create_playoff_configuration(
             tournament_id=tournament_id,
@@ -68,13 +73,13 @@ class PlayoffService:
             qualification_criteria={
                 "category": "elite",
                 "elite_positions": 6,
-                "academy_positions": 6
+                "academy_positions": 6,
             },
             description="Playoff for top 6 classified players",
-            min_provas_played=3
+            min_provas_played=3,
         )
         configurations.append(elite_config)
-        
+
         # Academy Playoff (Positions 7-12)
         academy_config = PlayoffService.create_playoff_configuration(
             tournament_id=tournament_id,
@@ -84,95 +89,111 @@ class PlayoffService:
             qualification_criteria={
                 "category": "academy",
                 "elite_positions": 6,
-                "academy_positions": 6
+                "academy_positions": 6,
             },
             description="Playoff for players in positions 7-12",
-            min_provas_played=3
+            min_provas_played=3,
         )
         configurations.append(academy_config)
-        
+
         return configurations
-    
+
     @staticmethod
-    def generate_all_qualifications(tournament_id: int) -> Dict[str, List[PlayoffQualification]]:
+    def generate_all_qualifications(
+        tournament_id: int,
+    ) -> Dict[str, List[PlayoffQualification]]:
         """Generate qualifications for all playoff configurations of a tournament."""
         configurations = PlayoffConfiguration.query.filter_by(
-            tournament_id=tournament_id,
-            is_active=True,
-            auto_generate=True
+            tournament_id=tournament_id, is_active=True, auto_generate=True
         ).all()
-        
+
         results = {}
         for config in configurations:
             qualifications = config.generate_qualifications()
             results[config.name] = qualifications
-        
+
         return results
-    
+
     @staticmethod
     def notify_qualified_players(configuration_id: int) -> int:
         """Send notifications to qualified players."""
         qualifications = PlayoffQualification.query.filter_by(
             configuration_id=configuration_id,
             status=QualificationStatus.PENDING,
-            notified_at=None
+            notified_at=None,
         ).all()
-        
+
         # In a real implementation, this would send actual notifications
         # For now, just mark as notified
         count = 0
         for qualification in qualifications:
             qualification.notified_at = datetime.utcnow()
             count += 1
-        
+
         db.session.commit()
         return count
-    
+
     @staticmethod
-    def confirm_qualification(qualification_id: int, user_id: int) -> PlayoffQualification:
+    def confirm_qualification(
+        qualification_id: int, user_id: int
+    ) -> PlayoffQualification:
         """Confirm a user's playoff qualification."""
         qualification = PlayoffQualification.query.filter_by(
-            id=qualification_id,
-            user_id=user_id
+            id=qualification_id, user_id=user_id
         ).first_or_404()
-        
+
         qualification.confirm_participation()
         db.session.commit()
-        
+
         # Check if we can start the playoff tournament
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
-        
+
         return qualification
-    
+
     @staticmethod
-    def decline_qualification(qualification_id: int, user_id: int) -> Optional[PlayoffQualification]:
+    def decline_qualification(
+        qualification_id: int, user_id: int
+    ) -> Optional[PlayoffQualification]:
         """Decline a user's playoff qualification and find replacement."""
         qualification = PlayoffQualification.query.filter_by(
-            id=qualification_id,
-            user_id=user_id
+            id=qualification_id, user_id=user_id
         ).first_or_404()
-        
+
         replacement = qualification.decline_participation()
         db.session.commit()
-        
+
         # Notify replacement if found
         if replacement:
             PlayoffService.notify_qualified_players(qualification.configuration_id)
-        
+
         return replacement
-    
+
     @staticmethod
-    def find_replacement_player(configuration_id: int) -> Optional[PlayoffQualification]:
+    def find_replacement_player(
+        configuration_id: int,
+    ) -> Optional[PlayoffQualification]:
         """Find the next eligible player for playoff replacement."""
-        configuration = PlayoffConfiguration.query.get_or_404(configuration_id)
-        
-        # Get current qualified/confirmed players
-        current_players = {q.user_id for q in configuration.qualifications 
-                          if q.status in [QualificationStatus.CONFIRMED, QualificationStatus.PENDING]}
-        
+        configuration = db.session.get(PlayoffConfiguration, configuration_id)
+        if configuration is None:
+            from flask import abort
+
+            abort(404)
+
+        # Get current qualified/confirmed players by querying directly instead of using relationship
+        confirmed_qualifications = PlayoffQualification.query.filter_by(
+            configuration_id=configuration_id,
+            status=QualificationStatus.CONFIRMED.value,
+        ).all()
+        pending_qualifications = PlayoffQualification.query.filter_by(
+            configuration_id=configuration_id, status=QualificationStatus.PENDING.value
+        ).all()
+        current_qualifications = confirmed_qualifications + pending_qualifications
+
+        current_players = {q.user_id for q in current_qualifications}
+
         # Re-evaluate qualifications to find next eligible
         all_qualified = configuration.evaluate_qualifications()
-        
+
         for player_data in all_qualified:
             if player_data["user_id"] not in current_players:
                 # Found a replacement
@@ -180,155 +201,191 @@ class PlayoffService:
                     configuration_id=configuration_id,
                     user_id=player_data["user_id"],
                     qualifying_position=player_data["position"],
-                    qualification_reason=f"Replacement - {player_data['qualification_reason']}"
+                    qualification_reason=f"Replacement - {player_data['qualification_reason']}",
                 )
                 db.session.add(replacement)
                 db.session.commit()
                 return replacement
-        
+
         return None
-    
+
     @staticmethod
     def expire_old_qualifications() -> int:
         """Expire qualifications that have passed their deadline."""
         expired_count = 0
-        
+
         configurations = PlayoffConfiguration.query.filter(
             PlayoffConfiguration.response_deadline <= datetime.utcnow(),
-            PlayoffConfiguration.is_active == True
+            PlayoffConfiguration.is_active == True,
         ).all()
-        
+
         for config in configurations:
             expired_qualifications = config.qualifications.filter_by(
                 status=QualificationStatus.PENDING
             ).all()
-            
+
             for qualification in expired_qualifications:
                 qualification.expire_qualification()
                 expired_count += 1
-                
+
                 # Find replacement
                 replacement = PlayoffService.find_replacement_player(config.id)
                 if replacement:
                     PlayoffService.notify_qualified_players(config.id)
-        
+
         db.session.commit()
         return expired_count
-    
+
     @staticmethod
     def create_playoff_tournament(configuration_id: int) -> PlayoffTournament:
         """Create the actual playoff tournament."""
-        configuration = PlayoffConfiguration.query.get_or_404(configuration_id)
-        
+        configuration = db.session.get(PlayoffConfiguration, configuration_id)
+        if configuration is None:
+            from flask import abort
+
+            abort(404)
+
         # Check if tournament already exists
-        if configuration.playoff_tournament:
-            return configuration.playoff_tournament
-        
+        if configuration.playoff_tournament is not None:
+            # Explicitly query for the playoff tournament to avoid type issues
+            playoff_tournament = PlayoffTournament.query.filter_by(
+                configuration_id=configuration_id
+            ).first()
+            if playoff_tournament:
+                return playoff_tournament
+
         tournament = PlayoffTournament(
             configuration_id=configuration_id,
             name=configuration.name,
             tournament_date=configuration.scheduled_date,
             location=configuration.location,
             entry_fee=configuration.entry_fee,
-            max_participants=configuration.max_participants
+            max_participants=configuration.max_participants,
         )
-        
+
         db.session.add(tournament)
         db.session.commit()
-        
+
         return tournament
-    
+
     @staticmethod
     def start_playoff_registration(tournament_id: int) -> PlayoffTournament:
         """Start registration for a playoff tournament."""
-        tournament = PlayoffTournament.query.get_or_404(tournament_id)
+        tournament = db.session.get(PlayoffTournament, tournament_id)
+        if tournament is None:
+            from flask import abort
+
+            abort(404)
         tournament.start_registration()
         db.session.commit()
-        
+
         return tournament
-    
+
     @staticmethod
     def get_tournament_playoff_status(tournament_id: int) -> Dict[str, Any]:
         """Get comprehensive playoff status for a tournament."""
         configurations = PlayoffConfiguration.query.filter_by(
-            tournament_id=tournament_id,
-            is_active=True
+            tournament_id=tournament_id, is_active=True
         ).all()
-        
+
         status = {
             "has_playoffs": len(configurations) > 0,
             "configurations": [],
             "total_qualified": 0,
             "total_confirmed": 0,
-            "ready_to_start": []
+            "ready_to_start": [],
         }
-        
+
         for config in configurations:
             config_status = {
                 "configuration": config,
                 "total_qualified": config.qualifications.count(),
-                "confirmed": config.qualifications.filter_by(status=QualificationStatus.CONFIRMED).count(),
-                "pending": config.qualifications.filter_by(status=QualificationStatus.PENDING).count(),
-                "declined": config.qualifications.filter_by(status=QualificationStatus.DECLINED).count(),
+                "confirmed": config.qualifications.filter_by(
+                    status=QualificationStatus.CONFIRMED
+                ).count(),
+                "pending": config.qualifications.filter_by(
+                    status=QualificationStatus.PENDING
+                ).count(),
+                "declined": config.qualifications.filter_by(
+                    status=QualificationStatus.DECLINED
+                ).count(),
                 "has_tournament": config.playoff_tournament is not None,
-                "tournament_status": config.playoff_tournament.status if config.playoff_tournament else None
+                "tournament_status": config.playoff_tournament.status
+                if config.playoff_tournament
+                else None,
             }
-            
+
             status["configurations"].append(config_status)
             status["total_qualified"] += config_status["total_qualified"]
             status["total_confirmed"] += config_status["confirmed"]
-            
+
             # Check if ready to start
-            if (config_status["confirmed"] >= config.max_participants * 0.8 and  # At least 80% confirmed
-                config_status["pending"] == 0):  # No pending responses
+            if (
+                config_status["confirmed"] >= config.max_participants * 0.8
+                and config_status["pending"] == 0  # At least 80% confirmed
+            ):  # No pending responses
                 status["ready_to_start"].append(config.name)
-        
+
         return status
-    
+
     @staticmethod
     def _check_playoff_readiness(configuration_id: int) -> None:
         """Check if playoff is ready to start and create tournament if needed."""
-        configuration = PlayoffConfiguration.query.get_or_404(configuration_id)
-        
+        configuration = db.session.get(PlayoffConfiguration, configuration_id)
+        if configuration is None:
+            from flask import abort
+
+            abort(404)
+
         confirmed_count = configuration.qualifications.filter_by(
             status=QualificationStatus.CONFIRMED
         ).count()
-        
+
         pending_count = configuration.qualifications.filter_by(
             status=QualificationStatus.PENDING
         ).count()
-        
+
         # If we have enough confirmed players and no pending responses
-        if (confirmed_count >= configuration.max_participants * 0.8 and 
-            pending_count == 0 and 
-            not configuration.playoff_tournament):
-            
+        if (
+            confirmed_count >= configuration.max_participants * 0.8
+            and pending_count == 0
+            and not configuration.playoff_tournament
+        ):
+
             # Auto-create playoff tournament
             PlayoffService.create_playoff_tournament(configuration_id)
-    
+
     @staticmethod
-    def complete_playoff_tournament(tournament_id: int, winner_id: Optional[int] = None) -> PlayoffTournament:
+    def complete_playoff_tournament(
+        tournament_id: int, winner_id: Optional[int] = None
+    ) -> PlayoffTournament:
         """Complete a playoff tournament."""
-        tournament = PlayoffTournament.query.get_or_404(tournament_id)
+        tournament = db.session.get(PlayoffTournament, tournament_id)
+        if tournament is None:
+            from flask import abort
+
+            abort(404)
         tournament.complete_tournament(winner_id)
         db.session.commit()
-        
+
         return tournament
-    
+
     @staticmethod
     def get_user_playoff_history(user_id: int) -> List[Dict[str, Any]]:
         """Get user's playoff participation history."""
         qualifications = PlayoffQualification.query.filter_by(user_id=user_id).all()
-        
+
         history = []
         for qualification in qualifications:
-            history.append({
-                "tournament_name": qualification.configuration.tournament.name,
-                "playoff_name": qualification.configuration.name,
-                "qualifying_position": qualification.qualifying_position,
-                "status": qualification.status.value,
-                "qualified_at": qualification.created_at,
-                "responded_at": qualification.responded_at
-            })
-        
+            history.append(
+                {
+                    "tournament_name": qualification.configuration.tournament.name,
+                    "playoff_name": qualification.configuration.name,
+                    "qualifying_position": qualification.qualifying_position,
+                    "status": qualification.status.value,
+                    "qualified_at": qualification.created_at,
+                    "responded_at": qualification.responded_at,
+                }
+            )
+
         return sorted(history, key=lambda x: x["qualified_at"], reverse=True)

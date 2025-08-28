@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import random
-from typing import List, Optional, Dict, Union, TypedDict, TypedDict
+from typing import List, Optional, Dict, TypedDict
 
 from models import (
     db,
@@ -89,19 +89,14 @@ class AmalfiEngine:
         players = [insc.user for insc in inscriptions]
         matches: List[Match] = []
 
-        # Classifica iniziale: prendi RoundClassification esistenti o crea nuovi
-        existing_classifications = db.session.query(RoundClassification).filter_by(
-            prova_id=self.prova.id, round_number=1
-        ).all()
-
         # Aggiorna o crea nuove classifiche
         for position, ins in enumerate(inscriptions, 1):
             # Cerca classifica esistente
-            existing = db.session.query(RoundClassification).filter_by(
-                prova_id=self.prova.id,
-                round_number=1,
-                user_id=ins.user_id
-            ).first()
+            existing = (
+                db.session.query(RoundClassification)
+                .filter_by(prova_id=self.prova.id, round_number=1, user_id=ins.user_id)
+                .first()
+            )
 
             if existing:
                 # Aggiorna posizione
@@ -112,7 +107,7 @@ class AmalfiEngine:
                     prova_id=self.prova.id,
                     round_number=1,
                     user_id=ins.user_id,
-                    position=position
+                    position=position,
                 )
                 db.session.add(classification)
 
@@ -160,9 +155,8 @@ class AmalfiEngine:
             self.prova.id, round_number - 1
         )
         classification = (
-            db.session.query(RoundClassification).filter_by(
-                prova_id=self.prova.id, round_number=round_number - 1
-            )
+            db.session.query(RoundClassification)
+            .filter_by(prova_id=self.prova.id, round_number=round_number - 1)
             .order_by(RoundClassification.position)
             .all()
         )
@@ -171,9 +165,9 @@ class AmalfiEngine:
         if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             excluded_ids = {
                 ins.user_id
-                for ins in db.session.query(Inscription).filter_by(
-                    prova_id=self.prova.id, is_withdrawn=True
-                ).all()
+                for ins in db.session.query(Inscription)
+                .filter_by(prova_id=self.prova.id, is_withdrawn=True)
+                .all()
             }
             classification = [
                 c for c in classification if c.user_id not in excluded_ids
@@ -358,7 +352,8 @@ class AmalfiEngine:
             ).all()
         }
         deleted_ids = {
-            u.id for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()
+            u.id
+            for u in db.session.query(User).filter(User.deleted_at.isnot(None)).all()
         }
         cancelled_ids = withdrawn_ids | deleted_ids
         if not cancelled_ids:
@@ -392,9 +387,9 @@ class AmalfiEngine:
         """
         withdrawn_ids = {
             ins.user_id
-            for ins in db.session.query(Inscription).filter_by(
-                prova_id=self.prova.id, is_withdrawn=True
-            ).all()
+            for ins in db.session.query(Inscription)
+            .filter_by(prova_id=self.prova.id, is_withdrawn=True)
+            .all()
         }
         deleted_ids = {
             u.id for u in User.query.filter(User.deleted_at.isnot(None)).all()
@@ -442,9 +437,8 @@ class AmalfiEngine:
             self.prova.id, next_round - 1
         )
         classification = (
-            db.session.query(RoundClassification).filter_by(
-                prova_id=self.prova.id, round_number=next_round - 1
-            )
+            db.session.query(RoundClassification)
+            .filter_by(prova_id=self.prova.id, round_number=next_round - 1)
             .order_by(RoundClassification.position)
             .all()
         )
@@ -533,9 +527,8 @@ def get_amalfi_classification(
     prova_id: int, round_number: int
 ) -> List[RoundClassification]:
     return (
-        db.session.query(RoundClassification).filter_by(
-            prova_id=prova_id, round_number=round_number
-        )
+        db.session.query(RoundClassification)
+        .filter_by(prova_id=prova_id, round_number=round_number)
         .order_by(RoundClassification.position)
         .all()
     )

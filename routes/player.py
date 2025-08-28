@@ -1,22 +1,44 @@
 # routes/player.py - AGGIORNATO dashboard per multi-torneo
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+    abort,
+    current_app,
+)
 from flask_login import login_required, current_user, logout_user
-from datetime import datetime
+from datetime import datetime, timezone
+
 from models import (
     db,
-    User,
-    Tournament,
     Prova,
     Inscription,
     Match,
     Rack,
-    Classification,
-    DirectorRequest,
+    User,
 )
-from utils import player_only
-from models.match.services import MatchService, RackService, MatchResultService
+from models.status_enum import (
+    MatchStatus,
+    ProvaStatus,
+    DirectorRequestStatus,
+)
+from models.tournament.models import Tournament
+from models.classification.models import Classification
+from models.user.models import DirectorRequest
 from models.user.services import UserDeletionService
-from utils.status_ui import MatchStatus, ProvaStatus, DirectorRequestStatus
+from utils import (
+    player_only,
+    player_required,
+    inscription_owner_required,
+    match_player_required,
+    rack_player_required,
+)
+from models.competition.services import InscriptionService
+from models.match.services import MatchService, RackService
 
 player_bp = Blueprint("player", __name__)
 
@@ -28,7 +50,7 @@ player_bp = Blueprint("player", __name__)
 def match_proposals():
     """View and manage individual match proposals"""
     from models.individual_match.services import IndividualMatchService
-    
+
     proposals = IndividualMatchService.get_user_proposals(current_user.id)
     return render_template("player/match_proposals.html", proposals=proposals)
 
@@ -41,7 +63,7 @@ def create_match_proposal():
     if request.method == "POST":
         from models.individual_match.services import IndividualMatchService
         from datetime import datetime
-        
+
         try:
             proposal_type = request.form.get("proposal_type")
             location = request.form.get("location")
@@ -58,10 +80,16 @@ def create_match_proposal():
             best_of = "best_of" in request.form
             break_rule = request.form.get("break_rule", "alternate")
             description = request.form.get("description")
-            entry_fee = float(request.form.get("entry_fee", 0)) if request.form.get("entry_fee") else None
-            
+            entry_fee = (
+                float(request.form.get("entry_fee", 0))
+                if request.form.get("entry_fee")
+                else None
+            )
+
             if proposal_type == "direct":
-                invited_ids = [int(x) for x in request.form.getlist("invited_users") if x]
+                invited_ids = [
+                    int(x) for x in request.form.getlist("invited_users") if x
+                ]
                 proposal = IndividualMatchService.create_direct_proposal(
                     proposer_id=current_user.id,
                     invited_user_ids=invited_ids,
@@ -72,7 +100,7 @@ def create_match_proposal():
                     best_of=best_of,
                     break_rule=break_rule,
                     description=description,
-                    entry_fee=entry_fee
+                    entry_fee=entry_fee,
                 )
             else:  # open
                 proposal = IndividualMatchService.create_open_proposal(
@@ -84,21 +112,24 @@ def create_match_proposal():
                     best_of=best_of,
                     break_rule=break_rule,
                     description=description,
-                    entry_fee=entry_fee
+                    entry_fee=entry_fee,
                 )
-            
+
             flash(f"Match proposal created successfully! ID: {proposal.id}")
             return redirect(url_for("player.match_proposals"))
-            
+
         except Exception as e:
             flash(f"Error creating proposal: {str(e)}", "error")
-    
+
     # Get available users and locations for the form
     from models.location.models import BilliardHall
+
     users = User.query.filter(User.id != current_user.id).all()
     locations = BilliardHall.query.all()
-    
-    return render_template("player/create_match_proposal.html", users=users, locations=locations)
+
+    return render_template(
+        "player/create_match_proposal.html", users=users, locations=locations
+    )
 
 
 @player_bp.route("/match-proposals/<int:proposal_id>/accept", methods=["POST"])
@@ -107,13 +138,13 @@ def create_match_proposal():
 def accept_match_proposal(proposal_id):
     """Accept a match proposal"""
     from models.individual_match.services import IndividualMatchService
-    
+
     try:
         match = IndividualMatchService.accept_proposal(current_user.id, proposal_id)
         flash(f"Match proposal accepted! Match ID: {match.id}")
     except Exception as e:
         flash(f"Error accepting proposal: {str(e)}", "error")
-    
+
     return redirect(url_for("player.match_proposals"))
 
 
@@ -123,13 +154,13 @@ def accept_match_proposal(proposal_id):
 def reject_match_proposal(proposal_id):
     """Reject a match proposal"""
     from models.individual_match.services import IndividualMatchService
-    
+
     try:
         IndividualMatchService.reject_invitation(current_user.id, proposal_id)
         flash("Match proposal rejected.")
     except Exception as e:
         flash(f"Error rejecting proposal: {str(e)}", "error")
-    
+
     return redirect(url_for("player.match_proposals"))
 
 
@@ -139,13 +170,13 @@ def reject_match_proposal(proposal_id):
 def cancel_match_proposal(proposal_id):
     """Cancel a match proposal"""
     from models.individual_match.services import MatchProposalService
-    
+
     try:
         MatchProposalService.cancel_proposal(proposal_id, current_user.id)
         flash("Match proposal cancelled.")
     except Exception as e:
         flash(f"Error cancelling proposal: {str(e)}", "error")
-    
+
     return redirect(url_for("player.match_proposals"))
 
 
@@ -156,6 +187,44 @@ def dashboard():
 
 
 # Il resto delle route rimane uguale...
+@player_bp.route("/prova/<int:prova_id>")
+@login_required
+@player_required
+def prova_detail(prova_id):
+    """Dettaglio prova con iscrizioni e partite dell'utente"""
+    prova = db.session.get(Prova, prova_id)
+    if prova is None:
+        abort(404)
+
+    # Verifica che l'utente sia iscritto alla prova
+    inscription = Inscription.query.filter_by(
+        prova_id=prova_id, user_id=current_user.id
+    ).first()
+
+    if not inscription:
+        flash("Non sei iscritto a questa prova.", "error")
+        return redirect(url_for("dashboard.dashboard"))
+
+    matches = (
+        Match.query.filter_by(prova_id=prova_id)
+        .filter(
+            db.or_(
+                Match.player1_id == current_user.id,
+                Match.player2_id == current_user.id,
+            )
+        )
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+
+    return render_template(
+        "player/prova_detail.html",
+        prova=prova,
+        inscription=inscription,
+        matches=matches,
+    )
+
+
 @player_bp.route("/prova/<int:prova_id>/inscribe", methods=["POST"])
 @login_required
 @player_only
@@ -192,71 +261,47 @@ def inscribe_to_prova(prova_id):
 
 @player_bp.route("/match/<int:match_id>")
 @login_required
+@match_player_required
 def match_detail(match_id):
     """Dettaglio partita per giocatore"""
-    match = Match.query.get_or_404(match_id)
-
-    # Verifica che l'utente sia coinvolto nel match
-    if current_user.id not in [match.player1_id, match.player2_id]:
-        flash("Non hai accesso a questa partita.")
-        return redirect(url_for("player.dashboard"))
+    match = db.session.get(Match, match_id)
+    if match is None:
+        abort(404)
 
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
 
-    return render_template("match_detail.html", match=match, racks=racks)
+    return render_template("player/match_detail.html", match=match, racks=racks)
 
 
-@player_bp.route("/match/<int:match_id>/add_rack", methods=["POST"])
+@player_bp.route("/match/<int:match_id>/report_rack", methods=["POST"])
 @login_required
-def add_rack_result(match_id):
-    """Aggiungi risultato rack (giocatore)"""
-    match = Match.query.get_or_404(match_id)
+@match_player_required
+def report_rack_result(match_id):
+    """Segnala risultato rack"""
+    match = db.session.get(Match, match_id)
+    if match is None:
+        abort(404)
+
     winner_id = int(request.form["winner_id"])
 
-    # Verifica autorizzazioni
-    if current_user.id not in [match.player1_id, match.player2_id]:
-        return jsonify({"error": "Non autorizzato"}), 403
+    # Verifica che il vincitore sia uno dei giocatori della partita
+    if winner_id not in [match.player1_id, match.player2_id]:
+        flash("Giocatore non valido.", "error")
+        return redirect(url_for("player.match_detail", match_id=match_id))
 
-    # Trova il prossimo numero rack
-    last_rack = (
-        Rack.query.filter_by(match_id=match_id)
-        .order_by(Rack.rack_number.desc())
-        .first()
-    )
-    next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
-
-    # ↳ Service: crea il rack (reporter = giocatore; non validato da admin)
-    RackService.add_rack_result(
-        match_id=match.id,
-        rack_number=next_rack_number,
-        winner_id=winner_id,
-        reported_by_id=current_user.id,
-        validated_by_admin=False,
-    )
-
-    # Aggiorna punteggio match (come fa già oggi la route)
-    if winner_id == match.player1_id:
-        match.player1_score += 1
-    else:
-        match.player2_score += 1
-
-    # Se il match è finito, imposta il vincitore tramite il service dedicato
-    if match.prova.is_match_finished(match.player1_score, match.player2_score):
-        final_winner_id = (
-            match.player1_id
-            if match.player1_score > match.player2_score
-            else match.player2_id
+    # Usa il service layer invece del direct database access
+    try:
+        result = RackService.add_rack_with_score_update(
+            match_id=match_id,
+            winner_id=winner_id,
+            reported_by_id=current_user.id,
+            validated_by_admin=False,  # Player report, needs admin validation
         )
-        MatchResultService.submit_result(match.id, final_winner_id)
-
-    return jsonify(
-        {
-            "success": True,
-            "player1_score": match.player1_score,
-            "player2_score": match.player2_score,
-            "status": match.status,
-        }
-    )
+        return jsonify(result)
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
 
 
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
@@ -387,7 +432,7 @@ def delete_account():
         if not user_to_delete:
             flash("Errore: utente non trovato.", "danger")
             return render_template("player/delete_account.html")
-        
+
         UserDeletionService.delete_user(user_to_delete)
         logout_user()  # Disconnette l'utente dopo la cancellazione
         flash(
@@ -535,3 +580,15 @@ def unconfirm_rack(rack_id):
     db.session.commit()
 
     return jsonify({"success": True, "message": "Conferma rimossa"})
+
+
+@player_bp.route("/rack/<int:rack_id>")
+@login_required
+@rack_player_required
+def rack_detail(rack_id):
+    """Dettaglio rack"""
+    rack = db.session.get(Rack, rack_id)
+    if rack is None:
+        abort(404)
+
+    return render_template("player/rack_detail.html", rack=rack)

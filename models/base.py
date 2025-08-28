@@ -51,7 +51,7 @@ class UtilityMixin:
         """Convert model instance to dictionary"""
         result = {}
         # Only process if the model has a __table__ attribute (i.e., inherits from db.Model)
-        table = getattr(self, '__table__', None)
+        table = getattr(self, "__table__", None)
         if table is not None:
             for column in table.columns:
                 value = getattr(self, column.name)

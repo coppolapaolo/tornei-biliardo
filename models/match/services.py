@@ -154,23 +154,23 @@ class RackService:
             db.session.add(match)
             db.session.commit()
         return rack
-    
+
     @staticmethod
     def add_rack_with_score_update(
         match_id: int,
         winner_id: int,
         reported_by_id: int = 1,
-        validated_by_admin: bool = True
+        validated_by_admin: bool = True,
     ) -> dict:
         """Aggiunge rack e aggiorna automaticamente il punteggio del match.
-        
+
         Returns:
             Dict con stato aggiornato del match
         """
         match = db.session.get(Match, match_id)
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
-        
+
         # Trova il prossimo numero rack
         last_rack = (
             Rack.query.filter_by(match_id=match_id)
@@ -178,7 +178,7 @@ class RackService:
             .first()
         )
         next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
-        
+
         # Crea il rack
         rack = RackService.add_rack_result(
             match_id=match.id,
@@ -187,13 +187,13 @@ class RackService:
             reported_by_id=reported_by_id,
             validated_by_admin=validated_by_admin,
         )
-        
+
         # Aggiorna punteggio match
         if winner_id == match.player1_id:
             match.player1_score += 1
         else:
             match.player2_score += 1
-        
+
         # Se il match è finito, imposta il vincitore
         if match.prova.is_match_finished(match.player1_score, match.player2_score):
             final_winner_id = (
@@ -203,38 +203,37 @@ class RackService:
             )
             # Import locale per evitare cicli
             from models.match.services import MatchResultService
+
             MatchResultService.submit_result(match.id, final_winner_id)
-        
+
         db.session.commit()
-        
+
         return {
             "success": True,
             "player1_score": match.player1_score,
             "player2_score": match.player2_score,
             "status": match.status,
         }
-    
+
     @staticmethod
     def set_match_result_direct(
-        match_id: int, 
-        player1_score: int, 
-        player2_score: int
+        match_id: int, player1_score: int, player2_score: int
     ) -> None:
         """Imposta risultato completo di una partita sostituendo tutti i rack."""
         match = db.session.get(Match, match_id)
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
-        
+
         if match.is_bye:
             raise ValueError("Non puoi modificare una partita bye!")
-        
+
         # Validazione punteggi
         if player1_score < 0 or player2_score < 0:
             raise ValueError("I punteggi non possono essere negativi!")
-        
+
         # Verifica che il risultato sia valido secondo le regole della prova
         total_racks = player1_score + player2_score
-        
+
         if match.prova.best_of:
             # Al meglio di: uno dei due deve aver raggiunto la soglia
             winning_score = match.prova.get_winning_score()
@@ -250,7 +249,7 @@ class RackService:
                     f'Nel "{match.prova.distance} rack esatti", '
                     f"la somma deve essere esattamente {match.prova.distance}!"
                 )
-        
+
         # Determina il vincitore
         if player1_score > player2_score:
             winner_id = match.player1_id
@@ -258,86 +257,92 @@ class RackService:
             winner_id = match.player2_id
         else:
             raise ValueError("Non può esserci un pareggio!")
-        
+
         # Elimina tutti i rack esistenti per questa partita
         existing_racks = Rack.query.filter_by(match_id=match_id).all()
         for rack in existing_racks:
             db.session.delete(rack)
-        
+
         # Crea i nuovi rack basati sul risultato
         rack_number = 1
-        
+
         # Crea rack per player1
         for i in range(player1_score):
             RackService.add_rack_result(
                 match_id, rack_number, match.player1_id, 1, validated_by_admin=True
             )
             rack_number += 1
-        
+
         # Crea rack per player2
         for i in range(player2_score):
             RackService.add_rack_result(
                 match_id, rack_number, match.player2_id, 1, validated_by_admin=True
             )
             rack_number += 1
-        
+
         # Aggiorna il match
         match.player1_score = player1_score
         match.player2_score = player2_score
         match.winner_id = winner_id
-        
+
         # Import locale per evitare cicli
         from models.match.services import MatchService
+
         MatchService.to_completed(match.id)
-    
+
     @staticmethod
     def reset_match_complete(match_id: int) -> None:
         """Reset completo di una partita eliminando tutti i rack."""
         match = db.session.get(Match, match_id)
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
-        
+
         if match.is_bye:
             raise ValueError("Non puoi resettare una partita bye!")
-        
+
         # Elimina tutti i rack
         existing_racks = Rack.query.filter_by(match_id=match_id).all()
         for rack in existing_racks:
             db.session.delete(rack)
-        
+
         # Reset match
         match.player1_score = 0
         match.player2_score = 0
         match.winner_id = None
-        
+
         # Import locale per evitare cicli
         from models.match.services import MatchService
+
         MatchService.reset_to_pending(match.id, clear_validation=True)
-        
+
         db.session.commit()
-    
+
     @staticmethod
     def remove_rack_admin(rack_id: int) -> dict:
         """Rimuove un rack e aggiorna il punteggio del match (admin).
-        
+
         Returns:
             Dict con stato aggiornato del match
         """
-        rack = Rack.query.get_or_404(rack_id)
+        rack = db.session.get(Rack, rack_id)
+        if rack is None:
+            from flask import abort
+
+            abort(404)
         match = rack.match
-        
+
         # Salva il vincitore per aggiornare il punteggio
         winner_id = rack.winner_id
-        
+
         # Rimuovi il rack
         db.session.delete(rack)
-        
+
         # Aggiorna il punteggio del match
         if winner_id == match.player1_id:
             match.player1_score = max(0, match.player1_score - 1)
         else:
             match.player2_score = max(0, match.player2_score - 1)
-        
+
         # Se il match era completato e ora non ha più i punti per essere vinto,
         # rimettilo in playing
         if match.status == MatchStatus.COMPLETED.value:
@@ -346,17 +351,19 @@ class RackService:
                 if max(match.player1_score, match.player2_score) < winning_score:
                     # Import locale per evitare cicli
                     from models.match.services import MatchService
+
                     MatchService.to_playing(match.id)
                     match.winner_id = None
             else:  # esatto numero
                 if (match.player1_score + match.player2_score) < match.prova.distance:
                     # Import locale per evitare cicli
                     from models.match.services import MatchService
+
                     MatchService.to_playing(match.id)
                     match.winner_id = None
-        
+
         db.session.commit()
-        
+
         return {
             "success": True,
             "message": "Rack rimosso (Admin)",
@@ -364,18 +371,22 @@ class RackService:
             "player2_score": match.player2_score,
             "status": match.status,
         }
-    
+
     @staticmethod
     def validate_rack_admin(rack_id: int) -> None:
         """Valida un rack (admin)."""
-        rack = Rack.query.get_or_404(rack_id)
-        
+        rack = db.session.get(Rack, rack_id)
+        if rack is None:
+            from flask import abort
+
+            abort(404)
+
         # Valida il rack
         rack.validated_by_admin = True
         rack.confirmed_by_player = (
             True  # Automaticamente confermato se validato dall'admin
         )
-        
+
         db.session.commit()
 
     @staticmethod

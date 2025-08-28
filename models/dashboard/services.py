@@ -36,13 +36,21 @@ def _role_truthy(user: User, attr_name: str) -> bool:
 def _compute_user_stats(user_id: int) -> dict[str, Any]:
     total_matches = (
         db.session.query(TournamentMatch)
-        .filter(or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id))
+        .filter(
+            or_(
+                TournamentMatch.player1_id == user_id,
+                TournamentMatch.player2_id == user_id,
+            )
+        )
         .count()
     )
     won_matches = (
         db.session.query(TournamentMatch)
         .filter(
-            or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id),
+            or_(
+                TournamentMatch.player1_id == user_id,
+                TournamentMatch.player2_id == user_id,
+            ),
             TournamentMatch.winner_id == user_id,
         )
         .count()
@@ -102,9 +110,11 @@ class DashboardVM:
     managed_tournaments: Optional[List[Tournament]] = None
     can_manage_directors: bool = False
     debug_mode: bool = False
-    
+
     # Individual match proposals
-    match_proposals: Optional[dict[str, Any]] = None  # {"created": [], "received": [], "available": []}
+    match_proposals: Optional[
+        dict[str, Any]
+    ] = None  # {"created": [], "received": [], "available": []}
     individual_matches: Optional[List[Any]] = None  # Recent individual matches
     match_opportunities: Optional[List[Any]] = None  # Available match opportunities
 
@@ -121,7 +131,7 @@ class DashboardService:
         # joinedload per poter calcolare la prima data utile nel selector
         return (
             db.session.query(Tournament)
-            .options(joinedload(getattr(Tournament, 'provas')))
+            .options(joinedload(getattr(Tournament, "provas")))
             .order_by(Tournament.created_at.desc())
         )
 
@@ -131,7 +141,7 @@ class DashboardService:
             db.session.query(Tournament)
             .join(TournamentDirector, TournamentDirector.tournament_id == Tournament.id)
             .filter(TournamentDirector.user_id == user_id)
-            .options(joinedload(getattr(Tournament, 'provas')))
+            .options(joinedload(getattr(Tournament, "provas")))
             .order_by(Tournament.created_at.desc())
         )
 
@@ -151,9 +161,7 @@ class DashboardService:
             return []
         for p in provas:
             # True se le iscrizioni sono aperte (enum centralizzato)
-            p.is_inscription_open = (
-                p.get_real_status() == ProvaStatus.INSCRIPTION.value
-            )
+            p.is_inscription_open = p.get_real_status() == ProvaStatus.INSCRIPTION.value
         return provas
 
     @staticmethod
@@ -208,12 +216,14 @@ class DashboardService:
             # Safely access the provas relationship
             try:
                 # Get the provas - either already loaded or load them
-                provas_attr = getattr(t, 'provas', None)
+                provas_attr = getattr(t, "provas", None)
                 if provas_attr is None:
                     return None
-                
+
                 # Convert to list to handle both collections and query objects
-                provas_list = list(provas_attr) if hasattr(provas_attr, '__iter__') else []
+                provas_list = (
+                    list(provas_attr) if hasattr(provas_attr, "__iter__") else []
+                )
                 dates = [p.date for p in provas_list if getattr(p, "date", None)]
             except (AttributeError, TypeError):
                 # Fallback if relationship access fails
@@ -314,9 +324,14 @@ class DashboardService:
             .filter(
                 Prova.tournament_id == selected.id,
                 TournamentMatch.status == "playing",  # type: ignore[operator]
-                or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id),
+                or_(
+                    TournamentMatch.player1_id == user_id,
+                    TournamentMatch.player2_id == user_id,
+                ),
             )
-            .order_by(TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc())
+            .order_by(
+                TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
+            )
             .all()
         )
 
@@ -326,9 +341,14 @@ class DashboardService:
             .filter(
                 Prova.tournament_id == selected.id,
                 TournamentMatch.status == "completed",  # type: ignore[operator]
-                or_(TournamentMatch.player1_id == user_id, TournamentMatch.player2_id == user_id),
+                or_(
+                    TournamentMatch.player1_id == user_id,
+                    TournamentMatch.player2_id == user_id,
+                ),
             )
-            .order_by(TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc())
+            .order_by(
+                TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
+            )
             .limit(10)
             .all()
         )
@@ -339,53 +359,55 @@ class DashboardService:
             "current_matches": my_upcoming,
             "recent_matches": my_recent,
         }
-    
+
     @staticmethod
     def _build_individual_match_sections(user_id: int) -> dict:
         """Build individual match proposal sections for user."""
         from ..individual_match.services import IndividualMatchService
         from ..individual_match.models import IndividualMatch
-        
+
         # Get user's match proposals
-        proposals = IndividualMatchService.get_user_proposals(user_id, include_expired=False)
-        
+        proposals = IndividualMatchService.get_user_proposals(
+            user_id, include_expired=False
+        )
+
         # Get recent individual matches
         recent_individual_matches = (
             db.session.query(IndividualMatch)
             .filter(
                 or_(
                     IndividualMatch.player1_id == user_id,
-                    IndividualMatch.player2_id == user_id
+                    IndividualMatch.player2_id == user_id,
                 )
             )
             .order_by(IndividualMatch.created_at.desc())
             .limit(10)
             .all()
         )
-        
+
         # Calculate match opportunities (open proposals in user's locations)
         from ..location.models import BilliardHall
         from ..individual_match.models import PlayerAvailability
-        
+
         user_locations = {
-            av.location for av in 
-            db.session.query(PlayerAvailability).filter_by(user_id=user_id, is_available=True).all()
+            av.location
+            for av in db.session.query(PlayerAvailability)
+            .filter_by(user_id=user_id, is_available=True)
+            .all()
         }
-        
+
         # Also include locations where user has played before
-        played_locations = {
-            match.location for match in recent_individual_matches
-        }
-        
+        played_locations = {match.location for match in recent_individual_matches}
+
         eligible_locations = user_locations.union(played_locations)
-        
+
         # Get opportunities - open proposals in eligible locations
         opportunities = proposals.get("available", [])
-        
+
         return {
             "match_proposals": proposals,
             "individual_matches": recent_individual_matches,
-            "match_opportunities": opportunities[:5]  # Limit to top 5 opportunities
+            "match_opportunities": opportunities[:5],  # Limit to top 5 opportunities
         }
 
     # ---- ADMIN --------------------------------------------------------
@@ -400,10 +422,10 @@ class DashboardService:
             can_create_standalone=True,
             can_register_self=False,
         )
-        
+
         # Note: Admin dashboard doesn't include individual match proposals
         # as it's focused on tournament/prova management
-        
+
         return DashboardVM(
             title="Dashboard Amministratore",
             tournaments=tournaments,
@@ -471,7 +493,7 @@ class DashboardService:
 
         # sezioni player-like per torneo selezionato
         player_sections = DashboardService._build_player_sections(user_id, selected)
-        
+
         # Individual match sections
         individual_sections = DashboardService._build_individual_match_sections(user_id)
 
@@ -567,7 +589,7 @@ class DashboardService:
             selected_prova = None
 
         player_sections = DashboardService._build_player_sections(user_id, selected)
-        
+
         # Individual match sections
         individual_sections = DashboardService._build_individual_match_sections(user_id)
 

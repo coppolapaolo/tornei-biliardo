@@ -13,7 +13,7 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        
+
         # Use service layer for authentication
         user = UserService.authenticate_user(username, password)
 
@@ -41,13 +41,13 @@ def register():
                 username=username,
                 email=email,
                 password=password,
-                phone=phone if phone else None
+                phone=phone if phone else None,
             )
-            
+
             login_user(user)
             flash("Registrazione completata!")
             return redirect(url_for("dashboard.dashboard"))
-            
+
         except ValueError as e:
             flash(str(e))
             return render_template("register.html")

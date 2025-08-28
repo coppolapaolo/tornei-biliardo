@@ -1,12 +1,13 @@
 # routes/admin/tournament.py
 """Tournament management blueprint for admin interface."""
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from sqlalchemy import not_
 from sqlalchemy.exc import IntegrityError
 
 from models import (
+    db,
     Tournament,
     Prova,
     User,
@@ -80,13 +81,17 @@ def tournament_detail(tournament_id):
 @tournament_manager_required(lambda tournament_id: tournament_id)
 def edit_tournament(tournament_id):
     """Modifica torneo - AGGIORNATO per nuovo model"""
-    tournament = Tournament.query.get_or_404(tournament_id)
+    tournament = db.session.get(Tournament, tournament_id)
+    if tournament is None:
+        abort(404)
 
     if not tournament.can_be_modified():
         flash(
             "Impossibile modificare il torneo: alcune prove hanno già delle iscrizioni!"
         )
-        return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+        return redirect(
+            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        )
 
     if request.method == "POST":
         # Usa il service layer invece del direct database access
@@ -102,8 +107,10 @@ def edit_tournament(tournament_id):
             flash("Torneo aggiornato con successo!")
         except ValueError as ve:
             flash(str(ve), "error")
-        
-        return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+
+        return redirect(
+            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        )
 
     return render_template("admin/tournament_edit.html", tournament=tournament)
 
@@ -118,10 +125,14 @@ def delete_tournament(tournament_id):
         return redirect(url_for("dashboard.dashboard"))
     except ValueError as ve:
         flash(str(ve))
-        return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+        return redirect(
+            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        )
     except IntegrityError:
         flash("Cancellazione bloccata da vincoli di integrità.")
-        return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+        return redirect(
+            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        )
 
 
 @tournament_bp.route("/<int:tournament_id>/toggle_active", methods=["POST"])
@@ -130,7 +141,7 @@ def toggle_tournament_active(tournament_id):
     """Attiva/disattiva torneo"""
     # Usa il service layer invece del direct database access
     tournament = tournament_service.toggle_active_status(tournament_id)
-    
+
     status = "attivato" if tournament.is_active else "disattivato"
     flash(f'Torneo "{tournament.name}" {status}!')
     return redirect(url_for("dashboard.dashboard"))
@@ -142,24 +153,26 @@ def toggle_tournament_active(tournament_id):
 def add_director(tournament_id):
     """Aggiunge un co‑direttore"""
     new_director_id = int(request.form["user_id"])
-    
+
     # Usa il service layer invece del direct database access
     try:
         success = tournament_service.add_director(
             tournament_id=tournament_id,
             user_id=new_director_id,
-            assigned_by_id=current_user.id
+            assigned_by_id=current_user.id,
         )
-        
+
         if success:
             flash("Direttore aggiunto con successo.")
         else:
             flash("Questo utente è già un direttore.", "warning")
-            
+
     except ValueError as ve:
         flash(str(ve), "warning")
-    
-    return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+
+    return redirect(
+        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+    )
 
 
 @tournament_bp.route("/<int:tournament_id>/remove_director", methods=["POST"])
@@ -168,16 +181,17 @@ def add_director(tournament_id):
 def remove_director(tournament_id):
     """Rimuove un co‑direttore"""
     director_id = int(request.form["user_id"])
-    
+
     # Usa il service layer invece del direct database access
     success = tournament_service.remove_director(
-        tournament_id=tournament_id,
-        user_id=director_id
+        tournament_id=tournament_id, user_id=director_id
     )
-    
+
     if success:
         flash("Direttore rimosso con successo.")
     else:
         flash("Direttore non trovato.", "warning")
-    
-    return redirect(url_for("admin.tournament.tournament_detail", tournament_id=tournament_id))
+
+    return redirect(
+        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+    )

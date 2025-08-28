@@ -8,7 +8,7 @@ def get_database_stats():
     """Restituisce conteggio rapido entità DB (per debug)."""
     # Import here to avoid circular imports
     from models import User, Tournament, Prova, Inscription, Match
-    
+
     try:
         return {
             "users": User.query.count(),

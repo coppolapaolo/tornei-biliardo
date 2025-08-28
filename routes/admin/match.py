@@ -1,12 +1,22 @@
 # routes/admin/match.py
 """Match and rack management blueprint for admin interface."""
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+    abort,
+)
 from flask_login import login_required
 
 from models import (
     Match,
     Rack,
+    db,
 )
 from utils import (
     match_manager_required,
@@ -24,7 +34,9 @@ match_bp = Blueprint("match", __name__)
 @match_manager_required
 def match_detail(match_id):
     """Dettaglio partita per admin"""
-    match = Match.query.get_or_404(match_id)
+    match = db.session.get(Match, match_id)
+    if match is None:
+        abort(404)
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
 
     return render_template("match_detail.html", match=match, racks=racks)
@@ -36,7 +48,7 @@ def match_detail(match_id):
 def add_rack_result(match_id):
     """Aggiungi risultato rack (admin)"""
     winner_id = int(request.form["winner_id"])
-    
+
     # Usa il service layer invece del direct database access
     try:
         result = RackService.add_rack_with_score_update(
@@ -60,13 +72,13 @@ def set_match_result_direct(match_id):
     try:
         player1_score = int(request.form["player1_score"])
         player2_score = int(request.form["player2_score"])
-        
+
         # Usa il service layer invece del direct database access
         RackService.set_match_result_direct(match_id, player1_score, player2_score)
-        
+
         flash("Risultato impostato con successo!")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
-        
+
     except ValueError as ve:
         flash(str(ve), "error")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
@@ -83,10 +95,10 @@ def reset_match(match_id):
     try:
         # Usa il service layer invece del direct database access
         RackService.reset_match_complete(match_id)
-        
+
         flash("Partita resettata con successo!")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
-        
+
     except ValueError as ve:
         flash(str(ve), "error")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
@@ -107,7 +119,7 @@ def remove_rack_admin(rack_id):
         # Usa il service layer invece del direct database access
         result = RackService.remove_rack_admin(rack_id)
         return jsonify(result)
-        
+
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
@@ -122,11 +134,11 @@ def validate_rack_admin(rack_id):
     try:
         # Usa il service layer invece del direct database access
         RackService.validate_rack_admin(rack_id)
-        
+
         return jsonify(
             {"success": True, "message": "Rack validato dall'amministratore"}
         )
-        
+
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:

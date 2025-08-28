@@ -1,0 +1,18 @@
+{
+    "include": [
+        "models",
+        "routes",
+        "amalfi",
+        "tests",
+        "utils"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        "**/node_modules",
+        "**/.git"
+    ],
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false,
+    "pythonVersion": "3.9",
+    "pythonPlatform": "Darwin"
+}

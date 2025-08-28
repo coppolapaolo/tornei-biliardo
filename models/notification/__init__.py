@@ -5,8 +5,12 @@ Requirements: SPECIFICHE.md - Notification system
 """
 
 from .models import (
-    Notification, NotificationPreference, NotificationTemplate,
-    NotificationType, NotificationPriority, NotificationStatus
+    Notification,
+    NotificationPreference,
+    NotificationTemplate,
+    NotificationType,
+    NotificationPriority,
+    NotificationStatus,
 )
 from .services import NotificationService
 
@@ -15,12 +19,10 @@ __all__ = [
     "Notification",
     "NotificationPreference",
     "NotificationTemplate",
-    
     # Enums
     "NotificationType",
-    "NotificationPriority", 
+    "NotificationPriority",
     "NotificationStatus",
-    
     # Services
     "NotificationService",
 ]

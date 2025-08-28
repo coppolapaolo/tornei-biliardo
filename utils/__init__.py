@@ -50,8 +50,10 @@ def prova_manager_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         from models import Prova, db  # Local import to avoid circular dependency
-        
-        prova_id = kwargs.get("prova_id") or (request.view_args.get("prova_id") if request.view_args else None)
+
+        prova_id = kwargs.get("prova_id") or (
+            request.view_args.get("prova_id") if request.view_args else None
+        )
         prova = db.session.get(Prova, prova_id)
 
         if getattr(current_user, "is_admin", False):
@@ -140,13 +142,187 @@ def player_only(f):
     return decorated_function
 
 
+def player_required(f):
+    """Permette l'accesso solo a giocatori iscritti alla prova specificata."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import Inscription  # Local import to avoid circular dependency
+
+        prova_id = kwargs.get("prova_id")
+        if not prova_id:
+            abort(400)  # Bad request if prova_id is missing
+
+        # Check if user is enrolled in this prova
+        inscription = Inscription.query.filter_by(
+            user_id=current_user.id, prova_id=prova_id
+        ).first()
+
+        if not inscription:
+            flash("Non sei iscritto a questa prova.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def match_player_required(f):
+    """Permette l'accesso solo ai giocatori della partita specificata."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import Match  # Local import to avoid circular dependency
+
+        match_id = kwargs.get("match_id")
+        if not match_id:
+            abort(400)  # Bad request if match_id is missing
+
+        # Check if user is a player in this match
+        match = Match.query.get(match_id)
+        if not match:
+            abort(404)
+
+        if current_user.id not in [match.player1_id, match.player2_id]:
+            flash("Non sei un giocatore di questa partita.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def rack_player_required(f):
+    """Permette l'accesso solo ai giocatori del rack specificato."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import Rack  # Local import to avoid circular dependency
+
+        rack_id = kwargs.get("rack_id")
+        if not rack_id:
+            abort(400)  # Bad request if rack_id is missing
+
+        # Check if user is a player in the match associated with this rack
+        rack = Rack.query.get(rack_id)
+        if not rack:
+            abort(404)
+
+        match = rack.match
+        if current_user.id not in [match.player1_id, match.player2_id]:
+            flash("Non sei un giocatore di questa partita.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def inscription_owner_required(f):
+    """Permette l'accesso solo al proprietario dell'iscrizione specificata."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import Inscription  # Local import to avoid circular dependency
+
+        inscription_id = kwargs.get("inscription_id")
+        if not inscription_id:
+            abort(400)  # Bad request if inscription_id is missing
+
+        # Check if user is the owner of this inscription
+        inscription = Inscription.query.get(inscription_id)
+        if not inscription:
+            abort(404)
+
+        if current_user.id != inscription.user_id:
+            flash("Non sei il proprietario di questa iscrizione.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def challenge_player_required(f):
+    """Permette l'accesso solo ai giocatori della sfida specificata."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import Challenge  # Local import to avoid circular dependency
+
+        challenge_id = kwargs.get("challenge_id")
+        if not challenge_id:
+            abort(400)  # Bad request if challenge_id is missing
+
+        # Check if user has access to this challenge
+        challenge = Challenge.query.get(challenge_id)
+        if not challenge:
+            abort(404)
+
+        # For now, allow all authenticated players to access challenges
+        # This could be extended to check if user is enrolled in a prova that uses this challenge
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def challenge_attempt_player_required(f):
+    """Permette l'accesso solo al proprietario del tentativo di sfida specificato."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import ChallengeAttempt  # Local import to avoid circular dependency
+
+        attempt_id = kwargs.get("attempt_id")
+        if not attempt_id:
+            abort(400)  # Bad request if attempt_id is missing
+
+        # Check if user is the owner of this attempt
+        attempt = ChallengeAttempt.query.get(attempt_id)
+        if not attempt:
+            abort(404)
+
+        if current_user.id != attempt.user_id:
+            flash("Non sei il proprietario di questo tentativo.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def individual_match_player_required(f):
+    """Permette l'accesso solo ai giocatori della partita individuale specificata."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import IndividualMatch  # Local import to avoid circular dependency
+
+        match_id = kwargs.get("match_id")
+        if not match_id:
+            abort(400)  # Bad request if match_id is missing
+
+        # Check if user is a player in this individual match
+        match = IndividualMatch.query.get(match_id)
+        if not match:
+            abort(404)
+
+        if current_user.id not in [match.player1_id, match.player2_id]:
+            flash("Non sei un giocatore di questa partita.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 def rack_manager_required(f):
     """Richiede che l'utente possa gestire il torneo collegato al rack."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         from models import Rack  # Local import to avoid circular dependency
-        
+
         rack_id = kwargs.get("rack_id")
         rack = Rack.query.get_or_404(rack_id)
         tournament_id = rack.match.prova.tournament_id
@@ -165,7 +341,7 @@ def trio_manager_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         from models import TrioMatch  # Local import to avoid circular dependency
-        
+
         trio_id = kwargs.get("trio_id")
         trio = TrioMatch.query.get_or_404(trio_id)
         tournament_id = trio.match.prova.tournament_id
@@ -189,8 +365,12 @@ def trio_manager_required(f):
 # --------------------------------------------------------------------------
 def create_round_matches(prova, players_or_inscriptions, round_number):
     """Crea gli abbinamenti per un turno (logica standard)."""
-    from models import Inscription, Match, db  # Local import to avoid circular dependency
-    
+    from models import (
+        Inscription,
+        Match,
+        db,
+    )  # Local import to avoid circular dependency
+
     if isinstance(players_or_inscriptions[0], Inscription):
         players = [insc.user for insc in players_or_inscriptions]
     else:
@@ -232,7 +412,7 @@ def create_round_matches(prova, players_or_inscriptions, round_number):
 def calculate_round_classification(prova_id, round_number):
     """Calcola la classifica dopo un turno."""
     from models import Match, Inscription  # Local import to avoid circular dependency
-    
+
     matches = Match.query.filter_by(prova_id=prova_id, round_number=round_number).all()
     players_stats = {}
 
@@ -288,7 +468,7 @@ def calculate_round_classification(prova_id, round_number):
 def create_default_users():
     """Crea tre utenti di base (admin + 2 player)."""
     from models import User, db  # Local import to avoid circular dependency
-    
+
     admin = User(username="admin", email="admin@tournament.com", role="admin")
     admin.set_password("admin123")
 
@@ -306,7 +486,7 @@ def create_default_users():
 def create_sample_tournament():
     """Crea due tornei di esempio con prove collegate."""
     from models import Tournament, db  # Local import to avoid circular dependency
-    
+
     tournament1 = Tournament(
         name="Torneo Primavera 2025",
         tournament_type="Amalfi",
@@ -402,7 +582,7 @@ def create_admin_if_not_exists():
     - NON crea un secondo admin.
     """
     from models import User, db  # Local import to avoid circular dependency
-    
+
     cfg = current_app.config
     require_pwd = bool(cfg.get("ADMIN_PASSWORD_REQUIRED", False))
     username = (cfg.get("ADMIN_USERNAME") or "").strip() or None
@@ -442,8 +622,12 @@ def create_round_matches_amalfi_compatible(
     prova, players_or_inscriptions, round_number
 ):
     """Versione compatibile 'Amalfi'. Differisce per campo ``amalfi_round``."""
-    from models import Inscription, Match, db  # Local import to avoid circular dependency
-    
+    from models import (
+        Inscription,
+        Match,
+        db,
+    )  # Local import to avoid circular dependency
+
     if isinstance(players_or_inscriptions[0], Inscription):
         players = [insc.user for insc in players_or_inscriptions]
     else:

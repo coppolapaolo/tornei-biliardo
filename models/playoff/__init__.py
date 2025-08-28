@@ -5,21 +5,22 @@ Requirements: SPECIFICHE.md - Playoff system
 """
 
 from .models import (
-    PlayoffConfiguration, PlayoffQualification, PlayoffTournament,
-    PlayoffType, QualificationStatus
+    PlayoffConfiguration,
+    PlayoffQualification,
+    PlayoffTournament,
+    PlayoffType,
+    QualificationStatus,
 )
 from .services import PlayoffService
 
 __all__ = [
     # Models
     "PlayoffConfiguration",
-    "PlayoffQualification", 
+    "PlayoffQualification",
     "PlayoffTournament",
-    
     # Enums
     "PlayoffType",
     "QualificationStatus",
-    
     # Services
     "PlayoffService",
 ]

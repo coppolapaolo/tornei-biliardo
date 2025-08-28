@@ -23,20 +23,17 @@ from .models import (
     TiebreakerConfiguration,
     TiebreakerType,
     TiebreakerStatus,
-    SpotShotResult
+    SpotShotResult,
 )
 
-from .services import (
-    TiebreakerService,
-    TiebreakerConfigurationService
-)
+from .services import TiebreakerService, TiebreakerConfigurationService
 
 # Export all public classes and functions
 __all__ = [
     # Models
     "Tiebreaker",
     "SpotShot",
-    "RallyAttempt", 
+    "RallyAttempt",
     "PlayoffMatch",
     "TiebreakerConfiguration",
     # Enums

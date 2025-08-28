@@ -10,14 +10,12 @@ from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime, time
 
 from ..base import db
-from .models import (
-    BilliardHall, UserLocationAvailability, LocationReview, DayOfWeek
-)
+from .models import BilliardHall, UserLocationAvailability, LocationReview, DayOfWeek
 
 
 class LocationService:
     """Service for location and availability management."""
-    
+
     @staticmethod
     def create_billiard_hall(
         name: str,
@@ -32,10 +30,10 @@ class LocationService:
         table_types: Optional[List[str]] = None,
         amenities: Optional[List[str]] = None,
         hourly_rate: Optional[float] = None,
-        added_by_id: Optional[int] = None
+        added_by_id: Optional[int] = None,
     ) -> BilliardHall:
         """Create a new billiard hall."""
-        
+
         hall = BilliardHall(
             name=name,
             address=address,
@@ -47,41 +45,39 @@ class LocationService:
             website=website,
             number_of_tables=number_of_tables,
             hourly_rate=hourly_rate,
-            added_by_id=added_by_id
+            added_by_id=added_by_id,
         )
-        
+
         if table_types:
             hall.set_table_types(table_types)
-        
+
         if amenities:
             hall.set_amenities(amenities)
-        
+
         db.session.add(hall)
         db.session.commit()
-        
+
         return hall
-    
+
     @staticmethod
     def get_nearby_halls(
-        city: Optional[str] = None,
-        country: str = "Italy",
-        verified_only: bool = False
+        city: Optional[str] = None, country: str = "Italy", verified_only: bool = False
     ) -> List[BilliardHall]:
         """Get billiard halls in a specific area."""
-        
+
         query = BilliardHall.query.filter_by(is_active=True)
-        
+
         if city:
             query = query.filter(BilliardHall.city.ilike(f"%{city}%"))
-        
+
         if country:
             query = query.filter_by(country=country)
-        
+
         if verified_only:
             query = query.filter_by(verified=True)
-        
+
         return query.order_by(BilliardHall.name).all()
-    
+
     @staticmethod
     def set_user_availability(
         user_id: int,
@@ -91,15 +87,14 @@ class LocationService:
         preferred_time_start: Optional[str] = None,
         preferred_time_end: Optional[str] = None,
         advance_notice_hours: int = 24,
-        notify_on_proposals: bool = True
+        notify_on_proposals: bool = True,
     ) -> UserLocationAvailability:
         """Set or update user availability for a billiard hall."""
-        
+
         availability = UserLocationAvailability.query.filter_by(
-            user_id=user_id,
-            billiard_hall_id=billiard_hall_id
+            user_id=user_id, billiard_hall_id=billiard_hall_id
         ).first()
-        
+
         if availability:
             availability.is_available = is_available
             availability.advance_notice_hours = advance_notice_hours
@@ -110,109 +105,124 @@ class LocationService:
                 billiard_hall_id=billiard_hall_id,
                 is_available=is_available,
                 advance_notice_hours=advance_notice_hours,
-                notify_on_proposals=notify_on_proposals
+                notify_on_proposals=notify_on_proposals,
             )
             db.session.add(availability)
-        
+
         # Set available days
         if available_days:
             availability.set_available_days(available_days)
-        
+
         # Parse time preferences
         if preferred_time_start:
             try:
-                availability.preferred_time_start = datetime.strptime(preferred_time_start, "%H:%M").time()
+                availability.preferred_time_start = datetime.strptime(
+                    preferred_time_start, "%H:%M"
+                ).time()
             except ValueError:
                 pass
-        
+
         if preferred_time_end:
             try:
-                availability.preferred_time_end = datetime.strptime(preferred_time_end, "%H:%M").time()
+                availability.preferred_time_end = datetime.strptime(
+                    preferred_time_end, "%H:%M"
+                ).time()
             except ValueError:
                 pass
-        
+
         db.session.commit()
         return availability
-    
+
     @staticmethod
     def get_user_locations(user_id: int) -> List[Dict[str, Any]]:
         """Get all locations where user is available."""
-        
-        availabilities = (UserLocationAvailability.query
-                         .filter_by(user_id=user_id, is_available=True)
-                         .join(BilliardHall)
-                         .filter(BilliardHall.is_active == True)
-                         .all())
-        
+
+        availabilities = (
+            UserLocationAvailability.query.filter_by(user_id=user_id, is_available=True)
+            .join(BilliardHall)
+            .filter(BilliardHall.is_active == True)
+            .all()
+        )
+
         locations = []
         for availability in availabilities:
-            locations.append({
-                "billiard_hall": availability.billiard_hall,
-                "availability": availability.get_availability_summary()
-            })
-        
+            locations.append(
+                {
+                    "billiard_hall": availability.billiard_hall,
+                    "availability": availability.get_availability_summary(),
+                }
+            )
+
         return locations
-    
+
     @staticmethod
     def find_available_players(
         billiard_hall_id: int,
         proposed_datetime: datetime,
-        exclude_user_id: Optional[int] = None
+        exclude_user_id: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Find players available at a specific hall and time."""
-        
-        availabilities = (UserLocationAvailability.query
-                         .filter_by(billiard_hall_id=billiard_hall_id, is_available=True)
-                         .join(BilliardHall)
-                         .filter(BilliardHall.is_active == True)
-                         .all())
-        
+
+        availabilities = (
+            UserLocationAvailability.query.filter_by(
+                billiard_hall_id=billiard_hall_id, is_available=True
+            )
+            .join(BilliardHall)
+            .filter(BilliardHall.is_active == True)
+            .all()
+        )
+
         available_players = []
-        
+
         for availability in availabilities:
             if exclude_user_id and availability.user_id == exclude_user_id:
                 continue
-            
+
             if availability.is_available_at(proposed_datetime):
-                available_players.append({
-                    "user": availability.user,
-                    "availability": availability,
-                    "matches_played_here": availability.matches_played_here,
-                    "last_played_at": availability.last_played_at
-                })
-        
+                available_players.append(
+                    {
+                        "user": availability.user,
+                        "availability": availability,
+                        "matches_played_here": availability.matches_played_here,
+                        "last_played_at": availability.last_played_at,
+                    }
+                )
+
         # Sort by experience at this location (more experienced first)
         available_players.sort(key=lambda x: x["matches_played_here"], reverse=True)
-        
+
         return available_players
-    
+
     @staticmethod
     def get_location_statistics(billiard_hall_id: int) -> Dict[str, Any]:
         """Get statistics for a billiard hall."""
-        
-        hall = BilliardHall.query.get_or_404(billiard_hall_id)
-        
+
+        hall = db.session.get(BilliardHall, billiard_hall_id)
+        if hall is None:
+            from flask import abort
+
+            abort(404)
+
         # Count active users
-        active_users_count = (UserLocationAvailability.query
-                             .filter_by(billiard_hall_id=billiard_hall_id, is_available=True)
-                             .count())
-        
+        active_users_count = UserLocationAvailability.query.filter_by(
+            billiard_hall_id=billiard_hall_id, is_available=True
+        ).count()
+
         # Count total matches played (from individual matches)
         from ..individual_match.models import IndividualMatch
+
         total_matches = IndividualMatch.query.filter_by(location=hall.name).count()
-        
+
         # Count reviews
         reviews = LocationReview.query.filter_by(
-            billiard_hall_id=billiard_hall_id,
-            is_approved=True,
-            is_hidden=False
+            billiard_hall_id=billiard_hall_id, is_approved=True, is_hidden=False
         ).all()
-        
+
         # Calculate average ratings
         avg_rating = 0
         if reviews:
             avg_rating = sum(review.rating for review in reviews) / len(reviews)
-        
+
         return {
             "billiard_hall": hall,
             "active_users_count": active_users_count,
@@ -220,9 +230,9 @@ class LocationService:
             "reviews_count": len(reviews),
             "average_rating": round(avg_rating, 1),
             "table_types": hall.get_table_types(),
-            "amenities": hall.get_amenities()
+            "amenities": hall.get_amenities(),
         }
-    
+
     @staticmethod
     def add_location_review(
         user_id: int,
@@ -233,20 +243,19 @@ class LocationService:
         table_quality: Optional[int] = None,
         atmosphere: Optional[int] = None,
         service: Optional[int] = None,
-        value_for_money: Optional[int] = None
+        value_for_money: Optional[int] = None,
     ) -> LocationReview:
         """Add or update a location review."""
-        
+
         # Validate rating
         if not 1 <= rating <= 5:
             raise ValueError("Rating must be between 1 and 5")
-        
+
         # Check for existing review
         existing_review = LocationReview.query.filter_by(
-            user_id=user_id,
-            billiard_hall_id=billiard_hall_id
+            user_id=user_id, billiard_hall_id=billiard_hall_id
         ).first()
-        
+
         if existing_review:
             # Update existing review
             existing_review.rating = rating
@@ -269,104 +278,119 @@ class LocationService:
                 table_quality=table_quality,
                 atmosphere=atmosphere,
                 service=service,
-                value_for_money=value_for_money
+                value_for_money=value_for_money,
             )
             db.session.add(review)
-        
+
         db.session.commit()
         return review
-    
+
     @staticmethod
-    def get_location_reviews(billiard_hall_id: int, approved_only: bool = True) -> List[LocationReview]:
+    def get_location_reviews(
+        billiard_hall_id: int, approved_only: bool = True
+    ) -> List[LocationReview]:
         """Get reviews for a billiard hall."""
-        
+
         query = LocationReview.query.filter_by(billiard_hall_id=billiard_hall_id)
-        
+
         if approved_only:
             query = query.filter_by(is_approved=True, is_hidden=False)
-        
+
         return query.order_by(LocationReview.created_at.desc()).all()
-    
+
     @staticmethod
     def suggest_locations_for_match(
         user_id: int,
         opponent_id: Optional[int] = None,
-        preferred_city: Optional[str] = None
+        preferred_city: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Suggest billiard halls for a match between users."""
-        
+
         suggestions = []
-        
+
         # Get user's available locations
         user_locations = LocationService.get_user_locations(user_id)
         user_hall_ids = {loc["billiard_hall"].id for loc in user_locations}
-        
+
         # Get opponent's available locations if specified
         opponent_hall_ids = set()
         if opponent_id:
             opponent_locations = LocationService.get_user_locations(opponent_id)
             opponent_hall_ids = {loc["billiard_hall"].id for loc in opponent_locations}
-        
+
         # Find common locations
-        common_hall_ids = user_hall_ids.intersection(opponent_hall_ids) if opponent_id else user_hall_ids
-        
+        common_hall_ids = (
+            user_hall_ids.intersection(opponent_hall_ids)
+            if opponent_id
+            else user_hall_ids
+        )
+
         for location_data in user_locations:
             hall = location_data["billiard_hall"]
-            
+
             # Calculate suitability score
             score = 0
-            
+
             # Bonus for common locations
             if hall.id in common_hall_ids:
                 score += 10
-            
+
             # Bonus for preferred city
-            if preferred_city and hall.city and preferred_city.lower() in hall.city.lower():
+            if (
+                preferred_city
+                and hall.city
+                and preferred_city.lower() in hall.city.lower()
+            ):
                 score += 5
-            
+
             # Bonus for user experience at location
             user_availability = next(
-                (loc["availability"] for loc in user_locations if loc["billiard_hall"].id == hall.id),
-                {}
+                (
+                    loc["availability"]
+                    for loc in user_locations
+                    if loc["billiard_hall"].id == hall.id
+                ),
+                {},
             )
             matches_played = user_availability.get("matches_played_here", 0)
             score += min(matches_played, 5)  # Max 5 bonus points
-            
+
             # Bonus for verified halls
             if hall.verified:
                 score += 2
-            
-            suggestions.append({
-                "billiard_hall": hall,
-                "suitability_score": score,
-                "is_common_location": hall.id in common_hall_ids,
-                "user_matches_played": matches_played,
-                "statistics": LocationService.get_location_statistics(hall.id)
-            })
-        
+
+            suggestions.append(
+                {
+                    "billiard_hall": hall,
+                    "suitability_score": score,
+                    "is_common_location": hall.id in common_hall_ids,
+                    "user_matches_played": matches_played,
+                    "statistics": LocationService.get_location_statistics(hall.id),
+                }
+            )
+
         # Sort by suitability score
         suggestions.sort(key=lambda x: x["suitability_score"], reverse=True)
-        
+
         return suggestions
-    
+
     @staticmethod
     def record_match_at_location(user_id: int, location_name: str) -> None:
         """Record that a user played a match at a location."""
-        
+
         # Find billiard hall by name (fuzzy matching)
         hall = BilliardHall.query.filter(
             BilliardHall.name.ilike(f"%{location_name}%")
         ).first()
-        
+
         if not hall:
             return
-        
+
         # Update or create availability record
         availability = UserLocationAvailability.query.filter_by(
-            user_id=user_id,
-            billiard_hall_id=hall.id
+            user_id=user_id, billiard_hall_id=hall.id
         ).first()
-        
+
         if availability:
             availability.record_match_played()
         else:
@@ -376,70 +400,80 @@ class LocationService:
                 billiard_hall_id=hall.id,
                 is_available=True,
                 matches_played_here=1,
-                last_played_at=datetime.utcnow()
+                last_played_at=datetime.utcnow(),
             )
             db.session.add(availability)
-        
+
         db.session.commit()
-    
+
     @staticmethod
-    def update_billiard_hall(
-        hall_id: int,
-        **kwargs
-    ) -> BilliardHall:
+    def update_billiard_hall(hall_id: int, **kwargs) -> BilliardHall:
         """Update billiard hall information."""
-        
-        hall = BilliardHall.query.get_or_404(hall_id)
-        
+
+        hall = db.session.get(BilliardHall, hall_id)
+        if hall is None:
+            from flask import abort
+
+            abort(404)
+
         # Update simple fields
         simple_fields = [
-            'name', 'address', 'city', 'postal_code', 'country',
-            'phone', 'email', 'website', 'number_of_tables', 
-            'hourly_rate', 'is_active', 'verified'
+            "name",
+            "address",
+            "city",
+            "postal_code",
+            "country",
+            "phone",
+            "email",
+            "website",
+            "number_of_tables",
+            "hourly_rate",
+            "is_active",
+            "verified",
         ]
-        
+
         for field in simple_fields:
             if field in kwargs:
                 setattr(hall, field, kwargs[field])
-        
+
         # Update complex fields
-        if 'table_types' in kwargs:
-            hall.set_table_types(kwargs['table_types'])
-        
-        if 'amenities' in kwargs:
-            hall.set_amenities(kwargs['amenities'])
-        
-        if 'business_hours' in kwargs:
-            hall.set_business_hours(kwargs['business_hours'])
-        
+        if "table_types" in kwargs:
+            hall.set_table_types(kwargs["table_types"])
+
+        if "amenities" in kwargs:
+            hall.set_amenities(kwargs["amenities"])
+
+        if "business_hours" in kwargs:
+            hall.set_business_hours(kwargs["business_hours"])
+
         db.session.commit()
         return hall
-    
+
     @staticmethod
     def search_billiard_halls(
         query: str,
         city: Optional[str] = None,
         country: str = "Italy",
-        verified_only: bool = False
+        verified_only: bool = False,
     ) -> List[BilliardHall]:
         """Search billiard halls by name or location."""
-        
+
         search_query = BilliardHall.query.filter(
             BilliardHall.is_active == True,
             db.or_(
                 BilliardHall.name.ilike(f"%{query}%"),
                 BilliardHall.address.ilike(f"%{query}%"),
-                BilliardHall.city.ilike(f"%{query}%")
-            )
+                BilliardHall.city.ilike(f"%{query}%"),
+            ),
         )
-        
+
         if city:
             search_query = search_query.filter(BilliardHall.city.ilike(f"%{city}%"))
-        
+
         if country:
             search_query = search_query.filter_by(country=country)
-        
+
         if verified_only:
             search_query = search_query.filter_by(verified=True)
-        
+
         return search_query.order_by(BilliardHall.name).all()

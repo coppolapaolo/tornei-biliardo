@@ -455,26 +455,44 @@ class PermissionChecker:
             "admin.director_requests": lambda u, **kw: u.is_admin,
             # Tournament management routes
             "admin.tournament_detail": (
-                lambda u, **kw: (lambda tid: tid is not None and PermissionChecker.can_manage_tournament(u, tid))(kw.get("tournament_id"))
+                lambda u, **kw: (
+                    lambda tid: tid is not None
+                    and PermissionChecker.can_manage_tournament(u, tid)
+                )(kw.get("tournament_id"))
             ),
             "admin.create_tournament": (
                 lambda u, **kw: PermissionChecker.can_create_tournament(u)
             ),
             "admin.edit_tournament": (
-                lambda u, **kw: (lambda tid: tid is not None and PermissionChecker.can_modify_tournament(u, tid))(kw.get("tournament_id"))
+                lambda u, **kw: (
+                    lambda tid: tid is not None
+                    and PermissionChecker.can_modify_tournament(u, tid)
+                )(kw.get("tournament_id"))
             ),
             "admin.delete_tournament": (
-                lambda u, **kw: (lambda tid: tid is not None and PermissionChecker.can_delete_tournament(u, tid))(kw.get("tournament_id"))
+                lambda u, **kw: (
+                    lambda tid: tid is not None
+                    and PermissionChecker.can_delete_tournament(u, tid)
+                )(kw.get("tournament_id"))
             ),
             # Competition management routes
             "admin.prova_detail": (
-                lambda u, **kw: (lambda cid: cid is not None and PermissionChecker.can_manage_competition(u, cid))(kw.get("prova_id"))
+                lambda u, **kw: (
+                    lambda cid: cid is not None
+                    and PermissionChecker.can_manage_competition(u, cid)
+                )(kw.get("prova_id"))
             ),
             "admin.create_prova": (
-                lambda u, **kw: (lambda tid: tid is not None and PermissionChecker.can_manage_tournament(u, tid))(kw.get("tournament_id"))
+                lambda u, **kw: (
+                    lambda tid: tid is not None
+                    and PermissionChecker.can_manage_tournament(u, tid)
+                )(kw.get("tournament_id"))
             ),
             "admin.edit_prova": (
-                lambda u, **kw: (lambda cid: cid is not None and PermissionChecker.can_manage_competition(u, cid))(kw.get("prova_id"))
+                lambda u, **kw: (
+                    lambda cid: cid is not None
+                    and PermissionChecker.can_manage_competition(u, cid)
+                )(kw.get("prova_id"))
             ),
             # Player routes (all authenticated users)
             "player.dashboard": lambda u, **kw: True,
@@ -600,8 +618,12 @@ class RoleRequirement:
                     if callable(tournament_id_getter)
                     else tournament_id_getter
                 )
-                if tournament_id is None or not isinstance(tournament_id, int) or not PermissionChecker.can_manage_tournament(
-                    current_user, tournament_id
+                if (
+                    tournament_id is None
+                    or not isinstance(tournament_id, int)
+                    or not PermissionChecker.can_manage_tournament(
+                        current_user, tournament_id
+                    )
                 ):
                     abort(403)
                 return f(*args, **kwargs)
@@ -630,8 +652,12 @@ class RoleRequirement:
                     if callable(competition_id_getter)
                     else competition_id_getter
                 )
-                if competition_id is None or not isinstance(competition_id, int) or not PermissionChecker.can_manage_competition(
-                    current_user, competition_id
+                if (
+                    competition_id is None
+                    or not isinstance(competition_id, int)
+                    or not PermissionChecker.can_manage_competition(
+                        current_user, competition_id
+                    )
                 ):
                     abort(403)
                 return f(*args, **kwargs)
@@ -660,8 +686,12 @@ class RoleRequirement:
                     if callable(match_id_getter)
                     else match_id_getter
                 )
-                if match_id is None or not isinstance(match_id, int) or not PermissionChecker.can_insert_match_results(
-                    current_user, match_id
+                if (
+                    match_id is None
+                    or not isinstance(match_id, int)
+                    or not PermissionChecker.can_insert_match_results(
+                        current_user, match_id
+                    )
                 ):
                     abort(403)
                 return f(*args, **kwargs)
@@ -719,12 +749,24 @@ def user_can(permission: str, **kwargs) -> bool:
         "create_tournament": lambda **kw: PermissionChecker.can_create_tournament(
             current_user
         ),
-        "manage_tournament": lambda **kw: (lambda tid: tid is not None and PermissionChecker.can_manage_tournament(current_user, tid))(kw.get("tournament_id")),
-        "manage_competition": lambda **kw: (lambda cid: cid is not None and PermissionChecker.can_manage_competition(current_user, cid))(kw.get("competition_id")),
+        "manage_tournament": lambda **kw: (
+            lambda tid: tid is not None
+            and PermissionChecker.can_manage_tournament(current_user, tid)
+        )(kw.get("tournament_id")),
+        "manage_competition": lambda **kw: (
+            lambda cid: cid is not None
+            and PermissionChecker.can_manage_competition(current_user, cid)
+        )(kw.get("competition_id")),
         "inscribe_to_competition": (
-            lambda **kw: (lambda cid: cid is not None and PermissionChecker.can_inscribe_to_competition(current_user, cid))(kw.get("competition_id"))
+            lambda **kw: (
+                lambda cid: cid is not None
+                and PermissionChecker.can_inscribe_to_competition(current_user, cid)
+            )(kw.get("competition_id"))
         ),
-        "insert_match_results": lambda **kw: (lambda mid: mid is not None and PermissionChecker.can_insert_match_results(current_user, mid))(kw.get("match_id")),
+        "insert_match_results": lambda **kw: (
+            lambda mid: mid is not None
+            and PermissionChecker.can_insert_match_results(current_user, mid)
+        )(kw.get("match_id")),
     }
 
     check_func = permission_map.get(permission)

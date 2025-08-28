@@ -14,15 +14,21 @@ if TYPE_CHECKING:
 
 from ..base import db
 from .models import (
-    MatchProposal, ProposalInvitation, IndividualMatch, IndividualRack,
-    PlayerAvailability, ProposalType, ProposalStatus, MatchStatus,
-    InvitationStatus
+    MatchProposal,
+    ProposalInvitation,
+    IndividualMatch,
+    IndividualRack,
+    PlayerAvailability,
+    ProposalType,
+    ProposalStatus,
+    MatchStatus,
+    InvitationStatus,
 )
 
 
 class MatchProposalService:
     """Service for match proposal specific operations."""
-    
+
     @staticmethod
     def create_proposal(
         proposer_id: int,
@@ -36,10 +42,10 @@ class MatchProposalService:
         break_rule: str = "alternate",
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
-        invited_user_ids: Optional[List[int]] = None
+        invited_user_ids: Optional[List[int]] = None,
     ) -> MatchProposal:
         """Create a match proposal with invitations if needed."""
-        
+
         if proposal_type == ProposalType.DIRECT:
             return IndividualMatchService.create_direct_proposal(
                 proposer_id=proposer_id,
@@ -52,7 +58,7 @@ class MatchProposalService:
                 best_of=best_of,
                 break_rule=break_rule,
                 description=description,
-                entry_fee=entry_fee
+                entry_fee=entry_fee,
             )
         else:
             return IndividualMatchService.create_open_proposal(
@@ -65,48 +71,48 @@ class MatchProposalService:
                 best_of=best_of,
                 break_rule=break_rule,
                 description=description,
-                entry_fee=entry_fee
+                entry_fee=entry_fee,
             )
-    
+
     @staticmethod
     def get_user_proposals(user_id: int) -> Dict[str, List[MatchProposal]]:
         """Get proposals organized by user relationship."""
         return IndividualMatchService.get_user_proposals(user_id)
-    
+
     @staticmethod
     def accept_proposal(proposal_id: int, user_id: int) -> IndividualMatch:
         """Accept a match proposal."""
         return IndividualMatchService.accept_proposal(user_id, proposal_id)
-    
+
     @staticmethod
     def cancel_proposal(proposal_id: int, user_id: int) -> None:
         """Cancel a proposal."""
         return IndividualMatchService.cancel_proposal(user_id, proposal_id)
-    
+
     @staticmethod
     def expire_proposals() -> int:
         """Mark expired proposals as expired. Returns count of expired proposals."""
         now = datetime.utcnow()
-        
+
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,
-            MatchProposal.expires_at <= now
+            MatchProposal.expires_at <= now,
         ).all()
-        
+
         count = 0
         for proposal in expired_proposals:
             proposal.expire()
             count += 1
-        
+
         if count > 0:
             db.session.commit()
-        
+
         return count
 
 
 class IndividualMatchService:
     """Service for individual match management and business logic."""
-    
+
     @staticmethod
     def create_direct_proposal(
         proposer_id: int,
@@ -119,13 +125,15 @@ class IndividualMatchService:
         best_of: bool = True,
         break_rule: str = "alternate",
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None
+        entry_fee: Optional[float] = None,
     ) -> MatchProposal:
         """Create a direct match proposal to specific players."""
-        
+
         if expires_at is None:
-            expires_at = scheduled_at - timedelta(hours=2)  # Default: expire 2 hours before match
-        
+            expires_at = scheduled_at - timedelta(
+                hours=2
+            )  # Default: expire 2 hours before match
+
         proposal = MatchProposal(
             proposer_id=proposer_id,
             proposal_type=ProposalType.DIRECT,
@@ -137,24 +145,23 @@ class IndividualMatchService:
             best_of=best_of,
             break_rule=break_rule,
             description=description,
-            entry_fee=entry_fee
+            entry_fee=entry_fee,
         )
-        
+
         db.session.add(proposal)
         db.session.flush()  # Get the ID
-        
+
         # Create invitations
         for user_id in invited_user_ids:
             if user_id != proposer_id:  # Don't invite yourself
                 invitation = ProposalInvitation(
-                    proposal_id=proposal.id,
-                    invited_user_id=user_id
+                    proposal_id=proposal.id, invited_user_id=user_id
                 )
                 db.session.add(invitation)
-        
+
         db.session.commit()
         return proposal
-    
+
     @staticmethod
     def create_open_proposal(
         proposer_id: int,
@@ -166,13 +173,13 @@ class IndividualMatchService:
         best_of: bool = True,
         break_rule: str = "alternate",
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None
+        entry_fee: Optional[float] = None,
     ) -> MatchProposal:
         """Create an open match proposal for all eligible players."""
-        
+
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
-        
+
         proposal = MatchProposal(
             proposer_id=proposer_id,
             proposal_type=ProposalType.OPEN,
@@ -184,109 +191,127 @@ class IndividualMatchService:
             best_of=best_of,
             break_rule=break_rule,
             description=description,
-            entry_fee=entry_fee
+            entry_fee=entry_fee,
         )
-        
+
         db.session.add(proposal)
         db.session.commit()
         return proposal
-    
+
     @staticmethod
-    def get_user_proposals(user_id: int, include_expired: bool = False) -> Dict[str, List[MatchProposal]]:
+    def get_user_proposals(
+        user_id: int, include_expired: bool = False
+    ) -> Dict[str, List[MatchProposal]]:
         """Get proposals organized by user relationship."""
-        
+
         query = MatchProposal.query
-        
+
         if not include_expired:
             query = query.filter(
                 db.or_(
                     MatchProposal.status != ProposalStatus.EXPIRED,
-                    MatchProposal.expires_at > datetime.utcnow()
+                    MatchProposal.expires_at > datetime.utcnow(),
                 )
             )
-        
+
         # Proposals created by user
         created = query.filter_by(proposer_id=user_id).all()
-        
+
         # Direct invitations received
-        received_invitations = (query
-                              .join(ProposalInvitation, MatchProposal.id == ProposalInvitation.proposal_id)
-                              .filter(ProposalInvitation.invited_user_id == user_id)
-                              .all())
-        
+        received_invitations = (
+            query.join(
+                ProposalInvitation, MatchProposal.id == ProposalInvitation.proposal_id
+            )
+            .filter(ProposalInvitation.invited_user_id == user_id)
+            .all()
+        )
+
         # Open proposals available to user (exclude own proposals)
-        available_open = (query
-                         .filter(
-                             MatchProposal.proposal_type == ProposalType.OPEN,
-                             MatchProposal.proposer_id != user_id,
-                             MatchProposal.status == ProposalStatus.PENDING
-                         )
-                         .all())
-        
+        available_open = query.filter(
+            MatchProposal.proposal_type == ProposalType.OPEN,
+            MatchProposal.proposer_id != user_id,
+            MatchProposal.status == ProposalStatus.PENDING,
+        ).all()
+
         # Filter open proposals by location availability
-        user_locations = {av.location for av in 
-                         PlayerAvailability.query.filter_by(user_id=user_id, is_available=True).all()}
-        
+        user_locations = {
+            av.location
+            for av in PlayerAvailability.query.filter_by(
+                user_id=user_id, is_available=True
+            ).all()
+        }
+
         # Also include locations where user has played before
-        played_locations = {match.location for match in 
-                           IndividualMatch.query.filter(
-                               db.or_(
-                                   IndividualMatch.player1_id == user_id,
-                                   IndividualMatch.player2_id == user_id
-                               )
-                           ).all()}
-        
+        played_locations = {
+            match.location
+            for match in IndividualMatch.query.filter(
+                db.or_(
+                    IndividualMatch.player1_id == user_id,
+                    IndividualMatch.player2_id == user_id,
+                )
+            ).all()
+        }
+
         eligible_locations = user_locations.union(played_locations)
-        
+
         if eligible_locations:
-            available_open = [p for p in available_open if p.location in eligible_locations]
-        
+            available_open = [
+                p for p in available_open if p.location in eligible_locations
+            ]
+
         return {
             "created": created,
             "received": received_invitations,
-            "available": available_open
+            "available": available_open,
         }
-    
+
     @staticmethod
     def accept_proposal(user_id: int, proposal_id: int) -> IndividualMatch:
         """Accept a match proposal."""
-        proposal = MatchProposal.query.get_or_404(proposal_id)
-        
+        proposal = db.session.get(MatchProposal, proposal_id)
+        if proposal is None:
+            from flask import abort
+
+            abort(404)
+
         if not proposal.can_be_accepted_by(user_id):
             raise ValueError("User cannot accept this proposal")
-        
+
         individual_match = proposal.accept(user_id)
         db.session.commit()
-        
+
         return individual_match
-    
+
     @staticmethod
     def reject_invitation(user_id: int, proposal_id: int) -> None:
         """Reject a direct invitation."""
         invitation = ProposalInvitation.query.filter_by(
-            proposal_id=proposal_id,
-            invited_user_id=user_id
+            proposal_id=proposal_id, invited_user_id=user_id
         ).first_or_404()
-        
+
         invitation.reject()
         db.session.commit()
-    
+
     @staticmethod
     def cancel_proposal(user_id: int, proposal_id: int) -> None:
         """Cancel a match proposal."""
-        proposal = MatchProposal.query.get_or_404(proposal_id)
-        
+        proposal = db.session.get(MatchProposal, proposal_id)
+        if proposal is None:
+            from flask import abort
+
+            abort(404)
+
         # Verify user is the proposer
         if proposal.proposer_id != user_id:
             raise ValueError("Only the proposer can cancel the proposal")
-        
+
         # Verify proposal can be cancelled
         if proposal.status != ProposalStatus.PENDING:
             raise ValueError("Proposal cannot be cancelled - it's not pending")
-        
+
         proposal.cancel()
         db.session.commit()
-    
+
     @staticmethod
     def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
         """Get comprehensive dashboard data for user."""
@@ -294,108 +319,107 @@ class IndividualMatchService:
         matches = IndividualMatchService.get_user_matches(user_id)
         availability = IndividualMatchService.get_user_availability(user_id)
         stats = IndividualMatchService.get_user_statistics(user_id)
-        
+
         return {
             "proposals": proposals,
             "matches": matches,
             "availability": availability,
-            "statistics": stats
+            "statistics": stats,
         }
-    
 
-    
     @staticmethod
     def get_user_availability(user_id: int) -> Dict[str, Any]:
         """Get user's availability settings and schedule."""
         availability_records = PlayerAvailability.query.filter_by(user_id=user_id).all()
-        
+
         # Organize by location
         by_location = {}
         for record in availability_records:
             if record.location not in by_location:
                 by_location[record.location] = []
             by_location[record.location].append(record)
-        
+
         return {
             "availability_records": availability_records,
             "by_location": by_location,
-            "available_locations": [r.location for r in availability_records if r.is_available]
+            "available_locations": [
+                r.location for r in availability_records if r.is_available
+            ],
         }
-    
 
-    
-
-    
     @staticmethod
-    def submit_rack_result(match_id: int, user_id: int, winner_id: int, rack_number: int) -> IndividualRack:
+    def submit_rack_result(
+        match_id: int, user_id: int, winner_id: int, rack_number: int
+    ) -> IndividualRack:
         """Submit result for a rack in individual match."""
-        match = IndividualMatch.query.get_or_404(match_id)
-        
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
         # Verify user is part of this match
         if user_id not in (match.player1_id, match.player2_id):
             raise ValueError("User is not part of this match")
-        
+
         # Verify winner is valid
         if winner_id not in (match.player1_id, match.player2_id):
             raise ValueError("Invalid winner ID")
-        
+
         # Check if rack already exists
         existing_rack = IndividualRack.query.filter_by(
-            match_id=match_id,
-            rack_number=rack_number
+            match_id=match_id, rack_number=rack_number
         ).first()
-        
+
         if existing_rack:
             raise ValueError(f"Rack {rack_number} already recorded")
-        
+
         # Create rack record
         rack = IndividualRack(
-            match_id=match_id,
-            rack_number=rack_number,
-            winner_id=winner_id
+            match_id=match_id, rack_number=rack_number, winner_id=winner_id
         )
-        
+
         db.session.add(rack)
-        
+
         # Update match scores
         if winner_id == match.player1_id:
             match.player1_score += 1
         else:
             match.player2_score += 1
-        
+
         # Check if match is complete
         if match.is_complete():
             match.status = MatchStatus.COMPLETED
             match.completed_at = datetime.utcnow()
-            match.winner_id = winner_id if match.player1_score != match.player2_score else None
-        
+            match.winner_id = (
+                winner_id if match.player1_score != match.player2_score else None
+            )
+
         db.session.commit()
         return rack
-    
 
-    
-
-    
     @staticmethod
-    def update_user_availability(user_id: int, availability_data: List[Dict[str, Any]]) -> None:
+    def update_user_availability(
+        user_id: int, availability_data: List[Dict[str, Any]]
+    ) -> None:
         """Update user's availability settings."""
         # Clear existing availability
         PlayerAvailability.query.filter_by(user_id=user_id).delete()
-        
+
         # Add new availability records
         for data in availability_data:
             availability = PlayerAvailability(
                 user_id=user_id,
-                location=data['location'],
-                day_of_week=data['day_of_week'],
-                start_time=data['start_time'],
-                end_time=data['end_time'],
-                is_available=data.get('is_available', True)
+                location=data["location"],
+                day_of_week=data["day_of_week"],
+                start_time=data["start_time"],
+                end_time=data["end_time"],
+                is_available=data.get("is_available", True),
             )
             db.session.add(availability)
-        
+
         db.session.commit()
-    
+
     @staticmethod
     def get_admin_overview() -> Dict[str, Any]:
         """Get admin overview of all individual matches."""
@@ -404,115 +428,141 @@ class IndividualMatchService:
         for status in MatchStatus:
             count = IndividualMatch.query.filter_by(status=status).count()
             status_counts[status.value] = count
-        
+
         # Get recent matches
-        recent_matches = (IndividualMatch.query
-                         .order_by(IndividualMatch.created_at.desc())
-                         .limit(10)
-                         .all())
-        
+        recent_matches = (
+            IndividualMatch.query.order_by(IndividualMatch.created_at.desc())
+            .limit(10)
+            .all()
+        )
+
         # Get proposal counts
         proposal_counts = {}
         for status in ProposalStatus:
             count = MatchProposal.query.filter_by(status=status).count()
             proposal_counts[status.value] = count
-        
+
         # Get active locations
-        active_locations = (db.session.query(PlayerAvailability.location)
-                           .filter_by(is_available=True)
-                           .distinct()
-                           .all())
-        
+        active_locations = (
+            db.session.query(PlayerAvailability.location)
+            .filter_by(is_available=True)
+            .distinct()
+            .all()
+        )
+
         return {
             "status_counts": status_counts,
             "recent_matches": recent_matches,
             "proposal_counts": proposal_counts,
             "active_locations": [loc[0] for loc in active_locations],
-            "total_users_with_availability": PlayerAvailability.query.with_entities(PlayerAvailability.user_id).distinct().count()
+            "total_users_with_availability": PlayerAvailability.query.with_entities(
+                PlayerAvailability.user_id
+            )
+            .distinct()
+            .count(),
         }
-    
+
     @staticmethod
-    def get_user_matches(user_id: int, status_filter: Optional[MatchStatus] = None) -> List[IndividualMatch]:
+    def get_user_matches(
+        user_id: int, status_filter: Optional[MatchStatus] = None
+    ) -> List[IndividualMatch]:
         """Get individual matches for a user."""
         query = IndividualMatch.query.filter(
             db.or_(
                 IndividualMatch.player1_id == user_id,
-                IndividualMatch.player2_id == user_id
+                IndividualMatch.player2_id == user_id,
             )
         )
-        
+
         if status_filter:
             query = query.filter_by(status=status_filter)
-        
+
         return query.order_by(IndividualMatch.scheduled_at.desc()).all()
-    
+
     @staticmethod
     def start_match(match_id: int, user_id: int) -> IndividualMatch:
         """Start an individual match (must be one of the players)."""
-        match = IndividualMatch.query.get_or_404(match_id)
-        
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can start the match")
-        
+
         match.start_match()
         db.session.commit()
-        
+
         return match
-    
+
     @staticmethod
     def add_rack_result(match_id: int, winner_id: int, user_id: int) -> IndividualRack:
         """Add a rack result (must be one of the players)."""
-        match = IndividualMatch.query.get_or_404(match_id)
-        
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can add rack results")
-        
+
         rack = match.add_rack_result(winner_id)
         db.session.commit()
-        
+
         return rack
-    
+
     @staticmethod
     def complete_match(match_id: int, winner_id: int, user_id: int) -> IndividualMatch:
         """Complete a match (must be one of the players)."""
-        match = IndividualMatch.query.get_or_404(match_id)
-        
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can complete the match")
-        
+
         match.complete_match(winner_id)
         db.session.commit()
-        
+
         return match
-    
+
     @staticmethod
-    def cancel_match(match_id: int, user_id: int, reason: Optional[str] = None) -> IndividualMatch:
+    def cancel_match(
+        match_id: int, user_id: int, reason: Optional[str] = None
+    ) -> IndividualMatch:
         """Cancel a match (must be one of the players)."""
-        match = IndividualMatch.query.get_or_404(match_id)
-        
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can cancel the match")
-        
+
         match.cancel_match(reason)
         db.session.commit()
-        
+
         return match
-    
+
     @staticmethod
     def set_player_availability(
         user_id: int,
         location: str,
         is_available: bool = True,
         preferred_days: Optional[str] = None,
-        preferred_times: Optional[str] = None
+        preferred_times: Optional[str] = None,
     ) -> PlayerAvailability:
         """Set player availability for a location."""
-        
+
         availability = PlayerAvailability.query.filter_by(
-            user_id=user_id,
-            location=location
+            user_id=user_id, location=location
         ).first()
-        
+
         if availability:
             availability.is_available = is_available
             availability.preferred_days = preferred_days
@@ -523,78 +573,78 @@ class IndividualMatchService:
                 location=location,
                 is_available=is_available,
                 preferred_days=preferred_days,
-                preferred_times=preferred_times
+                preferred_times=preferred_times,
             )
             db.session.add(availability)
-        
+
         db.session.commit()
         return availability
-    
+
     @staticmethod
     def get_player_availability(user_id: int) -> List[PlayerAvailability]:
         """Get all availability settings for a player."""
         return PlayerAvailability.query.filter_by(user_id=user_id).all()
-    
+
     @staticmethod
-    def get_eligible_players_for_location(location: str, exclude_user_id: Optional[int] = None) -> List[User]:
+    def get_eligible_players_for_location(
+        location: str, exclude_user_id: Optional[int] = None
+    ) -> List[User]:
         """Get players available for matches at a specific location."""
         from ..user.models import User
-        
+
         # Players with explicit availability
-        available_users = (User.query
-                          .join(PlayerAvailability)
-                          .filter(
-                              PlayerAvailability.location == location,
-                              PlayerAvailability.is_available == True
-                          ))
-        
+        available_users = User.query.join(PlayerAvailability).filter(
+            PlayerAvailability.location == location,
+            PlayerAvailability.is_available == True,
+        )
+
         # Players who have played at this location before
-        experienced_users = (User.query
-                            .join(
-                                db.or_(
-                                    IndividualMatch.player1_id == User.id,
-                                    IndividualMatch.player2_id == User.id
-                                )
-                            )
-                            .filter(IndividualMatch.location == location))
-        
+        experienced_users = User.query.join(
+            db.or_(
+                IndividualMatch.player1_id == User.id,
+                IndividualMatch.player2_id == User.id,
+            )
+        ).filter(IndividualMatch.location == location)
+
         # Combine and deduplicate
         all_users = available_users.union(experienced_users)
-        
+
         if exclude_user_id:
             all_users = all_users.filter(User.id != exclude_user_id)
-        
+
         return all_users.all()
-    
+
     @staticmethod
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,
-            MatchProposal.expires_at <= datetime.utcnow()
+            MatchProposal.expires_at <= datetime.utcnow(),
         ).all()
-        
+
         count = 0
         for proposal in expired_proposals:
             proposal.expire()
             count += 1
-        
+
         db.session.commit()
         return count
-    
+
     @staticmethod
     def get_user_statistics(user_id: int) -> Dict[str, Any]:
         """Get individual match statistics for a user."""
-        matches = IndividualMatchService.get_user_matches(user_id, MatchStatus.COMPLETED)
-        
+        matches = IndividualMatchService.get_user_matches(
+            user_id, MatchStatus.COMPLETED
+        )
+
         total_matches = len(matches)
         won_matches = sum(1 for m in matches if m.winner_id == user_id)
         lost_matches = total_matches - won_matches
-        
+
         # Calculate rack statistics
         total_racks_won = sum(m.get_user_score(user_id) for m in matches)
         total_racks_played = sum(m.player1_score + m.player2_score for m in matches)
-        
+
         # Location statistics
         locations_played = {}
         for match in matches:
@@ -604,14 +654,18 @@ class IndividualMatchService:
             locations_played[loc]["matches"] += 1
             if match.winner_id == user_id:
                 locations_played[loc]["wins"] += 1
-        
+
         return {
             "total_matches": total_matches,
             "won_matches": won_matches,
             "lost_matches": lost_matches,
-            "win_percentage": (won_matches / total_matches * 100) if total_matches > 0 else 0,
+            "win_percentage": (won_matches / total_matches * 100)
+            if total_matches > 0
+            else 0,
             "total_racks_won": total_racks_won,
             "total_racks_played": total_racks_played,
-            "rack_win_percentage": (total_racks_won / total_racks_played * 100) if total_racks_played > 0 else 0,
-            "locations_played": locations_played
+            "rack_win_percentage": (total_racks_won / total_racks_played * 100)
+            if total_racks_played > 0
+            else 0,
+            "locations_played": locations_played,
         }

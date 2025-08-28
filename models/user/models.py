@@ -18,6 +18,7 @@ from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel  # BaseModel for timestamps
 from ..fields import EncryptedString  # Encrypted field types
+from .role_enum import UserRole
 
 if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
@@ -36,7 +37,9 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(EncryptedString(200), unique=True, nullable=True)  # Encrypted personal data
+    email = db.Column(
+        EncryptedString(200), unique=True, nullable=True
+    )  # Encrypted personal data
     password_hash = db.Column(db.String(120), nullable=False)
 
     role = db.Column(db.String(20), nullable=False, default="player")
@@ -88,15 +91,15 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # ───────────────────
     @property
     def is_admin(self) -> bool:
-        return self.role == "admin"
+        return self.role == UserRole.ADMIN.value
 
     @property
     def is_director(self) -> bool:
-        return self.role == "director"
+        return self.role == UserRole.DIRECTOR.value
 
     @property
     def is_player(self) -> bool:
-        return self.role == "player"
+        return self.role == UserRole.PLAYER.value
 
     # Flask-Login integration: utente attivo solo se non soft-deleted
     @property
@@ -272,6 +275,7 @@ class DirectorRequest(BaseModel):
         self.processed_by = admin
         # Get the user object and update role
         from sqlalchemy.orm import Session
+
         session = db.session
         user = session.get(User, self.user_id)
         if user:
