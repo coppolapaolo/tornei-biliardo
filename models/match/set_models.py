@@ -4,7 +4,6 @@ Set models for multi-set matches.
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from sqlalchemy import func
 
 from models.base import db, BaseModel, TimestampMixin
 

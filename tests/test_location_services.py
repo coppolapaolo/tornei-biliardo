@@ -17,7 +17,6 @@ class TestLocationService:
 
     def setup_method(self):
         """Set up test fixtures before each test method."""
-        pass
 
     def test_create_billiard_hall(self):
         """Test creating a billiard hall successfully."""
@@ -392,24 +391,16 @@ class TestLocationService:
                         )
 
                         # Verify database operations
-                        mock_db.session.get.assert_called_once_with(
-                            BilliardHall, 1
+                        mock_db.session.get.assert_called_once_with(BilliardHall, 1)
+                        mock_user_location_class.query.filter_by.assert_called_once_with(
+                            billiard_hall_id=1, is_available=True
                         )
-                        mock_user_location_class.query.filter_by.\
-                            assert_called_once_with(
-                                billiard_hall_id=1,
-                                is_available=True
-                            )
-                        mock_individual_match_class.query.filter_by.\
-                            assert_called_once_with(
-                                location="Test Hall"
-                            )
-                        mock_location_review_class.query.filter_by.\
-                            assert_called_once_with(
-                                billiard_hall_id=1,
-                                is_approved=True,
-                                is_hidden=False
-                            )
+                        mock_individual_match_class.query.filter_by.assert_called_once_with(
+                            location="Test Hall"
+                        )
+                        mock_location_review_class.query.filter_by.assert_called_once_with(
+                            billiard_hall_id=1, is_approved=True, is_hidden=False
+                        )
 
                         # Verify the result
                         assert result["billiard_hall"] == mock_hall

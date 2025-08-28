@@ -180,7 +180,7 @@ class RackService:
         next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
 
         # Crea il rack
-        rack = RackService.add_rack_result(
+        RackService.add_rack_result(
             match_id=match.id,
             rack_number=next_rack_number,
             winner_id=winner_id,

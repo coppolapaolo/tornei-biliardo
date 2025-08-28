@@ -57,8 +57,9 @@ def execute_competition_routes():
                 mock_inscription.query.filter_by.return_value.all.return_value = []
 
                 mock_match = MagicMock()
-                mock_match.query.filter_by.return_value.order_by.return_value.all.\
-                    return_value = []
+                mock_match.query.filter_by.return_value.order_by.return_value.all.return_value = (
+                    []
+                )
 
                 mock_prova_service = MagicMock()
 
@@ -98,42 +99,31 @@ def execute_competition_routes():
                         functions_to_execute = [
                             (
                                 "create_prova_standalone",
-                                lambda: routes.admin.competition.
-                                create_prova_standalone(),
+                                lambda: routes.admin.competition.create_prova_standalone(),
                             ),
                             (
                                 "create_prova",
-                                lambda: routes.admin.competition.
-                                create_prova(),
+                                lambda: routes.admin.competition.create_prova(),
                             ),
                             (
                                 "edit_prova",
-                                lambda: routes.admin.competition.
-                                edit_prova(1),
+                                lambda: routes.admin.competition.edit_prova(1),
                             ),
                             (
                                 "delete_prova",
-                                lambda: routes.admin.competition.
-                                delete_prova(1),
+                                lambda: routes.admin.competition.delete_prova(1),
                             ),
                             (
                                 "prova_detail",
-                                lambda: routes.admin.competition.
-                                prova_detail(1),
+                                lambda: routes.admin.competition.prova_detail(1),
                             ),
                             (
                                 "open_inscriptions",
-                                lambda: (
-                                    routes.admin.competition.
-                                    open_inscriptions(1)
-                                ),
+                                lambda: (routes.admin.competition.open_inscriptions(1)),
                             ),
                             (
                                 "start_first_round",
-                                lambda: (
-                                    routes.admin.competition.
-                                    start_first_round(1)
-                                ),
+                                lambda: (routes.admin.competition.start_first_round(1)),
                             ),
                         ]
 
@@ -152,34 +142,29 @@ def execute_competition_routes():
                         additional_functions = [
                             (
                                 "prova_results_overview",
-                                lambda: routes.admin.competition.
-                                prova_results_overview(1),
+                                lambda: routes.admin.competition.prova_results_overview(
+                                    1
+                                ),
                             ),
                             (
                                 "amalfi_classification",
-                                lambda: routes.admin.competition.
-                                amalfi_classification(1, 1),
+                                lambda: routes.admin.competition.amalfi_classification(
+                                    1, 1
+                                ),
                             ),
                             (
                                 "amalfi_start_round",
                                 lambda: (
-                                    routes.admin.competition.
-                                    amalfi_start_round(1, 1)
+                                    routes.admin.competition.amalfi_start_round(1, 1)
                                 ),
                             ),
                             (
                                 "trio_add_rack",
-                                lambda: (
-                                    routes.admin.competition.
-                                    trio_add_rack(1)
-                                ),
+                                lambda: (routes.admin.competition.trio_add_rack(1)),
                             ),
                             (
                                 "trio_reset",
-                                lambda: (
-                                    routes.admin.competition.
-                                    trio_reset(1)
-                                ),
+                                lambda: (routes.admin.competition.trio_reset(1)),
                             ),
                         ]
 

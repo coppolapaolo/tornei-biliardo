@@ -13,7 +13,6 @@ from flask import (
     flash,
     jsonify,
     abort,
-    current_app,
 )
 from flask_login import login_required, current_user
 
@@ -28,7 +27,6 @@ from utils import (
     challenge_attempt_player_required,
 )
 from models.challenge.services import ChallengeService
-from sqlalchemy import desc
 
 # Blueprint initialization
 challenge_bp = Blueprint("challenge", __name__)

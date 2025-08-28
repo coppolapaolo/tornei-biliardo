@@ -6,9 +6,8 @@ Dependencies: models.base.db, datetime
 """
 
 from datetime import datetime
-from typing import Optional, Dict, Any, TYPE_CHECKING, List
+from typing import Optional, Dict, Any, TYPE_CHECKING
 from models.base import db
-from sqlalchemy.orm import relationship
 
 if TYPE_CHECKING:
     from .set_models import Set
@@ -503,7 +502,6 @@ class TrioMatch(db.Model):
             self.is_completed = True
             # Aggiorna anche il match associato
             # Query the match directly to avoid relationship property issues
-            from typing import cast
 
             match_obj = db.session.get(Match, self.match_id)
             if match_obj:

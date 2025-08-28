@@ -225,9 +225,7 @@ class TestTransactionManagement:
                 db_session.flush()  # Force ID assignment
 
                 try:
-                    with transaction_manager.transaction(
-                        savepoint_name="inner"
-                    ):
+                    with transaction_manager.transaction(savepoint_name="inner"):
                         # Create user in inner transaction
                         user2 = User(
                             username="inner", email="inner@test.com", role="player"

@@ -22,7 +22,6 @@ from .models import (
     ProposalType,
     ProposalStatus,
     MatchStatus,
-    InvitationStatus,
 )
 
 
@@ -595,7 +594,7 @@ class IndividualMatchService:
         # Players with explicit availability
         available_users = User.query.join(PlayerAvailability).filter(
             PlayerAvailability.location == location,
-            PlayerAvailability.is_available == True,
+            PlayerAvailability.is_available.is_(True),
         )
 
         # Players who have played at this location before

@@ -12,8 +12,6 @@ from datetime import datetime, time
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 
-from sqlalchemy import func
-from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel, TimestampMixin
 
@@ -158,7 +156,7 @@ class BilliardHall(BaseModel, TimestampMixin):
 
         query = User.query.join(UserLocationAvailability).filter(
             UserLocationAvailability.billiard_hall_id == self.id,
-            UserLocationAvailability.is_available == True,
+            UserLocationAvailability.is_available.is_(True),
         )
 
         # Get all available users first, then filter by day in application code if needed

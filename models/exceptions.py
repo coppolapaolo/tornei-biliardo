@@ -9,4 +9,3 @@ class InvalidTransitionError(ValueError):
     that is not allowed by the business rules.
     """
 
-    pass

@@ -1,21 +1,14 @@
 # routes/admin/user.py
 """User management blueprint for admin interface."""
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required
-from sqlalchemy import func, desc, case
+from flask import Blueprint, render_template, redirect, url_for, flash
 
 from models import (
     User,
-    Inscription,
-    Match,
-    Prova,
-    Tournament,
-    Classification,
     DirectorRequest,
 )
 from utils import admin_required
-from models.status_enum import DirectorRequestStatus, MatchStatus
+from models.status_enum import DirectorRequestStatus
 from models.user.services import UserService
 
 # Initialize the UserService

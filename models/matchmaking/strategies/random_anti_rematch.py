@@ -12,7 +12,7 @@ from typing import Sequence, List, Tuple, Optional, Set, TYPE_CHECKING
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
-    from ...competition.models import Prova, Inscription
+    pass
 
 
 class RandomAntiRematchStrategy(PairingStrategy):
@@ -297,4 +297,3 @@ class RandomAntiRematchStrategy(PairingStrategy):
 class RandomAntiRematchPairingStrategy(RandomAntiRematchStrategy):
     """Alias for compatibility with existing strategy registry."""
 
-    pass

@@ -6,13 +6,12 @@ Requirements: SPECIFICHE.md - Round Robin tournament format
 
 from __future__ import annotations
 
-import itertools
 from typing import Sequence, List, Tuple, Optional, TYPE_CHECKING
 
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
-    from models.competition.models import Prova
+    pass
 
 
 class RoundRobinStrategy(PairingStrategy):
@@ -171,4 +170,3 @@ class RoundRobinStrategy(PairingStrategy):
 class RoundRobinPairingStrategy(RoundRobinStrategy):
     """Alias for compatibility with existing strategy registry."""
 
-    pass

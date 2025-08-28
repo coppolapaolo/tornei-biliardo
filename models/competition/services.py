@@ -300,7 +300,7 @@ class ProvaService:
                 raise ValueError(f"Prova {prova_id} non trovata")
 
             # Usa il binding Amalfi esistente
-            results = create_amalfi_round_matches(prova, round_number)
+            create_amalfi_round_matches(prova, round_number)
 
             # Conta i risultati
             matches = (

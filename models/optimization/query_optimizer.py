@@ -6,23 +6,19 @@ Requirements: Implement query analysis, N+1 detection, and optimization strategi
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Set, Callable, Union, TypeVar
+from typing import Any, Dict, List, Optional, Set, Callable, TypeVar
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import wraps
-from collections import defaultdict, Counter
 import logging
 import time
 import threading
 from contextlib import contextmanager
-from sqlalchemy import event, text
+from sqlalchemy import event
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Query, Session
-from sqlalchemy.orm.events import InstanceEvents
-from sqlalchemy.pool import Pool
+from sqlalchemy.orm import Query
 
-from ..base import db
-from ..caching import cache_manager, cached
+from ..caching import cache_manager
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -591,7 +587,7 @@ def bulk_load_relationships(query: Query, *relationships) -> Query:
             User.orders
         )
     """
-    from sqlalchemy.orm import joinedload, selectinload
+    from sqlalchemy.orm import selectinload
     from sqlalchemy.orm.attributes import InstrumentedAttribute
 
     for relationship in relationships:

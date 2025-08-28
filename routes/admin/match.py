@@ -22,8 +22,7 @@ from utils import (
     match_manager_required,
     rack_manager_required,
 )
-from models.match.services import MatchService, RackService, MatchResultService
-from models.status_enum import MatchStatus
+from models.match.services import RackService
 
 # Match management blueprint
 match_bp = Blueprint("match", __name__)

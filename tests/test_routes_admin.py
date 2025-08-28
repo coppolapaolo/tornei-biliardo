@@ -3,6 +3,7 @@ Test module for routes/admin.py
 """
 
 import pytest
+
 # No mocks needed for this test
 
 # Import the admin blueprint

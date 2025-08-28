@@ -20,7 +20,6 @@ The original file has been backed up to routes/admin_backup.py
 """
 
 # Import the new blueprint structure
-from routes.admin import admin_bp
 
 # The admin_bp blueprint is now available for registration in the main app
 # All existing URLs are preserved through the new blueprint architecture:

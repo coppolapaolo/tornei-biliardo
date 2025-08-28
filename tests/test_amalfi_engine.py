@@ -72,12 +72,10 @@ class TestUtilityFunctions:
     def test_get_amalfi_classification(self, mock_db):
         """Test get_amalfi_classification function."""
         # Setup mock
-        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = (  # noqa: E501
-            [
-                "classification1",
-                "classification2",
-            ]
-        )
+        mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = [  # noqa: E501
+            "classification1",
+            "classification2",
+        ]
 
         # Call function
         result = get_amalfi_classification(1, 1)

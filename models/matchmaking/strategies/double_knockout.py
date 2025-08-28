@@ -7,7 +7,7 @@ Requirements: SPECIFICHE.md - Double knockout tournament format
 from __future__ import annotations
 
 import math
-from typing import Sequence, List, Tuple, Optional, Dict, TYPE_CHECKING, Any
+from typing import Sequence, List, Optional, Dict, TYPE_CHECKING, Any
 
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
@@ -291,7 +291,6 @@ class DoubleKnockoutStrategy(PairingStrategy):
             return []
 
         # Get recent losers from winners bracket
-        from ...match.models import Match
 
         recent_losers = self._get_recent_winners_bracket_losers(prova, round_number)
 
@@ -406,4 +405,3 @@ class DoubleKnockoutStrategy(PairingStrategy):
 class DoubleKnockoutPairingStrategy(DoubleKnockoutStrategy):
     """Alias for compatibility with existing strategy registry."""
 
-    pass

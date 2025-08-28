@@ -8,15 +8,14 @@ Data Structures: Challenge, ChallengeAttempt, ChallengeFavorite
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
-from sqlalchemy import func, desc
-from sqlalchemy.orm import backref
+from sqlalchemy import desc
 
 from ..base import db, BaseModel, TimestampMixin
 
 if TYPE_CHECKING:
-    from ..user.models import User
+    pass
 
 
 class Challenge(BaseModel, TimestampMixin):

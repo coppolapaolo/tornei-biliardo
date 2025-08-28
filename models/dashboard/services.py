@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, List, Optional, Iterable, Tuple
 from datetime import date as date_cls
 
-from sqlalchemy import or_, select, text
+from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
 from models.base import db
@@ -13,7 +13,7 @@ from models.tournament.models import Tournament, TournamentDirector
 from models.competition.models import Prova, Inscription
 from models.match.models import Match as TournamentMatch
 from models.user.models import User
-from models.status_enum import ProvaStatus, MatchStatus
+from models.status_enum import ProvaStatus
 
 
 # -----------------------
@@ -386,7 +386,6 @@ class DashboardService:
         )
 
         # Calculate match opportunities (open proposals in user's locations)
-        from ..location.models import BilliardHall
         from ..individual_match.models import PlayerAvailability
 
         user_locations = {
@@ -399,7 +398,7 @@ class DashboardService:
         # Also include locations where user has played before
         played_locations = {match.location for match in recent_individual_matches}
 
-        eligible_locations = user_locations.union(played_locations)
+        user_locations.union(played_locations)
 
         # Get opportunities - open proposals in eligible locations
         opportunities = proposals.get("available", [])

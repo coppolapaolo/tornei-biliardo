@@ -6,22 +6,17 @@ Requirements: Coordinate operations across User, Tournament, Competition, Match,
 
 from __future__ import annotations
 
-from typing import Dict, Any, List, Optional, Type
-from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional
+from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
 import logging
 
-from ..base import db
 from ..user.services import UserService
 from ..tournament.services import TournamentService
 from ..competition.services import ProvaService
-from ..match.services import MatchService
-from ..classification.services import ClassificationService
 from ..matchmaking.service import MatchmakingService
-from ..rating.services import RatingService, CategoryService, HandicapService
-from ..challenge.services import ChallengeService
-from ..individual_match.services import IndividualMatchService
+from ..rating.services import CategoryService
 
 # Setup logging
 logger = logging.getLogger(__name__)

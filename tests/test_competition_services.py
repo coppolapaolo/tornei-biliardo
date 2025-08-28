@@ -4,7 +4,7 @@ Test module for models/competition/services.py
 
 import pytest
 from unittest.mock import Mock, patch
-from datetime import datetime, date
+from datetime import date
 from models.competition.services import (
     ProvaService,
     ProvaStateMachine,
@@ -232,7 +232,7 @@ class TestProvaService:
     def test_update_prova_with_date_str(self):
         """Test updating a prova with date string."""
         from datetime import datetime
-        
+
         mock_prova = Mock()
         mock_prova.can_be_modified.return_value = True
 
@@ -275,8 +275,8 @@ class TestProvaService:
 
     def test_modify_inscription_dates_success_reopen_setup(self):
         """Test modifying inscription dates successfully - reopen setup path."""
-        from datetime import datetime, timedelta
-        
+        from datetime import datetime
+
         mock_prova = Mock()
         mock_prova.can_modify_inscription_dates.return_value = True
         start_date = datetime(2023, 1, 1)
@@ -290,10 +290,16 @@ class TestProvaService:
             ) as mock_reopen_setup:
                 # Mock datetime.utcnow to be before start_date
                 with patch("models.competition.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(2022, 12, 15)  # Before start
-                    mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
-                    
-                    result = ProvaService.modify_inscription_dates(1, start_date, end_date)
+                    mock_datetime.utcnow.return_value = datetime(
+                        2022, 12, 15
+                    )  # Before start
+                    mock_datetime.side_effect = lambda *args, **kw: datetime(
+                        *args, **kw
+                    )
+
+                    result = ProvaService.modify_inscription_dates(
+                        1, start_date, end_date
+                    )
 
                     # Verify database operation
                     mock_db.session.get.assert_called_once_with(Prova, 1)
@@ -311,7 +317,7 @@ class TestProvaService:
     def test_modify_inscription_dates_success_to_inscription(self):
         """Test modifying inscription dates successfully - to inscription path."""
         from datetime import datetime
-        
+
         mock_prova = Mock()
         mock_prova.can_modify_inscription_dates.return_value = True
         start_date = datetime(2023, 1, 1)
@@ -325,10 +331,16 @@ class TestProvaService:
             ) as mock_to_inscription:
                 # Mock datetime.utcnow to be between start and end dates
                 with patch("models.competition.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(2023, 1, 15)  # Between start and end
-                    mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
-                    
-                    result = ProvaService.modify_inscription_dates(1, start_date, end_date)
+                    mock_datetime.utcnow.return_value = datetime(
+                        2023, 1, 15
+                    )  # Between start and end
+                    mock_datetime.side_effect = lambda *args, **kw: datetime(
+                        *args, **kw
+                    )
+
+                    result = ProvaService.modify_inscription_dates(
+                        1, start_date, end_date
+                    )
 
                     # Verify database operation
                     mock_db.session.get.assert_called_once_with(Prova, 1)
@@ -346,7 +358,7 @@ class TestProvaService:
     def test_modify_inscription_dates_cannot_modify(self):
         """Test modifying inscription dates when not allowed."""
         from datetime import datetime
-        
+
         mock_prova = Mock()
         mock_prova.can_modify_inscription_dates.return_value = False  # Cannot modify
         start_date = datetime(2023, 1, 1)
@@ -356,15 +368,13 @@ class TestProvaService:
             mock_db.session.get.return_value = mock_prova
 
             # Should raise ValueError
-            with pytest.raises(
-                ValueError, match="Impossibile modificare le date"
-            ):
+            with pytest.raises(ValueError, match="Impossibile modificare le date"):
                 ProvaService.modify_inscription_dates(1, start_date, end_date)
 
     def test_modify_inscription_dates_not_found(self):
         """Test modifying inscription dates when prova not found."""
         from datetime import datetime
-        
+
         start_date = datetime(2023, 1, 1)
         end_date = datetime(2023, 1, 31)
 
@@ -377,20 +387,18 @@ class TestProvaService:
 
     def test_start_first_round_success(self):
         """Test starting first round successfully."""
-        from datetime import datetime
-        from unittest.mock import MagicMock
-        
+
         mock_prova = Mock()
         mock_prova.current_round = 0
         mock_prova.min_participants = 2
-        
+
         mock_inscription1 = Mock()
         mock_inscription2 = Mock()
         mock_inscriptions = [mock_inscription1, mock_inscription2]
 
         with patch("models.competition.services.db") as mock_db:
             mock_db.session.get.return_value = mock_prova
-            
+
             # Mock the query for inscriptions
             mock_query = Mock()
             mock_query.all.return_value = mock_inscriptions
@@ -409,10 +417,13 @@ class TestProvaService:
 
                     # Verify inscriptions were ordered (we can't verify shuffling easily in tests)
                     # But we can verify that initial_order was set for each inscription
-                    assert hasattr(mock_inscription1, 'initial_order')
-                    assert hasattr(mock_inscription2, 'initial_order')
+                    assert hasattr(mock_inscription1, "initial_order")
+                    assert hasattr(mock_inscription2, "initial_order")
                     # The initial_order values should be 1 and 2 (in some order)
-                    initial_orders = [mock_inscription1.initial_order, mock_inscription2.initial_order]
+                    initial_orders = [
+                        mock_inscription1.initial_order,
+                        mock_inscription2.initial_order,
+                    ]
                     assert sorted(initial_orders) == [1, 2]
 
                     # Verify create_round_matches was called
@@ -451,12 +462,12 @@ class TestProvaService:
         mock_prova = Mock()
         mock_prova.current_round = 0
         mock_prova.min_participants = 3  # Need 3 participants
-        
+
         mock_inscription = Mock()  # Only 1 inscription
 
         with patch("models.competition.services.db") as mock_db:
             mock_db.session.get.return_value = mock_prova
-            
+
             # Mock the query for inscriptions
             mock_query = Mock()
             mock_query.all.return_value = [mock_inscription]  # Only 1 inscription

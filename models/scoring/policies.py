@@ -25,7 +25,6 @@ class ScoringPolicy(ABC):
         Returns:
             List of tuples (player, score) sorted by ranking criteria
         """
-        pass
 
     @abstractmethod
     def get_ranking_criteria(self) -> List[str]:
@@ -34,4 +33,3 @@ class ScoringPolicy(ABC):
         Returns:
             List of ranking criteria names in order of priority
         """
-        pass

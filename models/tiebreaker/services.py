@@ -6,9 +6,8 @@ Requirements: SPECIFICHE.md - Tiebreaker system management
 
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional, cast
+from typing import Dict, Any, Optional, cast
 from datetime import datetime
-from sqlalchemy import true, false
 
 from ..base import db
 from .models import (

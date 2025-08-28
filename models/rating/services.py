@@ -6,7 +6,7 @@ Requirements: SPECIFICHE.md - Handicap system management
 
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from ..base import db
@@ -127,7 +127,7 @@ class RatingService:
                 PlayerCategory,
                 db.and_(
                     PlayerCategory.user_id == PlayerRating.user_id,
-                    PlayerCategory.is_active == True,
+                    PlayerCategory.is_active.is_(True),
                 ),
             )
             .filter(PlayerCategory.id.is_(None))

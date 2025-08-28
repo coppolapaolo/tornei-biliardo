@@ -1,12 +1,10 @@
 from __future__ import annotations
-from typing import Sequence, Dict, Any, List, Optional, Tuple
+from typing import Sequence, Dict, Any, List, Optional
 from dataclasses import dataclass
-from datetime import datetime
 
 from .base import BaseStrategy, Pairing, ValidationResult
 from models.competition.models import Prova
 from models.challenge.models import Challenge
-from models.user.models import User
 from models.classification.models import RoundClassification
 from models.matchmaking.strategies.amalfi_adapter import AmalfiStrategy
 
@@ -329,14 +327,12 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     ) -> None:
         """Record challenge assignment for X replacement."""
         # This would typically update some tracking system
-        pass
 
     def _record_individual_match_intention(
         self, prova: Prova, pairing: Pairing, round_number: int
     ) -> None:
         """Record intention to create individual match for X replacement."""
         # This would typically update some tracking system
-        pass
 
     def _postprocess_pairings(
         self, pairings: Sequence[Pairing], prova: object, round_number: int

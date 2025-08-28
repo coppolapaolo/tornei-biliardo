@@ -7,7 +7,7 @@ Requirements: SPECIFICHE.md - Playoff management and qualification system
 from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from ..base import db
 from .models import (
@@ -216,7 +216,7 @@ class PlayoffService:
 
         configurations = PlayoffConfiguration.query.filter(
             PlayoffConfiguration.response_deadline <= datetime.utcnow(),
-            PlayoffConfiguration.is_active == True,
+            PlayoffConfiguration.is_active.is_(True),
         ).all()
 
         for config in configurations:

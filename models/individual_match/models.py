@@ -7,12 +7,11 @@ Data Structures: IndividualMatch, MatchProposal, PlayerAvailability
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from datetime import datetime
+from typing import List, Optional, TYPE_CHECKING
 from enum import Enum
 
 from sqlalchemy import func
-from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel, TimestampMixin
 

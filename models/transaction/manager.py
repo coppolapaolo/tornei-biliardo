@@ -6,7 +6,7 @@ Requirements: Ensure data consistency and proper transaction boundaries across d
 
 from __future__ import annotations
 
-from typing import Optional, Any, Dict, List, Callable, TypeVar, Generic
+from typing import Optional, Any, Dict, List, Callable, TypeVar
 from contextlib import contextmanager
 from functools import wraps
 from dataclasses import dataclass
@@ -275,7 +275,7 @@ class TransactionManager:
             context.status = TransactionStatus.ROLLED_BACK
             raise
 
-        except:
+        except Exception:
             # Handle unexpected errors
             context.status = TransactionStatus.FAILED
             try:

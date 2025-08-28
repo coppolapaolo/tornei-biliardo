@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Protocol, Sequence, Tuple, Dict, Any, Optional, List
+from typing import Sequence, Tuple, Dict, Any, Optional, List
 from datetime import datetime
 
 
@@ -179,7 +179,7 @@ class BaseStrategy(PairingStrategy):
         errors.extend(strategy_validation.get("errors", []))
         warnings.extend(strategy_validation.get("warnings", []))
 
-        validation_time = (datetime.utcnow() - validation_start).total_seconds() * 1000
+        (datetime.utcnow() - validation_start).total_seconds() * 1000
 
         if errors:
             return ValidationResult.failure(errors, warnings)
@@ -259,7 +259,6 @@ class BaseStrategy(PairingStrategy):
         preview_mode: bool = True,
     ) -> Sequence[Pairing]:
         """Generate the actual pairings (strategy-specific logic)."""
-        pass
 
     def _validate_strategy_specific(self, prova: object) -> Dict[str, List[str]]:
         """Override for strategy-specific validation."""
@@ -285,7 +284,6 @@ class BaseStrategy(PairingStrategy):
         self, pairings: Sequence[Pairing], prova: object, round_number: int
     ) -> None:
         """Override for strategy-specific side effects (e.g., updating classification)."""
-        pass
 
     # Helper methods
 

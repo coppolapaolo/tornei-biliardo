@@ -36,8 +36,9 @@ class TestMainRoutes:
         # Mock date.today()
         mock_date.today.return_value = date(2023, 1, 1)
 
-        mock_tournament.query.filter_by.return_value.order_by.return_value.\
-            all.return_value = []
+        mock_tournament.query.filter_by.return_value.order_by.return_value.all.return_value = (
+            []
+        )
 
         response = client.get("/")
         assert response.status_code == 200
@@ -145,8 +146,9 @@ class TestMainRoutes:
         mock_tournament_obj = MagicMock()
         mock_tournament_obj.id = 1
         mock_tournament_obj.name = "Test Tournament"
-        mock_tournament.query.filter_by.return_value.order_by.return_value.\
-            all.return_value = [mock_tournament_obj]
+        mock_tournament.query.filter_by.return_value.order_by.return_value.all.return_value = [
+            mock_tournament_obj
+        ]
 
         # Create mock prova with proper attributes
         mock_prova_obj = MagicMock()
@@ -155,8 +157,9 @@ class TestMainRoutes:
 
         # Create a mock query object that will handle the filter method properly
         mock_filtered_query = MagicMock()
-        mock_filtered_query.order_by.return_value.limit.return_value.\
-            all.return_value = [mock_prova_obj]
+        mock_filtered_query.order_by.return_value.limit.return_value.all.return_value = [
+            mock_prova_obj
+        ]
 
         # Patch the filter method to return our mock query object
         # We need to mock the filter method to avoid the comparison issue
@@ -174,8 +177,9 @@ class TestMainRoutes:
 
         # Create a mock query object for classification
         mock_classification_filtered_query = MagicMock()
-        mock_classification_filtered_query.order_by.return_value.limit.return_value.\
-            all.return_value = [mock_classification_obj]
+        mock_classification_filtered_query.order_by.return_value.limit.return_value.all.return_value = [
+            mock_classification_obj
+        ]
 
         # Patch the classification filter method to return our mock query object
         mock_classification.query.filter.return_value = (

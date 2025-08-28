@@ -2,7 +2,6 @@
 """Dashboard management blueprint for admin interface."""
 
 from flask import Blueprint, redirect, url_for
-from flask_login import login_required
 
 from utils import admin_required
 

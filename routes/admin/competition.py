@@ -10,7 +10,6 @@ from flask import (
     flash,
     jsonify,
     abort,
-    current_app,
 )
 from flask_login import login_required, current_user
 from datetime import datetime
@@ -21,7 +20,6 @@ from models import (
     Prova,
     Inscription,
     Match,
-    User,
 )
 from models.status_enum import (
     ProvaStatus,
@@ -30,13 +28,10 @@ from models.status_enum import (
 from models.competition.models import WithdrawPolicy
 from utils import (
     prova_manager_required,
-    tournament_manager_required,
     admin_required,
     trio_manager_required,
 )
 from models.competition.services import ProvaService
-from models.match.services import MatchService
-from models.matchmaking.service import MatchmakingService
 from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
 from models.classification.models import RoundClassification
 

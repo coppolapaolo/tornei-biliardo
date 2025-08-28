@@ -9,10 +9,10 @@ from datetime import datetime
 from models.base import db
 from enum import Enum
 from models.status_enum import ProvaStatus, MatchStatus
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from models.match.models import Match
+    pass
 
 
 class WithdrawPolicy(str, Enum):

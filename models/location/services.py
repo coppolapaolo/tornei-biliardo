@@ -6,8 +6,8 @@ Requirements: SPECIFICHE.md - Location-based match organization
 
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any, Tuple
-from datetime import datetime, time
+from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 from ..base import db
 from .models import BilliardHall, UserLocationAvailability, LocationReview, DayOfWeek
@@ -140,7 +140,7 @@ class LocationService:
         availabilities = (
             UserLocationAvailability.query.filter_by(user_id=user_id, is_available=True)
             .join(BilliardHall)
-            .filter(BilliardHall.is_active == True)
+            .filter(BilliardHall.is_active.is_(True))
             .all()
         )
 
@@ -168,7 +168,7 @@ class LocationService:
                 billiard_hall_id=billiard_hall_id, is_available=True
             )
             .join(BilliardHall)
-            .filter(BilliardHall.is_active == True)
+            .filter(BilliardHall.is_active.is_(True))
             .all()
         )
 
@@ -459,7 +459,7 @@ class LocationService:
         """Search billiard halls by name or location."""
 
         search_query = BilliardHall.query.filter(
-            BilliardHall.is_active == True,
+            BilliardHall.is_active.is_(True),
             db.or_(
                 BilliardHall.name.ilike(f"%{query}%"),
                 BilliardHall.address.ilike(f"%{query}%"),

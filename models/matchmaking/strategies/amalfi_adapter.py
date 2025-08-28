@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Sequence, Callable, cast, Optional, Dict, Any, List
+from typing import Sequence, Callable, cast, Dict, Any
 
-from .base import BaseStrategy, Pairing, ValidationResult, StrategyMetrics
+from .base import BaseStrategy, Pairing, ValidationResult
 from models.competition.models import Prova
 
 from amalfi.engine import AmalfiEngine

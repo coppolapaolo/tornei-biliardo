@@ -9,16 +9,14 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 from enum import Enum
 
-from sqlalchemy import func
-from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel, TimestampMixin
 
 if TYPE_CHECKING:
-    from ..user.models import User
+    pass
 
 
 class NotificationType(Enum):

@@ -4,7 +4,7 @@ Purpose: Service for managing multi-discipline match configurations
 Requirements: SPECIFICHE.md - Multi-discipline support within matches
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from ..base import db
 from .models import Match
 from .set_models import Set

@@ -7,7 +7,7 @@ Requirements: SPECIFICHE.md - Direct elimination tournament format
 from __future__ import annotations
 
 import math
-from typing import Sequence, List, Tuple, Optional, TYPE_CHECKING, cast
+from typing import Sequence, List, Optional, TYPE_CHECKING, cast
 
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
@@ -236,4 +236,3 @@ class DirectEliminationStrategy(PairingStrategy):
 class DirectEliminationPairingStrategy(DirectEliminationStrategy):
     """Alias for compatibility with existing strategy registry."""
 
-    pass

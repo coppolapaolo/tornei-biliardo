@@ -6,17 +6,15 @@ Requirements: Implement multi-level caching with TTL, LRU, and intelligent inval
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, List, Callable, Union, TypeVar, Generic
+from typing import Any, Dict, Optional, List, Callable, TypeVar
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from functools import wraps, lru_cache
+from datetime import datetime
+from functools import wraps
 from threading import RLock
 import hashlib
 import json
 import logging
-import time
-import weakref
 from collections import OrderedDict
 from enum import Enum
 
@@ -103,27 +101,22 @@ class CacheBackend(ABC):
     @abstractmethod
     def get(self, key: str) -> Optional[CacheEntry]:
         """Get cache entry by key."""
-        pass
 
     @abstractmethod
     def set(self, entry: CacheEntry) -> bool:
         """Set cache entry."""
-        pass
 
     @abstractmethod
     def delete(self, key: str) -> bool:
         """Delete cache entry by key."""
-        pass
 
     @abstractmethod
     def clear(self) -> None:
         """Clear all cache entries."""
-        pass
 
     @abstractmethod
     def get_stats(self) -> CacheStats:
         """Get cache statistics."""
-        pass
 
     def invalidate_by_tags(self, tags: List[str]) -> int:
         """Invalidate entries by tags. Default implementation does nothing."""
@@ -276,7 +269,7 @@ class MemoryCacheBackend(CacheBackend):
             else:
                 # Rough estimate for complex objects
                 return len(str(value))
-        except:
+        except Exception:
             return 100  # Default estimate
 
 

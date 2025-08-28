@@ -3,14 +3,11 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
-from sqlalchemy import not_
 from sqlalchemy.exc import IntegrityError
 
 from models import (
     db,
     Tournament,
-    Prova,
-    User,
 )
 from utils import (
     tournament_manager_required,

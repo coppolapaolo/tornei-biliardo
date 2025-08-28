@@ -7,7 +7,6 @@ Requirements: SPECIFICHE.md - Exam management and grading
 from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
-from datetime import datetime
 from sqlalchemy import text
 
 from ..base import db
@@ -277,13 +276,6 @@ class ExamService:
     @staticmethod
     def can_user_take_exam(user_id: int, exam_id: int) -> bool:
         """Check if a user can take an exam (no recent completed attempts)."""
-        recent_attempt = (
-            ExamAttempt.query.filter_by(
-                user_id=user_id, exam_id=exam_id, completed=True
-            )
-            .order_by(text("completed_at DESC"))
-            .first()
-        )
-
+        # Check if user can take exam (allow retakes for now)
         # For now, allow retakes (could add time restrictions later)
         return True

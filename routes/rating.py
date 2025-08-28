@@ -9,8 +9,6 @@ from flask_login import login_required, current_user
 
 from models.rating.services import RatingService, CategoryService, HandicapService
 from models.rating.models import (
-    PlayerCategory,
-    PlayerRating,
     RatingSystem,
     CategoryLevel,
 )

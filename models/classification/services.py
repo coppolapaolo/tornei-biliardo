@@ -8,7 +8,7 @@ Enhanced: Phase 3.4 - Performance Optimization
 """
 
 from typing import List, Tuple, Optional, Dict, Any
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import joinedload
 from models.base import db
 from .models import Classification, RoundClassification, PlayerEncounter
 from models.competition.models import Inscription
@@ -55,7 +55,6 @@ class ClassificationService:
             List of updated Classification objects
         """
         from models.competition.models import Prova
-        from models.match.models import Match
         from models.tournament.models import Tournament
 
         # Get tournament to determine scoring policy

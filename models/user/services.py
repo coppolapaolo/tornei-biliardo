@@ -19,21 +19,19 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.engine.row import Row
 from sqlalchemy import func, desc, or_
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Query
+from datetime import datetime
 
 from ..base import db
-from .models import User, TournamentDirector, DirectorRequest
+from .models import User, DirectorRequest
 from ..transaction.manager import (
     DomainService,
     transactional,
     read_only,
-    transaction_manager,
 )
 
 from models.match import Match
 from models.competition.models import Prova, Inscription
-from models.status_enum import MatchStatus, DirectorRequestStatus
+from models.status_enum import MatchStatus
 from models.user.role_enum import UserRole
 from models.classification.models import Classification
 from models.tournament.models import Tournament

@@ -7,7 +7,6 @@ Requirements: SPECIFICHE.md - Challenge management and statistics
 from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
-from datetime import datetime
 from sqlalchemy import desc
 
 from ..base import db

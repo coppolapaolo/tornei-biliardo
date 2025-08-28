@@ -6,13 +6,12 @@ Dependencies: models.base.db, models.user.models
 """
 
 from datetime import datetime
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from models.base import db
 from models.user.models import User, TournamentDirector
 
 if TYPE_CHECKING:
-    from models.competition.models import Prova
-    from models.playoff.models import PlayoffConfiguration
+    pass
 
 
 class Tournament(db.Model):

@@ -12,16 +12,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 
-from sqlalchemy import func
-from sqlalchemy.orm import backref
-from sqlalchemy.sql import or_
 
 from ..base import db, BaseModel, TimestampMixin
 
 if TYPE_CHECKING:
-    from ..user.models import User
-    from ..tournament.models import Tournament
-    from ..competition.models import Prova
     from ..classification.models import Classification
 
 
@@ -109,7 +103,6 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
     def evaluate_qualifications(self) -> List[Dict[str, Any]]:
         """Evaluate which players qualify for this playoff based on criteria."""
         from ..classification.models import Classification
-        from ..competition.models import Inscription, Prova
 
         criteria = self.get_qualification_criteria()
 
@@ -393,7 +386,6 @@ class PlayoffTournament(BaseModel, TimestampMixin):
         self.registration_start = datetime.utcnow()
 
         # Create inscriptions for confirmed qualifiers
-        from ..competition.services import ProvaService
 
         confirmed_qualifications = self.configuration.qualifications.filter_by(
             status=QualificationStatus.CONFIRMED

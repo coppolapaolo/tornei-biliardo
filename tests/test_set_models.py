@@ -7,6 +7,7 @@ from datetime import datetime
 from unittest.mock import patch, MagicMock
 
 from models.match.set_models import Set, SetRack
+
 # No unused imports needed
 
 
@@ -173,8 +174,9 @@ class TestSetModel:
         set_obj.id = 1
 
         # Mock database query for max rack number
-        mock_db.session.query.return_value.filter_by.return_value.scalar.\
-            return_value = 0
+        mock_db.session.query.return_value.filter_by.return_value.scalar.return_value = (
+            0
+        )
         mock_db.session.add = MagicMock()
 
         # Test adding a rack result

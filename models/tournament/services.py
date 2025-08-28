@@ -21,7 +21,6 @@ from ..transaction.manager import (
     DomainService,
     transactional,
     read_only,
-    transaction_manager,
 )
 
 

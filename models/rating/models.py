@@ -8,16 +8,14 @@ Data Structures: PlayerCategory, PlayerRating, HandicapRule
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from enum import Enum
 
-from sqlalchemy import func
-from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel, TimestampMixin
 
 if TYPE_CHECKING:
-    from ..user.models import User
+    pass
 
 
 class CategoryLevel(Enum):
@@ -69,7 +67,7 @@ class PlayerCategory(BaseModel, TimestampMixin):
         """Get user's current active category."""
         return (
             cls.query.filter_by(user_id=user_id, is_active=True)
-            .filter(db.or_(cls.expires_at == None, cls.expires_at > datetime.utcnow()))
+            .filter(db.or_(cls.expires_at.is_(None), cls.expires_at > datetime.utcnow()))
             .first()
         )
 

@@ -3,9 +3,8 @@ Test module for models/dashboard/services.py
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import date, datetime
-from sqlalchemy.orm import joinedload
+from unittest.mock import Mock, patch
+from datetime import date
 
 from models.dashboard.services import (
     DashboardService,
@@ -14,13 +13,10 @@ from models.dashboard.services import (
     CapabilityVM,
     DashboardVM,
 )
-from models.tournament.models import Tournament, TournamentDirector
-from models.competition.models import Prova, Inscription
+from models.tournament.models import Tournament
+from models.competition.models import Prova
 from models.match.models import Match as TournamentMatch
-from models.user.models import User
-from models.status_enum import ProvaStatus, MatchStatus
-from models.individual_match.models import IndividualMatch
-from models.location.models import PlayerAvailability
+from models.status_enum import ProvaStatus
 
 
 class TestDashboardServiceHelpers:
@@ -265,7 +261,10 @@ class TestDashboardServiceSelectorHelpers:
         mock_tournament.provas = []
 
         result = DashboardService._build_selector_items(
-            [mock_tournament], [mock_prova], selected_tournament_id=None, selected_prova_id=None
+            [mock_tournament],
+            [mock_prova],
+            selected_tournament_id=None,
+            selected_prova_id=None,
         )
 
         assert len(result) == 2
@@ -331,7 +330,9 @@ class TestDashboardServicePlayerSections:
 
             # Mock available provas query
             mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = []
+            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+                []
+            )
             mock_db.session.query.return_value.filter.return_value = mock_prova_query
 
             # Mock inscriptions query
@@ -339,7 +340,9 @@ class TestDashboardServicePlayerSections:
             mock_inscription_query.join.return_value.filter.return_value.options.return_value.order_by.return_value.all.return_value = (
                 []
             )
-            mock_db.session.query.return_value.join.return_value = mock_inscription_query
+            mock_db.session.query.return_value.join.return_value = (
+                mock_inscription_query
+            )
 
             # Mock matches queries
             mock_match_query = Mock()
@@ -413,7 +416,9 @@ class TestDashboardServiceMainMethods:
 
             # Mock prova query
             mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = []
+            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+                []
+            )
             mock_db.session.query.return_value.filter.return_value = mock_prova_query
 
             result = DashboardService.for_admin()
@@ -456,7 +461,9 @@ class TestDashboardServiceMainMethods:
 
             # Mock prova query
             mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = []
+            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+                []
+            )
             mock_db.session.query.return_value.filter.return_value = mock_prova_query
 
             # Mock inscription query
@@ -554,7 +561,9 @@ class TestDashboardServiceMainMethods:
 
             # Mock prova query
             mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = []
+            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+                []
+            )
             mock_db.session.query.return_value.filter.return_value = mock_prova_query
 
             # Mock inscription query

@@ -107,10 +107,9 @@ class TestCompetitionRoutesExecution:
 
             # Mock related objects
             mock_inscription.query.filter_by.return_value.all.return_value = []
-            mock_match.query.filter_by.return_value.order_by.return_value.\
-                all.return_value = (
-                    []
-                )
+            mock_match.query.filter_by.return_value.order_by.return_value.all.return_value = (
+                []
+            )
 
             # Execute each function
             for func_name in functions_to_test:

@@ -12,19 +12,14 @@ from flask import (
     url_for,
     flash,
     jsonify,
-    abort,
-    current_app,
 )
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 
 from models import (
-    db,
-    MatchProposal,
     IndividualMatch,
 )
 from utils import (
-    individual_match_player_required,
     admin_required,
 )
 from models.individual_match.services import (
@@ -217,7 +212,7 @@ def match_detail(match_id):
 def start_match(match_id):
     """Start an individual match."""
     try:
-        match = IndividualMatchService.start_match(match_id, current_user.id)
+        IndividualMatchService.start_match(match_id, current_user.id)
 
         if request.is_json:
             return jsonify({"success": True, "message": "Match started successfully"})

@@ -8,10 +8,9 @@ from flask import (
     flash,
     jsonify,
     abort,
-    current_app,
 )
 from flask_login import login_required, current_user, logout_user
-from datetime import datetime, timezone
+from datetime import datetime
 
 from models import (
     db,
@@ -33,11 +32,9 @@ from models.user.services import UserDeletionService
 from utils import (
     player_only,
     player_required,
-    inscription_owner_required,
     match_player_required,
     rack_player_required,
 )
-from models.competition.services import InscriptionService
 from models.match.services import MatchService, RackService
 
 player_bp = Blueprint("player", __name__)

@@ -1,14 +1,10 @@
 from __future__ import annotations
 from typing import Sequence, Dict, Any, Optional, List, TYPE_CHECKING
-from datetime import datetime, timedelta
-from functools import lru_cache
-import hashlib
-import json
+from datetime import timedelta
 
 from .registry import EngineRegistry
 from .strategies.base import Pairing
 from ..base import db
-from ..classification.services import ClassificationService
 from ..match.services import MatchService
 from ..rating.services import RatingService, HandicapService
 from ..challenge.services import ChallengeService
@@ -18,7 +14,7 @@ from .strategies.advanced_amalfi import AdvancedAmalfiStrategy
 from .strategies.amalfi_adapter import AmalfiStrategy
 
 if TYPE_CHECKING:
-    from ..competition.models import Prova
+    pass
 
 
 class MatchmakingOrchestrator:
@@ -133,7 +129,7 @@ class MatchmakingOrchestrator:
                 {
                     "type": "individual_match",
                     "name": "Individual Match",
-                    "description": f"Play individual match with available player",
+                    "description": "Play individual match with available player",
                     "available_players": available_players[:3],  # Limit to top 3
                     "estimated_duration": "30-45 minutes",
                     "scoring_method": "direct_match_result",

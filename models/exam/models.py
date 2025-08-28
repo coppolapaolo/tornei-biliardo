@@ -9,16 +9,13 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
-from sqlalchemy.orm import backref
-from sqlalchemy import func
 
 from ..base import db, BaseModel, TimestampMixin
 
 if TYPE_CHECKING:
-    from ..user.models import User
-    from ..challenge.models import Challenge
+    pass
 
 
 class Exam(BaseModel, TimestampMixin):
@@ -263,7 +260,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
         """Get exam progress information."""
         total_challenges = self.exam.challenges.count()
         completed_challenges = self.challenge_results.filter(
-            ExamChallengeResult.score != None
+            ExamChallengeResult.score.isnot(None)
         ).count()
 
         return {

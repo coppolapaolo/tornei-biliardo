@@ -274,7 +274,6 @@ class DirectorRequest(BaseModel):
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
         # Get the user object and update role
-        from sqlalchemy.orm import Session
 
         session = db.session
         user = session.get(User, self.user_id)

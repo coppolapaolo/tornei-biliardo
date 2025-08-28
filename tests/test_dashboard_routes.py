@@ -93,9 +93,7 @@ class TestDashboardRoutes:
         # Mock the DashboardService and ProvaService
         with patch(
             "routes.dashboard.DashboardService"
-        ) as mock_dashboard_service, patch(
-            "routes.dashboard.ProvaService"
-        ):
+        ) as mock_dashboard_service, patch("routes.dashboard.ProvaService"):
             mock_dashboard_service.for_player.return_value = {"player_data": "test"}
 
             response = client.get("/dashboard?prova_id=456")

@@ -56,8 +56,9 @@ def execute_competition_routes():
             mock_inscription.query.filter_by.return_value.all.return_value = []
 
             mock_match = MagicMock()
-            mock_match.query.filter_by.return_value.order_by.return_value.all.\
-                return_value = []
+            mock_match.query.filter_by.return_value.order_by.return_value.all.return_value = (
+                []
+            )
 
             mock_prova_service = MagicMock()
 
