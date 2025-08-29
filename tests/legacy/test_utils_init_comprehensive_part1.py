@@ -27,15 +27,6 @@ from utils import (
 
 
 @pytest.fixture
-def app():
-    """Create Flask app for testing."""
-    app = Flask(__name__)
-    app.config['TESTING'] = True
-    app.config['SECRET_KEY'] = 'test-secret-key'
-    return app
-
-
-@pytest.fixture
 def mock_user():
     """Create a mock user for testing."""
     user = Mock()

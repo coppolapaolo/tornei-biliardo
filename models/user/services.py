@@ -154,6 +154,8 @@ class UserService:
         user = db.session.get(User, user_id)
         if not user:
             raise ValueError("User not found")
+        if user.role == UserRole.ADMIN.value:
+            raise ValueError("Cannot modify administrator user")
 
         # Update allowed fields
         if "username" in kwargs:
@@ -169,19 +171,7 @@ class UserService:
                 user.username = new_username
 
         if "email" in kwargs:
-            new_email = kwargs["email"].strip().lower()
-            if new_email != user.email:
-                # Check uniqueness
-                # For encrypted fields, we need to retrieve all users and filter in Python
-                users = User.query.all()
-                for existing_user in users:
-                    if (
-                        existing_user.id != user_id
-                        and existing_user.email
-                        and existing_user.email.lower() == new_email
-                    ):
-                        raise ValueError(f"Email '{new_email}' already exists")
-                user.email = new_email
+            user.email = kwargs["email"].strip().lower()
 
         if "phone" in kwargs:
             user.phone = kwargs["phone"].strip() if kwargs["phone"] else None
@@ -207,6 +197,9 @@ class UserService:
             user = db.session.get(User, user_id)
             if not user:
                 return False
+
+            if user.role == UserRole.ADMIN.value:
+                raise ValueError("Cannot change password for administrator user")
 
             if not user.check_password(old_password):
                 return False
@@ -265,6 +258,8 @@ class UserService:
         user = db.session.get(User, user_id)
         if not user:
             raise ValueError("User not found")
+        if user.role == UserRole.ADMIN.value:
+            raise ValueError("Cannot delete administrator user")
 
         user.soft_delete()
         # Transaction will be committed by decorator
