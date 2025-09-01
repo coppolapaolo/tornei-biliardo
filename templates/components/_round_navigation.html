@@ -6,7 +6,7 @@
     <div class="card-body">
         {% for r in range(1, prova.rounds_count + 1) %}
             {% if r <= prova.current_round %}
-                <a href="{{ url_for('admin.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
+                <a href="{{ url_for('admin.competition.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
                    class="btn btn-sm {% if r == round_number %}btn-primary{% else %}btn-outline-primary{% endif %} w-100 mb-1">
                     Turno {{ r }}
                     {% if r == round_number %}

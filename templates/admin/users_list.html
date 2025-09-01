@@ -80,10 +80,21 @@
                                     <small>{{ user.created_at.strftime('%d/%m/%Y') }}</small>
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}" 
-                                       class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> Dettagli
-                                    </a>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> Dettagli
+                                        </a>
+                                        {% if user.is_director %}
+                                        <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" 
+                                              method="POST" style="display: inline;"
+                                              onsubmit="return confirm('Rimuovere il ruolo director a {{ user.username }}?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-user-minus"></i> Rimuovi director
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

@@ -11,7 +11,7 @@
                     {{ dir_user.username }}
                     {% if can_manage_directors and dir_user.id != current_user.id %}
                         <form method="POST"
-                            action="{{ url_for('admin.remove_director',
+                            action="{{ url_for('admin.tournament.remove_director',
                                                 tournament_id=tournament.id) }}">
                             <input type="hidden" name="user_id" value="{{ dir_user.id }}">
                             <button class="btn btn-sm btn-danger">Rimuovi</button>
@@ -21,7 +21,7 @@
             {% endfor %}
         </ul>
 
-        <form method="POST" action="{{ url_for('admin.add_director', tournament_id=tournament.id) }}" class="mt-3">
+        <form method="POST" action="{{ url_for('admin.tournament.add_director', tournament_id=tournament.id) }}" class="mt-3">
             <div class="input-group">
             <select class="form-select" name="user_id">
                 {% for user in users %}

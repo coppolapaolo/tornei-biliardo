@@ -77,6 +77,15 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         lazy=True,
     )
 
+    # Director request relationship
+    director_request = db.relationship(
+        "DirectorRequest",
+        foreign_keys="DirectorRequest.user_id",
+        uselist=False,
+        viewonly=True,
+        primaryjoin="and_(User.id==DirectorRequest.user_id, DirectorRequest.status=='pending')"
+    )
+
     # ───────────────────
     # Auth helpers
     # ───────────────────

@@ -144,11 +144,21 @@
                             <a class="nav-link dropdown-toggle" href="#" role="button" 
                             data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user"></i> {{ current_user.username }}
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="badge bg-danger rounded-pill">{{ unread_notifications_count }}</span>
+                                {% endif %}
                                 {% if current_user.is_admin %}
                                     <span class="badge bg-warning text-dark ms-1">Admin</span>
                                 {% endif %}
                             </a>
-                            <ul class="dropdown-menu">                                
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('player.notifications') }}">
+                                    <i class="fas fa-bell"></i> Notifiche
+                                    {% if unread_notifications_count > 0 %}
+                                        <span class="badge bg-danger rounded-pill ms-2">{{ unread_notifications_count }}</span>
+                                    {% endif %}
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
                                 {% if can_view_profile %}
                                     <li><a class="dropdown-item" href="{{ url_for('player.profile') }}">
                                         <i class="fas fa-id-card"></i> Il mio Profilo
@@ -172,6 +182,9 @@
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.user.users_list') }}">
                                         <i class="fas fa-users"></i> Gestione Utenti
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.user.director_requests') }}">
+                                        <i class="fas fa-user-tie"></i> Richieste Director
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 {% endif %}                                

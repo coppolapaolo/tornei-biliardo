@@ -6,7 +6,7 @@
                 <h5 class="modal-title">Nuova Prova</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url_for('admin.create_prova') }}" method="POST">
+            <form action="{{ url_for('admin.competition.create_prova') }}" method="POST">
                 <input type="hidden" name="tournament_id" value="{{ tournament.id }}">
                 <div class="modal-body">
                     <!-- Prima riga: Info base -->

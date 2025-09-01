@@ -245,6 +245,70 @@ class UserService:
 
     @staticmethod
     @transactional(domain="user")
+    def demote_director_to_player(user_id: int, demoted_by_id: int) -> bool:
+        """
+        Demote director to player role.
+
+        Args:
+            user_id: ID of user to demote
+            demoted_by_id: ID of admin performing demotion
+
+        Returns:
+            bool: True if demoted successfully
+
+        Raises:
+            ValueError: If user not found or not a director or has active tournaments/competitions
+            PermissionError: If demoted_by is not admin
+        """
+        # Check if demoting user is admin
+        admin_user = db.session.get(User, demoted_by_id)
+        if not admin_user or not admin_user.is_admin:
+            raise PermissionError("Only administrators can demote directors")
+
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        if user.role != UserRole.DIRECTOR.value:
+            raise ValueError("User is not a director")
+
+        if user.is_admin:
+            raise ValueError("Cannot demote admin user")
+
+        # Remove from tournament director roles (per le specifiche: se non ha direttori -> gestito da admin)
+        from ..user.models import TournamentDirector
+        TournamentDirector.query.filter_by(user_id=user_id).delete()
+        
+        # Transfer standalone competitions to admin (per le specifiche: se non ha direttori -> gestito da admin)
+        from ..competition.models import Prova
+        standalone_provas = Prova.query.filter_by(director_id=user_id).all()
+        for prova in standalone_provas:
+            prova.director_id = admin_user.id
+
+        user.role = UserRole.PLAYER.value
+        # Transaction will be committed by decorator
+        
+        # Send notification to user about demotion
+        from ..notification.services import NotificationService
+        from ..notification.models import NotificationType, NotificationPriority
+        
+        message = "Il tuo ruolo di direttore di gara è stato rimosso dall'amministratore."
+        if standalone_provas:
+            message += f" Le tue {len(standalone_provas)} prove standalone sono state trasferite all'amministratore."
+        message += " Ora sei tornato ad essere un semplice giocatore."
+        
+        NotificationService.create_notification(
+            user_id=user_id,
+            notification_type=NotificationType.ACCOUNT_UPDATE,
+            title="Ruolo Director Rimosso",
+            message=message,
+            priority=NotificationPriority.HIGH
+        )
+        
+        return True
+
+    @staticmethod
+    @transactional(domain="user")
     def soft_delete_user(user_id: int) -> None:
         """
         Soft delete a user (mark as deleted without removing from database).
@@ -768,8 +832,28 @@ class DirectorRequestService:
         # Process the request
         if approve:
             request.approve(admin_user)
+            # Send notification to user about approval
+            from ..notification.services import NotificationService
+            from ..notification.models import NotificationType, NotificationPriority
+            NotificationService.create_notification(
+                user_id=request.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title="Richiesta Director Approvata",
+                message="La tua richiesta di diventare direttore di gara è stata approvata! Ora puoi creare e gestire tornei.",
+                priority=NotificationPriority.HIGH
+            )
         else:
             request.reject(admin_user)
+            # Send notification to user about rejection
+            from ..notification.services import NotificationService
+            from ..notification.models import NotificationType, NotificationPriority
+            NotificationService.create_notification(
+                user_id=request.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title="Richiesta Director Rifiutata",
+                message="La tua richiesta di diventare direttore di gara è stata rifiutata. Per maggiori informazioni, contatta l'amministratore.",
+                priority=NotificationPriority.NORMAL
+            )
 
         db.session.commit()
         return request

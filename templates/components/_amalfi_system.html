@@ -42,7 +42,7 @@
                         <h6>Classifiche per Turno</h6>
                         <div class="btn-group" role="group">
                             {% for r in range(1, prova.current_round + 1) %}
-                                <a href="{{ url_for('admin.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
+                                <a href="{{ url_for('admin.competition.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     Turno {{ r }}
                                 </a>
@@ -96,7 +96,7 @@
                                 onclick="validateAmalfiConfig()">
                             <i class="fas fa-check-circle"></i> Valida Config
                         </button>
-                        <a href="{{ url_for('admin.amalfi_encounters', prova_id=prova.id) }}" 
+                        <a href="{{ url_for('admin.competition.amalfi_encounters', prova_id=prova.id) }}" 
                            class="btn btn-outline-info btn-sm">
                             <i class="fas fa-network-wired"></i> Matrice Incontri
                         </a>

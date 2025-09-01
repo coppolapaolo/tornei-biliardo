@@ -12,18 +12,27 @@
         {% if current_user.role == 'player' %}
             {% set dr = current_user|attr('director_request')|default(None, true) %}
             {% if dr %}
-            {{ dr | status_badge('director_request') }}
+            <p><strong>Richiesta Director:</strong> {{ dr | status_badge('director_request') }}</p>
             {% else %}
-            <span class="text-muted">Nessuna richiesta</span>
+            <p><strong>Richiesta Director:</strong> <span class="text-muted">Nessuna richiesta</span></p>
             {% endif %}
         {% endif %}
 
         <hr>
-        <div class="alert alert-warning">
-            <small>
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>Nota:</strong> Per modificare le informazioni personali, contatta l'amministratore.
-            </small>
+        <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('player.edit_profile') }}">
+            <i class="fas fa-edit"></i> Modifica contatti
+        </a>
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+            <i class="fas fa-key"></i> Cambia password
+        </button>
+        {% if current_user.role == 'player' and not current_user.director_request %}
+        <form action="{{ url_for('player.request_director') }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-user-tie"></i> Richiedi ruolo Director
+            </button>
+        </form>
+        {% endif %}
         </div>
     </div>
 </div>

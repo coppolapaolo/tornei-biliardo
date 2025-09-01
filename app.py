@@ -69,6 +69,15 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_permissions():
         """Inject permission helpers into all Jinja2 templates"""
+        # Get unread notifications count for current user
+        unread_count = 0
+        if current_user.is_authenticated:
+            from models.notification.models import Notification, NotificationStatus
+            unread_count = Notification.query.filter_by(
+                user_id=current_user.id,
+                status=NotificationStatus.PENDING
+            ).count()
+            
         return {
             "can_inscribe": UserPermissions.can_inscribe_to_prova(),
             "can_view_profile": UserPermissions.can_view_profile(),
@@ -78,6 +87,7 @@ def create_app(config_name=None):
             "is_player": current_user.is_authenticated and current_user.is_player,
             "is_director": current_user.is_authenticated and current_user.is_director,
             "is_admin": current_user.is_authenticated and current_user.is_admin,
+            "unread_notifications_count": unread_count,
         }
 
     # Filtri Jinja per status

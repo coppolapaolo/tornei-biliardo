@@ -28,7 +28,9 @@ from models.status_enum import (
 from models.tournament.models import Tournament
 from models.classification.models import Classification
 from models.user.models import DirectorRequest
-from models.user.services import UserDeletionService
+from models.notification.services import NotificationService
+from models.notification.models import NotificationType, NotificationPriority
+from models.user.services import UserDeletionService, UserService
 from utils import (
     player_only,
     player_required,
@@ -380,6 +382,50 @@ def profile():
     )
 
 
+@player_bp.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+@player_only
+def edit_profile():
+    """Modifica email e telefono dell'utente corrente."""
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip()
+        phone = (request.form.get("phone") or "").strip() or None
+
+        try:
+            UserService.update_user(current_user.id, email=email, phone=phone)
+            flash("Informazioni aggiornate correttamente.", "success")
+            return redirect(url_for("player.profile"))
+        except ValueError as e:
+            flash(str(e), "error")
+        except Exception:
+            flash("Si è verificato un errore durante l'aggiornamento.", "error")
+
+    # GET o POST fallito → ripresenta il form
+    return render_template("player/profile_edit.html", user=current_user)
+
+
+@player_bp.route("/profile/change_password", methods=["POST"])
+@login_required
+@player_only
+def change_password():
+    """Cambia la password dell'utente corrente."""
+    current = request.form.get("current_password") or ""
+    new = request.form.get("new_password") or ""
+    confirm = request.form.get("confirm_password") or ""
+
+    if new != confirm:
+        flash("La nuova password e la conferma non coincidono.", "error")
+        return redirect(url_for("player.profile"))
+
+    ok = UserService.change_password(current_user.id, current, new)
+    if ok:
+        flash("Password aggiornata correttamente.", "success")
+    else:
+        flash("Password attuale errata o nuova password non valida.", "error")
+
+    return redirect(url_for("player.profile"))
+
+
 @player_bp.route("/request_director", methods=["POST"])
 @login_required
 @player_only
@@ -397,8 +443,86 @@ def request_director():
     )
     db.session.add(req)
     db.session.commit()
-    flash("Richiesta inviata. Sarai contattato dall’amministratore.")
+    
+    # Invia notifica all'admin
+    admin = User.query.filter_by(role="admin").first()
+    if admin:
+        NotificationService.create_notification(
+            user_id=admin.id,
+            notification_type=NotificationType.ACCOUNT_UPDATE,
+            title="Nuova richiesta Director",
+            message=f"L'utente {current_user.username} ha richiesto di diventare direttore di gara.",
+            priority=NotificationPriority.HIGH,
+            action_url=url_for("admin.user.director_requests"),
+            action_text="Gestisci richieste"
+        )
+    
+    flash("Richiesta inviata. Sarai contattato dall'amministratore.")
     return redirect(url_for("player.profile"))
+
+
+@player_bp.route("/notifications")
+@login_required
+def notifications():
+    """Mostra le notifiche dell'utente"""
+    from models.notification.models import Notification, NotificationStatus
+    
+    # Get all notifications for current user
+    user_notifications = Notification.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Notification.created_at.desc()).all()
+    
+    # Mark PENDING notifications as SENT
+    for notif in user_notifications:
+        if notif.status == NotificationStatus.PENDING:
+            notif.status = NotificationStatus.SENT
+            notif.sent_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    return render_template("player/notifications.html", notifications=user_notifications)
+
+
+@player_bp.route("/notifications/<int:notification_id>/mark_read", methods=["POST"])
+@login_required
+def mark_notification_read(notification_id):
+    """Segna una notifica come letta"""
+    from models.notification.models import Notification, NotificationStatus
+    
+    notification = Notification.query.filter_by(
+        id=notification_id,
+        user_id=current_user.id
+    ).first_or_404()
+    
+    notification.status = NotificationStatus.READ
+    notification.read_at = datetime.utcnow()
+    db.session.commit()
+    
+    # If there's an action URL, redirect to it
+    if notification.action_url:
+        return redirect(notification.action_url)
+    
+    return redirect(url_for("player.notifications"))
+
+
+@player_bp.route("/notifications/mark_all_read", methods=["POST"])
+@login_required
+def mark_all_notifications_read():
+    """Segna tutte le notifiche come lette"""
+    from models.notification.models import Notification, NotificationStatus
+    
+    Notification.query.filter_by(
+        user_id=current_user.id
+    ).filter(
+        Notification.status != NotificationStatus.READ
+    ).update({
+        "status": NotificationStatus.READ,
+        "read_at": datetime.utcnow()
+    })
+    
+    db.session.commit()
+    flash("Tutte le notifiche sono state segnate come lette.")
+    return redirect(url_for("player.notifications"))
 
 
 @player_bp.route("/delete_account", methods=["GET", "POST"])

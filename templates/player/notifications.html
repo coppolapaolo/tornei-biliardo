@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Le mie Notifiche{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-bell"></i> Le mie Notifiche</h1>
+    {% if notifications %}
+    <form action="{{ url_for('player.mark_all_notifications_read') }}" method="POST" style="display: inline;">
+        <button type="submit" class="btn btn-outline-secondary">
+            <i class="fas fa-check-double"></i> Segna tutte come lette
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+{% if not notifications %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Non hai notifiche.
+</div>
+{% else %}
+<div class="list-group">
+    {% for notification in notifications %}
+    <div class="list-group-item {% if notification.status.value == 'read' %}list-group-item-light{% endif %}">
+        <div class="d-flex w-100 justify-content-between">
+            <div class="flex-grow-1">
+                <h5 class="mb-1">
+                    {% if notification.status.value != 'read' %}
+                        <span class="badge bg-primary me-2">Nuova</span>
+                    {% endif %}
+                    {% if notification.priority.value == 'high' %}
+                        <span class="badge bg-danger me-2">Importante</span>
+                    {% elif notification.priority.value == 'urgent' %}
+                        <span class="badge bg-danger me-2">Urgente</span>
+                    {% endif %}
+                    {{ notification.title }}
+                </h5>
+                <p class="mb-1">{{ notification.message }}</p>
+                <small class="text-muted">
+                    <i class="fas fa-clock"></i> {{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}
+                    {% if notification.status.value == 'read' %}
+                        - Letta il {{ notification.read_at.strftime('%d/%m/%Y %H:%M') }}
+                    {% endif %}
+                </small>
+            </div>
+            <div class="ms-3">
+                {% if notification.action_url and notification.status.value != 'read' %}
+                <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-external-link-alt"></i> {{ notification.action_text or 'Vai' }}
+                    </button>
+                </form>
+                {% elif notification.status.value != 'read' %}
+                <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-check"></i> Segna come letta
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('player.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+    </a>
+</div>
+{% endblock %}

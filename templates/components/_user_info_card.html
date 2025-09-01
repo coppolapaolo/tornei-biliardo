@@ -11,6 +11,15 @@
         <p><strong>Ruolo:</strong> 
             {% if user.is_director %}
                 <span class="badge bg-secondary">Direttore di gara</span>
+                {% if current_user.is_admin %}
+                <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST" 
+                      style="display: inline; margin-left: 10px;" 
+                      onsubmit="return confirm('Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-user-minus"></i> Rimuovi ruolo
+                    </button>
+                </form>
+                {% endif %}
             {% else %}
                 <span class="badge bg-primary">Giocatore</span>
             {% endif %}
