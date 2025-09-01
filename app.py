@@ -73,11 +73,11 @@ def create_app(config_name=None):
         unread_count = 0
         if current_user.is_authenticated:
             from models.notification.models import Notification, NotificationStatus
+
             unread_count = Notification.query.filter_by(
-                user_id=current_user.id,
-                status=NotificationStatus.PENDING
+                user_id=current_user.id, status=NotificationStatus.PENDING
             ).count()
-            
+
         return {
             "can_inscribe": UserPermissions.can_inscribe_to_prova(),
             "can_view_profile": UserPermissions.can_view_profile(),

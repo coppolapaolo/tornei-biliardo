@@ -67,7 +67,9 @@ class PlayerCategory(BaseModel, TimestampMixin):
         """Get user's current active category."""
         return (
             cls.query.filter_by(user_id=user_id, is_active=True)
-            .filter(db.or_(cls.expires_at.is_(None), cls.expires_at > datetime.utcnow()))
+            .filter(
+                db.or_(cls.expires_at.is_(None), cls.expires_at > datetime.utcnow())
+            )
             .first()
         )
 

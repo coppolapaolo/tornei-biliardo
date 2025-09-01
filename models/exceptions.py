@@ -8,4 +8,3 @@ class InvalidTransitionError(ValueError):
     This exception is raised when attempting to perform a state transition
     that is not allowed by the business rules.
     """
-

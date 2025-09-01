@@ -3,9 +3,7 @@ Focused tests for high-impact coverage improvement.
 Targeting modules with most uncovered statements.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
 
 # Test classification services (133 statements, 0% coverage)
 from models.classification.services import ClassificationService
@@ -16,12 +14,13 @@ class TestClassificationServiceCoverage:
 
     def test_update_tournament_classification_basic(self):
         """Test basic tournament classification update."""
-        with patch('models.classification.services.db.session') as mock_session, \
-             patch('models.tournament.models.Tournament') as mock_tournament:
-            
+        with patch("models.classification.services.db.session") as mock_session, patch(
+            "models.tournament.models.Tournament"
+        ) as mock_tournament:
+
             mock_session.get.return_value = Mock()
             mock_session.query.return_value.filter_by.return_value.all.return_value = []
-            
+
             try:
                 result = ClassificationService.update_tournament_classification(1)
                 # If method exists and works, result should be a list
@@ -32,9 +31,11 @@ class TestClassificationServiceCoverage:
 
     def test_get_tournament_standings_basic(self):
         """Test basic tournament standings retrieval."""
-        with patch('models.classification.services.db.session') as mock_session:
-            mock_session.query.return_value.filter_by.return_value.options.return_value.order_by.return_value.all.return_value = []
-            
+        with patch("models.classification.services.db.session") as mock_session:
+            mock_session.query.return_value.filter_by.return_value.options.return_value.order_by.return_value.all.return_value = (
+                []
+            )
+
             try:
                 result = ClassificationService.get_tournament_standings(1)
                 assert isinstance(result, list)
@@ -43,21 +44,23 @@ class TestClassificationServiceCoverage:
 
     def test_get_player_ranking_basic(self):
         """Test basic player ranking retrieval."""
-        with patch('models.classification.services.db.session') as mock_session:
-            mock_session.query.return_value.options.return_value.filter_by.return_value.first.return_value = None
-            
+        with patch("models.classification.services.db.session") as mock_session:
+            mock_session.query.return_value.options.return_value.filter_by.return_value.first.return_value = (
+                None
+            )
+
             try:
                 result = ClassificationService.get_player_ranking(1, 1)
                 # Should return None or a ranking object
-                assert result is None or hasattr(result, 'id')
+                assert result is None or hasattr(result, "id")
             except Exception:
                 pass
 
     def test_get_player_statistics_summary_basic(self):
         """Test basic player statistics summary."""
-        with patch('models.classification.services.db.session') as mock_session:
+        with patch("models.classification.services.db.session") as mock_session:
             mock_session.query.return_value.filter_by.return_value.all.return_value = []
-            
+
             try:
                 result = ClassificationService.get_player_statistics_summary(1)
                 assert isinstance(result, dict)
@@ -66,9 +69,11 @@ class TestClassificationServiceCoverage:
 
     def test_get_round_standings_basic(self):
         """Test basic round standings retrieval."""
-        with patch('models.classification.services.db.session') as mock_session:
-            mock_session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = []
-            
+        with patch("models.classification.services.db.session") as mock_session:
+            mock_session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = (
+                []
+            )
+
             try:
                 result = ClassificationService.get_round_standings(1, 1)
                 assert isinstance(result, list)
@@ -77,9 +82,11 @@ class TestClassificationServiceCoverage:
 
     def test_calculate_and_save_round_classification_basic(self):
         """Test basic round classification calculation."""
-        with patch('models.classification.models.RoundClassification.calculate_classification_after_round') as mock_calc:
+        with patch(
+            "models.classification.models.RoundClassification.calculate_classification_after_round"
+        ) as mock_calc:
             mock_calc.return_value = None
-            
+
             try:
                 ClassificationService.calculate_and_save_round_classification(1, 1)
             except Exception:
@@ -96,7 +103,8 @@ class TestSharedUtils:
         try:
             # Test any available functions
             import models.shared.utils as utils
-            assert hasattr(utils, '__file__')
+
+            assert hasattr(utils, "__file__")
         except Exception:
             pass
 
@@ -104,9 +112,12 @@ class TestSharedUtils:
         """Test available functions in shared utils."""
         try:
             import models.shared.utils as utils
+
             # Get all functions and test them with mock data
             for attr_name in dir(utils):
-                if not attr_name.startswith('_') and callable(getattr(utils, attr_name)):
+                if not attr_name.startswith("_") and callable(
+                    getattr(utils, attr_name)
+                ):
                     func = getattr(utils, attr_name)
                     try:
                         # Try calling with basic arguments
@@ -130,7 +141,8 @@ class TestScoringStrategies:
         """Test that scoring strategies can be imported."""
         try:
             import models.scoring.strategies as strategies
-            assert hasattr(strategies, '__file__')
+
+            assert hasattr(strategies, "__file__")
         except Exception:
             pass
 
@@ -138,12 +150,13 @@ class TestScoringStrategies:
         """Test classic scoring policy if available."""
         try:
             from models.scoring.strategies import ClassicScoringPolicy
+
             policy = ClassicScoringPolicy()
-            
+
             # Test with mock data
             players = [Mock(), Mock()]
             match_results = []
-            
+
             result = policy.calculate_standings(players, match_results)
             assert isinstance(result, list)
         except (ImportError, AttributeError):
@@ -155,11 +168,12 @@ class TestScoringStrategies:
         """Test fargo rating scoring policy if available."""
         try:
             from models.scoring.strategies import FargoRatingScoringPolicy
+
             policy = FargoRatingScoringPolicy()
-            
+
             players = [Mock(), Mock()]
             match_results = []
-            
+
             result = policy.calculate_standings(players, match_results)
             assert isinstance(result, list)
         except (ImportError, AttributeError):
@@ -171,11 +185,12 @@ class TestScoringStrategies:
         """Test ELO rating scoring policy if available."""
         try:
             from models.scoring.strategies import EloRatingScoringPolicy
+
             policy = EloRatingScoringPolicy()
-            
+
             players = [Mock(), Mock()]
             match_results = []
-            
+
             result = policy.calculate_standings(players, match_results)
             assert isinstance(result, list)
         except (ImportError, AttributeError):
@@ -192,7 +207,8 @@ class TestQueryOptimizer:
         """Test that query optimizer can be imported."""
         try:
             import models.optimization.query_optimizer as optimizer
-            assert hasattr(optimizer, '__file__')
+
+            assert hasattr(optimizer, "__file__")
         except Exception:
             pass
 
@@ -200,11 +216,11 @@ class TestQueryOptimizer:
         """Test optimized query decorator if available."""
         try:
             from models.optimization.query_optimizer import optimized_query
-            
+
             @optimized_query()
             def test_function():
                 return "test"
-            
+
             result = test_function()
             assert result == "test"
         except (ImportError, AttributeError):
@@ -216,11 +232,13 @@ class TestQueryOptimizer:
         """Test bulk load relationships if available."""
         try:
             from models.optimization.query_optimizer import bulk_load_relationships
-            
+
             mock_query = Mock()
             mock_query.options.return_value = mock_query
-            
-            result = bulk_load_relationships(mock_query, "relationship1", "relationship2")
+
+            result = bulk_load_relationships(
+                mock_query, "relationship1", "relationship2"
+            )
             assert result is not None
         except (ImportError, AttributeError):
             pass
@@ -236,7 +254,8 @@ class TestMatchmakingBootstrap:
         """Test that bootstrap can be imported."""
         try:
             import models.matchmaking.bootstrap as bootstrap
-            assert hasattr(bootstrap, '__file__')
+
+            assert hasattr(bootstrap, "__file__")
         except Exception:
             pass
 
@@ -244,8 +263,11 @@ class TestMatchmakingBootstrap:
         """Test bootstrap functions if available."""
         try:
             import models.matchmaking.bootstrap as bootstrap
+
             for attr_name in dir(bootstrap):
-                if not attr_name.startswith('_') and callable(getattr(bootstrap, attr_name)):
+                if not attr_name.startswith("_") and callable(
+                    getattr(bootstrap, attr_name)
+                ):
                     func = getattr(bootstrap, attr_name)
                     try:
                         func()
@@ -268,9 +290,12 @@ class TestUtilsModules:
         """Test utils __init__ functions."""
         try:
             import utils
+
             # Test any available functions
             for attr_name in dir(utils):
-                if not attr_name.startswith('_') and callable(getattr(utils, attr_name)):
+                if not attr_name.startswith("_") and callable(
+                    getattr(utils, attr_name)
+                ):
                     func = getattr(utils, attr_name)
                     try:
                         func()
@@ -288,9 +313,11 @@ class TestUtilsModules:
         """Test database utils for coverage."""
         try:
             import utils.database_utils as db_utils
-            
+
             for attr_name in dir(db_utils):
-                if not attr_name.startswith('_') and callable(getattr(db_utils, attr_name)):
+                if not attr_name.startswith("_") and callable(
+                    getattr(db_utils, attr_name)
+                ):
                     func = getattr(db_utils, attr_name)
                     try:
                         func()
@@ -303,9 +330,11 @@ class TestUtilsModules:
         """Test jinja utils for coverage."""
         try:
             import utils.jinja as jinja_utils
-            
+
             for attr_name in dir(jinja_utils):
-                if not attr_name.startswith('_') and callable(getattr(jinja_utils, attr_name)):
+                if not attr_name.startswith("_") and callable(
+                    getattr(jinja_utils, attr_name)
+                ):
                     func = getattr(jinja_utils, attr_name)
                     try:
                         func()
@@ -318,9 +347,11 @@ class TestUtilsModules:
         """Test reset data utils for coverage."""
         try:
             import utils.reset_data as reset_utils
-            
+
             for attr_name in dir(reset_utils):
-                if not attr_name.startswith('_') and callable(getattr(reset_utils, attr_name)):
+                if not attr_name.startswith("_") and callable(
+                    getattr(reset_utils, attr_name)
+                ):
                     func = getattr(reset_utils, attr_name)
                     try:
                         func()
@@ -338,16 +369,16 @@ class TestZeroCoverageModels:
         """Test scoring policies."""
         try:
             import models.scoring.policies as policies
-            
+
             for attr_name in dir(policies):
-                if not attr_name.startswith('_'):
+                if not attr_name.startswith("_"):
                     attr = getattr(policies, attr_name)
                     if callable(attr):
                         try:
                             attr()
                         except Exception:
                             pass
-                    elif hasattr(attr, '__class__'):
+                    elif hasattr(attr, "__class__"):
                         try:
                             # Try to instantiate classes
                             instance = attr()
@@ -360,9 +391,9 @@ class TestZeroCoverageModels:
         """Test optimization __init__."""
         try:
             import models.optimization as opt
-            
+
             for attr_name in dir(opt):
-                if not attr_name.startswith('_'):
+                if not attr_name.startswith("_"):
                     attr = getattr(opt, attr_name)
                     if callable(attr):
                         try:
@@ -376,9 +407,9 @@ class TestZeroCoverageModels:
         """Test scoring __init__."""
         try:
             import models.scoring as scoring
-            
+
             for attr_name in dir(scoring):
-                if not attr_name.startswith('_'):
+                if not attr_name.startswith("_"):
                     attr = getattr(scoring, attr_name)
                     if callable(attr):
                         try:

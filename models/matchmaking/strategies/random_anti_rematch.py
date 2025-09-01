@@ -296,4 +296,3 @@ class RandomAntiRematchStrategy(PairingStrategy):
 
 class RandomAntiRematchPairingStrategy(RandomAntiRematchStrategy):
     """Alias for compatibility with existing strategy registry."""
-

@@ -404,4 +404,3 @@ class DoubleKnockoutStrategy(PairingStrategy):
 
 class DoubleKnockoutPairingStrategy(DoubleKnockoutStrategy):
     """Alias for compatibility with existing strategy registry."""
-

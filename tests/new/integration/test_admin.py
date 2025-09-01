@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 def _get_admin(db_session, app):
     from models.user.models import User
+
     admin_username = app.config.get("ADMIN_USERNAME", "admin")
     return db_session.execute(
         select(User).where(User.username == admin_username)
@@ -14,20 +15,24 @@ def _get_admin(db_session, app):
 def _ensure_admin_in_testing(app):
     # in testing il bootstrap automatico non gira: usiamo il reset (idempotente)
     from utils.reset_data import reset_database_enhanced
+
     reset_database_enhanced()
 
 
 def test_admin_exists_on_empty_db_production_bootstrap():
     import os
+
     # usa un DB effimero ma modalità non-testing
     os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
     from app import create_app
+
     prod_app = create_app("development")  # TESTING=False qui
 
     with prod_app.app_context():
         from models import db
         from models.user.models import User
+
         admin_username = prod_app.config.get("ADMIN_USERNAME", "admin")
         admin = db.session.execute(
             select(User).where(User.username == admin_username)

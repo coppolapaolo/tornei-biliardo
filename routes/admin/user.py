@@ -120,11 +120,11 @@ def demote_director(user_id):
     """Rimuove il ruolo director da un utente"""
     from models.user.services import UserService
     from flask_login import current_user
-    
+
     try:
         UserService.demote_director_to_player(user_id, current_user.id)
         flash("Utente degradato da direttore a giocatore.")
     except (PermissionError, ValueError) as e:
         flash(str(e), "error")
-    
+
     return redirect(url_for("admin.user.user_detail", user_id=user_id))

@@ -5,9 +5,7 @@ def _register(username="dave", email=None, password="pass123"):
     from models.user.services import UserService  # type: ignore
 
     return UserService.create_user(
-        username,
-        email or f"{username}@test.local",
-        password
+        username, email or f"{username}@test.local", password
     )
 
 

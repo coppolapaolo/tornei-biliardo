@@ -235,4 +235,3 @@ class DirectEliminationStrategy(PairingStrategy):
 
 class DirectEliminationPairingStrategy(DirectEliminationStrategy):
     """Alias for compatibility with existing strategy registry."""
-

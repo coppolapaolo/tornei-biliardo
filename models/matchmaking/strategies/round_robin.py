@@ -169,4 +169,3 @@ class RoundRobinStrategy(PairingStrategy):
 
 class RoundRobinPairingStrategy(RoundRobinStrategy):
     """Alias for compatibility with existing strategy registry."""
-

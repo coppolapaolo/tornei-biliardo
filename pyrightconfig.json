@@ -11,8 +11,15 @@
         "**/node_modules",
         "**/.git"
     ],
-    "reportMissingImports": true,
+    "venvPath": ".",
+    "venv": "venv",
+    "reportMissingImports": false,
     "reportMissingTypeStubs": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownVariableType": false,
+    "reportUnknownParameterType": false,
+    "reportUnknownArgumentType": false,
+    "reportGeneralTypeIssues": false,
     "pythonVersion": "3.9",
     "pythonPlatform": "Darwin"
 }

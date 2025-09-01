@@ -83,7 +83,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         foreign_keys="DirectorRequest.user_id",
         uselist=False,
         viewonly=True,
-        primaryjoin="and_(User.id==DirectorRequest.user_id, DirectorRequest.status=='pending')"
+        primaryjoin="and_(User.id==DirectorRequest.user_id, DirectorRequest.status=='pending')",
     )
 
     # ───────────────────

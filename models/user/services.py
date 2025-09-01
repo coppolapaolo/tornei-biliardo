@@ -277,34 +277,38 @@ class UserService:
 
         # Remove from tournament director roles (per le specifiche: se non ha direttori -> gestito da admin)
         from ..user.models import TournamentDirector
+
         TournamentDirector.query.filter_by(user_id=user_id).delete()
-        
+
         # Transfer standalone competitions to admin (per le specifiche: se non ha direttori -> gestito da admin)
         from ..competition.models import Prova
+
         standalone_provas = Prova.query.filter_by(director_id=user_id).all()
         for prova in standalone_provas:
             prova.director_id = admin_user.id
 
         user.role = UserRole.PLAYER.value
         # Transaction will be committed by decorator
-        
+
         # Send notification to user about demotion
         from ..notification.services import NotificationService
         from ..notification.models import NotificationType, NotificationPriority
-        
-        message = "Il tuo ruolo di direttore di gara è stato rimosso dall'amministratore."
+
+        message = (
+            "Il tuo ruolo di direttore di gara è stato rimosso dall'amministratore."
+        )
         if standalone_provas:
             message += f" Le tue {len(standalone_provas)} prove standalone sono state trasferite all'amministratore."
         message += " Ora sei tornato ad essere un semplice giocatore."
-        
+
         NotificationService.create_notification(
             user_id=user_id,
             notification_type=NotificationType.ACCOUNT_UPDATE,
             title="Ruolo Director Rimosso",
             message=message,
-            priority=NotificationPriority.HIGH
+            priority=NotificationPriority.HIGH,
         )
-        
+
         return True
 
     @staticmethod
@@ -835,24 +839,26 @@ class DirectorRequestService:
             # Send notification to user about approval
             from ..notification.services import NotificationService
             from ..notification.models import NotificationType, NotificationPriority
+
             NotificationService.create_notification(
                 user_id=request.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
                 title="Richiesta Director Approvata",
                 message="La tua richiesta di diventare direttore di gara è stata approvata! Ora puoi creare e gestire tornei.",
-                priority=NotificationPriority.HIGH
+                priority=NotificationPriority.HIGH,
             )
         else:
             request.reject(admin_user)
             # Send notification to user about rejection
             from ..notification.services import NotificationService
             from ..notification.models import NotificationType, NotificationPriority
+
             NotificationService.create_notification(
                 user_id=request.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
                 title="Richiesta Director Rifiutata",
                 message="La tua richiesta di diventare direttore di gara è stata rifiutata. Per maggiori informazioni, contatta l'amministratore.",
-                priority=NotificationPriority.NORMAL
+                priority=NotificationPriority.NORMAL,
             )
 
         db.session.commit()
