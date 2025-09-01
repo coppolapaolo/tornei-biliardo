@@ -70,6 +70,25 @@ function deleteProva(provaId, provaNumber) {
     }
 }
 
+function cancelProvaWithNotifications(provaId, provaNumber) {
+    if (confirm(`Sei SICURO di voler cancellare la Prova ${provaNumber}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!`)) {
+        fetch(`/admin/prova/${provaId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = '/admin/tournament/{{ prova.tournament_id }}';
+            } else {
+                response.text().then(text => {
+                    alert('Errore durante la cancellazione: ' + text);
+                });
+            }
+        });
+    }
+}
+
 // Funzione helper per convertire Date in formato datetime-local
 function dateToLocalString(date) {
     const year = date.getFullYear();

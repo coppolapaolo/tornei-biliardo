@@ -55,6 +55,33 @@ def index():
             .limit(5)
             .all()
         )
+        
+        # Se non c'è classifica generale, prova a prendere la classifica della prova più recente
+        if not top_classifications and tournament.tournament_type == 'Amalfi':
+            from models.classification.models import RoundClassification
+            from models.status_enum import ProvaStatus
+            
+            # Trova la prova completata più recente
+            latest_completed_prova = (
+                Prova.query.filter(
+                    Prova.tournament_id == tournament.id,
+                    Prova.status == ProvaStatus.COMPLETED.value
+                )
+                .order_by(Prova.date.desc())
+                .first()
+            )
+            
+            if latest_completed_prova:
+                # Prendi la classifica dell'ultimo turno di questa prova
+                top_classifications = (
+                    RoundClassification.query.filter(
+                        RoundClassification.prova_id == latest_completed_prova.id
+                    )
+                    .filter(RoundClassification.round_number == latest_completed_prova.current_round)
+                    .order_by(RoundClassification.position)
+                    .limit(5)
+                    .all()
+                )
 
         tournaments_data.append(
             {

@@ -194,7 +194,13 @@ class DashboardService:
                 )
             )
 
-        return q.all()
+        provas = q.all()
+        
+        # Aggiungi il campo is_inscription_open (come in _available_provas_for_user)
+        for p in provas:
+            p.is_inscription_open = p.get_real_status() == ProvaStatus.INSCRIPTION.value
+        
+        return provas
 
     # ---- selector unico (tornei + standalone) ------------------------
     @staticmethod

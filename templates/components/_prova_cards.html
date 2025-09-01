@@ -59,6 +59,7 @@
               {% for ins in p.inscriptions %}
                 {% if ins.user_id == current_user.id %}{% set ns.inscribed = true %}{% endif %}
               {% endfor %}
+              
               {% if p.is_inscription_open and not ns.inscribed %}
                 <form class="ms-3" method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=p.id) }}">
                   <button type="submit" class="btn btn-primary">

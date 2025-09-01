@@ -40,6 +40,10 @@
                                             <span class="badge bg-success">
                                                 {{ match.player1_score }} - {{ match.player2_score }}
                                             </span>
+                                        {% elif match.status == 'playing' and (match.player1_score > 0 or match.player2_score > 0) %}
+                                            <span class="badge bg-info">
+                                                {{ match.player1_score }} - {{ match.player2_score }}
+                                            </span>
                                         {% else %}
                                             <span class="text-muted">-</span>
                                         {% endif %}
@@ -56,8 +60,8 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if not match.is_bye and match.status != 'completed' %}
-                                            <a href="{{ url_for('admin.match_detail', match_id=match.id) }}"
+                                        {% if not match.is_bye %}
+                                            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
                                                class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>

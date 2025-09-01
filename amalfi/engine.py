@@ -58,6 +58,95 @@ class AmalfiEngine:
         db.session.commit()
         return matches
 
+    def preview_round_pairings(self, round_number: int) -> Dict:
+        """
+        Calcola gli abbinamenti per un turno senza persistere nel database.
+        Ritorna un dictionary con matches, stats e informazioni per l'anteprima.
+        """
+        if round_number == 1:
+            matches = self._preview_first_round()
+        else:
+            matches = self._preview_amalfi_round(round_number)
+        
+        # Calcola statistiche
+        stats = {
+            "total_matches": len(matches),
+            "normal_matches": sum(1 for m in matches if m.get("type") == "normal"),
+            "bye_matches": sum(1 for m in matches if m.get("type") == "bye"),
+            "trio_matches": sum(1 for m in matches if m.get("type") == "trio"),
+        }
+        
+        return {
+            "matches": matches,
+            "stats": stats,
+            "salto": getattr(self, "_current_salto", 0)
+        }
+
+    def _preview_first_round(self) -> List[Dict]:
+        """Genera l'anteprima del primo turno senza persistere"""
+        # Implementazione semplificata per ora
+        inscriptions = self._inscriptions_for_pairing()
+        if len(inscriptions) < self.prova.min_participants:
+            raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
+        
+        matches_data = []
+        players = [ins for ins in inscriptions]
+        
+        # Algoritmo semplificato per il primo turno
+        i = 0
+        while i < len(players):
+            if i + 1 < len(players):
+                # Match normale
+                matches_data.append({
+                    "type": "normal",
+                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
+                    "player2": {"id": players[i+1].user_id, "username": players[i+1].user.username}
+                })
+                i += 2
+            else:
+                # Player con bye
+                matches_data.append({
+                    "type": "bye",
+                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
+                    "player2": None
+                })
+                i += 1
+        
+        return matches_data
+
+    def _preview_amalfi_round(self, round_number: int) -> List[Dict]:
+        """Genera l'anteprima di un turno Amalfi senza persistere"""
+        # Per ora ritorniamo un'anteprima semplificata
+        inscriptions = self._inscriptions_for_pairing()
+        if len(inscriptions) < self.prova.min_participants:
+            raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
+        
+        matches_data = []
+        players = [ins for ins in inscriptions]
+        
+        # Implementazione semplificata - in realtà dovrebbe usare l'algoritmo Amalfi completo
+        i = 0
+        while i < len(players):
+            if i + 1 < len(players):
+                matches_data.append({
+                    "type": "normal",
+                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
+                    "player2": {"id": players[i+1].user_id, "username": players[i+1].user.username}
+                })
+                i += 2
+            else:
+                matches_data.append({
+                    "type": "bye",
+                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
+                    "player2": None
+                })
+                i += 1
+        
+        # Salto fittizio per ora
+        self._current_salto = round_number
+        
+        return matches_data
+
     # ────────────────────────────────────────────────────────────────────────────
     # Primo turno
     # ────────────────────────────────────────────────────────────────────────────

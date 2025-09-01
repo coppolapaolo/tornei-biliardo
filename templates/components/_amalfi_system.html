@@ -58,8 +58,13 @@
                     {% if prova.current_round < prova.rounds_count %}
                         {% set next_round = prova.current_round + 1 %}
                         
-                        <!-- Verifica se turno precedente è completato -->
-                        {% if prova.current_round == 0 or matches|selectattr("round_number", "equalto", prova.current_round)|selectattr("status", "equalto", "completed")|list|length == matches|selectattr("round_number", "equalto", prova.current_round)|list|length %}
+                        <!-- Verifica se turno corrente è completato e prossimo non ancora avviato -->
+                        {% set next_round_started = matches|selectattr("round_number", "equalto", next_round)|list|length > 0 %}
+                        {% set current_round_matches = matches|selectattr("round_number", "equalto", prova.current_round)|list %}
+                        {% set current_round_completed_matches = current_round_matches|selectattr("status", "equalto", "completed")|list %}
+                        {% set current_round_is_completed = current_round_matches|length > 0 and current_round_completed_matches|length == current_round_matches|length %}
+                        
+                        {% if not next_round_started and (prova.current_round == 0 or current_round_is_completed) %}
                             
                             <button class="btn btn-info btn-sm" 
                                     onclick="previewAmalfiRound({{ next_round }})">
@@ -71,6 +76,13 @@
                                 <i class="fas fa-play"></i> Avvia Turno {{ next_round }}
                             </button>
                             
+                        {% elif next_round_started %}
+                            <div class="alert alert-info p-2">
+                                <small>
+                                    <i class="fas fa-clock"></i>
+                                    Turno {{ next_round }} in corso
+                                </small>
+                            </div>
                         {% else %}
                             <div class="alert alert-warning p-2">
                                 <small>
@@ -96,10 +108,12 @@
                                 onclick="validateAmalfiConfig()">
                             <i class="fas fa-check-circle"></i> Valida Config
                         </button>
+                        {# TODO: Implementare endpoint amalfi_encounters
                         <a href="{{ url_for('admin.competition.amalfi_encounters', prova_id=prova.id) }}" 
                            class="btn btn-outline-info btn-sm">
                             <i class="fas fa-network-wired"></i> Matrice Incontri
                         </a>
+                        #}
                     {% endif %}
                 </div>
             </div>

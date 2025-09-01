@@ -87,7 +87,7 @@ function resetMatch(matchId) {
 
 function removeRackAdmin(rackId) {
     if (confirm('Sei sicuro di voler rimuovere questo rack? (Admin)')) {
-        fetch(`/admin/rack/${rackId}/remove`, {
+        fetch(`/admin/match/rack/${rackId}/remove`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -105,7 +105,7 @@ function removeRackAdmin(rackId) {
 }
 
 function validateRackAdmin(rackId) {
-    fetch(`/admin/rack/${rackId}/validate`, {
+    fetch(`/admin/match/rack/${rackId}/validate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

@@ -150,7 +150,7 @@ class Prova(db.Model):
             ProvaStatus.PLAYING.value: {"class": "bg-success", "text": "In Corso"},
             ProvaStatus.COMPLETED.value: {"class": "bg-dark", "text": "Completata"},
             "round_completed": {"class": "bg-info", "text": "Turno Completato"},
-            "tournament_completed": {"class": "bg-dark", "text": "Torneo Completato"},
+            "tournament_completed": {"class": "bg-dark", "text": "Prova Completata"},
         }.get(real_status, {"class": "bg-secondary", "text": "Sconosciuto"})
 
     def can_start_new_round(self):
@@ -185,7 +185,9 @@ class Prova(db.Model):
 
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
-        return self.status == ProvaStatus.SETUP.value
+        # Permetti modifica in setup, inscription, o quando le iscrizioni sono scadute
+        # ma la prova non è ancora iniziata
+        return self.status in [ProvaStatus.SETUP.value, ProvaStatus.INSCRIPTION.value]
 
     def can_be_modified(self):
         """Verifica se la prova può essere modificata"""

@@ -1,15 +1,12 @@
 # routes/player.py - AGGIORNATO dashboard per multi-torneo
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    jsonify,
-    abort,
-)
+from flask.blueprints import Blueprint
+from flask.templating import render_template        # funzione reale
+from flask.globals import request                   # LocalProxy -> request
+from flask.helpers import redirect, url_for, flash  # helper ufficiali Flask
+from flask.json import jsonify                      # funzione ufficiale Flask
+from werkzeug.exceptions import abort               # più specifico e stabile
 from flask_login import login_required, current_user, logout_user
+
 from datetime import datetime
 
 from models import (

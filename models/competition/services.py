@@ -195,6 +195,54 @@ class ProvaService:
         db.session.commit()
 
     @staticmethod
+    def cancel_prova_with_notifications(prova_id: int, cancelled_by_id: int) -> None:
+        """Cancella una prova inviando notifiche a tutti i partecipanti iscritti."""
+        prova = db.session.get(Prova, prova_id)
+        if not prova:
+            raise ValueError(f"Prova {prova_id} non trovata")
+        
+        # Verifica che la prova possa essere cancellata
+        if prova.status not in ['setup', 'inscription']:
+            raise ValueError("La prova non può essere cancellata in questo stato!")
+            
+        # Ottieni tutti gli iscritti prima di cancellare
+        inscriptions = db.session.query(Inscription).filter_by(prova_id=prova_id).all()
+        participant_ids = [inscription.user_id for inscription in inscriptions]
+        
+        # Prepara le informazioni per le notifiche
+        prova_name = f"Prova {prova.number}"
+        tournament_name = prova.tournament.name if prova.tournament else "Standalone"
+        
+        try:
+            # Cancella la prova
+            db.session.delete(prova)
+            
+            # Invia notifiche a tutti i partecipanti
+            if participant_ids:
+                from models.notification.services import NotificationService
+                from models.notification.models import NotificationPriority
+                
+                message = f"La {prova_name}"
+                if prova.tournament:
+                    message += f" del torneo '{tournament_name}'"
+                message += f" del {prova.date.strftime('%d/%m/%Y')} è stata cancellata."
+                
+                for participant_id in participant_ids:
+                    NotificationService.create_notification(
+                        user_id=participant_id,
+                        title="Prova Cancellata",
+                        message=message,
+                        priority=NotificationPriority.HIGH,
+                        created_by_id=cancelled_by_id
+                    )
+            
+            db.session.commit()
+            
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(f"Errore durante la cancellazione della prova: {str(e)}")
+
+    @staticmethod
     def open_inscriptions(
         prova_id: int, inscription_start: datetime, inscription_end: datetime
     ) -> Prova:

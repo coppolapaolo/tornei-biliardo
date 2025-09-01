@@ -75,7 +75,7 @@ function previewNextRound(nextRoundNumber) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                displayPreviewResults(data);
+                displayPreviewResults(data, nextRoundNumber);
             } else {
                 previewContent.innerHTML = `
                     <div class="alert alert-danger">
@@ -96,7 +96,7 @@ function previewNextRound(nextRoundNumber) {
         });
 }
 
-function displayPreviewResults(data) {
+function displayPreviewResults(data, roundNumber) {
     const previewContent = document.getElementById('previewContent');
     
     let html = `
@@ -165,8 +165,8 @@ function displayPreviewResults(data) {
         </div>
         
         <div class="text-center mt-3">
-            <button class="btn btn-success" onclick="startNextRound(${data.round_number})">
-                <i class="fas fa-play"></i> Avvia Turno ${data.round_number}
+            <button class="btn btn-success" onclick="startNextRound(${roundNumber})">
+                <i class="fas fa-play"></i> Avvia Turno ${roundNumber}
             </button>
             <button class="btn btn-secondary ms-2" onclick="hidePreview()">
                 <i class="fas fa-times"></i> Chiudi Anteprima
@@ -179,23 +179,35 @@ function displayPreviewResults(data) {
 
 function startNextRound(roundNumber) {
     if (confirm(`Sei sicuro di voler avviare il Turno ${roundNumber} con gli abbinamenti mostrati?`)) {
+        // Disabilita il pulsante per evitare doppi click
+        const startButton = event.target;
+        startButton.disabled = true;
+        startButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Avvio...';
+        
         fetch(`/admin/prova/{{ prova.id }}/amalfi/start_round/${roundNumber}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
             }
         })
-        .then(response => {
-            if (response.ok) {
-                // Redirect alla prova detail
-                window.location.href = '/admin/prova/{{ prova.id }}';
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message + (data.details ? '\n' + data.details.join('\n') : ''));
+                window.location.href = data.redirect || '/admin/prova/{{ prova.id }}';
             } else {
-                alert('Errore durante l\'avvio del turno');
+                alert('Errore: ' + data.error);
+                // Riabilita il pulsante
+                startButton.disabled = false;
+                startButton.innerHTML = `<i class="fas fa-play"></i> Avvia Turno ${roundNumber}`;
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Errore di rete durante l\'avvio del turno');
+            // Riabilita il pulsante
+            startButton.disabled = false;
+            startButton.innerHTML = `<i class="fas fa-play"></i> Avvia Turno ${roundNumber}`;
         });
     }
 }

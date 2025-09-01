@@ -80,7 +80,7 @@ class StatusPresenter:
             ProvaDerivedStatus.ROUND_COMPLETED.value: ("bg-info", "Turno Completato"),
             ProvaDerivedStatus.TOURNAMENT_COMPLETED.value: (
                 "bg-dark",
-                "Torneo Completato",
+                "Prova Completata",
             ),
             # Persistiti
             ProvaStatus.SETUP.value: ("bg-warning", "Setup"),

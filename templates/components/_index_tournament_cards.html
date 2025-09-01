@@ -124,7 +124,7 @@
                                             {{ classification.position }}. {{ classification.user.username }}
                                         </strong>
                                     </div>
-                                    <small class="text-muted">{{ classification.total_matches_won }} vittorie</small>
+                                    <small class="text-muted">{{ classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won }} vittorie</small>
                                 </div>
                             {% endfor %}
                         </div>

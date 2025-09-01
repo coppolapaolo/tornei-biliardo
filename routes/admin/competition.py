@@ -303,6 +303,38 @@ def delete_prova(prova_id):
     )
 
 
+@competition_bp.route("/<int:prova_id>/cancel", methods=["POST"])
+@login_required
+@prova_manager_required
+def cancel_prova(prova_id):
+    """Cancella prova con notifiche ai partecipanti"""
+    prova = db.session.get(Prova, prova_id)
+    if prova is None:
+        abort(404)
+    
+    tournament_id = prova.tournament_id
+    prova_name = f"Prova {prova.number}"
+    
+    # Verifica che la prova possa essere cancellata
+    if prova.status not in ['setup', 'inscription']:
+        flash("La prova non può essere cancellata in questo stato!", "error")
+        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+
+    try:
+        # Usa il service layer per cancellare con notifiche
+        ProvaService.cancel_prova_with_notifications(prova_id, current_user.id)
+        flash(f"{prova_name} cancellata con successo! I partecipanti sono stati notificati.")
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+
+    if not tournament_id:
+        return redirect(url_for("dashboard.dashboard"))
+    return redirect(
+        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+    )
+
+
 @competition_bp.route("/<int:prova_id>")
 @login_required
 @prova_manager_required
@@ -311,7 +343,37 @@ def prova_detail(prova_id):
     prova = db.session.get(Prova, prova_id)
     if prova is None:
         abort(404)
+    
+    # Forza un refresh per assicurarsi di avere i dati più aggiornati
+    db.session.refresh(prova)
+    
+    # Ottieni iscrizioni ordinate per classifica attuale
     inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    
+    # Se ci sono turni giocati, ordina per classifica
+    if prova.current_round > 0:
+        from models.classification.models import RoundClassification
+        
+        # Cerca la classifica più recente disponibile (partendo dal turno corrente e scendendo)
+        latest_classification = None
+        for round_num in range(prova.current_round, 0, -1):
+            latest_classification = RoundClassification.query.filter_by(
+                prova_id=prova_id, round_number=round_num
+            ).order_by(RoundClassification.position).all()
+            if latest_classification:
+                break
+        
+        if latest_classification:
+            # Crea un dizionario per ordinare le iscrizioni per posizione in classifica
+            position_map = {cls.user_id: cls.position for cls in latest_classification}
+            inscriptions.sort(key=lambda ins: position_map.get(ins.user_id, 999))
+        else:
+            # Fallback: ordina per initial_order se non c'è classifica
+            inscriptions.sort(key=lambda ins: ins.initial_order or 999)
+    else:
+        # Prima dell'inizio: ordina per initial_order
+        inscriptions.sort(key=lambda ins: ins.initial_order or 999)
+    
     matches = (
         Match.query.filter_by(prova_id=prova_id)
         .order_by(Match.round_number, Match.id)
@@ -407,6 +469,12 @@ def prova_results_overview(prova_id):
             .all()
         )
 
+    # Debug
+    import logging
+    logging.warning(f"DEBUG results_overview: prova.rounds_count = {prova.rounds_count}")
+    for round_num, matches in matches_by_round.items():
+        logging.warning(f"DEBUG results_overview: Round {round_num} has {len(matches)} matches")
+
     return render_template(
         "admin/prova_result_overview.html",
         prova=prova,
@@ -471,8 +539,45 @@ def amalfi_classification(prova_id, round_number):
     )
 
 
+@competition_bp.route("/<int:prova_id>/amalfi/preview_round/<int:round_number>")
+@login_required
+@prova_manager_required
+def amalfi_preview_round(prova_id, round_number):
+    """Anteprima di un turno Amalfi senza creare le partite"""
+    from amalfi.engine import AmalfiEngine
+    
+    prova = db.session.get(Prova, prova_id)
+    if prova is None:
+        return jsonify({"success": False, "error": "Prova non trovata"}), 404
+    
+    try:
+        # Validazioni preliminari
+        if round_number < 1 or round_number > prova.rounds_count:
+            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
+            
+        if round_number <= prova.current_round:
+            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
+            
+        if round_number != prova.current_round + 1:
+            return jsonify({"success": False, "error": f"Devi avviare prima il turno {prova.current_round + 1}!"})
+
+        # Usa il motore Amalfi per calcolare gli abbinamenti senza crearli
+        engine = AmalfiEngine(prova)
+        preview_data = engine.preview_round_pairings(round_number)
+        
+        return jsonify({
+            "success": True,
+            "matches": preview_data["matches"],
+            "stats": preview_data["stats"],
+            "salto": preview_data.get("salto", 0)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 @competition_bp.route(
-    "/amalfi/start_round/<int:prova_id>/<int:round_number>", methods=["POST"]
+    "/<int:prova_id>/amalfi/start_round/<int:round_number>", methods=["POST"]
 )
 @login_required
 @prova_manager_required
@@ -483,30 +588,22 @@ def amalfi_start_round(prova_id, round_number):
     try:
         # Validazioni preliminari
         if round_number < 1 or round_number > prova.rounds_count:
-            flash(f"Turno {round_number} non valido!")
-            return redirect(
-                url_for("admin.competition.prova_detail", prova_id=prova_id)
-            )
-        if round_number <= prova.current_round:
-            flash(f"Il turno {round_number} è già stato avviato!")
-            return redirect(
-                url_for("admin.competition.prova_detail", prova_id=prova_id)
-            )
+            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
+            
+        # Controlla se il turno è già stato avviato (idempotenza)
+        existing_matches = Match.query.filter_by(
+            prova_id=prova_id, round_number=round_number
+        ).first()
+        if existing_matches:
+            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
+            
         if round_number != prova.current_round + 1:
-            flash(f"Devi avviare prima il turno {prova.current_round + 1}!")
-            return redirect(
-                url_for("admin.competition.prova_detail", prova_id=prova_id)
-            )
+            return jsonify({"success": False, "error": f"Devi avviare prima il turno {prova.current_round + 1}!"})
 
         validation = validate_amalfi_configuration(prova)
         if not validation["is_valid"]:
-            for error in validation["errors"]:
-                flash(f"Errore Amalfi: {error}", "error")
-            return redirect(
-                url_for("admin.competition.prova_detail", prova_id=prova_id)
-            )
-        for warning in validation["warnings"]:
-            flash(f"Attenzione: {warning}", "warning")
+            errors = "; ".join(validation["errors"])
+            return jsonify({"success": False, "error": f"Errore Amalfi: {errors}"})
 
         if round_number > 1:
             prev_matches = Match.query.filter_by(
@@ -516,10 +613,7 @@ def amalfi_start_round(prova_id, round_number):
                 m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
             ]
             if incomplete_prev:
-                flash(f"Completa prima tutte le partite del turno {round_number-1}!")
-                return redirect(
-                    url_for("admin.competition.prova_detail", prova_id=prova_id)
-                )
+                return jsonify({"success": False, "error": f"Completa prima tutte le partite del turno {round_number-1}!"})
 
         # Crea il turno Amalfi usando il service layer
         total, n_normal, n_bye, n_trio = ProvaService.create_amalfi_round(
@@ -527,30 +621,38 @@ def amalfi_start_round(prova_id, round_number):
         )
 
         # Aggiorna lo stato della prova
-        prova.current_round = round_number
         if prova.status != ProvaStatus.PLAYING.value:
-            ProvaService.start_playing(prova.id)
+            prova = ProvaService.start_playing(prova.id)
+        
+        # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
+        db.session.refresh(prova)
+        
+        # Aggiorna il turno corrente DOPO il cambio di stato
+        prova.current_round = round_number
+        db.session.add(prova)
+        db.session.commit()
 
-        # Messaggi basati sui risultati
-        flash(
-            f"Turno {round_number} avviato con successo! "
-            f"Creati {total} abbinamenti Amalfi."
-        )
+        # Costruisci il messaggio di successo
+        message = f"Turno {round_number} avviato con successo! Creati {total} abbinamenti Amalfi."
+        details = []
         if n_normal:
-            flash(f"Abbinamenti normali: {n_normal}", "info")
+            details.append(f"Abbinamenti normali: {n_normal}")
         if n_bye:
-            flash(f"Partite vs X: {n_bye}", "info")
+            details.append(f"Partite vs X: {n_bye}")
         if n_trio:
-            flash(f"Trii: {n_trio}", "info")
+            details.append(f"Trii: {n_trio}")
 
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return jsonify({
+            "success": True, 
+            "message": message,
+            "details": details,
+            "redirect": url_for("admin.competition.prova_detail", prova_id=prova_id)
+        })
 
     except ValueError as ve:
-        flash(str(ve), "error")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return jsonify({"success": False, "error": str(ve)})
     except Exception as e:
-        flash(f"Errore durante la creazione del turno: {str(e)}", "error")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return jsonify({"success": False, "error": f"Errore durante la creazione del turno: {str(e)}"})
 
 
 # ============ GESTIONE TRII ============

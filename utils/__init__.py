@@ -322,11 +322,30 @@ def rack_manager_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         from models import Rack  # Local import to avoid circular dependency
+        from flask import flash, redirect, url_for
+        from flask_login import current_user
 
         rack_id = kwargs.get("rack_id")
         rack = Rack.query.get_or_404(rack_id)
-        tournament_id = rack.match.prova.tournament_id
+        prova = rack.match.prova
+        tournament_id = prova.tournament_id
 
+        # Admin può sempre gestire
+        if getattr(current_user, "is_admin", False):
+            return f(*args, **kwargs)
+
+        # Standalone: serve essere DIRECTOR e essere il director assegnato
+        if tournament_id is None:  # Prova standalone
+            if not (
+                getattr(current_user, "is_director", False)
+                and hasattr(prova, "director_id")
+                and prova.director_id == current_user.id
+            ):
+                flash("Non puoi gestire i rack di questa prova.", "error")
+                return redirect(url_for("dashboard.dashboard"))
+            return f(*args, **kwargs)
+        
+        # Prova con torneo: usa la logica standard
         def _get_tid(**_ignored):
             return tournament_id
 
