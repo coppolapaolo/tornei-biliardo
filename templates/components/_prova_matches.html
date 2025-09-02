@@ -26,6 +26,9 @@
                                 <tr>
                                     <td>
                                         <strong>{{ match.player1.username }}</strong>
+                                        {% if match.winner_id == match.player1_id %}
+                                            <i class="fas fa-crown text-warning ms-1"></i>
+                                        {% endif %}
                                     </td>
                                     <td class="text-center">vs</td>
                                     <td>
@@ -33,6 +36,9 @@
                                             <em class="text-muted">Bye</em>
                                         {% else %}
                                             <strong>{{ match.player2.username }}</strong>
+                                            {% if match.winner_id == match.player2_id %}
+                                                <i class="fas fa-crown text-warning ms-1"></i>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                     <td>

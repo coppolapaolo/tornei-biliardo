@@ -142,9 +142,42 @@ Advanced matchmaking system that:
 - Handles odd numbers via trio matches or bye rounds
 - Maintains competitive balance while avoiding repetitive matchups
 
+## Recent Development History
+
+### Comprehensive Competition Management Fixes (September 2025)
+Major bug fix session addressing multiple competition workflow issues:
+
+#### Core Issues Fixed
+1. **Expired Inscriptions Management**: Added ability to start first round or cancel competition with participant notifications when inscriptions expire
+2. **Match Display Issues**: Fixed partial results display for in-progress matches and maintained editability for completed matches
+3. **Rack Management**: Resolved rack removal functionality and proper business logic validation for "best of N" vs "exactly N" match formats
+4. **Director Permissions**: Enabled director inscription functionality on dashboard
+5. **Amalfi Preview System**: Implemented tournament pairing preview without database persistence
+6. **Round Management**: Made start round endpoint idempotent to prevent duplicate matches, fixed round completion detection
+7. **UI Consistency**: Resolved current round display inconsistencies between different UI components
+8. **Statistics Display**: Fixed match statistics in results overview
+9. **Status Labels**: Changed "Torneo Completato" to "Prova Completata" for completed competitions
+10. **Guest Classification**: Implemented fallback system showing RoundClassification from completed Amalfi provas when general tournament classification unavailable
+
+#### Technical Solutions Implemented
+- Enhanced `ProvaService` with cancellation and notification workflows
+- Added preview functionality to `AmalfiEngine` without database modifications  
+- Improved database transaction handling in competition endpoints
+- Added comprehensive error handling and validation throughout competition workflow
+- Implemented intelligent classification fallback logic for guest home page
+- Fixed template endpoint references and permission decorators for standalone competitions
+
+#### Files Modified (21 files, +468/-77 lines)
+- Backend services: `models/competition/services.py`, `amalfi/engine.py`, `routes/admin/competition.py`
+- UI components: Multiple template files in `templates/components/` and `templates/admin/`
+- Status system: `utils/status_ui.py` for badge text corrections
+- Database models: Enhanced validation in `models/competition/models.py`
+
 ## Development Notes
 
 - The codebase uses Italian comments and variable names in many places
 - Git workflow uses feature branches (current: `refactor/step-1-admin-routes-split`)
 - Application runs on `http://localhost:5000` by default
 - Production deployment on PythonAnywhere platform
+- Comprehensive testing revealed and fixed multiple edge cases in competition workflow
+- Amalfi tournament system now fully supports preview, idempotent operations, and fallback classification display

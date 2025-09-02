@@ -65,12 +65,35 @@ def tournament_detail(tournament_id):
         td.user_id == current_user.id for td in tournament.directors_association
     )
 
+    # Calcola statistiche avanzate del torneo  
+    tournament_stats = tournament_service.calculate_tournament_statistics(tournament_id)
+    
+    # Calcola classifica generale se ci sono prove completate o prove in corso con tutti i round completati
+    general_classification = None
+    last_completed_prova_number = None
+    
+    # Trova prove completate o prove "playing" ma con tutti i round completati
+    eligible_provas = []
+    for p in provas:
+        if p.status == 'completed':
+            eligible_provas.append(p)
+        elif p.status == 'playing' and p.current_round > p.rounds_count:
+            # Prova tecnicamente completata ma non ancora marcata come tale
+            eligible_provas.append(p)
+    
+    if eligible_provas:
+        last_completed_prova_number = max(p.number for p in eligible_provas)
+        general_classification = tournament_service.calculate_general_classification(tournament_id)
+
     return render_template(
         "admin/tournament_detail.html",
         tournament=tournament,
         provas=provas,
         users=candidate_directors,
         can_manage_directors=can_manage_directors,
+        tournament_stats=tournament_stats,
+        general_classification=general_classification,
+        last_completed_prova_number=last_completed_prova_number,
     )
 
 

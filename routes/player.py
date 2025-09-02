@@ -71,16 +71,14 @@ def create_match_proposal():
                 flash("Scheduled time is required", "error")
                 raise ValueError("Scheduled time is required")
             scheduled_at = datetime.fromisoformat(scheduled_str.replace("Z", "+00:00"))
-            discipline = request.form.get("discipline", "palla_8")
-            distance = int(request.form.get("distance", 5))
+            discipline = request.form.get("discipline") or None
+            distance_str = request.form.get("distance")
+            distance = int(distance_str) if distance_str else None
             best_of = "best_of" in request.form
-            break_rule = request.form.get("break_rule", "alternate")
+            break_rule = request.form.get("break_rule") or None
             description = request.form.get("description")
-            entry_fee = (
-                float(request.form.get("entry_fee", 0))
-                if request.form.get("entry_fee")
-                else None
-            )
+            # I match individuali sono sempre gratuiti
+            entry_fee = None
 
             if proposal_type == "direct":
                 invited_ids = [
@@ -118,10 +116,20 @@ def create_match_proposal():
             flash(f"Error creating proposal: {str(e)}", "error")
 
     # Get available users and locations for the form
-    from models.location.models import BilliardHall
-
-    users = User.query.filter(User.id != current_user.id).all()
-    locations = BilliardHall.query.all()
+    from models.user.role_enum import UserRole
+    
+    # Escludi admin e current user dai giocatori invitabili
+    users = User.query.filter(
+        User.id != current_user.id,
+        User.role != UserRole.ADMIN.value
+    ).all()
+    
+    # Ottieni i luoghi già utilizzati nelle prove esistenti
+    recent_locations = db.session.query(Prova.location).distinct().filter(
+        Prova.location.isnot(None), 
+        Prova.location != ""
+    ).limit(20).all()
+    locations = [{"name": loc[0]} for loc in recent_locations if loc[0]]
 
     return render_template(
         "player/create_match_proposal.html", users=users, locations=locations

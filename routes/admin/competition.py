@@ -45,95 +45,72 @@ competition_bp = Blueprint("competition", __name__)
 def create_prova_standalone():
     """Crea prova standalone (solo admin)"""
     if request.method == "POST":
-        tournament_id = request.form.get("tournament_id")
-        if not tournament_id:
-            flash("Tournament ID mancante!", "error")
-            return redirect(url_for("dashboard.dashboard"))
+        try:
+            # Campi base
+            name = request.form.get("name", "").strip()
+            if not name:
+                flash("Il nome della competizione è obbligatorio!", "error")
+                return redirect(url_for("admin.competition.create_prova_standalone"))
 
-        tournament_id = int(tournament_id)
-        tournament = db.session.get(Tournament, tournament_id)
-        if tournament is None:
-            abort(404)
+            date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+            
+            # Campi opzionali
+            location = request.form.get("location", "").strip()
+            description = request.form.get("description", "").strip()
+            rounds_count = int(request.form.get("rounds_count", 3))
+            min_participants = int(request.form.get("min_participants", 2))
+            max_participants = request.form.get("max_participants")
+            max_participants = int(max_participants) if max_participants else None
+            entry_fee = float(request.form.get("entry_fee", 0.0))
 
-        # Verifica permessi sul torneo
-        if not (
-            current_user.is_admin
-            or (
-                current_user.is_director
-                and any(
-                    td.user_id == current_user.id
-                    for td in tournament.directors_association
-                )
+            # Game settings
+            discipline = request.form["discipline"]
+            distance = int(request.form["distance"])
+            exact_number = "exact_number" in request.form
+            best_of = not exact_number
+            withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
+
+            # Crea la prova standalone usando il service layer (senza tournament_id)
+            prova = ProvaService.create_prova(
+                tournament_id=None,  # Prove standalone non hanno torneo
+                number=1,  # Sempre 1 per prove standalone
+                name=name,
+                date=date,
+                location=location,
+                description=description,
+                rounds_count=rounds_count,
+                min_participants=min_participants,
+                max_participants=max_participants,
+                entry_fee=entry_fee,
+                discipline=discipline,
+                distance=distance,
+                best_of=best_of,
+                withdraw_policy=withdraw_policy,
+                director_id=current_user.id  # L'admin che crea è il direttore
             )
-        ):
-            flash("Non puoi creare prove in questo torneo.", "error")
-            return redirect(url_for("dashboard.dashboard"))
 
-        number = int(request.form["number"])
+            flash(f"Gara singola '{name}' creata con successo!", "success")
+            return redirect(url_for("admin.competition.prova_detail", prova_id=prova.id))
 
-        # Verifica che il numero prova non esista già
-        existing = Prova.query.filter_by(
-            tournament_id=tournament_id, number=number
-        ).first()
-        if existing:
-            flash(f"La prova {number} esiste già!")
-            return redirect(
-                url_for(
-                    "admin.tournament.tournament_detail", tournament_id=tournament_id
-                )
-            )
-
-        # Campi base
-        name = request.form.get("name", f"Prova {number}")
-        date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
-
-        # Nuovi campi
-        location = request.form.get("location", "")
-        description = request.form.get("description", "")
-        rounds_count = int(request.form.get("rounds_count", 3))
-        min_participants = int(request.form.get("min_participants", 2))
-        max_participants = request.form.get("max_participants")
-        max_participants = int(max_participants) if max_participants else None
-        entry_fee = float(request.form.get("entry_fee", 0.0))
-
-        # Game settings
-        discipline = request.form["discipline"]
-        distance = int(request.form["distance"])
-        exact_number = "exact_number" in request.form
-        best_of = not exact_number
-
-        # Crea la prova usando il service layer
-        withdraw_policy = request.form.get(
-            "withdraw_policy", WithdrawPolicy.EXCLUDE.value
-        )
-        ProvaService.create_prova(
-            tournament_id=tournament_id,
-            number=number,
-            name=name,
-            date=date,
-            location=location,
-            description=description,
-            rounds_count=rounds_count,
-            min_participants=min_participants,
-            max_participants=max_participants,
-            entry_fee=entry_fee,
-            discipline=discipline,
-            distance=distance,
-            best_of=best_of,
-            withdraw_policy=withdraw_policy,
-        )
-
-        flash(f"Prova {number} creata con successo!")
-        return redirect(
-            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
-        )
+        except ValueError as e:
+            flash(f"Errore nella creazione: {str(e)}", "error")
+            return redirect(url_for("admin.competition.create_prova_standalone"))
+        except Exception as e:
+            flash(f"Errore imprevisto: {str(e)}", "error")
+            return redirect(url_for("admin.competition.create_prova_standalone"))
 
     # GET request - show form
-    tournaments = Tournament.query.filter_by(is_active=True).all()
+    # Recupera luoghi utilizzati in precedenza
+    recent_locations = db.session.query(Prova.location).distinct().filter(
+        Prova.location.isnot(None), 
+        Prova.location != ""
+    ).limit(10).all()
+    recent_locations = [loc[0] for loc in recent_locations if loc[0]]
+    
     return render_template(
         "admin/prova_create_standalone.html",
-        tournaments=tournaments,
         WithdrawPolicy=WithdrawPolicy,
+        recent_locations=recent_locations
     )
 
 
@@ -520,10 +497,12 @@ def amalfi_classification(prova_id, round_number):
     # Ottieni o calcola classifica
     classification = get_amalfi_classification(prova_id, round_number)
     if not classification:
-        # Calcola classifica se non esiste
-        classification = RoundClassification.calculate_classification_after_round(
+        # Calcola classifica se non esiste (questo metodo ritorna tuple, non oggetti)
+        RoundClassification.calculate_classification_after_round(
             prova_id, round_number
         )
+        # Ricarica la classifica dopo il calcolo (ora sono oggetti RoundClassification)
+        classification = get_amalfi_classification(prova_id, round_number)
 
     # Statistiche aggiuntive
     total_players = len(classification)

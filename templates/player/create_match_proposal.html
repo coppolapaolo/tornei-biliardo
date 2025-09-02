@@ -1,66 +1,69 @@
 {% extends "base.html" %}
 
-{% block title %}Create Match Proposal - Torneo Biliardo{% endblock %}
+{% block title %}Crea Proposta Match - Torneo Biliardo{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-handshake"></i> Create Match Proposal</h4>
+                <h4 class="mb-0"><i class="fas fa-handshake"></i> Crea Proposta Match</h4>
             </div>
             <div class="card-body">
                 <form method="POST" id="proposalForm">
                     <!-- Proposal Type -->
                     <div class="mb-3">
-                        <label class="form-label">Proposal Type</label>
+                        <label class="form-label">Tipo di Proposta</label>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="proposal_type" id="direct" value="direct" checked>
                             <label class="form-check-label" for="direct">
-                                <strong>Direct Invitation</strong> - Invite specific players
+                                <strong>Invito Diretto</strong> - Invita giocatori specifici
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="proposal_type" id="open" value="open">
                             <label class="form-check-label" for="open">
-                                <strong>Open Proposal</strong> - Available to all eligible players
+                                <strong>Proposta Aperta</strong> - Disponibile a tutti i giocatori idonei
                             </label>
                         </div>
                     </div>
 
                     <!-- Invited Users (for direct proposals) -->
                     <div class="mb-3" id="invitedUsersSection">
-                        <label for="invited_users" class="form-label">Invite Players</label>
+                        <label for="invited_users" class="form-label">Invita Giocatori</label>
                         <select class="form-select" name="invited_users" id="invited_users" multiple size="5">
                             {% for user in users %}
                             <option value="{{ user.id }}">{{ user.username }}</option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Hold Ctrl/Cmd to select multiple players</div>
+                        <div class="form-text">Tieni premuto Ctrl/Cmd per selezionare più giocatori</div>
                     </div>
 
                     <!-- Location -->
                     <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <select class="form-select" name="location" id="location" required>
-                            <option value="">Select a location...</option>
+                        <label for="location" class="form-label">Luogo</label>
+                        <input type="text" class="form-control" name="location" id="location" 
+                               placeholder="Es. Circolo Biliardo Milano" list="locations" required>
+                        <datalist id="locations">
                             {% for location in locations %}
-                            <option value="{{ location.name }}">{{ location.name }} - {{ location.address }}</option>
+                            <option value="{{ location.name }}">
                             {% endfor %}
-                        </select>
+                        </datalist>
+                        <div class="form-text">Seleziona da elenco esistenti o inserisci nuovo luogo</div>
                     </div>
 
                     <!-- Scheduled Date/Time -->
                     <div class="mb-3">
-                        <label for="scheduled_at" class="form-label">Scheduled Date & Time</label>
+                        <label for="scheduled_at" class="form-label">Data e Ora Programmata</label>
                         <input type="datetime-local" class="form-control" name="scheduled_at" id="scheduled_at" required>
                     </div>
 
-                    <!-- Game Configuration -->
+                    <!-- Game Configuration (Optional) -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="discipline" class="form-label">Discipline</label>
+                            <label for="discipline" class="form-label">Disciplina <small class="text-muted">(opzionale)</small></label>
                             <select class="form-select" name="discipline" id="discipline">
+                                <option value="">Da decidere...</option>
                                 <option value="palla_8">8-Ball</option>
                                 <option value="palla_9">9-Ball</option>
                                 <option value="palla_10">10-Ball</option>
@@ -68,49 +71,46 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="distance" class="form-label">Distance</label>
-                            <input type="number" class="form-control" name="distance" id="distance" value="5" min="1" max="25">
+                            <label for="distance" class="form-label">Distanza <small class="text-muted">(opzionale)</small></label>
+                            <input type="number" class="form-control" name="distance" id="distance" placeholder="Es. 5" min="1" max="25">
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="best_of" id="best_of" checked>
+                                <input class="form-check-input" type="checkbox" name="best_of" id="best_of">
                                 <label class="form-check-label" for="best_of">
-                                    Best of (unchecked = Race to)
+                                    Al meglio di (non selezionato = Esatto numero)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="break_rule" class="form-label">Break Rule</label>
+                            <label for="break_rule" class="form-label">Regola Break <small class="text-muted">(opzionale)</small></label>
                             <select class="form-select" name="break_rule" id="break_rule">
-                                <option value="alternate">Alternate Break</option>
-                                <option value="winner">Winner Breaks</option>
-                                <option value="loser">Loser Breaks</option>
+                                <option value="">Da decidere...</option>
+                                <option value="alternate">Break Alternato</option>
+                                <option value="winner">Vince Chi Fa Break</option>
+                                <option value="loser">Perde Chi Fa Break</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Optional Fields -->
-                    <div class="mb-3">
-                        <label for="entry_fee" class="form-label">Entry Fee (€) <small class="text-muted">(optional)</small></label>
-                        <input type="number" class="form-control" name="entry_fee" id="entry_fee" step="0.01" min="0">
-                    </div>
 
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description <small class="text-muted">(optional)</small></label>
+                        <label for="description" class="form-label">Descrizione <small class="text-muted">(opzionale)</small></label>
                         <textarea class="form-control" name="description" id="description" rows="3" 
-                                  placeholder="Add any additional information about this match..."></textarea>
+                                  placeholder="Aggiungi informazioni aggiuntive su questo match..."></textarea>
                     </div>
 
                     <!-- Submit Buttons -->
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('player.match_proposals') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Cancel
+                            <i class="fas fa-arrow-left"></i> Annulla
                         </a>
                         <button type="submit" class="btn btn-success">
-                            <i class="fas fa-paper-plane"></i> Create Proposal
+                            <i class="fas fa-paper-plane"></i> Crea Proposta
                         </button>
                     </div>
                 </form>

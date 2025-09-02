@@ -5,11 +5,11 @@
         <div class="card bg-info bg-opacity-10">
             <div class="card-body text-center">
                 <h3 class="text-info">
-                    {% set total_matches = 0 %}
+                    {% set total_matches = namespace(count=0) %}
                     {% for round_matches in matches_by_round.values() %}
-                        {% set total_matches = total_matches + round_matches|length %}
+                        {% set total_matches.count = total_matches.count + round_matches|length %}
                     {% endfor %}
-                    {{ total_matches }}
+                    {{ total_matches.count }}
                 </h3>
                 <small class="text-muted">Partite Totali</small>
             </div>
@@ -19,11 +19,11 @@
         <div class="card bg-success bg-opacity-10">
             <div class="card-body text-center">
                 <h3 class="text-success">
-                    {% set completed_count = 0 %}
+                    {% set completed_count = namespace(count=0) %}
                     {% for round_num, round_matches in matches_by_round.items() %}
-                        {% set completed_count = completed_count + round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                        {% set completed_count.count = completed_count.count + round_matches|selectattr("status", "equalto", "completed")|list|length %}
                     {% endfor %}
-                    {{ completed_count }}
+                    {{ completed_count.count }}
                 </h3>
                 <small class="text-muted">Completate</small>
             </div>
@@ -33,11 +33,11 @@
         <div class="card bg-warning bg-opacity-10">
             <div class="card-body text-center">
                 <h3 class="text-warning">
-                    {% set pending_count = 0 %}
+                    {% set pending_count = namespace(count=0) %}
                     {% for round_num, round_matches in matches_by_round.items() %}
-                        {% set pending_count = pending_count + round_matches|selectattr("status", "in", ["pending", "playing"])|list|length %}
+                        {% set pending_count.count = pending_count.count + round_matches|selectattr("status", "in", ["pending", "playing"])|list|length %}
                     {% endfor %}
-                    {{ pending_count }}
+                    {{ pending_count.count }}
                 </h3>
                 <small class="text-muted">In Attesa</small>
             </div>

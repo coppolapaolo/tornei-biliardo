@@ -84,15 +84,18 @@ class AmalfiEngine:
 
     def _preview_first_round(self) -> List[Dict]:
         """Genera l'anteprima del primo turno senza persistere"""
-        # Implementazione semplificata per ora
         inscriptions = self._inscriptions_for_pairing()
         if len(inscriptions) < self.prova.min_participants:
             raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
         
-        matches_data = []
-        players = [ins for ins in inscriptions]
+        # Usa lo stesso seed del _create_first_round per avere gli stessi accoppiamenti
+        rng = random.Random(self.prova.id)
+        rng.shuffle(inscriptions)
         
-        # Algoritmo semplificato per il primo turno
+        matches_data = []
+        players = inscriptions
+        
+        # Usa la stessa logica del _create_first_round
         i = 0
         while i < len(players):
             if i + 1 < len(players):
@@ -155,8 +158,10 @@ class AmalfiEngine:
         if len(inscriptions) < self.prova.min_participants:
             raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
 
-        # Sorteggio casuale e memorizzazione ordine
-        random.shuffle(inscriptions)
+        # Usa un seed basato sul prova_id per avere risultati deterministici
+        # ma diversi per ogni prova
+        rng = random.Random(self.prova.id)
+        rng.shuffle(inscriptions)
         for i, inscription in enumerate(inscriptions, 1):
             inscription.initial_order = i
 

@@ -119,10 +119,10 @@ class IndividualMatchService:
         location: str,
         scheduled_at: datetime,
         expires_at: Optional[datetime] = None,
-        discipline: str = "palla_8",
-        distance: int = 5,
-        best_of: bool = True,
-        break_rule: str = "alternate",
+        discipline: Optional[str] = None,
+        distance: Optional[int] = None,
+        best_of: bool = False,
+        break_rule: Optional[str] = None,
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
     ) -> MatchProposal:
@@ -150,13 +150,40 @@ class IndividualMatchService:
         db.session.add(proposal)
         db.session.flush()  # Get the ID
 
-        # Create invitations
+        # Create invitations and send notifications
+        from ..notification.services import NotificationService
+        from ..user.models import User
+        
+        proposer = User.query.get(proposer_id)
+        
         for user_id in invited_user_ids:
             if user_id != proposer_id:  # Don't invite yourself
                 invitation = ProposalInvitation(
                     proposal_id=proposal.id, invited_user_id=user_id
                 )
                 db.session.add(invitation)
+                
+                # Send notification direttamente (come per le richieste direttore)
+                from ..notification.models import NotificationType, NotificationPriority
+                from flask import url_for
+                
+                try:
+                    notification_result = NotificationService.create_notification(
+                        user_id=user_id,
+                        notification_type=NotificationType.MATCH_PROPOSAL,
+                        title="Nuovo Invito Match",
+                        message=(
+                            f"{proposer.username if proposer else 'Un giocatore'} ti ha invitato "
+                            f"per un match presso {location} il {scheduled_at.strftime('%d/%m/%Y alle %H:%M')}."
+                        ),
+                        priority=NotificationPriority.NORMAL,
+                        action_url=url_for('player.match_proposals', _external=False),
+                        action_text="Vedi Invito"
+                    )
+                    print(f"DEBUG: Notification created for user {user_id}: {notification_result}")
+                except Exception as e:
+                    print(f"DEBUG: Error creating notification for user {user_id}: {e}")
+                    # Continue anyway - notification failure shouldn't block proposal creation
 
         db.session.commit()
         return proposal
@@ -167,10 +194,10 @@ class IndividualMatchService:
         location: str,
         scheduled_at: datetime,
         expires_at: Optional[datetime] = None,
-        discipline: str = "palla_8",
-        distance: int = 5,
-        best_of: bool = True,
-        break_rule: str = "alternate",
+        discipline: Optional[str] = None,
+        distance: Optional[int] = None,
+        best_of: bool = False,
+        break_rule: Optional[str] = None,
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
     ) -> MatchProposal:
@@ -203,11 +230,14 @@ class IndividualMatchService:
     ) -> Dict[str, List[MatchProposal]]:
         """Get proposals organized by user relationship."""
 
+        # First, expire any pending proposals that have passed their expiry time
+        IndividualMatchService._expire_pending_proposals()
+
         query = MatchProposal.query
 
         if not include_expired:
             query = query.filter(
-                db.or_(
+                db.and_(
                     MatchProposal.status != ProposalStatus.EXPIRED,
                     MatchProposal.expires_at > datetime.utcnow(),
                 )
@@ -668,3 +698,23 @@ class IndividualMatchService:
             else 0,
             "locations_played": locations_played,
         }
+
+    @staticmethod
+    def _expire_pending_proposals() -> int:
+        """Mark expired pending proposals as expired. Returns count of expired proposals."""
+        now = datetime.utcnow()
+        
+        expired_proposals = MatchProposal.query.filter(
+            MatchProposal.status == ProposalStatus.PENDING,
+            MatchProposal.expires_at <= now,
+        ).all()
+        
+        count = 0
+        for proposal in expired_proposals:
+            proposal.expire()
+            count += 1
+        
+        if count > 0:
+            db.session.commit()
+        
+        return count

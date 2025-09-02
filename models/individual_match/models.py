@@ -186,6 +186,17 @@ class MatchProposal(BaseModel, TimestampMixin):
                 if invitation.status == InvitationStatus.PENDING:
                     invitation.status = InvitationStatus.EXPIRED
 
+    def get_invitation_for_user(self, user_id: int) -> Optional["ProposalInvitation"]:
+        """Get the invitation for a specific user."""
+        if self.proposal_type != ProposalType.DIRECT:
+            return None
+            
+        from typing import cast
+        for invitation in cast(List["ProposalInvitation"], self.invitations):
+            if invitation.invited_user_id == user_id:
+                return invitation
+        return None
+
     def __repr__(self) -> str:
         return f"<MatchProposal {self.proposer_id} -> {self.proposal_type.value} at {self.location}>"
 

@@ -496,6 +496,177 @@ class TournamentService(DomainService):
         }
 
 
+    @read_only(domain="tournament")
+    def calculate_tournament_statistics(self, tournament_id: int) -> Dict[str, Any]:
+        """Calcola statistiche avanzate del torneo."""
+        from models.competition.models import Prova, Inscription
+        from models.match.models import Match
+        from sqlalchemy import func, distinct
+        
+        # Trova tutte le prove del torneo
+        provas = db.session.query(Prova).filter_by(tournament_id=tournament_id).all()
+        
+        # Giocatori unici che hanno mai partecipato al torneo
+        unique_players_query = (
+            db.session.query(distinct(Inscription.user_id))
+            .join(Prova, Inscription.prova_id == Prova.id)
+            .filter(Prova.tournament_id == tournament_id)
+        )
+        total_unique_players = unique_players_query.count()
+        
+        # Giocatori attualmente iscritti a prove con iscrizioni aperte
+        active_inscriptions_query = (
+            db.session.query(distinct(Inscription.user_id))
+            .join(Prova, Inscription.prova_id == Prova.id)
+            .filter(
+                Prova.tournament_id == tournament_id,
+                Prova.status == 'inscription'  # Solo prove con iscrizioni aperte
+            )
+        )
+        currently_inscribed_players = active_inscriptions_query.count()
+        
+        # Match totali completati in tutte le prove
+        completed_matches_query = (
+            db.session.query(func.count(Match.id))
+            .join(Prova, Match.prova_id == Prova.id)
+            .filter(
+                Prova.tournament_id == tournament_id,
+                Match.status == 'completed'
+            )
+        )
+        total_completed_matches = completed_matches_query.scalar() or 0
+        
+        # Rack totali giocati (somma dei punteggi di tutti i match completati)
+        rack_sum_query = (
+            db.session.query(
+                func.sum(Match.player1_score + Match.player2_score)
+            )
+            .join(Prova, Match.prova_id == Prova.id)
+            .filter(
+                Prova.tournament_id == tournament_id,
+                Match.status == 'completed'
+            )
+        )
+        total_racks_played = rack_sum_query.scalar() or 0
+        
+        return {
+            'total_unique_players': total_unique_players,
+            'currently_inscribed_players': currently_inscribed_players,
+            'total_completed_matches': total_completed_matches,
+            'total_racks_played': total_racks_played
+        }
+    
+    @read_only(domain="tournament")
+    def calculate_general_classification(self, tournament_id: int) -> List[tuple]:
+        """Calcola la classifica generale del torneo basata su tutte le prove completate."""
+        from models.competition.models import Prova
+        from models.classification.models import RoundClassification
+        from models.tournament.models import Tournament
+        from models.user.models import User
+        from sqlalchemy import func
+        
+        # Trova il torneo per verificare il tipo
+        tournament = db.session.query(Tournament).filter_by(id=tournament_id).first()
+        if not tournament:
+            return []
+        
+        # Trova tutte le prove completate del torneo (incluse quelle "playing" ma finite)
+        all_provas = (
+            db.session.query(Prova)
+            .filter_by(tournament_id=tournament_id)
+            .filter(Prova.status.in_(['completed', 'playing']))
+            .all()
+        )
+        
+        # Filtra le prove che sono realmente completate
+        completed_provas = []
+        for prova in all_provas:
+            if prova.status == 'completed':
+                completed_provas.append(prova)
+            elif prova.status == 'playing' and prova.current_round > prova.rounds_count:
+                # Prova con tutti i round completati
+                completed_provas.append(prova)
+        
+        if not completed_provas:
+            return []
+        
+        # Raccoglie tutti i risultati per giocatore
+        player_totals = {}
+        
+        for prova in completed_provas:
+            # Ottieni la classifica finale di questa prova (ultimo turno)
+            final_round = prova.rounds_count
+            classifications = (
+                db.session.query(RoundClassification)
+                .filter_by(prova_id=prova.id, round_number=final_round)
+                .order_by(RoundClassification.position)
+                .all()
+            )
+            
+            for classification in classifications:
+                user_id = classification.user_id
+                if user_id not in player_totals:
+                    player_totals[user_id] = {
+                        'username': classification.user.username,
+                        'total_matches_won': 0,
+                        'total_rack_difference': 0,
+                        'participations': 0
+                    }
+                
+                # Per tornei Amalfi: somma match vinti e differenza rack
+                player_totals[user_id]['total_matches_won'] += classification.matches_won or 0
+                player_totals[user_id]['total_rack_difference'] += classification.rack_difference or 0
+                player_totals[user_id]['participations'] += 1
+        
+        # Per tornei Amalfi: ordina per match vinti (decrescente), poi per differenza rack (decrescente)
+        if tournament.tournament_type == 'Amalfi':
+            sorted_players = sorted(
+                player_totals.items(),
+                key=lambda x: (
+                    -x[1]['total_matches_won'],  # Prima i match vinti
+                    -x[1]['total_rack_difference']  # Poi la differenza rack
+                )
+            )
+        else:
+            # Per altri tipi di torneo, usa il sistema a punti
+            position_points = {
+                1: 10, 2: 7, 3: 5, 4: 4, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1, 10: 1
+            }
+            # Calcola punti per giocatore (logica precedente)
+            for prova in completed_provas:
+                final_round = prova.rounds_count
+                classifications = (
+                    db.session.query(RoundClassification)
+                    .filter_by(prova_id=prova.id, round_number=final_round)
+                    .order_by(RoundClassification.position)
+                    .all()
+                )
+                
+                for classification in classifications:
+                    user_id = classification.user_id
+                    if 'total_points' not in player_totals[user_id]:
+                        player_totals[user_id]['total_points'] = 0
+                    
+                    points = position_points.get(classification.position, 0)
+                    player_totals[user_id]['total_points'] += points
+            
+            sorted_players = sorted(
+                player_totals.items(),
+                key=lambda x: (
+                    -x[1].get('total_points', 0),
+                    -x[1]['total_rack_difference'],
+                    -x[1]['total_matches_won']
+                )
+            )
+        
+        # Aggiungi posizioni e restituisci nel formato richiesto
+        result = []
+        for position, (user_id, data) in enumerate(sorted_players, 1):
+            result.append((position, data))
+        
+        return result
+
+
 # -----------------------------
 # Funzione *pura* per lo stato derivato del Torneo
 # -----------------------------

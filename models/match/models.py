@@ -355,6 +355,35 @@ class Match(db.Model):
             "sets": sets_summary,
         }
 
+    def _check_and_complete_prova_if_needed(self, match_obj):
+        """Controlla se tutti i match della prova sono completati e completa automaticamente la prova"""
+        try:
+            from models.competition.services import ProvaService
+            from models.competition.models import Prova
+            from models.status_enum import ProvaStatus
+            
+            if not match_obj.prova_id:
+                return
+            
+            prova = db.session.get(Prova, match_obj.prova_id)
+            if not prova or prova.status != ProvaStatus.PLAYING.value:
+                return
+            
+            # Controlla se tutti i match della prova sono completati
+            all_matches = db.session.query(Match).filter_by(prova_id=prova.id).all()
+            completed_matches = [m for m in all_matches if m.status == 'completed']
+            
+            # Se tutti i match sono completati e abbiamo finito tutti i round, completa la prova
+            if (len(completed_matches) == len(all_matches) and 
+                prova.current_round >= prova.rounds_count):
+                
+                ProvaService.complete(prova.id)
+                print(f"Prova {prova.id} automaticamente completata dopo il completamento dell'ultimo match")
+                
+        except Exception as e:
+            # Log l'errore ma non bloccare il completamento del match
+            print(f"Errore nel completamento automatico della prova: {e}")
+
 
 class Rack(db.Model):
     """Detailed tracking of individual racks within a match."""
@@ -509,6 +538,9 @@ class TrioMatch(db.Model):
                 match_obj.status = "completed"
                 match_obj.player1_score = self.player1_racks
                 match_obj.player2_score = self.player2_racks
+                
+                # Controlla se tutti i match della prova sono completati e completa automaticamente la prova
+                match_obj._check_and_complete_prova_if_needed(match_obj)
 
         # Ruota i giocatori per il prossimo rack
         self._rotate_players()
