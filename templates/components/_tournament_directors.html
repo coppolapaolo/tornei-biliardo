@@ -1,5 +1,5 @@
 <!-- Directors Management Component -->
-{% if show_admin_management or show_director_management %}
+{% if (show_admin_management or show_director_management) and (tournament.directors or users) %}
 <div class="card m-3">
     <div class="card-header">
         <h6><i class="fas fa-users"></i> Direttori di gara</h6>

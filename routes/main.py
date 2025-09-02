@@ -103,8 +103,12 @@ def reset_database():
     """Reset completo del database - SOLO in modalità debug"""
     if not Config.DEBUG_MODE:
         return "Reset non disponibile in produzione", 403
-
-    return render_template("reset.html")
+    
+    from utils.reset_manager import ResetManager
+    manager = ResetManager()
+    reset_options = manager.get_reset_options()
+    
+    return render_template("reset.html", reset_options=reset_options)
 
 
 @main_bp.route("/reset/confirm", methods=["POST"])
@@ -114,6 +118,8 @@ def reset_database_confirm():
         return "Reset non disponibile in produzione", 403
 
     password = request.form.get("password", "")
+    reset_type = request.form.get("reset_type", "base")
+    
     if password != "RESET_DB_CONFIRM":
         flash("Password di conferma errata!")
         return redirect(url_for("main.reset_database"))
@@ -123,23 +129,16 @@ def reset_database_confirm():
         if current_user.is_authenticated:
             logout_user()
 
-        # Elimina tutte le tabelle
-        db.drop_all()
-
-        # Ricrea tutte le tabelle
-        db.create_all()
-
-        # Import enhanced reset functionality - CORREZIONE PATH
-        from utils.reset_data import reset_database_enhanced
-
-        # Create enhanced reset data
-        reset_database_enhanced()
-
-        flash(
-            "Database resettato con successo! "
-            "Enhanced data created with rich user examples."
-        )
-        flash("Sei stato disconnesso automaticamente. Rieffettua il login.", "info")
+        from utils.reset_manager import ResetManager
+        manager = ResetManager()
+        result = manager.execute_reset(reset_type)
+        
+        if result['status'] == 'success':
+            flash(result['message'])
+            flash("Sei stato disconnesso automaticamente. Rieffettua il login.", "info")
+        else:
+            flash(f"Errore: {result['message']}", "danger")
+            
         return redirect(url_for("main.index"))
 
     except Exception as e:
@@ -165,3 +164,46 @@ def quick_login(username):
     flash(f"Quick login effettuato come {username}!")
 
     return redirect(url_for("dashboard.dashboard"))
+
+
+@main_bp.route("/reset/save", methods=["POST"])
+def save_reset_snapshot():
+    """Salva lo stato corrente del database come snapshot"""
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+    
+    name = request.form.get("name", "")
+    description = request.form.get("description", "")
+    
+    if not name:
+        flash("Il nome dello snapshot è obbligatorio!", "danger")
+        return redirect(request.referrer or url_for("main.reset_database"))
+    
+    from utils.reset_manager import ResetManager
+    manager = ResetManager()
+    result = manager.save_current_state(name, description)
+    
+    if result['status'] == 'success':
+        flash(result['message'], "success")
+    else:
+        flash(result['message'], "danger")
+    
+    return redirect(request.referrer or url_for("main.reset_database"))
+
+
+@main_bp.route("/reset/delete/<snapshot_id>", methods=["POST"])
+def delete_reset_snapshot(snapshot_id):
+    """Elimina uno snapshot salvato"""
+    if not Config.DEBUG_MODE:
+        return "Funzione non disponibile in produzione", 403
+    
+    from utils.reset_manager import ResetManager
+    manager = ResetManager()
+    result = manager.delete_snapshot(snapshot_id)
+    
+    if result['status'] == 'success':
+        flash(result['message'], "success")
+    else:
+        flash(result['message'], "danger")
+    
+    return redirect(url_for("main.reset_database"))

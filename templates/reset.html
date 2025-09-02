@@ -4,53 +4,119 @@
 {% block title %}Reset Database - Torneo Biliardo{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card border-danger">
-            <div class="card-header bg-danger text-white">
-                <h4><i class="fas fa-exclamation-triangle"></i> Reset Database</h4>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-warning">
-                    <strong>⚠️ ATTENZIONE!</strong><br>
-                    Questa operazione eliminerà TUTTI i dati nel database e li sostituirà con dati di test.
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-database"></i> Gestione Reset Database</h2>
+    
+    <!-- Opzioni di reset disponibili -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-undo"></i> Opzioni di Reset Disponibili</h5>
                 </div>
-
-                <h5>Cosa farà il reset:</h5>
-                <ul>
-                    <li>❌ Elimina tutti i tornei, prove, iscrizioni e partite</li>
-                    <li>❌ Elimina tutti gli utenti esistenti</li>
-                    <li>✅ Crea utente <strong>admin</strong> (password: admin123)</li>
-                    <li>✅ Crea utente <strong>mario</strong> (password: mario123)</li>
-                    <li>✅ Crea utente <strong>pino</strong> (password: pino123)</li>
-                    <li>✅ Crea un torneo di test con una prova</li>
-                </ul>
-
-                <hr>
-
-                <form method="POST" action="{{ url_for('main.reset_database_confirm') }}" onsubmit="return confirm('Sei SICURO di voler resettare tutto il database?')">
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <strong>Password di conferma:</strong>
-                        </label>
-                        <input type="text" class="form-control" name="password"
-                               placeholder="Digita: RESET_DB_CONFIRM" required>
-                        <small class="text-muted">
-                            Per sicurezza, digita esattamente: <code>RESET_DB_CONFIRM</code>
-                        </small>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Descrizione</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reset_id, reset_data in reset_options.items() %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ reset_data.name }}</strong>
+                                        {% if reset_data.created_at %}
+                                            <br><small class="text-muted">Creato: {{ reset_data.created_at }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reset_data.description }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('main.reset_database_confirm') }}" 
+                                              style="display: inline-block;"
+                                              onsubmit="return confirmReset('{{ reset_data.name }}')">
+                                            <input type="hidden" name="reset_type" value="{{ reset_id }}">
+                                            <input type="hidden" name="password" id="password-{{ reset_id }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-play"></i> Esegui
+                                            </button>
+                                        </form>
+                                        
+                                        {% if reset_data.deletable %}
+                                        <form method="POST" action="{{ url_for('main.delete_reset_snapshot', snapshot_id=reset_id) }}" 
+                                              style="display: inline-block;"
+                                              onsubmit="return confirm('Sei sicuro di voler eliminare questo snapshot?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-bomb"></i> RESET DATABASE
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form per salvare nuovo snapshot -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-save"></i> Salva Stato Corrente</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.save_reset_snapshot') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome Snapshot</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="es. Test Torneo Completato" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrizione</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="3" placeholder="Descrivi lo stato salvato..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info w-100">
+                            <i class="fas fa-camera"></i> Salva Snapshot
                         </button>
-                        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Annulla
-                        </a>
-                    </div>
-                </form>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Informazioni di avviso -->
+            <div class="alert alert-warning mt-3">
+                <h6><i class="fas fa-exclamation-triangle"></i> Attenzione!</h6>
+                <ul class="mb-0 small">
+                    <li>Il reset eliminerà TUTTI i dati correnti</li>
+                    <li>L'operazione non è reversibile</li>
+                    <li>Sarai disconnesso automaticamente</li>
+                    <li>I reset "Base" e "Demo" non possono essere eliminati</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function confirmReset(resetName) {
+    const password = prompt(`Stai per eseguire il reset "${resetName}".\n\nPer confermare, digita: RESET_DB_CONFIRM`);
+    
+    if (password === 'RESET_DB_CONFIRM') {
+        // Trova tutti i campi password e imposta il valore
+        document.querySelectorAll('input[id^="password-"]').forEach(input => {
+            input.value = password;
+        });
+        return true;
+    }
+    
+    alert('Password di conferma errata!');
+    return false;
+}
+</script>
 {% endblock %}

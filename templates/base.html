@@ -276,7 +276,8 @@
                     <div class="debug-item">
                         <strong>Quick Actions:</strong><br>
                         <a href="{{ url_for('main.reset_database') }}" class="text-warning">Reset DB</a> |
-                        <a href="/admin" class="text-info">Admin Panel</a>
+                        <a href="/admin" class="text-info">Admin Panel</a> |
+                        <a href="#" onclick="saveCurrentReset(); return false;" class="text-success">Save Reset</a>
                     </div>
                     <div class="debug-item">
                         <strong>Quick Login:</strong><br>
@@ -301,6 +302,42 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    {% if debug_info.debug_mode %}
+    <script>
+    function saveCurrentReset() {
+        const name = prompt("Nome per lo snapshot del database corrente:");
+        if (!name) {
+            return;
+        }
+        
+        const description = prompt("Descrizione (opzionale):");
+        
+        // Crea un form nascosto e lo invia
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("main.save_reset_snapshot") }}';
+        
+        const nameInput = document.createElement('input');
+        nameInput.type = 'hidden';
+        nameInput.name = 'name';
+        nameInput.value = name;
+        form.appendChild(nameInput);
+        
+        if (description) {
+            const descInput = document.createElement('input');
+            descInput.type = 'hidden';
+            descInput.name = 'description';
+            descInput.value = description;
+            form.appendChild(descInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+    </script>
+    {% endif %}
+    
     {% block scripts %}{% endblock %}
 </body>
 </html>
