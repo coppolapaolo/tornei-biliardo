@@ -1,13 +1,8 @@
 {# templates/components/_director_dashboard_content.html #}
 {% if vm.standalone_provas | length %}
   <div class="card mb-4" id="standalone-owned" data-test="director-standalone-owned">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header">
       <h5 class="mb-0"><i class="fas fa-bullseye"></i> Prove Standalone che gestite</h5>
-      {% if vm.caps and vm.caps.can_create_standalone %}
-        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newStandaloneModal">
-          <i class="fas fa-plus"></i> Nuova Standalone
-        </button>
-      {% endif %}
     </div>
     <div class="card-body">
       {% set provas = vm.standalone_provas %}
@@ -17,10 +12,10 @@
   </div>
 {% endif %}
 
-{% if vm.standalone_available is not none %}
+{% if vm.standalone_available and vm.standalone_available | length %}
   <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Le altre Standalone</h5>
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Prove Standalone Disponibili</h5>
     </div>
     <div class="card-body">
       {% set provas = vm.standalone_available %}
@@ -103,6 +98,33 @@
   </div>
 {% endif %}
 
+<!-- Tornei Disponibili (come player) -->
+{% set available_tournaments = [] %}
+{% for t in vm.tournaments %}
+  {% set is_director = false %}
+  {% for mt in vm.managed_tournaments %}
+    {% if mt.id == t.id %}
+      {% set is_director = true %}
+    {% endif %}
+  {% endfor %}
+  {% if not is_director %}
+    {% set _ = available_tournaments.append(t) %}
+  {% endif %}
+{% endfor %}
+
+{% if available_tournaments | length %}
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-trophy"></i> Tornei Disponibili</h5>
+    </div>
+    <div class="card-body">
+      {% set tournaments = available_tournaments %}
+      {% set mode = 'player' %}
+      {% include "components/_tournament_cards.html" %}
+    </div>
+  </div>
+{% endif %}
+
 {% if vm.selected_tournament %}
 
   <!-- LAYOUT A DUE COLONNE -->
@@ -116,11 +138,19 @@
 
     </div>
 
+    <!-- COLONNA DESTRA -->
+    <div class="col-lg-4">
+      <!-- Tournament Info -->
+      {% include "components/_tournament_info.html" %}
+
+      <!-- Quick Actions -->
+      {% include "components/_quick_actions.html" %}
+    </div>
+
   </div>
 
 {% else %}
-  <div class="alert alert-warning">
-    <h4>Nessun torneo attivo</h4>
-    <p>Al momento non ci sono tornei attivi.</p>
-  </div>
+  {% if not vm.managed_tournaments and not vm.standalone_provas and not available_tournaments and not vm.standalone_available %}
+    {% include "components/_dashboard_empty_state.html" %}
+  {% endif %}
 {% endif %}

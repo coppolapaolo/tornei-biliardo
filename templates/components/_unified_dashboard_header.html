@@ -23,13 +23,13 @@
       
       {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_tournament) %}
         {% if current_user.is_admin %}
-          <a class="btn btn-outline-primary" href="{{ url_for('admin.competition.create_prova_standalone') }}">
-            <i class="fas fa-bullseye"></i> Nuova Prova
+          <a class="btn btn-success" href="{{ url_for('admin.competition.create_prova_standalone') }}">
+            <i class="fas fa-plus"></i> Nuova Prova
           </a>
-        {% else %}
-          <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newStandaloneModal">
-            <i class="fas fa-plus"></i> Nuova Standalone
-          </button>
+        {% elif current_user.is_director %}
+          <a class="btn btn-success" href="{{ url_for('director.create_prova_standalone') }}">
+            <i class="fas fa-plus"></i> Nuova Prova
+          </a>
         {% endif %}
       {% endif %}
     {% endif %}

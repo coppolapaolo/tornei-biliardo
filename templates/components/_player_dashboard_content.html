@@ -21,11 +21,17 @@
           <td>{{ p.discipline|replace('_', ' ')|title }}</td>
           <td><span class="text-danger">{{ p.inscription_end.strftime('%d/%m %H:%M') if p.inscription_end else '-' }}</span></td>
           <td>
-            <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=p.id) }}">
-             <button type="submit" class="btn btn-sm btn-success">
-                <i class="fas fa-user-plus"></i> Iscriviti
-              </button>
-            </form>
+            {% if p.status == 'inscription' %}
+              <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=p.id) }}">
+               <button type="submit" class="btn btn-sm btn-success">
+                  <i class="fas fa-user-plus"></i> Iscriviti
+                </button>
+              </form>
+            {% elif p.status == 'setup' %}
+              <span class="badge bg-secondary">In preparazione</span>
+            {% else %}
+              <span class="badge bg-warning">{{ p.status|title }}</span>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -80,5 +86,7 @@
   </div>
 
 {% else %}
-  {% include "components/_dashboard_empty_state.html" %}
+  {% if not vm.standalone_available or vm.standalone_available|length == 0 %}
+    {% include "components/_dashboard_empty_state.html" %}
+  {% endif %}
 {% endif %}

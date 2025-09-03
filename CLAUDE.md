@@ -173,6 +173,35 @@ Major bug fix session addressing multiple competition workflow issues:
 - Status system: `utils/status_ui.py` for badge text corrections
 - Database models: Enhanced validation in `models/competition/models.py`
 
+### Match Proposals System Overhaul (September 2025)
+Complete redesign and enhancement of the individual match proposals system:
+
+#### Major Features Implemented
+1. **Italian Localization**: Full translation of match proposals interface from English to Italian
+2. **Fixed Notification System**: Proper integration with NotificationService for match proposal alerts
+3. **Enhanced UI/UX**: Reordered sections prioritizing "Inviti Ricevuti" over "Le Mie Proposte"
+4. **Dynamic Status Management**: Real-time status badges (In Attesa/Accettato/Rifiutato/Scaduto/Annullato)
+5. **Smart Button Management**: Action buttons hidden for non-pending invitations per SPECIFICHE.md requirements
+6. **Automatic Expiry System**: Background process to mark and filter expired proposals
+7. **Flexible Field Configuration**: Made discipline, distance, and break rules optional in proposal creation
+8. **Location Integration**: Smart location suggestions from existing competitions and standalone provas
+
+#### Technical Improvements
+- **Fixed Notification Creation**: Replaced template-based notifications with direct NotificationService.create_notification()
+- **Enhanced Data Models**: Added `get_invitation_for_user()` method to MatchProposal model for precise status tracking
+- **Corrected Filter Logic**: Fixed proposal expiry filtering from OR to AND logic for proper SPECIFICHE.md compliance
+- **Automatic Cleanup**: Implemented `_expire_pending_proposals()` for database hygiene
+- **Service Layer Updates**: Removed hardcoded defaults from IndividualMatchService methods
+- **Admin Exclusion**: Prevented admin users from appearing in match proposal invitations
+- **Fee Removal**: Eliminated entry fees from individual matches (always free per requirements)
+
+#### Files Modified (21 files, +753/-237 lines)
+- **Core Services**: `models/individual_match/services.py`, `models/individual_match/models.py`
+- **Notification System**: Integration with existing NotificationService for proper alerts
+- **Route Handlers**: `routes/player.py` for improved user filtering and location suggestions
+- **Templates**: Complete UI overhaul in `templates/player/match_proposals.html`, `templates/player/create_match_proposal.html`
+- **Competition System**: Enhanced standalone competition creation with optional fields and location datalist
+
 ## Development Notes
 
 - The codebase uses Italian comments and variable names in many places

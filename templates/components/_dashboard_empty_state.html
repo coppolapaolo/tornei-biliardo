@@ -1,9 +1,14 @@
 <!-- Unified Dashboard Empty State Component -->
 <div class="alert alert-info text-center">
   <h4><i class="fas fa-trophy"></i> Benvenuto!</h4>
-  <p>Non ci sono ancora tornei configurati. Inizia creando il tuo primo torneo!</p>
-  {% if vm.caps and vm.caps.can_create_tournament %}
-    <!-- Button removed to avoid duplication with header button -->
+  {% if current_user.is_admin %}
+    <p>Non ci sono ancora tornei configurati. Inizia creando il tuo primo torneo!</p>
     <p class="text-muted mt-3">Usa il pulsante "Nuovo Torneo" nell'intestazione per creare il tuo primo torneo.</p>
+  {% elif current_user.is_director %}
+    <p>Non ci sono ancora tornei o prove da gestire.</p>
+    <p class="text-muted mt-3">Puoi creare nuovi tornei o prove usando i pulsanti nell'intestazione.</p>
+  {% else %}
+    <p>Non ci sono ancora tornei attivi a cui puoi partecipare.</p>
+    <p class="text-muted mt-3">Controlla più tardi per nuove opportunità di gioco.</p>
   {% endif %}
 </div>

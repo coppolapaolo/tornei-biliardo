@@ -46,6 +46,13 @@
                     <i class="fas fa-users"></i>
                     Iscritti: {{ p.inscriptions|length }}{% if p.max_participants %}/{{ p.max_participants }}{% endif %}
                   </small>
+                {% elif p.status == 'setup' %}
+                  <div class="mt-2">
+                    <span class="badge bg-secondary">In preparazione</span>
+                  </div>
+                  <small class="text-muted d-block mt-1">
+                    Le iscrizioni apriranno a breve
+                  </small>
                 {% else %}
                   <small class="text-muted d-block mt-2">
                     <i class="fas fa-users"></i>

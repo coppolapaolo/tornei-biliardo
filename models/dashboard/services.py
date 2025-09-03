@@ -170,7 +170,7 @@ class DashboardService:
     ) -> List[Prova]:
         """
         Standalone disponibili per iscrizione:
-        - stato = INSCRIPTION
+        - stato = INSCRIPTION o SETUP (mostra tutte le prove non ancora iniziate)
         - utente NON già iscritto
         - opzionale: escludi quelle gestite da exclude_director_id
             (evita duplicati su director)
@@ -182,7 +182,10 @@ class DashboardService:
         )
 
         q = DashboardService._standalone_q().filter(
-            Prova.status == ProvaStatus.INSCRIPTION.value,
+            or_(
+                Prova.status == ProvaStatus.INSCRIPTION.value,
+                Prova.status == ProvaStatus.SETUP.value
+            ),
             ~Prova.id.in_(subq_all_my_prova_ids),
         )
 
