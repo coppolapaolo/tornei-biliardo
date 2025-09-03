@@ -1,14 +1,14 @@
 """
 Module: models/status_enum
 Purpose: Definizione centralizzata degli *status* applicativi come Enum string-based.
-Data Structures: ProvaStatus, ProvaDerivedStatus, TournamentStatus, MatchStatus,
+Data Structures: GaraStatus, ProvaDerivedStatus, TournamentStatus, MatchStatus,
                  DirectorRequestStatus, PlayoffConfirmationStatus
 Dependencies: Solo stdlib (enum, typing)
 
 Note di migrazione (soft):
 - Gli Enum ereditano da `str` per mantenere piena retrocompatibilità con il DB
   (colonne VARCHAR). Nessun DDL richiesto in questo sprint.
-- Gli status "derived" di Prova NON sono persistiti: servono a UI/flow.
+- Gli status "derived" di Gara NON sono persistiti: servono a UI/flow.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from enum import Enum
 from typing import Tuple, Type, TypeVar
 
 __all__ = [
-    "ProvaStatus",
+    "GaraStatus",
     "ProvaDerivedStatus",
     "TournamentStatus",
     "MatchStatus",
@@ -36,13 +36,13 @@ class _StrEnum(str, Enum):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# PROVA
-# Persistito: `prova.status` → {setup, inscription, playing, completed}
+# GARA
+# Persistito: `gara.status` → {setup, inscription, playing, completed}
 # Derived/UI (non persistito):
-#   {inscription_closed, ready_to_start, round_completed, tournament_completed}
+#   {inscription_closed, ready_to_start, round_completed, campionato_completed}
 # Fonte: models/competition/models.py
 # ──────────────────────────────────────────────────────────────────────────────
-class ProvaStatus(_StrEnum):
+class GaraStatus(_StrEnum):
     SETUP = "setup"
     INSCRIPTION = "inscription"
     PLAYING = "playing"
@@ -50,7 +50,7 @@ class ProvaStatus(_StrEnum):
 
 
 class ProvaDerivedStatus(_StrEnum):
-    """Stati *derivati* (non persistiti) usati da UI/flow di Prova.
+    """Stati *derivati* (non persistiti) usati da UI/flow di Gara.
 
     Questi stati possono essere restituiti da funzioni di dominio (es. get_real_status)
     ma non vanno salvati nel DB.
@@ -59,14 +59,14 @@ class ProvaDerivedStatus(_StrEnum):
     INSCRIPTION_CLOSED = "inscription_closed"
     READY_TO_START = "ready_to_start"
     ROUND_COMPLETED = "round_completed"
-    TOURNAMENT_COMPLETED = "tournament_completed"
+    TOURNAMENT_COMPLETED = "campionato_completed"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# TOURNAMENT (derivato dalle Prove)
-# Restituito da `Tournament.get_status()`:
+# CAMPIONATO (derivato dalle Gare)
+# Restituito da `Campionato.get_status()`:
 #           {setup, registration_open, in_progress, completed}
-# Fonte: models/tournament/models.py
+# Fonte: models/campionato/models.py
 # ──────────────────────────────────────────────────────────────────────────────
 class TournamentStatus(_StrEnum):
     SETUP = "setup"

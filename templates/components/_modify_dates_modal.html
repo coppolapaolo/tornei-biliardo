@@ -6,7 +6,7 @@
                 <h5 class="modal-title">Modifica Date Iscrizioni</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url_for('admin.competition.modify_inscription_dates', prova_id=prova.id) }}" method="POST" id="modifyDatesForm">
+            <form action="{{ url_for('admin.competition.modify_inscription_dates', gara_id=gara.id) }}" method="POST" id="modifyDatesForm">
                 <div class="modal-body">
                     <div class="alert alert-info">
                         <small><i class="fas fa-clock"></i> <strong>Timezone:</strong> <span id="modify-user-timezone">Caricamento...</span></small>

@@ -1,0 +1,91 @@
+<!-- Provas Table Component -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-list"></i> Gare del Campionato</h5>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProvaModal">
+            <i class="fas fa-plus"></i> Nuova Gara
+        </button>
+    </div>
+    <div class="card-body">
+        {% if provas %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Gara</th>
+                            <th>Data</th>
+                            <th>Luogo</th>
+                            <th>Disciplina</th>
+                            <th>Distanza</th>
+                            <th>Quota</th>
+                            <th>Iscritti</th>
+                            <th>Stato</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gara in provas %}
+                            <tr>
+                                <td><strong>{{ gara.number }}</strong></td>
+                                <td>{{ gara.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ gara.location or '-' }}</td>
+                                <td>
+                                    {{ gara.discipline }}
+                                    {% if gara.best_of %}
+                                        <small class="text-muted">(al meglio di {{ gara.distance }})</small>
+                                    {% else %}
+                                        <small class="text-muted">({{ gara.distance }} rack)</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ gara.distance }}</td>
+                                <td>
+                                    {% if gara.entry_fee > 0 %}
+                                        €{{ "%.2f"|format(gara.entry_fee) }}
+                                    {% else %}
+                                        Gratuita
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ gara.inscriptions|length }}</span>
+                                    {% if gara.max_participants %}
+                                        / {{ gara.max_participants }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ status_badge(gara, 'gara') }}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if gara.can_be_modified() %}
+                                            <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" 
+                                               class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if gara.can_be_deleted() %}
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="deleteProva({{ gara.id }}, {{ gara.number }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <h5><i class="fas fa-calendar-plus"></i> Nessuna Gara Configurata</h5>
+                <p>Inizia aggiungendo la prima gara al campionato.</p>
+                <!-- Button removed to avoid duplication with header button -->
+                <p class="text-muted mt-3">Usa il pulsante "Nuova Gara" nell'intestazione per aggiungere la prima gara.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

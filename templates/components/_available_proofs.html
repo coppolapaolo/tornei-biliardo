@@ -1,40 +1,40 @@
 {# templates/components/_available_proofs.html #}
-<!-- Prove Disponibili per Iscrizione -->
-{% if can_inscribe and available_provas %}
+<!-- Gare Disponibili per Iscrizione -->
+{% if can_inscribe and available_garas %}
 <div class="card mb-4">
     <div class="card-header">
-        <h5><i class="fas fa-calendar-plus"></i> Prove Disponibili per Iscrizione ({{ available_provas|length }})</h5>
+        <h5><i class="fas fa-calendar-plus"></i> Gare Disponibili per Iscrizione ({{ available_garas|length }})</h5>
     </div>
     <div class="card-body">
-        {% for prova in available_provas %}
+        {% for gara in available_garas %}
             <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
                 <div>
-                    <strong>Prova {{ prova.number }}</strong> - {{ prova.discipline }}
-                    {% if prova.name %} ({{ prova.name }}){% endif %}
-                    <br><small class="text-muted">{{ prova.date.strftime('%d/%m/%Y') }} - 
-                    {% if prova.best_of %}
-                        Al meglio di {{ prova.distance }}
+                    <strong>Gara {{ gara.number }}</strong> - {{ gara.discipline }}
+                    {% if gara.name %} ({{ gara.name }}){% endif %}
+                    <br><small class="text-muted">{{ gara.date.strftime('%d/%m/%Y') }} - 
+                    {% if gara.best_of %}
+                        Al meglio di {{ gara.distance }}
                     {% else %}
-                        {{ prova.distance }} rack esatti
+                        {{ gara.distance }} rack esatti
                     {% endif %}
                     </small>
-                    {% if prova.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ prova.location }}</small>{% endif %}
+                    {% if gara.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ gara.location }}</small>{% endif %}
                     <br><span class="badge bg-success">Iscrizioni aperte</span>
                     <span class="badge bg-warning ms-1">
                         <i class="fas fa-clock"></i> 
-                        Scade: <span data-utc="{{ prova.inscription_end.isoformat() if prova.inscription_end else '' }}">
-                            {{ prova.inscription_end.strftime('%d/%m/%Y %H:%M') if prova.inscription_end else 'N/A' }}
+                        Scade: <span data-utc="{{ gara.inscription_end.isoformat() if gara.inscription_end else '' }}">
+                            {{ gara.inscription_end.strftime('%d/%m/%Y %H:%M') if gara.inscription_end else 'N/A' }}
                         </span>
                     </span>
-                    {% if prova.entry_fee > 0 %}
-                        <br><small class="text-muted"><i class="fas fa-euro-sign"></i> Quota: €{{ "%.2f"|format(prova.entry_fee) }}</small>
+                    {% if gara.entry_fee > 0 %}
+                        <br><small class="text-muted"><i class="fas fa-euro-sign"></i> Quota: €{{ "%.2f"|format(gara.entry_fee) }}</small>
                     {% endif %}
                     <br><small class="text-muted">
-                        <i class="fas fa-users"></i> Iscritti: {{ prova.inscriptions|length }}{% if prova.max_participants %}/{{ prova.max_participants }}{% endif %}
+                        <i class="fas fa-users"></i> Iscritti: {{ gara.inscriptions|length }}{% if gara.max_participants %}/{{ gara.max_participants }}{% endif %}
                     </small>
                 </div>
                 <div>
-                    <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=prova.id) }}" style="display: inline;">
+                    <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" style="display: inline;">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-user-plus"></i> Iscriviti
                         </button>

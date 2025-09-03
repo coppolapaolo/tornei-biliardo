@@ -33,13 +33,13 @@ class TestPlayoffService:
                 }
 
                 result = PlayoffService.create_playoff_configuration(
-                    tournament_id=1,
+                    campionato_id=1,
                     name="Elite Playoff",
                     playoff_type=PlayoffType.ELITE_ACADEMY,
                     max_participants=6,
                     qualification_criteria=qualification_criteria,
                     description="Playoff for top 6 classified players",
-                    min_provas_played=3,
+                    min_garas_played=3,
                     location="Test Location",
                     scheduled_date=datetime(2023, 6, 15, 14, 0, 0),
                     entry_fee=50.0,
@@ -49,12 +49,12 @@ class TestPlayoffService:
                 # Verify PlayoffConfiguration was created with correct parameters
                 mock_config_class.assert_called_once()
                 args, kwargs = mock_config_class.call_args
-                assert kwargs["tournament_id"] == 1
+                assert kwargs["campionato_id"] == 1
                 assert kwargs["name"] == "Elite Playoff"
                 assert kwargs["playoff_type"] == PlayoffType.ELITE_ACADEMY
                 assert kwargs["max_participants"] == 6
                 assert kwargs["description"] == "Playoff for top 6 classified players"
-                assert kwargs["min_provas_played"] == 3
+                assert kwargs["min_garas_played"] == 3
                 assert kwargs["location"] == "Test Location"
                 assert kwargs["scheduled_date"] == datetime(2023, 6, 15, 14, 0, 0)
                 assert kwargs["entry_fee"] == 50.0
@@ -93,7 +93,7 @@ class TestPlayoffService:
             mock_create_config.side_effect = create_config_side_effect
 
             result = PlayoffService.create_standard_playoff_configurations(
-                tournament_id=1
+                campionato_id=1
             )
 
             # Verify two configurations were created
@@ -106,7 +106,7 @@ class TestPlayoffService:
 
             # Verify first call (Elite Playoff)
             mock_create_config.assert_any_call(
-                tournament_id=1,
+                campionato_id=1,
                 name="Elite Playoff",
                 playoff_type=PlayoffType.ELITE_ACADEMY,
                 max_participants=6,
@@ -116,12 +116,12 @@ class TestPlayoffService:
                     "academy_positions": 6,
                 },
                 description="Playoff for top 6 classified players",
-                min_provas_played=3,
+                min_garas_played=3,
             )
 
             # Verify second call (Academy Playoff)
             mock_create_config.assert_any_call(
-                tournament_id=1,
+                campionato_id=1,
                 name="Academy Playoff",
                 playoff_type=PlayoffType.ELITE_ACADEMY,
                 max_participants=6,
@@ -131,11 +131,11 @@ class TestPlayoffService:
                     "academy_positions": 6,
                 },
                 description="Playoff for players in positions 7-12",
-                min_provas_played=3,
+                min_garas_played=3,
             )
 
     def test_generate_all_qualifications(self):
-        """Test generating all qualifications for a tournament."""
+        """Test generating all qualifications for a campionato."""
         mock_config1 = Mock()
         mock_config1.name = "Elite Playoff"
         mock_config1.id = 1
@@ -160,7 +160,7 @@ class TestPlayoffService:
             mock_config_class.query.filter_by.return_value = mock_query
             mock_query.all.return_value = [mock_config1, mock_config2]
 
-            result = PlayoffService.generate_all_qualifications(tournament_id=1)
+            result = PlayoffService.generate_all_qualifications(campionato_id=1)
 
             # Verify the structure of the result
             assert "Elite Playoff" in result
@@ -477,8 +477,8 @@ class TestPlayoffService:
                             # Verify result (count of expired qualifications)
                             assert result == 1
 
-    def test_create_playoff_tournament_success(self):
-        """Test creating a playoff tournament successfully."""
+    def test_create_playoff_campionato_success(self):
+        """Test creating a playoff campionato successfully."""
         mock_configuration = Mock()
         mock_configuration.id = 1
         mock_configuration.name = "Elite Playoff"
@@ -486,119 +486,119 @@ class TestPlayoffService:
         mock_configuration.location = "Test Location"
         mock_configuration.entry_fee = 50.0
         mock_configuration.max_participants = 6
-        mock_configuration.playoff_tournament = None
+        mock_configuration.playoff_campionato = None
 
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = mock_configuration
 
-            mock_tournament = Mock()
-            mock_tournament.id = 1
+            mock_campionato = Mock()
+            mock_campionato.id = 1
 
             with patch(
                 "models.playoff.services.PlayoffTournament"
-            ) as mock_tournament_class:
-                mock_tournament_class.return_value = mock_tournament
+            ) as mock_campionato_class:
+                mock_campionato_class.return_value = mock_campionato
 
-                result = PlayoffService.create_playoff_tournament(configuration_id=1)
+                result = PlayoffService.create_playoff_campionato(configuration_id=1)
 
                 # Verify PlayoffTournament was created with correct parameters
-                mock_tournament_class.assert_called_once()
-                args, kwargs = mock_tournament_class.call_args
+                mock_campionato_class.assert_called_once()
+                args, kwargs = mock_campionato_class.call_args
                 assert kwargs["configuration_id"] == 1
                 assert kwargs["name"] == "Elite Playoff"
-                assert kwargs["tournament_date"] == datetime(2023, 6, 15, 14, 0, 0)
+                assert kwargs["campionato_date"] == datetime(2023, 6, 15, 14, 0, 0)
                 assert kwargs["location"] == "Test Location"
                 assert kwargs["entry_fee"] == 50.0
                 assert kwargs["max_participants"] == 6
 
                 # Verify database operations
-                mock_db.session.add.assert_called_once_with(mock_tournament)
+                mock_db.session.add.assert_called_once_with(mock_campionato)
                 mock_db.session.commit.assert_called_once()
 
                 # Verify result
-                assert result == mock_tournament
+                assert result == mock_campionato
 
-    def test_create_playoff_tournament_already_exists(self):
-        """Test creating a playoff tournament when it already exists."""
+    def test_create_playoff_campionato_already_exists(self):
+        """Test creating a playoff campionato when it already exists."""
         mock_configuration = Mock()
         mock_configuration.id = 1
-        mock_configuration.playoff_tournament = Mock()
+        mock_configuration.playoff_campionato = Mock()
 
-        mock_existing_tournament = Mock()
-        mock_existing_tournament.id = 1
+        mock_existing_campionato = Mock()
+        mock_existing_campionato.id = 1
 
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = mock_configuration
 
             with patch(
                 "models.playoff.services.PlayoffTournament"
-            ) as mock_tournament_class:
+            ) as mock_campionato_class:
                 mock_query = Mock()
-                mock_tournament_class.query.filter_by.return_value = mock_query
-                mock_query.first.return_value = mock_existing_tournament
+                mock_campionato_class.query.filter_by.return_value = mock_query
+                mock_query.first.return_value = mock_existing_campionato
 
-                result = PlayoffService.create_playoff_tournament(configuration_id=1)
+                result = PlayoffService.create_playoff_campionato(configuration_id=1)
 
-                # Verify existing tournament was returned
-                assert result == mock_existing_tournament
+                # Verify existing campionato was returned
+                assert result == mock_existing_campionato
 
-    def test_create_playoff_tournament_configuration_not_found(self):
-        """Test creating a playoff tournament when configuration is not found."""
+    def test_create_playoff_campionato_configuration_not_found(self):
+        """Test creating a playoff campionato when configuration is not found."""
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
             with patch("flask.abort") as mock_abort:
                 with pytest.raises(Exception):
-                    PlayoffService.create_playoff_tournament(configuration_id=1)
+                    PlayoffService.create_playoff_campionato(configuration_id=1)
 
                 # Verify abort was called with 404
                 mock_abort.assert_called_once_with(404)
 
     def test_start_playoff_registration_success(self):
         """Test starting playoff registration successfully."""
-        mock_tournament = Mock()
-        mock_tournament.id = 1
+        mock_campionato = Mock()
+        mock_campionato.id = 1
 
         with patch("models.playoff.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_tournament
+            mock_db.session.get.return_value = mock_campionato
 
-            result = PlayoffService.start_playoff_registration(tournament_id=1)
+            result = PlayoffService.start_playoff_registration(campionato_id=1)
 
             # Verify start_registration was called
-            mock_tournament.start_registration.assert_called_once()
+            mock_campionato.start_registration.assert_called_once()
 
             # Verify database commit
             mock_db.session.commit.assert_called_once()
 
             # Verify result
-            assert result == mock_tournament
+            assert result == mock_campionato
 
     def test_start_playoff_registration_not_found(self):
-        """Test starting playoff registration when tournament is not found."""
+        """Test starting playoff registration when campionato is not found."""
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
             with patch("flask.abort") as mock_abort:
                 with pytest.raises(Exception):
-                    PlayoffService.start_playoff_registration(tournament_id=1)
+                    PlayoffService.start_playoff_registration(campionato_id=1)
 
                 # Verify abort was called with 404
                 mock_abort.assert_called_once_with(404)
 
-    def test_get_tournament_playoff_status(self):
-        """Test getting tournament playoff status."""
+    def test_get_campionato_playoff_status(self):
+        """Test getting campionato playoff status."""
         mock_config1 = Mock()
         mock_config1.name = "Elite Playoff"
         mock_config1.id = 1
         mock_config1.max_participants = 6
-        mock_config1.playoff_tournament = None
+        mock_config1.playoff_campionato = None
 
         mock_config2 = Mock()
         mock_config2.name = "Academy Playoff"
         mock_config2.id = 2
         mock_config2.max_participants = 6
-        mock_config2.playoff_tournament = Mock()
-        mock_config2.playoff_tournament.status = "completed"
+        mock_config2.playoff_campionato = Mock()
+        mock_config2.playoff_campionato.status = "completed"
 
         # Mock qualification counts
         mock_config1.qualifications.count.return_value = 8
@@ -620,7 +620,7 @@ class TestPlayoffService:
             mock_config_class.query.filter_by.return_value = mock_query
             mock_query.all.return_value = [mock_config1, mock_config2]
 
-            result = PlayoffService.get_tournament_playoff_status(tournament_id=1)
+            result = PlayoffService.get_campionato_playoff_status(campionato_id=1)
 
             # Verify the structure of the returned status
             assert result["has_playoffs"] is True
@@ -635,7 +635,7 @@ class TestPlayoffService:
             assert config1_status["confirmed"] == 5
             assert config1_status["pending"] == 2
             assert config1_status["declined"] == 1
-            assert config1_status["has_tournament"] is False
+            assert config1_status["has_campionato"] is False
 
             # Verify second configuration status
             config2_status = result["configurations"][1]
@@ -644,15 +644,15 @@ class TestPlayoffService:
             assert config2_status["confirmed"] == 6
             assert config2_status["pending"] == 0
             assert config2_status["declined"] == 0
-            assert config2_status["has_tournament"] is True
-            assert config2_status["tournament_status"] == "completed"
+            assert config2_status["has_campionato"] is True
+            assert config2_status["campionato_status"] == "completed"
 
     def test_check_playoff_readiness_ready_to_start(self):
         """Test checking playoff readiness when ready to start."""
         mock_configuration = Mock()
         mock_configuration.id = 1
         mock_configuration.max_participants = 6
-        mock_configuration.playoff_tournament = None
+        mock_configuration.playoff_campionato = None
 
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = mock_configuration
@@ -673,19 +673,19 @@ class TestPlayoffService:
             ]
 
             with patch.object(
-                PlayoffService, "create_playoff_tournament"
-            ) as mock_create_tournament:
+                PlayoffService, "create_playoff_campionato"
+            ) as mock_create_campionato:
                 PlayoffService._check_playoff_readiness(configuration_id=1)
 
-                # Verify playoff tournament was created
-                mock_create_tournament.assert_called_once_with(1)
+                # Verify playoff campionato was created
+                mock_create_campionato.assert_called_once_with(1)
 
     def test_check_playoff_readiness_not_ready(self):
         """Test checking playoff readiness when not ready to start."""
         mock_configuration = Mock()
         mock_configuration.id = 1
         mock_configuration.max_participants = 6
-        mock_configuration.playoff_tournament = None
+        mock_configuration.playoff_campionato = None
 
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = mock_configuration
@@ -706,42 +706,42 @@ class TestPlayoffService:
             ]
 
             with patch.object(
-                PlayoffService, "create_playoff_tournament"
-            ) as mock_create_tournament:
+                PlayoffService, "create_playoff_campionato"
+            ) as mock_create_campionato:
                 PlayoffService._check_playoff_readiness(configuration_id=1)
 
-                # Verify playoff tournament was not created
-                mock_create_tournament.assert_not_called()
+                # Verify playoff campionato was not created
+                mock_create_campionato.assert_not_called()
 
-    def test_complete_playoff_tournament_success(self):
-        """Test completing a playoff tournament successfully."""
-        mock_tournament = Mock()
-        mock_tournament.id = 1
+    def test_complete_playoff_campionato_success(self):
+        """Test completing a playoff campionato successfully."""
+        mock_campionato = Mock()
+        mock_campionato.id = 1
 
         with patch("models.playoff.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_tournament
+            mock_db.session.get.return_value = mock_campionato
 
-            result = PlayoffService.complete_playoff_tournament(
-                tournament_id=1, winner_id=10
+            result = PlayoffService.complete_playoff_campionato(
+                campionato_id=1, winner_id=10
             )
 
-            # Verify complete_tournament was called
-            mock_tournament.complete_tournament.assert_called_once_with(10)
+            # Verify complete_campionato was called
+            mock_campionato.complete_campionato.assert_called_once_with(10)
 
             # Verify database commit
             mock_db.session.commit.assert_called_once()
 
             # Verify result
-            assert result == mock_tournament
+            assert result == mock_campionato
 
-    def test_complete_playoff_tournament_not_found(self):
-        """Test completing a playoff tournament when not found."""
+    def test_complete_playoff_campionato_not_found(self):
+        """Test completing a playoff campionato when not found."""
         with patch("models.playoff.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
             with patch("flask.abort") as mock_abort:
                 with pytest.raises(Exception):
-                    PlayoffService.complete_playoff_tournament(tournament_id=1)
+                    PlayoffService.complete_playoff_campionato(campionato_id=1)
 
                 # Verify abort was called with 404
                 mock_abort.assert_called_once_with(404)
@@ -758,9 +758,9 @@ class TestPlayoffService:
         mock_config1.name = "Elite Playoff"
         mock_qualification1.configuration = mock_config1
 
-        mock_tournament1 = Mock()
-        mock_tournament1.name = "Tournament 1"
-        mock_config1.tournament = mock_tournament1
+        mock_campionato1 = Mock()
+        mock_campionato1.name = "Campionato 1"
+        mock_config1.campionato = mock_campionato1
 
         mock_qualification2 = Mock()
         mock_qualification2.qualifying_position = 7
@@ -772,9 +772,9 @@ class TestPlayoffService:
         mock_config2.name = "Academy Playoff"
         mock_qualification2.configuration = mock_config2
 
-        mock_tournament2 = Mock()
-        mock_tournament2.name = "Tournament 2"
-        mock_config2.tournament = mock_tournament2
+        mock_campionato2 = Mock()
+        mock_campionato2.name = "Campionato 2"
+        mock_config2.campionato = mock_campionato2
 
         with patch("models.playoff.services.PlayoffQualification") as mock_qual_class:
             mock_query = Mock()
@@ -787,7 +787,7 @@ class TestPlayoffService:
             assert len(result) == 2
 
             # Verify most recent entry first (sorted by created_at desc)
-            assert result[0]["tournament_name"] == "Tournament 2"
+            assert result[0]["campionato_name"] == "Campionato 2"
             assert result[0]["playoff_name"] == "Academy Playoff"
             assert result[0]["qualifying_position"] == 7
             assert result[0]["status"] == "declined"
@@ -795,7 +795,7 @@ class TestPlayoffService:
             assert result[0]["responded_at"] == datetime(2023, 2, 2, 10, 0, 0)
 
             # Verify older entry second
-            assert result[1]["tournament_name"] == "Tournament 1"
+            assert result[1]["campionato_name"] == "Campionato 1"
             assert result[1]["playoff_name"] == "Elite Playoff"
             assert result[1]["qualifying_position"] == 1
             assert result[1]["status"] == "confirmed"

@@ -1,0 +1,149 @@
+<!-- New Gara Modal Component -->
+<div class="modal fade" id="newProvaModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuova Gara</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.competition.create_gara') }}" method="POST">
+                <input type="hidden" name="campionato_id" value="{{ campionato.id }}">
+                <div class="modal-body">
+                    <!-- Prima riga: Info base -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="number" class="form-label">Numero Gara</label>
+                                <select class="form-control" name="number" required>
+                                    {% for i in range(1, 21) %}
+                                        {% if not provas|selectattr("number", "equalto", i)|list %}
+                                            <option value="{{ i }}">Gara {{ i }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome (opzionale)</label>
+                                <input type="text" class="form-control" name="name" id="create_name"
+                                       placeholder="es: Prima Gara, Semifinale...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Data</label>
+                                <input type="date" class="form-control" name="date" id="create_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seconda riga: Luogo e partecipanti -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Luogo</label>
+                                <input type="text" class="form-control" name="location" id="create_location"
+                                       placeholder="es: Circolo Biliardo Centro">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="min_participants" class="form-label">Min Iscritti</label>
+                                <input type="number" class="form-control" name="min_participants" id="create_min_participants"
+                                       min="2" max="32" value="2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="max_participants" class="form-label">Max Iscritti</label>
+                                <input type="number" class="form-control" name="max_participants" id="create_max_participants"
+                                       min="2" max="64" placeholder="Illimitato">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="entry_fee" class="form-label">Quota €</label>
+                                <input type="number" class="form-control" name="entry_fee" id="create_entry_fee"
+                                       min="0" step="0.50" value="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terza riga: Game settings -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="discipline" class="form-label">Disciplina</label>
+                                <select class="form-control" name="discipline" id="create_discipline" required>
+                                    <option value="palla 8">Palla 8</option>
+                                    <option value="palla 9" selected>Palla 9</option>
+                                    <option value="palla 10">Palla 10</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="distance" class="form-label">Rack/Distanza</label>
+                                <input type="number" class="form-control" name="distance" id="create_distance"
+                                       min="1" max="15" value="7" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="exact_number" class="form-label">Modalità</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="exact_number" id="create_exact_number">
+                                    <label class="form-check-label" for="exact_number">
+                                        Esatto numero
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    <span id="create-game-mode-text">Al meglio di 7 (vince con 4)</span>
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="rounds_count" class="form-label">Turni</label>
+                                <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
+                                       min="1" max="10" value="3" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-label">Auto-copia</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="copy_from_previous" 
+                                           id="copy_from_previous" value="true" {% if provas %}checked{% endif %}>
+                                    <label class="form-check-label" for="copy_from_previous">
+                                        Da precedente
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Descrizione -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrizione (opzionale)</label>
+                        <textarea class="form-control" name="description" id="create_description" rows="2" 
+                                  placeholder="Note aggiuntive sulla gara..."></textarea>
+                    </div>
+                    
+                    {% if provas %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Da precedente:</strong> Se attivo, i campi verranno precompilati 
+                            con i valori dell'ultima gara creata.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Crea Gara</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

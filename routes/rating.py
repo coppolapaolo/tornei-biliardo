@@ -264,7 +264,7 @@ def create_handicap_rule():
         rule = HandicapService.create_handicap_rule(
             name=data["name"],
             description=data.get("description"),
-            applies_to_tournaments=data.get("applies_to_tournaments", "true").lower()
+            applies_to_campionatos=data.get("applies_to_campionatos", "true").lower()
             == "true",
             applies_to_individual_matches=data.get(
                 "applies_to_individual_matches", "true"

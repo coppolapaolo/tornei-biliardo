@@ -9,22 +9,22 @@ from unittest.mock import Mock, patch
 from datetime import datetime
 
 from models.competition.services import (
-    ProvaService,
+    GaraService,
     InscriptionService,
     ProvaStateMachine,
 )
-from models.status_enum import ProvaStatus
+from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
 
 
 class TestProvaServiceAdditional:
-    """Additional tests for ProvaService targeting missed coverage areas."""
+    """Additional tests for GaraService targeting missed coverage areas."""
 
     @patch("models.competition.services.db")
     def test_create_amalfi_round_success(self, mock_db):
         """Test successful Amalfi round creation."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
 
         # Mock matches data
         mock_match1 = Mock()
@@ -53,25 +53,25 @@ class TestProvaServiceAdditional:
             with patch("models.competition.services.TrioMatch") as mock_trio:
                 mock_db.session.query.side_effect = [mock_query, mock_trio_query]
 
-                result = ProvaService.create_amalfi_round(123, 2)
+                result = GaraService.create_amalfi_round(123, 2)
 
                 assert result == (3, 1, 1, 1)  # total, normal, bye, trio
-                mock_create.assert_called_once_with(mock_prova, 2)
+                mock_create.assert_called_once_with(mock_gara, 2)
                 mock_db.session.commit.assert_called_once()
 
     @patch("models.competition.services.db")
-    def test_create_amalfi_round_prova_not_found(self, mock_db):
-        """Test Amalfi round creation with non-existent prova."""
+    def test_create_amalfi_round_gara_not_found(self, mock_db):
+        """Test Amalfi round creation with non-existent gara."""
         mock_db.session.get.return_value = None
 
-        with pytest.raises(ValueError, match="Prova 999 non trovata"):
-            ProvaService.create_amalfi_round(999, 2)
+        with pytest.raises(ValueError, match="Gara 999 non trovata"):
+            GaraService.create_amalfi_round(999, 2)
 
     @patch("models.competition.services.db")
     def test_create_amalfi_round_exception_handling(self, mock_db):
         """Test Amalfi round creation with exception handling."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
 
         with patch(
             "models.competition.services.create_amalfi_round_matches"
@@ -81,7 +81,7 @@ class TestProvaServiceAdditional:
             with pytest.raises(
                 ValueError, match="Errore durante la creazione del turno"
             ):
-                ProvaService.create_amalfi_round(123, 2)
+                GaraService.create_amalfi_round(123, 2)
 
             mock_db.session.rollback.assert_called_once()
 
@@ -91,7 +91,7 @@ class TestProvaServiceAdditional:
         """Test adding trio rack with non-existent trio."""
         mock_db.session.get.return_value = None
 
-        ProvaService.add_trio_rack(999, 123)
+        GaraService.add_trio_rack(999, 123)
         mock_abort.assert_called_once_with(404)
 
     @patch("models.competition.services.db")
@@ -104,7 +104,7 @@ class TestProvaServiceAdditional:
         mock_db.session.get.return_value = mock_trio
 
         with pytest.raises(ValueError, match="Vincitore non valido per questo trio"):
-            ProvaService.add_trio_rack(123, 999)
+            GaraService.add_trio_rack(123, 999)
 
     @patch("models.competition.services.db")
     def test_add_trio_rack_success(self, mock_db):
@@ -136,7 +136,7 @@ class TestProvaServiceAdditional:
 
         mock_db.session.get.return_value = mock_trio
 
-        result = ProvaService.add_trio_rack(123, 1)
+        result = GaraService.add_trio_rack(123, 1)
 
         assert result["success"] is True
         assert result["trio_completed"] is True
@@ -156,7 +156,7 @@ class TestProvaServiceAdditional:
         mock_db.session.get.return_value = mock_trio
 
         with pytest.raises(ValueError, match="Errore durante aggiunta rack"):
-            ProvaService.add_trio_rack(123, 1)
+            GaraService.add_trio_rack(123, 1)
 
         mock_db.session.rollback.assert_called_once()
 
@@ -166,7 +166,7 @@ class TestProvaServiceAdditional:
         """Test trio reset with non-existent trio."""
         mock_db.session.get.return_value = None
 
-        ProvaService.reset_trio(999)
+        GaraService.reset_trio(999)
         mock_abort.assert_called_once_with(404)
 
     @patch("models.competition.services.MatchService")
@@ -194,7 +194,7 @@ class TestProvaServiceAdditional:
 
         mock_db.session.get.side_effect = mock_get_side_effect
 
-        ProvaService.reset_trio(123)
+        GaraService.reset_trio(123)
 
         # Verify trio reset
         assert mock_trio.player1_racks == 0
@@ -229,14 +229,14 @@ class TestProvaServiceAdditional:
         mock_db.session.get.side_effect = mock_get_side_effect
 
         with pytest.raises(ValueError, match="Errore durante reset trio"):
-            ProvaService.reset_trio(123)
+            GaraService.reset_trio(123)
 
         mock_db.session.rollback.assert_called_once()
 
     @patch("models.competition.services.select")
     @patch("models.competition.services.TournamentDirector")
     @patch("models.competition.services.db")
-    def test_get_director_provas(self, mock_db, mock_td_class, mock_select):
+    def test_get_director_garas(self, mock_db, mock_td_class, mock_select):
         """Test getting provas for a director."""
         mock_director_id = 123
 
@@ -250,29 +250,29 @@ class TestProvaServiceAdditional:
         mock_main_query = Mock()
         mock_filtered_query = Mock()
         mock_ordered_query = Mock()
-        mock_provas = [Mock(), Mock()]
+        mock_garas = [Mock(), Mock()]
 
         mock_main_query.filter.return_value = mock_filtered_query
         mock_filtered_query.order_by.return_value = mock_ordered_query
-        mock_ordered_query.all.return_value = mock_provas
+        mock_ordered_query.all.return_value = mock_garas
 
         # Set up mock_db.session.query to return different mocks for different calls
         def mock_query_side_effect(model):
-            if model == mock_td_class.tournament_id:
+            if model == mock_td_class.campionato_id:
                 return mock_td_query
-            else:  # Prova query
+            else:  # Gara query
                 return mock_main_query
 
         mock_db.session.query.side_effect = mock_query_side_effect
 
-        result = ProvaService.get_director_provas(mock_director_id)
+        result = GaraService.get_director_garas(mock_director_id)
 
-        assert result == mock_provas
+        assert result == mock_garas
 
-    def test_validate_prova_data_all_valid(self):
-        """Test prova data validation with all valid data."""
+    def test_validate_gara_data_all_valid(self):
+        """Test gara data validation with all valid data."""
         data = {
-            "name": "Test Prova",
+            "name": "Test Gara",
             "discipline": "palla_8",
             "distance": "5",
             "entry_fee": "10.50",
@@ -284,11 +284,11 @@ class TestProvaServiceAdditional:
             "rounds_count": "5",
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
         assert errors == {}
 
-    def test_validate_prova_data_all_errors(self):
-        """Test prova data validation with all possible errors."""
+    def test_validate_gara_data_all_errors(self):
+        """Test gara data validation with all possible errors."""
         data = {
             "name": "",
             "discipline": "",
@@ -302,7 +302,7 @@ class TestProvaServiceAdditional:
             "rounds_count": "0",
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         assert "name" in errors
         assert "discipline" in errors
@@ -316,8 +316,8 @@ class TestProvaServiceAdditional:
         assert "inscription_end" in errors  # Test requirement
         assert "rounds_count" in errors
 
-    def test_validate_prova_data_invalid_types(self):
-        """Test prova data validation with invalid data types."""
+    def test_validate_gara_data_invalid_types(self):
+        """Test gara data validation with invalid data types."""
         data = {
             "distance": "not_a_number",
             "entry_fee": "not_a_float",
@@ -329,7 +329,7 @@ class TestProvaServiceAdditional:
             "rounds_count": "not_an_int",
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         assert "distance" in errors
         assert "entry_fee" in errors
@@ -340,8 +340,8 @@ class TestProvaServiceAdditional:
         assert "inscription_end" in errors
         assert "rounds_count" in errors
 
-    def test_validate_prova_data_optional_fields_empty(self):
-        """Test prova data validation with optional fields empty."""
+    def test_validate_gara_data_optional_fields_empty(self):
+        """Test gara data validation with optional fields empty."""
         data = {
             "name": "Test",
             "discipline": "palla_8",
@@ -355,7 +355,7 @@ class TestProvaServiceAdditional:
             "rounds_count": "",
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         # Should not have errors for empty optional fields
         assert "entry_fee" not in errors
@@ -370,73 +370,73 @@ class TestProvaServiceAdditional:
 
     @patch("models.competition.services.db")
     def test_to_inscription_with_dates(self, mock_db):
-        """Test ProvaService.to_inscription with date validation."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
+        """Test GaraService.to_inscription with date validation."""
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
 
         start_date = datetime(2024, 1, 15, 10, 0)
         end_date = datetime(2024, 1, 20, 18, 0)
 
         with patch.object(ProvaStateMachine, "to_inscription") as mock_state_machine:
-            mock_state_machine.return_value = mock_prova
+            mock_state_machine.return_value = mock_gara
 
-            result = ProvaService.to_inscription(123, start_date, end_date)
+            result = GaraService.to_inscription(123, start_date, end_date)
 
-            assert result == mock_prova
-            assert mock_prova.inscription_start == start_date
-            assert mock_prova.inscription_end == end_date
-            mock_state_machine.assert_called_once_with(mock_prova)
+            assert result == mock_gara
+            assert mock_gara.inscription_start == start_date
+            assert mock_gara.inscription_end == end_date
+            mock_state_machine.assert_called_once_with(mock_gara)
 
     @patch("models.competition.services.db")
     def test_to_inscription_invalid_dates(self, mock_db):
-        """Test ProvaService.to_inscription with invalid date range."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
+        """Test GaraService.to_inscription with invalid date range."""
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
 
         start_date = datetime(2024, 1, 20, 10, 0)
         end_date = datetime(2024, 1, 15, 18, 0)  # Before start
 
         with pytest.raises(ValueError, match="data di inizio deve essere precedente"):
-            ProvaService.to_inscription(123, start_date, end_date)
+            GaraService.to_inscription(123, start_date, end_date)
 
     @patch("models.competition.services.ProvaStateMachine")
     @patch("models.competition.services.db")
     def test_reopen_setup_success(self, mock_db, mock_state_machine):
         """Test successful reopen_setup."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
-        mock_state_machine.reopen_setup.return_value = mock_prova
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
+        mock_state_machine.reopen_setup.return_value = mock_gara
 
-        result = ProvaService.reopen_setup(123)
+        result = GaraService.reopen_setup(123)
 
-        assert result == mock_prova
-        mock_state_machine.reopen_setup.assert_called_once_with(mock_prova)
+        assert result == mock_gara
+        mock_state_machine.reopen_setup.assert_called_once_with(mock_gara)
 
     @patch("models.competition.services.ProvaStateMachine")
     @patch("models.competition.services.db")
     def test_start_playing_success(self, mock_db, mock_state_machine):
         """Test successful start_playing."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
-        mock_state_machine.start_playing.return_value = mock_prova
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
+        mock_state_machine.start_playing.return_value = mock_gara
 
-        result = ProvaService.start_playing(123)
+        result = GaraService.start_playing(123)
 
-        assert result == mock_prova
-        mock_state_machine.start_playing.assert_called_once_with(mock_prova)
+        assert result == mock_gara
+        mock_state_machine.start_playing.assert_called_once_with(mock_gara)
 
     @patch("models.competition.services.ProvaStateMachine")
     @patch("models.competition.services.db")
     def test_complete_success(self, mock_db, mock_state_machine):
         """Test successful complete."""
-        mock_prova = Mock()
-        mock_db.session.get.return_value = mock_prova
-        mock_state_machine.complete.return_value = mock_prova
+        mock_gara = Mock()
+        mock_db.session.get.return_value = mock_gara
+        mock_state_machine.complete.return_value = mock_gara
 
-        result = ProvaService.complete(123)
+        result = GaraService.complete(123)
 
-        assert result == mock_prova
-        mock_state_machine.complete.assert_called_once_with(mock_prova)
+        assert result == mock_gara
+        mock_state_machine.complete.assert_called_once_with(mock_gara)
 
 
 class TestProvaStateMachineAdditional:
@@ -444,69 +444,69 @@ class TestProvaStateMachineAdditional:
 
     def test_require_success(self):
         """Test successful _require check."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.SETUP.value
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.SETUP.value
 
         # Should not raise
-        ProvaStateMachine._require(mock_prova, ProvaStatus.SETUP)
+        ProvaStateMachine._require(mock_gara, GaraStatus.SETUP)
 
     def test_require_failure(self):
         """Test failed _require check."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.PLAYING.value
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.PLAYING.value
 
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine._require(mock_prova, ProvaStatus.SETUP)
+            ProvaStateMachine._require(mock_gara, GaraStatus.SETUP)
 
     def test_require_none_status_defaults_to_setup(self):
         """Test _require with None status defaults to SETUP."""
-        mock_prova = Mock()
-        mock_prova.status = None
+        mock_gara = Mock()
+        mock_gara.status = None
 
         # Should not raise since None defaults to SETUP
-        ProvaStateMachine._require(mock_prova, ProvaStatus.SETUP)
+        ProvaStateMachine._require(mock_gara, GaraStatus.SETUP)
 
     @patch("models.competition.services.db")
     def test_start_playing_insufficient_inscriptions(self, mock_db):
         """Test start_playing with insufficient inscriptions."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
-        mock_prova.inscriptions = [Mock()]  # Only 1 inscription
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
+        mock_gara.inscriptions = [Mock()]  # Only 1 inscription
 
         with pytest.raises(
             InvalidTransitionError, match="Numero iscritti insufficiente"
         ):
-            ProvaStateMachine.start_playing(mock_prova)
+            ProvaStateMachine.start_playing(mock_gara)
 
     @patch("models.competition.services.db")
     def test_start_playing_with_current_round_handling(self, mock_db):
         """Test start_playing with current_round attribute handling."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
-        mock_prova.inscriptions = [Mock(), Mock()]  # 2 inscriptions
-        mock_prova.current_round = 0
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
+        mock_gara.inscriptions = [Mock(), Mock()]  # 2 inscriptions
+        mock_gara.current_round = 0
 
-        ProvaStateMachine.start_playing(mock_prova)
+        ProvaStateMachine.start_playing(mock_gara)
 
         # Verify current_round was set to 1
-        assert mock_prova.current_round == 1
-        assert mock_prova.status == ProvaStatus.PLAYING.value
-        mock_db.session.add.assert_called_once_with(mock_prova)
+        assert mock_gara.current_round == 1
+        assert mock_gara.status == GaraStatus.PLAYING.value
+        mock_db.session.add.assert_called_once_with(mock_gara)
         mock_db.session.commit.assert_called_once()
 
     @patch("models.competition.services.db")
     def test_start_playing_no_current_round_attribute(self, mock_db):
-        """Test start_playing when prova doesn't have current_round attribute."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
-        mock_prova.inscriptions = [Mock(), Mock()]
+        """Test start_playing when gara doesn't have current_round attribute."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
+        mock_gara.inscriptions = [Mock(), Mock()]
         # Remove current_round attribute
-        delattr(mock_prova, "current_round")
+        delattr(mock_gara, "current_round")
 
         # Should not raise even without current_round attribute
-        ProvaStateMachine.start_playing(mock_prova)
+        ProvaStateMachine.start_playing(mock_gara)
 
-        assert mock_prova.status == ProvaStatus.PLAYING.value
+        assert mock_gara.status == GaraStatus.PLAYING.value
 
 
 class TestInscriptionServiceAdditional:
@@ -528,7 +528,7 @@ class TestInscriptionServiceAdditional:
             result = InscriptionService.inscribe_user(123, 456)
 
             assert result == mock_inscription
-            mock_inscription_class.assert_called_once_with(user_id=123, prova_id=456)
+            mock_inscription_class.assert_called_once_with(user_id=123, gara_id=456)
             mock_db.session.add.assert_called_once_with(mock_inscription)
             mock_db.session.commit.assert_called_once()
 

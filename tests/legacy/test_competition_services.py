@@ -6,12 +6,12 @@ import pytest
 from unittest.mock import Mock, patch
 from datetime import date
 from models.competition.services import (
-    ProvaService,
+    GaraService,
     ProvaStateMachine,
     InscriptionService,
 )
-from models.competition.models import Prova
-from models.status_enum import ProvaStatus
+from models.competition.models import Gara
+from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
 
 
@@ -19,274 +19,274 @@ class TestProvaStateMachine:
     """Test cases for ProvaStateMachine class."""
 
     def test_to_inscription_success(self):
-        """Test transitioning prova to inscription state successfully."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.SETUP.value
+        """Test transitioning gara to inscription state successfully."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.SETUP.value
 
         with patch("models.competition.services.db") as mock_db:
-            result = ProvaStateMachine.to_inscription(mock_prova)
+            result = ProvaStateMachine.to_inscription(mock_gara)
 
-            # Verify the prova status was updated
-            assert mock_prova.status == ProvaStatus.INSCRIPTION.value
+            # Verify the gara status was updated
+            assert mock_gara.status == GaraStatus.INSCRIPTION.value
 
             # Verify database operations
-            mock_db.session.add.assert_called_once_with(mock_prova)
+            mock_db.session.add.assert_called_once_with(mock_gara)
             mock_db.session.commit.assert_called_once()
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
     def test_to_inscription_invalid_transition(self):
-        """Test transitioning prova to inscription state with invalid current state."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.PLAYING.value  # Already playing
+        """Test transitioning gara to inscription state with invalid current state."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.PLAYING.value  # Already playing
 
         # Should raise InvalidTransitionError
         with pytest.raises(InvalidTransitionError):
-            ProvaStateMachine.to_inscription(mock_prova)
+            ProvaStateMachine.to_inscription(mock_gara)
 
     def test_reopen_setup_success(self):
-        """Test transitioning prova back to setup state successfully."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
+        """Test transitioning gara back to setup state successfully."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
 
         with patch("models.competition.services.db") as mock_db:
-            result = ProvaStateMachine.reopen_setup(mock_prova)
+            result = ProvaStateMachine.reopen_setup(mock_gara)
 
-            # Verify the prova status was updated
-            assert mock_prova.status == ProvaStatus.SETUP.value
+            # Verify the gara status was updated
+            assert mock_gara.status == GaraStatus.SETUP.value
 
             # Verify database operations
-            mock_db.session.add.assert_called_once_with(mock_prova)
+            mock_db.session.add.assert_called_once_with(mock_gara)
             mock_db.session.commit.assert_called_once()
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
     def test_start_playing_success(self):
-        """Test transitioning prova to playing state successfully."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
-        mock_prova.inscriptions = [Mock(), Mock()]  # Two inscriptions
-        mock_prova.current_round = 0
+        """Test transitioning gara to playing state successfully."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
+        mock_gara.inscriptions = [Mock(), Mock()]  # Two inscriptions
+        mock_gara.current_round = 0
 
         with patch("models.competition.services.db") as mock_db:
-            result = ProvaStateMachine.start_playing(mock_prova)
+            result = ProvaStateMachine.start_playing(mock_gara)
 
-            # Verify the prova status was updated
-            assert mock_prova.status == ProvaStatus.PLAYING.value
+            # Verify the gara status was updated
+            assert mock_gara.status == GaraStatus.PLAYING.value
 
             # Verify the current round was set
-            assert mock_prova.current_round == 1
+            assert mock_gara.current_round == 1
 
             # Verify database operations
-            mock_db.session.add.assert_called_once_with(mock_prova)
+            mock_db.session.add.assert_called_once_with(mock_gara)
             mock_db.session.commit.assert_called_once()
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
     def test_start_playing_insufficient_inscriptions(self):
-        """Test transitioning prova to playing state with insufficient inscriptions."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
-        mock_prova.inscriptions = [Mock()]  # Only one inscription
+        """Test transitioning gara to playing state with insufficient inscriptions."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
+        mock_gara.inscriptions = [Mock()]  # Only one inscription
 
         # Should raise InvalidTransitionError
         with pytest.raises(
             InvalidTransitionError, match="Numero iscritti insufficiente"
         ):
-            ProvaStateMachine.start_playing(mock_prova)
+            ProvaStateMachine.start_playing(mock_gara)
 
     def test_complete_success(self):
-        """Test transitioning prova to completed state successfully."""
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.PLAYING.value
+        """Test transitioning gara to completed state successfully."""
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.PLAYING.value
 
         with patch("models.competition.services.db") as mock_db:
-            result = ProvaStateMachine.complete(mock_prova)
+            result = ProvaStateMachine.complete(mock_gara)
 
-            # Verify the prova status was updated
-            assert mock_prova.status == ProvaStatus.COMPLETED.value
+            # Verify the gara status was updated
+            assert mock_gara.status == GaraStatus.COMPLETED.value
 
             # Verify database operations
-            mock_db.session.add.assert_called_once_with(mock_prova)
+            mock_db.session.add.assert_called_once_with(mock_gara)
             mock_db.session.commit.assert_called_once()
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
 
 class TestProvaService:
-    """Test cases for ProvaService class."""
+    """Test cases for GaraService class."""
 
-    def test_create_prova_success(self):
-        """Test creating a prova successfully."""
+    def test_create_gara_success(self):
+        """Test creating a gara successfully."""
         with patch("models.competition.services.db") as mock_db:
-            mock_prova = Mock()
+            mock_gara = Mock()
 
-            # Mock the Prova constructor
+            # Mock the Gara constructor
             with patch(
-                "models.competition.services.Prova", return_value=mock_prova
-            ) as mock_prova_class:
-                result = ProvaService.create_prova(
+                "models.competition.services.Gara", return_value=mock_gara
+            ) as mock_gara_class:
+                result = GaraService.create_gara(
                     number=1,
-                    name="Test Prova",
+                    name="Test Gara",
                     date=date(2023, 1, 1),
                     discipline="Test Discipline",
                     distance=50,
-                    tournament_id=1,
+                    campionato_id=1,
                 )
 
-                # Verify the prova was created with correct parameters
-                mock_prova_class.assert_called_once_with(
+                # Verify the gara was created with correct parameters
+                mock_gara_class.assert_called_once_with(
                     number=1,
-                    name="Test Prova",
+                    name="Test Gara",
                     date=date(2023, 1, 1),
                     discipline="Test Discipline",
                     distance=50,
-                    tournament_id=1,
+                    campionato_id=1,
                     director_id=None,
                 )
 
                 # Verify database operations
-                mock_db.session.add.assert_called_once_with(mock_prova)
+                mock_db.session.add.assert_called_once_with(mock_gara)
                 mock_db.session.commit.assert_called_once()
 
                 # Verify the result
-                assert result == mock_prova
+                assert result == mock_gara
 
-    def test_create_prova_without_tournament_or_director(self):
-        """Test creating a prova without tournament_id or director_id."""
+    def test_create_gara_without_campionato_or_director(self):
+        """Test creating a gara without campionato_id or director_id."""
         # Should raise ValueError
-        with pytest.raises(ValueError, match="Una Prova deve avere"):
-            ProvaService.create_prova(
+        with pytest.raises(ValueError, match="Una Gara deve avere"):
+            GaraService.create_gara(
                 number=1,
-                name="Test Prova",
+                name="Test Gara",
                 date=date(2023, 1, 1),
                 discipline="Test Discipline",
                 distance=50,
             )
 
-    def test_get_prova_by_id_success(self):
-        """Test getting a prova by ID successfully."""
-        mock_prova = Mock()
+    def test_get_gara_by_id_success(self):
+        """Test getting a gara by ID successfully."""
+        mock_gara = Mock()
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
-            result = ProvaService.get_prova_by_id(1)
+            result = GaraService.get_gara_by_id(1)
 
             # Verify database operation
-            mock_db.session.get.assert_called_once_with(Prova, 1)
+            mock_db.session.get.assert_called_once_with(Gara, 1)
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
-    def test_get_prova_by_id_not_found(self):
-        """Test getting a prova by ID when not found."""
+    def test_get_gara_by_id_not_found(self):
+        """Test getting a gara by ID when not found."""
         with patch("models.competition.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
-            result = ProvaService.get_prova_by_id(1)
+            result = GaraService.get_gara_by_id(1)
 
             # Verify database operation
-            mock_db.session.get.assert_called_once_with(Prova, 1)
+            mock_db.session.get.assert_called_once_with(Gara, 1)
 
             # Verify the result
             assert result is None
 
-    def test_update_prova_success(self):
-        """Test updating a prova successfully."""
-        mock_prova = Mock()
-        mock_prova.can_be_modified.return_value = True
+    def test_update_gara_success(self):
+        """Test updating a gara successfully."""
+        mock_gara = Mock()
+        mock_gara.can_be_modified.return_value = True
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
-            result = ProvaService.update_prova(1, name="Updated Name", distance=100)
+            result = GaraService.update_gara(1, name="Updated Name", distance=100)
 
             # Verify database operation
-            mock_db.session.get.assert_called_once_with(Prova, 1)
+            mock_db.session.get.assert_called_once_with(Gara, 1)
             mock_db.session.commit.assert_called_once()
 
-            # Verify the prova was updated
-            assert mock_prova.name == "Updated Name"
-            assert mock_prova.distance == 100
+            # Verify the gara was updated
+            assert mock_gara.name == "Updated Name"
+            assert mock_gara.distance == 100
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
-    def test_update_prova_cannot_be_modified(self):
-        """Test updating a prova that cannot be modified."""
-        mock_prova = Mock()
-        mock_prova.can_be_modified.return_value = False  # Cannot be modified
+    def test_update_gara_cannot_be_modified(self):
+        """Test updating a gara that cannot be modified."""
+        mock_gara = Mock()
+        mock_gara.can_be_modified.return_value = False  # Cannot be modified
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Should raise ValueError
-            with pytest.raises(ValueError, match="Impossibile modificare la prova"):
-                ProvaService.update_prova(1, name="Updated Name")
+            with pytest.raises(ValueError, match="Impossibile modificare la gara"):
+                GaraService.update_gara(1, name="Updated Name")
 
-    def test_update_prova_with_date_str(self):
-        """Test updating a prova with date string."""
+    def test_update_gara_with_date_str(self):
+        """Test updating a gara with date string."""
         from datetime import datetime
 
-        mock_prova = Mock()
-        mock_prova.can_be_modified.return_value = True
+        mock_gara = Mock()
+        mock_gara.can_be_modified.return_value = True
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
-            result = ProvaService.update_prova(1, date_str="2023-06-15")
+            result = GaraService.update_gara(1, date_str="2023-06-15")
 
             # Verify database operation
-            mock_db.session.get.assert_called_once_with(Prova, 1)
+            mock_db.session.get.assert_called_once_with(Gara, 1)
             mock_db.session.commit.assert_called_once()
 
-            # Verify the prova was updated with parsed date
+            # Verify the gara was updated with parsed date
             expected_date = datetime.strptime("2023-06-15", "%Y-%m-%d").date()
-            assert mock_prova.date == expected_date
+            assert mock_gara.date == expected_date
 
             # Verify the result
-            assert result == mock_prova
+            assert result == mock_gara
 
-    def test_delete_prova_cannot_be_deleted(self):
-        """Test deleting a prova that cannot be deleted."""
-        mock_prova = Mock()
-        mock_prova.can_be_deleted.return_value = False  # Cannot be deleted
+    def test_delete_gara_cannot_be_deleted(self):
+        """Test deleting a gara that cannot be deleted."""
+        mock_gara = Mock()
+        mock_gara.can_be_deleted.return_value = False  # Cannot be deleted
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Should raise ValueError
-            with pytest.raises(ValueError, match="Impossibile cancellare la prova"):
-                ProvaService.delete_prova(1)
+            with pytest.raises(ValueError, match="Impossibile cancellare la gara"):
+                GaraService.delete_gara(1)
 
-    def test_delete_prova_not_found(self):
-        """Test deleting a prova when not found."""
+    def test_delete_gara_not_found(self):
+        """Test deleting a gara when not found."""
         with patch("models.competition.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
             # Should raise ValueError
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.delete_prova(1)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.delete_gara(1)
 
     def test_modify_inscription_dates_success_reopen_setup(self):
         """Test modifying inscription dates successfully - reopen setup path."""
         from datetime import datetime
 
-        mock_prova = Mock()
-        mock_prova.can_modify_inscription_dates.return_value = True
+        mock_gara = Mock()
+        mock_gara.can_modify_inscription_dates.return_value = True
         start_date = datetime(2023, 1, 1)
         end_date = datetime(2023, 1, 31)
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             with patch.object(
-                ProvaStateMachine, "reopen_setup", return_value=mock_prova
+                ProvaStateMachine, "reopen_setup", return_value=mock_gara
             ) as mock_reopen_setup:
                 # Mock datetime.utcnow to be before start_date
                 with patch("models.competition.services.datetime") as mock_datetime:
@@ -297,37 +297,37 @@ class TestProvaService:
                         *args, **kw
                     )
 
-                    result = ProvaService.modify_inscription_dates(
+                    result = GaraService.modify_inscription_dates(
                         1, start_date, end_date
                     )
 
                     # Verify database operation
-                    mock_db.session.get.assert_called_once_with(Prova, 1)
+                    mock_db.session.get.assert_called_once_with(Gara, 1)
 
-                    # Verify the prova dates were set
-                    assert mock_prova.inscription_start == start_date
-                    assert mock_prova.inscription_end == end_date
+                    # Verify the gara dates were set
+                    assert mock_gara.inscription_start == start_date
+                    assert mock_gara.inscription_end == end_date
 
                     # Verify state machine was called for reopen_setup
-                    mock_reopen_setup.assert_called_once_with(mock_prova)
+                    mock_reopen_setup.assert_called_once_with(mock_gara)
 
                     # Verify the result
-                    assert result == mock_prova
+                    assert result == mock_gara
 
     def test_modify_inscription_dates_success_to_inscription(self):
         """Test modifying inscription dates successfully - to inscription path."""
         from datetime import datetime
 
-        mock_prova = Mock()
-        mock_prova.can_modify_inscription_dates.return_value = True
+        mock_gara = Mock()
+        mock_gara.can_modify_inscription_dates.return_value = True
         start_date = datetime(2023, 1, 1)
         end_date = datetime(2023, 1, 31)
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             with patch.object(
-                ProvaStateMachine, "to_inscription", return_value=mock_prova
+                ProvaStateMachine, "to_inscription", return_value=mock_gara
             ) as mock_to_inscription:
                 # Mock datetime.utcnow to be between start and end dates
                 with patch("models.competition.services.datetime") as mock_datetime:
@@ -338,41 +338,41 @@ class TestProvaService:
                         *args, **kw
                     )
 
-                    result = ProvaService.modify_inscription_dates(
+                    result = GaraService.modify_inscription_dates(
                         1, start_date, end_date
                     )
 
                     # Verify database operation
-                    mock_db.session.get.assert_called_once_with(Prova, 1)
+                    mock_db.session.get.assert_called_once_with(Gara, 1)
 
-                    # Verify the prova dates were set
-                    assert mock_prova.inscription_start == start_date
-                    assert mock_prova.inscription_end == end_date
+                    # Verify the gara dates were set
+                    assert mock_gara.inscription_start == start_date
+                    assert mock_gara.inscription_end == end_date
 
                     # Verify state machine was called for to_inscription
-                    mock_to_inscription.assert_called_once_with(mock_prova)
+                    mock_to_inscription.assert_called_once_with(mock_gara)
 
                     # Verify the result
-                    assert result == mock_prova
+                    assert result == mock_gara
 
     def test_modify_inscription_dates_cannot_modify(self):
         """Test modifying inscription dates when not allowed."""
         from datetime import datetime
 
-        mock_prova = Mock()
-        mock_prova.can_modify_inscription_dates.return_value = False  # Cannot modify
+        mock_gara = Mock()
+        mock_gara.can_modify_inscription_dates.return_value = False  # Cannot modify
         start_date = datetime(2023, 1, 1)
         end_date = datetime(2023, 1, 31)
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Should raise ValueError
             with pytest.raises(ValueError, match="Impossibile modificare le date"):
-                ProvaService.modify_inscription_dates(1, start_date, end_date)
+                GaraService.modify_inscription_dates(1, start_date, end_date)
 
     def test_modify_inscription_dates_not_found(self):
-        """Test modifying inscription dates when prova not found."""
+        """Test modifying inscription dates when gara not found."""
         from datetime import datetime
 
         start_date = datetime(2023, 1, 1)
@@ -382,22 +382,22 @@ class TestProvaService:
             mock_db.session.get.return_value = None
 
             # Should raise ValueError
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.modify_inscription_dates(1, start_date, end_date)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.modify_inscription_dates(1, start_date, end_date)
 
     def test_start_first_round_success(self):
         """Test starting first round successfully."""
 
-        mock_prova = Mock()
-        mock_prova.current_round = 0
-        mock_prova.min_participants = 2
+        mock_gara = Mock()
+        mock_gara.current_round = 0
+        mock_gara.min_participants = 2
 
         mock_inscription1 = Mock()
         mock_inscription2 = Mock()
         mock_inscriptions = [mock_inscription1, mock_inscription2]
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Mock the query for inscriptions
             mock_query = Mock()
@@ -405,14 +405,14 @@ class TestProvaService:
             mock_db.session.query.return_value.filter_by.return_value = mock_query
 
             with patch.object(
-                ProvaStateMachine, "start_playing", return_value=mock_prova
+                ProvaStateMachine, "start_playing", return_value=mock_gara
             ) as mock_start_playing:
                 # Patch the utils module directly
                 with patch("utils.create_round_matches") as mock_create_round:
-                    result = ProvaService.start_first_round(1)
+                    result = GaraService.start_first_round(1)
 
                     # Verify database operations
-                    mock_db.session.get.assert_called_once_with(Prova, 1)
+                    mock_db.session.get.assert_called_once_with(Gara, 1)
                     mock_query.all.assert_called_once()
 
                     # Verify inscriptions were ordered (we can't verify shuffling easily in tests)
@@ -430,43 +430,43 @@ class TestProvaService:
                     mock_create_round.assert_called_once()
 
                     # Verify state machine was called
-                    mock_start_playing.assert_called_once_with(mock_prova)
+                    mock_start_playing.assert_called_once_with(mock_gara)
 
                     # Verify the result
-                    assert result == mock_prova
-                    assert mock_prova.current_round == 1
+                    assert result == mock_gara
+                    assert mock_gara.current_round == 1
 
     def test_start_first_round_not_found(self):
-        """Test starting first round when prova not found."""
+        """Test starting first round when gara not found."""
         with patch("models.competition.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
             # Should raise ValueError
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.start_first_round(1)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.start_first_round(1)
 
     def test_start_first_round_already_started(self):
         """Test starting first round when already started."""
-        mock_prova = Mock()
-        mock_prova.current_round = 1  # Already started
+        mock_gara = Mock()
+        mock_gara.current_round = 1  # Already started
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Should raise ValueError
-            with pytest.raises(ValueError, match="La prova è già iniziata"):
-                ProvaService.start_first_round(1)
+            with pytest.raises(ValueError, match="La gara è già iniziata"):
+                GaraService.start_first_round(1)
 
     def test_start_first_round_insufficient_participants(self):
         """Test starting first round with insufficient participants."""
-        mock_prova = Mock()
-        mock_prova.current_round = 0
-        mock_prova.min_participants = 3  # Need 3 participants
+        mock_gara = Mock()
+        mock_gara.current_round = 0
+        mock_gara.min_participants = 3  # Need 3 participants
 
         mock_inscription = Mock()  # Only 1 inscription
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Mock the query for inscriptions
             mock_query = Mock()
@@ -475,14 +475,14 @@ class TestProvaService:
 
             # Should raise ValueError
             with pytest.raises(
-                ValueError, match="Servono almeno 3 iscritti per avviare la prova"
+                ValueError, match="Servono almeno 3 iscritti per avviare la gara"
             ):
-                ProvaService.start_first_round(1)
+                GaraService.start_first_round(1)
 
-    def test_validate_prova_data_valid_with_all_fields(self):
-        """Test validating prova data with all valid fields."""
+    def test_validate_gara_data_valid_with_all_fields(self):
+        """Test validating gara data with all valid fields."""
         data = {
-            "name": "Test Prova",
+            "name": "Test Gara",
             "discipline": "Test Discipline",
             "distance": "50",
             "entry_fee": "10.5",
@@ -494,116 +494,116 @@ class TestProvaService:
             "rounds_count": "3",
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         # Verify no errors
         assert errors == {}
 
-    def test_validate_prova_data_invalid_max_participants(self):
-        """Test validating prova data with invalid max participants."""
+    def test_validate_gara_data_invalid_max_participants(self):
+        """Test validating gara data with invalid max participants."""
         data = {
-            "name": "Test Prova",
+            "name": "Test Gara",
             "discipline": "Test Discipline",
             "distance": "50",
             "min_participants": "4",
             "max_participants": "2",  # Less than min_participants
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         # Verify error for max participants
         assert "max_participants" in errors
         assert ">= min" in errors["max_participants"]
 
-    def test_validate_prova_data_invalid_rounds_count(self):
-        """Test validating prova data with invalid rounds count."""
+    def test_validate_gara_data_invalid_rounds_count(self):
+        """Test validating gara data with invalid rounds count."""
         data = {
-            "name": "Test Prova",
+            "name": "Test Gara",
             "discipline": "Test Discipline",
             "distance": "50",
             "rounds_count": "0",  # Must be at least 1
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         # Verify error for rounds count
         assert "rounds_count" in errors
         assert "almeno 1" in errors["rounds_count"]
 
-    def test_validate_prova_data_invalid_date_format(self):
-        """Test validating prova data with invalid date format."""
+    def test_validate_gara_data_invalid_date_format(self):
+        """Test validating gara data with invalid date format."""
         data = {
-            "name": "Test Prova",
+            "name": "Test Gara",
             "discipline": "Test Discipline",
             "distance": "50",
             "inscription_start": "invalid-date",
         }
 
-        errors = ProvaService.validate_prova_data(data)
+        errors = GaraService.validate_gara_data(data)
 
         # Verify error for invalid date format
         assert "inscription_start" in errors
         assert "Formato data non valido" in errors["inscription_start"]
 
-    def test_prova_service_state_machine_methods(self):
-        """Test ProvaService state machine facade methods."""
-        mock_prova = Mock()
+    def test_gara_service_state_machine_methods(self):
+        """Test GaraService state machine facade methods."""
+        mock_gara = Mock()
 
         with patch("models.competition.services.db") as mock_db:
-            mock_db.session.get.return_value = mock_prova
+            mock_db.session.get.return_value = mock_gara
 
             # Test to_inscription
             with patch.object(
-                ProvaStateMachine, "to_inscription", return_value=mock_prova
+                ProvaStateMachine, "to_inscription", return_value=mock_gara
             ) as mock_to_inscription:
-                result = ProvaService.to_inscription(1)
-                mock_to_inscription.assert_called_once_with(mock_prova)
-                assert result == mock_prova
+                result = GaraService.to_inscription(1)
+                mock_to_inscription.assert_called_once_with(mock_gara)
+                assert result == mock_gara
 
             # Test reopen_setup
             with patch.object(
-                ProvaStateMachine, "reopen_setup", return_value=mock_prova
+                ProvaStateMachine, "reopen_setup", return_value=mock_gara
             ) as mock_reopen_setup:
-                result = ProvaService.reopen_setup(1)
-                mock_reopen_setup.assert_called_once_with(mock_prova)
-                assert result == mock_prova
+                result = GaraService.reopen_setup(1)
+                mock_reopen_setup.assert_called_once_with(mock_gara)
+                assert result == mock_gara
 
             # Test start_playing
             with patch.object(
-                ProvaStateMachine, "start_playing", return_value=mock_prova
+                ProvaStateMachine, "start_playing", return_value=mock_gara
             ) as mock_start_playing:
-                result = ProvaService.start_playing(1)
-                mock_start_playing.assert_called_once_with(mock_prova)
-                assert result == mock_prova
+                result = GaraService.start_playing(1)
+                mock_start_playing.assert_called_once_with(mock_gara)
+                assert result == mock_gara
 
             # Test complete
             with patch.object(
-                ProvaStateMachine, "complete", return_value=mock_prova
+                ProvaStateMachine, "complete", return_value=mock_gara
             ) as mock_complete:
-                result = ProvaService.complete(1)
-                mock_complete.assert_called_once_with(mock_prova)
-                assert result == mock_prova
+                result = GaraService.complete(1)
+                mock_complete.assert_called_once_with(mock_gara)
+                assert result == mock_gara
 
-    def test_prova_service_state_machine_methods_not_found(self):
-        """Test ProvaService state machine facade methods when prova not found."""
+    def test_gara_service_state_machine_methods_not_found(self):
+        """Test GaraService state machine facade methods when gara not found."""
         with patch("models.competition.services.db") as mock_db:
             mock_db.session.get.return_value = None
 
             # Test to_inscription
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.to_inscription(1)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.to_inscription(1)
 
             # Test reopen_setup
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.reopen_setup(1)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.reopen_setup(1)
 
             # Test start_playing
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.start_playing(1)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.start_playing(1)
 
             # Test complete
-            with pytest.raises(ValueError, match="Prova 1 non trovata"):
-                ProvaService.complete(1)
+            with pytest.raises(ValueError, match="Gara 1 non trovata"):
+                GaraService.complete(1)
 
 
 class TestInscriptionService:
@@ -626,7 +626,7 @@ class TestInscriptionService:
                 result = InscriptionService.inscribe_user(1, 1)
 
                 # Verify the inscription was created with correct parameters
-                mock_inscription_class.assert_called_once_with(user_id=1, prova_id=1)
+                mock_inscription_class.assert_called_once_with(user_id=1, gara_id=1)
 
                 # Verify database operations
                 mock_db.session.add.assert_called_once_with(mock_inscription)

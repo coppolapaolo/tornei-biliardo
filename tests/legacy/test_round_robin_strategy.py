@@ -18,7 +18,7 @@ class TestRoundRobinStrategy:
         assert strategy.display_name == "Round Robin"
         assert (
             strategy.description
-            == "Round Robin tournament where everyone plays everyone else"
+            == "Round Robin campionato where everyone plays everyone else"
         )
         assert strategy.min_players == 3
         assert strategy.max_players == 16
@@ -29,14 +29,14 @@ class TestRoundRobinStrategy:
         """Test validate method with insufficient players."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object with only 1 player
-        mock_prova = Mock()
+        # Create a mock gara object with only 1 player
+        mock_gara = Mock()
         mock_inscription = Mock()
         mock_inscription.status = "confirmed"
         mock_inscription.user_id = 1
-        mock_prova.inscriptions = [mock_inscription]
+        mock_gara.inscriptions = [mock_inscription]
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is False
@@ -46,18 +46,18 @@ class TestRoundRobinStrategy:
         """Test validate method with sufficient players."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object with 4 players
-        mock_prova = Mock()
+        # Create a mock gara object with 4 players
+        mock_gara = Mock()
         mock_inscriptions = []
         for i in range(4):
             mock_inscription = Mock()
             mock_inscription.status = "confirmed"
             mock_inscription.user_id = i + 1
             mock_inscriptions.append(mock_inscription)
-        mock_prova.inscriptions = mock_inscriptions
-        mock_prova.rounds_count = 5  # 4 players need 3 rounds, but we have 5
+        mock_gara.inscriptions = mock_inscriptions
+        mock_gara.rounds_count = 5  # 4 players need 3 rounds, but we have 5
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is True
@@ -67,32 +67,32 @@ class TestRoundRobinStrategy:
         """Test validate method with insufficient rounds."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object with 6 players but only 3 rounds
-        mock_prova = Mock()
+        # Create a mock gara object with 6 players but only 3 rounds
+        mock_gara = Mock()
         mock_inscriptions = []
         for i in range(6):
             mock_inscription = Mock()
             mock_inscription.status = "confirmed"
             mock_inscription.user_id = i + 1
             mock_inscriptions.append(mock_inscription)
-        mock_prova.inscriptions = mock_inscriptions
-        mock_prova.rounds_count = 3  # 6 players need 5 rounds
+        mock_gara.inscriptions = mock_inscriptions
+        mock_gara.rounds_count = 3  # 6 players need 5 rounds
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is False
-        assert "Round Robin requires 5 rounds, but prova has 3" in result.messages
+        assert "Round Robin requires 5 rounds, but gara has 3" in result.messages
 
     def test_validate_with_exception(self):
         """Test validate method when an exception occurs."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object that will cause an exception
-        mock_prova = Mock()
+        # Create a mock gara object that will cause an exception
+        mock_gara = Mock()
         # Instead of deleting inscriptions, let's mock getattr to raise an exception
         with patch("builtins.getattr", side_effect=AttributeError("test error")):
-            result = strategy.validate(mock_prova)
+            result = strategy.validate(mock_gara)
 
             # Verify the result
             assert result.ok is False
@@ -102,51 +102,51 @@ class TestRoundRobinStrategy:
         """Test preview method."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object
-        mock_prova = Mock()
+        # Create a mock gara object
+        mock_gara = Mock()
         round_number = 1
 
         # Mock the _generate_round_pairings method
         with patch.object(strategy, "_generate_round_pairings") as mock_generate:
             mock_generate.return_value = []
 
-            result = strategy.preview(mock_prova, round_number)
+            result = strategy.preview(mock_gara, round_number)
 
             # Verify the result
             assert result == []
-            mock_generate.assert_called_once_with(mock_prova, round_number)
+            mock_generate.assert_called_once_with(mock_gara, round_number)
 
     def test_propose(self):
         """Test propose method."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object
-        mock_prova = Mock()
+        # Create a mock gara object
+        mock_gara = Mock()
         round_number = 1
 
         # Mock the _generate_round_pairings method
         with patch.object(strategy, "_generate_round_pairings") as mock_generate:
             mock_generate.return_value = []
 
-            result = strategy.propose(mock_prova, round_number)
+            result = strategy.propose(mock_gara, round_number)
 
             # Verify the result
             assert result == []
-            mock_generate.assert_called_once_with(mock_prova, round_number)
+            mock_generate.assert_called_once_with(mock_gara, round_number)
 
     def test_generate_round_pairings_with_insufficient_players(self):
         """Test _generate_round_pairings method with insufficient players."""
         strategy = RoundRobinStrategy()
 
-        # Create a mock prova object with only 1 player
-        mock_prova = Mock()
+        # Create a mock gara object with only 1 player
+        mock_gara = Mock()
         mock_inscription = Mock()
         mock_inscription.status = "confirmed"
         mock_inscription.user_id = 1
-        mock_prova.inscriptions = [mock_inscription]
+        mock_gara.inscriptions = [mock_inscription]
         round_number = 1
 
-        result = strategy._generate_round_pairings(mock_prova, round_number)
+        result = strategy._generate_round_pairings(mock_gara, round_number)
 
         # Verify the result
         assert result == []

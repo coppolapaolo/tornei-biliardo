@@ -11,17 +11,17 @@
             <div class="list-group-item">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-1">{{ inscription.prova.name }}</h6>
+                        <h6 class="mb-1">{{ inscription.gara.name }}</h6>
                         <p class="mb-1">
                             <small>
-                                📅 {{ inscription.prova.date.strftime('%d/%m/%Y') }} - 
-                                📍 {{ inscription.prova.location or 'Luogo da definire' }}
+                                📅 {{ inscription.gara.date.strftime('%d/%m/%Y') }} - 
+                                📍 {{ inscription.gara.location or 'Luogo da definire' }}
                             </small>
                         </p>
-                        {{ status_badge(inscription.prova, 'prova') }}
+                        {{ status_badge(inscription.gara, 'gara') }}
                     </div>
                     <div>
-                        <a href="{{ url_for('admin.competition.prova_detail', prova_id=inscription.prova.id) }}" 
+                        <a href="{{ url_for('admin.competition.gara_detail', gara_id=inscription.gara.id) }}" 
                            class="btn btn-sm btn-outline-primary">
                             Dettagli
                         </a>

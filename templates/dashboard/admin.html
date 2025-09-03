@@ -7,21 +7,21 @@
 {% include "components/_admin_dashboard_content.html" %}
 {% endblock %}
 
-{% include "components/_tournament_create_modal.html" %}
+{% include "components/_campionato_create_modal.html" %}
 
 {% block scripts %}
 <script>
 function toggleActive(tournamentId) {
-  if (confirm('Sei sicuro di voler cambiare lo stato del torneo?')) {
-    fetch(`/admin/tournament/${tournamentId}/toggle_active`, {
+  if (confirm('Sei sicuro di voler cambiare lo stato del campionato?')) {
+    fetch(`/admin/campionato/${tournamentId}/toggle_active`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'}
     }).then(r => { if (r.ok) location.reload(); });
   }
 }
 function deleteTournament(tournamentId, tournamentName) {
-  if (confirm(`Sei SICURO di voler eliminare il torneo "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
-    fetch(`/admin/tournament/${tournamentId}/delete`, {
+  if (confirm(`Sei SICURO di voler eliminare il campionato "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
+    fetch(`/admin/campionato/${tournamentId}/delete`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'}
     }).then(r => { if (r.ok) location.reload(); });

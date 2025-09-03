@@ -11,7 +11,7 @@ from models.matchmaking.strategies.direct_elimination import DirectEliminationSt
 from models.matchmaking.strategies.double_knockout import DoubleKnockoutStrategy
 from models.matchmaking.strategies.random_anti_rematch import RandomAntiRematchStrategy
 from models.matchmaking.strategies.round_robin import RoundRobinStrategy
-from models import User, Tournament, Prova, Inscription
+from models import User, Campionato, Gara, Inscription
 
 
 class TestBaseStrategy:
@@ -19,14 +19,14 @@ class TestBaseStrategy:
 
     def test_base_strategy_initialization(self):
         """Test base strategy can be initialized."""
-        prova = Mock()
-        strategy = BaseStrategy(prova)
-        assert strategy.prova == prova
+        gara = Mock()
+        strategy = BaseStrategy(gara)
+        assert strategy.gara == gara
 
     def test_base_strategy_abstract_methods(self):
         """Test abstract methods raise NotImplementedError."""
-        prova = Mock()
-        strategy = BaseStrategy(prova)
+        gara = Mock()
+        strategy = BaseStrategy(gara)
 
         with pytest.raises(NotImplementedError):
             strategy.create_round_matches(1)
@@ -36,8 +36,8 @@ class TestBaseStrategy:
 
     def test_get_active_players_basic(self):
         """Test get_active_players method."""
-        prova = Mock()
-        strategy = BaseStrategy(prova)
+        gara = Mock()
+        strategy = BaseStrategy(gara)
 
         with patch.object(strategy, "_get_inscriptions") as mock_inscriptions:
             mock_inscription = Mock()
@@ -55,14 +55,14 @@ class TestDirectEliminationStrategy:
     """Test direct elimination strategy."""
 
     @pytest.fixture
-    def sample_prova(self, db_session):
-        """Create a sample prova for testing."""
-        tournament = Tournament(name="Direct Test", tournament_type="Elimination")
-        db_session.add(tournament)
+    def sample_gara(self, db_session):
+        """Create a sample gara for testing."""
+        campionato = Campionato(name="Direct Test", campionato_type="Elimination")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Direct Elimination Test",
             date=date.today(),
@@ -71,16 +71,16 @@ class TestDirectEliminationStrategy:
             status="playing",
             current_round=1,
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.commit()
-        return prova
+        return gara
 
-    def test_direct_elimination_initialization(self, sample_prova):
+    def test_direct_elimination_initialization(self, sample_gara):
         """Test direct elimination strategy initialization."""
-        strategy = DirectEliminationStrategy(sample_prova)
-        assert strategy.prova == sample_prova
+        strategy = DirectEliminationStrategy(sample_gara)
+        assert strategy.gara == sample_gara
 
-    def test_create_first_round_even_players(self, sample_prova, db_session):
+    def test_create_first_round_even_players(self, sample_gara, db_session):
         """Test first round creation with even number of players."""
         # Create 4 players
         players = []
@@ -95,13 +95,13 @@ class TestDirectEliminationStrategy:
         # Create inscriptions
         for player in players:
             inscription = Inscription(
-                prova_id=sample_prova.id, user_id=player.id, is_withdrawn=False
+                gara_id=sample_gara.id, user_id=player.id, is_withdrawn=False
             )
             db_session.add(inscription)
 
         db_session.commit()
 
-        strategy = DirectEliminationStrategy(sample_prova)
+        strategy = DirectEliminationStrategy(sample_gara)
 
         with patch.object(strategy, "_create_match") as mock_create:
             mock_create.return_value = Mock()
@@ -112,9 +112,9 @@ class TestDirectEliminationStrategy:
             assert mock_create.call_count == 2
             assert len(result) == 2
 
-    def test_create_round_matches_subsequent_round(self, sample_prova):
+    def test_create_round_matches_subsequent_round(self, sample_gara):
         """Test creating matches for subsequent rounds."""
-        strategy = DirectEliminationStrategy(sample_prova)
+        strategy = DirectEliminationStrategy(sample_gara)
 
         with patch.object(strategy, "_get_round_winners") as mock_winners, patch.object(
             strategy, "_create_match"
@@ -132,9 +132,9 @@ class TestDirectEliminationStrategy:
             assert mock_create.call_count == 1
             assert len(result) == 1
 
-    def test_validate_round_success(self, sample_prova):
+    def test_validate_round_success(self, sample_gara):
         """Test successful round validation."""
-        strategy = DirectEliminationStrategy(sample_prova)
+        strategy = DirectEliminationStrategy(sample_gara)
 
         result = strategy.validate_round(1)
 
@@ -147,14 +147,14 @@ class TestDoubleKnockoutStrategy:
     """Test double knockout strategy."""
 
     @pytest.fixture
-    def sample_prova_double(self, db_session):
-        """Create a sample prova for double knockout testing."""
-        tournament = Tournament(name="Double KO Test", tournament_type="DoubleKnockout")
-        db_session.add(tournament)
+    def sample_gara_double(self, db_session):
+        """Create a sample gara for double knockout testing."""
+        campionato = Campionato(name="Double KO Test", campionato_type="DoubleKnockout")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Double Knockout Test",
             date=date.today(),
@@ -163,18 +163,18 @@ class TestDoubleKnockoutStrategy:
             status="playing",
             current_round=1,
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.commit()
-        return prova
+        return gara
 
-    def test_double_knockout_initialization(self, sample_prova_double):
+    def test_double_knockout_initialization(self, sample_gara_double):
         """Test double knockout strategy initialization."""
-        strategy = DoubleKnockoutStrategy(sample_prova_double)
-        assert strategy.prova == sample_prova_double
+        strategy = DoubleKnockoutStrategy(sample_gara_double)
+        assert strategy.gara == sample_gara_double
 
-    def test_create_round_matches_first_round(self, sample_prova_double):
+    def test_create_round_matches_first_round(self, sample_gara_double):
         """Test first round creation in double knockout."""
-        strategy = DoubleKnockoutStrategy(sample_prova_double)
+        strategy = DoubleKnockoutStrategy(sample_gara_double)
 
         with patch.object(strategy, "get_active_players") as mock_players, patch.object(
             strategy, "_create_winner_bracket_matches"
@@ -189,9 +189,9 @@ class TestDoubleKnockoutStrategy:
             mock_winner_matches.assert_called_once()
             assert len(result) == 2
 
-    def test_create_round_matches_subsequent_round(self, sample_prova_double):
+    def test_create_round_matches_subsequent_round(self, sample_gara_double):
         """Test subsequent round creation in double knockout."""
-        strategy = DoubleKnockoutStrategy(sample_prova_double)
+        strategy = DoubleKnockoutStrategy(sample_gara_double)
 
         with patch.object(
             strategy, "_create_winner_bracket_matches"
@@ -208,9 +208,9 @@ class TestDoubleKnockoutStrategy:
             mock_loser.assert_called_once()
             assert len(result) == 2
 
-    def test_validate_round_double_knockout(self, sample_prova_double):
+    def test_validate_round_double_knockout(self, sample_gara_double):
         """Test round validation for double knockout."""
-        strategy = DoubleKnockoutStrategy(sample_prova_double)
+        strategy = DoubleKnockoutStrategy(sample_gara_double)
 
         result = strategy.validate_round(1)
 
@@ -223,14 +223,14 @@ class TestRandomAntiRematchStrategy:
     """Test random anti-rematch strategy."""
 
     @pytest.fixture
-    def sample_prova_random(self, db_session):
-        """Create a sample prova for random anti-rematch testing."""
-        tournament = Tournament(name="Random Test", tournament_type="RandomAntiRematch")
-        db_session.add(tournament)
+    def sample_gara_random(self, db_session):
+        """Create a sample gara for random anti-rematch testing."""
+        campionato = Campionato(name="Random Test", campionato_type="RandomAntiRematch")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Random Anti-Rematch Test",
             date=date.today(),
@@ -239,18 +239,18 @@ class TestRandomAntiRematchStrategy:
             status="playing",
             current_round=1,
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.commit()
-        return prova
+        return gara
 
-    def test_random_anti_rematch_initialization(self, sample_prova_random):
+    def test_random_anti_rematch_initialization(self, sample_gara_random):
         """Test random anti-rematch strategy initialization."""
-        strategy = RandomAntiRematchStrategy(sample_prova_random)
-        assert strategy.prova == sample_prova_random
+        strategy = RandomAntiRematchStrategy(sample_gara_random)
+        assert strategy.gara == sample_gara_random
 
-    def test_create_round_matches_basic(self, sample_prova_random):
+    def test_create_round_matches_basic(self, sample_gara_random):
         """Test basic round creation with anti-rematch logic."""
-        strategy = RandomAntiRematchStrategy(sample_prova_random)
+        strategy = RandomAntiRematchStrategy(sample_gara_random)
 
         with patch.object(strategy, "get_active_players") as mock_players, patch.object(
             strategy, "_get_previous_encounters"
@@ -268,9 +268,9 @@ class TestRandomAntiRematchStrategy:
             mock_pairings.assert_called_once()
             assert len(result) == 2
 
-    def test_validate_round_anti_rematch(self, sample_prova_random):
+    def test_validate_round_anti_rematch(self, sample_gara_random):
         """Test round validation for anti-rematch strategy."""
-        strategy = RandomAntiRematchStrategy(sample_prova_random)
+        strategy = RandomAntiRematchStrategy(sample_gara_random)
 
         result = strategy.validate_round(1)
 
@@ -283,14 +283,14 @@ class TestRoundRobinStrategy:
     """Test round robin strategy."""
 
     @pytest.fixture
-    def sample_prova_robin(self, db_session):
-        """Create a sample prova for round robin testing."""
-        tournament = Tournament(name="Round Robin Test", tournament_type="RoundRobin")
-        db_session.add(tournament)
+    def sample_gara_robin(self, db_session):
+        """Create a sample gara for round robin testing."""
+        campionato = Campionato(name="Round Robin Test", campionato_type="RoundRobin")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Round Robin Test",
             date=date.today(),
@@ -299,18 +299,18 @@ class TestRoundRobinStrategy:
             status="playing",
             current_round=1,
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.commit()
-        return prova
+        return gara
 
-    def test_round_robin_initialization(self, sample_prova_robin):
+    def test_round_robin_initialization(self, sample_gara_robin):
         """Test round robin strategy initialization."""
-        strategy = RoundRobinStrategy(sample_prova_robin)
-        assert strategy.prova == sample_prova_robin
+        strategy = RoundRobinStrategy(sample_gara_robin)
+        assert strategy.gara == sample_gara_robin
 
-    def test_create_round_matches_robin(self, sample_prova_robin):
+    def test_create_round_matches_robin(self, sample_gara_robin):
         """Test round creation in round robin."""
-        strategy = RoundRobinStrategy(sample_prova_robin)
+        strategy = RoundRobinStrategy(sample_gara_robin)
 
         with patch.object(strategy, "get_active_players") as mock_players, patch.object(
             strategy, "_get_round_pairings"
@@ -329,9 +329,9 @@ class TestRoundRobinStrategy:
                 assert mock_create.call_count == 2
                 assert len(result) == 2
 
-    def test_validate_round_robin(self, sample_prova_robin):
+    def test_validate_round_robin(self, sample_gara_robin):
         """Test round validation for round robin."""
-        strategy = RoundRobinStrategy(sample_prova_robin)
+        strategy = RoundRobinStrategy(sample_gara_robin)
 
         result = strategy.validate_round(1)
 
@@ -339,9 +339,9 @@ class TestRoundRobinStrategy:
         assert "warnings" in result
         assert "errors" in result
 
-    def test_calculate_total_rounds_robin(self, sample_prova_robin):
+    def test_calculate_total_rounds_robin(self, sample_gara_robin):
         """Test total rounds calculation for round robin."""
-        strategy = RoundRobinStrategy(sample_prova_robin)
+        strategy = RoundRobinStrategy(sample_gara_robin)
 
         with patch.object(strategy, "get_active_players") as mock_players:
             # Mock 4 players should need 3 rounds (each plays each other once)
@@ -358,13 +358,13 @@ class TestStrategyUtilities:
 
     def test_strategy_factory_pattern(self):
         """Test that all strategies follow the same interface."""
-        prova = Mock()
+        gara = Mock()
 
         strategies = [
-            DirectEliminationStrategy(prova),
-            DoubleKnockoutStrategy(prova),
-            RandomAntiRematchStrategy(prova),
-            RoundRobinStrategy(prova),
+            DirectEliminationStrategy(gara),
+            DoubleKnockoutStrategy(gara),
+            RandomAntiRematchStrategy(gara),
+            RoundRobinStrategy(gara),
         ]
 
         for strategy in strategies:

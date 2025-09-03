@@ -28,14 +28,14 @@ class TestRandomAntiRematchStrategy:
         """Test validate method with insufficient players."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with only 1 player
-        mock_prova = Mock()
+        # Create a mock gara object with only 1 player
+        mock_gara = Mock()
         mock_inscription = Mock()
         mock_inscription.is_withdrawn = False
         mock_inscription.user_id = 1
-        mock_prova.inscriptions = [mock_inscription]
+        mock_gara.inscriptions = [mock_inscription]
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is False
@@ -45,18 +45,18 @@ class TestRandomAntiRematchStrategy:
         """Test validate method with sufficient players."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with 2 players
-        mock_prova = Mock()
+        # Create a mock gara object with 2 players
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.is_withdrawn = False
         mock_inscription1.user_id = 1
         mock_inscription2 = Mock()
         mock_inscription2.is_withdrawn = False
         mock_inscription2.user_id = 2
-        mock_prova.inscriptions = [mock_inscription1, mock_inscription2]
-        mock_prova.rounds_count = 1
+        mock_gara.inscriptions = [mock_inscription1, mock_inscription2]
+        mock_gara.rounds_count = 1
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is True
@@ -66,8 +66,8 @@ class TestRandomAntiRematchStrategy:
         """Test validate method with too many rounds planned."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with 3 players but 4 rounds planned
-        mock_prova = Mock()
+        # Create a mock gara object with 3 players but 4 rounds planned
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.is_withdrawn = False
         mock_inscription1.user_id = 1
@@ -77,14 +77,14 @@ class TestRandomAntiRematchStrategy:
         mock_inscription3 = Mock()
         mock_inscription3.is_withdrawn = False
         mock_inscription3.user_id = 3
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
         ]
-        mock_prova.rounds_count = 4  # Only 3 unique matches possible with 3 players
+        mock_gara.rounds_count = 4  # Only 3 unique matches possible with 3 players
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is False
@@ -97,11 +97,11 @@ class TestRandomAntiRematchStrategy:
         """Test validate method when an exception occurs."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object that will cause an exception
-        mock_prova = Mock()
-        del mock_prova.inscriptions  # This will cause an AttributeError
+        # Create a mock gara object that will cause an exception
+        mock_gara = Mock()
+        del mock_gara.inscriptions  # This will cause an AttributeError
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify the result
         assert result.ok is False
@@ -111,51 +111,51 @@ class TestRandomAntiRematchStrategy:
         """Test preview method."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object
-        mock_prova = Mock()
+        # Create a mock gara object
+        mock_gara = Mock()
         round_number = 1
 
         # Mock the _generate_round_pairings method
         with patch.object(strategy, "_generate_round_pairings") as mock_generate:
             mock_generate.return_value = []
 
-            result = strategy.preview(mock_prova, round_number)
+            result = strategy.preview(mock_gara, round_number)
 
             # Verify the result
             assert result == []
-            mock_generate.assert_called_once_with(mock_prova, round_number)
+            mock_generate.assert_called_once_with(mock_gara, round_number)
 
     def test_propose(self):
         """Test propose method."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object
-        mock_prova = Mock()
+        # Create a mock gara object
+        mock_gara = Mock()
         round_number = 1
 
         # Mock the _generate_round_pairings method
         with patch.object(strategy, "_generate_round_pairings") as mock_generate:
             mock_generate.return_value = []
 
-            result = strategy.propose(mock_prova, round_number)
+            result = strategy.propose(mock_gara, round_number)
 
             # Verify the result
             assert result == []
-            mock_generate.assert_called_once_with(mock_prova, round_number)
+            mock_generate.assert_called_once_with(mock_gara, round_number)
 
     def test_generate_round_pairings_with_insufficient_players(self):
         """Test _generate_round_pairings method with insufficient players."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with only 1 player
-        mock_prova = Mock()
+        # Create a mock gara object with only 1 player
+        mock_gara = Mock()
         mock_inscription = Mock()
         mock_inscription.is_withdrawn = False
         mock_inscription.user_id = 1
-        mock_prova.inscriptions = [mock_inscription]
+        mock_gara.inscriptions = [mock_inscription]
         round_number = 1
 
-        result = strategy._generate_round_pairings(mock_prova, round_number)
+        result = strategy._generate_round_pairings(mock_gara, round_number)
 
         # Verify the result
         assert result == []
@@ -164,12 +164,12 @@ class TestRandomAntiRematchStrategy:
         """Test _generate_round_pairings method when an exception occurs."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object that will cause an exception
-        mock_prova = Mock()
-        del mock_prova.inscriptions  # This will cause an AttributeError
+        # Create a mock gara object that will cause an exception
+        mock_gara = Mock()
+        del mock_gara.inscriptions  # This will cause an AttributeError
         round_number = 1
 
-        result = strategy._generate_round_pairings(mock_prova, round_number)
+        result = strategy._generate_round_pairings(mock_gara, round_number)
 
         # Verify the result
         assert result == []
@@ -179,9 +179,9 @@ class TestRandomAntiRematchStrategy:
         """Test _get_previous_pairings method."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object
-        mock_prova = Mock()
-        mock_prova.id = 1
+        # Create a mock gara object
+        mock_gara = Mock()
+        mock_gara.id = 1
         round_number = 2
 
         # Create mock matches
@@ -224,7 +224,7 @@ class TestRandomAntiRematchStrategy:
         # Mock the all method to return our mock matches
         mock_filtered_query.all.return_value = [mock_match1, mock_match2, mock_match3]
 
-        result = strategy._get_previous_pairings(mock_prova, round_number)
+        result = strategy._get_previous_pairings(mock_gara, round_number)
 
         # Debug information
         print(f"Result: {result}")
@@ -477,14 +477,14 @@ class TestRandomAntiRematchStrategy:
         """Test can_generate_all_rounds method with insufficient players."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with only 1 player
-        mock_prova = Mock()
+        # Create a mock gara object with only 1 player
+        mock_gara = Mock()
         mock_inscription = Mock()
         mock_inscription.is_withdrawn = False
         mock_inscription.user_id = 1
-        mock_prova.inscriptions = [mock_inscription]
+        mock_gara.inscriptions = [mock_inscription]
 
-        result = strategy.can_generate_all_rounds(mock_prova)
+        result = strategy.can_generate_all_rounds(mock_gara)
 
         # Should return False since there are insufficient players
         assert result is False
@@ -493,8 +493,8 @@ class TestRandomAntiRematchStrategy:
         """Test can_generate_all_rounds method with sufficient players."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with 4 players and 2 rounds
-        mock_prova = Mock()
+        # Create a mock gara object with 4 players and 2 rounds
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.is_withdrawn = False
         mock_inscription1.user_id = 1
@@ -507,15 +507,15 @@ class TestRandomAntiRematchStrategy:
         mock_inscription4 = Mock()
         mock_inscription4.is_withdrawn = False
         mock_inscription4.user_id = 4
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
             mock_inscription4,
         ]
-        mock_prova.rounds_count = 2
+        mock_gara.rounds_count = 2
 
-        result = strategy.can_generate_all_rounds(mock_prova)
+        result = strategy.can_generate_all_rounds(mock_gara)
 
         # Should return True since 2 rounds can be generated without rematches
         assert result is True
@@ -524,8 +524,8 @@ class TestRandomAntiRematchStrategy:
         """Test get_rematch_probability method with no matches played."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with 4 players
-        mock_prova = Mock()
+        # Create a mock gara object with 4 players
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.is_withdrawn = False
         mock_inscription1.user_id = 1
@@ -538,7 +538,7 @@ class TestRandomAntiRematchStrategy:
         mock_inscription4 = Mock()
         mock_inscription4.is_withdrawn = False
         mock_inscription4.user_id = 4
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
@@ -546,7 +546,7 @@ class TestRandomAntiRematchStrategy:
         ]
         round_number = 1  # First round
 
-        result = strategy.get_rematch_probability(mock_prova, round_number)
+        result = strategy.get_rematch_probability(mock_gara, round_number)
 
         # Should return 0.0 since no matches have been played yet
         assert result == 0.0
@@ -556,8 +556,8 @@ class TestRandomAntiRematchStrategy:
         have been played."""
         strategy = RandomAntiRematchStrategy()
 
-        # Create a mock prova object with 4 players
-        mock_prova = Mock()
+        # Create a mock gara object with 4 players
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.is_withdrawn = False
         mock_inscription1.user_id = 1
@@ -570,7 +570,7 @@ class TestRandomAntiRematchStrategy:
         mock_inscription4 = Mock()
         mock_inscription4.is_withdrawn = False
         mock_inscription4.user_id = 4
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
@@ -578,7 +578,7 @@ class TestRandomAntiRematchStrategy:
         ]
         round_number = 7  # More than the possible unique pairings (6 for 4 players)
 
-        result = strategy.get_rematch_probability(mock_prova, round_number)
+        result = strategy.get_rematch_probability(mock_gara, round_number)
 
         # Should return 1.0 since all possible matches have been played
         assert result == 1.0

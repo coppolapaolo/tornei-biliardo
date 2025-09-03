@@ -44,7 +44,7 @@ class EncryptionManager:
 
         # Derive encryption key from the key string
         key_bytes = key_string.encode()
-        salt = b"tornei-biliardo-salt"  # Should be random in production
+        salt = b"campionati-biliardo-salt"  # Should be random in production
 
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),

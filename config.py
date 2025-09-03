@@ -9,7 +9,7 @@ class Config:
         os.environ.get("SECRET_KEY") or "your-secret-key-change-this-in-production"
     )
     SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("DATABASE_URL") or "sqlite:///billiard_tournament.db"
+        os.environ.get("DATABASE_URL") or "sqlite:///billiard_campionato.db"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -23,7 +23,7 @@ class Config:
     ADMIN_PASSWORD_REQUIRED = False
 
     # App Info
-    APP_NAME = "Torneo Biliardo"
+    APP_NAME = "Campionato Biliardo"
     VERSION = "1.0.0"
 
 
@@ -50,7 +50,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
     ADMIN_USERNAME = "admin"
-    ADMIN_EMAIL = "admin@tournament.local"
+    ADMIN_EMAIL = "admin@campionato.local"
     ADMIN_PASSWORD = "admin123"
     ADMIN_PASSWORD_REQUIRED = False
 

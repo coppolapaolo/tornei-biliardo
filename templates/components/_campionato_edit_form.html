@@ -1,0 +1,108 @@
+<!-- Campionato Edit Form Component -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-edit"></i> Informazioni Campionato</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Nome Campionato</label>
+                <input type="text" class="form-control" name="name" 
+                       value="{{ campionato.name }}" required>
+                <small class="text-muted">Includi l'anno nel nome se necessario</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="campionato_type" class="form-label">Tipo Campionato</label>
+                <select class="form-control" name="campionato_type" required>
+                    <option value="Amalfi" {% if campionato.campionato_type == 'Amalfi' %}selected{% endif %}>
+                        Amalfi
+                    </option>
+                    <!-- Aggiungi altri tipi in futuro -->
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">Opzioni Campionato</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="without_x" id="without_x"
+                           {% if campionato.without_x %}checked{% endif %}>
+                    <label class="form-check-label" for="without_x">
+                        <strong>Senza X</strong>
+                        <br><small class="text-muted">Nessun giocatore riceve bye automatico nei turni</small>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="final_playoffs" id="final_playoffs"
+                           {% if campionato.final_playoffs %}checked{% endif %}>
+                    <label class="form-check-label" for="final_playoffs">
+                        <strong>Playoff Finali</strong>
+                        <br><small class="text-muted">Organizza playoff Elite (primi 6) e Academy (secondi 6) alla fine</small>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="challenge_mode" id="challenge_mode"
+                           {% if campionato.challenge_mode %}checked{% endif %}>
+                    <label class="form-check-label" for="challenge_mode">
+                        <strong>Modalità Challenge</strong>
+                        <br><small class="text-muted">Abilita funzionalità avanzate di sfida (in sviluppo)</small>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="scoring_policy" class="form-label">Sistema di Punteggio</label>
+                <select class="form-control" name="scoring_policy" id="scoring_policy">
+                    <option value="classic" {% if campionato.scoring_policy == "classic" %}selected{% endif %}>
+                        Classico (Vittorie → Differenza rack → Ordine precedente)
+                    </option>
+                    <option value="fargo" {% if campionato.scoring_policy == "fargo" %}selected{% endif %}>
+                        Fargo Rating (Rating → Vittorie → Differenza rack)
+                    </option>
+                    <option value="elo" {% if campionato.scoring_policy == "elo" %}selected{% endif %}>
+                        Elo Rating (Rating → Vittorie → Differenza rack)
+                    </option>
+                </select>
+                <small class="text-muted">Determina come vengono calcolate le classifiche del campionato</small>
+            </div>
+            
+            <hr>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Attenzione:</strong> Una volta che una gara del campionato avrà delle iscrizioni, 
+                non sarà più possibile modificare le impostazioni del campionato.
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, quote, ecc.) 
+                vengono configurate in ogni singola gara.
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}" 
+                   class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annulla
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Salva Modifiche
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if debug_info.debug_mode %}
+    <div class="mt-4">
+        <div class="alert alert-dark">
+            <h6><i class="fas fa-bug"></i> DEBUG - Edit Campionato</h6>
+            <small>
+                Campionato ID: {{ campionato.id }}<br>
+                Can be modified: {{ campionato.can_be_modified() }}<br>
+                Current values: Type={{ campionato.campionato_type }}<br>
+                Options: Without_X={{ campionato.without_x }}, Playoffs={{ campionato.final_playoffs }}, Challenge={{ campionato.challenge_mode }}
+            </small>
+        </div>
+    </div>
+{% endif %}

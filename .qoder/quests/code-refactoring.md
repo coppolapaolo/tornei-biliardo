@@ -1,10 +1,10 @@
-# Code Refactoring Design - Tornei Biliardo
+# Code Refactoring Design - Campionati Biliardo
 
 ## Overview
 
-The tornei-biliardo project is a comprehensive Flask-based web application for managing billiards tournaments using the official Sistema Amalfi pairing algorithm. This refactoring initiative focuses on advancing the current domain-driven design implementation, improving service layer architecture, and enhancing modularity while maintaining backward compatibility.
+The campionati-biliardo project is a comprehensive Flask-based web application for managing billiards campionati using the official Sistema Amalfi pairing algorithm. This refactoring initiative focuses on advancing the current domain-driven design implementation, improving service layer architecture, and enhancing modularity while maintaining backward compatibility.
 
-**Current State**: The application has successfully completed Phase 2 Sprint 1 of domain separation, with core domains (User, Tournament, Competition, Match, Classification) properly modularized and service layers implemented.
+**Current State**: The application has successfully completed Phase 2 Sprint 1 of domain separation, with core domains (User, Campionato, Competition, Match, Classification) properly modularized and service layers implemented.
 
 **Refactoring Goals**:
 - Complete domain separation and service layer optimization
@@ -24,7 +24,7 @@ The tornei-biliardo project is a comprehensive Flask-based web application for m
 
 **Key Dependencies**:
 - Werkzeug 2.3.7 for WSGI utilities
-- Custom Amalfi algorithm engine for tournament pairing
+- Custom Amalfi algorithm engine for campionato pairing
 - Soft delete filtering for data integrity
 - Multi-domain service orchestration
 
@@ -40,7 +40,7 @@ graph TB
     end
     
     subgraph "Service Layer"
-        D[User Service] --> E[Tournament Service]
+        D[User Service] --> E[Campionato Service]
         E --> F[Competition Service]
         F --> G[Match Service]
         G --> H[Classification Service]
@@ -48,7 +48,7 @@ graph TB
     end
     
     subgraph "Domain Models"
-        J[User Domain] --> K[Tournament Domain]
+        J[User Domain] --> K[Campionato Domain]
         K --> L[Competition Domain]
         L --> M[Match Domain]
         M --> N[Classification Domain]
@@ -72,16 +72,16 @@ The application follows a Domain-Driven Design (DDD) approach with clear bounded
 
 **Core Domains** (Phase 2 Complete):
 - **User Domain**: Authentication, role management, director promotion system
-- **Tournament Domain**: Tournament lifecycle and administrative interface
-- **Competition Domain**: Prova (competition) management and player inscription
+- **Campionato Domain**: Campionato lifecycle and administrative interface
+- **Competition Domain**: Gara (competition) management and player inscription
 - **Match Domain**: Match lifecycle, result recording, trio match handling
-- **Classification Domain**: Tournament standings and anti-rematch logic
+- **Classification Domain**: Campionato standings and anti-rematch logic
 
 **Extended Domains** (Phase 3 Implementation):
 - **Challenge Domain**: Individual skill challenges and favorites
 - **Exam Domain**: Certification and testing system
 - **Individual Match Domain**: Direct player matchmaking and proposals
-- **Playoff Domain**: Tournament playoff configuration and management
+- **Playoff Domain**: Campionato playoff configuration and management
 - **Rating Domain**: Player categorization and handicap system
 - **Notification Domain**: Communication and alert system
 - **Location Domain**: Billiard hall management and availability
@@ -152,16 +152,16 @@ except IntegrityError:
 - Director promotion requires approval
 - Cascade delete with audit trail preservation
 
-#### Tournament Service Layer
+#### Campionato Service Layer
 **Responsibilities**:
-- Tournament lifecycle management
-- Multi-tournament support with timezone handling
+- Campionato lifecycle management
+- Multi-campionato support with timezone handling
 - Administrative interface operations
 - Resource cleanup and integrity maintenance
 
 #### Competition Service Layer
 **Responsibilities**:
-- Prova state machine management (setup → inscription → playing → completed)
+- Gara state machine management (setup → inscription → playing → completed)
 - Player inscription and withdrawal handling
 - Automatic trio formation for odd player counts
 - Result validation and consistency checks
@@ -178,7 +178,7 @@ except IntegrityError:
 - Real-time ranking calculations
 - Anti-rematch enforcement through PlayerEncounter tracking
 - Multi-criteria sorting (wins → rack difference → previous order)
-- Tournament standings generation
+- Campionato standings generation
 
 #### Matchmaking Service Layer
 **Responsibilities**:
@@ -193,8 +193,8 @@ except IntegrityError:
 classDiagram
     class MatchmakingService {
         -registry: EngineRegistry
-        +preview(strategy_name, prova, round_number)
-        +run(strategy_name, prova, round_number)
+        +preview(strategy_name, gara, round_number)
+        +run(strategy_name, gara, round_number)
     }
     
     class EngineRegistry {
@@ -205,16 +205,16 @@ classDiagram
     }
     
     class AmalfiAdapter {
-        +generate_pairs(prova, round_number)
+        +generate_pairs(gara, round_number)
         +apply_anti_rematch_logic()
     }
     
     class DirectElimination {
-        +generate_pairs(prova, round_number)
+        +generate_pairs(gara, round_number)
     }
     
     class RoundRobin {
-        +generate_pairs(prova, round_number)
+        +generate_pairs(gara, round_number)
     }
     
     MatchmakingService --> EngineRegistry
@@ -227,14 +227,14 @@ classDiagram
 
 ```mermaid
 erDiagram
-    User ||--o{ Tournament : "creates"
-    Tournament ||--o{ Prova : "contains"
-    Prova ||--o{ Match : "includes"
+    User ||--o{ Campionato : "creates"
+    Campionato ||--o{ Gara : "contains"
+    Gara ||--o{ Match : "includes"
     Match ||--o{ Rack : "has"
     User ||--o{ Inscription : "registers"
-    Prova ||--o{ Inscription : "accepts"
+    Gara ||--o{ Inscription : "accepts"
     User ||--o{ Classification : "ranked_in"
-    Prova ||--o{ Classification : "generates"
+    Gara ||--o{ Classification : "generates"
     User ||--o{ PlayerEncounter : "encounters"
     Match ||--o{ TrioMatch : "special_case"
     
@@ -246,7 +246,7 @@ erDiagram
         datetime deleted_at
     }
     
-    Tournament {
+    Campionato {
         int id PK
         string name
         datetime start_date
@@ -254,17 +254,17 @@ erDiagram
         int creator_id FK
     }
     
-    Prova {
+    Gara {
         int id PK
         string name
         enum status
-        int tournament_id FK
+        int campionato_id FK
         int max_participants
     }
     
     Match {
         int id PK
-        int prova_id FK
+        int gara_id FK
         enum status
         boolean is_bye
         int round_number
@@ -280,16 +280,16 @@ erDiagram
 - `/admin` - Administrative operations and management
 - `/player` - Player-specific features and profile management
 - `/dashboard` - Role-based dashboard views
-- `/` - Public routes and main tournament display
+- `/` - Public routes and main campionato display
 
 **Route-Service Integration Pattern**:
 ```python
 # Example: Admin route delegating to service layer
-@admin_bp.route('/tournaments/<int:tournament_id>/delete', methods=['POST'])
+@admin_bp.route('/campionati/<int:campionato_id>/delete', methods=['POST'])
 @admin_required
-def delete_tournament(tournament_id):
+def delete_campionato(campionato_id):
     try:
-        result = TournamentService.delete_tournament(tournament_id, current_user.id)
+        result = TournamentService.delete_campionato(campionato_id, current_user.id)
         return jsonify({"success": True, "message": result["message"]})
     except ValueError as e:
         return jsonify({"success": False, "error": str(e)}), 400
@@ -298,14 +298,14 @@ def delete_tournament(tournament_id):
 ### URL Design Patterns
 
 **RESTful Resource Mapping**:
-- `GET /admin/tournaments` - List tournaments
-- `POST /admin/tournaments` - Create tournament
-- `GET /admin/tournaments/{id}` - View tournament details
-- `PUT /admin/tournaments/{id}` - Update tournament
-- `DELETE /admin/tournaments/{id}` - Delete tournament
+- `GET /admin/campionati` - List campionati
+- `POST /admin/campionati` - Create campionato
+- `GET /admin/campionati/{id}` - View campionato details
+- `PUT /admin/campionati/{id}` - Update campionato
+- `DELETE /admin/campionati/{id}` - Delete campionato
 
 **Action-Oriented Endpoints**:
-- `POST /admin/provas/{id}/start` - Transition prova to playing state
+- `POST /admin/provas/{id}/start` - Transition gara to playing state
 - `POST /admin/matches/{id}/submit-result` - Submit match result
 - `GET /player/matches/preview` - Preview upcoming matches
 
@@ -353,13 +353,13 @@ stateDiagram-v2
 **Internal Service Orchestration**:
 ```python
 class MatchmakingService:
-    def create_new_round(self, prova_id: int, strategy_name: str) -> dict:
+    def create_new_round(self, gara_id: int, strategy_name: str) -> dict:
         # Service orchestration example
-        prova = CompetitionService.get_prova(prova_id)
-        classification = ClassificationService.get_current_standings(prova_id)
-        pairings = self.generate_pairings(strategy_name, prova, classification)
+        gara = CompetitionService.get_gara(gara_id)
+        classification = ClassificationService.get_current_standings(gara_id)
+        pairings = self.generate_pairings(strategy_name, gara, classification)
         matches = MatchService.create_matches_from_pairings(pairings)
-        return {"round_number": prova.current_round, "matches": matches}
+        return {"round_number": gara.current_round, "matches": matches}
 ```
 
 ### External System Integration Points
@@ -396,7 +396,7 @@ class TestUserService:
 ```
 
 **Integration Testing Strategy**:
-- End-to-end tournament workflow validation
+- End-to-end campionato workflow validation
 - Cross-domain service interaction testing
 - Database transaction boundary verification
 - Performance testing for Amalfi algorithm execution
@@ -421,14 +421,14 @@ class TestUserService:
 **Query Optimization Strategies**:
 ```python
 # Prevent N+1 query problems
-def get_tournament_with_provas(tournament_id):
-    return Tournament.query.options(
-        joinedload(Tournament.provas).joinedload(Prova.matches)
-    ).get(tournament_id)
+def get_campionato_with_garas(campionato_id):
+    return Campionato.query.options(
+        joinedload(Campionato.provas).joinedload(Gara.matches)
+    ).get(campionato_id)
 ```
 
 **Caching Opportunities**:
-- Tournament classification caching
+- Campionato classification caching
 - User permission role caching
 - Static configuration data caching
 

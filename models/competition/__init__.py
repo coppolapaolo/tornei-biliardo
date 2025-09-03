@@ -5,7 +5,7 @@ This module contains all competition-related models, services, and functionality
 following Domain-Driven Design principles.
 
 Domain: Competition Management
-- Prova (competition rounds) entity and lifecycle
+- Gara (competition rounds) entity and lifecycle
 - Inscription (player registration) management
 - Competition configuration and rules
 
@@ -13,12 +13,12 @@ Author: Refactoring Phase 2 - Sprint 1
 Created: 2025-08-05
 """
 
-from .models import Prova, Inscription
+from .models import Gara, Inscription
 
 # Export all public classes and functions
 __all__ = [
     # Models
-    "Prova",
+    "Gara",
     "Inscription",
 ]
 

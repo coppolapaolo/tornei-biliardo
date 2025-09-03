@@ -20,16 +20,16 @@ class TestAmalfiEngine:
 
     def test_amalfi_engine_initialization(self):
         """Test AmalfiEngine initialization."""
-        # Create mock prova and tournament
-        mock_prova = MagicMock()
-        mock_tournament = MagicMock()
-        mock_prova.tournament = mock_tournament
+        # Create mock gara and campionato
+        mock_gara = MagicMock()
+        mock_campionato = MagicMock()
+        mock_gara.campionato = mock_campionato
 
         # Create engine instance
-        engine = AmalfiEngine(mock_prova)
+        engine = AmalfiEngine(mock_gara)
 
-        assert engine.prova == mock_prova
-        assert engine.tournament == mock_tournament
+        assert engine.gara == mock_gara
+        assert engine.campionato == mock_campionato
 
     def test_validation_result_structure(self):
         """Test ValidationResult structure."""
@@ -54,17 +54,17 @@ class TestUtilityFunctions:
     def test_create_amalfi_round_matches(self, mock_engine_class):
         """Test create_amalfi_round_matches function."""
         # Setup mock
-        mock_prova = MagicMock()
+        mock_gara = MagicMock()
         mock_engine_instance = MagicMock()
         mock_engine_class.return_value = mock_engine_instance
         mock_matches = [MagicMock(), MagicMock()]
         mock_engine_instance.create_round_matches.return_value = mock_matches
 
         # Call function
-        result = create_amalfi_round_matches(mock_prova, 1)
+        result = create_amalfi_round_matches(mock_gara, 1)
 
         # Verify
-        mock_engine_class.assert_called_once_with(mock_prova)
+        mock_engine_class.assert_called_once_with(mock_gara)
         mock_engine_instance.create_round_matches.assert_called_once_with(1)
         assert result == mock_matches
 
@@ -89,15 +89,15 @@ class TestUtilityFunctions:
     def test_validate_amalfi_configuration_valid(self, mock_db):
         """Test validate_amalfi_configuration with valid configuration."""
         # Setup mock
-        mock_prova = MagicMock()
-        mock_prova.min_participants = 3
-        mock_prova.rounds_count = 3
-        mock_prova.id = 1
+        mock_gara = MagicMock()
+        mock_gara.min_participants = 3
+        mock_gara.rounds_count = 3
+        mock_gara.id = 1
 
         mock_db.session.query.return_value.filter_by.return_value.count.return_value = 5
 
         # Call function
-        result = validate_amalfi_configuration(mock_prova)
+        result = validate_amalfi_configuration(mock_gara)
 
         # Verify
         assert result["is_valid"] is True
@@ -107,15 +107,15 @@ class TestUtilityFunctions:
     def test_validate_amalfi_configuration_invalid_insufficient_players(self, mock_db):
         """Test validate_amalfi_configuration with insufficient players."""
         # Setup mock
-        mock_prova = MagicMock()
-        mock_prova.min_participants = 5
-        mock_prova.rounds_count = 3
-        mock_prova.id = 1
+        mock_gara = MagicMock()
+        mock_gara.min_participants = 5
+        mock_gara.rounds_count = 3
+        mock_gara.id = 1
 
         mock_db.session.query.return_value.filter_by.return_value.count.return_value = 3
 
         # Call function
-        result = validate_amalfi_configuration(mock_prova)
+        result = validate_amalfi_configuration(mock_gara)
 
         # Verify
         assert result["is_valid"] is False
@@ -126,15 +126,15 @@ class TestUtilityFunctions:
     def test_validate_amalfi_configuration_too_many_rounds(self, mock_db):
         """Test validate_amalfi_configuration with too many rounds."""
         # Setup mock
-        mock_prova = MagicMock()
-        mock_prova.min_participants = 3
-        mock_prova.rounds_count = 10
-        mock_prova.id = 1
+        mock_gara = MagicMock()
+        mock_gara.min_participants = 3
+        mock_gara.rounds_count = 10
+        mock_gara.id = 1
 
         mock_db.session.query.return_value.filter_by.return_value.count.return_value = 4
 
         # Call function
-        result = validate_amalfi_configuration(mock_prova)
+        result = validate_amalfi_configuration(mock_gara)
 
         # Verify
         assert result["is_valid"] is False

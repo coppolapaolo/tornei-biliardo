@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, TypedDict
 from models import (
     db,
     Match,
-    Prova,
+    Gara,
     Inscription,
     PlayerEncounter,
     RoundClassification,
@@ -32,9 +32,9 @@ class ValidationResult(TypedDict):
 class AmalfiEngine:
     """Engine principale per gestione abbinamenti Sistema Amalfi"""
 
-    def __init__(self, prova: Prova):
-        self.prova = prova
-        self.tournament = prova.tournament
+    def __init__(self, gara: Gara):
+        self.gara = gara
+        self.campionato = gara.campionato
 
     # ────────────────────────────────────────────────────────────────────────────
     # Entry point
@@ -85,11 +85,11 @@ class AmalfiEngine:
     def _preview_first_round(self) -> List[Dict]:
         """Genera l'anteprima del primo turno senza persistere"""
         inscriptions = self._inscriptions_for_pairing()
-        if len(inscriptions) < self.prova.min_participants:
-            raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
+        if len(inscriptions) < self.gara.min_participants:
+            raise ValueError(f"Servono almeno {self.gara.min_participants} iscritti")
         
         # Usa lo stesso seed del _create_first_round per avere gli stessi accoppiamenti
-        rng = random.Random(self.prova.id)
+        rng = random.Random(self.gara.id)
         rng.shuffle(inscriptions)
         
         matches_data = []
@@ -121,8 +121,8 @@ class AmalfiEngine:
         """Genera l'anteprima di un turno Amalfi senza persistere"""
         # Per ora ritorniamo un'anteprima semplificata
         inscriptions = self._inscriptions_for_pairing()
-        if len(inscriptions) < self.prova.min_participants:
-            raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
+        if len(inscriptions) < self.gara.min_participants:
+            raise ValueError(f"Servono almeno {self.gara.min_participants} iscritti")
         
         matches_data = []
         players = [ins for ins in inscriptions]
@@ -155,12 +155,12 @@ class AmalfiEngine:
     # ────────────────────────────────────────────────────────────────────────────
     def _create_first_round(self) -> List[Match]:
         inscriptions = self._inscriptions_for_pairing()
-        if len(inscriptions) < self.prova.min_participants:
-            raise ValueError(f"Servono almeno {self.prova.min_participants} iscritti")
+        if len(inscriptions) < self.gara.min_participants:
+            raise ValueError(f"Servono almeno {self.gara.min_participants} iscritti")
 
-        # Usa un seed basato sul prova_id per avere risultati deterministici
-        # ma diversi per ogni prova
-        rng = random.Random(self.prova.id)
+        # Usa un seed basato sul gara_id per avere risultati deterministici
+        # ma diversi per ogni gara
+        rng = random.Random(self.gara.id)
         rng.shuffle(inscriptions)
         for i, inscription in enumerate(inscriptions, 1):
             inscription.initial_order = i
@@ -168,11 +168,11 @@ class AmalfiEngine:
         matches = self._create_first_round_matches(inscriptions)
 
         # 🔧 FIX contratto: registra incontri con ordine corretto
-        # (prova_id, p1, p2, round)
+        # (gara_id, p1, p2, round)
         for match in matches:
             if not getattr(match, "is_bye", False):
                 PlayerEncounter.record_encounter(
-                    self.prova.id, match.player1_id, match.player2_id, 1
+                    self.gara.id, match.player1_id, match.player2_id, 1
                 )
 
         return matches
@@ -188,7 +188,7 @@ class AmalfiEngine:
             # Cerca classifica esistente
             existing = (
                 db.session.query(RoundClassification)
-                .filter_by(prova_id=self.prova.id, round_number=1, user_id=ins.user_id)
+                .filter_by(gara_id=self.gara.id, round_number=1, user_id=ins.user_id)
                 .first()
             )
 
@@ -198,7 +198,7 @@ class AmalfiEngine:
             else:
                 # Crea nuova classifica
                 classification = RoundClassification(
-                    prova_id=self.prova.id,
+                    gara_id=self.gara.id,
                     round_number=1,
                     user_id=ins.user_id,
                     position=position,
@@ -209,12 +209,12 @@ class AmalfiEngine:
         if len(players) % 2 == 1:
             bye_player = players[-1]
             bye_score = (
-                self.prova.get_winning_score()
-                if self.prova.best_of
-                else self.prova.distance
+                self.gara.get_winning_score()
+                if self.gara.best_of
+                else self.gara.distance
             )
             match = Match(
-                prova_id=self.prova.id,
+                gara_id=self.gara.id,
                 round_number=1,
                 player1_id=bye_player.id,
                 is_bye=True,
@@ -229,7 +229,7 @@ class AmalfiEngine:
         # Coppie rimanenti
         for i in range(0, len(players), 2):
             match = Match(
-                prova_id=self.prova.id,
+                gara_id=self.gara.id,
                 round_number=1,
                 player1_id=players[i].id,
                 player2_id=players[i + 1].id,
@@ -246,28 +246,28 @@ class AmalfiEngine:
     def _create_amalfi_round(self, round_number: int) -> List[Match]:
         # Calcola/aggiorna classifica del turno precedente e poi carica le righe
         RoundClassification.calculate_classification_after_round(
-            self.prova.id, round_number - 1
+            self.gara.id, round_number - 1
         )
         classification = (
             db.session.query(RoundClassification)
-            .filter_by(prova_id=self.prova.id, round_number=round_number - 1)
+            .filter_by(gara_id=self.gara.id, round_number=round_number - 1)
             .order_by(RoundClassification.position)
             .all()
         )
 
         # escludi i ritirati se EXCLUDE
-        if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
+        if self.gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             excluded_ids = {
                 ins.user_id
                 for ins in db.session.query(Inscription)
-                .filter_by(prova_id=self.prova.id, is_withdrawn=True)
+                .filter_by(gara_id=self.gara.id, is_withdrawn=True)
                 .all()
             }
             classification = [
                 c for c in classification if c.user_id not in excluded_ids
             ]
 
-        salto = self.prova.rounds_count - round_number
+        salto = self.gara.rounds_count - round_number
         matches = self._apply_amalfi_algorithm(classification, round_number, salto)
 
         # 🔧 FIX contratto: registra incontri con ordine corretto + copri i trii
@@ -277,17 +277,17 @@ class AmalfiEngine:
             if getattr(match, "is_trio", False):
                 trio = match.trio_match
                 PlayerEncounter.record_encounter(
-                    self.prova.id, trio.player1_id, trio.player2_id, round_number
+                    self.gara.id, trio.player1_id, trio.player2_id, round_number
                 )
                 PlayerEncounter.record_encounter(
-                    self.prova.id, trio.player1_id, trio.player3_id, round_number
+                    self.gara.id, trio.player1_id, trio.player3_id, round_number
                 )
                 PlayerEncounter.record_encounter(
-                    self.prova.id, trio.player2_id, trio.player3_id, round_number
+                    self.gara.id, trio.player2_id, trio.player3_id, round_number
                 )
             else:
                 PlayerEncounter.record_encounter(
-                    self.prova.id, match.player1_id, match.player2_id, round_number
+                    self.gara.id, match.player1_id, match.player2_id, round_number
                 )
 
         self._finalize_forfeit_matches(matches)
@@ -312,7 +312,7 @@ class AmalfiEngine:
 
             if target_class:
                 match = Match(
-                    prova_id=self.prova.id,
+                    gara_id=self.gara.id,
                     round_number=round_number,
                     player1_id=current_class.user_id,
                     player2_id=target_class.user_id,
@@ -357,7 +357,7 @@ class AmalfiEngine:
             ):
                 return target_class
 
-            # prova posizione successiva
+            # gara posizione successiva
             target_position += 1
             attempts += 1
 
@@ -371,7 +371,7 @@ class AmalfiEngine:
         if p1_id in matched_players or p2_id in matched_players:
             return False
         # anti‑reincontro via policy
-        if not anti_rematch_allowed(self.prova.id, p1_id, p2_id):
+        if not anti_rematch_allowed(self.gara.id, p1_id, p2_id):
             return False
         return True
 
@@ -383,7 +383,7 @@ class AmalfiEngine:
     ) -> None:
         """Gestisce l'ultimo giocatore rimasto (bye oppure trasformazione in trio)."""
         decision = decide_trio_or_bye(
-            tournament_without_x=bool(self.tournament.without_x),
+            campionato_without_x=bool(self.campionato.without_x),
             can_trio=bool(matches),
         )
         if decision is OddResolution.TRIO and matches:
@@ -403,20 +403,20 @@ class AmalfiEngine:
             player1_id=base_match.player1_id,
             player2_id=base_match.player2_id,
             player3_id=third_player_id,
-            target_score=self.prova.get_winning_score()
-            if self.prova.best_of
-            else self.prova.distance,
+            target_score=self.gara.get_winning_score()
+            if self.gara.best_of
+            else self.gara.distance,
         )
         db.session.add(trio)
 
     def _create_bye_match(self, player_id: int, round_number: int) -> None:
         score = (
-            self.prova.get_winning_score()
-            if self.prova.best_of
-            else self.prova.distance
+            self.gara.get_winning_score()
+            if self.gara.best_of
+            else self.gara.distance
         )
         bye = Match(
-            prova_id=self.prova.id,
+            gara_id=self.gara.id,
             round_number=round_number,
             player1_id=player_id,
             is_bye=True,
@@ -428,21 +428,21 @@ class AmalfiEngine:
         db.session.add(bye)
 
     def _inscriptions_for_pairing(self) -> list[Inscription]:
-        q = db.session.query(Inscription).filter_by(prova_id=self.prova.id)
-        if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
+        q = db.session.query(Inscription).filter_by(gara_id=self.gara.id)
+        if self.gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             q = q.filter_by(is_withdrawn=False)
         return q.all()
 
     def _finalize_forfeit_matches(self, matches: list["Match"]) -> None:
         """Chiude a tavolino i match con esattamente un
         cancellato/ritirato, SOLO se policy FORFEIT."""
-        if self.prova.withdraw_policy != WithdrawPolicy.FORFEIT.value:
+        if self.gara.withdraw_policy != WithdrawPolicy.FORFEIT.value:
             return
 
         withdrawn_ids = {
             ins.user_id
             for ins in Inscription.query.filter_by(
-                prova_id=self.prova.id, is_withdrawn=True
+                gara_id=self.gara.id, is_withdrawn=True
             ).all()
         }
         deleted_ids = {
@@ -453,7 +453,7 @@ class AmalfiEngine:
         if not cancelled_ids:
             return
 
-        to_win = self.prova.get_winning_score()
+        to_win = self.gara.get_winning_score()
 
         for m in matches:
             # Salta match già completati e BYE (il cleanup li ha già gestiti)
@@ -482,7 +482,7 @@ class AmalfiEngine:
         withdrawn_ids = {
             ins.user_id
             for ins in db.session.query(Inscription)
-            .filter_by(prova_id=self.prova.id, is_withdrawn=True)
+            .filter_by(gara_id=self.gara.id, is_withdrawn=True)
             .all()
         }
         deleted_ids = {
@@ -528,28 +528,28 @@ class AmalfiEngine:
 
         # aggiorna classifica round precedente e poi carica le righe
         RoundClassification.calculate_classification_after_round(
-            self.prova.id, next_round - 1
+            self.gara.id, next_round - 1
         )
         classification = (
             db.session.query(RoundClassification)
-            .filter_by(prova_id=self.prova.id, round_number=next_round - 1)
+            .filter_by(gara_id=self.gara.id, round_number=next_round - 1)
             .order_by(RoundClassification.position)
             .all()
         )
 
         # escludi i ritirati se EXCLUDE
-        if self.prova.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
+        if self.gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             excluded_ids = {
                 ins.user_id
                 for ins in Inscription.query.filter_by(
-                    prova_id=self.prova.id, is_withdrawn=True
+                    gara_id=self.gara.id, is_withdrawn=True
                 ).all()
             }
             classification = [
                 c for c in classification if c.user_id not in excluded_ids
             ]
 
-        salto = self.prova.rounds_count - next_round
+        salto = self.gara.rounds_count - next_round
         matched: set[int] = set()
         preview_matches: List[Dict] = []
 
@@ -571,7 +571,7 @@ class AmalfiEngine:
         # eventuale disparità
         rest = [c for c in classification if c.user_id not in matched]
         if rest:
-            if self.tournament.without_x and preview_matches:
+            if self.campionato.without_x and preview_matches:
                 last = preview_matches[-1]
                 last["type"] = "trio"
                 last["player3"] = rest[0].user
@@ -599,7 +599,7 @@ class AmalfiEngine:
                     }
                 )
             else:
-                if self.tournament.without_x and preview_matches:
+                if self.campionato.without_x and preview_matches:
                     preview_matches[-1]["type"] = "trio"
                     preview_matches[-1]["player3"] = users_copy[i]
                 else:
@@ -612,42 +612,42 @@ class AmalfiEngine:
 # Utility functions per compat con codice esistente
 
 
-def create_amalfi_round_matches(prova: Prova, round_number: int) -> List[Match]:
-    engine = AmalfiEngine(prova)
+def create_amalfi_round_matches(gara: Gara, round_number: int) -> List[Match]:
+    engine = AmalfiEngine(gara)
     return engine.create_round_matches(round_number)
 
 
 def get_amalfi_classification(
-    prova_id: int, round_number: int
+    gara_id: int, round_number: int
 ) -> List[RoundClassification]:
     return (
         db.session.query(RoundClassification)
-        .filter_by(prova_id=prova_id, round_number=round_number)
+        .filter_by(gara_id=gara_id, round_number=round_number)
         .order_by(RoundClassification.position)
         .all()
     )
 
 
-def validate_amalfi_configuration(prova: Prova) -> ValidationResult:
+def validate_amalfi_configuration(gara: Gara) -> ValidationResult:
     from models import Inscription  # late import per evitare cicli
 
-    inscriptions = db.session.query(Inscription).filter_by(prova_id=prova.id).count()
+    inscriptions = db.session.query(Inscription).filter_by(gara_id=gara.id).count()
     validation: ValidationResult = {"is_valid": True, "warnings": [], "errors": []}
 
-    if inscriptions < prova.min_participants:
+    if inscriptions < gara.min_participants:
         validation["errors"].append(
-            f"Servono almeno {prova.min_participants} "
+            f"Servono almeno {gara.min_participants} "
             f"iscritti (attuali: {inscriptions})"
         )
         validation["is_valid"] = False
 
-    if prova.rounds_count < 2:
+    if gara.rounds_count < 2:
         validation["warnings"].append(
             "Con meno di 2 turni l'algoritmo Amalfi ha efficacia limitata"
         )
 
     max_encounters = (inscriptions * (inscriptions - 1)) // 2
-    required_encounters = inscriptions * (prova.rounds_count - 1)
+    required_encounters = inscriptions * (gara.rounds_count - 1)
     if required_encounters > max_encounters:
         validation["errors"].append(
             f"Troppi turni per {inscriptions} giocatori. Massimo "

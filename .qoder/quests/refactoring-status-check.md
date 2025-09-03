@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document assesses the current status of the comprehensive refactoring initiative for the tornei-biliardo webapp and provides a detailed plan to complete the remaining work. The refactoring aims to transform the monolithic architecture into a clean, maintainable, domain-driven design while preserving all functionality outlined in SPECIFICHE.md.
+This document assesses the current status of the comprehensive refactoring initiative for the campionati-biliardo webapp and provides a detailed plan to complete the remaining work. The refactoring aims to transform the monolithic architecture into a clean, maintainable, domain-driven design while preserving all functionality outlined in SPECIFICHE.md.
 
 ## Technology Stack
 
@@ -57,8 +57,8 @@ graph TB
 **Achievement**: Successfully decomposed monolithic `routes/admin.py` (1,442 lines) into domain-specific blueprints.
 
 **Domain Separation**:
-- `routes/admin/tournament.py` - Tournament lifecycle management (204 lines)
-- `routes/admin/competition.py` - Prova/competition management (605 lines)
+- `routes/admin/campionato.py` - Campionato lifecycle management (204 lines)
+- `routes/admin/competition.py` - Gara/competition management (605 lines)
 - `routes/admin/match.py` - Match and rack operations (282 lines)
 - `routes/admin/user.py` - User administration (158 lines)
 - `routes/admin/dashboard.py` - Admin overview (16 lines)
@@ -74,7 +74,7 @@ graph TB
 **Current State**: Service layer exists but routes still contain direct database access patterns.
 
 **Issues Identified**:
-- Routes directly query models (`Tournament.query.get_or_404()`, `Prova.query.filter_by()`)
+- Routes directly query models (`Campionato.query.get_or_404()`, `Gara.query.filter_by()`)
 - Business logic scattered between routes and services
 - Transaction management not consistently handled through services
 - 25+ direct model query patterns found in admin routes
@@ -82,7 +82,7 @@ graph TB
 **Compliant Service Usage Examples Found**:
 ```python
 # Good: Using service layer
-prova_service = ProvaService()
+gara_service = GaraService()
 matchmaking_service = get_matchmaking_service()
 ```
 
@@ -91,17 +91,17 @@ matchmaking_service = get_matchmaking_service()
 **Current State**: Large templates remain uncomponentized despite some component infrastructure.
 
 **Critical Issues**:
-- `admin/prova_detail.html` still 832 lines (target: <400 lines)
+- `admin/gara_detail.html` still 832 lines (target: <400 lines)
 - `player/dashboard.html` and other large templates not componentized
 - Component system exists but not systematically applied
 - Business logic still embedded in templates
 
 **Existing Components** (underutilized):
 - `_admin_empty_state.html`
-- `_prova_cards.html`
+- `_gara_cards.html`
 - `_resource_selector.html`
-- `_tournament_cards.html`
-- `_tournament_create_modal.html`
+- `_campionato_cards.html`
+- `_campionato_create_modal.html`
 
 ### ❌ INCOMPLETE - Step 4: Error Handling Unification
 
@@ -121,13 +121,13 @@ matchmaking_service = get_matchmaking_service()
 
 ### Core Domain Requirements
 
-**Tournament Management** (COMPLIANT):
-- Tournament creation and lifecycle ✅
+**Campionato Management** (COMPLIANT):
+- Campionato creation and lifecycle ✅
 - Director assignment and co-director support ✅
 - Soft delete with data preservation ✅
 
-**Competition (Prova) Management** (COMPLIANT):
-- Standalone and tournament-linked competitions ✅
+**Competition (Gara) Management** (COMPLIANT):
+- Standalone and campionato-linked competitions ✅
 - Amalfi algorithm integration ✅
 - Inscription management with date controls ✅
 - Minimum/maximum participant limits ✅
@@ -146,7 +146,7 @@ matchmaking_service = get_matchmaking_service()
 ### Architectural Requirements from SPECIFICHE
 
 **Privacy Compliance**: ✅ User data encryption implemented  
-**Multi-Tournament Support**: ✅ Concurrent tournament management  
+**Multi-Campionato Support**: ✅ Concurrent campionato management  
 **Real-Time Classification**: ✅ Amalfi algorithm integration  
 **Mobile-First UI**: ✅ Bootstrap 5 responsive design
 
@@ -169,7 +169,7 @@ matchmaking_service = get_matchmaking_service()
 **Objective**: Break down large templates and create reusable component system.
 
 **Scope**:
-- Componentize `admin/prova_detail.html` (832 lines → <400 lines)
+- Componentize `admin/gara_detail.html` (832 lines → <400 lines)
 - Create macro system for common UI patterns
 - Extract repeated template logic into reusable components
 - Implement template composition patterns
@@ -213,7 +213,7 @@ matchmaking_service = get_matchmaking_service()
 ### Phase 2: Template Componentization (Estimated: 3-4 days)
 
 #### Step 2.1: Large Template Decomposition
-- Break down `admin/prova_detail.html` into logical components
+- Break down `admin/gara_detail.html` into logical components
 - Create reusable macros for common UI patterns
 - Implement template composition for complex views
 - Extract business logic from templates
@@ -320,7 +320,7 @@ matchmaking_service = get_matchmaking_service()
 
 ### Short-term Goals (Next 2 weeks)
 1. **Complete Service Layer**: Eliminate all direct database access from routes
-2. **Componentize Critical Templates**: Focus on `admin/prova_detail.html` and other >400 line templates
+2. **Componentize Critical Templates**: Focus on `admin/gara_detail.html` and other >400 line templates
 3. **Expand Test Coverage**: Achieve ≥90% coverage on refactored service layer
 4. **Documentation Update**: Update architectural documentation to reflect new patterns
 

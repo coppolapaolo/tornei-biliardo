@@ -14,10 +14,10 @@ print(f"Blueprint name: {competition_bp.name}")
 # Reference some functions to ensure they're loaded
 print("Available functions:")
 print(
-    f"- create_prova_standalone: "
-    f"{hasattr(routes.admin.competition, 'create_prova_standalone')}"
+    f"- create_gara_standalone: "
+    f"{hasattr(routes.admin.competition, 'create_gara_standalone')}"
 )
-print(f"- create_prova: {hasattr(routes.admin.competition, 'create_prova')}")
-print(f"- edit_prova: {hasattr(routes.admin.competition, 'edit_prova')}")
+print(f"- create_gara: {hasattr(routes.admin.competition, 'create_gara')}")
+print(f"- edit_gara: {hasattr(routes.admin.competition, 'edit_gara')}")
 
 print("Script completed successfully")

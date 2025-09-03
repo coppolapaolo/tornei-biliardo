@@ -30,11 +30,11 @@ from ..transaction.manager import (
 )
 
 from models.match import Match
-from models.competition.models import Prova, Inscription
+from models.competition.models import Gara, Inscription
 from models.status_enum import MatchStatus
 from models.user.role_enum import UserRole
 from models.classification.models import Classification
-from models.tournament.models import Tournament
+from models.campionato.models import Campionato
 
 
 class UserServiceCore(DomainService):
@@ -257,7 +257,7 @@ class UserService:
             bool: True if demoted successfully
 
         Raises:
-            ValueError: If user not found or not a director or has active tournaments/competitions
+            ValueError: If user not found or not a director or has active campionati/competitions
             PermissionError: If demoted_by is not admin
         """
         # Check if demoting user is admin
@@ -275,17 +275,17 @@ class UserService:
         if user.is_admin:
             raise ValueError("Cannot demote admin user")
 
-        # Remove from tournament director roles (per le specifiche: se non ha direttori -> gestito da admin)
+        # Remove from campionato director roles (per le specifiche: se non ha direttori -> gestito da admin)
         from ..user.models import TournamentDirector
 
         TournamentDirector.query.filter_by(user_id=user_id).delete()
 
         # Transfer standalone competitions to admin (per le specifiche: se non ha direttori -> gestito da admin)
-        from ..competition.models import Prova
+        from ..competition.models import Gara
 
-        standalone_provas = Prova.query.filter_by(director_id=user_id).all()
-        for prova in standalone_provas:
-            prova.director_id = admin_user.id
+        standalone_garas = Gara.query.filter_by(director_id=user_id).all()
+        for gara in standalone_garas:
+            gara.director_id = admin_user.id
 
         user.role = UserRole.PLAYER.value
         # Transaction will be committed by decorator
@@ -297,8 +297,8 @@ class UserService:
         message = (
             "Il tuo ruolo di direttore di gara è stato rimosso dall'amministratore."
         )
-        if standalone_provas:
-            message += f" Le tue {len(standalone_provas)} prove standalone sono state trasferite all'amministratore."
+        if standalone_garas:
+            message += f" Le tue {len(standalone_garas)} gare standalone sono state trasferite all'amministratore."
         message += " Ora sei tornato ad essere un semplice giocatore."
 
         NotificationService.create_notification(
@@ -452,9 +452,9 @@ class UserService:
         # Iscrizioni dell'utente
         inscriptions = (
             Inscription.query.filter_by(user_id=user_id)
-            .join(Prova)
-            .join(Tournament)
-            .order_by(Tournament.created_at.desc(), Prova.number.desc())
+            .join(Gara)
+            .join(Campionato)
+            .order_by(Campionato.created_at.desc(), Gara.number.desc())
             .all()
         )
 
@@ -463,21 +463,21 @@ class UserService:
             Match.query.filter(
                 db.or_(Match.player1_id == user_id, Match.player2_id == user_id)
             )
-            .join(Prova)
-            .join(Tournament)
+            .join(Gara)
+            .join(Campionato)
             .order_by(
-                Tournament.created_at.desc(),
-                Prova.number.desc(),
+                Campionato.created_at.desc(),
+                Gara.number.desc(),
                 Match.round_number.desc(),
             )
             .all()
         )
 
-        # Classifiche per torneo
+        # Classifiche per campionato
         classifications = (
             Classification.query.filter_by(user_id=user_id)
-            .join(Tournament)
-            .order_by(Tournament.created_at.desc())
+            .join(Campionato)
+            .order_by(Campionato.created_at.desc())
             .all()
         )
 
@@ -526,7 +526,7 @@ class UserService:
             "lost_matches": total_matches - won_matches,
             "win_percentage": round(win_percentage, 1),
             "tournaments_played": len(
-                set([insc.prova.tournament_id for insc in inscriptions])
+                set([insc.gara.campionato_id for insc in inscriptions])
             ),
         }
 
@@ -844,7 +844,7 @@ class DirectorRequestService:
                 user_id=request.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
                 title="Richiesta Director Approvata",
-                message="La tua richiesta di diventare direttore di gara è stata approvata! Ora puoi creare e gestire tornei.",
+                message="La tua richiesta di diventare direttore di gara è stata approvata! Ora puoi creare e gestire campionati.",
                 priority=NotificationPriority.HIGH,
             )
         else:

@@ -23,11 +23,11 @@ try:
     # Reference some functions to ensure they're loaded
     print("Available functions:")
     functions = [
-        "create_prova_standalone",
-        "create_prova",
-        "edit_prova",
-        "delete_prova",
-        "prova_detail",
+        "create_gara_standalone",
+        "create_gara",
+        "edit_gara",
+        "delete_gara",
+        "gara_detail",
         "open_inscriptions",
         "start_first_round",
     ]

@@ -19,7 +19,7 @@ from flask_login import current_user
 
 from models.user.permissions import PermissionChecker, RoleRequirement
 from models.user.role_enum import UserRole
-from models.competition.services import ProvaService
+from models.competition.services import GaraService
 
 # --------------------------------------------------------------------------
 # Decorator aggiornati con il nuovo permission system
@@ -41,34 +41,34 @@ def director_or_admin_required(f):
     return RoleRequirement.director_or_admin_required(f)
 
 
-def tournament_manager_required(tournament_id_getter):
-    """Permette l’accesso a chi gestisce il torneo indicato."""
-    return RoleRequirement.tournament_manager_required(tournament_id_getter)
+def campionato_manager_required(campionato_id_getter):
+    """Permette l’accesso a chi gestisce il campionato indicato."""
+    return RoleRequirement.campionato_manager_required(campionato_id_getter)
 
 
-def prova_manager_required(fn):
+def gara_manager_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        from models import Prova, db  # Local import to avoid circular dependency
+        from models import Gara, db  # Local import to avoid circular dependency
 
-        prova_id = kwargs.get("prova_id") or (
-            request.view_args.get("prova_id") if request.view_args else None
+        gara_id = kwargs.get("gara_id") or (
+            request.view_args.get("gara_id") if request.view_args else None
         )
-        prova = db.session.get(Prova, prova_id)
+        gara = db.session.get(Gara, gara_id)
 
         if getattr(current_user, "is_admin", False):
             return fn(*args, **kwargs)
 
         # Standalone: serve essere DIRECTOR e essere il director assegnato
-        if prova and getattr(prova, "tournament_id", None) is None:
+        if gara and getattr(gara, "campionato_id", None) is None:
             if not (
                 getattr(current_user, "is_director", False)
-                and prova.director_id == current_user.id
+                and gara.director_id == current_user.id
             ):
                 abort(403)
             return fn(*args, **kwargs)
 
-        # Tornei: lascia l'implementazione esistente (assegnazione su torneo)
+        # Campionati: lascia l'implementazione esistente (assegnazione su campionato)
         return fn(*args, **kwargs)
 
     return wrapper
@@ -96,7 +96,7 @@ class UserPermissions:
     """Helper centralizzato per logica di interfaccia / visibilità."""
 
     @staticmethod
-    def can_inscribe_to_prova():
+    def can_inscribe_to_gara():
         return current_user.is_authenticated and not current_user.is_admin
 
     @staticmethod
@@ -143,23 +143,23 @@ def player_only(f):
 
 
 def player_required(f):
-    """Permette l'accesso solo a giocatori iscritti alla prova specificata."""
+    """Permette l'accesso solo a giocatori iscritti alla gara specificata."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         from models import Inscription  # Local import to avoid circular dependency
 
-        prova_id = kwargs.get("prova_id")
-        if not prova_id:
-            abort(400)  # Bad request if prova_id is missing
+        gara_id = kwargs.get("gara_id")
+        if not gara_id:
+            abort(400)  # Bad request if gara_id is missing
 
-        # Check if user is enrolled in this prova
+        # Check if user is enrolled in this gara
         inscription = Inscription.query.filter_by(
-            user_id=current_user.id, prova_id=prova_id
+            user_id=current_user.id, gara_id=gara_id
         ).first()
 
         if not inscription:
-            flash("Non sei iscritto a questa prova.", "error")
+            flash("Non sei iscritto a questa gara.", "error")
             return redirect(url_for("dashboard.dashboard"))
 
         return f(*args, **kwargs)
@@ -260,7 +260,7 @@ def challenge_player_required(f):
             abort(404)
 
         # For now, allow all authenticated players to access challenges
-        # This could be extended to check if user is enrolled in a prova that uses this challenge
+        # This could be extended to check if user is enrolled in a gara that uses this challenge
         return f(*args, **kwargs)
 
     return decorated_function
@@ -317,7 +317,7 @@ def individual_match_player_required(f):
 
 
 def rack_manager_required(f):
-    """Richiede che l'utente possa gestire il torneo collegato al rack."""
+    """Richiede che l'utente possa gestire il campionato collegato al rack."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -327,29 +327,29 @@ def rack_manager_required(f):
 
         rack_id = kwargs.get("rack_id")
         rack = Rack.query.get_or_404(rack_id)
-        prova = rack.match.prova
-        tournament_id = prova.tournament_id
+        gara = rack.match.gara
+        campionato_id = gara.campionato_id
 
         # Admin può sempre gestire
         if getattr(current_user, "is_admin", False):
             return f(*args, **kwargs)
 
         # Standalone: serve essere DIRECTOR e essere il director assegnato
-        if tournament_id is None:  # Prova standalone
+        if campionato_id is None:  # Gara standalone
             if not (
                 getattr(current_user, "is_director", False)
-                and hasattr(prova, "director_id")
-                and prova.director_id == current_user.id
+                and hasattr(gara, "director_id")
+                and gara.director_id == current_user.id
             ):
-                flash("Non puoi gestire i rack di questa prova.", "error")
+                flash("Non puoi gestire i rack di questa gara.", "error")
                 return redirect(url_for("dashboard.dashboard"))
             return f(*args, **kwargs)
         
-        # Prova con torneo: usa la logica standard
+        # Gara con campionato: usa la logica standard
         def _get_tid(**_ignored):
-            return tournament_id
+            return campionato_id
 
-        return tournament_manager_required(_get_tid)(f)(*args, **kwargs)
+        return campionato_manager_required(_get_tid)(f)(*args, **kwargs)
 
     return decorated_function
 
@@ -363,12 +363,12 @@ def trio_manager_required(f):
 
         trio_id = kwargs.get("trio_id")
         trio = TrioMatch.query.get_or_404(trio_id)
-        tournament_id = trio.match.prova.tournament_id
+        campionato_id = trio.match.gara.campionato_id
 
         def _get_tid(**_ignored):
-            return tournament_id
+            return campionato_id
 
-        return tournament_manager_required(_get_tid)(f)(*args, **kwargs)
+        return campionato_manager_required(_get_tid)(f)(*args, **kwargs)
 
     return decorated_function
 
@@ -380,9 +380,9 @@ def trio_manager_required(f):
 
 
 # --------------------------------------------------------------------------
-# Funzioni di dominio tornei / match
+# Funzioni di dominio campionati / match
 # --------------------------------------------------------------------------
-def create_round_matches(prova, players_or_inscriptions, round_number):
+def create_round_matches(gara, players_or_inscriptions, round_number):
     """Crea gli abbinamenti per un turno (logica standard)."""
     from models import (
         Inscription,
@@ -401,10 +401,10 @@ def create_round_matches(prova, players_or_inscriptions, round_number):
         # Numero dispari: ultimo giocatore ha un bye
         bye_player = players[-1]
 
-        bye_score = prova.get_winning_score() if prova.best_of else prova.distance
+        bye_score = gara.get_winning_score() if gara.best_of else gara.distance
 
         match = Match(
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=round_number,
             player1_id=bye_player.id,
             is_bye=True,
@@ -417,7 +417,7 @@ def create_round_matches(prova, players_or_inscriptions, round_number):
 
     for i in range(0, len(players), 2):
         match = Match(
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=round_number,
             player1_id=players[i].id,
             player2_id=players[i + 1].id,
@@ -428,11 +428,11 @@ def create_round_matches(prova, players_or_inscriptions, round_number):
     return matches
 
 
-def calculate_round_classification(prova_id, round_number):
+def calculate_round_classification(gara_id, round_number):
     """Calcola la classifica dopo un turno."""
     from models import Match, Inscription  # Local import to avoid circular dependency
 
-    matches = Match.query.filter_by(prova_id=prova_id, round_number=round_number).all()
+    matches = Match.query.filter_by(gara_id=gara_id, round_number=round_number).all()
     players_stats = {}
 
     for match in matches:
@@ -449,7 +449,7 @@ def calculate_round_classification(prova_id, round_number):
             for player_id in [match.player1_id, match.player2_id]:
                 if player_id not in players_stats:
                     inscription = Inscription.query.filter_by(
-                        user_id=player_id, prova_id=prova_id
+                        user_id=player_id, gara_id=gara_id
                     ).first()
                     players_stats[player_id] = {
                         "matches_won": 0,
@@ -488,7 +488,7 @@ def create_default_users():
     """Crea tre utenti di base (admin + 2 player)."""
     from models import User, db  # Local import to avoid circular dependency
 
-    admin = User(username="admin", email="admin@tournament.com", role="admin")
+    admin = User(username="admin", email="admin@campionato.com", role="admin")
     admin.set_password("admin123")
 
     mario = User(username="mario", email="mario@test.com", role="player")
@@ -502,13 +502,13 @@ def create_default_users():
     return admin, mario, pino
 
 
-def create_sample_tournament():
-    """Crea due tornei di esempio con prove collegate."""
-    from models import Tournament, db  # Local import to avoid circular dependency
+def create_sample_campionato():
+    """Crea due campionati di esempio con gare collegate."""
+    from models import Campionato, db  # Local import to avoid circular dependency
 
-    tournament1 = Tournament(
-        name="Torneo Primavera 2025",
-        tournament_type="Amalfi",
+    tournament1 = Campionato(
+        name="Campionato Primavera 2025",
+        campionato_type="Amalfi",
         without_x=False,
         final_playoffs=True,
         challenge_mode=False,
@@ -517,9 +517,9 @@ def create_sample_tournament():
     db.session.add(tournament1)
     db.session.commit()
 
-    tournament2 = Tournament(
+    tournament2 = Campionato(
         name="Coppa Estate 2025",
-        tournament_type="Amalfi",
+        campionato_type="Amalfi",
         without_x=True,
         final_playoffs=False,
         challenge_mode=True,
@@ -532,13 +532,13 @@ def create_sample_tournament():
 
     today = date.today()
 
-    ProvaService.create_prova(
-        tournament_id=tournament1.id,
+    GaraService.create_gara(
+        campionato_id=tournament1.id,
         number=1,
-        name="Prima Prova",
+        name="Prima Gara",
         date=today + timedelta(days=7),
         location="Circolo Biliardo Centro",
-        description="Prima prova del torneo primaverile",
+        description="Prima gara del campionato primaverile",
         rounds_count=3,
         min_participants=4,
         max_participants=16,
@@ -549,13 +549,13 @@ def create_sample_tournament():
         status="setup",
     )
 
-    ProvaService.create_prova(
-        tournament_id=tournament1.id,
+    GaraService.create_gara(
+        campionato_id=tournament1.id,
         number=2,
-        name="Seconda Prova",
+        name="Seconda Gara",
         date=today + timedelta(days=14),
         location="Circolo Biliardo Centro",
-        description="Seconda prova del torneo primaverile",
+        description="Seconda gara del campionato primaverile",
         rounds_count=3,
         min_participants=4,
         max_participants=16,
@@ -566,13 +566,13 @@ def create_sample_tournament():
         status="setup",
     )
 
-    ProvaService.create_prova(
-        tournament_id=tournament2.id,
+    GaraService.create_gara(
+        campionato_id=tournament2.id,
         number=1,
         name="Coppa Opening",
         date=today + timedelta(days=21),
         location="Sala Biliardo Elite",
-        description="Prova di apertura della coppa estiva",
+        description="Gara di apertura della coppa estiva",
         rounds_count=2,
         min_participants=6,
         max_participants=12,
@@ -584,9 +584,9 @@ def create_sample_tournament():
     )
 
     db.session.commit()
-    print("✅ Creati 2 tornei di esempio:")
-    print(f"   - {tournament1.name} (ID: {tournament1.id}) con 2 prove")
-    print(f"   - {tournament2.name} (ID: {tournament2.id}) con 1 prova")
+    print("✅ Creati 2 campionati di esempio:")
+    print(f"   - {tournament1.name} (ID: {tournament1.id}) con 2 gare")
+    print(f"   - {tournament2.name} (ID: {tournament2.id}) con 1 gara")
     return tournament1, tournament2
 
 
@@ -628,7 +628,7 @@ def create_admin_if_not_exists():
 
     admin = User(
         username=username,
-        email=email or f"{username}@tournament.local",
+        email=email or f"{username}@campionato.local",
         role=UserRole.ADMIN.value,
     )
     admin.set_password(password)
@@ -638,7 +638,7 @@ def create_admin_if_not_exists():
 
 
 def create_round_matches_amalfi_compatible(
-    prova, players_or_inscriptions, round_number
+    gara, players_or_inscriptions, round_number
 ):
     """Versione compatibile 'Amalfi'. Differisce per campo ``amalfi_round``."""
     from models import (
@@ -656,9 +656,9 @@ def create_round_matches_amalfi_compatible(
 
     if len(players) % 2 == 1:
         bye_player = players[-1]
-        bye_score = prova.get_winning_score() if prova.best_of else prova.distance
+        bye_score = gara.get_winning_score() if gara.best_of else gara.distance
         match = Match(
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=round_number,
             player1_id=bye_player.id,
             is_bye=True,
@@ -672,7 +672,7 @@ def create_round_matches_amalfi_compatible(
 
     for i in range(0, len(players), 2):
         match = Match(
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=round_number,
             player1_id=players[i].id,
             player2_id=players[i + 1].id,

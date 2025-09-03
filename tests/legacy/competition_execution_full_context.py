@@ -42,16 +42,16 @@ def execute_competition_routes():
 
                 mock_db = MagicMock()
 
-                mock_tournament = MagicMock()
-                mock_tournament.query.filter_by.return_value.all.return_value = []
+                mock_campionato = MagicMock()
+                mock_campionato.query.filter_by.return_value.all.return_value = []
 
-                mock_prova = MagicMock()
-                mock_prova_instance = MagicMock()
-                mock_prova_instance.id = 1
-                mock_prova_instance.can_be_modified.return_value = True
-                mock_prova_instance.tournament_id = 1
-                mock_prova.query.filter_by.return_value.first.return_value = None
-                mock_db.session.get.return_value = mock_prova_instance
+                mock_gara = MagicMock()
+                mock_gara_instance = MagicMock()
+                mock_gara_instance.id = 1
+                mock_gara_instance.can_be_modified.return_value = True
+                mock_gara_instance.campionato_id = 1
+                mock_gara.query.filter_by.return_value.first.return_value = None
+                mock_db.session.get.return_value = mock_gara_instance
 
                 mock_inscription = MagicMock()
                 mock_inscription.query.filter_by.return_value.all.return_value = []
@@ -61,7 +61,7 @@ def execute_competition_routes():
                     []
                 )
 
-                mock_prova_service = MagicMock()
+                mock_gara_service = MagicMock()
 
                 # Mock render_template and redirect to avoid Flask rendering issues
                 with patch(
@@ -84,38 +84,38 @@ def execute_competition_routes():
                     with patch(
                         "routes.admin.competition.current_user", mock_current_user
                     ), patch("routes.admin.competition.db", mock_db), patch(
-                        "routes.admin.competition.Tournament", mock_tournament
+                        "routes.admin.competition.Campionato", mock_campionato
                     ), patch(
-                        "routes.admin.competition.Prova", mock_prova
+                        "routes.admin.competition.Gara", mock_gara
                     ), patch(
                         "routes.admin.competition.Inscription", mock_inscription
                     ), patch(
                         "routes.admin.competition.Match", mock_match
                     ), patch(
-                        "routes.admin.competition.ProvaService", mock_prova_service
+                        "routes.admin.competition.GaraService", mock_gara_service
                     ):
 
                         # Execute each function to improve coverage
                         functions_to_execute = [
                             (
-                                "create_prova_standalone",
-                                lambda: routes.admin.competition.create_prova_standalone(),
+                                "create_gara_standalone",
+                                lambda: routes.admin.competition.create_gara_standalone(),
                             ),
                             (
-                                "create_prova",
-                                lambda: routes.admin.competition.create_prova(),
+                                "create_gara",
+                                lambda: routes.admin.competition.create_gara(),
                             ),
                             (
-                                "edit_prova",
-                                lambda: routes.admin.competition.edit_prova(1),
+                                "edit_gara",
+                                lambda: routes.admin.competition.edit_gara(1),
                             ),
                             (
-                                "delete_prova",
-                                lambda: routes.admin.competition.delete_prova(1),
+                                "delete_gara",
+                                lambda: routes.admin.competition.delete_gara(1),
                             ),
                             (
-                                "prova_detail",
-                                lambda: routes.admin.competition.prova_detail(1),
+                                "gara_detail",
+                                lambda: routes.admin.competition.gara_detail(1),
                             ),
                             (
                                 "open_inscriptions",
@@ -141,8 +141,8 @@ def execute_competition_routes():
                         # Try to execute some more functions if they exist
                         additional_functions = [
                             (
-                                "prova_results_overview",
-                                lambda: routes.admin.competition.prova_results_overview(
+                                "gara_results_overview",
+                                lambda: routes.admin.competition.gara_results_overview(
                                     1
                                 ),
                             ),

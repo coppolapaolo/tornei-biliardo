@@ -23,12 +23,12 @@ class TestMatchServiceEnhanced:
         mock_match_class.return_value = mock_match
 
         result = MatchService.create_match(
-            prova_id=123, round_number=1, player1_id=456, player2_id=789, is_bye=False
+            gara_id=123, round_number=1, player1_id=456, player2_id=789, is_bye=False
         )
 
         assert result == mock_match
         mock_match_class.assert_called_once_with(
-            prova_id=123,
+            gara_id=123,
             round_number=1,
             player1_id=456,
             player2_id=789,
@@ -46,12 +46,12 @@ class TestMatchServiceEnhanced:
         mock_match_class.return_value = mock_match
 
         result = MatchService.create_match(
-            prova_id=123, round_number=1, player1_id=456, is_bye=True
+            gara_id=123, round_number=1, player1_id=456, is_bye=True
         )
 
         assert result == mock_match
         mock_match_class.assert_called_once_with(
-            prova_id=123,
+            gara_id=123,
             round_number=1,
             player1_id=456,
             player2_id=None,
@@ -60,15 +60,15 @@ class TestMatchServiceEnhanced:
         )
 
     @patch("models.match.services.Match")
-    def test_get_matches_by_prova(self, mock_match_class):
-        """Test getting matches by prova."""
+    def test_get_matches_by_gara(self, mock_match_class):
+        """Test getting matches by gara."""
         mock_matches = [Mock(), Mock()]
         mock_match_class.query.filter_by.return_value.all.return_value = mock_matches
 
-        result = MatchService.get_matches_by_prova(123)
+        result = MatchService.get_matches_by_gara(123)
 
         assert result == mock_matches
-        mock_match_class.query.filter_by.assert_called_once_with(prova_id=123)
+        mock_match_class.query.filter_by.assert_called_once_with(gara_id=123)
 
     @patch("models.match.services.db")
     @patch("models.match.services.TrioMatch")
@@ -352,10 +352,10 @@ class TestRackServiceEnhanced:
         mock_match.player1_score = 2
         mock_match.player2_score = 1
 
-        # Mock prova
-        mock_prova = Mock()
-        mock_prova.is_match_finished.return_value = False
-        mock_match.prova = mock_prova
+        # Mock gara
+        mock_gara = Mock()
+        mock_gara.is_match_finished.return_value = False
+        mock_match.gara = mock_gara
 
         mock_db.session.get.return_value = mock_match
 
@@ -393,10 +393,10 @@ class TestRackServiceEnhanced:
         mock_match.player1_score = 4
         mock_match.player2_score = 2
 
-        # Mock prova with is_match_finished method
-        mock_prova = Mock()
-        mock_prova.is_match_finished.return_value = True
-        mock_match.prova = mock_prova
+        # Mock gara with is_match_finished method
+        mock_gara = Mock()
+        mock_gara.is_match_finished.return_value = True
+        mock_match.gara = mock_gara
 
         mock_db.session.get.return_value = mock_match
 
@@ -423,7 +423,7 @@ class TestRackServiceEnhanced:
             assert mock_match.player1_score == 5
 
             # Verify match completion logic
-            mock_prova.is_match_finished.assert_called_once_with(5, 2)
+            mock_gara.is_match_finished.assert_called_once_with(5, 2)
             mock_result_service.submit_result.assert_called_once_with(123, 456)
 
     @patch("models.match.services.db")
@@ -487,11 +487,11 @@ class TestRackServiceEnhanced:
         mock_match = Mock()
         mock_match.is_bye = False
 
-        mock_prova = Mock()
-        mock_prova.best_of = True
-        mock_prova.distance = 9
-        mock_prova.get_winning_score.return_value = 5
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = True
+        mock_gara.distance = 9
+        mock_gara.get_winning_score.return_value = 5
+        mock_match.gara = mock_gara
 
         mock_db.session.get.return_value = mock_match
 
@@ -506,10 +506,10 @@ class TestRackServiceEnhanced:
         mock_match = Mock()
         mock_match.is_bye = False
 
-        mock_prova = Mock()
-        mock_prova.best_of = False
-        mock_prova.distance = 9
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = False
+        mock_gara.distance = 9
+        mock_match.gara = mock_gara
 
         mock_db.session.get.return_value = mock_match
 
@@ -522,10 +522,10 @@ class TestRackServiceEnhanced:
         mock_match = Mock()
         mock_match.is_bye = False
 
-        mock_prova = Mock()
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 5
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 5
+        mock_match.gara = mock_gara
 
         mock_db.session.get.return_value = mock_match
 
@@ -614,7 +614,7 @@ class TestRackServiceEnhanced:
     def test_remove_rack_admin_exact_racks_reopen(
         self, mock_db, mock_match_service, mock_abort
     ):
-        """Test rack removal for exact racks prova that reopens match."""
+        """Test rack removal for exact racks gara that reopens match."""
         mock_rack = Mock()
         mock_rack.winner_id = 789
 
@@ -625,11 +625,11 @@ class TestRackServiceEnhanced:
         mock_match.player2_score = 4
         mock_match.status = MatchStatus.COMPLETED.value
 
-        # Mock prova (exact racks)
-        mock_prova = Mock()
-        mock_prova.best_of = False
-        mock_prova.distance = 9
-        mock_match.prova = mock_prova
+        # Mock gara (exact racks)
+        mock_gara = Mock()
+        mock_gara.best_of = False
+        mock_gara.distance = 9
+        mock_match.gara = mock_gara
 
         mock_rack.match = mock_match
         mock_db.session.get.return_value = mock_rack

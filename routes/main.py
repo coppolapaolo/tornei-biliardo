@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user, logout_user
 from datetime import date
-from models import db, Tournament, Prova, Classification, User
+from models import db, Campionato, Gara, Classification, User
 from config import Config
 
 
@@ -25,59 +25,59 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.dashboard"))
 
-    # Mostra TUTTI i tornei attivi
-    active_tournaments = (
-        Tournament.query.filter_by(is_active=True)
-        .order_by(Tournament.created_at.desc())
+    # Mostra TUTTI i campionati attivi
+    active_campionatos = (
+        Campionato.query.filter_by(is_active=True)
+        .order_by(Campionato.created_at.desc())
         .all()
     )
 
-    if not active_tournaments:
-        return render_template("no_tournament.html")
+    if not active_campionatos:
+        return render_template("no_campionato.html")
 
-    # Raccogli dati per TUTTI i tornei attivi
+    # Raccogli dati per TUTTI i campionati attivi
     tournaments_data = []
-    for tournament in active_tournaments:
-        # Prossime prove per questo torneo
-        upcoming_provas = (
-            Prova.query.filter(
-                Prova.tournament_id == tournament.id, Prova.date >= date.today()
+    for campionato in active_campionatos:
+        # Prossime gare per questo campionato
+        upcoming_garas = (
+            Gara.query.filter(
+                Gara.campionato_id == campionato.id, Gara.date >= date.today()
             )
-            .order_by(Prova.date)
+            .order_by(Gara.date)
             .limit(3)
             .all()
         )
 
-        # Classifica generale per questo torneo (top 5)
+        # Classifica generale per questo campionato (top 5)
         top_classifications = (
-            Classification.query.filter(Classification.tournament_id == tournament.id)
+            Classification.query.filter(Classification.campionato_id == campionato.id)
             .order_by(Classification.position)
             .limit(5)
             .all()
         )
         
-        # Se non c'è classifica generale, prova a prendere la classifica della prova più recente
-        if not top_classifications and tournament.tournament_type == 'Amalfi':
+        # Se non c'è classifica generale, gara a prendere la classifica della gara più recente
+        if not top_classifications and campionato.campionato_type == 'Amalfi':
             from models.classification.models import RoundClassification
-            from models.status_enum import ProvaStatus
+            from models.status_enum import GaraStatus
             
-            # Trova la prova completata più recente
-            latest_completed_prova = (
-                Prova.query.filter(
-                    Prova.tournament_id == tournament.id,
-                    Prova.status == ProvaStatus.COMPLETED.value
+            # Trova la gara completata più recente
+            latest_completed_gara = (
+                Gara.query.filter(
+                    Gara.campionato_id == campionato.id,
+                    Gara.status == GaraStatus.COMPLETED.value
                 )
-                .order_by(Prova.date.desc())
+                .order_by(Gara.date.desc())
                 .first()
             )
             
-            if latest_completed_prova:
-                # Prendi la classifica dell'ultimo turno di questa prova
+            if latest_completed_gara:
+                # Prendi la classifica dell'ultimo turno di questa gara
                 top_classifications = (
                     RoundClassification.query.filter(
-                        RoundClassification.prova_id == latest_completed_prova.id
+                        RoundClassification.gara_id == latest_completed_gara.id
                     )
-                    .filter(RoundClassification.round_number == latest_completed_prova.current_round)
+                    .filter(RoundClassification.round_number == latest_completed_gara.current_round)
                     .order_by(RoundClassification.position)
                     .limit(5)
                     .all()
@@ -85,8 +85,8 @@ def index():
 
         tournaments_data.append(
             {
-                "tournament": tournament,
-                "upcoming_provas": upcoming_provas,
+                "campionato": campionato,
+                "upcoming_garas": upcoming_garas,
                 "top_classifications": top_classifications,
             }
         )
@@ -94,7 +94,7 @@ def index():
     return render_template(
         "index.html",
         tournaments_data=tournaments_data,
-        active_tournaments=active_tournaments,
+        active_campionatos=active_campionatos,
     )
 
 

@@ -41,7 +41,7 @@ class TestDashboardRoutes:
 
             # Verify the service method was called
             mock_dashboard_service.for_director.assert_called_once_with(
-                director_user.id, selected_tournament_id=None, selected_prova_id=None
+                director_user.id, selected_campionato_id=None, selected_gara_id=None
             )
             assert response.status_code == 200
 
@@ -60,12 +60,12 @@ class TestDashboardRoutes:
 
             # Verify the service method was called
             mock_dashboard_service.for_player.assert_called_once_with(
-                player_user.id, selected_tournament_id=None, selected_prova_id=None
+                player_user.id, selected_campionato_id=None, selected_gara_id=None
             )
             assert response.status_code == 200
 
-    def test_dashboard_with_tournament_id(self, client, player_user):
-        """Test dashboard route with tournament_id parameter."""
+    def test_dashboard_with_campionato_id(self, client, player_user):
+        """Test dashboard route with campionato_id parameter."""
         # Login as player
         client.post(
             "/auth/login", data={"username": "testplayer", "password": "password"}
@@ -75,37 +75,37 @@ class TestDashboardRoutes:
         with patch("routes.dashboard.DashboardService") as mock_dashboard_service:
             mock_dashboard_service.for_player.return_value = {"player_data": "test"}
 
-            response = client.get("/dashboard?tournament_id=123")
+            response = client.get("/dashboard?campionato_id=123")
 
             # Verify the service method was called with correct parameters
             mock_dashboard_service.for_player.assert_called_once_with(
-                player_user.id, selected_tournament_id=123, selected_prova_id=None
+                player_user.id, selected_campionato_id=123, selected_gara_id=None
             )
             assert response.status_code == 200
 
-    def test_dashboard_with_prova_id(self, client, player_user):
-        """Test dashboard route with prova_id parameter."""
+    def test_dashboard_with_gara_id(self, client, player_user):
+        """Test dashboard route with gara_id parameter."""
         # Login as player
         client.post(
             "/auth/login", data={"username": "testplayer", "password": "password"}
         )
 
-        # Mock the DashboardService and ProvaService
+        # Mock the DashboardService and GaraService
         with patch(
             "routes.dashboard.DashboardService"
-        ) as mock_dashboard_service, patch("routes.dashboard.ProvaService"):
+        ) as mock_dashboard_service, patch("routes.dashboard.GaraService"):
             mock_dashboard_service.for_player.return_value = {"player_data": "test"}
 
-            response = client.get("/dashboard?prova_id=456")
+            response = client.get("/dashboard?gara_id=456")
 
             # Verify the service method was called with correct parameters
             mock_dashboard_service.for_player.assert_called_once_with(
-                player_user.id, selected_tournament_id=None, selected_prova_id=456
+                player_user.id, selected_campionato_id=None, selected_gara_id=456
             )
             assert response.status_code == 200
 
-    def test_dashboard_with_both_ids_standalone_prova(self, client, player_user):
-        """Test dashboard route with both IDs where prova is standalone."""
+    def test_dashboard_with_both_ids_standalone_gara(self, client, player_user):
+        """Test dashboard route with both IDs where gara is standalone."""
         # Login as player
         client.post(
             "/auth/login", data={"username": "testplayer", "password": "password"}
@@ -115,24 +115,24 @@ class TestDashboardRoutes:
         with patch(
             "routes.dashboard.DashboardService"
         ) as mock_dashboard_service, patch(
-            "routes.dashboard.ProvaService"
-        ) as mock_prova_service:
-            mock_prova_service.get_prova_by_id.return_value = MagicMock(
-                tournament_id=None
+            "routes.dashboard.GaraService"
+        ) as mock_gara_service:
+            mock_gara_service.get_gara_by_id.return_value = MagicMock(
+                campionato_id=None
             )
             mock_dashboard_service.for_player.return_value = {"player_data": "test"}
 
-            response = client.get("/dashboard?tournament_id=123&prova_id=456")
+            response = client.get("/dashboard?campionato_id=123&gara_id=456")
 
             # Verify the service methods were called
-            mock_prova_service.get_prova_by_id.assert_called_once_with(456)
+            mock_gara_service.get_gara_by_id.assert_called_once_with(456)
             mock_dashboard_service.for_player.assert_called_once_with(
-                player_user.id, selected_tournament_id=None, selected_prova_id=456
+                player_user.id, selected_campionato_id=None, selected_gara_id=456
             )
             assert response.status_code == 200
 
-    def test_dashboard_with_both_ids_tournament_prova(self, client, player_user):
-        """Test dashboard route with both IDs where prova belongs to tournament."""
+    def test_dashboard_with_both_ids_campionato_gara(self, client, player_user):
+        """Test dashboard route with both IDs where gara belongs to campionato."""
         # Login as player
         client.post(
             "/auth/login", data={"username": "testplayer", "password": "password"}
@@ -142,19 +142,19 @@ class TestDashboardRoutes:
         with patch(
             "routes.dashboard.DashboardService"
         ) as mock_dashboard_service, patch(
-            "routes.dashboard.ProvaService"
-        ) as mock_prova_service:
-            mock_prova_service.get_prova_by_id.return_value = MagicMock(
-                tournament_id=789
+            "routes.dashboard.GaraService"
+        ) as mock_gara_service:
+            mock_gara_service.get_gara_by_id.return_value = MagicMock(
+                campionato_id=789
             )
             mock_dashboard_service.for_player.return_value = {"player_data": "test"}
 
-            response = client.get("/dashboard?tournament_id=123&prova_id=456")
+            response = client.get("/dashboard?campionato_id=123&gara_id=456")
 
             # Verify the service methods were called
-            mock_prova_service.get_prova_by_id.assert_called_once_with(456)
+            mock_gara_service.get_gara_by_id.assert_called_once_with(456)
             mock_dashboard_service.for_player.assert_called_once_with(
-                player_user.id, selected_tournament_id=123, selected_prova_id=None
+                player_user.id, selected_campionato_id=123, selected_gara_id=None
             )
             assert response.status_code == 200
 

@@ -1,21 +1,21 @@
 {# templates/components/_player_inscriptions.html #}
-<!-- Iscrizioni per Torneo -->
+<!-- Iscrizioni per Campionato -->
 <div class="card">
     <div class="card-header">
         <h5><i class="fas fa-list"></i> Le mie Iscrizioni</h5>
     </div>
     <div class="card-body">
         {% if inscriptions %}
-            {% set tournaments = inscriptions|groupby('prova.tournament.name') %}
-            {% for tournament_name, tournament_inscriptions in tournaments %}
-                <h6>{{ tournament_name }}</h6>
+            {% set campionati = inscriptions|groupby('gara.campionato.name') %}
+            {% for campionato_name, campionato_inscriptions in campionati %}
+                <h6>{{ campionato_name }}</h6>
                 <ul class="list-unstyled mb-3">
-                    {% for inscription in tournament_inscriptions %}
+                    {% for inscription in campionato_inscriptions %}
                         <li>
                             <small>
-                                Prova {{ inscription.prova.number }} - 
-                                {{ inscription.prova.date.strftime('%d/%m/%Y') }}
-                                {{ status_badge(inscription.prova, 'prova') }}
+                                Gara {{ inscription.gara.number }} - 
+                                {{ inscription.gara.date.strftime('%d/%m/%Y') }}
+                                {{ status_badge(inscription.gara, 'gara') }}
                             </small>
                         </li>
                     {% endfor %}
@@ -25,7 +25,7 @@
             <div class="alert alert-info">
                 <small>
                     <i class="fas fa-info-circle"></i>
-                    Non sei ancora iscritto a nessuna prova.
+                    Non sei ancora iscritto a nessuna gara.
                 </small>
             </div>
         {% endif %}

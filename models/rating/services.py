@@ -219,8 +219,8 @@ class RatingService:
 
             leaderboards[system.value] = top_players
 
-        # Category-based leaderboard (by number of tournament wins, etc.)
-        # This would need integration with tournament results
+        # Category-based leaderboard (by number of campionato wins, etc.)
+        # This would need integration with campionato results
         category_leaders = {}
         for category in CategoryLevel:
             # For now, just show most recent assignments
@@ -451,7 +451,7 @@ class HandicapService:
     def create_handicap_rule(
         name: str,
         description: Optional[str] = None,
-        applies_to_tournaments: bool = True,
+        applies_to_campionatos: bool = True,
         applies_to_individual_matches: bool = True,
         category_rules: Optional[List[Dict[str, Any]]] = None,
         rating_rules: Optional[List[Dict[str, Any]]] = None,
@@ -461,7 +461,7 @@ class HandicapService:
         rule = HandicapRule(
             name=name,
             description=description,
-            applies_to_tournaments=applies_to_tournaments,
+            applies_to_campionatos=applies_to_campionatos,
             applies_to_individual_matches=applies_to_individual_matches,
         )
 

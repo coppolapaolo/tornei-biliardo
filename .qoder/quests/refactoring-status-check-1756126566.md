@@ -2,13 +2,13 @@
 
 ## Executive Summary
 
-The tornei-biliardo application refactoring has been successfully completed. All planned milestones have been implemented according to the original roadmap defined in ADR-0001. This document summarizes the completed work and provides final recommendations for ongoing maintenance.
+The campionati-biliardo application refactoring has been successfully completed. All planned milestones have been implemented according to the original roadmap defined in ADR-0001. This document summarizes the completed work and provides final recommendations for ongoing maintenance.
 
 ## Current Status Analysis
 
 ### Milestone 1: Route Blueprint Decomposition ✅ COMPLETED
 The monolithic route structure has been successfully decomposed into domain-specific Flask Blueprints:
-- `/routes/admin/` - Contains domain-specific blueprints (competition.py, match.py, tournament.py, user.py)
+- `/routes/admin/` - Contains domain-specific blueprints (competition.py, match.py, campionato.py, user.py)
 - Legacy routes consolidated in `admin_backup.py`
 
 ### Milestone 2: Dashboard Unification & Component System (Template Componentization) ✅ COMPLETED
@@ -21,9 +21,9 @@ Template componentization has been successfully completed:
 
 ### Milestone 3: Service Layer Implementation ✅ COMPLETED
 Domain-specific service classes have been created and fully implemented:
-- `models/competition/services.py` - ProvaService with state machine
+- `models/competition/services.py` - GaraService with state machine
 - `models/match/services.py` - MatchService, RackService, MatchResultService
-- `models/tournament/services.py` - TournamentService
+- `models/campionato/services.py` - TournamentService
 - `models/user/services.py` - UserService
 
 All business logic has been migrated from routes to service classes, and direct database access has been eliminated from route handlers.
@@ -33,7 +33,7 @@ The scoring strategy pattern has been successfully implemented:
 - `models/scoring/policies.py` - Abstract ScoringPolicy interface
 - `models/scoring/strategies.py` - Concrete implementations (Classic, Fargo, Elo)
 - Integrated into `models/classification/services.py`
-- UI support in tournament creation/edit forms
+- UI support in campionato creation/edit forms
 
 ### Milestone 5: Core Cleanup & Shared Utilities ✅ COMPLETED
 Error handling has been unified and shared utilities have been centralized:
@@ -90,7 +90,7 @@ Each phase must meet the following quality criteria before proceeding:
 
 ## Refactoring Complete
 
-The tornei-biliardo application refactoring has been successfully completed. The application now has a clean, maintainable architecture based on Domain-Driven Design principles with Flask Blueprints, enabling easier feature development, improved testability, and better team collaboration.
+The campionati-biliardo application refactoring has been successfully completed. The application now has a clean, maintainable architecture based on Domain-Driven Design principles with Flask Blueprints, enabling easier feature development, improved testability, and better team collaboration.
 
 ### Key Achievements
 
@@ -100,7 +100,7 @@ The tornei-biliardo application refactoring has been successfully completed. The
 
 3. **Service Layer Implementation**: Business logic has been extracted from routes into dedicated service classes, eliminating direct database access from route handlers.
 
-4. **Scoring Strategy Pattern**: A flexible scoring system has been implemented, allowing configurable scoring policies for tournaments.
+4. **Scoring Strategy Pattern**: A flexible scoring system has been implemented, allowing configurable scoring policies for campionati.
 
 5. **Code Quality**: Error handling has been unified, duplicated code has been eliminated, and test coverage has been expanded.
 

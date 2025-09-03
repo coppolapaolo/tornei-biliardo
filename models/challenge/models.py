@@ -112,7 +112,7 @@ class Challenge(BaseModel, TimestampMixin):
         )
 
     def can_be_used_for_x_replacement(self) -> bool:
-        """Check if challenge can be used as X replacement in tournaments."""
+        """Check if challenge can be used as X replacement in campionati."""
         # Only challenges with numeric scoring can be used for X replacement
         return not self.pass_fail_only and self.is_active
 
@@ -142,16 +142,16 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
     # Optional: notes or details about the attempt
     notes = db.Column(db.Text, nullable=True)
 
-    # For tournament integration (when used as X replacement)
-    prova_id = db.Column(
-        db.Integer, db.ForeignKey("prova.id", ondelete="SET NULL"), nullable=True
+    # For campionato integration (when used as X replacement)
+    gara_id = db.Column(
+        db.Integer, db.ForeignKey("gara.id", ondelete="SET NULL"), nullable=True
     )
     round_number = db.Column(db.Integer, nullable=True)
 
     # Relationships
     challenge = db.relationship("Challenge", back_populates="attempts")
     user = db.relationship("User")
-    prova = db.relationship("Prova")
+    gara = db.relationship("Gara")
 
     def complete_attempt(
         self, score: Optional[int] = None, passed: Optional[bool] = None
@@ -173,7 +173,7 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
                 self.passed = passed
 
     def get_rack_difference_equivalent(self) -> int:
-        """Convert challenge score to rack difference for tournament classification."""
+        """Convert challenge score to rack difference for campionato classification."""
         if not self.completed or self.score is None:
             return 0
 

@@ -1,0 +1,26 @@
+<!-- Campionato Statistics Component -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-chart-bar"></i> Statistiche</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <strong>Gare Totali:</strong> {{ provas|length }}<br>
+                <strong>Gare Setup:</strong> {{ provas|selectattr("status", "equalto", "setup")|list|length }}<br>
+                <strong>Iscrizioni Aperte:</strong> {{ provas|selectattr("status", "equalto", "inscription")|list|length }}<br>
+                <strong>In Corso:</strong> {{ provas|selectattr("status", "equalto", "playing")|list|length }}<br>
+                <strong>Completate:</strong> {{ provas|selectattr("status", "equalto", "completed")|list|length }}<br>
+            </div>
+        </div>
+        <hr class="my-3">
+        <div class="row">
+            <div class="col-12">
+                <strong>Giocatori Totali:</strong> {{ campionato_stats.total_unique_players|default(0) }}<br>
+                <strong>Giocatori Iscritti:</strong> {{ campionato_stats.currently_inscribed_players|default(0) }}<br>
+                <strong>Match Totali Giocati:</strong> {{ campionato_stats.total_completed_matches|default(0) }}<br>
+                <strong>Rack Totali Giocati:</strong> {{ campionato_stats.total_racks_played|default(0) }}
+            </div>
+        </div>
+    </div>
+</div>

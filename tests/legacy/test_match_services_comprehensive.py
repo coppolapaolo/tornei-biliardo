@@ -22,12 +22,12 @@ class TestMatchService:
         mock_match_class.return_value = mock_match
 
         result = MatchService.create_match(
-            prova_id=123, round_number=1, player1_id=456, player2_id=789, is_bye=False
+            gara_id=123, round_number=1, player1_id=456, player2_id=789, is_bye=False
         )
 
         assert result == mock_match
         mock_match_class.assert_called_once_with(
-            prova_id=123,
+            gara_id=123,
             round_number=1,
             player1_id=456,
             player2_id=789,
@@ -38,15 +38,15 @@ class TestMatchService:
         mock_db.session.commit.assert_called_once()
 
     @patch("models.match.services.Match")
-    def test_get_matches_by_prova(self, mock_match_class):
-        """Test get_matches_by_prova method."""
+    def test_get_matches_by_gara(self, mock_match_class):
+        """Test get_matches_by_gara method."""
         mock_matches = [Mock(), Mock(), Mock()]
         mock_match_class.query.filter_by.return_value.all.return_value = mock_matches
 
-        result = MatchService.get_matches_by_prova(123)
+        result = MatchService.get_matches_by_gara(123)
 
         assert result == mock_matches
-        mock_match_class.query.filter_by.assert_called_once_with(prova_id=123)
+        mock_match_class.query.filter_by.assert_called_once_with(gara_id=123)
 
     @patch("models.match.services.db")
     @patch("models.match.services.TrioMatch")
@@ -270,10 +270,10 @@ class TestRackService:
         mock_match.player2_score = 1
         mock_db.session.get.return_value = mock_match
 
-        # Mock prova with is_match_finished method
-        mock_prova = Mock()
-        mock_prova.is_match_finished.return_value = False
-        mock_match.prova = mock_prova
+        # Mock gara with is_match_finished method
+        mock_gara = Mock()
+        mock_gara.is_match_finished.return_value = False
+        mock_match.gara = mock_gara
 
         # Mock last rack
         mock_last_rack = Mock()
@@ -312,9 +312,9 @@ class TestRackService:
         mock_match.player2_score = 1
         mock_db.session.get.return_value = mock_match
 
-        mock_prova = Mock()
-        mock_prova.is_match_finished.return_value = False
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.is_match_finished.return_value = False
+        mock_match.gara = mock_gara
 
         # No previous racks
         mock_rack_class.query.filter_by.return_value.order_by.return_value.first.return_value = (
@@ -352,9 +352,9 @@ class TestRackService:
         mock_match.player2_score = 2
         mock_db.session.get.return_value = mock_match
 
-        mock_prova = Mock()
-        mock_prova.is_match_finished.return_value = True
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.is_match_finished.return_value = True
+        mock_match.gara = mock_gara
 
         mock_rack_class.query.filter_by.return_value.order_by.return_value.first.return_value = (
             None
@@ -390,10 +390,10 @@ class TestRackService:
         mock_match.is_bye = False
         mock_db.session.get.return_value = mock_match
 
-        mock_prova = Mock()
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 5
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 5
+        mock_match.gara = mock_gara
 
         # Mock existing racks to be deleted
         mock_existing_racks = [Mock(), Mock()]
@@ -442,11 +442,11 @@ class TestRackService:
         mock_match.is_bye = False
         mock_db.session.get.return_value = mock_match
 
-        mock_prova = Mock()
-        mock_prova.best_of = True
-        mock_prova.distance = 9
-        mock_prova.get_winning_score.return_value = 5
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = True
+        mock_gara.distance = 9
+        mock_gara.get_winning_score.return_value = 5
+        mock_match.gara = mock_gara
 
         with pytest.raises(ValueError, match="deve raggiungere 5 punti"):
             RackService.set_match_result_direct(123, 3, 2)  # Neither reached 5
@@ -458,10 +458,10 @@ class TestRackService:
         mock_match.is_bye = False
         mock_db.session.get.return_value = mock_match
 
-        mock_prova = Mock()
-        mock_prova.best_of = False
-        mock_prova.distance = 7
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = False
+        mock_gara.distance = 7
+        mock_match.gara = mock_gara
 
         with pytest.raises(ValueError, match="la somma deve essere esattamente 7"):
             RackService.set_match_result_direct(123, 3, 2)  # Sum is 5, not 7
@@ -473,10 +473,10 @@ class TestRackService:
         mock_match.is_bye = False
         mock_db.session.get.return_value = mock_match
 
-        mock_prova = Mock()
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 5
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 5
+        mock_match.gara = mock_gara
 
         with pytest.raises(ValueError, match="Non può esserci un pareggio!"):
             RackService.set_match_result_direct(123, 5, 5)
@@ -541,10 +541,10 @@ class TestRackService:
         mock_match.player2_score = 3
         mock_rack.match = mock_match
 
-        mock_prova = Mock()
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 5
-        mock_match.prova = mock_prova
+        mock_gara = Mock()
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 5
+        mock_match.gara = mock_gara
 
         result = RackService.remove_rack_admin(123)
 

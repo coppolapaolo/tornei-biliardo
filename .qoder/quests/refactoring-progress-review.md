@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document reviews the current state of the tornei-biliardo refactoring project and defines the immediate next steps to continue the comprehensive refactoring roadmap established in ADR-0001.
+This document reviews the current state of the campionati-biliardo refactoring project and defines the immediate next steps to continue the comprehensive refactoring roadmap established in ADR-0001.
 
 ## Current Progress Assessment
 
@@ -43,19 +43,19 @@ Based on the current `admin.py` analysis, identify these domain boundaries:
 
 ```mermaid
 graph TD
-    A[admin.py 1443 lines] --> B[Tournament Management]
+    A[admin.py 1443 lines] --> B[Campionato Management]
     A --> C[Competition Management]
     A --> D[Match Management]
     A --> E[User Management]
     A --> F[Dashboard & Overview]
     
-    B --> B1["/tournament/create"]
-    B --> B2["/tournament/<id>"]
-    B --> B3["/tournament/<id>/edit"]
+    B --> B1["/campionato/create"]
+    B --> B2["/campionato/<id>"]
+    B --> B3["/campionato/<id>/edit"]
     
-    C --> C1["/prova/create"]
-    C --> C2["/prova/<id>"]
-    C --> C3["/prova/<id>/start"]
+    C --> C1["/gara/create"]
+    C --> C2["/gara/<id>"]
+    C --> C3["/gara/<id>/start"]
     
     D --> D1["/match/<id>/result"]
     D --> D2["/match/<id>/edit"]
@@ -72,8 +72,8 @@ graph TD
 #### 2. Blueprint Architecture
 Create domain-specific blueprint modules:
 
-- `routes/admin/tournament.py` - Tournament lifecycle management
-- `routes/admin/competition.py` - Prova (competition) management  
+- `routes/admin/campionato.py` - Campionato lifecycle management
+- `routes/admin/competition.py` - Gara (competition) management  
 - `routes/admin/match.py` - Match and result management
 - `routes/admin/user.py` - User administration
 - `routes/admin/dashboard.py` - Admin dashboard views
@@ -90,15 +90,15 @@ from flask import Blueprint
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # Domain sub-blueprints
-from .tournament import tournament_bp
+from .campionato import campionato_bp
 from .competition import competition_bp  
 from .match import match_bp
 from .user import user_bp
 from .dashboard import dashboard_bp
 
 # Register sub-blueprints with preserved URLs
-admin_bp.register_blueprint(tournament_bp, url_prefix='/tournament')
-admin_bp.register_blueprint(competition_bp, url_prefix='/prova')  
+admin_bp.register_blueprint(campionato_bp, url_prefix='/campionato')
+admin_bp.register_blueprint(competition_bp, url_prefix='/gara')  
 admin_bp.register_blueprint(match_bp, url_prefix='/match')
 admin_bp.register_blueprint(user_bp, url_prefix='/user')
 admin_bp.register_blueprint(dashboard_bp)
@@ -113,20 +113,20 @@ admin_bp.register_blueprint(dashboard_bp)
 4. Create mechanical route extraction (copy-paste with minimal changes)
 
 #### Phase 1.2: Route Migration
-1. **Tournament Routes** (Lines ~50-200 in admin.py)
-   - `/tournament/create` 
-   - `/tournament/<id>`
-   - `/tournament/<id>/edit`
-   - `/tournament/<id>/delete`
-   - `/tournament/<id>/toggle_active`
-   - `/tournament/<id>/add_director`
+1. **Campionato Routes** (Lines ~50-200 in admin.py)
+   - `/campionato/create` 
+   - `/campionato/<id>`
+   - `/campionato/<id>/edit`
+   - `/campionato/<id>/delete`
+   - `/campionato/<id>/toggle_active`
+   - `/campionato/<id>/add_director`
 
 2. **Competition Routes** (Lines ~200-800 in admin.py) 
-   - `/prova/create`
-   - `/prova/<id>`
-   - `/prova/<id>/start`
-   - `/prova/<id>/inscribe`
-   - `/prova/<id>/withdraw`
+   - `/gara/create`
+   - `/gara/<id>`
+   - `/gara/<id>/start`
+   - `/gara/<id>/inscribe`
+   - `/gara/<id>/withdraw`
 
 3. **Match Routes** (Lines ~800-1200 in admin.py)
    - `/match/<id>/result`
@@ -173,7 +173,7 @@ admin_bp.register_blueprint(dashboard_bp)
 1. **Create ADR-0002**: Document blueprint decomposition decisions
 2. **Create Branch**: `refactor/step-1-admin-routes-split`
 3. **Implement Phase 1.1**: Blueprint structure creation
-4. **Begin Route Migration**: Start with tournament routes (lowest risk)
+4. **Begin Route Migration**: Start with campionato routes (lowest risk)
 
 ### Risk Mitigation
 1. **URL Testing**: Create smoke tests for all 39 admin endpoints before migration

@@ -64,7 +64,7 @@ class Tiebreaker(db.Model):
     Supports multiple tiebreaker types:
     - Spot shots for 8-ball/9-ball
     - Rally for straight pool
-    - Playoff matches for tournament ties
+    - Playoff matches for campionato ties
     - Sudden death racks
     """
 
@@ -74,8 +74,8 @@ class Tiebreaker(db.Model):
 
     # Relationship to the tied match/situation
     match_id = Column(Integer, ForeignKey("match.id"), nullable=False)
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=True)
-    prova_id = Column(Integer, ForeignKey("prova.id"), nullable=True)
+    campionato_id = Column(Integer, ForeignKey("campionato.id"), nullable=True)
+    gara_id = Column(Integer, ForeignKey("gara.id"), nullable=True)
 
     # Tiebreaker configuration
     tiebreaker_type = Column(String(20), nullable=False)  # TiebreakerType enum
@@ -296,8 +296,8 @@ class RallyAttempt(db.Model):
 
 class PlayoffMatch(db.Model):
     """
-    Mini playoff match for tournament tiebreakers.
-    Short matches to resolve tournament position ties.
+    Mini playoff match for campionato tiebreakers.
+    Short matches to resolve campionato position ties.
     """
 
     __tablename__ = "playoff_match"
@@ -363,7 +363,7 @@ class PlayoffMatch(db.Model):
 
 class TiebreakerConfiguration(db.Model):
     """
-    Tournament-level configuration for tiebreaker rules.
+    Campionato-level configuration for tiebreaker rules.
     Defines how ties should be resolved in different situations.
     """
 
@@ -372,8 +372,8 @@ class TiebreakerConfiguration(db.Model):
     id = Column(Integer, primary_key=True)
 
     # Scope
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=True)
-    prova_id = Column(Integer, ForeignKey("prova.id"), nullable=True)
+    campionato_id = Column(Integer, ForeignKey("campionato.id"), nullable=True)
+    gara_id = Column(Integer, ForeignKey("gara.id"), nullable=True)
 
     # Configuration name
     name = Column(String(100), nullable=False)

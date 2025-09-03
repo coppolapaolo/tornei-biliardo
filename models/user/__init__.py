@@ -7,7 +7,7 @@ following Domain-Driven Design principles.
 Domain: User Management
 - User authentication and profiles
 - Role-based permissions (Admin, Director, Player)
-- Tournament director assignments
+- Campionato director assignments
 - Director promotion requests
 
 Author: Refactoring Phase 1

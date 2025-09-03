@@ -17,8 +17,8 @@ if str(ROOT_DIR) not in sys.path:
 from app import create_app  # noqa: E402
 from models import db as _db  # noqa: E402
 from models import User  # noqa: E402
-from models.tournament.models import Tournament  # noqa: E402
-from models.competition.models import Prova  # noqa: E402
+from models.campionato.models import Campionato  # noqa: E402
+from models.competition.models import Gara  # noqa: E402
 from models.caching import cache_manager  # noqa: E402
 
 
@@ -128,15 +128,15 @@ def admin_user(db_session):
 
 
 @pytest.fixture
-def tournament(db_session):
+def campionato(db_session):
     """
-    Crea un torneo minimale tramite il service di dominio.
+    Crea un campionato minimale tramite il service di dominio.
     Usa db_session per essere dentro la transazione del test.
     """
-    from models.tournament.services import TournamentService
+    from models.campionato.services import TournamentService
 
-    # Qui non servono kwargs: il modello ha default sensati (tournament_type="Amalfi")
-    t = TournamentService.create_tournament(name="Unit Test Tournament")
+    # Qui non servono kwargs: il modello ha default sensati (campionato_type="Amalfi")
+    t = TournamentService.create_campionato(name="Unit Test Campionato")
 
     # Garantisce che l'ID sia assegnato anche se il service cambiasse in futuro
     _db.session.flush()
@@ -144,24 +144,24 @@ def tournament(db_session):
 
 
 @pytest.fixture
-def started_prova(db_session):
+def started_gara(db_session):
     """
-    Crea un Tournament e una Prova in stato 'playing' (prova avviata)
+    Crea un Campionato e una Gara in stato 'playing' (gara avviata)
     aderente ai modelli attuali.
     """
-    # Torneo minimo (tournament_type è non-nullable, ma ha default "Amalfi")
-    t = Tournament(
-        name="Tournament Fixture",
-        tournament_type="Amalfi",
+    # Campionato minimo (campionato_type è non-nullable, ma ha default "Amalfi")
+    t = Campionato(
+        name="Campionato Fixture",
+        campionato_type="Amalfi",
     )
     _db.session.add(t)
     _db.session.flush()  # ci serve t.id senza committare ancora
 
-    # Prova 'avviata' con i campi obbligatori della codebase
-    p = Prova(
-        tournament_id=t.id,  # puoi ometterlo se vuoi una prova standalone
+    # Gara 'avviata' con i campi obbligatori della codebase
+    p = Gara(
+        campionato_id=t.id,  # puoi ometterlo se vuoi una gara standalone
         number=1,
-        name="Prova started",
+        name="Gara started",
         date=_dt.date.today(),
         discipline="palla 9",  # ammessi: palla 8/9/10
         distance=7,  # numero rack da giocare
@@ -176,23 +176,23 @@ def started_prova(db_session):
 
 @pytest.fixture
 def assign_director(db_session):
-    """Factory per assegnare un director a un torneo con assigned_by valorizzato.
+    """Factory per assegnare un director a un campionato con assigned_by valorizzato.
     Idempotente: se esiste già, restituisce quello.
     """
     from models.user.models import TournamentDirector
 
-    def _assign(director_user, tournament, assigned_by_user):
+    def _assign(director_user, campionato, assigned_by_user):
         # get_or_create per evitare UNIQUE violation in caso di doppio uso
         existing = TournamentDirector.query.filter_by(
             user_id=director_user.id,
-            tournament_id=tournament.id,
+            campionato_id=campionato.id,
         ).one_or_none()
         if existing:
             return existing
 
         assoc = TournamentDirector(
             user_id=director_user.id,
-            tournament_id=tournament.id,
+            campionato_id=campionato.id,
             assigned_by_id=assigned_by_user.id,
         )
         _db.session.add(assoc)

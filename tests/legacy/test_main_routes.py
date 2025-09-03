@@ -24,19 +24,19 @@ class TestMainRoutes:
         assert "/dashboard" in response.location
 
     @patch("routes.main.current_user")
-    @patch("routes.main.Tournament")
+    @patch("routes.main.Campionato")
     @patch("routes.main.date")
-    def test_index_route_unauthenticated_user_no_tournaments(
-        self, mock_date, mock_tournament, mock_current_user, client
+    def test_index_route_unauthenticated_user_no_campionatos(
+        self, mock_date, mock_campionato, mock_current_user, client
     ):
-        """Test index route when user is not authenticated and no tournaments exist."""
+        """Test index route when user is not authenticated and no campionati exist."""
         # Mock current_user as not authenticated
         mock_current_user.is_authenticated = False
 
         # Mock date.today()
         mock_date.today.return_value = date(2023, 1, 1)
 
-        mock_tournament.query.filter_by.return_value.order_by.return_value.all.return_value = (
+        mock_campionato.query.filter_by.return_value.order_by.return_value.all.return_value = (
             []
         )
 
@@ -123,56 +123,56 @@ class TestMainRoutes:
 
     @patch("routes.main.date")
     @patch("routes.main.Classification")
-    @patch("routes.main.Prova")
-    @patch("routes.main.Tournament")
+    @patch("routes.main.Gara")
+    @patch("routes.main.Campionato")
     @patch("routes.main.current_user")
-    def test_index_route_unauthenticated_user_with_tournaments(
+    def test_index_route_unauthenticated_user_with_campionatos(
         self,
         mock_current_user,
-        mock_tournament,
-        mock_prova,
+        mock_campionato,
+        mock_gara,
         mock_classification,
         mock_date,
         client,
     ):
-        """Test index route when user is not authenticated and tournaments exist."""
+        """Test index route when user is not authenticated and campionati exist."""
         # Mock current_user as not authenticated
         mock_current_user.is_authenticated = False
 
         # Mock date.today()
         mock_date.today.return_value = date(2023, 1, 1)
 
-        # Create mock tournament
-        mock_tournament_obj = MagicMock()
-        mock_tournament_obj.id = 1
-        mock_tournament_obj.name = "Test Tournament"
-        mock_tournament.query.filter_by.return_value.order_by.return_value.all.return_value = [
-            mock_tournament_obj
+        # Create mock campionato
+        mock_campionato_obj = MagicMock()
+        mock_campionato_obj.id = 1
+        mock_campionato_obj.name = "Test Campionato"
+        mock_campionato.query.filter_by.return_value.order_by.return_value.all.return_value = [
+            mock_campionato_obj
         ]
 
-        # Create mock prova with proper attributes
-        mock_prova_obj = MagicMock()
-        mock_prova_obj.date = date(2023, 1, 2)  # Future date
-        mock_prova_obj.tournament_id = 1
+        # Create mock gara with proper attributes
+        mock_gara_obj = MagicMock()
+        mock_gara_obj.date = date(2023, 1, 2)  # Future date
+        mock_gara_obj.campionato_id = 1
 
         # Create a mock query object that will handle the filter method properly
         mock_filtered_query = MagicMock()
         mock_filtered_query.order_by.return_value.limit.return_value.all.return_value = [
-            mock_prova_obj
+            mock_gara_obj
         ]
 
         # Patch the filter method to return our mock query object
         # We need to mock the filter method to avoid the comparison issue
-        # Mock Prova.date to return a MagicMock that can be compared
-        mock_prova_date = MagicMock()
-        mock_prova_date.__ge__ = MagicMock(return_value=True)
-        mock_prova.date = mock_prova_date
+        # Mock Gara.date to return a MagicMock that can be compared
+        mock_gara_date = MagicMock()
+        mock_gara_date.__ge__ = MagicMock(return_value=True)
+        mock_gara.date = mock_gara_date
 
-        mock_prova.query.filter.return_value = mock_filtered_query
+        mock_gara.query.filter.return_value = mock_filtered_query
 
         # Create mock classification with proper attributes
         mock_classification_obj = MagicMock()
-        mock_classification_obj.tournament_id = 1
+        mock_classification_obj.campionato_id = 1
         mock_classification_obj.position = 1  # Set a concrete value for position
 
         # Create a mock query object for classification
@@ -188,8 +188,8 @@ class TestMainRoutes:
 
         response = client.get("/")
         assert response.status_code == 200
-        # Should show index page with tournaments
-        assert b"Test Tournament" in response.data
+        # Should show index page with campionati
+        assert b"Test Campionato" in response.data
 
 
 if __name__ == "__main__":

@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Classifica Turno {{ round_number }} - Prova {{ prova.number }}{% endblock %}
+{% block title %}Classifica Turno {{ round_number }} - Gara {{ gara.number }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1><i class="fas fa-trophy"></i> Classifica Turno {{ round_number }}</h1>
         <p class="text-muted mb-0">
-            {{ prova.tournament.name }} - Prova {{ prova.number }} - {{ prova.date.strftime('%d/%m/%Y') }}
+            {{ gara.campionato.name }} - Gara {{ gara.number }} - {{ gara.date.strftime('%d/%m/%Y') }}
         </p>
     </div>
     <div>
-        <a href="{{ url_for('admin.competition.prova_detail', prova_id=prova.id) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna alla Prova
+        <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Gara
         </a>
     </div>
 </div>
@@ -39,11 +39,11 @@
     <div class="alert alert-dark">
         <h6><i class="fas fa-bug"></i> DEBUG - Classifica Amalfi</h6>
         <small>
-            Prova ID: {{ prova.id }}<br>
+            Gara ID: {{ gara.id }}<br>
             Round Number: {{ round_number }}<br>
             Total Players: {{ total_players }}<br>
-            Current Round: {{ prova.current_round }}<br>
-            Rounds Count: {{ prova.rounds_count }}<br>
+            Current Round: {{ gara.current_round }}<br>
+            Rounds Count: {{ gara.rounds_count }}<br>
             Classification items: {{ classification|length if classification else 0 }}
         </small>
     </div>
@@ -71,7 +71,7 @@ function previewNextRound(nextRoundNumber) {
     `;
     
     // Chiamata AJAX per preview
-    fetch(`/admin/prova/{{ prova.id }}/amalfi/preview_round/${nextRoundNumber}`)
+    fetch(`/admin/gara/{{ gara.id }}/amalfi/preview_round/${nextRoundNumber}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -184,7 +184,7 @@ function startNextRound(roundNumber) {
         startButton.disabled = true;
         startButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Avvio...';
         
-        fetch(`/admin/prova/{{ prova.id }}/amalfi/start_round/${roundNumber}`, {
+        fetch(`/admin/gara/{{ gara.id }}/amalfi/start_round/${roundNumber}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ function startNextRound(roundNumber) {
         .then(data => {
             if (data.success) {
                 alert(data.message + (data.details ? '\n' + data.details.join('\n') : ''));
-                window.location.href = data.redirect || '/admin/prova/{{ prova.id }}';
+                window.location.href = data.redirect || '/admin/gara/{{ gara.id }}';
             } else {
                 alert('Errore: ' + data.error);
                 // Riabilita il pulsante

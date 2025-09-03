@@ -7,28 +7,28 @@
 {% include "components/_director_dashboard_content.html" %}
 {% endblock %}
 
-{% if vm.caps and vm.caps.can_create_tournament %}
-  {% include "components/_tournament_create_modal.html" %}
+{% if vm.caps and vm.caps.can_create_campionato %}
+  {% include "components/_campionato_create_modal.html" %}
 {% endif %}
 
 {% block scripts %}
 <script>
 function unsubscribeFromProva(provaId, provaNumber) {
-  if (confirm(`Confermi di volerti disiscrivere dalla Prova ${provaNumber}?`)) {
-    fetch(`/player/prova/${provaId}/unsubscribe`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+  if (confirm(`Confermi di volerti disiscrivere dalla Gara ${provaNumber}?`)) {
+    fetch(`/player/gara/${provaId}/unsubscribe`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
       .then(r => { if (r.ok) location.reload(); else alert('Errore durante la disiscrizione'); })
       .catch(() => alert('Errore durante la disiscrizione'));
   }
 }
 function toggleActive(tournamentId) {
-  if (confirm('Confermi di voler cambiare lo stato del torneo?')) {
-    fetch(`/admin/tournament/${tournamentId}/toggle_active`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+  if (confirm('Confermi di voler cambiare lo stato del campionato?')) {
+    fetch(`/admin/campionato/${tournamentId}/toggle_active`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
       .then(r => { if (r.ok) location.reload(); });
   }
 }
 function deleteTournament(tournamentId, tournamentName) {
-  if (confirm(`Confermi di voler eliminare il torneo "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
-    fetch(`/admin/tournament/${tournamentId}/delete`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+  if (confirm(`Confermi di voler eliminare il campionato "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
+    fetch(`/admin/campionato/${tournamentId}/delete`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
       .then(r => { if (r.ok) location.reload(); });
   }
 }

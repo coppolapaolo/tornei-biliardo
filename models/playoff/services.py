@@ -24,13 +24,13 @@ class PlayoffService:
 
     @staticmethod
     def create_playoff_configuration(
-        tournament_id: int,
+        campionato_id: int,
         name: str,
         playoff_type: PlayoffType,
         max_participants: int,
         qualification_criteria: Dict[str, Any],
         description: Optional[str] = None,
-        min_provas_played: Optional[int] = None,
+        min_garas_played: Optional[int] = None,
         location: Optional[str] = None,
         scheduled_date: Optional[datetime] = None,
         entry_fee: Optional[float] = None,
@@ -39,12 +39,12 @@ class PlayoffService:
         """Create a new playoff configuration."""
 
         configuration = PlayoffConfiguration(
-            tournament_id=tournament_id,
+            campionato_id=campionato_id,
             name=name,
             playoff_type=playoff_type,
             max_participants=max_participants,
             description=description,
-            min_provas_played=min_provas_played,
+            min_garas_played=min_garas_played,
             location=location,
             scheduled_date=scheduled_date,
             entry_fee=entry_fee,
@@ -59,14 +59,14 @@ class PlayoffService:
 
     @staticmethod
     def create_standard_playoff_configurations(
-        tournament_id: int,
+        campionato_id: int,
     ) -> List[PlayoffConfiguration]:
-        """Create standard playoff configurations for a tournament."""
+        """Create standard playoff configurations for a campionato."""
         configurations = []
 
         # Elite Playoff (Top 6)
         elite_config = PlayoffService.create_playoff_configuration(
-            tournament_id=tournament_id,
+            campionato_id=campionato_id,
             name="Elite Playoff",
             playoff_type=PlayoffType.ELITE_ACADEMY,
             max_participants=6,
@@ -76,13 +76,13 @@ class PlayoffService:
                 "academy_positions": 6,
             },
             description="Playoff for top 6 classified players",
-            min_provas_played=3,
+            min_garas_played=3,
         )
         configurations.append(elite_config)
 
         # Academy Playoff (Positions 7-12)
         academy_config = PlayoffService.create_playoff_configuration(
-            tournament_id=tournament_id,
+            campionato_id=campionato_id,
             name="Academy Playoff",
             playoff_type=PlayoffType.ELITE_ACADEMY,
             max_participants=6,
@@ -92,7 +92,7 @@ class PlayoffService:
                 "academy_positions": 6,
             },
             description="Playoff for players in positions 7-12",
-            min_provas_played=3,
+            min_garas_played=3,
         )
         configurations.append(academy_config)
 
@@ -100,11 +100,11 @@ class PlayoffService:
 
     @staticmethod
     def generate_all_qualifications(
-        tournament_id: int,
+        campionato_id: int,
     ) -> Dict[str, List[PlayoffQualification]]:
-        """Generate qualifications for all playoff configurations of a tournament."""
+        """Generate qualifications for all playoff configurations of a campionato."""
         configurations = PlayoffConfiguration.query.filter_by(
-            tournament_id=tournament_id, is_active=True, auto_generate=True
+            campionato_id=campionato_id, is_active=True, auto_generate=True
         ).all()
 
         results = {}
@@ -145,7 +145,7 @@ class PlayoffService:
         qualification.confirm_participation()
         db.session.commit()
 
-        # Check if we can start the playoff tournament
+        # Check if we can start the playoff campionato
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
 
         return qualification
@@ -237,55 +237,55 @@ class PlayoffService:
         return expired_count
 
     @staticmethod
-    def create_playoff_tournament(configuration_id: int) -> PlayoffTournament:
-        """Create the actual playoff tournament."""
+    def create_playoff_campionato(configuration_id: int) -> PlayoffTournament:
+        """Create the actual playoff campionato."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
             from flask import abort
 
             abort(404)
 
-        # Check if tournament already exists
-        if configuration.playoff_tournament is not None:
-            # Explicitly query for the playoff tournament to avoid type issues
-            playoff_tournament = PlayoffTournament.query.filter_by(
+        # Check if campionato already exists
+        if configuration.playoff_campionato is not None:
+            # Explicitly query for the playoff campionato to avoid type issues
+            playoff_campionato = PlayoffTournament.query.filter_by(
                 configuration_id=configuration_id
             ).first()
-            if playoff_tournament:
-                return playoff_tournament
+            if playoff_campionato:
+                return playoff_campionato
 
-        tournament = PlayoffTournament(
+        campionato = PlayoffTournament(
             configuration_id=configuration_id,
             name=configuration.name,
-            tournament_date=configuration.scheduled_date,
+            campionato_date=configuration.scheduled_date,
             location=configuration.location,
             entry_fee=configuration.entry_fee,
             max_participants=configuration.max_participants,
         )
 
-        db.session.add(tournament)
+        db.session.add(campionato)
         db.session.commit()
 
-        return tournament
+        return campionato
 
     @staticmethod
-    def start_playoff_registration(tournament_id: int) -> PlayoffTournament:
-        """Start registration for a playoff tournament."""
-        tournament = db.session.get(PlayoffTournament, tournament_id)
-        if tournament is None:
+    def start_playoff_registration(campionato_id: int) -> PlayoffTournament:
+        """Start registration for a playoff campionato."""
+        campionato = db.session.get(PlayoffTournament, campionato_id)
+        if campionato is None:
             from flask import abort
 
             abort(404)
-        tournament.start_registration()
+        campionato.start_registration()
         db.session.commit()
 
-        return tournament
+        return campionato
 
     @staticmethod
-    def get_tournament_playoff_status(tournament_id: int) -> Dict[str, Any]:
-        """Get comprehensive playoff status for a tournament."""
+    def get_campionato_playoff_status(campionato_id: int) -> Dict[str, Any]:
+        """Get comprehensive playoff status for a campionato."""
         configurations = PlayoffConfiguration.query.filter_by(
-            tournament_id=tournament_id, is_active=True
+            campionato_id=campionato_id, is_active=True
         ).all()
 
         status = {
@@ -309,9 +309,9 @@ class PlayoffService:
                 "declined": config.qualifications.filter_by(
                     status=QualificationStatus.DECLINED
                 ).count(),
-                "has_tournament": config.playoff_tournament is not None,
-                "tournament_status": config.playoff_tournament.status
-                if config.playoff_tournament
+                "has_campionato": config.playoff_campionato is not None,
+                "campionato_status": config.playoff_campionato.status
+                if config.playoff_campionato
                 else None,
             }
 
@@ -330,7 +330,7 @@ class PlayoffService:
 
     @staticmethod
     def _check_playoff_readiness(configuration_id: int) -> None:
-        """Check if playoff is ready to start and create tournament if needed."""
+        """Check if playoff is ready to start and create campionato if needed."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
             from flask import abort
@@ -349,26 +349,26 @@ class PlayoffService:
         if (
             confirmed_count >= configuration.max_participants * 0.8
             and pending_count == 0
-            and not configuration.playoff_tournament
+            and not configuration.playoff_campionato
         ):
 
-            # Auto-create playoff tournament
-            PlayoffService.create_playoff_tournament(configuration_id)
+            # Auto-create playoff campionato
+            PlayoffService.create_playoff_campionato(configuration_id)
 
     @staticmethod
-    def complete_playoff_tournament(
-        tournament_id: int, winner_id: Optional[int] = None
+    def complete_playoff_campionato(
+        campionato_id: int, winner_id: Optional[int] = None
     ) -> PlayoffTournament:
-        """Complete a playoff tournament."""
-        tournament = db.session.get(PlayoffTournament, tournament_id)
-        if tournament is None:
+        """Complete a playoff campionato."""
+        campionato = db.session.get(PlayoffTournament, campionato_id)
+        if campionato is None:
             from flask import abort
 
             abort(404)
-        tournament.complete_tournament(winner_id)
+        campionato.complete_campionato(winner_id)
         db.session.commit()
 
-        return tournament
+        return campionato
 
     @staticmethod
     def get_user_playoff_history(user_id: int) -> List[Dict[str, Any]]:
@@ -379,7 +379,7 @@ class PlayoffService:
         for qualification in qualifications:
             history.append(
                 {
-                    "tournament_name": qualification.configuration.tournament.name,
+                    "campionato_name": qualification.configuration.campionato.name,
                     "playoff_name": qualification.configuration.name,
                     "qualifying_position": qualification.qualifying_position,
                     "status": qualification.status.value,

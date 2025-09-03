@@ -1,0 +1,77 @@
+<!-- Modal Nuovo Campionato  -->
+<div class="modal fade" id="newTournamentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuovo Campionato</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.campionato.create_campionato') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Campionato</label>
+                        <input type="text" class="form-control" name="name" required 
+                               placeholder="es: Campionato Primavera 2025">
+                        <small class="text-muted">Includi l'anno nel nome se necessario</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="campionato_type" class="form-label">Tipo Campionato</label>
+                        <select class="form-control" name="campionato_type" required>
+                            <option value="Amalfi">Amalfi</option>
+                            <!-- Aggiungi altri tipi in futuro -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Opzioni Campionato</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="without_x" id="without_x">
+                            <label class="form-check-label" for="without_x">
+                                Senza X <small class="text-muted">(nessun giocatore riceve bye automatico)</small>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="final_playoffs" id="final_playoffs" checked>
+                            <label class="form-check-label" for="final_playoffs">
+                                Playoff Finali <small class="text-muted">(Elite + Academy)</small>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="challenge_mode" id="challenge_mode">
+                            <label class="form-check-label" for="challenge_mode">
+                                Modalità Challenge <small class="text-muted">(funzionalità avanzata)</small>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scoring_policy" class="form-label">Sistema di Punteggio</label>
+                        <select class="form-control" name="scoring_policy" id="scoring_policy">
+                            <option value="classic" selected>
+                                Classico (Vittorie → Differenza rack → Ordine precedente)
+                            </option>
+                            <option value="fargo">
+                                Fargo Rating (Rating → Vittorie → Differenza rack)
+                            </option>
+                            <option value="elo">
+                                Elo Rating (Rating → Vittorie → Differenza rack)
+                            </option>
+                        </select>
+                        <small class="text-muted">Determina come vengono calcolate le classifiche del campionato</small>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, ecc.) 
+                        vengono configurate in ogni singola gara.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-success">Crea Campionato</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

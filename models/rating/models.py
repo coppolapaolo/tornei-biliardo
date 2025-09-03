@@ -174,7 +174,7 @@ class HandicapRule(BaseModel, TimestampMixin):
 
     # Rule configuration
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    applies_to_tournaments = db.Column(db.Boolean, nullable=False, default=True)
+    applies_to_campionatos = db.Column(db.Boolean, nullable=False, default=True)
     applies_to_individual_matches = db.Column(db.Boolean, nullable=False, default=True)
 
     # Category-based rules

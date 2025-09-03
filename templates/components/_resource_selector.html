@@ -8,12 +8,12 @@
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
-      {% if vm.selected_prova %}
+      {% if vm.selected_gara %}
         <i class="fas fa-bullseye me-2"></i>
-        {{ vm.selected_prova.name }}{% if vm.selected_prova.date %} ({{ vm.selected_prova.date.strftime('%d/%m') }}){% endif %}
-      {% elif vm.selected_tournament %}
+        {{ vm.selected_gara.name }}{% if vm.selected_gara.date %} ({{ vm.selected_gara.date.strftime('%d/%m') }}){% endif %}
+      {% elif vm.selected_campionato %}
         <i class="fas fa-trophy me-2"></i>
-        {{ vm.selected_tournament.name }}
+        {{ vm.selected_campionato.name }}
       {% else %}
         <i class="fas fa-trophy me-2"></i> Seleziona…
       {% endif %}
@@ -51,11 +51,11 @@
       const id = this.dataset.id;
       const params = new URLSearchParams(window.location.search);
       if (kind === 'p') {
-        params.set('prova_id', id);
-        params.delete('tournament_id');
+        params.set('gara_id', id);
+        params.delete('campionato_id');
       } else {
-        params.set('tournament_id', id);
-        params.delete('prova_id');
+        params.set('campionato_id', id);
+        params.delete('gara_id');
       }
       window.location.search = params.toString();
     });

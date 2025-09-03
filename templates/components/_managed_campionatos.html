@@ -1,0 +1,13 @@
+<!-- Managed Campionati Sidebar Component -->
+{% if vm.managed_campionatos and vm.managed_campionatos|length %}
+<div class="card mb-4">
+  <div class="card-header"><h5 class="mb-0"><i class="fas fa-briefcase"></i> I miei Campionati</h5></div>
+  <div class="card-body p-2">
+    {% for t in vm.managed_campionatos %}
+      <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=t.id) }}" class="btn btn-outline-secondary btn-sm w-100 mb-1">
+        {{ t.name }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

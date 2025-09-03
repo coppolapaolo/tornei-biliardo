@@ -1,0 +1,45 @@
+{# templates/components/_campionato_selection_header.html #}
+<!-- Header con selezione campionato -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center mb-2">
+    <h1 class="me-3 mb-0">
+      <i class="fas fa-user"></i>
+      {% if is_director %}Dashboard Direttore{% else %}Dashboard Giocatore{% endif %}
+    </h1>
+
+    {% if is_director %}
+      <!-- bottone crea campionato -->
+      <button class="btn btn-success btn-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#newTournamentModal">
+        <i class="fas fa-plus"></i> Nuovo Campionato
+      </button>
+    {% endif %}
+  </div>
+    
+    {% if campionati|length > 0 %}
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-trophy"></i> 
+                {% if selected_campionato %}
+                    {{ selected_campionato.name }}
+                {% else %}
+                    Seleziona Campionato
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                {% for campionato in campionati %}
+                    <li>
+                        <a class="dropdown-item {% if selected_campionato and campionato.id == selected_campionato.id %}active{% endif %}" 
+                            href="{{ url_for('player.dashboard', campionato_id=campionato.id) }}">
+                            {{ campionato.name }}
+                            <span class="badge {{ campionato | status_badge_class }} ms-2">
+                                {{ campionato | status_text }}
+                            </span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>

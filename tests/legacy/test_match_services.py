@@ -23,7 +23,7 @@ class TestMatchService:
                 "models.match.services.Match", return_value=mock_match
             ) as mock_match_class:
                 result = MatchService.create_match(
-                    prova_id=1,
+                    gara_id=1,
                     round_number=1,
                     player1_id=10,
                     player2_id=20,
@@ -32,7 +32,7 @@ class TestMatchService:
 
                 # Verify the match was created with correct parameters
                 mock_match_class.assert_called_once_with(
-                    prova_id=1,
+                    gara_id=1,
                     round_number=1,
                     player1_id=10,
                     player2_id=20,
@@ -47,8 +47,8 @@ class TestMatchService:
                 # Verify the result
                 assert result == mock_match
 
-    def test_get_matches_by_prova(self):
-        """Test getting matches by prova."""
+    def test_get_matches_by_gara(self):
+        """Test getting matches by gara."""
         mock_matches = [Mock(), Mock(), Mock()]
 
         with patch("models.match.services.Match") as mock_match_class:
@@ -60,10 +60,10 @@ class TestMatchService:
             mock_match_class.query = mock_query
             mock_query.filter_by.return_value = mock_filtered_query
 
-            result = MatchService.get_matches_by_prova(1)
+            result = MatchService.get_matches_by_gara(1)
 
             # Verify the query was called correctly
-            mock_query.filter_by.assert_called_once_with(prova_id=1)
+            mock_query.filter_by.assert_called_once_with(gara_id=1)
             mock_filtered_query.all.assert_called_once()
 
             # Verify the result
@@ -279,15 +279,15 @@ class TestRackService:
                 with patch.object(
                     RackService, "add_rack_result", return_value=mock_rack
                 ):
-                    # Mock the prova and its methods
-                    mock_prova = Mock()
-                    mock_prova.best_of = True
-                    mock_prova.distance = 5
-                    mock_match.prova = mock_prova
+                    # Mock the gara and its methods
+                    mock_gara = Mock()
+                    mock_gara.best_of = True
+                    mock_gara.distance = 5
+                    mock_match.gara = mock_gara
 
-                    with patch.object(mock_prova, "get_winning_score", return_value=3):
+                    with patch.object(mock_gara, "get_winning_score", return_value=3):
                         with patch.object(
-                            mock_prova, "is_match_finished", return_value=False
+                            mock_gara, "is_match_finished", return_value=False
                         ):
                             result = RackService.add_rack_with_score_update(
                                 match_id=1,

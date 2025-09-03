@@ -25,15 +25,15 @@ def execute_competition_routes():
 
         # Reference all route functions to ensure they're loaded
         functions = [
-            "create_prova_standalone",
-            "create_prova",
-            "edit_prova",
-            "delete_prova",
-            "prova_detail",
+            "create_gara_standalone",
+            "create_gara",
+            "edit_gara",
+            "delete_gara",
+            "gara_detail",
             "open_inscriptions",
             "modify_inscription_dates",
             "start_first_round",
-            "prova_results_overview",
+            "gara_results_overview",
             "amalfi_classification",
             "amalfi_start_round",
             "trio_add_rack",

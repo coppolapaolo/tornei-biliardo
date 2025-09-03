@@ -1,7 +1,7 @@
 """
 Module: models/notification/services.py
 Purpose: Notification domain services for notification management
-Requirements: SPECIFICHE.md - Notification system for matches and tournaments
+Requirements: SPECIFICHE.md - Notification system for matches and campionati
 """
 
 from __future__ import annotations
@@ -336,10 +336,10 @@ class NotificationService:
         )
 
     @staticmethod
-    def notify_tournament_registration(
-        user_ids: List[int], tournament_name: str, tournament_id: int
+    def notify_campionato_registration(
+        user_ids: List[int], campionato_name: str, campionato_id: int
     ) -> List[Notification]:
-        """Notify multiple users about tournament registration opening."""
+        """Notify multiple users about campionato registration opening."""
         notifications = []
 
         for user_id in user_ids:
@@ -347,8 +347,8 @@ class NotificationService:
                 user_id=user_id,
                 notification_type=NotificationType.TOURNAMENT_REGISTRATION,
                 context={
-                    "tournament_name": tournament_name,
-                    "tournament_id": tournament_id,
+                    "campionato_name": campionato_name,
+                    "campionato_id": campionato_id,
                 },
             )
             if notification:
@@ -358,7 +358,7 @@ class NotificationService:
 
     @staticmethod
     def notify_playoff_invitation(
-        user_id: int, playoff_name: str, tournament_name: str, deadline: datetime
+        user_id: int, playoff_name: str, campionato_name: str, deadline: datetime
     ) -> Optional[Notification]:
         """Notify user about playoff invitation."""
         return NotificationService.create_from_template(
@@ -366,7 +366,7 @@ class NotificationService:
             notification_type=NotificationType.PLAYOFF_INVITATION,
             context={
                 "playoff_name": playoff_name,
-                "tournament_name": tournament_name,
+                "campionato_name": campionato_name,
                 "deadline": deadline.strftime("%Y-%m-%d %H:%M"),
             },
             expires_override=deadline,
@@ -394,16 +394,16 @@ class NotificationService:
             },
             {
                 "type": NotificationType.TOURNAMENT_REGISTRATION,
-                "title": "Tournament Registration Open",
-                "message": "Registration is now open for {tournament_name}",
+                "title": "Campionato Registration Open",
+                "message": "Registration is now open for {campionato_name}",
                 "action_text": "Register Now",
-                "action_url": "/tournaments/{tournament_id}",
+                "action_url": "/campionati/{campionato_id}",
                 "expires_hours": 168,  # 1 week
             },
             {
                 "type": NotificationType.PLAYOFF_INVITATION,
                 "title": "Playoff Invitation",
-                "message": "You've qualified for {playoff_name} in {tournament_name}! Please respond by {deadline}",
+                "message": "You've qualified for {playoff_name} in {campionato_name}! Please respond by {deadline}",
                 "action_text": "Respond",
                 "action_url": "/playoffs/respond",
                 "priority": NotificationPriority.HIGH,

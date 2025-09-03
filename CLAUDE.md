@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Flask-based billiards tournament management web application with an advanced tournament algorithm called "Sistema Amalfi". The app manages players, tournaments, matches, and provides statistical tracking.
+This is a Flask-based billiards campionato management web application with an advanced campionato algorithm called "Sistema Amalfi". The app manages players, campionati, matches, and provides statistical tracking.
 
 ## Commands
 
@@ -62,7 +62,7 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 ### Key Components
 
 #### Amalfi Engine (`amalfi/`)
-Core tournament algorithm for automatic player matchmaking:
+Core campionato algorithm for automatic player matchmaking:
 - Dynamic round pairing with anti-rematch logic
 - Handles odd players with trio matches or byes
 - Real-time classification updates
@@ -72,7 +72,7 @@ Core tournament algorithm for automatic player matchmaking:
 Domain-organized with extensive relationships:
 - **Base**: `base.py` contains common model functionality
 - **User**: Player management with soft delete and permissions
-- **Competition**: Tournaments, rounds (Prova), matches
+- **Competition**: Campionati, rounds (Gara), matches
 - **Matchmaking**: Pairing strategies and encounter tracking
 - **Rating**: Player rating system
 - **Challenge**: Individual challenges between players
@@ -95,7 +95,7 @@ Shared utilities:
 - Data reset utilities
 
 ### Database
-- **Development**: SQLite (`billiard_tournament.db`)
+- **Development**: SQLite (`billiard_campionato.db`)
 - **Production**: PostgreSQL support via DATABASE_URL
 - **ORM**: SQLAlchemy with Flask-SQLAlchemy
 - **Migrations**: Manual database management
@@ -121,24 +121,24 @@ Shared utilities:
 
 ## Key Business Logic
 
-### Tournament Flow
-1. **Tournament Creation**: Admin/Director creates tournaments with multiple rounds (Prova)
+### Campionato Flow
+1. **Campionato Creation**: Admin/Director creates campionati with multiple rounds (Gara)
 2. **Player Registration**: Players register for individual rounds with waitlist support
 3. **Matchmaking**: Amalfi algorithm creates optimal pairings avoiding rematches
 4. **Match Execution**: Players compete in rounds with real-time scoring
 5. **Classification**: Automatic ranking updates after each round
-6. **Playoffs**: Optional elimination rounds after main tournament
+6. **Playoffs**: Optional elimination rounds after main campionato
 
 ### User Roles
 - **Admin**: System administrator (configured in environment)
-- **Director**: Can create/manage tournaments (elevated player)
-- **Player**: Can register and participate in tournaments
+- **Director**: Can create/manage campionati (elevated player)
+- **Player**: Can register and participate in campionati
 - **Guest**: Visitor access only
 
 ### Amalfi Algorithm
 Advanced matchmaking system that:
 - Pairs players based on remaining rounds and current standings
-- Prevents player rematches throughout tournament
+- Prevents player rematches throughout campionato
 - Handles odd numbers via trio matches or bye rounds
 - Maintains competitive balance while avoiding repetitive matchups
 
@@ -152,15 +152,15 @@ Major bug fix session addressing multiple competition workflow issues:
 2. **Match Display Issues**: Fixed partial results display for in-progress matches and maintained editability for completed matches
 3. **Rack Management**: Resolved rack removal functionality and proper business logic validation for "best of N" vs "exactly N" match formats
 4. **Director Permissions**: Enabled director inscription functionality on dashboard
-5. **Amalfi Preview System**: Implemented tournament pairing preview without database persistence
+5. **Amalfi Preview System**: Implemented campionato pairing preview without database persistence
 6. **Round Management**: Made start round endpoint idempotent to prevent duplicate matches, fixed round completion detection
 7. **UI Consistency**: Resolved current round display inconsistencies between different UI components
 8. **Statistics Display**: Fixed match statistics in results overview
-9. **Status Labels**: Changed "Torneo Completato" to "Prova Completata" for completed competitions
-10. **Guest Classification**: Implemented fallback system showing RoundClassification from completed Amalfi provas when general tournament classification unavailable
+9. **Status Labels**: Changed "Campionato Completato" to "Gara Completata" for completed competitions
+10. **Guest Classification**: Implemented fallback system showing RoundClassification from completed Amalfi provas when general campionato classification unavailable
 
 #### Technical Solutions Implemented
-- Enhanced `ProvaService` with cancellation and notification workflows
+- Enhanced `GaraService` with cancellation and notification workflows
 - Added preview functionality to `AmalfiEngine` without database modifications  
 - Improved database transaction handling in competition endpoints
 - Added comprehensive error handling and validation throughout competition workflow
@@ -209,4 +209,4 @@ Complete redesign and enhancement of the individual match proposals system:
 - Application runs on `http://localhost:5000` by default
 - Production deployment on PythonAnywhere platform
 - Comprehensive testing revealed and fixed multiple edge cases in competition workflow
-- Amalfi tournament system now fully supports preview, idempotent operations, and fallback classification display
+- Amalfi campionato system now fully supports preview, idempotent operations, and fallback classification display

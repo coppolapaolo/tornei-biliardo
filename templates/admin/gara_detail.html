@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Gara {{ gara.number }} - Admin{% endblock %}
+
+{% block content %}
+{% include "components/_gara_header.html" %}
+
+<!-- Info Gara -->
+<div class="row mb-4">
+    {% include "components/_gara_info.html" %}
+    {% include "components/_gara_management.html" %}
+</div>
+
+<!-- Sistema Amalfi Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        {% include "components/_amalfi_system.html" %}
+    </div>
+</div>
+
+<!-- Modal Anteprima Amalfi -->
+{% include "components/_amalfi_preview_modal.html" %}
+
+<div class="row">
+    <div class="col-md-8">
+        {% include "components/_gara_matches.html" %}
+    </div>
+
+    <div class="col-md-4">
+        {% include "components/_gara_inscriptions.html" %}
+    </div>
+</div>
+
+<!-- Modal Apertura Iscrizioni -->
+{% include "components/_open_inscriptions_modal.html" %}
+
+<!-- Modal Modifica Date -->
+{% include "components/_modify_dates_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function startFirstRound(provaId) {
+    if (confirm('Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.')) {
+        fetch(`/admin/gara/${provaId}/start_first_round`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function deleteProva(provaId, provaNumber) {
+    if (confirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
+        fetch(`/admin/gara/${provaId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = '/admin/campionato/{{ gara.campionato_id }}';
+            }
+        });
+    }
+}
+
+function cancelProvaWithNotifications(provaId, provaNumber) {
+    if (confirm(`Sei SICURO di voler cancellare la Gara ${provaNumber}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!`)) {
+        fetch(`/admin/gara/${provaId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = '/admin/campionato/{{ gara.campionato_id }}';
+            } else {
+                response.text().then(text => {
+                    alert('Errore durante la cancellazione: ' + text);
+                });
+            }
+        });
+    }
+}
+
+// Funzione helper per convertire Date in formato datetime-local
+function dateToLocalString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Gestione Timezone per iscrizioni
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostra timezone utente in entrambi i modal
+    const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');
+    timezoneSpans.forEach(span => {
+        if (span) {
+            span.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+    });
+    
+    // Imposta valori predefiniti per modal apertura iscrizioni
+    const inscriptionStartInput = document.getElementById('inscription_start');
+    const inscriptionEndInput = document.getElementById('inscription_end');
+    
+    if (inscriptionStartInput && inscriptionEndInput) {
+        const now = new Date();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        
+        inscriptionStartInput.value = dateToLocalString(now);
+        inscriptionEndInput.value = dateToLocalString(tomorrow);
+    }
+    
+    // Imposta valori attuali per modal modifica date
+    const modifyStartInput = document.getElementById('modify_inscription_start');
+    const modifyEndInput = document.getElementById('modify_inscription_end');
+    
+    if (modifyStartInput && modifyEndInput) {
+        // Imposta i valori attuali se disponibili (dal server)
+        {% if gara.inscription_start %}
+            const currentStart = new Date('{{ gara.inscription_start.isoformat() }}Z');
+            modifyStartInput.value = dateToLocalString(currentStart);
+        {% endif %}
+        
+        {% if gara.inscription_end %}
+            const currentEnd = new Date('{{ gara.inscription_end.isoformat() }}Z');
+            modifyEndInput.value = dateToLocalString(currentEnd);
+        {% endif %}
+    }
+    
+    // Funzione helper per aggiungere campi UTC
+    function addUTCFields(form, startFieldName, endFieldName) {
+        const startInput = form.querySelector(`input[name="${startFieldName}"]`);
+        const endInput = form.querySelector(`input[name="${endFieldName}"]`);
+        
+        if (startInput && endInput) {
+            // Converti locale in UTC
+            const startLocal = new Date(startInput.value);
+            const endLocal = new Date(endInput.value);
+            
+            // Crea campi hidden con valori UTC
+            const startHidden = document.createElement('input');
+            startHidden.type = 'hidden';
+            startHidden.name = startFieldName + '_utc';
+            startHidden.value = startLocal.toISOString().slice(0, 19);
+            
+            const endHidden = document.createElement('input');
+            endHidden.type = 'hidden';
+            endHidden.name = endFieldName + '_utc';
+            endHidden.value = endLocal.toISOString().slice(0, 19);
+            
+            form.appendChild(startHidden);
+            form.appendChild(endHidden);
+        }
+    }
+    
+    // Form submit handler per apertura iscrizioni
+    const inscriptionForm = document.getElementById('inscriptionForm');
+    if (inscriptionForm) {
+        inscriptionForm.addEventListener('submit', function(e) {
+            addUTCFields(this, 'inscription_start', 'inscription_end');
+        });
+    }
+    
+    // Form submit handler per modifica date
+    const modifyDatesForm = document.getElementById('modifyDatesForm');
+    if (modifyDatesForm) {
+        modifyDatesForm.addEventListener('submit', function(e) {
+            addUTCFields(this, 'inscription_start', 'inscription_end');
+        });
+    }
+});
+
+// Variabile globale per il turno in anteprima
+let previewingRound = null;
+
+function previewAmalfiRound(roundNumber) {
+    previewingRound = roundNumber;
+    const modal = new bootstrap.Modal(document.getElementById('amalfiPreviewModal'));
+    const modalTitle = document.getElementById('modalRoundNumber');
+    const content = document.getElementById('amalfiPreviewContent');
+    const confirmBtn = document.getElementById('confirmStartRound');
+    
+    // Setup modal
+    modalTitle.textContent = roundNumber;
+    confirmBtn.style.display = 'none';
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Calcolo abbinamenti...</span>
+            </div>
+            <p class="mt-2">Applicando algoritmo Amalfi...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Fetch preview data
+    fetch(`/admin/gara/{{ gara.id }}/amalfi/preview_round/${roundNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayAmalfiPreview(data);
+                confirmBtn.style.display = 'inline-block';
+                confirmBtn.onclick = () => confirmStartAmalfiRound(roundNumber);
+            } else {
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Errore:</strong> ${data.error || 'Impossibile calcolare abbinamenti'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Errore di rete:</strong> Impossibile caricare l'anteprima
+                </div>
+            `;
+        });
+}
+
+function displayAmalfiPreview(data) {
+    const content = document.getElementById('amalfiPreviewContent');
+    
+    let html = `
+        <!-- Statistiche Anteprima -->
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Salto:</strong> <span class="badge bg-primary">${data.salto || 0}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Totali:</strong> <span class="badge bg-info">${data.stats.total_matches}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Normali:</strong> <span class="badge bg-success">${data.stats.normal_matches}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Speciali:</strong> <span class="badge bg-warning">${data.stats.trio_matches + data.stats.bye_matches}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Abbinamenti Dettagliati -->
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="35%">Giocatore 1</th>
+                        <th width="10%" class="text-center">vs</th>
+                        <th width="35%">Giocatore 2</th>
+                        <th width="20%">Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    data.matches.forEach((match, index) => {
+        let player2Content = '';
+        let typeContent = '';
+        let rowClass = '';
+        
+        if (match.type === 'normal') {
+            player2Content = `<strong>${match.player2.username}</strong>`;
+            typeContent = `<span class="badge bg-primary">Normale</span>`;
+        } else if (match.type === 'trio') {
+            player2Content = `<strong>${match.player2.username}</strong><br><small class="text-muted">+ ${match.player3.username}</small>`;
+            typeContent = `<span class="badge bg-warning">Trio</span>`;
+            rowClass = 'table-warning';
+        } else if (match.type === 'bye') {
+            player2Content = `<em class="text-muted">X (Bye)</em>`;
+            typeContent = `<span class="badge bg-info">Bye</span>`;
+            rowClass = 'table-info';
+        }
+        
+        html += `
+            <tr class="${rowClass}">
+                <td><strong>${match.player1.username}</strong></td>
+                <td class="text-center"><i class="fas fa-arrows-alt-h"></i></td>
+                <td>${player2Content}</td>
+                <td>${typeContent}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Note Algoritmo -->
+        <div class="alert alert-secondary">
+            <small>
+                <i class="fas fa-info-circle"></i>
+                <strong>Algoritmo Amalfi:</strong> Gli abbinamenti rispettano la formula del salto e l'anti-reincontro.
+                {% if gara.campionato.without_x %}
+                    Modalità "Senza X": i numeri dispari generano trii.
+                {% else %}
+                    Modalità "Con X": i numeri dispari generano abbinamenti vs X (bye).
+                {% endif %}
+            </small>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+}
+
+function confirmStartAmalfiRound(roundNumber) {
+    if (confirm(`Confermi l'avvio del Turno ${roundNumber} con gli abbinamenti mostrati?\n\nQuesta azione creerà le partite e non potrà essere annullata.`)) {
+        // Chiudi modal
+        bootstrap.Modal.getInstance(document.getElementById('amalfiPreviewModal')).hide();
+        
+        // Avvia turno
+        startAmalfiRound(roundNumber);
+    }
+}
+
+function startAmalfiRound(roundNumber) {
+    // Disabilita pulsanti per evitare doppi click
+    const buttons = document.querySelectorAll('button[onclick*="startAmalfiRound"], button[onclick*="previewAmalfiRound"]');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    fetch(`/admin/gara/{{ gara.id }}/amalfi/start_round/${roundNumber}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Ricarica pagina per mostrare nuove partite
+            location.reload();
+        } else {
+            response.text().then(text => {
+                alert('Errore durante l\'avvio del turno: ' + text);
+                buttons.forEach(btn => btn.disabled = false);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore di rete durante l\'avvio del turno');
+        buttons.forEach(btn => btn.disabled = false);
+    });
+}
+
+function validateAmalfiConfig() {
+    fetch(`/admin/gara/{{ gara.id }}/amalfi/validate`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const validation = data.validation;
+                let message = 'Configurazione Amalfi:\n\n';
+                
+                if (validation.is_valid) {
+                    message += '✅ VALIDA\n\n';
+                } else {
+                    message += '❌ NON VALIDA\n\n';
+                }
+                
+                if (validation.errors.length > 0) {
+                    message += 'ERRORI:\n' + validation.errors.join('\n') + '\n\n';
+                }
+                
+                if (validation.warnings.length > 0) {
+                    message += 'AVVERTIMENTI:\n' + validation.warnings.join('\n') + '\n\n';
+                }
+                
+                message += `Info Gara:
+- Turni: ${data.gara_info.rounds_count}
+- Iscritti: ${data.gara_info.inscriptions_count}
+- Tipo: ${data.gara_info.campionato_type}
+- Senza X: ${data.gara_info.without_x ? 'Sì' : 'No'}`;
+                
+                alert(message);
+            } else {
+                alert('Errore durante la validazione');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Errore di rete durante la validazione');
+        });
+}
+</script>
+{% endblock %}

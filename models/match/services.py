@@ -29,7 +29,7 @@ class MatchService:
     # -----------------------------
     @staticmethod
     def create_match(
-        prova_id: int,
+        gara_id: int,
         round_number: int,
         player1_id: int,
         player2_id: Optional[int] = None,
@@ -37,7 +37,7 @@ class MatchService:
     ) -> Match:
         """Crea un match. Imposta lo stato iniziale a 'pending'."""
         match = Match(
-            prova_id=prova_id,
+            gara_id=gara_id,
             round_number=round_number,
             player1_id=player1_id,
             player2_id=player2_id,
@@ -49,8 +49,8 @@ class MatchService:
         return match
 
     @staticmethod
-    def get_matches_by_prova(prova_id: int) -> List[Match]:
-        return Match.query.filter_by(prova_id=prova_id).all()
+    def get_matches_by_gara(gara_id: int) -> List[Match]:
+        return Match.query.filter_by(gara_id=gara_id).all()
 
     @staticmethod
     def create_trio_match(match_id: int, player3_id: int) -> TrioMatch:
@@ -172,7 +172,7 @@ class RackService:
             raise ValueError(f"Match {match_id} non trovato")
 
         # Verifica che il match non sia già finito
-        if match.prova.is_match_finished(match.player1_score, match.player2_score):
+        if match.gara.is_match_finished(match.player1_score, match.player2_score):
             raise ValueError("Il match è già finito, non è possibile aggiungere altri punti")
 
         # Verifica che non si superi il limite anche con questo nuovo punto
@@ -185,16 +185,16 @@ class RackService:
             temp_p2_score += 1
             
         # Valida in base al tipo di match
-        if match.prova.best_of:  # "al meglio di N"
+        if match.gara.best_of:  # "al meglio di N"
             # Per "al meglio di N", il limite per singolo giocatore è (N // 2) + 1
-            winning_score = match.prova.get_winning_score()
+            winning_score = match.gara.get_winning_score()
             if temp_p1_score > winning_score or temp_p2_score > winning_score:
-                raise ValueError(f"Match già completato - limite raggiunto per 'al meglio di {match.prova.distance}'")
+                raise ValueError(f"Match già completato - limite raggiunto per 'al meglio di {match.gara.distance}'")
         else:  # "esattamente N"
             # Per "esattamente N", il totale non può superare N
             total_racks = temp_p1_score + temp_p2_score
-            if total_racks > match.prova.distance:
-                raise ValueError(f"Non è possibile superare il limite di {match.prova.distance} rack totali per questo match")
+            if total_racks > match.gara.distance:
+                raise ValueError(f"Non è possibile superare il limite di {match.gara.distance} rack totali per questo match")
 
         # Trova il prossimo numero rack
         last_rack = (
@@ -220,7 +220,7 @@ class RackService:
             match.player2_score += 1
 
         # Se il match è finito, imposta il vincitore
-        if match.prova.is_match_finished(match.player1_score, match.player2_score):
+        if match.gara.is_match_finished(match.player1_score, match.player2_score):
             final_winner_id = (
                 match.player1_id
                 if match.player1_score > match.player2_score
@@ -256,23 +256,23 @@ class RackService:
         if player1_score < 0 or player2_score < 0:
             raise ValueError("I punteggi non possono essere negativi!")
 
-        # Verifica che il risultato sia valido secondo le regole della prova
+        # Verifica che il risultato sia valido secondo le regole della gara
         total_racks = player1_score + player2_score
 
-        if match.prova.best_of:
+        if match.gara.best_of:
             # Al meglio di: uno dei due deve aver raggiunto la soglia
-            winning_score = match.prova.get_winning_score()
+            winning_score = match.gara.get_winning_score()
             if max(player1_score, player2_score) < winning_score:
                 raise ValueError(
-                    f'Nel "al meglio di {match.prova.distance}", uno dei '
+                    f'Nel "al meglio di {match.gara.distance}", uno dei '
                     f"giocatori deve raggiungere {winning_score} punti!"
                 )
         else:
             # Esatto numero: la somma deve essere esattamente la distanza
-            if total_racks != match.prova.distance:
+            if total_racks != match.gara.distance:
                 raise ValueError(
-                    f'Nel "{match.prova.distance} rack esatti", '
-                    f"la somma deve essere esattamente {match.prova.distance}!"
+                    f'Nel "{match.gara.distance} rack esatti", '
+                    f"la somma deve essere esattamente {match.gara.distance}!"
                 )
 
         # Determina il vincitore
@@ -371,8 +371,8 @@ class RackService:
         # Se il match era completato e ora non ha più i punti per essere vinto,
         # rimettilo in playing
         if match.status == MatchStatus.COMPLETED.value:
-            if match.prova.best_of:
-                winning_score = match.prova.get_winning_score()
+            if match.gara.best_of:
+                winning_score = match.gara.get_winning_score()
                 if max(match.player1_score, match.player2_score) < winning_score:
                     # Import locale per evitare cicli
                     from models.match.services import MatchService
@@ -380,7 +380,7 @@ class RackService:
                     MatchService.to_playing(match.id)
                     match.winner_id = None
             else:  # esatto numero
-                if (match.player1_score + match.player2_score) < match.prova.distance:
+                if (match.player1_score + match.player2_score) < match.gara.distance:
                     # Import locale per evitare cicli
                     from models.match.services import MatchService
 

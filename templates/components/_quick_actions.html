@@ -10,9 +10,9 @@
       <i class="fas fa-handshake"></i> Match Proposals
     </a>
 
-    {% if vm.available_provas and vm.available_provas|length %}
+    {% if vm.available_garas and vm.available_garas|length %}
     <div class="alert alert-success p-2 mb-2">
-      <small><i class="fas fa-calendar-plus"></i> <strong>{{ vm.available_provas|length }}</strong> prova/e disponibili</small>
+      <small><i class="fas fa-calendar-plus"></i> <strong>{{ vm.available_garas|length }}</strong> gara/e disponibili</small>
     </div>{% endif %}
 
     {% if vm.current_matches and vm.current_matches|length %}
@@ -29,11 +29,11 @@
       {% endif %}
     {% endif %}
 
-    {% if vm.tournaments and vm.tournaments|length > 1 %}
-    <hr><h6>Altri Tornei</h6>
-    {% for t in vm.tournaments %}
-      {% if not vm.selected_tournament or t.id != vm.selected_tournament.id %}
-        <a href="{{ url_for(request.endpoint, tournament_id=t.id) }}" class="btn btn-outline-secondary btn-sm w-100 mb-1">
+    {% if vm.campionati and vm.campionati|length > 1 %}
+    <hr><h6>Altri Campionati</h6>
+    {% for t in vm.campionati %}
+      {% if not vm.selected_campionato or t.id != vm.selected_campionato.id %}
+        <a href="{{ url_for(request.endpoint, campionato_id=t.id) }}" class="btn btn-outline-secondary btn-sm w-100 mb-1">
           {{ t.name }}
         </a>
       {% endif %}

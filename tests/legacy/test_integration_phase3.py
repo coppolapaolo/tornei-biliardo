@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 
 from models import db
 from models.user.models import User
-from models.tournament.models import Tournament
-from models.competition.models import Prova
+from models.campionato.models import Campionato
+from models.competition.models import Gara
 from models.challenge.models import Challenge
 from models.individual_match.models import (
     ProposalType,
@@ -70,19 +70,19 @@ def sample_users(db_session):
 
 
 @pytest.fixture
-def sample_tournament(db_session, sample_users):
-    """Create sample tournament with prova."""
-    tournament = Tournament(name="Test Tournament")
-    db_session.add(tournament)
+def sample_campionato(db_session, sample_users):
+    """Create sample campionato with gara."""
+    campionato = Campionato(name="Test Campionato")
+    db_session.add(campionato)
     db_session.commit()
-    db_session.refresh(tournament)
+    db_session.refresh(campionato)
 
     from datetime import date
 
-    prova = Prova(
-        name="Test Prova",
-        description="Test prova for integration testing",
-        tournament_id=tournament.id,
+    gara = Gara(
+        name="Test Gara",
+        description="Test gara for integration testing",
+        campionato_id=campionato.id,
         director_id=sample_users["director"].id,
         number=1,
         date=date.today(),
@@ -91,11 +91,11 @@ def sample_tournament(db_session, sample_users):
         max_participants=8,
         status="setup",
     )
-    db_session.add(prova)
+    db_session.add(gara)
     db_session.commit()
-    db_session.refresh(prova)
+    db_session.refresh(gara)
 
-    return {"tournament": tournament, "prova": prova}
+    return {"campionato": campionato, "gara": gara}
 
 
 @pytest.fixture
@@ -132,32 +132,32 @@ class TestCachingIntegration:
     def test_cache_invalidation_by_tags(self, db_session):
         """Test cache invalidation by tags."""
         # Set multiple cache entries with tags
-        cache_manager.set("key1", "value1", tags=["tournament", "test"])
+        cache_manager.set("key1", "value1", tags=["campionato", "test"])
         cache_manager.set("key2", "value2", tags=["user", "test"])
-        cache_manager.set("key3", "value3", tags=["tournament"])
+        cache_manager.set("key3", "value3", tags=["campionato"])
 
         # Invalidate by tag
-        cache_manager.invalidate_by_tags(["tournament"])
+        cache_manager.invalidate_by_tags(["campionato"])
 
-        # Check that tournament-tagged entries are gone
+        # Check that campionato-tagged entries are gone
         assert cache_manager.get("key1") is None
         assert cache_manager.get("key3") is None
         # But user-only tagged entry remains
         assert cache_manager.get("key2") is not None
 
-    def test_classification_service_caching(self, app, sample_tournament, sample_users):
+    def test_classification_service_caching(self, app, sample_campionato, sample_users):
         """Test that classification service properly uses caching."""
         with app.app_context():
-            tournament_id = sample_tournament["tournament"].id
+            campionato_id = sample_campionato["campionato"].id
 
             # Clear cache first
             cache_manager.clear_all()
 
             # First call should miss cache
-            standings1 = ClassificationService.get_tournament_standings(tournament_id)
+            standings1 = ClassificationService.get_campionato_standings(campionato_id)
 
             # Second call should hit cache
-            standings2 = ClassificationService.get_tournament_standings(tournament_id)
+            standings2 = ClassificationService.get_campionato_standings(campionato_id)
 
             # Results should be identical
             assert len(standings1) == len(standings2)
@@ -273,17 +273,17 @@ class TestQueryOptimization:
             assert report["summary"]["total_unique_queries"] > 0
             assert report["summary"]["total_executions"] > 0
 
-    def test_n1_detection(self, app, sample_tournament, sample_users):
+    def test_n1_detection(self, app, sample_campionato, sample_users):
         """Test N+1 query detection."""
         with app.app_context():
             # Clear previous metrics
             query_optimizer.analyzer.clear_metrics()
 
-            # Simulate N+1 pattern by fetching tournament then its provas individually
-            tournament = Tournament.query.first()
+            # Simulate N+1 pattern by fetching campionato then its provas individually
+            campionato = Campionato.query.first()
             # This should trigger potential N+1 detection
             for _ in range(5):
-                Prova.query.filter_by(tournament_id=tournament.id).first()
+                Gara.query.filter_by(campionato_id=campionato.id).first()
 
             # Detect N+1 problems
             problems = query_optimizer.analyzer.detect_n1_problems()
@@ -332,23 +332,23 @@ class TestCrossDomainOrchestration:
             assert category is not None
             assert category.category == CategoryLevel.D  # Default for new players
 
-    def test_tournament_setup_orchestration(self, db_session, sample_users):
-        """Test tournament setup orchestration."""
+    def test_campionato_setup_orchestration(self, db_session, sample_users):
+        """Test campionato setup orchestration."""
         # Skip orchestration test as it requires complex domain services
-        # that may not be fully implemented. Test direct tournament creation instead.
+        # that may not be fully implemented. Test direct campionato creation instead.
 
-        # Create tournament directly
-        tournament = Tournament(name="Orchestrated Tournament")
-        db_session.add(tournament)
+        # Create campionato directly
+        campionato = Campionato(name="Orchestrated Campionato")
+        db_session.add(campionato)
         db_session.commit()
-        db_session.refresh(tournament)
+        db_session.refresh(campionato)
 
         # Create associated provas
         from datetime import date
 
-        prova1 = Prova(
-            name="Orchestrated Prova 1",
-            tournament_id=tournament.id,
+        prova1 = Gara(
+            name="Orchestrated Gara 1",
+            campionato_id=campionato.id,
             director_id=sample_users["director"].id,
             number=1,
             date=date.today(),
@@ -356,9 +356,9 @@ class TestCrossDomainOrchestration:
             distance=5,
             max_participants=8,
         )
-        prova2 = Prova(
-            name="Orchestrated Prova 2",
-            tournament_id=tournament.id,
+        prova2 = Gara(
+            name="Orchestrated Gara 2",
+            campionato_id=campionato.id,
             director_id=sample_users["director"].id,
             number=2,
             date=date.today(),
@@ -369,14 +369,14 @@ class TestCrossDomainOrchestration:
         db_session.add_all([prova1, prova2])
         db_session.commit()
 
-        # Verify tournament was created
-        found_tournament = Tournament.query.filter_by(
-            name="Orchestrated Tournament"
+        # Verify campionato was created
+        found_campionato = Campionato.query.filter_by(
+            name="Orchestrated Campionato"
         ).first()
-        assert found_tournament is not None
+        assert found_campionato is not None
 
         # Verify competitions were created
-        provas = Prova.query.filter_by(tournament_id=found_tournament.id).all()
+        provas = Gara.query.filter_by(campionato_id=found_campionato.id).all()
         assert len(provas) == 2
 
 
@@ -384,21 +384,21 @@ class TestExtendedDomainIntegration:
     """Test integration of extended domains."""
 
     def test_challenge_domain_integration(
-        self, db_session, sample_challenge, sample_users, sample_tournament
+        self, db_session, sample_challenge, sample_users, sample_campionato
     ):
-        """Test challenge domain integration with tournaments."""
-        prova = sample_tournament["prova"]
+        """Test challenge domain integration with campionati."""
+        gara = sample_campionato["gara"]
         player = sample_users["player1"]
 
         # Create challenge attempt for X replacement
         attempt = ChallengeService.create_x_replacement_attempt(
             user_id=player.id,
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=1,
             challenge_id=sample_challenge.id,
         )
 
-        assert attempt.prova_id == prova.id
+        assert attempt.gara_id == gara.id
         assert attempt.round_number == 1
         assert attempt.user_id == player.id
 
@@ -505,10 +505,10 @@ class TestServiceLayerBoundaries:
             category_info = CategoryService.get_user_category_info(user.id)
             assert isinstance(category_info, dict)
 
-    def test_cross_domain_data_consistency(self, app, sample_users, sample_tournament):
+    def test_cross_domain_data_consistency(self, app, sample_users, sample_campionato):
         """Test data consistency across domain boundaries."""
         with app.app_context():
-            sample_tournament["tournament"]
+            sample_campionato["campionato"]
             player = sample_users["player1"]
 
             # Operations affecting multiple domains should maintain consistency
@@ -545,10 +545,10 @@ class TestServiceLayerBoundaries:
 class TestPerformanceIntegration:
     """Test performance optimization integration."""
 
-    def test_caching_performance_impact(self, app, sample_tournament):
+    def test_caching_performance_impact(self, app, sample_campionato):
         """Test that caching improves performance."""
         with app.app_context():
-            tournament_id = sample_tournament["tournament"].id
+            campionato_id = sample_campionato["campionato"].id
 
             # Clear cache
             cache_manager.clear_all()
@@ -557,12 +557,12 @@ class TestPerformanceIntegration:
             import time
 
             start_time = time.time()
-            standings1 = ClassificationService.get_tournament_standings(tournament_id)
+            standings1 = ClassificationService.get_campionato_standings(campionato_id)
             first_call_time = time.time() - start_time
 
             # Time second call (cache hit)
             start_time = time.time()
-            standings2 = ClassificationService.get_tournament_standings(tournament_id)
+            standings2 = ClassificationService.get_campionato_standings(campionato_id)
             second_call_time = time.time() - start_time
 
             # Second call should be faster (though on empty data it might be negligible)

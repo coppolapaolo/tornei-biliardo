@@ -1,5 +1,5 @@
 # routes/admin/competition.py
-"""Competition (Prova) management blueprint for admin interface."""
+"""Competition (Gara) management blueprint for admin interface."""
 
 from flask import (
     Blueprint,
@@ -16,22 +16,22 @@ from datetime import datetime
 
 from models import (
     db,
-    Tournament,
-    Prova,
+    Campionato,
+    Gara,
     Inscription,
     Match,
 )
 from models.status_enum import (
-    ProvaStatus,
+    GaraStatus,
     MatchStatus,
 )
 from models.competition.models import WithdrawPolicy
 from utils import (
-    prova_manager_required,
+    gara_manager_required,
     admin_required,
     trio_manager_required,
 )
-from models.competition.services import ProvaService
+from models.competition.services import GaraService
 from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
 from models.classification.models import RoundClassification
 
@@ -42,15 +42,15 @@ competition_bp = Blueprint("competition", __name__)
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
 @login_required
 @admin_required
-def create_prova_standalone():
-    """Crea prova standalone (solo admin)"""
+def create_gara_standalone():
+    """Crea gara standalone (solo admin)"""
     if request.method == "POST":
         try:
             # Campi base
             name = request.form.get("name", "").strip()
             if not name:
                 flash("Il nome della competizione è obbligatorio!", "error")
-                return redirect(url_for("admin.competition.create_prova_standalone"))
+                return redirect(url_for("admin.competition.create_gara_standalone"))
 
             date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
             
@@ -70,10 +70,10 @@ def create_prova_standalone():
             best_of = not exact_number
             withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
 
-            # Crea la prova standalone usando il service layer (senza tournament_id)
-            prova = ProvaService.create_prova(
-                tournament_id=None,  # Prove standalone non hanno torneo
-                number=1,  # Sempre 1 per prove standalone
+            # Crea la gara standalone usando il service layer (senza campionato_id)
+            gara = GaraService.create_gara(
+                campionato_id=None,  # Gare standalone non hanno campionato
+                number=1,  # Sempre 1 per gare standalone
                 name=name,
                 date=date,
                 location=location,
@@ -90,25 +90,25 @@ def create_prova_standalone():
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova.id))
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 
         except ValueError as e:
             flash(f"Errore nella creazione: {str(e)}", "error")
-            return redirect(url_for("admin.competition.create_prova_standalone"))
+            return redirect(url_for("admin.competition.create_gara_standalone"))
         except Exception as e:
             flash(f"Errore imprevisto: {str(e)}", "error")
-            return redirect(url_for("admin.competition.create_prova_standalone"))
+            return redirect(url_for("admin.competition.create_gara_standalone"))
 
     # GET request - show form
     # Recupera luoghi utilizzati in precedenza
-    recent_locations = db.session.query(Prova.location).distinct().filter(
-        Prova.location.isnot(None), 
-        Prova.location != ""
+    recent_locations = db.session.query(Gara.location).distinct().filter(
+        Gara.location.isnot(None), 
+        Gara.location != ""
     ).limit(10).all()
     recent_locations = [loc[0] for loc in recent_locations if loc[0]]
     
     return render_template(
-        "admin/prova_create_standalone.html",
+        "admin/gara_create_standalone.html",
         WithdrawPolicy=WithdrawPolicy,
         recent_locations=recent_locations
     )
@@ -116,52 +116,52 @@ def create_prova_standalone():
 
 @competition_bp.route("/create", methods=["POST"])
 @login_required
-def create_prova():
-    """Crea nuova prova - Aggiornata per supportare standalone"""
+def create_gara():
+    """Crea nuova gara - Aggiornata per supportare standalone"""
 
-    # Determina se è standalone o per torneo
-    tournament_id = request.form.get("tournament_id")
-    is_standalone = tournament_id == "standalone" or not tournament_id
+    # Determina se è standalone o per campionato
+    campionato_id = request.form.get("campionato_id")
+    is_standalone = campionato_id == "standalone" or not campionato_id
 
     if is_standalone:
         # Redirect alla route standalone
-        return redirect(url_for("admin.competition.create_prova_standalone"))
+        return redirect(url_for("admin.competition.create_gara_standalone"))
 
-    # Codice esistente per prove con torneo...
-    if not tournament_id:
-        flash("Tournament ID mancante!", "error")
+    # Codice esistente per gare con campionato...
+    if not campionato_id:
+        flash("Campionato ID mancante!", "error")
         return redirect(url_for("dashboard.dashboard"))
 
-    tournament_id = int(tournament_id)
-    tournament = db.session.get(Tournament, tournament_id)
-    if tournament is None:
+    campionato_id = int(campionato_id)
+    campionato = db.session.get(Campionato, campionato_id)
+    if campionato is None:
         abort(404)
 
-    # Verifica permessi sul torneo
+    # Verifica permessi sul campionato
     if not (
         current_user.is_admin
         or (
             current_user.is_director
             and any(
-                td.user_id == current_user.id for td in tournament.directors_association
+                td.user_id == current_user.id for td in campionato.directors_association
             )
         )
     ):
-        flash("Non puoi creare prove in questo torneo.", "error")
+        flash("Non puoi creare gare in questo campionato.", "error")
         return redirect(url_for("dashboard.dashboard"))
 
     number = int(request.form["number"])
 
-    # Verifica che il numero prova non esista già
-    existing = Prova.query.filter_by(tournament_id=tournament_id, number=number).first()
+    # Verifica che il numero gara non esista già
+    existing = Gara.query.filter_by(campionato_id=campionato_id, number=number).first()
     if existing:
-        flash(f"La prova {number} esiste già!")
+        flash(f"La gara {number} esiste già!")
         return redirect(
-            url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
         )
 
     # Campi base
-    name = request.form.get("name", f"Prova {number}")
+    name = request.form.get("name", f"Gara {number}")
     date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
 
     # Nuovi campi
@@ -179,10 +179,10 @@ def create_prova():
     exact_number = "exact_number" in request.form
     best_of = not exact_number
 
-    # Crea la prova usando il service layer
+    # Crea la gara usando il service layer
     withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
-    ProvaService.create_prova(
-        tournament_id=tournament_id,
+    GaraService.create_gara(
+        campionato_id=campionato_id,
         number=number,
         name=name,
         date=date,
@@ -198,24 +198,24 @@ def create_prova():
         withdraw_policy=withdraw_policy,
     )
 
-    flash(f"Prova {number} creata con successo!")
+    flash(f"Gara {number} creata con successo!")
     return redirect(
-        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
     )
 
 
-@competition_bp.route("/<int:prova_id>/edit", methods=["GET", "POST"])
+@competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])
 @login_required
-@prova_manager_required
-def edit_prova(prova_id):
-    """Modifica prova"""
-    prova = db.session.get(Prova, prova_id)
-    if prova is None:
+@gara_manager_required
+def edit_gara(gara_id):
+    """Modifica gara"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
         abort(404)
 
-    if not prova.can_be_modified():
-        flash("Impossibile modificare la prova: ci sono già delle iscrizioni!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    if not gara.can_be_modified():
+        flash("Impossibile modificare la gara: ci sono già delle iscrizioni!")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     if request.method == "POST":
         # Usa il service layer invece del direct database access
@@ -226,9 +226,9 @@ def edit_prova(prova_id):
             exact_number = "exact_number" in request.form
             best_of = not exact_number
 
-            ProvaService.update_prova(
-                prova_id=prova_id,
-                name=request.form.get("name", prova.name),
+            GaraService.update_gara(
+                gara_id=gara_id,
+                name=request.form.get("name", gara.name),
                 date_str=request.form["date"],
                 location=request.form.get("location", ""),
                 description=request.form.get("description", ""),
@@ -243,99 +243,99 @@ def edit_prova(prova_id):
                     "withdraw_policy", WithdrawPolicy.EXCLUDE.value
                 ),
             )
-            flash("Prova aggiornata con successo!")
+            flash("Gara aggiornata con successo!")
         except ValueError as ve:
             flash(str(ve), "error")
 
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     return render_template(
-        "admin/prova_edit.html", prova=prova, WithdrawPolicy=WithdrawPolicy
+        "admin/gara_edit.html", gara=gara, WithdrawPolicy=WithdrawPolicy
     )
 
 
-@competition_bp.route("/<int:prova_id>/delete", methods=["POST"])
+@competition_bp.route("/<int:gara_id>/delete", methods=["POST"])
 @login_required
-@prova_manager_required
-def delete_prova(prova_id):
-    """Cancella prova"""
-    prova = db.session.get(Prova, prova_id)
-    if prova is None:
+@gara_manager_required
+def delete_gara(gara_id):
+    """Cancella gara"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
         abort(404)
-    tournament_id = prova.tournament_id
-    prova_name = f"Prova {prova.number}"
+    campionato_id = gara.campionato_id
+    gara_name = f"Gara {gara.number}"
 
     # Usa il service layer invece del direct database access
     try:
-        ProvaService.delete_prova(prova_id)
-        flash(f"{prova_name} cancellata con successo!")
+        GaraService.delete_gara(gara_id)
+        flash(f"{gara_name} cancellata con successo!")
     except ValueError as ve:
         flash(str(ve), "error")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    if not tournament_id:
+    if not campionato_id:
         return redirect(url_for("dashboard.dashboard"))
     return redirect(
-        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
     )
 
 
-@competition_bp.route("/<int:prova_id>/cancel", methods=["POST"])
+@competition_bp.route("/<int:gara_id>/cancel", methods=["POST"])
 @login_required
-@prova_manager_required
-def cancel_prova(prova_id):
-    """Cancella prova con notifiche ai partecipanti"""
-    prova = db.session.get(Prova, prova_id)
-    if prova is None:
+@gara_manager_required
+def cancel_gara(gara_id):
+    """Cancella gara con notifiche ai partecipanti"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
         abort(404)
     
-    tournament_id = prova.tournament_id
-    prova_name = f"Prova {prova.number}"
+    campionato_id = gara.campionato_id
+    gara_name = f"Gara {gara.number}"
     
-    # Verifica che la prova possa essere cancellata
-    if prova.status not in ['setup', 'inscription']:
-        flash("La prova non può essere cancellata in questo stato!", "error")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    # Verifica che la gara possa essere cancellata
+    if gara.status not in ['setup', 'inscription']:
+        flash("La gara non può essere cancellata in questo stato!", "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     try:
         # Usa il service layer per cancellare con notifiche
-        ProvaService.cancel_prova_with_notifications(prova_id, current_user.id)
-        flash(f"{prova_name} cancellata con successo! I partecipanti sono stati notificati.")
+        GaraService.cancel_gara_with_notifications(gara_id, current_user.id)
+        flash(f"{gara_name} cancellata con successo! I partecipanti sono stati notificati.")
     except ValueError as ve:
         flash(str(ve), "error")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    if not tournament_id:
+    if not campionato_id:
         return redirect(url_for("dashboard.dashboard"))
     return redirect(
-        url_for("admin.tournament.tournament_detail", tournament_id=tournament_id)
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
     )
 
 
-@competition_bp.route("/<int:prova_id>")
+@competition_bp.route("/<int:gara_id>")
 @login_required
-@prova_manager_required
-def prova_detail(prova_id):
-    """Dettaglio prova con iscrizioni e partite"""
-    prova = db.session.get(Prova, prova_id)
-    if prova is None:
+@gara_manager_required
+def gara_detail(gara_id):
+    """Dettaglio gara con iscrizioni e partite"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
         abort(404)
     
     # Forza un refresh per assicurarsi di avere i dati più aggiornati
-    db.session.refresh(prova)
+    db.session.refresh(gara)
     
     # Ottieni iscrizioni ordinate per classifica attuale
-    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
     
     # Se ci sono turni giocati, ordina per classifica
-    if prova.current_round > 0:
+    if gara.current_round > 0:
         from models.classification.models import RoundClassification
         
         # Cerca la classifica più recente disponibile (partendo dal turno corrente e scendendo)
         latest_classification = None
-        for round_num in range(prova.current_round, 0, -1):
+        for round_num in range(gara.current_round, 0, -1):
             latest_classification = RoundClassification.query.filter_by(
-                prova_id=prova_id, round_number=round_num
+                gara_id=gara_id, round_number=round_num
             ).order_by(RoundClassification.position).all()
             if latest_classification:
                 break
@@ -352,24 +352,24 @@ def prova_detail(prova_id):
         inscriptions.sort(key=lambda ins: ins.initial_order or 999)
     
     matches = (
-        Match.query.filter_by(prova_id=prova_id)
+        Match.query.filter_by(gara_id=gara_id)
         .order_by(Match.round_number, Match.id)
         .all()
     )
 
     return render_template(
-        "admin/prova_detail.html",
-        prova=prova,
+        "admin/gara_detail.html",
+        gara=gara,
         inscriptions=inscriptions,
         matches=matches,
     )
 
 
-@competition_bp.route("/<int:prova_id>/open_inscriptions", methods=["POST"])
+@competition_bp.route("/<int:gara_id>/open_inscriptions", methods=["POST"])
 @login_required
-@prova_manager_required
-def open_inscriptions(prova_id):
-    """Apri iscrizioni per una prova"""
+@gara_manager_required
+def open_inscriptions(gara_id):
+    """Apri iscrizioni per una gara"""
     # Ottieni le date UTC dal JavaScript
     inscription_start = datetime.strptime(
         request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
@@ -380,7 +380,7 @@ def open_inscriptions(prova_id):
 
     # Usa il service layer invece del direct database access
     try:
-        ProvaService.open_inscriptions(prova_id, inscription_start, inscription_end)
+        GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
         flash(
             "Iscrizioni aperte! Gli orari sono gestiti "
             "automaticamente nel tuo timezone locale."
@@ -388,14 +388,14 @@ def open_inscriptions(prova_id):
     except ValueError as ve:
         flash(str(ve), "error")
 
-    return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
-@competition_bp.route("/<int:prova_id>/modify_inscription_dates", methods=["POST"])
+@competition_bp.route("/<int:gara_id>/modify_inscription_dates", methods=["POST"])
 @login_required
-@prova_manager_required
-def modify_inscription_dates(prova_id):
-    """Modifica date di iscrizione per una prova"""
+@gara_manager_required
+def modify_inscription_dates(gara_id):
+    """Modifica date di iscrizione per una gara"""
     inscription_start = datetime.strptime(
         request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
     )
@@ -405,56 +405,56 @@ def modify_inscription_dates(prova_id):
 
     # Usa il service layer invece del direct database access
     try:
-        ProvaService.modify_inscription_dates(
-            prova_id, inscription_start, inscription_end
+        GaraService.modify_inscription_dates(
+            gara_id, inscription_start, inscription_end
         )
         flash("Date di iscrizione aggiornate con successo!")
     except ValueError as ve:
         flash(str(ve), "error")
 
-    return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
-@competition_bp.route("/<int:prova_id>/start_first_round", methods=["POST"])
+@competition_bp.route("/<int:gara_id>/start_first_round", methods=["POST"])
 @login_required
-@prova_manager_required
-def start_first_round(prova_id):
-    """Avvia primo turno della prova"""
+@gara_manager_required
+def start_first_round(gara_id):
+    """Avvia primo turno della gara"""
     # Usa il service layer invece del direct database access
     try:
-        ProvaService.start_first_round(prova_id)
+        GaraService.start_first_round(gara_id)
         flash("Primo turno avviato!")
     except ValueError as ve:
         flash(str(ve), "error")
 
-    return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
-@competition_bp.route("/<int:prova_id>/results_overview")
+@competition_bp.route("/<int:gara_id>/results_overview")
 @login_required
-@prova_manager_required
-def prova_results_overview(prova_id):
-    """Overview risultati prova per inserimento rapido (admin)"""
-    prova = Prova.query.get_or_404(prova_id)
+@gara_manager_required
+def gara_results_overview(gara_id):
+    """Overview risultati gara per inserimento rapido (admin)"""
+    gara = Gara.query.get_or_404(gara_id)
 
     # Organizza partite per turno
     matches_by_round = {}
-    for round_num in range(1, prova.rounds_count + 1):
+    for round_num in range(1, gara.rounds_count + 1):
         matches_by_round[round_num] = (
-            Match.query.filter_by(prova_id=prova_id, round_number=round_num)
+            Match.query.filter_by(gara_id=gara_id, round_number=round_num)
             .order_by(Match.id)
             .all()
         )
 
     # Debug
     import logging
-    logging.warning(f"DEBUG results_overview: prova.rounds_count = {prova.rounds_count}")
+    logging.warning(f"DEBUG results_overview: gara.rounds_count = {gara.rounds_count}")
     for round_num, matches in matches_by_round.items():
         logging.warning(f"DEBUG results_overview: Round {round_num} has {len(matches)} matches")
 
     return render_template(
-        "admin/prova_result_overview.html",
-        prova=prova,
+        "admin/gara_result_overview.html",
+        gara=gara,
         matches_by_round=matches_by_round,
     )
 
@@ -462,26 +462,26 @@ def prova_results_overview(prova_id):
 # ============ SISTEMA AMALFI ============
 
 
-@competition_bp.route("/amalfi/classification/<int:prova_id>/<int:round_number>")
+@competition_bp.route("/amalfi/classification/<int:gara_id>/<int:round_number>")
 @login_required
-@prova_manager_required
-def amalfi_classification(prova_id, round_number):
+@gara_manager_required
+def amalfi_classification(gara_id, round_number):
     """Visualizza classifica Amalfi dopo un turno specifico"""
-    prova = Prova.query.get_or_404(prova_id)
+    gara = Gara.query.get_or_404(gara_id)
 
     # Verifica che il turno sia valido
-    if round_number < 1 or round_number > prova.rounds_count:
-        flash(f"Turno {round_number} non valido per questa prova!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+    if round_number < 1 or round_number > gara.rounds_count:
+        flash(f"Turno {round_number} non valido per questa gara!")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Verifica che il turno sia completato
     matches_in_round = Match.query.filter_by(
-        prova_id=prova_id, round_number=round_number
+        gara_id=gara_id, round_number=round_number
     ).all()
 
     if not matches_in_round:
         flash(f"Il turno {round_number} non è ancora iniziato!")
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Controlla se tutti i match del turno sono completati
     incomplete_matches = [
@@ -492,25 +492,25 @@ def amalfi_classification(prova_id, round_number):
             f"Il turno {round_number} non è ancora completato! "
             f"Mancano {len(incomplete_matches)} partite."
         )
-        return redirect(url_for("admin.competition.prova_detail", prova_id=prova_id))
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Ottieni o calcola classifica
-    classification = get_amalfi_classification(prova_id, round_number)
+    classification = get_amalfi_classification(gara_id, round_number)
     if not classification:
         # Calcola classifica se non esiste (questo metodo ritorna tuple, non oggetti)
         RoundClassification.calculate_classification_after_round(
-            prova_id, round_number
+            gara_id, round_number
         )
         # Ricarica la classifica dopo il calcolo (ora sono oggetti RoundClassification)
-        classification = get_amalfi_classification(prova_id, round_number)
+        classification = get_amalfi_classification(gara_id, round_number)
 
     # Statistiche aggiuntive
     total_players = len(classification)
-    inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+    inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
 
     return render_template(
         "admin/amalfi_classification.html",
-        prova=prova,
+        gara=gara,
         round_number=round_number,
         classification=classification,
         total_players=total_players,
@@ -518,30 +518,30 @@ def amalfi_classification(prova_id, round_number):
     )
 
 
-@competition_bp.route("/<int:prova_id>/amalfi/preview_round/<int:round_number>")
+@competition_bp.route("/<int:gara_id>/amalfi/preview_round/<int:round_number>")
 @login_required
-@prova_manager_required
-def amalfi_preview_round(prova_id, round_number):
+@gara_manager_required
+def amalfi_preview_round(gara_id, round_number):
     """Anteprima di un turno Amalfi senza creare le partite"""
     from amalfi.engine import AmalfiEngine
     
-    prova = db.session.get(Prova, prova_id)
-    if prova is None:
-        return jsonify({"success": False, "error": "Prova non trovata"}), 404
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
+        return jsonify({"success": False, "error": "Gara non trovata"}), 404
     
     try:
         # Validazioni preliminari
-        if round_number < 1 or round_number > prova.rounds_count:
+        if round_number < 1 or round_number > gara.rounds_count:
             return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
             
-        if round_number <= prova.current_round:
+        if round_number <= gara.current_round:
             return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
             
-        if round_number != prova.current_round + 1:
-            return jsonify({"success": False, "error": f"Devi avviare prima il turno {prova.current_round + 1}!"})
+        if round_number != gara.current_round + 1:
+            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
 
         # Usa il motore Amalfi per calcolare gli abbinamenti senza crearli
-        engine = AmalfiEngine(prova)
+        engine = AmalfiEngine(gara)
         preview_data = engine.preview_round_pairings(round_number)
         
         return jsonify({
@@ -556,37 +556,37 @@ def amalfi_preview_round(prova_id, round_number):
 
 
 @competition_bp.route(
-    "/<int:prova_id>/amalfi/start_round/<int:round_number>", methods=["POST"]
+    "/<int:gara_id>/amalfi/start_round/<int:round_number>", methods=["POST"]
 )
 @login_required
-@prova_manager_required
-def amalfi_start_round(prova_id, round_number):
+@gara_manager_required
+def amalfi_start_round(gara_id, round_number):
     """Avvia un turno specifico con algoritmo Amalfi"""
-    prova = Prova.query.get_or_404(prova_id)
+    gara = Gara.query.get_or_404(gara_id)
 
     try:
         # Validazioni preliminari
-        if round_number < 1 or round_number > prova.rounds_count:
+        if round_number < 1 or round_number > gara.rounds_count:
             return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
             
         # Controlla se il turno è già stato avviato (idempotenza)
         existing_matches = Match.query.filter_by(
-            prova_id=prova_id, round_number=round_number
+            gara_id=gara_id, round_number=round_number
         ).first()
         if existing_matches:
             return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
             
-        if round_number != prova.current_round + 1:
-            return jsonify({"success": False, "error": f"Devi avviare prima il turno {prova.current_round + 1}!"})
+        if round_number != gara.current_round + 1:
+            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
 
-        validation = validate_amalfi_configuration(prova)
+        validation = validate_amalfi_configuration(gara)
         if not validation["is_valid"]:
             errors = "; ".join(validation["errors"])
             return jsonify({"success": False, "error": f"Errore Amalfi: {errors}"})
 
         if round_number > 1:
             prev_matches = Match.query.filter_by(
-                prova_id=prova_id, round_number=round_number - 1
+                gara_id=gara_id, round_number=round_number - 1
             ).all()
             incomplete_prev = [
                 m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
@@ -595,20 +595,20 @@ def amalfi_start_round(prova_id, round_number):
                 return jsonify({"success": False, "error": f"Completa prima tutte le partite del turno {round_number-1}!"})
 
         # Crea il turno Amalfi usando il service layer
-        total, n_normal, n_bye, n_trio = ProvaService.create_amalfi_round(
-            prova_id, round_number
+        total, n_normal, n_bye, n_trio = GaraService.create_amalfi_round(
+            gara_id, round_number
         )
 
-        # Aggiorna lo stato della prova
-        if prova.status != ProvaStatus.PLAYING.value:
-            prova = ProvaService.start_playing(prova.id)
+        # Aggiorna lo stato della gara
+        if gara.status != GaraStatus.PLAYING.value:
+            gara = GaraService.start_playing(gara.id)
         
         # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
-        db.session.refresh(prova)
+        db.session.refresh(gara)
         
         # Aggiorna il turno corrente DOPO il cambio di stato
-        prova.current_round = round_number
-        db.session.add(prova)
+        gara.current_round = round_number
+        db.session.add(gara)
         db.session.commit()
 
         # Costruisci il messaggio di successo
@@ -625,7 +625,7 @@ def amalfi_start_round(prova_id, round_number):
             "success": True, 
             "message": message,
             "details": details,
-            "redirect": url_for("admin.competition.prova_detail", prova_id=prova_id)
+            "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
         })
 
     except ValueError as ve:
@@ -646,7 +646,7 @@ def trio_add_rack(trio_id):
         winner_id = int(request.form["winner_id"])
 
         # Usa il service layer invece del direct database access
-        result = ProvaService.add_trio_rack(trio_id, winner_id)
+        result = GaraService.add_trio_rack(trio_id, winner_id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -662,7 +662,7 @@ def trio_reset(trio_id):
     """Reset completo trio"""
     try:
         # Usa il service layer invece del direct database access
-        ProvaService.reset_trio(trio_id)
+        GaraService.reset_trio(trio_id)
         return jsonify({"success": True, "message": "Trio resettato con successo"})
 
     except ValueError as ve:

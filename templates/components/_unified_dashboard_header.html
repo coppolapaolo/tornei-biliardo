@@ -15,20 +15,20 @@
   
   <div class="d-flex gap-2">
     {% if current_user.is_admin or current_user.is_director %}
-      {% if vm.caps and vm.caps.can_create_tournament %}
+      {% if vm.caps and vm.caps.can_create_campionato %}
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
-          <i class="fas fa-plus"></i> Nuovo Torneo
+          <i class="fas fa-plus"></i> Nuovo Campionato
         </button>
       {% endif %}
       
-      {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_tournament) %}
+      {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_campionato) %}
         {% if current_user.is_admin %}
-          <a class="btn btn-success" href="{{ url_for('admin.competition.create_prova_standalone') }}">
-            <i class="fas fa-plus"></i> Nuova Prova
+          <a class="btn btn-success" href="{{ url_for('admin.competition.create_gara_standalone') }}">
+            <i class="fas fa-plus"></i> Nuova Gara
           </a>
         {% elif current_user.is_director %}
-          <a class="btn btn-success" href="{{ url_for('director.create_prova_standalone') }}">
-            <i class="fas fa-plus"></i> Nuova Prova
+          <a class="btn btn-success" href="{{ url_for('director.create_gara_standalone') }}">
+            <i class="fas fa-plus"></i> Nuova Gara
           </a>
         {% endif %}
       {% endif %}

@@ -20,23 +20,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for prova in standalone_available %}
+                    {% for gara in standalone_available %}
                     <tr>
                         <td>
-                            <strong>{{ prova.name }}</strong>
+                            <strong>{{ gara.name }}</strong>
                             <span class="badge bg-info ms-2">Standalone</span>
                         </td>
-                        <td>{{ prova.date.strftime('%d/%m/%Y') }}</td>
-                        <td>{{ prova.location or '-' }}</td>
-                        <td>{{ prova.get_organizer().username }}</td>
-                        <td>{{ prova.discipline|replace('_', ' ')|title }}</td>
+                        <td>{{ gara.date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ gara.location or '-' }}</td>
+                        <td>{{ gara.get_organizer().username }}</td>
+                        <td>{{ gara.discipline|replace('_', ' ')|title }}</td>
                         <td>
                             <span class="text-danger">
-                                {{ prova.inscription_end.strftime('%d/%m %H:%M') }}
+                                {{ gara.inscription_end.strftime('%d/%m %H:%M') }}
                             </span>
                         </td>
                         <td>
-                            <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=prova.id) }}" 
+                            <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" 
                                   style="display: inline;">
                                 <button type="submit" class="btn btn-sm btn-success">
                                     <i class="fas fa-user-plus"></i> Iscriviti

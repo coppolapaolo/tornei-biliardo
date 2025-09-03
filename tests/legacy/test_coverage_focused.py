@@ -12,32 +12,32 @@ from models.classification.services import ClassificationService
 class TestClassificationServiceCoverage:
     """Test ClassificationService to improve coverage."""
 
-    def test_update_tournament_classification_basic(self):
-        """Test basic tournament classification update."""
+    def test_update_campionato_classification_basic(self):
+        """Test basic campionato classification update."""
         with patch("models.classification.services.db.session") as mock_session, patch(
-            "models.tournament.models.Tournament"
-        ) as mock_tournament:
+            "models.campionato.models.Campionato"
+        ) as mock_campionato:
 
             mock_session.get.return_value = Mock()
             mock_session.query.return_value.filter_by.return_value.all.return_value = []
 
             try:
-                result = ClassificationService.update_tournament_classification(1)
+                result = ClassificationService.update_campionato_classification(1)
                 # If method exists and works, result should be a list
                 assert isinstance(result, list)
             except Exception:
                 # If method has issues, just pass - we're testing for coverage
                 pass
 
-    def test_get_tournament_standings_basic(self):
-        """Test basic tournament standings retrieval."""
+    def test_get_campionato_standings_basic(self):
+        """Test basic campionato standings retrieval."""
         with patch("models.classification.services.db.session") as mock_session:
             mock_session.query.return_value.filter_by.return_value.options.return_value.order_by.return_value.all.return_value = (
                 []
             )
 
             try:
-                result = ClassificationService.get_tournament_standings(1)
+                result = ClassificationService.get_campionato_standings(1)
                 assert isinstance(result, list)
             except Exception:
                 pass

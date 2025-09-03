@@ -30,8 +30,8 @@ class TiebreakerService:
         match_id: int,
         player1_id: int,
         player2_id: int,
-        tournament_id: Optional[int] = None,
-        prova_id: Optional[int] = None,
+        campionato_id: Optional[int] = None,
+        gara_id: Optional[int] = None,
         configuration: Optional[Dict[str, Any]] = None,
     ) -> Tiebreaker:
         """Create a spot shot tiebreaker for tied matches."""
@@ -48,8 +48,8 @@ class TiebreakerService:
 
         tiebreaker = Tiebreaker(
             match_id=match_id,
-            tournament_id=tournament_id,
-            prova_id=prova_id,
+            campionato_id=campionato_id,
+            gara_id=gara_id,
             tiebreaker_type=TiebreakerType.SPOT_SHOT.value,
             player1_id=player1_id,
             player2_id=player2_id,
@@ -65,8 +65,8 @@ class TiebreakerService:
         match_id: int,
         player1_id: int,
         player2_id: int,
-        tournament_id: Optional[int] = None,
-        prova_id: Optional[int] = None,
+        campionato_id: Optional[int] = None,
+        gara_id: Optional[int] = None,
         target_score: int = 15,
     ) -> Tiebreaker:
         """Create a rally tiebreaker for straight pool ties."""
@@ -79,8 +79,8 @@ class TiebreakerService:
 
         tiebreaker = Tiebreaker(
             match_id=match_id,
-            tournament_id=tournament_id,
-            prova_id=prova_id,
+            campionato_id=campionato_id,
+            gara_id=gara_id,
             tiebreaker_type=TiebreakerType.RALLY.value,
             player1_id=player1_id,
             player2_id=player2_id,
@@ -96,11 +96,11 @@ class TiebreakerService:
         match_id: int,
         player1_id: int,
         player2_id: int,
-        tournament_id: Optional[int] = None,
-        prova_id: Optional[int] = None,
+        campionato_id: Optional[int] = None,
+        gara_id: Optional[int] = None,
         best_of: int = 3,
     ) -> Tiebreaker:
-        """Create a playoff match tiebreaker for tournament position ties."""
+        """Create a playoff match tiebreaker for campionato position ties."""
 
         configuration = {
             "best_of": best_of,
@@ -110,8 +110,8 @@ class TiebreakerService:
 
         tiebreaker = Tiebreaker(
             match_id=match_id,
-            tournament_id=tournament_id,
-            prova_id=prova_id,
+            campionato_id=campionato_id,
+            gara_id=gara_id,
             tiebreaker_type=TiebreakerType.PLAYOFF_MATCH.value,
             player1_id=player1_id,
             player2_id=player2_id,
@@ -427,7 +427,7 @@ class TiebreakerConfigurationService:
 
     @staticmethod
     def create_default_configuration(
-        tournament_id: Optional[int] = None, prova_id: Optional[int] = None
+        campionato_id: Optional[int] = None, gara_id: Optional[int] = None
     ) -> TiebreakerConfiguration:
         """Create default tiebreaker configuration."""
 
@@ -443,8 +443,8 @@ class TiebreakerConfigurationService:
         }
 
         config = TiebreakerConfiguration(
-            tournament_id=tournament_id,
-            prova_id=prova_id,
+            campionato_id=campionato_id,
+            gara_id=gara_id,
             name="Default Tiebreaker Rules",
             description="Standard tiebreaker rules for all disciplines",
             rules=default_rules,
@@ -472,22 +472,22 @@ class TiebreakerConfigurationService:
         # Try to find specific configuration
         config = None
 
-        # First try prova-specific
-        if match.prova_id:
+        # First try gara-specific
+        if match.gara_id:
             config = TiebreakerConfiguration.query.filter_by(
-                prova_id=match.prova_id, is_active=True
+                gara_id=match.gara_id, is_active=True
             ).first()
 
-        # Then try tournament-specific
-        if not config and match.prova and match.prova.tournament_id:
+        # Then try campionato-specific
+        if not config and match.gara and match.gara.campionato_id:
             config = TiebreakerConfiguration.query.filter_by(
-                tournament_id=match.prova.tournament_id, is_active=True
+                campionato_id=match.gara.campionato_id, is_active=True
             ).first()
 
         # Finally try default
         if not config:
             config = TiebreakerConfiguration.query.filter_by(
-                tournament_id=None, prova_id=None, is_default=True, is_active=True
+                campionato_id=None, gara_id=None, is_default=True, is_active=True
             ).first()
 
         return config if config and config.supports_discipline(discipline) else None

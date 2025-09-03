@@ -494,7 +494,7 @@ class TestNotificationService:
         """Test getting all user preferences."""
         mock_preferences = [
             Mock(notification_type=Mock(value="match_proposal")),
-            Mock(notification_type=Mock(value="tournament_registration")),
+            Mock(notification_type=Mock(value="campionato_registration")),
         ]
 
         with patch(
@@ -514,7 +514,7 @@ class TestNotificationService:
             assert isinstance(result, dict)
             assert len(result) == 2
             assert "match_proposal" in result
-            assert "tournament_registration" in result
+            assert "campionato_registration" in result
 
     def test_expire_old_notifications(self, db_session):
         """Test expiring old notifications."""
@@ -669,8 +669,8 @@ class TestNotificationService:
             # Verify the result
             assert result == mock_notification
 
-    def test_notify_tournament_registration(self, db_session):
-        """Test notifying about tournament registration."""
+    def test_notify_campionato_registration(self, db_session):
+        """Test notifying about campionato registration."""
         with patch(
             "models.notification.services.NotificationService.create_from_template"
         ) as mock_create_from_template:
@@ -681,8 +681,8 @@ class TestNotificationService:
                 mock_notification2,
             ]
 
-            result = NotificationService.notify_tournament_registration(
-                user_ids=[1, 2], tournament_name="Test Tournament", tournament_id=123
+            result = NotificationService.notify_campionato_registration(
+                user_ids=[1, 2], campionato_name="Test Campionato", campionato_id=123
             )
 
             # Verify the notifications were created from template
@@ -690,12 +690,12 @@ class TestNotificationService:
             mock_create_from_template.assert_any_call(
                 user_id=1,
                 notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                context={"tournament_name": "Test Tournament", "tournament_id": 123},
+                context={"campionato_name": "Test Campionato", "campionato_id": 123},
             )
             mock_create_from_template.assert_any_call(
                 user_id=2,
                 notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                context={"tournament_name": "Test Tournament", "tournament_id": 123},
+                context={"campionato_name": "Test Campionato", "campionato_id": 123},
             )
 
             # Verify the result
@@ -714,7 +714,7 @@ class TestNotificationService:
             result = NotificationService.notify_playoff_invitation(
                 user_id=1,
                 playoff_name="Test Playoff",
-                tournament_name="Test Tournament",
+                campionato_name="Test Campionato",
                 deadline=deadline,
             )
 
@@ -724,7 +724,7 @@ class TestNotificationService:
                 notification_type=NotificationType.PLAYOFF_INVITATION,
                 context={
                     "playoff_name": "Test Playoff",
-                    "tournament_name": "Test Tournament",
+                    "campionato_name": "Test Campionato",
                     "deadline": "2023-01-01 12:00",
                 },
                 expires_override=deadline,

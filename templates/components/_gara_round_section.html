@@ -1,0 +1,51 @@
+{# templates/components/_gara_round_section.html #}
+<!-- Partite per Turno -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5>
+                <i class="fas fa-gamepad"></i> Turno {{ round_num }}
+                <span class="badge bg-info ms-2">{{ round_matches|length }} partite</span>
+            </h5>
+            <div>
+                {% set completed = round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                {% set total = round_matches|length %}
+                {% if total > 0 %}
+                    <span class="badge bg-{% if completed == total %}success{% elif completed > 0 %}warning{% else %}secondary{% endif %}">
+                        {{ completed }}/{{ total }} completate
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if round_matches %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th width="25%">Giocatore 1</th>
+                            <th width="25%">Giocatore 2</th>
+                            <th width="15%">Risultato</th>
+                            <th width="15%">Stato</th>
+                            <th width="20%">Azioni Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in round_matches %}
+                            {% include "components/_match_result_row.html" %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Turno {{ round_num }}:</strong> Nessuna partita ancora creata.
+                {% if round_num == 1 %}
+                    Vai al dettaglio gara per avviare il primo turno.
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>

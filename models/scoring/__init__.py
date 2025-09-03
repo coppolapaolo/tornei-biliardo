@@ -1,5 +1,5 @@
 # models/scoring/__init__.py
-"""Scoring module for tournament classifications."""
+"""Scoring module for campionato classifications."""
 
 from .policies import ScoringPolicy
 from .strategies import (

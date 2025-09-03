@@ -109,7 +109,7 @@ def start_attempt(challenge_id):
         attempt = ChallengeService.start_challenge_attempt(
             user_id=current_user.id,
             challenge_id=challenge_id,
-            prova_id=int(data["prova_id"]) if data.get("prova_id") else None,
+            gara_id=int(data["gara_id"]) if data.get("gara_id") else None,
             round_number=int(data["round_number"])
             if data.get("round_number")
             else None,
@@ -263,17 +263,17 @@ def challenge_statistics(challenge_id):
 
 
 @challenge_bp.route(
-    "/x-replacement/<int:prova_id>/<int:round_number>", methods=["POST"]
+    "/x-replacement/<int:gara_id>/<int:round_number>", methods=["POST"]
 )
 @login_required
-def create_x_replacement(prova_id, round_number):
-    """Create challenge attempt for X replacement in tournament."""
+def create_x_replacement(gara_id, round_number):
+    """Create challenge attempt for X replacement in campionato."""
     try:
         data = request.get_json() if request.is_json else request.form
 
         attempt = ChallengeService.create_x_replacement_attempt(
             user_id=current_user.id,
-            prova_id=prova_id,
+            gara_id=gara_id,
             round_number=round_number,
             challenge_id=data.get("challenge_id", type=int),
         )
@@ -308,7 +308,7 @@ def complete_x_replacement(attempt_id):
         attempt = ChallengeAttempt.query.get_or_404(attempt_id)
 
         # Verify user owns this attempt and it's for X replacement
-        if attempt.user_id != current_user.id or not attempt.prova_id:
+        if attempt.user_id != current_user.id or not attempt.gara_id:
             return jsonify({"success": False, "error": "Access denied"}), 403
 
         data = request.get_json() if request.is_json else request.form
@@ -328,7 +328,7 @@ def complete_x_replacement(attempt_id):
             )
         else:
             flash("X replacement completed successfully!", "success")
-            return redirect(url_for("admin.prova_detail", prova_id=attempt.prova_id))
+            return redirect(url_for("admin.gara_detail", gara_id=attempt.gara_id))
 
     except ValueError as e:
         error_msg = f"Error completing X replacement: {str(e)}"

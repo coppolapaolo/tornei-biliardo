@@ -4,20 +4,20 @@
         <h6>Info Partita</h6>
     </div>
     <div class="card-body">
-        <p><strong>Torneo:</strong> {{ match.prova.tournament.name }}</p>
-        <p><strong>Prova:</strong> {{ match.prova.number }}</p>
-        <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.prova.rounds_count }}</p>
-        <p><strong>Disciplina:</strong> {{ match.prova.discipline }}</p>
+        <p><strong>Campionato:</strong> {{ match.gara.campionato.name }}</p>
+        <p><strong>Gara:</strong> {{ match.gara.number }}</p>
+        <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
+        <p><strong>Disciplina:</strong> {{ match.gara.discipline }}</p>
         <p><strong>Modalità:</strong> 
-            {% if match.prova.best_of %}
-                Al meglio di {{ match.prova.distance }}
+            {% if match.gara.best_of %}
+                Al meglio di {{ match.gara.distance }}
             {% else %}
-                {{ match.prova.distance }} rack esatti
+                {{ match.gara.distance }} rack esatti
             {% endif %}
         </p>
-        <p><strong>Data:</strong> {{ match.prova.date.strftime('%d/%m/%Y') }}</p>
-        {% if match.prova.location %}
-            <p><strong>Luogo:</strong> {{ match.prova.location }}</p>
+        <p><strong>Data:</strong> {{ match.gara.date.strftime('%d/%m/%Y') }}</p>
+        {% if match.gara.location %}
+            <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
         {% endif %}
         
         {% if debug_info.debug_mode %}

@@ -13,17 +13,17 @@ from sqlalchemy.orm import backref
 
 class Classification(db.Model):
     """
-    Tournament overall classification tracking.
+    Campionato overall classification tracking.
 
-    Tracks the overall performance of players across all provas in a tournament,
+    Tracks the overall performance of players across all provas in a campionato,
     maintaining total wins, point differences, and final rankings.
     """
 
     __tablename__ = "classification"
 
     id = db.Column(db.Integer, primary_key=True)
-    tournament_id = db.Column(
-        db.Integer, db.ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False
+    campionato_id = db.Column(
+        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"), nullable=False
     )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     position = db.Column(db.Integer)
@@ -32,8 +32,8 @@ class Classification(db.Model):
     provas_played = db.Column(db.Integer, default=0)
 
     # Relations
-    tournament = db.relationship(
-        "Tournament",
+    campionato = db.relationship(
+        "Campionato",
         backref=backref(
             "classifications",
             cascade="all, delete-orphan",
@@ -57,8 +57,8 @@ class RoundClassification(db.Model):
     __tablename__ = "round_classification"
 
     id = db.Column(db.Integer, primary_key=True)
-    prova_id = db.Column(
-        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
+    gara_id = db.Column(
+        db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
     )
     round_number = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -73,8 +73,8 @@ class RoundClassification(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
-    prova = db.relationship(
-        "Prova",
+    gara = db.relationship(
+        "Gara",
         backref=backref(
             "round_classifications",
             cascade="all, delete-orphan",
@@ -86,12 +86,12 @@ class RoundClassification(db.Model):
     # Constraint: one entry per player per round
     __table_args__ = (
         db.UniqueConstraint(
-            "prova_id", "round_number", "user_id", name="unique_round_classification"
+            "gara_id", "round_number", "user_id", name="unique_round_classification"
         ),
     )
 
     @staticmethod
-    def calculate_classification_after_round(prova_id, round_number):
+    def calculate_classification_after_round(gara_id, round_number):
         """
         Calculate classification after a specific round.
 
@@ -99,7 +99,7 @@ class RoundClassification(db.Model):
         and creates/updates RoundClassification entries for all players.
 
         Args:
-            prova_id: ID of the prova
+            gara_id: ID of the gara
             round_number: Round number to calculate classification for
 
         Returns:
@@ -111,7 +111,7 @@ class RoundClassification(db.Model):
         completed_matches = (
             db.session.query(Match)
             .filter(
-                Match.prova_id == prova_id,
+                Match.gara_id == gara_id,
                 Match.round_number <= round_number,
                 Match.status == "completed",  # type: ignore[operator]
                 Match.is_bye.is_(False),
@@ -167,7 +167,7 @@ class RoundClassification(db.Model):
             previous_classification = (
                 db.session.query(RoundClassification)
                 .filter_by(
-                    prova_id=prova_id,
+                    gara_id=gara_id,
                     round_number=round_number - 1,
                     user_id=player_id,
                 )
@@ -181,7 +181,7 @@ class RoundClassification(db.Model):
             classification = (
                 db.session.query(RoundClassification)
                 .filter_by(
-                    prova_id=prova_id,
+                    gara_id=gara_id,
                     round_number=round_number,
                     user_id=player_id,
                 )
@@ -197,7 +197,7 @@ class RoundClassification(db.Model):
             else:
                 # Create new
                 classification = RoundClassification(
-                    prova_id=prova_id,
+                    gara_id=gara_id,
                     round_number=round_number,
                     user_id=player_id,
                     position=position,
@@ -221,15 +221,15 @@ class PlayerEncounter(db.Model):
     """
     Player encounter tracking for anti-reincontro logic.
 
-    Tracks which players have already faced each other in a prova,
+    Tracks which players have already faced each other in a gara,
     enabling the Amalfi algorithm to avoid repeat pairings when possible.
     """
 
     __tablename__ = "player_encounter"
 
     id = db.Column(db.Integer, primary_key=True)
-    prova_id = db.Column(
-        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
+    gara_id = db.Column(
+        db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
     )
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -237,8 +237,8 @@ class PlayerEncounter(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
-    prova = db.relationship(
-        "Prova",
+    gara = db.relationship(
+        "Gara",
         backref=backref(
             "player_encounters",
             cascade="all, delete-orphan",
@@ -255,20 +255,20 @@ class PlayerEncounter(db.Model):
     __table_args__ = (
         db.CheckConstraint("player1_id < player2_id", name="ordered_players"),
         db.UniqueConstraint(
-            "prova_id",
+            "gara_id",
             "player1_id",
             "player2_id",
-            name="unique_encounter_per_prova",
+            name="unique_encounter_per_gara",
         ),
     )
 
     @staticmethod
-    def have_played(prova_id, player1_id, player2_id):
+    def have_played(gara_id, player1_id, player2_id):
         """
         Check if two players have already played against each other.
 
         Args:
-            prova_id: ID of the prova
+            gara_id: ID of the gara
             player1_id: ID of first player
             player2_id: ID of second player
 
@@ -280,19 +280,19 @@ class PlayerEncounter(db.Model):
 
         encounter = (
             db.session.query(PlayerEncounter)
-            .filter_by(prova_id=prova_id, player1_id=p1, player2_id=p2)
+            .filter_by(gara_id=gara_id, player1_id=p1, player2_id=p2)
             .first()
         )
 
         return encounter is not None
 
     @staticmethod
-    def record_encounter(prova_id, player1_id, player2_id, round_number):
+    def record_encounter(gara_id, player1_id, player2_id, round_number):
         """
         Record that two players have played against each other.
 
         Args:
-            prova_id: ID of the prova
+            gara_id: ID of the gara
             player1_id: ID of first player
             player2_id: ID of second player
             round_number: Round when they played
@@ -304,7 +304,7 @@ class PlayerEncounter(db.Model):
         p1, p2 = min(player1_id, player2_id), max(player1_id, player2_id)
 
         encounter = PlayerEncounter(
-            prova_id=prova_id,
+            gara_id=gara_id,
             player1_id=p1,
             player2_id=p2,
             round_number=round_number,

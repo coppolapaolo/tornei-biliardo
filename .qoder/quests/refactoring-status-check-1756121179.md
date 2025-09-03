@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a comprehensive analysis of the current status of the tornei-biliardo web application refactoring effort. Based on the documentation and codebase analysis, we can determine that Phase 3 of the refactoring has been completed, and the route blueprint decomposition has also been completed. However, the overall refactoring roadmap defined in ADR-0001 is not yet fully implemented.
+This document provides a comprehensive analysis of the current status of the campionati-biliardo web application refactoring effort. Based on the documentation and codebase analysis, we can determine that Phase 3 of the refactoring has been completed, and the route blueprint decomposition has also been completed. However, the overall refactoring roadmap defined in ADR-0001 is not yet fully implemented.
 
 ## Current Status Analysis
 
@@ -18,7 +18,7 @@ This document provides a comprehensive analysis of the current status of the tor
 
 2. **Route Blueprint Decomposition** (Completed)
    - Successfully decomposed the monolithic `routes/admin.py` (1,442 lines) into domain-specific Flask Blueprints
-   - Created separate blueprints for Tournament, Competition, Match, User, and Dashboard domains
+   - Created separate blueprints for Campionato, Competition, Match, User, and Dashboard domains
    - Maintained complete URL compatibility
    - Implemented smoke tests to verify functionality
 
@@ -37,7 +37,7 @@ Based on ADR-0001 and actual codebase analysis, the following milestones remain 
    - Eliminate all `db.session` usage from routes
 
 3. **Milestone 4: Scoring Strategy Pattern**
-   - Implement configurable scoring policies for tournaments
+   - Implement configurable scoring policies for campionati
    - Define `ScoringPolicy` interface
    - Implement multiple scoring strategies
 
@@ -50,20 +50,20 @@ Based on ADR-0001 and actual codebase analysis, the following milestones remain 
 
 ### Template Complexity
 Based on actual file sizes, the following templates still exceed 400 lines:
-- `admin/prova_result_overview.html` (14.7KB, ~400+ lines)
-- `admin/prova_detail.html` (13.8KB, ~400+ lines)
+- `admin/gara_result_overview.html` (14.7KB, ~400+ lines)
+- `admin/gara_detail.html` (13.8KB, ~400+ lines)
 - `admin/user_detail.html` (10.4KB, ~300+ lines)
 
 While there are many components in the `templates/components/` directory, the main templates still need further componentization to meet the <400 lines target.
 
 ### Direct Database Access
 Analysis of the refactored route files shows mixed usage:
-- `routes/admin/competition.py`: Properly uses service layer (ProvaService) for business logic
+- `routes/admin/competition.py`: Properly uses service layer (GaraService) for business logic
 - `routes/admin/match.py`: Properly uses service layer (MatchService, RackService)
-- `routes/admin/tournament.py`: Uses direct model queries but could benefit from a TournamentService
+- `routes/admin/campionato.py`: Uses direct model queries but could benefit from a TournamentService
 - `routes/admin/user.py`: Still uses direct `db.session` calls (4 occurrences) that should be moved to UserService
 
-While the competition and match routes have been properly refactored to use service layers, the tournament and user routes still have direct database access that needs to be migrated.
+While the competition and match routes have been properly refactored to use service layers, the campionato and user routes still have direct database access that needs to be migrated.
 
 ### Code Duplication
 The `InvalidTransitionError` duplication has been resolved:
@@ -78,8 +78,8 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
 
 ### ✅ Adequately Addressed
 - User roles (guest, player, director, admin)
-- Tournament management
-- Competition (prova) management
+- Campionato management
+- Competition (gara) management
 - Match management
 - Basic Amalfi pairing algorithm
 - Playoff system implementation
@@ -133,13 +133,13 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
       - Verify all functionality works as expected
       - Check for any visual regressions
    
-   **File: `admin/prova_result_overview.html` (14.7KB)**
-   - Create `_prova_results_stats.html` component for statistics cards:
+   **File: `admin/gara_result_overview.html` (14.7KB)**
+   - Create `_gara_results_stats.html` component for statistics cards:
      - Total matches card
      - Completed matches card
      - Pending matches card
      - Total rounds card
-   - Create `_prova_round_section.html` component for each round section:
+   - Create `_gara_round_section.html` component for each round section:
      - Round header with number and match count
      - Progress badge showing completion status
      - Match table for the round
@@ -149,37 +149,37 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
      - Score display with badges
      - Action buttons (quick result, edit, reset)
 
-   **File: `admin/prova_detail.html` (13.8KB)**
+   **File: `admin/gara_detail.html` (13.8KB)**
    - Already uses several components:
-     - `_prova_header.html`
-     - `_prova_info.html`
-     - `_prova_management.html`
+     - `_gara_header.html`
+     - `_gara_info.html`
+     - `_gara_management.html`
      - `_amalfi_system.html`
      - `_amalfi_preview_modal.html`
      - `_open_inscriptions_modal.html`
      - `_modify_dates_modal.html`
-     - `_prova_matches.html`
-     - `_prova_inscriptions.html`
+     - `_gara_matches.html`
+     - `_gara_inscriptions.html`
    - Identify sections that can be further componentized:
-     - Create `_prova_round_navigation.html` for round navigation controls
-     - Create `_prova_action_buttons.html` for action buttons section
-     - Create `_prova_script_section.html` for JavaScript functions
+     - Create `_gara_round_navigation.html` for round navigation controls
+     - Create `_gara_action_buttons.html` for action buttons section
+     - Create `_gara_script_section.html` for JavaScript functions
 
    **File: `admin/user_detail.html` (10.4KB)**
    - Create `_user_profile_header.html` component for user header:
      - Username with admin badge
      - Page title
    - Create `_user_general_stats.html` component for general statistics:
-     - Tournaments played card
+     - Campionati played card
      - Provas played card
      - Matches won card
      - Win percentage card
    - Create `_user_recent_matches_table.html` component for recent matches:
      - Table header
-     - Match rows with tournament, prova, round, opponent, result, and outcome
-   - Create `_user_tournament_classifications_table.html` component for classifications:
+     - Match rows with campionato, gara, round, opponent, result, and outcome
+   - Create `_user_campionato_classifications_table.html` component for classifications:
      - Table header
-     - Classification rows with tournament, position, matches won, point difference, and provas played
+     - Classification rows with campionato, position, matches won, point difference, and provas played
    - Create `_user_info_card.html` component for user information:
      - Username, email, phone, role, registration date
      - Debug information (if enabled)
@@ -213,9 +213,9 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
    - `_dashboard_header.html` - Common header for all dashboards
    - `_dashboard_stats_cards.html` - Statistics overview cards
    - `_dashboard_recent_activity.html` - Recent matches and activities
-   - `_dashboard_upcoming_events.html` - Upcoming tournaments and provas
+   - `_dashboard_upcoming_events.html` - Upcoming campionati and provas
    - `_dashboard_quick_actions.html` - Quick action buttons based on user role
-   - `_dashboard_tournament_list.html` - Tournament cards section
+   - `_dashboard_campionato_list.html` - Campionato cards section
 
    **Role-based content rendering:**
    - Create role-specific components:
@@ -275,15 +275,15 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
    **TournamentService Enhancement**
 
    **Current State:**
-   - `routes/admin/tournament.py` uses a mix of direct database access and `TournamentService`
+   - `routes/admin/campionato.py` uses a mix of direct database access and `TournamentService`
    - `TournamentService` exists but is incomplete
 
    **Required Enhancements:**
    - Enhance `TournamentService` with additional methods:
-     - `get_tournament_detail_data(tournament_id)` - Consolidate query logic for tournament detail
-     - `get_candidate_directors(tournament_id)` - Get directors not already assigned
-     - `calculate_tournament_status(tournament_id)` - Calculate derived status information
-     - `get_tournament_statistics(tournament_id)` - Get tournament-level statistics
+     - `get_campionato_detail_data(campionato_id)` - Consolidate query logic for campionato detail
+     - `get_candidate_directors(campionato_id)` - Get directors not already assigned
+     - `calculate_campionato_status(campionato_id)` - Calculate derived status information
+     - `get_campionato_statistics(campionato_id)` - Get campionato-level statistics
 
    **Additional Service Classes**
 
@@ -307,16 +307,16 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
 1. **Strategy Pattern Implementation**
    - Define `ScoringPolicy` interface
    - Implement various scoring strategies (Amalfi, Round Robin, etc.)
-   - Enable per-tournament scoring configuration
+   - Enable per-campionato scoring configuration
 
    **Detailed Implementation Plan:**
 
    **Implementation Steps**
 
    1. **Policy Integration (1 day)**
-      - Enhance `Tournament` model with scoring policy support
+      - Enhance `Campionato` model with scoring policy support
       - Create `ScoringPolicyFactory` for policy instantiation
-      - Integrate with tournament classification calculation
+      - Integrate with campionato classification calculation
 
    2. **Advanced Pairing Implementation (1.5 days)**
       - Implement challenge-based X-replacement
@@ -324,7 +324,7 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
       - Enhance Amalfi algorithm with anti-reincontro logic
 
    3. **Testing and Validation (0.5 days)**
-      - Test all scoring policies with different tournament types
+      - Test all scoring policies with different campionato types
       - Validate pairing algorithms produce correct results
       - Check performance of complex pairing calculations
 
@@ -333,14 +333,14 @@ The current implementation partially addresses the requirements in SPECIFICHE.md
    **Current State:**
    - `ScoringPolicy` interface exists in `models/scoring/policies.py`
    - Concrete implementations exist in `models/scoring/strategies.py`
-   - Policies are not fully integrated with tournament management
+   - Policies are not fully integrated with campionato management
 
    **Required Enhancements:**
-   - Enhance `Tournament` model to support scoring policy selection:
+   - Enhance `Campionato` model to support scoring policy selection:
      - Add `scoring_policy` field to store policy type
      - Add relationship to scoring policy configuration
-   - Create `ScoringPolicyFactory` to instantiate policies based on tournament settings
-   - Integrate scoring policies with tournament classification calculation
+   - Create `ScoringPolicyFactory` to instantiate policies based on campionato settings
+   - Integrate scoring policies with campionato classification calculation
 
 2. **Advanced Pairing Features**
    - Implement X-replacement with challenges
@@ -516,7 +516,7 @@ The refactoring will be considered complete when:
 1. All templates are under 400 lines
 2. All route handlers contain only HTTP-related logic
 3. All business logic resides in service classes with proper transaction management
-4. Scoring policies are configurable per tournament
+4. Scoring policies are configurable per campionato
 5. Exception handling is unified across all domains
 6. Shared utilities are consolidated and dead code is removed
 7. All quality gates are met (90%+ test coverage, linting passes, performance targets)

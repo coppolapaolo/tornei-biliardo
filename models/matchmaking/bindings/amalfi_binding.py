@@ -5,11 +5,11 @@ from typing import Tuple, List, Any
 from amalfi import validate_amalfi_configuration, create_amalfi_round_matches
 
 
-def validate_prova(prova: Any) -> Tuple[bool, tuple[str, ...]]:
+def validate_gara(gara: Any) -> Tuple[bool, tuple[str, ...]]:
     """
-    Adatta validate_amalfi_configuration(prova) -> (ok, messages)
+    Adatta validate_amalfi_configuration(gara) -> (ok, messages)
     """
-    data = validate_amalfi_configuration(prova)  # dict con is_valid, errors, warnings
+    data = validate_amalfi_configuration(gara)  # dict con is_valid, errors, warnings
     ok = bool(data.get("is_valid", False))
     # Prima gli errori (bloccanti), poi i warning (informativi)
     messages: list[str] = []
@@ -41,11 +41,11 @@ def _extract_pairing_from_match(m: Any) -> tuple[int, ...]:
     return (int(m.player1_id), int(m.player2_id))
 
 
-def propose_pairings(prova: Any, round_number: int) -> List[tuple[int, ...]]:
+def propose_pairings(gara: Any, round_number: int) -> List[tuple[int, ...]]:
     """
     Genera gli abbinamenti *effettivi* del round invocando il tuo engine legacy,
     poi li traduce in tuple di ID giocatori (p1,p2) o (p1,) per bye o
     (p1,p2,p3) per trio.
     """
-    matches = create_amalfi_round_matches(prova, round_number)
+    matches = create_amalfi_round_matches(gara, round_number)
     return [_extract_pairing_from_match(m) for m in matches]

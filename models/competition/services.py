@@ -1,8 +1,8 @@
 """
 Module: models/competition/services
-Purpose: Service layer per il dominio Competition (Prova, Inscription) +
-         state machine per le transizioni di stato di Prova.
-Data Structures: ProvaService, ProvaStateMachine, InscriptionService
+Purpose: Service layer per il dominio Competition (Gara, Inscription) +
+         state machine per le transizioni di stato di Gara.
+Data Structures: GaraService, ProvaStateMachine, InscriptionService
 Dependencies: models.base.db, models.competition.models, models.status_enum
 
 Nota sprint 4 (migrazione soft):
@@ -17,61 +17,61 @@ from datetime import date, datetime
 from sqlalchemy import select
 
 from models.base import db
-from models.status_enum import ProvaStatus
-from .models import Prova, Inscription
+from models.status_enum import GaraStatus
+from .models import Gara, Inscription
 
 
 from models.exceptions import InvalidTransitionError
 
 
 class ProvaStateMachine:
-    """Regole di transizione per `Prova.status`.
+    """Regole di transizione per `Gara.status`.
 
     Stati persistiti ammessi: setup → inscription ↔ setup → playing → completed.
     - setup → inscription: apertura iscrizioni
     - inscription → setup: riapertura setup (es. modifica date/config)
     - inscription → playing: inizio partite
-    - playing → completed: chiusura prova
+    - playing → completed: chiusura gara
     """
 
     @staticmethod
-    def _require(prova: Prova, expected: ProvaStatus) -> None:
-        if (prova.status or ProvaStatus.SETUP) != expected.value:
+    def _require(gara: Gara, expected: GaraStatus) -> None:
+        if (gara.status or GaraStatus.SETUP) != expected.value:
             raise InvalidTransitionError(
-                f"Transizione non ammessa: {prova.status!r} → "
+                f"Transizione non ammessa: {gara.status!r} → "
                 f"{expected.name.lower()} richiesta come stato corrente."
             )
 
     @staticmethod
-    def to_inscription(prova: Prova) -> Prova:
+    def to_inscription(gara: Gara) -> Gara:
         """setup → inscription"""
-        ProvaStateMachine._require(prova, ProvaStatus.SETUP)
-        prova.status = ProvaStatus.INSCRIPTION.value
-        prova.updated_at = getattr(prova, "updated_at", None) or None  # compat
-        db.session.add(prova)
+        ProvaStateMachine._require(gara, GaraStatus.SETUP)
+        gara.status = GaraStatus.INSCRIPTION.value
+        gara.updated_at = getattr(gara, "updated_at", None) or None  # compat
+        db.session.add(gara)
         db.session.commit()
-        return prova
+        return gara
 
     @staticmethod
-    def reopen_setup(prova: Prova) -> Prova:
+    def reopen_setup(gara: Gara) -> Gara:
         """inscription → setup"""
-        ProvaStateMachine._require(prova, ProvaStatus.INSCRIPTION)
-        prova.status = ProvaStatus.SETUP.value
-        db.session.add(prova)
+        ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
+        gara.status = GaraStatus.SETUP.value
+        db.session.add(gara)
         db.session.commit()
-        return prova
+        return gara
 
     @staticmethod
-    def start_playing(prova: Prova) -> Prova:
+    def start_playing(gara: Gara) -> Gara:
         """inscription → playing.
         Esegue controlli minimi: se disponibile, verifica numero iscritti >= 2.
         """
-        ProvaStateMachine._require(prova, ProvaStatus.INSCRIPTION)
+        ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
 
         # Controllo soft sul numero di iscritti (se relazione disponibile)
         min_required = 2
         try:
-            count = len(prova.inscriptions)  # type: ignore[attr-defined]
+            count = len(gara.inscriptions)  # type: ignore[attr-defined]
         except Exception:
             count = None
         if count is not None and count < min_required:
@@ -79,158 +79,158 @@ class ProvaStateMachine:
                 "Numero iscritti insufficiente per iniziare (min 2)."
             )
 
-        prova.status = ProvaStatus.PLAYING.value
+        gara.status = GaraStatus.PLAYING.value
         # Se il modello espone current_round/rounds_count, inizializza con cautela
-        if hasattr(prova, "current_round") and getattr(prova, "current_round") in (
+        if hasattr(gara, "current_round") and getattr(gara, "current_round") in (
             None,
             0,
         ):
             try:
-                setattr(prova, "current_round", 1)
+                setattr(gara, "current_round", 1)
             except Exception:
                 pass
-        db.session.add(prova)
+        db.session.add(gara)
         db.session.commit()
-        return prova
+        return gara
 
     @staticmethod
-    def complete(prova: Prova) -> Prova:
+    def complete(gara: Gara) -> Gara:
         """playing → completed"""
-        ProvaStateMachine._require(prova, ProvaStatus.PLAYING)
-        prova.status = ProvaStatus.COMPLETED.value
-        db.session.add(prova)
+        ProvaStateMachine._require(gara, GaraStatus.PLAYING)
+        gara.status = GaraStatus.COMPLETED.value
+        db.session.add(gara)
         db.session.commit()
-        return prova
+        return gara
 
 
-class ProvaService:
-    """Operazioni di business su Prova (creazione, query, validazione, transizioni)."""
+class GaraService:
+    """Operazioni di business su Gara (creazione, query, validazione, transizioni)."""
 
     # -----------------------------
     # CREAZIONE / QUERY DI SUPPORTO
     # -----------------------------
     @staticmethod
-    def create_prova(
+    def create_gara(
         number: int,
         name: str,
         date,
         discipline: str,
         distance: int,
-        tournament_id: Optional[int] = None,
+        campionato_id: Optional[int] = None,
         director_id: Optional[int] = None,
         **kwargs,
-    ) -> Prova:
-        """Crea una Prova (anche standalone se `tournament_id` è None)."""
-        # Guard: una Prova deve appartenere a un torneo o avere un direttore esplicito
-        if not tournament_id and not director_id:
+    ) -> Gara:
+        """Crea una Gara (anche standalone se `campionato_id` è None)."""
+        # Guard: una Gara deve appartenere a un campionato o avere un direttore esplicito
+        if not campionato_id and not director_id:
             raise ValueError(
-                "Una Prova deve avere un tournament_id o un director_id (standalone)."
+                "Una Gara deve avere un campionato_id o un director_id (standalone)."
             )
 
-        prova = Prova(
+        gara = Gara(
             number=number,
             name=name,
             date=date,
             discipline=discipline,
             distance=distance,
-            tournament_id=tournament_id,
+            campionato_id=campionato_id,
             director_id=director_id,
             **kwargs,
         )
-        db.session.add(prova)
+        db.session.add(gara)
         db.session.commit()
-        return prova
+        return gara
 
     @staticmethod
-    def get_prova_by_id(prova_id: int) -> Optional[Prova]:
-        """Retrieve a Prova by ID using service layer.
+    def get_gara_by_id(gara_id: int) -> Optional[Gara]:
+        """Retrieve a Gara by ID using service layer.
 
         Args:
-            prova_id: ID of the prova to retrieve
+            gara_id: ID of the gara to retrieve
 
         Returns:
-            Prova: The prova instance if found, None otherwise
+            Gara: The gara instance if found, None otherwise
         """
-        return db.session.get(Prova, prova_id)
+        return db.session.get(Gara, gara_id)
 
     @staticmethod
-    def update_prova(prova_id: int, **kwargs) -> Prova:
-        """Aggiorna una prova con i campi forniti."""
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+    def update_gara(gara_id: int, **kwargs) -> Gara:
+        """Aggiorna una gara con i campi forniti."""
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
 
-        if not prova.can_be_modified():
+        if not gara.can_be_modified():
             raise ValueError(
-                "Impossibile modificare la prova: ci sono già delle iscrizioni!"
+                "Impossibile modificare la gara: ci sono già delle iscrizioni!"
             )
 
         # Aggiorna solo i campi forniti
         for field, value in kwargs.items():
-            if hasattr(prova, field):
-                setattr(prova, field, value)
+            if hasattr(gara, field):
+                setattr(gara, field, value)
 
         # Gestione speciale per date
         if "date_str" in kwargs:
             from datetime import datetime
 
-            prova.date = datetime.strptime(kwargs["date_str"], "%Y-%m-%d").date()
+            gara.date = datetime.strptime(kwargs["date_str"], "%Y-%m-%d").date()
 
         db.session.commit()
-        return prova
+        return gara
 
     @staticmethod
-    def delete_prova(prova_id: int) -> None:
-        """Cancella una prova se possibile."""
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+    def delete_gara(gara_id: int) -> None:
+        """Cancella una gara se possibile."""
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
 
-        if not prova.can_be_deleted():
+        if not gara.can_be_deleted():
             raise ValueError(
-                "Impossibile cancellare la prova: ci sono già delle iscrizioni!"
+                "Impossibile cancellare la gara: ci sono già delle iscrizioni!"
             )
 
-        db.session.delete(prova)
+        db.session.delete(gara)
         db.session.commit()
 
     @staticmethod
-    def cancel_prova_with_notifications(prova_id: int, cancelled_by_id: int) -> None:
-        """Cancella una prova inviando notifiche a tutti i partecipanti iscritti."""
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+    def cancel_gara_with_notifications(gara_id: int, cancelled_by_id: int) -> None:
+        """Cancella una gara inviando notifiche a tutti i partecipanti iscritti."""
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
         
-        # Verifica che la prova possa essere cancellata
-        if prova.status not in ['setup', 'inscription']:
-            raise ValueError("La prova non può essere cancellata in questo stato!")
+        # Verifica che la gara possa essere cancellata
+        if gara.status not in ['setup', 'inscription']:
+            raise ValueError("La gara non può essere cancellata in questo stato!")
             
         # Ottieni tutti gli iscritti prima di cancellare
-        inscriptions = db.session.query(Inscription).filter_by(prova_id=prova_id).all()
+        inscriptions = db.session.query(Inscription).filter_by(gara_id=gara_id).all()
         participant_ids = [inscription.user_id for inscription in inscriptions]
         
         # Prepara le informazioni per le notifiche
-        prova_name = f"Prova {prova.number}"
-        tournament_name = prova.tournament.name if prova.tournament else "Standalone"
+        gara_name = f"Gara {gara.number}"
+        campionato_name = gara.campionato.name if gara.campionato else "Standalone"
         
         try:
-            # Cancella la prova
-            db.session.delete(prova)
+            # Cancella la gara
+            db.session.delete(gara)
             
             # Invia notifiche a tutti i partecipanti
             if participant_ids:
                 from models.notification.services import NotificationService
                 from models.notification.models import NotificationPriority
                 
-                message = f"La {prova_name}"
-                if prova.tournament:
-                    message += f" del torneo '{tournament_name}'"
-                message += f" del {prova.date.strftime('%d/%m/%Y')} è stata cancellata."
+                message = f"La {gara_name}"
+                if gara.campionato:
+                    message += f" del campionato '{campionato_name}'"
+                message += f" del {gara.date.strftime('%d/%m/%Y')} è stata cancellata."
                 
                 for participant_id in participant_ids:
                     NotificationService.create_notification(
                         user_id=participant_id,
-                        title="Prova Cancellata",
+                        title="Gara Cancellata",
                         message=message,
                         priority=NotificationPriority.HIGH,
                         created_by_id=cancelled_by_id
@@ -240,38 +240,38 @@ class ProvaService:
             
         except Exception as e:
             db.session.rollback()
-            raise ValueError(f"Errore durante la cancellazione della prova: {str(e)}")
+            raise ValueError(f"Errore durante la cancellazione della gara: {str(e)}")
 
     @staticmethod
     def open_inscriptions(
-        prova_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> Prova:
-        """Apre le iscrizioni per una prova con validazione delle date."""
+        gara_id: int, inscription_start: datetime, inscription_end: datetime
+    ) -> Gara:
+        """Apre le iscrizioni per una gara con validazione delle date."""
         if inscription_start > inscription_end:
             raise ValueError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
 
-        prova.inscription_start = inscription_start
-        prova.inscription_end = inscription_end
-        prova = ProvaStateMachine.to_inscription(prova)
+        gara.inscription_start = inscription_start
+        gara.inscription_end = inscription_end
+        gara = ProvaStateMachine.to_inscription(gara)
 
-        return prova
+        return gara
 
     @staticmethod
     def modify_inscription_dates(
-        prova_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> Prova:
-        """Modifica le date di iscrizione per una prova."""
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+        gara_id: int, inscription_start: datetime, inscription_end: datetime
+    ) -> Gara:
+        """Modifica le date di iscrizione per una gara."""
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
 
-        if not prova.can_modify_inscription_dates():
+        if not gara.can_modify_inscription_dates():
             raise ValueError(
                 "Impossibile modificare le date: il primo turno è già stato avviato!"
             )
@@ -281,36 +281,36 @@ class ProvaService:
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
-        prova.inscription_start = inscription_start
-        prova.inscription_end = inscription_end
+        gara.inscription_start = inscription_start
+        gara.inscription_end = inscription_end
 
         # Gestione automatica dello stato in base alle date
         now = datetime.utcnow()
         if inscription_start > now:
-            prova = ProvaStateMachine.reopen_setup(prova)
+            gara = ProvaStateMachine.reopen_setup(gara)
         elif inscription_start <= now <= inscription_end:
-            prova = ProvaStateMachine.to_inscription(prova)
+            gara = ProvaStateMachine.to_inscription(gara)
 
-        return prova
+        return gara
 
     @staticmethod
-    def start_first_round(prova_id: int) -> Prova:
-        """Avvia il primo turno della prova con controlli e sorteggio."""
+    def start_first_round(gara_id: int) -> Gara:
+        """Avvia il primo turno della gara con controlli e sorteggio."""
         from models.competition.models import Inscription
         import random
 
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
 
-        if prova.current_round != 0:
-            raise ValueError("La prova è già iniziata!")
+        if gara.current_round != 0:
+            raise ValueError("La gara è già iniziata!")
 
         # Verifica numero minimo partecipanti
-        inscriptions = db.session.query(Inscription).filter_by(prova_id=prova_id).all()
-        if len(inscriptions) < prova.min_participants:
+        inscriptions = db.session.query(Inscription).filter_by(gara_id=gara_id).all()
+        if len(inscriptions) < gara.min_participants:
             raise ValueError(
-                f"Servono almeno {prova.min_participants} iscritti per avviare la prova!"
+                f"Servono almeno {gara.min_participants} iscritti per avviare la gara!"
             )
 
         # Genera il sorteggio iniziale
@@ -323,16 +323,16 @@ class ProvaService:
         # Crea abbinamenti primo turno
         from utils import create_round_matches  # Import locale
 
-        create_round_matches(prova, inscriptions, 1)
+        create_round_matches(gara, inscriptions, 1)
 
-        prova.current_round = 1
-        prova = ProvaStateMachine.start_playing(prova)
+        gara.current_round = 1
+        gara = ProvaStateMachine.start_playing(gara)
 
-        return prova
+        return gara
 
     @staticmethod
     def create_amalfi_round(
-        prova_id: int, round_number: int
+        gara_id: int, round_number: int
     ) -> tuple[int, int, int, int]:
         """Crea un turno Amalfi con gestione degli errori.
 
@@ -343,17 +343,17 @@ class ProvaService:
         from amalfi import create_amalfi_round_matches
 
         try:
-            prova = db.session.get(Prova, prova_id)
-            if not prova:
-                raise ValueError(f"Prova {prova_id} non trovata")
+            gara = db.session.get(Gara, gara_id)
+            if not gara:
+                raise ValueError(f"Gara {gara_id} non trovata")
 
             # Usa il binding Amalfi esistente
-            create_amalfi_round_matches(prova, round_number)
+            create_amalfi_round_matches(gara, round_number)
 
             # Conta i risultati
             matches = (
                 db.session.query(Match)
-                .filter_by(prova_id=prova_id, round_number=round_number)
+                .filter_by(gara_id=gara_id, round_number=round_number)
                 .all()
             )
             normal_matches = sum(1 for m in matches if not m.is_bye and not m.is_trio)
@@ -361,7 +361,7 @@ class ProvaService:
             trio_matches = (
                 db.session.query(TrioMatch)
                 .join(Match)
-                .filter(Match.prova_id == prova_id, Match.round_number == round_number)
+                .filter(Match.gara_id == gara_id, Match.round_number == round_number)
                 .count()
             )
             total_matches = len(matches)
@@ -460,29 +460,29 @@ class ProvaService:
             raise ValueError(f"Errore durante reset trio: {str(e)}")
 
     @staticmethod
-    def get_director_provas(director_id: int):
+    def get_director_garas(director_id: int):
         """
-        Restituisce le Prove dove l'utente è:
-        - direttore esplicito (Prova.director_id)
-        - oppure Tournament Director del torneo (via TournamentDirector)
+        Restituisce le Gare dove l'utente è:
+        - direttore esplicito (Gara.director_id)
+        - oppure Campionato Director del campionato (via TournamentDirector)
         """
         # import locale per evitare cicli
         from models.user.models import TournamentDirector
 
-        # Subquery degli id torneo in cui l'utente è Tournament Director
+        # Subquery degli id campionato in cui l'utente è Campionato Director
         td_subq = (
-            db.session.query(TournamentDirector.tournament_id)
+            db.session.query(TournamentDirector.campionato_id)
             .filter(TournamentDirector.user_id == director_id)
             .subquery()
         )
 
         q = (
-            db.session.query(Prova)
+            db.session.query(Gara)
             .filter(
-                (Prova.director_id == director_id)
-                | (Prova.tournament_id.in_(select(td_subq)))
+                (Gara.director_id == director_id)
+                | (Gara.campionato_id.in_(select(td_subq)))
             )
-            .order_by(Prova.date.desc(), Prova.number.asc())
+            .order_by(Gara.date.desc(), Gara.number.asc())
         )
         return q.all()
 
@@ -490,9 +490,9 @@ class ProvaService:
     # VALIDAZIONE DATI (type-safe)
     # -----------------------------
     @staticmethod
-    def validate_prova_data(data: dict) -> dict:
+    def validate_gara_data(data: dict) -> dict:
         """
-        Valida i campi della Prova e restituisce un dict di errori {campo: messaggio}.
+        Valida i campi della Gara e restituisce un dict di errori {campo: messaggio}.
         Requisiti chiesti dai test storici:
         - max_participants < min_participants -> messaggio contiene '>= min'
         - entry_fee < 0 -> messaggio contiene 'negativa'
@@ -540,9 +540,9 @@ class ProvaService:
             try:
                 number = int(number_raw)
                 if number < 1:
-                    errors["number"] = "Numero prova deve essere almeno 1"
+                    errors["number"] = "Numero gara deve essere almeno 1"
             except (TypeError, ValueError):
-                errors["number"] = "Numero prova non valido"
+                errors["number"] = "Numero gara non valido"
 
         # min_participants (default 2)
         min_p_raw = data.get("min_participants")
@@ -618,13 +618,13 @@ class ProvaService:
     # -----------------------------
     @staticmethod
     def to_inscription(
-        prova_id: int, start: Optional[datetime] = None, end: Optional[datetime] = None
-    ) -> Prova:
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
+        gara_id: int, start: Optional[datetime] = None, end: Optional[datetime] = None
+    ) -> Gara:
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
 
-        prova = ProvaStateMachine.to_inscription(prova)
+        gara = ProvaStateMachine.to_inscription(gara)
 
         # Validazione finestra (se entrambe presenti)
         if start is not None and end is not None and start > end:
@@ -634,61 +634,61 @@ class ProvaService:
 
         # Imposta campi data se forniti (parte della stessa transazione)
         if start is not None:
-            prova.inscription_start = start
+            gara.inscription_start = start
         if end is not None:
-            prova.inscription_end = end
+            gara.inscription_end = end
 
-        return prova
-
-    @staticmethod
-    def reopen_setup(prova_id: int) -> Prova:
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
-        return ProvaStateMachine.reopen_setup(prova)
+        return gara
 
     @staticmethod
-    def start_playing(prova_id: int) -> Prova:
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
-        return ProvaStateMachine.start_playing(prova)
+    def reopen_setup(gara_id: int) -> Gara:
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+        return ProvaStateMachine.reopen_setup(gara)
 
     @staticmethod
-    def complete(prova_id: int) -> Prova:
-        prova = db.session.get(Prova, prova_id)
-        if not prova:
-            raise ValueError(f"Prova {prova_id} non trovata")
-        return ProvaStateMachine.complete(prova)
+    def start_playing(gara_id: int) -> Gara:
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+        return ProvaStateMachine.start_playing(gara)
+
+    @staticmethod
+    def complete(gara_id: int) -> Gara:
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+        return ProvaStateMachine.complete(gara)
 
 
 class InscriptionService:
     """Operazioni di business su Inscription."""
 
     @staticmethod
-    def inscribe_user(user_id: int, prova_id: int) -> Optional[Inscription]:
-        """Registra un utente a una prova se non già iscritto."""
+    def inscribe_user(user_id: int, gara_id: int) -> Optional[Inscription]:
+        """Registra un utente a una gara se non già iscritto."""
         existing = (
             db.session.query(Inscription)
-            .filter_by(user_id=user_id, prova_id=prova_id)
+            .filter_by(user_id=user_id, gara_id=gara_id)
             .first()
         )
         if existing:
             return existing
-        ins = Inscription(user_id=user_id, prova_id=prova_id)
+        ins = Inscription(user_id=user_id, gara_id=gara_id)
         db.session.add(ins)
         db.session.commit()
         return ins
 
     @staticmethod
-    def uninscribe_user(user_id: int, prova_id: int) -> bool:
-        """Cancella l'iscrizione di un utente dalla prova.
+    def uninscribe_user(user_id: int, gara_id: int) -> bool:
+        """Cancella l'iscrizione di un utente dalla gara.
 
         Returns: True se rimossa, False se non trovata.
         """
         inscription = (
             db.session.query(Inscription)
-            .filter_by(user_id=user_id, prova_id=prova_id)
+            .filter_by(user_id=user_id, gara_id=gara_id)
             .first()
         )
         if inscription:
@@ -699,7 +699,7 @@ class InscriptionService:
 
 
 __all__ = [
-    "ProvaService",
+    "GaraService",
     "InscriptionService",
     "ProvaStateMachine",
     "InvalidTransitionError",

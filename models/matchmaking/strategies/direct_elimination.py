@@ -1,7 +1,7 @@
 """
 Module: models/matchmaking/strategies/direct_elimination.py
 Purpose: Direct Elimination (single knockout) pairing strategy implementation
-Requirements: SPECIFICHE.md - Direct elimination tournament format
+Requirements: SPECIFICHE.md - Direct elimination campionato format
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from typing import Sequence, List, Optional, TYPE_CHECKING, cast
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
-    from models.competition.models import Prova
+    from models.competition.models import Gara
 
 
 class DirectEliminationStrategy(PairingStrategy):
@@ -21,7 +21,7 @@ class DirectEliminationStrategy(PairingStrategy):
     # PairingStrategy metadata
     name = "direct_elimination"
     display_name = "Direct Elimination"
-    description = "Single knockout tournament format"
+    description = "Single knockout campionato format"
     min_players = 4
     max_players = 128
     supports_byes = True
@@ -30,11 +30,11 @@ class DirectEliminationStrategy(PairingStrategy):
     def __init__(self):
         self.strategy_name = "direct_elimination"
 
-    def validate(self, prova: object) -> ValidationResult:
-        """Validate if Direct Elimination can be used for this prova."""
+    def validate(self, gara: object) -> ValidationResult:
+        """Validate if Direct Elimination can be used for this gara."""
         try:
             # Get active inscriptions
-            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
             active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_count = len(active_inscriptions)
 
@@ -55,13 +55,13 @@ class DirectEliminationStrategy(PairingStrategy):
             # Calculate required rounds
             required_rounds = math.ceil(math.log2(player_count))
 
-            if hasattr(prova, "rounds_count"):
-                rounds_count = getattr(prova, "rounds_count")
+            if hasattr(gara, "rounds_count"):
+                rounds_count = getattr(gara, "rounds_count")
                 if rounds_count < required_rounds:
                     return ValidationResult(
                         ok=False,
                         messages=(
-                            f"Direct Elimination requires {required_rounds} rounds, but prova has {rounds_count}",
+                            f"Direct Elimination requires {required_rounds} rounds, but gara has {rounds_count}",
                         ),
                     )
 
@@ -70,39 +70,39 @@ class DirectEliminationStrategy(PairingStrategy):
         except Exception as e:
             return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
 
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
 
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
-        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
 
     def _generate_round_pairings(
-        self, prova: object, round_number: int
+        self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Direct Elimination."""
         try:
-            prova_typed = cast("Prova", prova)
+            gara_typed = cast("Gara", gara)
             if round_number == 1:
-                return self._generate_first_round_pairings(prova_typed)
+                return self._generate_first_round_pairings(gara_typed)
             else:
                 return self._generate_subsequent_round_pairings(
-                    prova_typed, round_number
+                    gara_typed, round_number
                 )
 
         except Exception as e:
             print(f"Error generating Direct Elimination pairings: {e}")
             return []
 
-    def _generate_first_round_pairings(self, prova: "Prova") -> List[Pairing]:
+    def _generate_first_round_pairings(self, gara: "Gara") -> List[Pairing]:
         """Generate first round pairings with proper seeding and byes."""
         # Get active players
-        inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
 
         # Sort players by seeding (use classification or random)
-        player_ids = self._get_seeded_players(prova, active_inscriptions)
+        player_ids = self._get_seeded_players(gara, active_inscriptions)
 
         n = len(player_ids)
 
@@ -129,7 +129,7 @@ class DirectEliminationStrategy(PairingStrategy):
         # Pair remaining players
         remaining_players = [p for p in player_ids if p not in players_with_byes]
 
-        # Standard tournament seeding: 1 vs last, 2 vs second-last, etc.
+        # Standard campionato seeding: 1 vs last, 2 vs second-last, etc.
         while len(remaining_players) >= 2:
             player1 = remaining_players.pop(0)
             player2 = remaining_players.pop(-1)
@@ -138,7 +138,7 @@ class DirectEliminationStrategy(PairingStrategy):
         return pairings
 
     def _generate_subsequent_round_pairings(
-        self, prova: "Prova", round_number: int
+        self, gara: "Gara", round_number: int
     ) -> List[Pairing]:
         """Generate pairings for subsequent rounds based on previous round winners."""
         from ...match.models import Match
@@ -146,12 +146,12 @@ class DirectEliminationStrategy(PairingStrategy):
         # Get winners from previous round
         previous_round = round_number - 1
         previous_matches = Match.query.filter_by(
-            prova_id=prova.id, round_number=previous_round, status="completed"
+            gara_id=gara.id, round_number=previous_round, status="completed"
         ).all()
 
         # Check if all previous matches are completed
         total_previous_matches = Match.query.filter_by(
-            prova_id=prova.id, round_number=previous_round
+            gara_id=gara.id, round_number=previous_round
         ).count()
 
         if len(previous_matches) != total_previous_matches:
@@ -187,14 +187,14 @@ class DirectEliminationStrategy(PairingStrategy):
 
         return pairings
 
-    def _get_seeded_players(self, prova: "Prova", inscriptions: List) -> List[int]:
+    def _get_seeded_players(self, gara: "Gara", inscriptions: List) -> List[int]:
         """Get players in seeded order (by classification or random)."""
         from ...classification.models import Classification
 
-        # Try to get seeding from tournament classification
-        if hasattr(prova, "tournament_id"):
+        # Try to get seeding from campionato classification
+        if hasattr(gara, "campionato_id"):
             classifications = (
-                Classification.query.filter_by(tournament_id=prova.tournament_id)
+                Classification.query.filter_by(campionato_id=gara.campionato_id)
                 .order_by(Classification.position)
                 .all()
             )

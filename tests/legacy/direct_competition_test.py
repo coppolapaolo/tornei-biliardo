@@ -22,24 +22,24 @@ try:
     # Reference some functions to ensure they're loaded
     print("Available functions:")
     print(
-        f"- create_prova_standalone: "
-        f"{hasattr(routes.admin.competition, 'create_prova_standalone')}"
+        f"- create_gara_standalone: "
+        f"{hasattr(routes.admin.competition, 'create_gara_standalone')}"
     )
-    print(f"- create_prova: {hasattr(routes.admin.competition, 'create_prova')}")
-    print(f"- edit_prova: {hasattr(routes.admin.competition, 'edit_prova')}")
+    print(f"- create_gara: {hasattr(routes.admin.competition, 'create_gara')}")
+    print(f"- edit_gara: {hasattr(routes.admin.competition, 'edit_gara')}")
 
     # Try to access some route functions directly
-    if hasattr(routes.admin.competition, "create_prova_standalone"):
-        func = getattr(routes.admin.competition, "create_prova_standalone")
-        print(f"Function create_prova_standalone: {func}")
+    if hasattr(routes.admin.competition, "create_gara_standalone"):
+        func = getattr(routes.admin.competition, "create_gara_standalone")
+        print(f"Function create_gara_standalone: {func}")
 
-    if hasattr(routes.admin.competition, "create_prova"):
-        func = getattr(routes.admin.competition, "create_prova")
-        print(f"Function create_prova: {func}")
+    if hasattr(routes.admin.competition, "create_gara"):
+        func = getattr(routes.admin.competition, "create_gara")
+        print(f"Function create_gara: {func}")
 
-    if hasattr(routes.admin.competition, "edit_prova"):
-        func = getattr(routes.admin.competition, "edit_prova")
-        print(f"Function edit_prova: {func}")
+    if hasattr(routes.admin.competition, "edit_gara"):
+        func = getattr(routes.admin.competition, "edit_gara")
+        print(f"Function edit_gara: {func}")
 
     print("Script completed successfully")
 

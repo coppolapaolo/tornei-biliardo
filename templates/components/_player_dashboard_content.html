@@ -13,7 +13,7 @@
       </thead>
       <tbody>
         {% for p in vm.standalone_available %}
-        <tr class="{% if vm.selected_prova and vm.selected_prova.id == p.id %}table-active{% endif %}">
+        <tr class="{% if vm.selected_gara and vm.selected_gara.id == p.id %}table-active{% endif %}">
           <td><strong>{{ p.name }}</strong> <span class="badge bg-info ms-2">Standalone</span></td>
           <td>{{ p.date.strftime('%d/%m/%Y') if p.date else '-' }}</td>
           <td>{{ p.location or '-' }}</td>
@@ -22,7 +22,7 @@
           <td><span class="text-danger">{{ p.inscription_end.strftime('%d/%m %H:%M') if p.inscription_end else '-' }}</span></td>
           <td>
             {% if p.status == 'inscription' %}
-              <form method="POST" action="{{ url_for('player.inscribe_to_prova', prova_id=p.id) }}">
+              <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=p.id) }}">
                <button type="submit" class="btn btn-sm btn-success">
                   <i class="fas fa-user-plus"></i> Iscriviti
                 </button>
@@ -41,9 +41,9 @@
 </div>
 {% endif %}
 
-{% if vm.selected_tournament %}
-  <!-- Info torneo selezionato -->
-  {% include "components/_tournament_info_alert.html" %}
+{% if vm.selected_campionato %}
+  <!-- Info campionato selezionato -->
+  {% include "components/_campionato_info_alert.html" %}
 
   <div class="row">
     <!-- COLONNA SINISTRA -->
@@ -55,8 +55,8 @@
       <!-- Recent Individual Matches -->
       {% include "components/_individual_matches.html" %}
 
-      <!-- Prove disponibili per iscrizione -->
-      {% include "components/_available_provas.html" %}
+      <!-- Gare disponibili per iscrizione -->
+      {% include "components/_available_garas.html" %}
 
       <!-- Le mie iscrizioni -->
       {% include "components/_my_inscriptions.html" %}
@@ -74,11 +74,11 @@
 
     <!-- COLONNA DESTRA -->
     <div class="col-md-4">
-      <!-- Tournament Info -->
-      {% include "components/_tournament_info.html" %}
+      <!-- Campionato Info -->
+      {% include "components/_campionato_info.html" %}
 
-      <!-- Managed Tournaments -->
-      {% include "components/_managed_tournaments.html" %}
+      <!-- Managed Campionati -->
+      {% include "components/_managed_campionatos.html" %}
 
       <!-- Quick Actions -->
       {% include "components/_quick_actions.html" %}

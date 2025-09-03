@@ -1,8 +1,8 @@
-# Repository Consistency Analysis - Tornei Biliardo
+# Repository Consistency Analysis - Campionati Biliardo
 
 ## Overview
 
-This document analyzes the current tornei-biliardo repository structure against the provided specifications (SPECIFICHE.md) to identify inconsistencies, missing features, and required architectural changes to align the codebase with the specified requirements.
+This document analyzes the current campionati-biliardo repository structure against the provided specifications (SPECIFICHE.md) to identify inconsistencies, missing features, and required architectural changes to align the codebase with the specified requirements.
 
 ## Technology Stack Analysis
 
@@ -31,11 +31,11 @@ classDiagram
         +is_admin()
         +is_director()
         +is_player()
-        +can_manage_tournament()
+        +can_manage_campionato()
     }
     
     class TournamentDirector {
-        +int tournament_id
+        +int campionato_id
         +int user_id
     }
     
@@ -63,16 +63,16 @@ classDiagram
 2. **Player Availability System**: Missing location-based availability for individual matches
 3. **Friends/Previous Players System**: No relationship tracking for match proposals
 
-## Tournament Management Domain Analysis
+## Campionato Management Domain Analysis
 
 ### Current Implementation Status
 
 ```mermaid
 classDiagram
-    class Tournament {
+    class Campionato {
         +int id
         +string name
-        +string tournament_type
+        +string campionato_type
         +bool without_x
         +bool final_playoffs
         +bool challenge_mode
@@ -82,9 +82,9 @@ classDiagram
         +can_be_deleted()
     }
     
-    class Prova {
+    class Gara {
         +int id
-        +int tournament_id
+        +int campionato_id
         +int director_id
         +int number
         +string name
@@ -98,14 +98,14 @@ classDiagram
         +get_organizer()
     }
     
-    Tournament ||--o{ Prova : contains
+    Campionato ||--o{ Gara : contains
 ```
 
 **Specification Compliance:**
-- ✅ Tournament creation by admin/director
-- ✅ Multiple competition rounds (prove) per tournament
+- ✅ Campionato creation by admin/director
+- ✅ Multiple competition rounds (gare) per campionato
 - ✅ Standalone competitions support
-- ✅ Tournament type configuration (Amalfi)
+- ✅ Campionato type configuration (Amalfi)
 - ✅ Playoff configuration flag
 - ⚠️ **Partially Implemented**: Challenge mode exists as flag but not functional
 - ❌ **Missing**: Actual playoff functionality implementation
@@ -114,14 +114,14 @@ classDiagram
 
 1. **Playoff Implementation**: Currently only a boolean flag, needs full playoff logic
 2. **Challenge Integration**: Challenge mode exists but lacks implementation
-3. **Tournament Soft Delete**: Specification requires soft delete for tournaments with played matches
+3. **Campionato Soft Delete**: Specification requires soft delete for campionati with played matches
 
 ## Competition Management Analysis
 
 ### Current Implementation Status
 
 **Specification Compliance:**
-- ✅ Competition rounds (prove) within tournaments
+- ✅ Competition rounds (gare) within campionati
 - ✅ Standalone competitions
 - ✅ Player inscription/withdrawal system
 - ✅ Minimum/maximum participants
@@ -153,7 +153,7 @@ classDiagram
 classDiagram
     class Match {
         +int id
-        +int prova_id
+        +int gara_id
         +int round_number
         +int player1_id
         +int player2_id
@@ -297,7 +297,7 @@ classDiagram
 
 **Specification Compliance:**
 - ✅ Round classifications
-- ✅ Tournament overall classifications
+- ✅ Campionato overall classifications
 - ✅ Multi-criteria sorting (wins, rack difference, position)
 - ✅ Real-time classification updates
 - ❌ **Missing**: Tiebreaker system implementation
@@ -314,9 +314,9 @@ classDiagram
 ### Current Implementation Status
 
 **Specification Compliance:**
-- ✅ Admin dashboard with tournament management
-- ✅ Director dashboard with limited tournament management
-- ✅ Player dashboard with tournaments and standings
+- ✅ Admin dashboard with campionato management
+- ✅ Director dashboard with limited campionato management
+- ✅ Player dashboard with campionati and standings
 - ❌ **Missing**: Individual match proposal interface
 - ❌ **Missing**: Match opportunity notifications
 - ❌ **Missing**: Location-based match suggestions
@@ -388,7 +388,7 @@ erDiagram
     
     PLAYOFF_QUALIFICATION {
         int id PK
-        int tournament_id FK
+        int campionato_id FK
         int user_id FK
         string category
         int qualifying_position
@@ -407,7 +407,7 @@ erDiagram
 2. **Challenge Service**: Challenge and exam management
 3. **Notification Service**: Real-time user notifications
 4. **Location Service**: Billiard hall and availability management
-5. **Playoff Service**: Tournament playoff orchestration
+5. **Playoff Service**: Campionato playoff orchestration
 
 ### Frontend Extensions Required
 
@@ -474,7 +474,7 @@ Implement new service layers following existing patterns:
 - **IndividualMatchService**: Match proposal lifecycle
 - **ChallengeService**: Challenge and exam management
 - **NotificationService**: Real-time notifications
-- **PlayoffService**: Tournament playoff management
+- **PlayoffService**: Campionato playoff management
 
 ### 3. Database Migration Strategy
 
@@ -520,14 +520,14 @@ Extend the current route structure:
 ### Backward Compatibility
 
 Maintain backward compatibility for:
-- Existing tournament and match data
+- Existing campionato and match data
 - Current user authentication flows
 - Admin and director interfaces
 - Player statistics and history
 
 ## Conclusion
 
-The tornei-biliardo repository demonstrates a solid foundation with good architectural principles, but requires significant extensions to fully comply with the specifications. The most critical gaps are:
+The campionati-biliardo repository demonstrates a solid foundation with good architectural principles, but requires significant extensions to fully comply with the specifications. The most critical gaps are:
 
 1. **Individual Match System** - Completely missing but essential for community features
 2. **Challenge and Examination System** - Absent but specified as core functionality  

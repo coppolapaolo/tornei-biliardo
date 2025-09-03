@@ -19,11 +19,11 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
         self.mock_base_strategy = Mock(spec=AmalfiStrategy)
         self.strategy = AdvancedAmalfiStrategy(self.mock_base_strategy)
 
-        # Create a mock prova
-        self.mock_prova = Mock()
-        self.mock_prova.id = 1
-        self.mock_prova.without_x = False
-        self.mock_prova.inscriptions = []
+        # Create a mock gara
+        self.mock_gara = Mock()
+        self.mock_gara.id = 1
+        self.mock_gara.without_x = False
+        self.mock_gara.inscriptions = []
 
         # Create some test pairings
         self.base_pairings = [
@@ -48,36 +48,36 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
         self.assertTrue(options.use_individual_matches_for_x)
 
     def test_validate_success(self):
-        """Test validation with valid prova."""
+        """Test validation with valid gara."""
         # Configure mock base strategy to return successful validation
         self.mock_base_strategy.validate.return_value = ValidationResult(
             ok=True, messages=(), warnings=()
         )
 
-        result = self.strategy.validate(self.mock_prova)
+        result = self.strategy.validate(self.mock_gara)
 
         self.assertTrue(result.ok)
         # Just check that validate was called with the right argument
-        self.mock_base_strategy.validate.assert_called_with(self.mock_prova)
+        self.mock_base_strategy.validate.assert_called_with(self.mock_gara)
 
     def test_validate_failure(self):
-        """Test validation with invalid prova."""
+        """Test validation with invalid gara."""
         # Configure mock base strategy to return failed validation
         self.mock_base_strategy.validate.return_value = ValidationResult(
-            ok=False, errors=("Invalid prova",), warnings=()
+            ok=False, errors=("Invalid gara",), warnings=()
         )
 
-        result = self.strategy.validate(self.mock_prova)
+        result = self.strategy.validate(self.mock_gara)
 
         self.assertFalse(result.ok)
-        self.assertIn("Invalid prova", result.errors)
+        self.assertIn("Invalid gara", result.errors)
 
     def test_generate_pairings_without_x_replacement(self):
         """Test pairing generation without X replacement."""
         # Configure mock to return base pairings
         self.mock_base_strategy._generate_pairings.return_value = self.base_pairings
 
-        processed_data = {"prova": self.mock_prova}
+        processed_data = {"gara": self.mock_gara}
         pairings = self.strategy._generate_pairings(
             processed_data, 1, preview_mode=True
         )
@@ -103,7 +103,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
                 notes="Individual match replacement for X",
             )
 
-            processed_data = {"prova": self.mock_prova}
+            processed_data = {"gara": self.mock_gara}
             pairings = self.strategy._generate_pairings(
                 processed_data, 1, preview_mode=True
             )
@@ -127,14 +127,14 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
             mock_find_challenge.return_value = mock_challenge
 
             replacement = self.strategy._generate_x_replacement(
-                self.mock_prova, 1, 1, preview_mode=True
+                self.mock_gara, 1, 1, preview_mode=True
             )
 
             self.assertIsNotNone(replacement)
             # Add null check before accessing notes attribute
             if replacement and replacement.notes:
                 self.assertIn("Challenge:", replacement.notes)
-            mock_find_challenge.assert_called_once_with(self.mock_prova, 1)
+            mock_find_challenge.assert_called_once_with(self.mock_gara, 1)
 
     def test_generate_x_replacement_with_individual_match(self):
         """Test X replacement with individual match."""
@@ -149,7 +149,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
             mock_find_opponent.return_value = 2
 
             replacement = self.strategy._generate_x_replacement(
-                self.mock_prova, 1, 1, preview_mode=True
+                self.mock_gara, 1, 1, preview_mode=True
             )
 
             self.assertIsNotNone(replacement)
@@ -159,13 +159,13 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
             # Add null check before accessing notes attribute
             if replacement and replacement.notes:
                 self.assertIn("Individual match", replacement.notes)
-            mock_find_opponent.assert_called_once_with(self.mock_prova, 1, 1)
+            mock_find_opponent.assert_called_once_with(self.mock_gara, 1, 1)
 
     def test_enhance_trio_match(self):
         """Test enhancing trio match with metadata."""
         trio_pairing = Pairing(players=(1, 2, 3), is_bye=False, round_number=1)
 
-        enhanced = self.strategy._enhance_trio_match(trio_pairing, self.mock_prova, 1)
+        enhanced = self.strategy._enhance_trio_match(trio_pairing, self.mock_gara, 1)
 
         self.assertEqual(enhanced.players, (1, 2, 3))
         self.assertFalse(enhanced.is_bye)
@@ -177,7 +177,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
 
     def test_find_suitable_opponent(self):
         """Test finding suitable opponent for individual match."""
-        # Set up mock prova with inscriptions
+        # Set up mock gara with inscriptions
         mock_inscription1 = Mock()
         mock_inscription1.user_id = 1
         mock_inscription2 = Mock()
@@ -185,7 +185,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
         mock_inscription3 = Mock()
         mock_inscription3.user_id = 3
 
-        self.mock_prova.inscriptions = [
+        self.mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
@@ -202,7 +202,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
                 mock_find_similar.return_value = 2
 
                 # Use round_number > 1 to trigger the similar ranked player logic
-                opponent = self.strategy._find_suitable_opponent(self.mock_prova, 1, 2)
+                opponent = self.strategy._find_suitable_opponent(self.mock_gara, 1, 2)
 
                 self.assertEqual(opponent, 2)
                 mock_find_similar.assert_called_once()
@@ -218,7 +218,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
             mock_have_played.return_value = True
 
             quality = self.strategy._calculate_enhanced_pairing_quality(
-                pairing, self.mock_prova, 1
+                pairing, self.mock_gara, 1
             )
 
             # Quality should be reduced due to rematch
@@ -237,7 +237,7 @@ class TestAdvancedAmalfiStrategy(unittest.TestCase):
             mock_calc_quality.return_value = 0.8
 
             enhanced_pairings = self.strategy._postprocess_pairings(
-                pairings, self.mock_prova, 1
+                pairings, self.mock_gara, 1
             )
 
             self.assertEqual(len(enhanced_pairings), 1)

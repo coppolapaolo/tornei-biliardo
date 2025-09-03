@@ -1,13 +1,13 @@
 {# templates/components/_director_dashboard_content.html #}
-{% if vm.standalone_provas | length %}
+{% if vm.standalone_garas | length %}
   <div class="card mb-4" id="standalone-owned" data-test="director-standalone-owned">
     <div class="card-header">
-      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Prove Standalone che gestite</h5>
+      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Gare Standalone che gestite</h5>
     </div>
     <div class="card-body">
-      {% set provas = vm.standalone_provas %}
+      {% set provas = vm.standalone_garas %}
       {% set mode = 'director' %}
-      {% include "components/_prova_cards.html" %}
+      {% include "components/_gara_cards.html" %}
     </div>
   </div>
 {% endif %}
@@ -15,12 +15,12 @@
 {% if vm.standalone_available and vm.standalone_available | length %}
   <div class="card mb-4">
     <div class="card-header">
-      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Prove Standalone Disponibili</h5>
+      <h5 class="mb-0"><i class="fas fa-bullseye"></i> Gare Standalone Disponibili</h5>
     </div>
     <div class="card-body">
       {% set provas = vm.standalone_available %}
       {% set mode = 'player' %}
-      {% include "components/_prova_cards.html" %}
+      {% include "components/_gara_cards.html" %}
     </div>
   </div>
 {% endif %}
@@ -80,52 +80,52 @@
 {% endif %}
 
 
-{% if vm.managed_tournaments | length %}
+{% if vm.managed_campionatos | length %}
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="fas fa-trophy"></i> Tornei che gestisci</h5>
-          {% if vm.caps and vm.caps.can_create_tournament %}
+      <h5 class="mb-0"><i class="fas fa-trophy"></i> Campionati che gestisci</h5>
+          {% if vm.caps and vm.caps.can_create_campionato %}
             <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
-              <i class="fas fa-plus"></i> Nuovo Torneo
+              <i class="fas fa-plus"></i> Nuovo Campionato
             </button>
           {% endif %}
     </div>
     <div class="card-body">
-      {% set tournaments = vm.managed_tournaments %}
+      {% set campionati = vm.managed_campionatos %}
       {% set mode = 'director' %}
-      {% include "components/_tournament_cards.html" %}
+      {% include "components/_campionato_cards.html" %}
     </div>
   </div>
 {% endif %}
 
-<!-- Tornei Disponibili (come player) -->
-{% set available_tournaments = [] %}
-{% for t in vm.tournaments %}
+<!-- Campionati Disponibili (come player) -->
+{% set available_campionatos = [] %}
+{% for t in vm.campionati %}
   {% set is_director = false %}
-  {% for mt in vm.managed_tournaments %}
+  {% for mt in vm.managed_campionatos %}
     {% if mt.id == t.id %}
       {% set is_director = true %}
     {% endif %}
   {% endfor %}
   {% if not is_director %}
-    {% set _ = available_tournaments.append(t) %}
+    {% set _ = available_campionatos.append(t) %}
   {% endif %}
 {% endfor %}
 
-{% if available_tournaments | length %}
+{% if available_campionatos | length %}
   <div class="card mb-4">
     <div class="card-header">
-      <h5 class="mb-0"><i class="fas fa-trophy"></i> Tornei Disponibili</h5>
+      <h5 class="mb-0"><i class="fas fa-trophy"></i> Campionati Disponibili</h5>
     </div>
     <div class="card-body">
-      {% set tournaments = available_tournaments %}
+      {% set campionati = available_campionatos %}
       {% set mode = 'player' %}
-      {% include "components/_tournament_cards.html" %}
+      {% include "components/_campionato_cards.html" %}
     </div>
   </div>
 {% endif %}
 
-{% if vm.selected_tournament %}
+{% if vm.selected_campionato %}
 
   <!-- LAYOUT A DUE COLONNE -->
   <div class="row g-4">
@@ -140,8 +140,8 @@
 
     <!-- COLONNA DESTRA -->
     <div class="col-lg-4">
-      <!-- Tournament Info -->
-      {% include "components/_tournament_info.html" %}
+      <!-- Campionato Info -->
+      {% include "components/_campionato_info.html" %}
 
       <!-- Quick Actions -->
       {% include "components/_quick_actions.html" %}
@@ -150,7 +150,7 @@
   </div>
 
 {% else %}
-  {% if not vm.managed_tournaments and not vm.standalone_provas and not available_tournaments and not vm.standalone_available %}
+  {% if not vm.managed_campionatos and not vm.standalone_garas and not available_campionatos and not vm.standalone_available %}
     {% include "components/_dashboard_empty_state.html" %}
   {% endif %}
 {% endif %}

@@ -4,7 +4,7 @@
 from flask import Blueprint
 
 # Import domain-specific blueprints
-from .tournament import tournament_bp
+from .campionato import campionato_bp
 from .competition import competition_bp
 from .match import match_bp
 from .user import user_bp
@@ -14,11 +14,11 @@ from .dashboard import dashboard_bp
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # Register sub-blueprints with preserved URLs
-# Tournament domain: /admin/tournament/*
-admin_bp.register_blueprint(tournament_bp, url_prefix="/tournament")
+# Campionato domain: /admin/campionato/*
+admin_bp.register_blueprint(campionato_bp, url_prefix="/campionato")
 
-# Competition domain: /admin/prova/*
-admin_bp.register_blueprint(competition_bp, url_prefix="/prova")
+# Competition domain: /admin/gara/*
+admin_bp.register_blueprint(competition_bp, url_prefix="/gara")
 
 # Match domain: /admin/match/*, /admin/rack/*
 admin_bp.register_blueprint(match_bp, url_prefix="/match")

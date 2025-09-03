@@ -81,7 +81,7 @@
             <div class="alert alert-warning text-center">
                 <h5><i class="fas fa-exclamation-triangle"></i> Classifica Non Disponibile</h5>
                 <p>La classifica per questo turno non è ancora stata calcolata.</p>
-                {% if round_number <= prova.current_round %}
+                {% if round_number <= gara.current_round %}
                     <p class="mb-0">Assicurati che tutte le partite del turno siano completate.</p>
                 {% endif %}
             </div>

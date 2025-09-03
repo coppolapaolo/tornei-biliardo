@@ -7,13 +7,13 @@ Separated to avoid circular imports.
 def get_database_stats():
     """Restituisce conteggio rapido entità DB (per debug)."""
     # Import here to avoid circular imports
-    from models import User, Tournament, Prova, Inscription, Match
+    from models import User, Campionato, Gara, Inscription, Match
 
     try:
         return {
             "users": User.query.count(),
-            "tournaments": Tournament.query.count(),
-            "provas": Prova.query.count(),
+            "campionati": Campionato.query.count(),
+            "provas": Gara.query.count(),
             "inscriptions": Inscription.query.count(),
             "matches": Match.query.count(),
         }

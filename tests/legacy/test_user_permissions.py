@@ -17,28 +17,28 @@ from models.user.permissions import (
 class TestPermissionChecker:
     """Test cases for PermissionChecker class."""
 
-    def test_can_manage_tournament_unauthenticated_user(self):
-        """Test can_manage_tournament with unauthenticated user."""
+    def test_can_manage_campionato_unauthenticated_user(self):
+        """Test can_manage_campionato with unauthenticated user."""
         user = MagicMock()
         user.is_authenticated = False
-        result = PermissionChecker.can_manage_tournament(user, 1)
+        result = PermissionChecker.can_manage_campionato(user, 1)
         assert result is False
 
-    def test_can_manage_tournament_none_user(self):
-        """Test can_manage_tournament with None user."""
-        result = PermissionChecker.can_manage_tournament(None, 1)
+    def test_can_manage_campionato_none_user(self):
+        """Test can_manage_campionato with None user."""
+        result = PermissionChecker.can_manage_campionato(None, 1)
         assert result is False
 
-    def test_can_manage_tournament_admin(self):
-        """Test can_manage_tournament with admin user."""
+    def test_can_manage_campionato_admin(self):
+        """Test can_manage_campionato with admin user."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = True
-        result = PermissionChecker.can_manage_tournament(user, 1)
+        result = PermissionChecker.can_manage_campionato(user, 1)
         assert result is True
 
-    def test_can_manage_tournament_director_with_assignment(self):
-        """Test can_manage_tournament with director who has assignment."""
+    def test_can_manage_campionato_director_with_assignment(self):
+        """Test can_manage_campionato with director who has assignment."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = False
@@ -46,15 +46,15 @@ class TestPermissionChecker:
         user.id = 1
 
         # Instead of patching the module, let's test the logic directly
-        # We'll mock the PermissionChecker.can_manage_tournament method
+        # We'll mock the PermissionChecker.can_manage_campionato method
         # to avoid the import issues
-        with patch.object(PermissionChecker, "can_manage_tournament") as mock_method:
+        with patch.object(PermissionChecker, "can_manage_campionato") as mock_method:
             mock_method.return_value = True
-            result = PermissionChecker.can_manage_tournament(user, 1)
+            result = PermissionChecker.can_manage_campionato(user, 1)
             assert result is True
 
-    def test_can_manage_tournament_director_without_assignment(self):
-        """Test can_manage_tournament with director who doesn't have assignment."""
+    def test_can_manage_campionato_director_without_assignment(self):
+        """Test can_manage_campionato with director who doesn't have assignment."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = False
@@ -62,9 +62,9 @@ class TestPermissionChecker:
         user.id = 1
 
         # Instead of patching the module, let's test the logic directly
-        with patch.object(PermissionChecker, "can_manage_tournament") as mock_method:
+        with patch.object(PermissionChecker, "can_manage_campionato") as mock_method:
             mock_method.return_value = False
-            result = PermissionChecker.can_manage_tournament(user, 1)
+            result = PermissionChecker.can_manage_campionato(user, 1)
             assert result is False
 
     def test_can_manage_competition_unauthenticated_user(self):
@@ -87,14 +87,14 @@ class TestPermissionChecker:
         result = PermissionChecker.can_manage_competition(user, 1)
         assert result is True
 
-    def test_can_manage_competition_director_with_tournament_access(self):
-        """Test can_manage_competition with director who has tournament access."""
+    def test_can_manage_competition_director_with_campionato_access(self):
+        """Test can_manage_competition with director who has campionato access."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = False
         user.is_director = True
 
-        # Test the case where the function would normally call can_manage_tournament
+        # Test the case where the function would normally call can_manage_campionato
         # but in our test environment it will throw an exception and return False
         result = PermissionChecker.can_manage_competition(user, 1)
         # In our test environment without app context, this will return
@@ -179,59 +179,59 @@ class TestPermissionChecker:
         result = PermissionChecker.can_insert_match_results(user, 1)
         assert result is False
 
-    def test_can_create_tournament_admin(self):
-        """Test can_create_tournament with admin user."""
+    def test_can_create_campionato_admin(self):
+        """Test can_create_campionato with admin user."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = True
-        result = PermissionChecker.can_create_tournament(user)
+        result = PermissionChecker.can_create_campionato(user)
         assert result is True
 
-    def test_can_create_tournament_director(self):
-        """Test can_create_tournament with director user."""
+    def test_can_create_campionato_director(self):
+        """Test can_create_campionato with director user."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = False
         user.is_director = True
-        result = PermissionChecker.can_create_tournament(user)
+        result = PermissionChecker.can_create_campionato(user)
         assert result is True
 
-    def test_can_create_tournament_player(self):
-        """Test can_create_tournament with player user."""
+    def test_can_create_campionato_player(self):
+        """Test can_create_campionato with player user."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = False
         user.is_director = False
         user.is_player = True
-        result = PermissionChecker.can_create_tournament(user)
+        result = PermissionChecker.can_create_campionato(user)
         assert result is False
 
-    def test_can_delete_tournament_admin(self):
-        """Test can_delete_tournament with admin user."""
+    def test_can_delete_campionato_admin(self):
+        """Test can_delete_campionato with admin user."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = True
-        result = PermissionChecker.can_delete_tournament(user, 1)
+        result = PermissionChecker.can_delete_campionato(user, 1)
         assert result is True
 
-    def test_can_delete_tournament_director(self):
-        """Test can_delete_tournament with director user."""
+    def test_can_delete_campionato_director(self):
+        """Test can_delete_campionato with director user."""
         user = MagicMock()
         user.is_authenticated = True
         user.is_admin = False
         user.is_director = True
-        result = PermissionChecker.can_delete_tournament(user, 1)
+        result = PermissionChecker.can_delete_campionato(user, 1)
         assert result is False
 
-    def test_can_modify_tournament_with_access(self):
-        """Test can_modify_tournament with user who has access."""
+    def test_can_modify_campionato_with_access(self):
+        """Test can_modify_campionato with user who has access."""
         user = MagicMock()
         user.is_authenticated = True
 
         with patch.object(
-            PermissionChecker, "can_manage_tournament", return_value=True
+            PermissionChecker, "can_manage_campionato", return_value=True
         ):
-            result = PermissionChecker.can_modify_tournament(user, 1)
+            result = PermissionChecker.can_modify_campionato(user, 1)
             assert result is True
 
     def test_can_assign_directors_admin(self):
@@ -310,10 +310,10 @@ class TestRoleRequirement:
         decorated_func = RoleRequirement.authenticated_required(mock_func)
         assert decorated_func is not None
 
-    def test_tournament_manager_required(self):
-        """Test tournament_manager_required decorator."""
+    def test_campionato_manager_required(self):
+        """Test campionato_manager_required decorator."""
         mock_func = MagicMock()
-        decorated_func = RoleRequirement.tournament_manager_required(lambda **kw: 1)(
+        decorated_func = RoleRequirement.campionato_manager_required(lambda **kw: 1)(
             mock_func
         )
         assert decorated_func is not None
@@ -353,7 +353,7 @@ class TestUtilityFunctions:
             mock_current_user.is_authenticated = True
             mock_current_user.is_admin = True
 
-            result = user_can("manage_tournaments")
+            result = user_can("manage_campionatos")
             assert result is True
 
     def test_user_can_with_invalid_permission(self):
@@ -369,7 +369,7 @@ class TestUtilityFunctions:
         with patch("models.user.permissions.current_user") as mock_current_user:
             mock_current_user.is_authenticated = False
 
-            result = user_can("manage_tournaments")
+            result = user_can("manage_campionatos")
             assert result is False
 
     def test_get_user_permissions_summary_unauthenticated(self):
@@ -389,7 +389,7 @@ class TestUtilityFunctions:
         with patch.object(PermissionChecker, "can_view_admin_panel", return_value=True):
             with patch.object(PermissionChecker, "can_manage_users", return_value=True):
                 with patch.object(
-                    PermissionChecker, "can_create_tournament", return_value=True
+                    PermissionChecker, "can_create_campionato", return_value=True
                 ):
                     with patch.object(
                         PermissionChecker, "can_assign_directors", return_value=True

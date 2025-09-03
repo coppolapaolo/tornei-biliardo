@@ -1,0 +1,110 @@
+{# templates/components/_campionato_general_classification.html #}
+{% if general_classification %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-trophy"></i> Classifica dopo Gara {{ last_completed_gara_number }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th width="10%">Pos.</th>
+                        <th width="30%">Giocatore</th>
+                        {% if campionato.campionato_type == 'Amalfi' %}
+                            <th width="15%">Match Vinti</th>
+                            <th width="15%">Diff. Rack</th>
+                        {% else %}
+                            <th width="15%">Punti Totali</th>
+                            <th width="15%">Diff. Rack Tot.</th>
+                        {% endif %}
+                        <th width="15%">Partecipazioni</th>
+                        <th width="15%">Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position, player_data in general_classification %}
+                        <tr class="{% if position <= 3 %}table-warning{% endif %}">
+                            <td>
+                                <strong>{{ position }}°</strong>
+                                {% if position == 1 %}
+                                    <i class="fas fa-medal text-warning"></i>
+                                {% elif position == 2 %}
+                                    <i class="fas fa-medal text-secondary"></i>
+                                {% elif position == 3 %}
+                                    <i class="fas fa-medal text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ player_data.username }}</strong>
+                            </td>
+                            {% if campionato.campionato_type == 'Amalfi' %}
+                                <td>
+                                    <span class="badge bg-success">{{ player_data.total_matches_won }}</span>
+                                </td>
+                                <td>
+                                    {% if player_data.total_rack_difference > 0 %}
+                                        <span class="text-success">+{{ player_data.total_rack_difference }}</span>
+                                    {% elif player_data.total_rack_difference < 0 %}
+                                        <span class="text-danger">{{ player_data.total_rack_difference }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                            {% else %}
+                                <td>
+                                    <span class="badge bg-primary">{{ player_data.total_points|default(0) }}</span>
+                                </td>
+                                <td>
+                                    {% if player_data.total_rack_difference > 0 %}
+                                        <span class="text-success">+{{ player_data.total_rack_difference }}</span>
+                                    {% elif player_data.total_rack_difference < 0 %}
+                                        <span class="text-danger">{{ player_data.total_rack_difference }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            <td>
+                                {{ player_data.participations }}
+                            </td>
+                            <td>
+                                {% if player_data.previous_position %}
+                                    {% set diff = player_data.previous_position - position %}
+                                    {% if diff > 0 %}
+                                        <span class="text-success">
+                                            <i class="fas fa-arrow-up"></i> {{ diff }}
+                                        </span>
+                                    {% elif diff < 0 %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-arrow-down"></i> {{ -diff }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-minus"></i>
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-3 text-muted small">
+            <i class="fas fa-info-circle"></i> 
+            {% if campionato.campionato_type == 'Amalfi' %}
+                Classifica generale Amalfi: ordinata per match vinti, poi per differenza rack totale.
+            {% else %}
+                Classifica generale basata sui punti ottenuti in tutte le gare completate.
+                Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti.
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}

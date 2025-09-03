@@ -31,11 +31,11 @@ class RandomAntiRematchStrategy(PairingStrategy):
         self.strategy_name = "random_anti_rematch"
         self.max_attempts = max_attempts  # Max attempts to find valid pairing
 
-    def validate(self, prova: object) -> ValidationResult:
-        """Validate if Random Anti-Rematch can be used for this prova."""
+    def validate(self, gara: object) -> ValidationResult:
+        """Validate if Random Anti-Rematch can be used for this gara."""
         try:
             # Get active inscriptions
-            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
             active_inscriptions = [
                 i for i in inscriptions if not getattr(i, "is_withdrawn", False)
             ]
@@ -51,7 +51,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
                 # With more than 2 players, anti-rematch should be feasible for reasonable round counts
                 max_possible_unique_matches = (player_count * (player_count - 1)) // 2
 
-                rounds_count = getattr(prova, "rounds_count", None)
+                rounds_count = getattr(gara, "rounds_count", None)
                 if rounds_count and rounds_count > max_possible_unique_matches:
                     return ValidationResult(
                         ok=False,
@@ -65,21 +65,21 @@ class RandomAntiRematchStrategy(PairingStrategy):
         except Exception as e:
             return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
 
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
 
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
-        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
 
     def _generate_round_pairings(
-        self, prova: object, round_number: int
+        self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate random pairings while avoiding rematches."""
         try:
             # Get active players
-            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
             active_inscriptions = [
                 i for i in inscriptions if not getattr(i, "is_withdrawn", False)
             ]
@@ -89,7 +89,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
                 return []
 
             # Get previous matches to avoid rematches
-            previous_pairings = self._get_previous_pairings(prova, round_number)
+            previous_pairings = self._get_previous_pairings(gara, round_number)
 
             # Generate valid random pairings
             pairings = self._generate_valid_random_pairings(
@@ -103,13 +103,13 @@ class RandomAntiRematchStrategy(PairingStrategy):
             return []
 
     def _get_previous_pairings(
-        self, prova: object, current_round: int
+        self, gara: object, current_round: int
     ) -> Set[Tuple[int, int]]:
         """Get all previous pairings to avoid rematches."""
         from ...match.models import Match
 
         previous_matches = (
-            Match.query.filter_by(prova_id=prova.id)
+            Match.query.filter_by(gara_id=gara.id)
             .filter(Match.round_number < current_round)  # type: ignore[attr-defined]
             .all()
         )
@@ -245,9 +245,9 @@ class RandomAntiRematchStrategy(PairingStrategy):
         # For larger odd numbers, use bye instead
         return len(player_ids) in [3, 5, 7]
 
-    def can_generate_all_rounds(self, prova: object) -> bool:
+    def can_generate_all_rounds(self, gara: object) -> bool:
         """Check if all rounds can be generated without rematches."""
-        inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
             i for i in inscriptions if not getattr(i, "is_withdrawn", False)
         ]
@@ -263,12 +263,12 @@ class RandomAntiRematchStrategy(PairingStrategy):
         pairings_per_round = player_count // 2
         max_rounds_without_rematch = max_unique_pairings // pairings_per_round
 
-        rounds_count = getattr(prova, "rounds_count", 1)
+        rounds_count = getattr(gara, "rounds_count", 1)
         return rounds_count <= max_rounds_without_rematch
 
-    def get_rematch_probability(self, prova: object, round_number: int) -> float:
+    def get_rematch_probability(self, gara: object, round_number: int) -> float:
         """Calculate probability of rematches in the given round."""
-        inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [
             i for i in inscriptions if not getattr(i, "is_withdrawn", False)
         ]

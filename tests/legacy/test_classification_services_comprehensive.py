@@ -15,8 +15,8 @@ from models.classification.services import (
 from models.classification.models import (
     Classification,
 )
-from models.competition.models import Prova, Inscription
-from models.tournament.models import Tournament
+from models.competition.models import Gara, Inscription
+from models.campionato.models import Campionato
 from models.user.models import User
 from models.match.models import Match
 
@@ -25,21 +25,21 @@ class TestClassificationService:
     """Comprehensive test coverage for ClassificationService."""
 
     @pytest.fixture
-    def mock_tournament(self):
-        """Create a mock tournament."""
-        tournament = Mock()
-        tournament.id = 1
-        tournament.scoring_policy = "classic"
-        return tournament
+    def mock_campionato(self):
+        """Create a mock campionato."""
+        campionato = Mock()
+        campionato.id = 1
+        campionato.scoring_policy = "classic"
+        return campionato
 
     @pytest.fixture
-    def mock_prova(self):
-        """Create a mock prova."""
-        prova = Mock()
-        prova.id = 1
-        prova.tournament_id = 1
-        prova.current_round = 3
-        return prova
+    def mock_gara(self):
+        """Create a mock gara."""
+        gara = Mock()
+        gara.id = 1
+        gara.campionato_id = 1
+        gara.current_round = 3
+        return gara
 
     @pytest.fixture
     def mock_players(self):
@@ -54,63 +54,63 @@ class TestClassificationService:
 
     def test_get_scoring_policy_classic(self):
         """Test _get_scoring_policy with classic policy."""
-        tournament = Mock()
-        tournament.scoring_policy = "classic"
+        campionato = Mock()
+        campionato.scoring_policy = "classic"
 
-        policy = ClassificationService._get_scoring_policy(tournament)
+        policy = ClassificationService._get_scoring_policy(campionato)
 
         assert policy.__class__.__name__ == "ClassicScoringPolicy"
 
     def test_get_scoring_policy_fargo(self):
         """Test _get_scoring_policy with fargo policy."""
-        tournament = Mock()
-        tournament.scoring_policy = "fargo"
+        campionato = Mock()
+        campionato.scoring_policy = "fargo"
 
-        policy = ClassificationService._get_scoring_policy(tournament)
+        policy = ClassificationService._get_scoring_policy(campionato)
 
         assert policy.__class__.__name__ == "FargoRatingScoringPolicy"
 
     def test_get_scoring_policy_elo(self):
         """Test _get_scoring_policy with elo policy."""
-        tournament = Mock()
-        tournament.scoring_policy = "elo"
+        campionato = Mock()
+        campionato.scoring_policy = "elo"
 
-        policy = ClassificationService._get_scoring_policy(tournament)
+        policy = ClassificationService._get_scoring_policy(campionato)
 
         assert policy.__class__.__name__ == "EloRatingScoringPolicy"
 
     def test_get_scoring_policy_default(self):
         """Test _get_scoring_policy with unknown policy defaults to classic."""
-        tournament = Mock()
-        tournament.scoring_policy = "unknown"
+        campionato = Mock()
+        campionato.scoring_policy = "unknown"
 
-        policy = ClassificationService._get_scoring_policy(tournament)
+        policy = ClassificationService._get_scoring_policy(campionato)
 
         assert policy.__class__.__name__ == "ClassicScoringPolicy"
 
     @patch("models.classification.services.db")
     @patch("models.classification.services.bulk_load_relationships")
-    def test_update_tournament_classification_tournament_not_found(
+    def test_update_campionato_classification_campionato_not_found(
         self, mock_bulk_load, mock_db
     ):
-        """Test update_tournament_classification when tournament not found."""
+        """Test update_campionato_classification when campionato not found."""
         mock_db.session.get.return_value = None
 
-        with pytest.raises(ValueError, match="Tournament 1 not found"):
-            ClassificationService.update_tournament_classification(1)
+        with pytest.raises(ValueError, match="Campionato 1 not found"):
+            ClassificationService.update_campionato_classification(1)
 
     @patch("models.classification.services.db")
     @patch("models.classification.services.bulk_load_relationships")
     @patch("models.classification.services.ClassificationService._get_scoring_policy")
-    def test_update_tournament_classification_success(
-        self, mock_get_policy, mock_bulk_load, mock_db, mock_tournament, mock_players
+    def test_update_campionato_classification_success(
+        self, mock_get_policy, mock_bulk_load, mock_db, mock_campionato, mock_players
     ):
-        """Test successful tournament classification update."""
+        """Test successful campionato classification update."""
         # Setup mocks
-        mock_db.session.get.return_value = mock_tournament
+        mock_db.session.get.return_value = mock_campionato
 
         # Mock provas with matches
-        mock_prova = Mock()
+        mock_gara = Mock()
         mock_match = Mock()
         mock_match.status = "completed"
         mock_match.is_bye = False
@@ -118,9 +118,9 @@ class TestClassificationService:
         mock_match.player2_id = 2
         mock_match.player1_score = 5
         mock_match.player2_score = 3
-        mock_prova.matches = [mock_match]
+        mock_gara.matches = [mock_match]
 
-        mock_bulk_load.return_value.all.return_value = [mock_prova]
+        mock_bulk_load.return_value.all.return_value = [mock_gara]
         mock_db.session.query.return_value.filter_by.return_value = (
             mock_bulk_load.return_value
         )
@@ -144,7 +144,7 @@ class TestClassificationService:
         # Mock existing classifications query
         mock_db.session.query.return_value.filter_by.return_value.all.return_value = []
 
-        result = ClassificationService.update_tournament_classification(1)
+        result = ClassificationService.update_campionato_classification(1)
 
         assert len(result) == 2
         mock_db.session.commit.assert_called_once()
@@ -152,23 +152,23 @@ class TestClassificationService:
     @patch("models.classification.services.db")
     @patch("models.classification.services.bulk_load_relationships")
     @patch("models.classification.services.ClassificationService._get_scoring_policy")
-    def test_update_tournament_classification_with_existing_classifications(
-        self, mock_get_policy, mock_bulk_load, mock_db, mock_tournament, mock_players
+    def test_update_campionato_classification_with_existing_classifications(
+        self, mock_get_policy, mock_bulk_load, mock_db, mock_campionato, mock_players
     ):
-        """Test tournament classification update with existing classifications."""
+        """Test campionato classification update with existing classifications."""
         # Setup mocks
-        mock_db.session.get.return_value = mock_tournament
+        mock_db.session.get.return_value = mock_campionato
 
         # Mock provas with proper structure - make it iterable
-        mock_prova = Mock()
-        mock_prova.matches = (
+        mock_gara = Mock()
+        mock_gara.matches = (
             []
         )  # Empty list instead of Mock object to avoid iteration error
-        mock_bulk_load.return_value.all.return_value = [mock_prova]
+        mock_bulk_load.return_value.all.return_value = [mock_gara]
 
         # Create separate mock objects for different query chains
-        mock_prova_query = Mock()
-        mock_prova_query.filter_by.return_value = mock_bulk_load.return_value
+        mock_gara_query = Mock()
+        mock_gara_query.filter_by.return_value = mock_bulk_load.return_value
 
         mock_player_query = Mock()
         mock_player_query.filter.return_value.all.return_value = mock_players
@@ -183,8 +183,8 @@ class TestClassificationService:
         # Configure db.session.query to return different mocks based on the argument
         def query_side_effect(model):
             if hasattr(model, "__name__"):
-                if model.__name__ == "Prova":
-                    return mock_prova_query
+                if model.__name__ == "Gara":
+                    return mock_gara_query
                 elif model.__name__ == "User":
                     return mock_player_query
                 elif model.__name__ == "Classification":
@@ -200,20 +200,20 @@ class TestClassificationService:
         ]
         mock_get_policy.return_value = mock_policy
 
-        result = ClassificationService.update_tournament_classification(1)
+        result = ClassificationService.update_campionato_classification(1)
 
         assert len(result) == 1
         assert result[0] == existing_classification
 
     @patch("models.classification.services.db")
-    def test_get_tournament_standings(self, mock_db):
-        """Test get_tournament_standings method."""
+    def test_get_campionato_standings(self, mock_db):
+        """Test get_campionato_standings method."""
         mock_classification = Mock()
         mock_db.session.query.return_value.filter_by.return_value.options.return_value.order_by.return_value.all.return_value = [
             mock_classification
         ]
 
-        result = ClassificationService.get_tournament_standings(1)
+        result = ClassificationService.get_campionato_standings(1)
 
         assert result == [mock_classification]
         mock_db.session.query.assert_called_with(Classification)
@@ -242,11 +242,11 @@ class TestClassificationService:
         assert result is None
 
     @patch("models.classification.services.cache_manager")
-    def test_invalidate_tournament_cache(self, mock_cache_manager):
-        """Test invalidate_tournament_cache method."""
-        ClassificationService.invalidate_tournament_cache(1)
+    def test_invalidate_campionato_cache(self, mock_cache_manager):
+        """Test invalidate_campionato_cache method."""
+        ClassificationService.invalidate_campionato_cache(1)
 
-        mock_cache_manager.invalidate_by_tags.assert_called_once_with(["tournament:1"])
+        mock_cache_manager.invalidate_by_tags.assert_called_once_with(["campionato:1"])
 
     @patch("models.classification.services.db")
     def test_get_player_statistics_summary(self, mock_db):
@@ -271,7 +271,7 @@ class TestClassificationService:
             assert "wins" in result
 
     @patch("models.classification.services.db")
-    def test_get_round_standings(self, mock_db, mock_prova):
+    def test_get_round_standings(self, mock_db, mock_gara):
         """Test get_round_standings method."""
         mock_classification = Mock()
         mock_db.session.query.return_value.filter_by.return_value.options.return_value.order_by.return_value.all.return_value = [
@@ -283,7 +283,7 @@ class TestClassificationService:
         assert result == [mock_classification]
 
     @patch("models.classification.services.db")
-    def test_get_round_standings_current_round(self, mock_db, mock_prova):
+    def test_get_round_standings_current_round(self, mock_db, mock_gara):
         """Test get_round_standings with current round."""
         mock_classification = Mock()
         mock_db.session.query.return_value.filter_by.return_value.options.return_value.order_by.return_value.all.return_value = [
@@ -356,7 +356,7 @@ class TestPlayerEncounterService:
     def test_record_match_encounters(self, mock_record):
         """Test record_match_encounters method."""
         mock_match = Mock()
-        mock_match.prova_id = 1
+        mock_match.gara_id = 1
         mock_match.player1_id = 1
         mock_match.player2_id = 2
         mock_match.round_number = 2
@@ -365,7 +365,7 @@ class TestPlayerEncounterService:
         PlayerEncounterService.record_match_encounters(mock_match)
 
         mock_record.assert_called_once_with(
-            prova_id=1, player1_id=1, player2_id=2, round_number=2
+            gara_id=1, player1_id=1, player2_id=2, round_number=2
         )
 
     @patch("models.classification.services.db")
@@ -417,22 +417,22 @@ class TestClassificationServiceIntegration:
 
     def test_classification_service_integration_basic(self, db_session):
         """Test basic classification service integration."""
-        # Create test tournament
-        tournament = Tournament(name="Test Tournament", tournament_type="Amalfi")
-        db_session.add(tournament)
+        # Create test campionato
+        campionato = Campionato(name="Test Campionato", campionato_type="Amalfi")
+        db_session.add(campionato)
         db_session.flush()
 
-        # Create test prova
-        prova = Prova(
-            tournament_id=tournament.id,
+        # Create test gara
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
-            name="Test Prova",
+            name="Test Gara",
             date=date.today(),
             discipline="palla 9",
             distance=7,
             status="completed",
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.flush()
 
         # Create test users
@@ -445,16 +445,16 @@ class TestClassificationServiceIntegration:
 
         # Create test inscriptions
         inscription1 = Inscription(
-            prova_id=prova.id, user_id=user1.id, is_withdrawn=False
+            gara_id=gara.id, user_id=user1.id, is_withdrawn=False
         )
         inscription2 = Inscription(
-            prova_id=prova.id, user_id=user2.id, is_withdrawn=False
+            gara_id=gara.id, user_id=user2.id, is_withdrawn=False
         )
         db_session.add_all([inscription1, inscription2])
 
         # Create test match
         match = Match(
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=1,
             player1_id=user1.id,
             player2_id=user2.id,
@@ -467,18 +467,18 @@ class TestClassificationServiceIntegration:
         db_session.commit()
 
         # Test that basic queries work
-        standings = ClassificationService.get_tournament_standings(tournament.id)
+        standings = ClassificationService.get_campionato_standings(campionato.id)
         assert isinstance(standings, list)
 
         player_ranking = ClassificationService.get_player_ranking(
-            tournament.id, user1.id
+            campionato.id, user1.id
         )
         # May be None if no classification exists yet, which is fine for integration test
 
     def test_classification_edge_cases(self, db_session):
         """Test classification service edge cases."""
-        # Test with non-existent tournament
-        standings = ClassificationService.get_tournament_standings(99999)
+        # Test with non-existent campionato
+        standings = ClassificationService.get_campionato_standings(99999)
         assert isinstance(standings, list)
         assert len(standings) == 0
 
@@ -493,9 +493,9 @@ class TestClassificationServiceCaching:
     @patch("models.classification.services.cache_manager")
     def test_cache_invalidation_flow(self, mock_cache_manager):
         """Test that cache invalidation works correctly."""
-        ClassificationService.invalidate_tournament_cache(1)
+        ClassificationService.invalidate_campionato_cache(1)
 
-        mock_cache_manager.invalidate_by_tags.assert_called_once_with(["tournament:1"])
+        mock_cache_manager.invalidate_by_tags.assert_called_once_with(["campionato:1"])
 
     @patch("models.classification.services.cached")
     def test_cached_decorators_applied(self, mock_cached):
@@ -514,18 +514,18 @@ class TestClassificationServiceErrorHandling:
         mock_db.session.get.side_effect = Exception("Database connection error")
 
         with pytest.raises(Exception):
-            ClassificationService.update_tournament_classification(1)
+            ClassificationService.update_campionato_classification(1)
 
     @patch("models.classification.services.db")
-    def test_invalid_tournament_id_handling(self, mock_db):
-        """Test handling of invalid tournament IDs."""
+    def test_invalid_campionato_id_handling(self, mock_db):
+        """Test handling of invalid campionato IDs."""
         mock_db.session.get.return_value = None
 
-        with pytest.raises(ValueError, match="Tournament .* not found"):
-            ClassificationService.update_tournament_classification(999)
+        with pytest.raises(ValueError, match="Campionato .* not found"):
+            ClassificationService.update_campionato_classification(999)
 
     def test_none_value_handling(self):
         """Test handling of None values in methods."""
         # Test that methods handle None inputs gracefully
-        result = ClassificationService.get_tournament_standings(None)
+        result = ClassificationService.get_campionato_standings(None)
         assert isinstance(result, list)

@@ -512,10 +512,10 @@ def _generate_default_key(func_name: str, args: tuple, kwargs: dict) -> str:
 
 
 # Specific cache key generators for common patterns
-def tournament_cache_key(*args, **kwargs) -> str:
-    """Generate cache key for tournament-related data."""
-    tournament_id = kwargs.get("tournament_id") or (args[0] if args else "unknown")
-    return f"tournament:{tournament_id}"
+def campionato_cache_key(*args, **kwargs) -> str:
+    """Generate cache key for campionato-related data."""
+    campionato_id = kwargs.get("campionato_id") or (args[0] if args else "unknown")
+    return f"campionato:{campionato_id}"
 
 
 def user_cache_key(*args, **kwargs) -> str:
@@ -524,19 +524,19 @@ def user_cache_key(*args, **kwargs) -> str:
     return f"user:{user_id}"
 
 
-def prova_cache_key(*args, **kwargs) -> str:
-    """Generate cache key for prova-related data."""
-    prova_id = kwargs.get("prova_id") or (args[0] if args else "unknown")
-    return f"prova:{prova_id}"
+def gara_cache_key(*args, **kwargs) -> str:
+    """Generate cache key for gara-related data."""
+    gara_id = kwargs.get("gara_id") or (args[0] if args else "unknown")
+    return f"gara:{gara_id}"
 
 
 # Register key generators
-cache_manager.register_key_generator("tournament", tournament_cache_key)
+cache_manager.register_key_generator("campionato", campionato_cache_key)
 cache_manager.register_key_generator("user", user_cache_key)
-cache_manager.register_key_generator("prova", prova_cache_key)
+cache_manager.register_key_generator("gara", gara_cache_key)
 
 # Register invalidation rules
-cache_manager.add_invalidation_rule("tournament_*", ["tournament"])
+cache_manager.add_invalidation_rule("campionato_*", ["campionato"])
 cache_manager.add_invalidation_rule("user_*", ["user"])
-cache_manager.add_invalidation_rule("prova_*", ["prova", "tournament"])
-cache_manager.add_invalidation_rule("match_*", ["match", "prova", "tournament"])
+cache_manager.add_invalidation_rule("gara_*", ["gara", "campionato"])
+cache_manager.add_invalidation_rule("match_*", ["match", "gara", "campionato"])

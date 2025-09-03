@@ -1,5 +1,5 @@
 """
-Modular base models and mixins for the tournament billiards application.
+Modular base models and mixins for the campionato billiards application.
 
 This module provides modular base classes allowing models to pick only
 the functionality they need (utility methods vs timestamps vs other features).
@@ -194,7 +194,7 @@ class BaseModel(db.Model):
     Full-featured base model with timestamps and utility methods.
 
     Use this for models that need both timestamp tracking and utility methods.
-    Good for: Tournament, Match, etc. (business entities that need audit trail)
+    Good for: Campionato, Match, etc. (business entities that need audit trail)
     """
 
     __abstract__ = True

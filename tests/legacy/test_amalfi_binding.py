@@ -5,7 +5,7 @@ Test module for models/matchmaking/bindings/amalfi_binding.py
 import pytest
 from unittest.mock import Mock, patch
 from models.matchmaking.bindings.amalfi_binding import (
-    validate_prova,
+    validate_gara,
     _extract_pairing_from_match,
     propose_pairings,
 )
@@ -14,10 +14,10 @@ from models.matchmaking.bindings.amalfi_binding import (
 class TestAmalfiBinding:
     """Test cases for amalfi_binding module."""
 
-    def test_validate_prova_with_valid_data(self):
-        """Test validate_prova with valid data."""
-        # Create a mock prova object
-        mock_prova = Mock()
+    def test_validate_gara_with_valid_data(self):
+        """Test validate_gara with valid data."""
+        # Create a mock gara object
+        mock_gara = Mock()
 
         # Mock the validate_amalfi_configuration function
         with patch(
@@ -29,16 +29,16 @@ class TestAmalfiBinding:
                 "warnings": [],
             }
 
-            result = validate_prova(mock_prova)
+            result = validate_gara(mock_gara)
 
             # Verify the result
             assert result == (True, ())
-            mock_validate.assert_called_once_with(mock_prova)
+            mock_validate.assert_called_once_with(mock_gara)
 
-    def test_validate_prova_with_errors(self):
-        """Test validate_prova with errors."""
-        # Create a mock prova object
-        mock_prova = Mock()
+    def test_validate_gara_with_errors(self):
+        """Test validate_gara with errors."""
+        # Create a mock gara object
+        mock_gara = Mock()
 
         # Mock the validate_amalfi_configuration function
         with patch(
@@ -50,16 +50,16 @@ class TestAmalfiBinding:
                 "warnings": [],
             }
 
-            result = validate_prova(mock_prova)
+            result = validate_gara(mock_gara)
 
             # Verify the result
             assert result == (False, ("Error 1", "Error 2"))
-            mock_validate.assert_called_once_with(mock_prova)
+            mock_validate.assert_called_once_with(mock_gara)
 
-    def test_validate_prova_with_warnings(self):
-        """Test validate_prova with warnings."""
-        # Create a mock prova object
-        mock_prova = Mock()
+    def test_validate_gara_with_warnings(self):
+        """Test validate_gara with warnings."""
+        # Create a mock gara object
+        mock_gara = Mock()
 
         # Mock the validate_amalfi_configuration function
         with patch(
@@ -71,16 +71,16 @@ class TestAmalfiBinding:
                 "warnings": ["Warning 1", "Warning 2"],
             }
 
-            result = validate_prova(mock_prova)
+            result = validate_gara(mock_gara)
 
             # Verify the result
             assert result == (True, ("Warning 1", "Warning 2"))
-            mock_validate.assert_called_once_with(mock_prova)
+            mock_validate.assert_called_once_with(mock_gara)
 
-    def test_validate_prova_with_errors_and_warnings(self):
-        """Test validate_prova with both errors and warnings."""
-        # Create a mock prova object
-        mock_prova = Mock()
+    def test_validate_gara_with_errors_and_warnings(self):
+        """Test validate_gara with both errors and warnings."""
+        # Create a mock gara object
+        mock_gara = Mock()
 
         # Mock the validate_amalfi_configuration function
         with patch(
@@ -92,11 +92,11 @@ class TestAmalfiBinding:
                 "warnings": ["Warning 1"],
             }
 
-            result = validate_prova(mock_prova)
+            result = validate_gara(mock_gara)
 
             # Verify the result
             assert result == (False, ("Error 1", "Warning 1"))
-            mock_validate.assert_called_once_with(mock_prova)
+            mock_validate.assert_called_once_with(mock_gara)
 
     def test_extract_pairing_from_match_bye(self):
         """Test _extract_pairing_from_match with a bye match."""
@@ -178,8 +178,8 @@ class TestAmalfiBinding:
 
     def test_propose_pairings(self):
         """Test propose_pairings function."""
-        # Create a mock prova object
-        mock_prova = Mock()
+        # Create a mock gara object
+        mock_gara = Mock()
         round_number = 1
 
         # Create mock matches
@@ -199,11 +199,11 @@ class TestAmalfiBinding:
         ) as mock_create:
             mock_create.return_value = [mock_match1, mock_match2]
 
-            result = propose_pairings(mock_prova, round_number)
+            result = propose_pairings(mock_gara, round_number)
 
             # Verify the result
             assert result == [(1, 2), (3,)]
-            mock_create.assert_called_once_with(mock_prova, round_number)
+            mock_create.assert_called_once_with(mock_gara, round_number)
 
 
 if __name__ == "__main__":

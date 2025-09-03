@@ -14,12 +14,12 @@
                             <span class="badge {{ match | status_badge_class }} ms-2">{{ match | status_text }}</span>
                         </h6>
                         <p class="mb-1">
-                            <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}/{{ match.prova.rounds_count }}
-                            <br><small class="text-muted">{{ match.prova.discipline }} - 
-                            {% if match.prova.best_of %}
-                                Al meglio di {{ match.prova.distance }}
+                            <strong>Gara {{ match.gara.number }}</strong> - Turno {{ match.round_number }}/{{ match.gara.rounds_count }}
+                            <br><small class="text-muted">{{ match.gara.discipline }} - 
+                            {% if match.gara.best_of %}
+                                Al meglio di {{ match.gara.distance }}
                             {% else %}
-                                {{ match.prova.distance }} rack esatti
+                                {{ match.gara.distance }} rack esatti
                             {% endif %}
                             </small>
                         </p>

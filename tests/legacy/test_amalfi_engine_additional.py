@@ -9,12 +9,12 @@ from datetime import date
 from amalfi.engine import AmalfiEngine, ValidationResult
 from models import (
     Match,
-    Prova,
+    Gara,
     Inscription,
     PlayerEncounter,
     RoundClassification,
     User,
-    Tournament,
+    Campionato,
 )
 from models.competition.models import WithdrawPolicy
 
@@ -23,20 +23,20 @@ class TestAmalfiEngineCreateRounds:
     """Test round creation functionality."""
 
     @pytest.fixture
-    def sample_tournament(self, db_session):
-        """Create a sample tournament."""
-        tournament = Tournament(name="Test Tournament", tournament_type="Amalfi")
-        db_session.add(tournament)
+    def sample_campionato(self, db_session):
+        """Create a sample campionato."""
+        campionato = Campionato(name="Test Campionato", campionato_type="Amalfi")
+        db_session.add(campionato)
         db_session.commit()
-        return tournament
+        return campionato
 
     @pytest.fixture
-    def sample_prova(self, db_session, sample_tournament):
-        """Create a sample prova."""
-        prova = Prova(
-            tournament_id=sample_tournament.id,
+    def sample_gara(self, db_session, sample_campionato):
+        """Create a sample gara."""
+        gara = Gara(
+            campionato_id=sample_campionato.id,
             number=1,
-            name="Test Prova",
+            name="Test Gara",
             date=date.today(),
             discipline="palla 9",
             distance=7,
@@ -46,9 +46,9 @@ class TestAmalfiEngineCreateRounds:
             current_round=1,
             rounds_count=5,
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.commit()
-        return prova
+        return gara
 
     @pytest.fixture
     def sample_users(self, db_session):
@@ -65,27 +65,27 @@ class TestAmalfiEngineCreateRounds:
         return users
 
     @pytest.fixture
-    def sample_inscriptions(self, db_session, sample_prova, sample_users):
+    def sample_inscriptions(self, db_session, sample_gara, sample_users):
         """Create sample inscriptions."""
         inscriptions = []
         for user in sample_users:
             inscription = Inscription(
-                prova_id=sample_prova.id, user_id=user.id, is_withdrawn=False
+                gara_id=sample_gara.id, user_id=user.id, is_withdrawn=False
             )
             db_session.add(inscription)
             inscriptions.append(inscription)
         db_session.commit()
         return inscriptions
 
-    def test_engine_initialization(self, sample_prova):
+    def test_engine_initialization(self, sample_gara):
         """Test engine initialization."""
-        engine = AmalfiEngine(sample_prova)
-        assert engine.prova == sample_prova
-        assert engine.tournament == sample_prova.tournament
+        engine = AmalfiEngine(sample_gara)
+        assert engine.gara == sample_gara
+        assert engine.campionato == sample_gara.campionato
 
-    def test_create_round_matches_first_round(self, sample_prova, sample_inscriptions):
+    def test_create_round_matches_first_round(self, sample_gara, sample_inscriptions):
         """Test creating matches for first round."""
-        engine = AmalfiEngine(sample_prova)
+        engine = AmalfiEngine(sample_gara)
 
         with patch.object(engine, "_create_first_round") as mock_first:
             mock_matches = [Mock()]
@@ -104,9 +104,9 @@ class TestAmalfiEngineCreateRounds:
                 mock_finalize.assert_called_once_with(mock_matches)
                 assert result == mock_matches
 
-    def test_create_round_matches_amalfi_round(self, sample_prova, sample_inscriptions):
+    def test_create_round_matches_amalfi_round(self, sample_gara, sample_inscriptions):
         """Test creating matches for amalfi round."""
-        engine = AmalfiEngine(sample_prova)
+        engine = AmalfiEngine(sample_gara)
 
         with patch.object(engine, "_create_amalfi_round") as mock_amalfi:
             mock_matches = [Mock()]
@@ -125,9 +125,9 @@ class TestAmalfiEngineCreateRounds:
                 mock_finalize.assert_called_once_with(mock_matches)
                 assert result == mock_matches
 
-    def test_create_first_round_insufficient_participants(self, sample_prova):
+    def test_create_first_round_insufficient_participants(self, sample_gara):
         """Test first round creation with insufficient participants."""
-        engine = AmalfiEngine(sample_prova)
+        engine = AmalfiEngine(sample_gara)
 
         with patch.object(engine, "_inscriptions_for_pairing") as mock_inscriptions:
             mock_inscriptions.return_value = [Mock(), Mock()]  # Only 2 participants
@@ -136,10 +136,10 @@ class TestAmalfiEngineCreateRounds:
                 engine._create_first_round()
 
     def test_create_first_round_matches_even_players(
-        self, sample_prova, sample_users, db_session
+        self, sample_gara, sample_users, db_session
     ):
         """Test first round creation with even number of players."""
-        engine = AmalfiEngine(sample_prova)
+        engine = AmalfiEngine(sample_gara)
 
         # Create 4 users for even pairing
         inscriptions = []
@@ -159,10 +159,10 @@ class TestAmalfiEngineCreateRounds:
         assert len(bye_matches) == 0
 
     def test_create_first_round_matches_odd_players(
-        self, sample_prova, sample_users, db_session
+        self, sample_gara, sample_users, db_session
     ):
         """Test first round creation with odd number of players."""
-        engine = AmalfiEngine(sample_prova)
+        engine = AmalfiEngine(sample_gara)
 
         # Create 5 users for odd pairing
         inscriptions = []
@@ -190,14 +190,14 @@ class TestAmalfiEngineClassification:
     """Test classification and ranking functionality."""
 
     @pytest.fixture
-    def sample_prova_classification(self, db_session):
-        """Create a prova for classification tests."""
-        tournament = Tournament(name="Class Test", tournament_type="Amalfi")
-        db_session.add(tournament)
+    def sample_gara_classification(self, db_session):
+        """Create a gara for classification tests."""
+        campionato = Campionato(name="Class Test", campionato_type="Amalfi")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Classification Test",
             date=date.today(),
@@ -209,15 +209,15 @@ class TestAmalfiEngineClassification:
             rounds_count=5,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.commit()
-        return prova
+        return gara
 
     def test_create_amalfi_round_with_exclusions(
-        self, sample_prova_classification, player_user, db_session
+        self, sample_gara_classification, player_user, db_session
     ):
         """Test amalfi round creation with withdrawn players excluded."""
-        engine = AmalfiEngine(sample_prova_classification)
+        engine = AmalfiEngine(sample_gara_classification)
 
         # Create classifications
         classifications = []
@@ -232,7 +232,7 @@ class TestAmalfiEngineClassification:
             db_session.flush()
 
             classification = RoundClassification(
-                prova_id=sample_prova_classification.id,
+                gara_id=sample_gara_classification.id,
                 round_number=1,
                 user_id=user.id,
                 position=i + 1,
@@ -242,7 +242,7 @@ class TestAmalfiEngineClassification:
 
         # Create withdrawn inscription
         withdrawn_inscription = Inscription(
-            prova_id=sample_prova_classification.id,
+            gara_id=sample_gara_classification.id,
             user_id=classifications[0].user_id,
             is_withdrawn=True,
         )
@@ -261,7 +261,7 @@ class TestAmalfiEngineClassification:
 
             result = engine._create_amalfi_round(2)
 
-            mock_calc.assert_called_once_with(sample_prova_classification.id, 1)
+            mock_calc.assert_called_once_with(sample_gara_classification.id, 1)
             mock_apply.assert_called_once()
 
             # Check that excluded player was filtered out
@@ -292,12 +292,12 @@ class TestAmalfiEnginePlayerEncounters:
     @pytest.fixture
     def sample_match(self, db_session):
         """Create a sample match."""
-        tournament = Tournament(name="Encounter Test", tournament_type="Amalfi")
-        db_session.add(tournament)
+        campionato = Campionato(name="Encounter Test", campionato_type="Amalfi")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Encounter Test",
             date=date.today(),
@@ -305,7 +305,7 @@ class TestAmalfiEnginePlayerEncounters:
             distance=7,
             status="playing",
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.flush()
 
         user1 = User(username="enc_player1", email="enc1@test.com", role="player")
@@ -316,21 +316,21 @@ class TestAmalfiEnginePlayerEncounters:
         db_session.flush()
 
         match = Match(
-            prova_id=prova.id,
+            gara_id=gara.id,
             round_number=1,
             player1_id=user1.id,
             player2_id=user2.id,
             amalfi_round=1,
         )
-        match.prova = prova
+        match.gara = gara
         db_session.add(match)
         db_session.commit()
         return match
 
     def test_player_encounter_recording_regular_match(self, sample_match):
         """Test recording encounters for regular matches."""
-        prova = sample_match.prova
-        engine = AmalfiEngine(prova)
+        gara = sample_match.gara
+        engine = AmalfiEngine(gara)
 
         matches = [sample_match]
 
@@ -339,21 +339,21 @@ class TestAmalfiEnginePlayerEncounters:
             for match in matches:
                 if not getattr(match, "is_bye", False):
                     PlayerEncounter.record_encounter(
-                        prova.id, match.player1_id, match.player2_id, 1
+                        gara.id, match.player1_id, match.player2_id, 1
                     )
 
             mock_record.assert_called_once_with(
-                prova.id, sample_match.player1_id, sample_match.player2_id, 1
+                gara.id, sample_match.player1_id, sample_match.player2_id, 1
             )
 
     def test_player_encounter_recording_trio_match(self, db_session):
         """Test recording encounters for trio matches."""
-        tournament = Tournament(name="Trio Test", tournament_type="Amalfi")
-        db_session.add(tournament)
+        campionato = Campionato(name="Trio Test", campionato_type="Amalfi")
+        db_session.add(campionato)
         db_session.flush()
 
-        prova = Prova(
-            tournament_id=tournament.id,
+        gara = Gara(
+            campionato_id=campionato.id,
             number=1,
             name="Trio Test",
             date=date.today(),
@@ -361,7 +361,7 @@ class TestAmalfiEnginePlayerEncounters:
             distance=7,
             status="playing",
         )
-        db_session.add(prova)
+        db_session.add(gara)
         db_session.flush()
 
         # Create trio match
@@ -372,7 +372,7 @@ class TestAmalfiEnginePlayerEncounters:
         trio_match.trio_match.player2_id = 2
         trio_match.trio_match.player3_id = 3
 
-        engine = AmalfiEngine(prova)
+        engine = AmalfiEngine(gara)
         matches = [trio_match]
 
         with patch("models.PlayerEncounter.record_encounter") as mock_record:
@@ -383,13 +383,13 @@ class TestAmalfiEnginePlayerEncounters:
                 if getattr(match, "is_trio", False):
                     trio = match.trio_match
                     PlayerEncounter.record_encounter(
-                        prova.id, trio.player1_id, trio.player2_id, 1
+                        gara.id, trio.player1_id, trio.player2_id, 1
                     )
                     PlayerEncounter.record_encounter(
-                        prova.id, trio.player1_id, trio.player3_id, 1
+                        gara.id, trio.player1_id, trio.player3_id, 1
                     )
                     PlayerEncounter.record_encounter(
-                        prova.id, trio.player2_id, trio.player3_id, 1
+                        gara.id, trio.player2_id, trio.player3_id, 1
                     )
 
             # Should record 3 encounters for trio match
@@ -401,8 +401,8 @@ class TestAmalfiEngineInscriptions:
 
     def test_inscriptions_for_pairing_method_exists(self):
         """Test that _inscriptions_for_pairing method exists and can be called."""
-        prova = Mock()
-        engine = AmalfiEngine(prova)
+        gara = Mock()
+        engine = AmalfiEngine(gara)
 
         # This tests that the method exists and can be mocked
         with patch.object(engine, "_inscriptions_for_pairing") as mock_method:
@@ -417,8 +417,8 @@ class TestAmalfiEngineUtilityMethods:
 
     def test_cleanup_cancelled_matches_method_exists(self):
         """Test that _cleanup_cancelled_matches method exists."""
-        prova = Mock()
-        engine = AmalfiEngine(prova)
+        gara = Mock()
+        engine = AmalfiEngine(gara)
 
         with patch.object(engine, "_cleanup_cancelled_matches") as mock_method:
             matches = [Mock()]
@@ -427,8 +427,8 @@ class TestAmalfiEngineUtilityMethods:
 
     def test_finalize_forfeit_matches_method_exists(self):
         """Test that _finalize_forfeit_matches method exists."""
-        prova = Mock()
-        engine = AmalfiEngine(prova)
+        gara = Mock()
+        engine = AmalfiEngine(gara)
 
         with patch.object(engine, "_finalize_forfeit_matches") as mock_method:
             matches = [Mock()]
@@ -437,8 +437,8 @@ class TestAmalfiEngineUtilityMethods:
 
     def test_apply_amalfi_algorithm_method_exists(self):
         """Test that _apply_amalfi_algorithm method exists."""
-        prova = Mock()
-        engine = AmalfiEngine(prova)
+        gara = Mock()
+        engine = AmalfiEngine(gara)
 
         with patch.object(engine, "_apply_amalfi_algorithm") as mock_method:
             mock_method.return_value = []

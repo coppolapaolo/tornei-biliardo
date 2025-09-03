@@ -6,32 +6,32 @@ This document summarizes all the new components created during the refactoring s
 
 ### Amalfi Classification Components
 1. `_amalfi_algorithm_info.html` - Displays Amalfi algorithm information
-2. `_round_navigation.html` - Provides navigation between tournament rounds
+2. `_round_navigation.html` - Provides navigation between campionato rounds
 3. `_detailed_classification.html` - Shows detailed player classification table
 4. `_next_round_preview.html` - Displays preview of the next round
 
-### Prova Detail Components
-5. `_prova_header.html` - Header section for prova detail page
+### Gara Detail Components
+5. `_gara_header.html` - Header section for gara detail page
 6. `_amalfi_preview_modal.html` - Modal for previewing Amalfi round pairings
-7. `_open_inscriptions_modal.html` - Modal for opening prova inscriptions
+7. `_open_inscriptions_modal.html` - Modal for opening gara inscriptions
 8. `_modify_dates_modal.html` - Modal for modifying inscription dates
 
 ### Form Components
-9. `_prova_edit_form.html` - Form for editing prova information
-10. `_tournament_edit_form.html` - Form for editing tournament information
+9. `_gara_edit_form.html` - Form for editing gara information
+10. `_campionato_edit_form.html` - Form for editing campionato information
 
 ### Dashboard Components
 11. `_dashboard_header.html` - Unified header for all dashboards
 12. `_dashboard_empty_state.html` - Empty state display for dashboards
-13. `_tournament_info_alert.html` - Alert showing selected tournament information
+13. `_campionato_info_alert.html` - Alert showing selected campionato information
 
 ## Templates Updated
 
 ### Admin Templates
 - `admin/amalfi_classification.html` - Now uses the new Amalfi classification components
-- `admin/prova_detail.html` - Now uses the new prova detail components
-- `admin/prova_edit.html` - Now uses the prova edit form component
-- `admin/tournament_edit.html` - Now uses the tournament edit form component
+- `admin/gara_detail.html` - Now uses the new gara detail components
+- `admin/gara_edit.html` - Now uses the gara edit form component
+- `admin/campionato_edit.html` - Now uses the campionato edit form component
 
 ### Dashboard Templates
 - `dashboard/admin.html` - Now uses the unified dashboard components

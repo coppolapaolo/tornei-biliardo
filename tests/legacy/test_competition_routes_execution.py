@@ -20,9 +20,9 @@ class TestCompetitionRoutesExecution:
         assert routes.admin.competition.competition_bp.name == "competition"
 
         # Verify some of the route functions exist
-        assert hasattr(routes.admin.competition, "create_prova_standalone")
-        assert hasattr(routes.admin.competition, "create_prova")
-        assert hasattr(routes.admin.competition, "edit_prova")
+        assert hasattr(routes.admin.competition, "create_gara_standalone")
+        assert hasattr(routes.admin.competition, "create_gara")
+        assert hasattr(routes.admin.competition, "edit_gara")
 
     def test_actual_route_execution_with_proper_setup(self, client, admin_user):
         """Test actual route execution with proper setup."""
@@ -33,10 +33,10 @@ class TestCompetitionRoutesExecution:
 
         # Test accessing the create_standalone route
         # We need to mock the dependencies that would normally be needed
-        with patch("routes.admin.competition.Tournament") as mock_tournament:
-            mock_tournament.query.filter_by.return_value.all.return_value = []
+        with patch("routes.admin.competition.Campionato") as mock_campionato:
+            mock_campionato.query.filter_by.return_value.all.return_value = []
 
-            response = client.get("/admin/prova/create_standalone")
+            response = client.get("/admin/gara/create_standalone")
             # Even if it redirects or has issues, we've executed the route function
             assert response is not None
 
@@ -47,19 +47,19 @@ class TestCompetitionRoutesExecution:
 
         # Mock the Flask context and dependencies
         with patch("routes.admin.competition.current_user") as mock_current_user, patch(
-            "routes.admin.competition.Tournament"
-        ) as mock_tournament:
+            "routes.admin.competition.Campionato"
+        ) as mock_campionato:
 
             # Setup mocks
             mock_current_user.is_admin = True
             mock_current_user.id = admin_user.id
-            mock_tournament.query.filter_by.return_value.all.return_value = []
+            mock_campionato.query.filter_by.return_value.all.return_value = []
 
             # Execute the function directly - this should improve coverage
             try:
                 # This will execute the function and improve coverage even if
                 # it raises an exception
-                routes.admin.competition.create_prova_standalone()
+                routes.admin.competition.create_gara_standalone()
             except Exception:
                 # We expect exceptions due to missing context, but the code
                 # will still be executed
@@ -72,21 +72,21 @@ class TestCompetitionRoutesExecution:
 
         # Execute several functions to improve coverage
         functions_to_test = [
-            "create_prova_standalone",
-            "create_prova",
-            "edit_prova",
-            "delete_prova",
-            "prova_detail",
+            "create_gara_standalone",
+            "create_gara",
+            "edit_gara",
+            "delete_gara",
+            "gara_detail",
             "open_inscriptions",
             "start_first_round",
         ]
 
         # Mock the Flask context and dependencies
         with patch("routes.admin.competition.current_user") as mock_current_user, patch(
-            "routes.admin.competition.Tournament"
-        ) as mock_tournament, patch(
-            "routes.admin.competition.Prova"
-        ) as mock_prova, patch(
+            "routes.admin.competition.Campionato"
+        ) as mock_campionato, patch(
+            "routes.admin.competition.Gara"
+        ) as mock_gara, patch(
             "routes.admin.competition.Inscription"
         ) as mock_inscription, patch(
             "routes.admin.competition.Match"
@@ -95,15 +95,15 @@ class TestCompetitionRoutesExecution:
             # Setup mocks
             mock_current_user.is_admin = True
             mock_current_user.id = admin_user.id
-            mock_tournament.query.filter_by.return_value.all.return_value = []
-            mock_prova.query.filter_by.return_value.first.return_value = None
+            mock_campionato.query.filter_by.return_value.all.return_value = []
+            mock_gara.query.filter_by.return_value.first.return_value = None
 
-            # Mock prova instance
-            mock_prova_instance = MagicMock()
-            mock_prova_instance.id = 1
-            mock_prova_instance.can_be_modified.return_value = True
-            mock_prova_instance.tournament_id = 1
-            mock_prova.query.get.return_value = mock_prova_instance
+            # Mock gara instance
+            mock_gara_instance = MagicMock()
+            mock_gara_instance.id = 1
+            mock_gara_instance.can_be_modified.return_value = True
+            mock_gara_instance.campionato_id = 1
+            mock_gara.query.get.return_value = mock_gara_instance
 
             # Mock related objects
             mock_inscription.query.filter_by.return_value.all.return_value = []
@@ -118,13 +118,13 @@ class TestCompetitionRoutesExecution:
                         func = getattr(routes.admin.competition, func_name)
                         # Call with appropriate parameters where needed
                         if func_name in [
-                            "edit_prova",
-                            "delete_prova",
-                            "prova_detail",
+                            "edit_gara",
+                            "delete_gara",
+                            "gara_detail",
                             "open_inscriptions",
                             "start_first_round",
                         ]:
-                            func(1)  # Pass prova_id parameter
+                            func(1)  # Pass gara_id parameter
                         else:
                             func()  # Call without parameters
                     except Exception:

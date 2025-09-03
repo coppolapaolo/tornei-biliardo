@@ -31,15 +31,15 @@ class TestTiebreakerService:
                     match_id=1,
                     player1_id=10,
                     player2_id=20,
-                    tournament_id=100,
-                    prova_id=200,
+                    campionato_id=100,
+                    gara_id=200,
                 )
 
                 # Verify Tiebreaker was created with correct parameters
                 mock_tiebreaker_class.assert_called_once_with(
                     match_id=1,
-                    tournament_id=100,
-                    prova_id=200,
+                    campionato_id=100,
+                    gara_id=200,
                     tiebreaker_type=TiebreakerType.SPOT_SHOT.value,
                     player1_id=10,
                     player2_id=20,
@@ -114,16 +114,16 @@ class TestTiebreakerService:
                     match_id=1,
                     player1_id=10,
                     player2_id=20,
-                    tournament_id=100,
-                    prova_id=200,
+                    campionato_id=100,
+                    gara_id=200,
                     target_score=20,
                 )
 
                 # Verify Tiebreaker was created with correct parameters
                 mock_tiebreaker_class.assert_called_once_with(
                     match_id=1,
-                    tournament_id=100,
-                    prova_id=200,
+                    campionato_id=100,
+                    gara_id=200,
                     tiebreaker_type=TiebreakerType.RALLY.value,
                     player1_id=10,
                     player2_id=20,
@@ -156,16 +156,16 @@ class TestTiebreakerService:
                     match_id=1,
                     player1_id=10,
                     player2_id=20,
-                    tournament_id=100,
-                    prova_id=200,
+                    campionato_id=100,
+                    gara_id=200,
                     best_of=5,
                 )
 
                 # Verify Tiebreaker was created with correct parameters
                 mock_tiebreaker_class.assert_called_once_with(
                     match_id=1,
-                    tournament_id=100,
-                    prova_id=200,
+                    campionato_id=100,
+                    gara_id=200,
                     tiebreaker_type=TiebreakerType.PLAYOFF_MATCH.value,
                     player1_id=10,
                     player2_id=20,
@@ -705,14 +705,14 @@ class TestTiebreakerConfigurationService:
                 mock_config_class.return_value = mock_config
 
                 result = TiebreakerConfigurationService.create_default_configuration(
-                    tournament_id=100, prova_id=200
+                    campionato_id=100, gara_id=200
                 )
 
                 # Verify configuration was created with correct parameters
                 mock_config_class.assert_called_once()
                 args, kwargs = mock_config_class.call_args
-                assert kwargs["tournament_id"] == 100
-                assert kwargs["prova_id"] == 200
+                assert kwargs["campionato_id"] == 100
+                assert kwargs["gara_id"] == 200
                 assert kwargs["name"] == "Default Tiebreaker Rules"
                 assert kwargs["is_default"] is True
 
@@ -726,9 +726,9 @@ class TestTiebreakerConfigurationService:
     def test_get_configuration_for_match_found(self):
         """Test getting configuration for match when found."""
         mock_match = Mock()
-        mock_match.prova_id = 50
-        mock_match.prova = Mock()
-        mock_match.prova.tournament_id = 100
+        mock_match.gara_id = 50
+        mock_match.gara = Mock()
+        mock_match.gara.campionato_id = 100
 
         mock_config = Mock()
         mock_config.supports_discipline.return_value = True
@@ -753,9 +753,9 @@ class TestTiebreakerConfigurationService:
     def test_get_configuration_for_match_not_found(self):
         """Test getting configuration for match when not found."""
         mock_match = Mock()
-        mock_match.prova_id = None
-        mock_match.prova = Mock()
-        mock_match.prova.tournament_id = None
+        mock_match.gara_id = None
+        mock_match.gara = Mock()
+        mock_match.gara.campionato_id = None
 
         with patch("models.tiebreaker.services.db") as mock_db:
             mock_db.session.get.return_value = mock_match

@@ -26,15 +26,15 @@ def test_competition_routes():
     try:
         # Import route functions
         from routes.admin.competition import (
-            create_prova_standalone,
-            create_prova,
-            edit_prova,
-            delete_prova,
-            prova_detail,
+            create_gara_standalone,
+            create_gara,
+            edit_gara,
+            delete_gara,
+            gara_detail,
             open_inscriptions,
             modify_inscription_dates,
             start_first_round,
-            prova_results_overview,
+            gara_results_overview,
             amalfi_classification,
             amalfi_start_round,
             trio_add_rack,
@@ -45,15 +45,15 @@ def test_competition_routes():
 
         # Test that functions exist
         functions = [
-            create_prova_standalone,
-            create_prova,
-            edit_prova,
-            delete_prova,
-            prova_detail,
+            create_gara_standalone,
+            create_gara,
+            edit_gara,
+            delete_gara,
+            gara_detail,
             open_inscriptions,
             modify_inscription_dates,
             start_first_round,
-            prova_results_overview,
+            gara_results_overview,
             amalfi_classification,
             amalfi_start_round,
             trio_add_rack,

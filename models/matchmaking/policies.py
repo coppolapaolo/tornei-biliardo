@@ -9,18 +9,18 @@ class OddResolution(Enum):
     TRIO = "trio"
 
 
-def decide_trio_or_bye(*, tournament_without_x: bool, can_trio: bool) -> OddResolution:
-    """Regola minimale: se il torneo consente il trio e c'è almeno un 1v1
+def decide_trio_or_bye(*, campionato_without_x: bool, can_trio: bool) -> OddResolution:
+    """Regola minimale: se il campionato consente il trio e c'è almeno un 1v1
     già costruito, scegli TRIO; altrimenti BYE.
     Nessun side-effect.
     """
     return (
-        OddResolution.TRIO if (tournament_without_x and can_trio) else OddResolution.BYE
+        OddResolution.TRIO if (campionato_without_x and can_trio) else OddResolution.BYE
     )
 
 
-def anti_rematch_allowed(prova_id: int, a_id: int, b_id: int) -> bool:
-    """True se A e B non hanno mai giocato tra loro in questa prova.
+def anti_rematch_allowed(gara_id: int, a_id: int, b_id: int) -> bool:
+    """True se A e B non hanno mai giocato tra loro in questa gara.
     Usa sola lettura sul dominio PlayerEncounter.
     """
-    return not PlayerEncounter.have_played(prova_id, a_id, b_id)
+    return not PlayerEncounter.have_played(gara_id, a_id, b_id)

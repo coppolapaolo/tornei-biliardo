@@ -12,12 +12,12 @@ from utils import create_admin_if_not_exists
 
 from models import User
 from models.base import db
-from models.tournament.models import Tournament
+from models.campionato.models import Campionato
 from models.user.models import TournamentDirector
 from models.user.services import UserService
 from models.user.role_enum import UserRole
 from models.competition.services import (
-    ProvaService,
+    GaraService,
     InscriptionService,
 )
 
@@ -56,7 +56,7 @@ def _reset_database_core() -> Dict[str, object]:
             )
         # Siamo in sviluppo: fallback locale sicuro per il SOLO seed
         username = (cfg.get("ADMIN_USERNAME") or "admin").strip()
-        email = (cfg.get("ADMIN_EMAIL") or f"{username}@tournament.local").strip()
+        email = (cfg.get("ADMIN_EMAIL") or f"{username}@campionato.local").strip()
         password = (cfg.get("ADMIN_PASSWORD") or "admin123").strip()
         existing = (
             User.query.filter_by(role=UserRole.ADMIN.value)
@@ -73,75 +73,75 @@ def _reset_database_core() -> Dict[str, object]:
     )
     pino = UserService.create_user("pino", "pino@pippo.it", "pino123", role="player")
 
-    maxdir = UserService.create_user("max", "max@tornei.com", "123456", role="director")
+    maxdir = UserService.create_user("max", "max@campionati.com", "123456", role="director")
     paolodir = UserService.create_user(
-        "paolo", "paolo@tornei.com", "123456", role="director"
+        "paolo", "paolo@campionati.com", "123456", role="director"
     )
     players: List[User] = [mario, pino]
     for n in range(1, 21):
         uname = f"player{n:02d}"
         player = UserService.create_user(
-            uname, f"{uname}@tornei.com", "123456", role="player"
+            uname, f"{uname}@campionati.com", "123456", role="player"
         )
         players.append(player)
 
-    # Tornei
-    garetta = Tournament(name="La Garetta", tournament_type="Amalfi")
-    mercoledi = Tournament(name="Mercoledì", tournament_type="Amalfi")
+    # Campionati
+    garetta = Campionato(name="La Garetta", campionato_type="Amalfi")
+    mercoledi = Campionato(name="Mercoledì", campionato_type="Amalfi")
     db.session.add_all([garetta, mercoledi])
     db.session.flush()
 
     # Assegnazioni direttori (includere assigned_by_id per vincolo NOT NULL)
     links = [
         TournamentDirector(
-            user_id=maxdir.id, tournament_id=garetta.id, assigned_by_id=admin.id
+            user_id=maxdir.id, campionato_id=garetta.id, assigned_by_id=admin.id
         ),
         TournamentDirector(
-            user_id=paolodir.id, tournament_id=garetta.id, assigned_by_id=admin.id
+            user_id=paolodir.id, campionato_id=garetta.id, assigned_by_id=admin.id
         ),
         TournamentDirector(
-            user_id=paolodir.id, tournament_id=mercoledi.id, assigned_by_id=admin.id
+            user_id=paolodir.id, campionato_id=mercoledi.id, assigned_by_id=admin.id
         ),
     ]
     db.session.add_all(links)
     db.session.flush()
 
-    # Prove
+    # Gare
     today = date.today()
-    prova_garetta = ProvaService.create_prova(
+    gara_garetta = GaraService.create_gara(
         name="La Garetta #1",
         number=1,
         date=today + timedelta(days=7),
         discipline="9-ball",
         distance=5,
-        tournament_id=garetta.id,
+        campionato_id=garetta.id,
         director_id=paolodir.id,
     )
-    prova_mercoledi = ProvaService.create_prova(
+    gara_mercoledi = GaraService.create_gara(
         name="Mercoledì #1",
         number=1,
         date=today + timedelta(days=10),
         discipline="10-ball",
         distance=5,
-        tournament_id=mercoledi.id,
+        campionato_id=mercoledi.id,
         director_id=paolodir.id,
     )
 
     # Apertura iscrizioni + 8 iscritti su La Garetta
-    ProvaService.to_inscription(
-        prova_garetta.id, datetime.now(), datetime.now() + timedelta(days=3)
+    GaraService.to_inscription(
+        gara_garetta.id, datetime.now(), datetime.now() + timedelta(days=3)
     )
     for u in players[:8]:
-        InscriptionService.inscribe_user(u.id, prova_garetta.id)
+        InscriptionService.inscribe_user(u.id, gara_garetta.id)
 
     # Competizione stand‑alone
-    standalone = ProvaService.create_prova(
+    standalone = GaraService.create_gara(
         name="Salamopen",
         number=1,
         date=today + timedelta(days=3),
         discipline="8-ball",
         distance=5,
-        tournament_id=None,
+        campionato_id=None,
         director_id=maxdir.id,
     )
 
@@ -153,11 +153,11 @@ def _reset_database_core() -> Dict[str, object]:
         "max": maxdir,
         "paolo": paolodir,
         "players": players,
-        "tournament_garetta": garetta,
-        "tournament_mercoledi": mercoledi,
-        "prova_garetta": prova_garetta,
-        "prova_mercoledi": prova_mercoledi,
-        "prova_standalone": standalone,
+        "campionato_garetta": garetta,
+        "campionato_mercoledi": mercoledi,
+        "gara_garetta": gara_garetta,
+        "gara_mercoledi": gara_mercoledi,
+        "gara_standalone": standalone,
     }
 
 

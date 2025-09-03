@@ -22,7 +22,7 @@ from .role_enum import UserRole
 
 if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
-    from ..tournament.models import Tournament
+    from ..campionato.models import Campionato
 
 from models.base import TimestampMixin, SoftDeleteMixin
 
@@ -136,10 +136,10 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # ───────────────────
     # Permission helpers
     # ───────────────────
-    def can_manage_tournament(self, tournament_id: int) -> bool:
+    def can_manage_campionato(self, campionato_id: int) -> bool:
         from .permissions import PermissionChecker
 
-        return PermissionChecker.can_manage_tournament(self, tournament_id)
+        return PermissionChecker.can_manage_campionato(self, campionato_id)
 
     def can_manage_competition(self, competition_id: int) -> bool:
         from .permissions import PermissionChecker
@@ -159,14 +159,14 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # ───────────────────
     # Task 1.4 – implementations
     # ───────────────────
-    def get_managed_tournaments(self) -> List["Tournament"]:
-        """Tornei che l’utente può gestire."""
+    def get_managed_campionatos(self) -> List["Campionato"]:
+        """Campionati che l’utente può gestire."""
         if self.is_admin:
-            from ..tournament.models import Tournament
+            from ..campionato.models import Campionato
 
-            return Tournament.query.all()
+            return Campionato.query.all()
         if self.is_director:
-            return [assoc.tournament for assoc in self.tournament_director_associations]
+            return [assoc.campionato for assoc in self.campionato_director_associations]
         return []
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -174,7 +174,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         # import locale, evita circolari
         from ..competition.models import (
             Inscription,
-            Prova,
+            Gara,
         )
         from ..match.models import Match
 
@@ -192,8 +192,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
-            .join(Prova)
-            .with_entities(Prova.tournament_id)
+            .join(Gara)
+            .with_entities(Gara.campionato_id)
             .distinct()
             .count()
         )
@@ -230,26 +230,26 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
 
 # ────────────────────────────────────────────────────────────────────────────────
-# TOURNAMENT DIRECTOR ASSOCIATION
+# CAMPIONATO DIRECTOR ASSOCIATION
 # ────────────────────────────────────────────────────────────────────────────────
 class TournamentDirector(BaseModel):
-    __tablename__ = "tournament_director"
+    __tablename__ = "campionato_director"
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    tournament_id = db.Column(
+    campionato_id = db.Column(
         db.Integer,
-        db.ForeignKey("tournament.id", ondelete="CASCADE"),
+        db.ForeignKey("campionato.id", ondelete="CASCADE"),
         primary_key=True,
     )
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     director = db.relationship(
-        "User", foreign_keys=[user_id], backref="tournament_director_associations"
+        "User", foreign_keys=[user_id], backref="campionato_director_associations"
     )
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
-    tournament = db.relationship(
-        "Tournament",
+    campionato = db.relationship(
+        "Campionato",
         backref=backref(
             "directors_association",
             cascade="all, delete-orphan",

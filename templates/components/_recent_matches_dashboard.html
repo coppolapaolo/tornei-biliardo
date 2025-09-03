@@ -3,7 +3,7 @@
 {% if recent_matches %}
     <div class="card">
         <div class="card-header">
-            <h5><i class="fas fa-history"></i> Ultime Partite Giocate - {{ selected_tournament.name }}</h5>
+            <h5><i class="fas fa-history"></i> Ultime Partite Giocate - {{ selected_campionato.name }}</h5>
         </div>
         <div class="card-body">
             {% for match in recent_matches %}
@@ -11,12 +11,12 @@
                     <div class="card-body py-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>Prova {{ match.prova.number }}</strong> - Turno {{ match.round_number }}
+                                <strong>Gara {{ match.gara.number }}</strong> - Turno {{ match.round_number }}
                                 <br><small class="text-muted">
                                     vs {% if match.is_bye %}Bye{% else %}
                                         {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
                                     {% endif %}
-                                    - {{ match.prova.date.strftime('%d/%m/%Y') }}
+                                    - {{ match.gara.date.strftime('%d/%m/%Y') }}
                                 </small>
                             </div>
                             <div class="text-end">

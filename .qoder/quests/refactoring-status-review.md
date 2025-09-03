@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The tornei-biliardo webapp refactoring project has successfully completed **Step 1 - Route Blueprint Decomposition** with significant architectural improvements. The monolithic `routes/admin.py` file (1,442 lines) has been decomposed into domain-specific blueprints, establishing proper separation of concerns. However, critical technical debt remains in service layer implementation and template componentization.
+The campionati-biliardo webapp refactoring project has successfully completed **Step 1 - Route Blueprint Decomposition** with significant architectural improvements. The monolithic `routes/admin.py` file (1,442 lines) has been decomposed into domain-specific blueprints, establishing proper separation of concerns. However, critical technical debt remains in service layer implementation and template componentization.
 
 ### Current Status: Step 1 Complete ✅
 
@@ -26,7 +26,7 @@ The tornei-biliardo webapp refactoring project has successfully completed **Step
 
 #### Achievements
 - **Route Separation**: Split 1,442-line monolithic file into 6 domain modules
-- **Domain Boundaries**: Clear separation between tournament, competition, match, user, dashboard
+- **Domain Boundaries**: Clear separation between campionato, competition, match, user, dashboard
 - **URL Preservation**: All 39 admin endpoints maintain backward compatibility
 - **Architecture**: Proper Flask blueprint structure established
 
@@ -42,8 +42,8 @@ The tornei-biliardo webapp refactoring project has successfully completed **Step
 ```
 routes/admin/
 ├── __init__.py (32 lines) - Blueprint registration
-├── tournament.py (204 lines) - Tournament management
-├── competition.py (605 lines) - Prova/Amalfi system
+├── campionato.py (204 lines) - Campionato management
+├── competition.py (605 lines) - Gara/Amalfi system
 ├── match.py (282 lines) - Match management
 ├── user.py (158 lines) - User administration  
 └── dashboard.py (16 lines) - Admin dashboard
@@ -59,7 +59,7 @@ routes/admin/
 **Distribution**:
 - `competition.py`: 13 occurrences (commits, rollbacks, deletes)
 - `match.py`: 7 occurrences (rack management, result processing)
-- `tournament.py`: 5 occurrences (tournament creation, director assignments)
+- `campionato.py`: 5 occurrences (campionato creation, director assignments)
 
 **Impact**: Direct database access in route handlers violates clean architecture principles
 
@@ -67,9 +67,9 @@ routes/admin/
 **Current State**: Large templates still require componentization
 
 **Critical Templates** (>400 lines):
-- `admin/prova_detail.html`: 832 lines (Amalfi system complexity)
+- `admin/gara_detail.html`: 832 lines (Amalfi system complexity)
 - `player/dashboard.html`: 521 lines (dashboard widgets)
-- `admin/tournament_detail.html`: 476 lines (tournament management)
+- `admin/campionato_detail.html`: 476 lines (campionato management)
 - `match_detail.html`: 459 lines (match presentation)
 - `dashboard/player.html`: 448 lines (player dashboard)
 
@@ -105,19 +105,19 @@ routes/admin/
 
 #### Implementation Strategy
 
-##### Phase 2.1: Tournament Domain Service Layer
+##### Phase 2.1: Campionato Domain Service Layer
 ```mermaid
 graph TD
-A[Tournament Routes] --> B[TournamentService]
-B --> C[Tournament Model]
-B --> D[Tournament Repository]
+A[Campionato Routes] --> B[TournamentService]
+B --> C[Campionato Model]
+B --> D[Campionato Repository]
 D --> E[Database Layer]
 C --> E
 ```
 
 **Target Files**:
-- Create `models/tournament/service.py` (enhanced)
-- Refactor `routes/admin/tournament.py` (eliminate 5 db.session calls)
+- Create `models/campionato/service.py` (enhanced)
+- Refactor `routes/admin/campionato.py` (eliminate 5 db.session calls)
 - Implement transaction boundaries
 - Add comprehensive error handling
 
@@ -156,16 +156,16 @@ C --> E
 ```jinja2
 <!-- templates/macros/admin_widgets.html -->
 {% macro status_badge(status, size='sm') %}
-{% macro prova_card(prova, show_actions=true) %}
+{% macro gara_card(gara, show_actions=true) %}
 {% macro match_result_form(match) %}
-{% macro amalfi_controls(prova) %}
+{% macro amalfi_controls(gara) %}
 ```
 
 ##### Phase 3.2: Large Template Decomposition
-**Target**: `admin/prova_detail.html` (832 lines)
+**Target**: `admin/gara_detail.html` (832 lines)
 
 **Component Breakdown**:
-- `_prova_header.html` (header with status, navigation)
+- `_gara_header.html` (header with status, navigation)
 - `_inscription_management.html` (player enrollment section)
 - `_amalfi_algorithm_panel.html` (Amalfi controls and preview)
 - `_match_results_table.html` (matches and results display)
@@ -173,7 +173,7 @@ C --> E
 
 ##### Phase 3.3: Dashboard Unification
 **Target**: Consolidate dashboard widget patterns
-- `_tournament_widgets.html`
+- `_campionato_widgets.html`
 - `_match_widgets.html`
 - `_user_stats_widgets.html`
 
@@ -191,7 +191,7 @@ C --> E
 ```python
 # core/exceptions.py
 class TorneiError(Exception):
-    """Base exception for tournament system"""
+    """Base exception for campionato system"""
     
 class InvalidTransitionError(TorneiError):
     """Unified state transition error"""

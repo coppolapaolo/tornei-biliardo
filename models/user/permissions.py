@@ -2,7 +2,7 @@
 Permission checking system for role-based access control
 
 This module provides comprehensive permission checking functionality
-for the tournament billiards application with granular control over
+for the campionato billiards application with granular control over
 user actions based on roles and relationships.
 
 Author: Refactoring Phase 1 - Task 1.3
@@ -24,16 +24,16 @@ class PermissionChecker:
     """
 
     @staticmethod
-    def can_manage_tournament(user, tournament_id: int) -> bool:
+    def can_manage_campionato(user, campionato_id: int) -> bool:
         """
-        Check if user can manage a specific tournament.
+        Check if user can manage a specific campionato.
 
         Args:
             user: User instance or None
-            tournament_id: ID of the tournament to check
+            campionato_id: ID of the campionato to check
 
         Returns:
-            bool: True if user can manage the tournament
+            bool: True if user can manage the campionato
         """
         if (
             not user
@@ -42,17 +42,17 @@ class PermissionChecker:
         ):
             return False
 
-        # Admin can manage all tournaments
+        # Admin can manage all campionati
         if user.is_admin:
             return True
 
-        # Director can manage assigned tournaments
+        # Director can manage assigned campionati
         if user.is_director:
             try:
                 from .models import TournamentDirector
 
                 assignment = TournamentDirector.query.filter_by(
-                    user_id=user.id, tournament_id=tournament_id
+                    user_id=user.id, campionato_id=campionato_id
                 ).first()
                 return assignment is not None
             except Exception:
@@ -64,7 +64,7 @@ class PermissionChecker:
     @staticmethod
     def can_manage_competition(user, competition_id: int) -> bool:
         """
-        Check if user can manage a specific competition (prova).
+        Check if user can manage a specific competition (gara).
 
         Args:
             user: User instance or None
@@ -84,16 +84,16 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Director can manage competitions in their tournaments
+        # Director can manage competitions in their campionati
         if user.is_director:
             try:
                 # Import here to avoid circular imports during transition
-                from models import Prova, db
+                from models import Gara, db
 
-                competition = db.session.get(Prova, competition_id)
+                competition = db.session.get(Gara, competition_id)
                 if competition:
-                    return PermissionChecker.can_manage_tournament(
-                        user, competition.tournament_id
+                    return PermissionChecker.can_manage_campionato(
+                        user, competition.campionato_id
                     )
             except Exception:
                 # If we're outside application context or other issues, return False
@@ -215,7 +215,7 @@ class PermissionChecker:
 
             # Director can insert results for matches in their competitions
             if user.is_director:
-                return PermissionChecker.can_manage_competition(user, match.prova_id)
+                return PermissionChecker.can_manage_competition(user, match.gara_id)
 
             # Players can insert results for their own matches
             if user.is_player:
@@ -228,15 +228,15 @@ class PermissionChecker:
         return False
 
     @staticmethod
-    def can_create_tournament(user) -> bool:
+    def can_create_campionato(user) -> bool:
         """
-        Check if user can create new tournaments.
+        Check if user can create new campionati.
 
         Args:
             user: User instance or None
 
         Returns:
-            bool: True if user can create tournaments
+            bool: True if user can create campionati
         """
         if (
             not user
@@ -247,42 +247,42 @@ class PermissionChecker:
         return user.is_admin or user.is_director
 
     @staticmethod
-    def can_delete_tournament(user, tournament_id: int) -> bool:
+    def can_delete_campionato(user, campionato_id: int) -> bool:
         """
-        Check if user can delete a tournament.
+        Check if user can delete a campionato.
 
         Args:
             user: User instance or None
-            tournament_id: ID of the tournament
+            campionato_id: ID of the campionato
 
         Returns:
-            bool: True if user can delete tournament
+            bool: True if user can delete campionato
         """
         if not user or not user.is_authenticated:
             return False
 
-        # Only admin can delete tournaments
+        # Only admin can delete campionati
         # (Directors can manage but not delete)
         return user.is_admin
 
     @staticmethod
-    def can_modify_tournament(user, tournament_id: int) -> bool:
+    def can_modify_campionato(user, campionato_id: int) -> bool:
         """
-        Check if user can modify tournament settings.
+        Check if user can modify campionato settings.
 
         Args:
             user: User instance or None
-            tournament_id: ID of the tournament
+            campionato_id: ID of the campionato
 
         Returns:
-            bool: True if user can modify tournament
+            bool: True if user can modify campionato
         """
-        return PermissionChecker.can_manage_tournament(user, tournament_id)
+        return PermissionChecker.can_manage_campionato(user, campionato_id)
 
     @staticmethod
     def can_assign_directors(user) -> bool:
         """
-        Check if user can assign directors to tournaments.
+        Check if user can assign directors to campionati.
 
         Args:
             user: User instance or None
@@ -356,13 +356,13 @@ class PermissionChecker:
         return user.is_admin
 
     @staticmethod
-    def get_tournament_management_level(user, tournament_id: int) -> str:
+    def get_campionato_management_level(user, campionato_id: int) -> str:
         """
-        Get the level of management permission for a tournament.
+        Get the level of management permission for a campionato.
 
         Args:
             user: User instance or None
-            tournament_id: ID of the tournament
+            campionato_id: ID of the campionato
 
         Returns:
             str: Permission level ('none', 'view', 'manage', 'full')
@@ -378,8 +378,8 @@ class PermissionChecker:
             return "full"  # Can do everything including delete
 
         try:
-            if user.is_director and PermissionChecker.can_manage_tournament(
-                user, tournament_id
+            if user.is_director and PermissionChecker.can_manage_campionato(
+                user, campionato_id
             ):
                 return "manage"  # Can manage but not delete
         except Exception:
@@ -389,41 +389,41 @@ class PermissionChecker:
         return "view"  # Can only view
 
     @staticmethod
-    def filter_tournaments_by_permission(user, tournaments, permission_level="view"):
+    def filter_campionatos_by_permission(user, campionati, permission_level="view"):
         """
-        Filter tournaments based on user permissions.
+        Filter campionati based on user permissions.
 
         Args:
             user: User instance or None
-            tournaments: List of tournament objects
+            campionati: List of campionato objects
             permission_level: Required permission level
 
         Returns:
-            list: Filtered tournaments
+            list: Filtered campionati
         """
         if (
             not user
             or not hasattr(user, "is_authenticated")
             or not user.is_authenticated
         ):
-            return [] if permission_level != "view" else tournaments
+            return [] if permission_level != "view" else campionati
 
         if user.is_admin:
-            return tournaments  # Admin sees everything
+            return campionati  # Admin sees everything
 
         if permission_level == "view":
-            return tournaments  # Everyone can view all tournaments
+            return campionati  # Everyone can view all campionati
 
         if permission_level == "manage" and user.is_director:
-            # Directors see only their assigned tournaments
+            # Directors see only their assigned campionati
             try:
                 from .models import TournamentDirector
 
                 managed_ids = [
-                    td.tournament_id
+                    td.campionato_id
                     for td in TournamentDirector.query.filter_by(user_id=user.id).all()
                 ]
-                return [t for t in tournaments if t.id in managed_ids]
+                return [t for t in campionati if t.id in managed_ids]
             except Exception:
                 # If there's an error with the query, return empty list
                 return []
@@ -438,7 +438,7 @@ class PermissionChecker:
         Args:
             user: User instance or None
             route_name: Name of the route to check
-            **kwargs: Additional parameters (tournament_id, competition_id, etc.)
+            **kwargs: Additional parameters (campionato_id, competition_id, etc.)
 
         Returns:
             bool: True if user can access the route
@@ -453,46 +453,46 @@ class PermissionChecker:
             "admin.users_list": lambda u, **kw: u.is_admin,
             "admin.reset_database": lambda u, **kw: u.is_admin,
             "admin.director_requests": lambda u, **kw: u.is_admin,
-            # Tournament management routes
-            "admin.tournament_detail": (
+            # Campionato management routes
+            "admin.campionato_detail": (
                 lambda u, **kw: (
                     lambda tid: tid is not None
-                    and PermissionChecker.can_manage_tournament(u, tid)
-                )(kw.get("tournament_id"))
+                    and PermissionChecker.can_manage_campionato(u, tid)
+                )(kw.get("campionato_id"))
             ),
-            "admin.create_tournament": (
-                lambda u, **kw: PermissionChecker.can_create_tournament(u)
+            "admin.create_campionato": (
+                lambda u, **kw: PermissionChecker.can_create_campionato(u)
             ),
-            "admin.edit_tournament": (
+            "admin.edit_campionato": (
                 lambda u, **kw: (
                     lambda tid: tid is not None
-                    and PermissionChecker.can_modify_tournament(u, tid)
-                )(kw.get("tournament_id"))
+                    and PermissionChecker.can_modify_campionato(u, tid)
+                )(kw.get("campionato_id"))
             ),
-            "admin.delete_tournament": (
+            "admin.delete_campionato": (
                 lambda u, **kw: (
                     lambda tid: tid is not None
-                    and PermissionChecker.can_delete_tournament(u, tid)
-                )(kw.get("tournament_id"))
+                    and PermissionChecker.can_delete_campionato(u, tid)
+                )(kw.get("campionato_id"))
             ),
             # Competition management routes
-            "admin.prova_detail": (
+            "admin.gara_detail": (
                 lambda u, **kw: (
                     lambda cid: cid is not None
                     and PermissionChecker.can_manage_competition(u, cid)
-                )(kw.get("prova_id"))
+                )(kw.get("gara_id"))
             ),
-            "admin.create_prova": (
+            "admin.create_gara": (
                 lambda u, **kw: (
                     lambda tid: tid is not None
-                    and PermissionChecker.can_manage_tournament(u, tid)
-                )(kw.get("tournament_id"))
+                    and PermissionChecker.can_manage_campionato(u, tid)
+                )(kw.get("campionato_id"))
             ),
-            "admin.edit_prova": (
+            "admin.edit_gara": (
                 lambda u, **kw: (
                     lambda cid: cid is not None
                     and PermissionChecker.can_manage_competition(u, cid)
-                )(kw.get("prova_id"))
+                )(kw.get("gara_id"))
             ),
             # Player routes (all authenticated users)
             "player.dashboard": lambda u, **kw: True,
@@ -599,12 +599,12 @@ class RoleRequirement:
         return decorated_function
 
     @staticmethod
-    def tournament_manager_required(tournament_id_getter):
+    def campionato_manager_required(campionato_id_getter):
         """
-        Decorator for tournament management functions.
+        Decorator for campionato management functions.
 
         Args:
-            tournament_id_getter: Function or lambda to get tournament_id from kwargs
+            campionato_id_getter: Function or lambda to get campionato_id from kwargs
 
         Returns:
             function: Decorator function
@@ -613,16 +613,16 @@ class RoleRequirement:
         def decorator(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
-                tournament_id = (
-                    tournament_id_getter(**kwargs)
-                    if callable(tournament_id_getter)
-                    else tournament_id_getter
+                campionato_id = (
+                    campionato_id_getter(**kwargs)
+                    if callable(campionato_id_getter)
+                    else campionato_id_getter
                 )
                 if (
-                    tournament_id is None
-                    or not isinstance(tournament_id, int)
-                    or not PermissionChecker.can_manage_tournament(
-                        current_user, tournament_id
+                    campionato_id is None
+                    or not isinstance(campionato_id, int)
+                    or not PermissionChecker.can_manage_campionato(
+                        current_user, campionato_id
                     )
                 ):
                     abort(403)
@@ -740,19 +740,19 @@ def user_can(permission: str, **kwargs) -> bool:
         return False
 
     permission_map = {
-        "manage_tournaments": lambda **kw: current_user.is_admin
+        "manage_campionatos": lambda **kw: current_user.is_admin
         or current_user.is_director,
         "manage_users": lambda **kw: PermissionChecker.can_manage_users(current_user),
         "view_admin_panel": lambda **kw: PermissionChecker.can_view_admin_panel(
             current_user
         ),
-        "create_tournament": lambda **kw: PermissionChecker.can_create_tournament(
+        "create_campionato": lambda **kw: PermissionChecker.can_create_campionato(
             current_user
         ),
-        "manage_tournament": lambda **kw: (
+        "manage_campionato": lambda **kw: (
             lambda tid: tid is not None
-            and PermissionChecker.can_manage_tournament(current_user, tid)
-        )(kw.get("tournament_id")),
+            and PermissionChecker.can_manage_campionato(current_user, tid)
+        )(kw.get("campionato_id")),
         "manage_competition": lambda **kw: (
             lambda cid: cid is not None
             and PermissionChecker.can_manage_competition(current_user, cid)
@@ -794,12 +794,12 @@ def get_user_permissions_summary(user) -> dict:
         "role": user.role,
         "can_view_admin_panel": PermissionChecker.can_view_admin_panel(user),
         "can_manage_users": PermissionChecker.can_manage_users(user),
-        "can_create_tournament": PermissionChecker.can_create_tournament(user),
+        "can_create_campionato": PermissionChecker.can_create_campionato(user),
         "can_assign_directors": PermissionChecker.can_assign_directors(user),
         "can_promote_users": PermissionChecker.can_promote_user(user),
         "can_reset_database": PermissionChecker.can_reset_database(user),
-        "managed_tournaments_count": len(user.get_managed_tournaments())
-        if hasattr(user, "get_managed_tournaments")
+        "managed_campionatos_count": len(user.get_managed_campionatos())
+        if hasattr(user, "get_managed_campionatos")
         else 0,
     }
 

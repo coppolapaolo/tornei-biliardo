@@ -13,10 +13,10 @@ from models.dashboard.services import (
     CapabilityVM,
     DashboardVM,
 )
-from models.tournament.models import Tournament
-from models.competition.models import Prova
+from models.campionato.models import Campionato
+from models.competition.models import Gara
 from models.match.models import Match as TournamentMatch
-from models.status_enum import ProvaStatus
+from models.status_enum import GaraStatus
 
 
 class TestDashboardServiceHelpers:
@@ -115,18 +115,18 @@ class TestDashboardServiceHelpers:
     def test_capability_vm_default_values(self):
         """Test CapabilityVM default values."""
         caps = CapabilityVM()
-        assert caps.can_create_tournament is False
+        assert caps.can_create_campionato is False
         assert caps.can_create_standalone is False
         assert caps.can_register_self is True
 
     def test_capability_vm_custom_values(self):
         """Test CapabilityVM with custom values."""
         caps = CapabilityVM(
-            can_create_tournament=True,
+            can_create_campionato=True,
             can_create_standalone=True,
             can_register_self=False,
         )
-        assert caps.can_create_tournament is True
+        assert caps.can_create_campionato is True
         assert caps.can_create_standalone is True
         assert caps.can_register_self is False
 
@@ -134,33 +134,33 @@ class TestDashboardServiceHelpers:
 class TestDashboardServiceQueryHelpers:
     """Test cases for query helper methods."""
 
-    def test_tournaments_q(self):
-        """Test _tournaments_q method."""
+    def test_campionatos_q(self):
+        """Test _campionatos_q method."""
         with patch("models.dashboard.services.db") as mock_db:
             mock_query = Mock()
             mock_db.session.query.return_value.options.return_value.order_by.return_value = (
                 mock_query
             )
 
-            result = DashboardService._tournaments_q()
+            result = DashboardService._campionatos_q()
 
             assert result == mock_query
-            mock_db.session.query.assert_called_once_with(Tournament)
+            mock_db.session.query.assert_called_once_with(Campionato)
             mock_db.session.query.return_value.options.assert_called_once()
             mock_db.session.query.return_value.options.return_value.order_by.assert_called_once()
 
-    def test_managed_tournaments_q(self):
-        """Test _managed_tournaments_q method."""
+    def test_managed_campionatos_q(self):
+        """Test _managed_campionatos_q method."""
         with patch("models.dashboard.services.db") as mock_db:
             mock_query = Mock()
             mock_db.session.query.return_value.join.return_value.filter.return_value.options.return_value.order_by.return_value = (
                 mock_query
             )
 
-            result = DashboardService._managed_tournaments_q(1)
+            result = DashboardService._managed_campionatos_q(1)
 
             assert result == mock_query
-            mock_db.session.query.assert_called_once_with(Tournament)
+            mock_db.session.query.assert_called_once_with(Campionato)
 
     def test_standalone_q(self):
         """Test _standalone_q method."""
@@ -173,27 +173,27 @@ class TestDashboardServiceQueryHelpers:
             result = DashboardService._standalone_q()
 
             assert result == mock_query
-            mock_db.session.query.assert_called_once_with(Prova)
+            mock_db.session.query.assert_called_once_with(Gara)
 
-    def test_annotate_provas_with_flags_empty_list(self):
-        """Test _annotate_provas_with_flags with empty list."""
-        result = DashboardService._annotate_provas_with_flags([])
+    def test_annotate_garas_with_flags_empty_list(self):
+        """Test _annotate_garas_with_flags with empty list."""
+        result = DashboardService._annotate_garas_with_flags([])
         assert result == []
 
-    def test_annotate_provas_with_flags_none(self):
-        """Test _annotate_provas_with_flags with None."""
-        result = DashboardService._annotate_provas_with_flags(None)
+    def test_annotate_garas_with_flags_none(self):
+        """Test _annotate_garas_with_flags with None."""
+        result = DashboardService._annotate_garas_with_flags(None)
         assert result == []
 
-    def test_annotate_provas_with_flags_with_provas(self):
-        """Test _annotate_provas_with_flags with provas."""
-        mock_prova = Mock()
-        mock_prova.get_real_status.return_value = ProvaStatus.INSCRIPTION.value
+    def test_annotate_garas_with_flags_with_garas(self):
+        """Test _annotate_garas_with_flags with provas."""
+        mock_gara = Mock()
+        mock_gara.get_real_status.return_value = GaraStatus.INSCRIPTION.value
 
-        result = DashboardService._annotate_provas_with_flags([mock_prova])
+        result = DashboardService._annotate_garas_with_flags([mock_gara])
 
         assert len(result) == 1
-        assert mock_prova.is_inscription_open is True
+        assert mock_gara.is_inscription_open is True
 
     def test_standalone_available_for_user(self):
         """Test _standalone_available_for_user method."""
@@ -242,36 +242,36 @@ class TestDashboardServiceSelectorHelpers:
     def test_build_selector_items_empty(self):
         """Test _build_selector_items with empty collections."""
         result = DashboardService._build_selector_items(
-            [], [], selected_tournament_id=None, selected_prova_id=None
+            [], [], selected_campionato_id=None, selected_gara_id=None
         )
         assert result == []
 
-    def test_build_selector_items_with_tournaments_and_provas(self):
-        """Test _build_selector_items with tournaments and provas."""
-        mock_tournament = Mock()
-        mock_tournament.id = 1
-        mock_tournament.name = "Test Tournament"
+    def test_build_selector_items_with_campionatos_and_garas(self):
+        """Test _build_selector_items with campionati and provas."""
+        mock_campionato = Mock()
+        mock_campionato.id = 1
+        mock_campionato.name = "Test Campionato"
 
-        mock_prova = Mock()
-        mock_prova.id = 1
-        mock_prova.name = "Test Prova"
-        mock_prova.date = date(2023, 1, 1)
+        mock_gara = Mock()
+        mock_gara.id = 1
+        mock_gara.name = "Test Gara"
+        mock_gara.date = date(2023, 1, 1)
 
-        # Mock the provas relationship on tournament
-        mock_tournament.provas = []
+        # Mock the provas relationship on campionato
+        mock_campionato.provas = []
 
         result = DashboardService._build_selector_items(
-            [mock_tournament],
-            [mock_prova],
-            selected_tournament_id=None,
-            selected_prova_id=None,
+            [mock_campionato],
+            [mock_gara],
+            selected_campionato_id=None,
+            selected_gara_id=None,
         )
 
         assert len(result) == 2
         # Check that both items are present
         kinds = [item["kind"] for item in result]
-        assert "t" in kinds  # tournament
-        assert "p" in kinds  # prova
+        assert "t" in kinds  # campionato
+        assert "p" in kinds  # gara
 
     def test_caps_for_admin_user(self):
         """Test _caps_for with admin user."""
@@ -281,7 +281,7 @@ class TestDashboardServiceSelectorHelpers:
 
         result = DashboardService._caps_for(mock_user)
 
-        assert result.can_create_tournament is True
+        assert result.can_create_campionato is True
         assert result.can_create_standalone is True
         assert result.can_register_self is False
 
@@ -293,7 +293,7 @@ class TestDashboardServiceSelectorHelpers:
 
         result = DashboardService._caps_for(mock_user)
 
-        assert result.can_create_tournament is True
+        assert result.can_create_campionato is True
         assert result.can_create_standalone is True
         assert result.can_register_self is True
 
@@ -305,7 +305,7 @@ class TestDashboardServiceSelectorHelpers:
 
         result = DashboardService._caps_for(mock_user)
 
-        assert result.can_create_tournament is False
+        assert result.can_create_campionato is False
         assert result.can_create_standalone is False
         assert result.can_register_self is True
 
@@ -313,27 +313,27 @@ class TestDashboardServiceSelectorHelpers:
 class TestDashboardServicePlayerSections:
     """Test cases for player section builder methods."""
 
-    def test_build_player_sections_no_selected_tournament(self):
-        """Test _build_player_sections with no selected tournament."""
+    def test_build_player_sections_no_selected_campionato(self):
+        """Test _build_player_sections with no selected campionato."""
         result = DashboardService._build_player_sections(1, None)
 
-        assert result["available_provas"] == []
+        assert result["available_garas"] == []
         assert result["my_inscriptions"] == []
         assert result["current_matches"] == []
         assert result["recent_matches"] == []
 
-    def test_build_player_sections_with_selected_tournament(self):
-        """Test _build_player_sections with selected tournament."""
+    def test_build_player_sections_with_selected_campionato(self):
+        """Test _build_player_sections with selected campionato."""
         with patch("models.dashboard.services.db") as mock_db:
-            mock_tournament = Mock()
-            mock_tournament.id = 1
+            mock_campionato = Mock()
+            mock_campionato.id = 1
 
             # Mock available provas query
-            mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+            mock_gara_query = Mock()
+            mock_gara_query.filter.return_value.order_by.return_value.all.return_value = (
                 []
             )
-            mock_db.session.query.return_value.filter.return_value = mock_prova_query
+            mock_db.session.query.return_value.filter.return_value = mock_gara_query
 
             # Mock inscriptions query
             mock_inscription_query = Mock()
@@ -356,9 +356,9 @@ class TestDashboardServicePlayerSections:
                 mock_match_query
             )
 
-            result = DashboardService._build_player_sections(1, mock_tournament)
+            result = DashboardService._build_player_sections(1, mock_campionato)
 
-            assert isinstance(result["available_provas"], list)
+            assert isinstance(result["available_garas"], list)
             assert isinstance(result["my_inscriptions"], list)
             assert isinstance(result["current_matches"], list)
             assert isinstance(result["recent_matches"], list)
@@ -407,19 +407,19 @@ class TestDashboardServiceMainMethods:
     def test_for_admin(self):
         """Test for_admin method."""
         with patch("models.dashboard.services.db") as mock_db:
-            # Mock tournament query
-            mock_tournament_query = Mock()
-            mock_tournament_query.all.return_value = []
+            # Mock campionato query
+            mock_campionato_query = Mock()
+            mock_campionato_query.all.return_value = []
             mock_db.session.query.return_value.options.return_value.order_by.return_value = (
-                mock_tournament_query
+                mock_campionato_query
             )
 
-            # Mock prova query
-            mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+            # Mock gara query
+            mock_gara_query = Mock()
+            mock_gara_query.filter.return_value.order_by.return_value.all.return_value = (
                 []
             )
-            mock_db.session.query.return_value.filter.return_value = mock_prova_query
+            mock_db.session.query.return_value.filter.return_value = mock_gara_query
 
             result = DashboardService.for_admin()
 
@@ -448,23 +448,23 @@ class TestDashboardServiceMainMethods:
             # Mock db.session.get for user
             mock_db.session.get.return_value = mock_user
 
-            # Mock tournament queries
-            mock_tournament_query = Mock()
-            mock_tournament_query.all.return_value = []
-            mock_tournament_query.join.return_value.filter.return_value.options.return_value.order_by.return_value.all.return_value = (
+            # Mock campionato queries
+            mock_campionato_query = Mock()
+            mock_campionato_query.all.return_value = []
+            mock_campionato_query.join.return_value.filter.return_value.options.return_value.order_by.return_value.all.return_value = (
                 []
             )
             mock_db.session.query.return_value.options.return_value.order_by.return_value = (
-                mock_tournament_query
+                mock_campionato_query
             )
-            mock_db.session.query.return_value.join.return_value = mock_tournament_query
+            mock_db.session.query.return_value.join.return_value = mock_campionato_query
 
-            # Mock prova query
-            mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+            # Mock gara query
+            mock_gara_query = Mock()
+            mock_gara_query.filter.return_value.order_by.return_value.all.return_value = (
                 []
             )
-            mock_db.session.query.return_value.filter.return_value = mock_prova_query
+            mock_db.session.query.return_value.filter.return_value = mock_gara_query
 
             # Mock inscription query
             mock_inscription_query = Mock()
@@ -552,19 +552,19 @@ class TestDashboardServiceMainMethods:
             # Mock db.session.get for user
             mock_db.session.get.return_value = mock_user
 
-            # Mock tournament queries
-            mock_tournament_query = Mock()
-            mock_tournament_query.all.return_value = []
+            # Mock campionato queries
+            mock_campionato_query = Mock()
+            mock_campionato_query.all.return_value = []
             mock_db.session.query.return_value.options.return_value.order_by.return_value = (
-                mock_tournament_query
+                mock_campionato_query
             )
 
-            # Mock prova query
-            mock_prova_query = Mock()
-            mock_prova_query.filter.return_value.order_by.return_value.all.return_value = (
+            # Mock gara query
+            mock_gara_query = Mock()
+            mock_gara_query.filter.return_value.order_by.return_value.all.return_value = (
                 []
             )
-            mock_db.session.query.return_value.filter.return_value = mock_prova_query
+            mock_db.session.query.return_value.filter.return_value = mock_gara_query
 
             # Mock inscription query
             mock_inscription_query = Mock()

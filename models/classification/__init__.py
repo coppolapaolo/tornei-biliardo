@@ -5,7 +5,7 @@ This module contains all classification-related models, services, and functional
 following Domain-Driven Design principles.
 
 Domain: Classification & Ranking Management
-- Tournament classification tracking
+- Campionato classification tracking
 - Round-by-round classification for Amalfi system
 - Player encounter tracking for anti-reincontro logic
 - Ranking calculations and tie-breaking rules

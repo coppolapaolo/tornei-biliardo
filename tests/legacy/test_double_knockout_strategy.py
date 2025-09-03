@@ -22,7 +22,7 @@ class TestDoubleKnockoutStrategy:
         assert strategy.display_name == "Double Knockout"
         assert (
             strategy.description
-            == "Double elimination tournament format with winners and losers bracket"
+            == "Double elimination campionato format with winners and losers bracket"
         )
         assert strategy.min_players == 4
         assert strategy.max_players == 64
@@ -31,11 +31,11 @@ class TestDoubleKnockoutStrategy:
         assert strategy.strategy_name == "double_knockout"
 
     def test_validate_success(self):
-        """Test successful validation with valid prova."""
+        """Test successful validation with valid gara."""
         strategy = DoubleKnockoutStrategy()
 
-        # Create a mock prova with sufficient players
-        mock_prova = Mock()
+        # Create a mock gara with sufficient players
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.status = "confirmed"
         mock_inscription2 = Mock()
@@ -47,16 +47,16 @@ class TestDoubleKnockoutStrategy:
         mock_inscription5 = Mock()
         mock_inscription5.status = "confirmed"
 
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
             mock_inscription4,
             mock_inscription5,
         ]
-        mock_prova.rounds_count = None  # No rounds count specified
+        mock_gara.rounds_count = None  # No rounds count specified
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify successful validation
         assert result.ok is True
@@ -66,8 +66,8 @@ class TestDoubleKnockoutStrategy:
         """Test validation failure with too few players."""
         strategy = DoubleKnockoutStrategy()
 
-        # Create a mock prova with insufficient players
-        mock_prova = Mock()
+        # Create a mock gara with insufficient players
+        mock_gara = Mock()
         mock_inscription1 = Mock()
         mock_inscription1.status = "confirmed"
         mock_inscription2 = Mock()
@@ -75,13 +75,13 @@ class TestDoubleKnockoutStrategy:
         mock_inscription3 = Mock()
         mock_inscription3.status = "confirmed"
 
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
         ]
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify validation failure
         assert result.ok is False
@@ -91,13 +91,13 @@ class TestDoubleKnockoutStrategy:
         """Test validation with too many players."""
         strategy = DoubleKnockoutStrategy()
 
-        # Create a mock prova with too many players
-        mock_prova = Mock()
-        mock_prova.inscriptions = [Mock() for _ in range(65)]  # 65 players
-        for inscription in mock_prova.inscriptions:
+        # Create a mock gara with too many players
+        mock_gara = Mock()
+        mock_gara.inscriptions = [Mock() for _ in range(65)]  # 65 players
+        for inscription in mock_gara.inscriptions:
             inscription.status = "confirmed"
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify validation warning
         assert result.ok is False
@@ -110,15 +110,15 @@ class TestDoubleKnockoutStrategy:
         """Test validation failure with insufficient rounds."""
         strategy = DoubleKnockoutStrategy()
 
-        # Create a mock prova with sufficient players but insufficient rounds
-        mock_prova = Mock()
-        mock_prova.inscriptions = [Mock() for _ in range(8)]  # 8 players
-        for inscription in mock_prova.inscriptions:
+        # Create a mock gara with sufficient players but insufficient rounds
+        mock_gara = Mock()
+        mock_gara.inscriptions = [Mock() for _ in range(8)]  # 8 players
+        for inscription in mock_gara.inscriptions:
             inscription.status = "confirmed"
 
-        mock_prova.rounds_count = 3  # Not enough rounds for 8 players
+        mock_gara.rounds_count = 3  # Not enough rounds for 8 players
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify validation failure
         assert result.ok is False
@@ -129,11 +129,11 @@ class TestDoubleKnockoutStrategy:
         """Test validation handles exceptions gracefully."""
         strategy = DoubleKnockoutStrategy()
 
-        # Create a mock prova that will cause an exception
-        mock_prova = Mock()
-        del mock_prova.inscriptions  # This will cause an AttributeError
+        # Create a mock gara that will cause an exception
+        mock_gara = Mock()
+        del mock_gara.inscriptions  # This will cause an AttributeError
 
-        result = strategy.validate(mock_prova)
+        result = strategy.validate(mock_gara)
 
         # Verify graceful exception handling
         assert result.ok is False
@@ -142,37 +142,37 @@ class TestDoubleKnockoutStrategy:
     def test_preview_pairings(self):
         """Test preview method delegates to _generate_round_pairings."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
         round_number = 2
 
         with patch.object(strategy, "_generate_round_pairings") as mock_generate:
             mock_generate.return_value = []
 
-            result = strategy.preview(mock_prova, round_number)
+            result = strategy.preview(mock_gara, round_number)
 
             # Verify delegation
-            mock_generate.assert_called_once_with(mock_prova, round_number)
+            mock_generate.assert_called_once_with(mock_gara, round_number)
             assert result == []
 
     def test_propose_pairings(self):
         """Test propose method delegates to _generate_round_pairings."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
         round_number = 3
 
         with patch.object(strategy, "_generate_round_pairings") as mock_generate:
             mock_generate.return_value = []
 
-            result = strategy.propose(mock_prova, round_number)
+            result = strategy.propose(mock_gara, round_number)
 
             # Verify delegation
-            mock_generate.assert_called_once_with(mock_prova, round_number)
+            mock_generate.assert_called_once_with(mock_gara, round_number)
             assert result == []
 
     def test_generate_first_round_pairings(self):
         """Test first round pairings generation."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         # Patch the DirectEliminationStrategy at the correct location
         with patch(
@@ -182,20 +182,20 @@ class TestDoubleKnockoutStrategy:
             mock_de_strategy.return_value = mock_instance
             mock_instance._generate_first_round_pairings.return_value = []
 
-            result = strategy._generate_first_round_pairings(mock_prova)
+            result = strategy._generate_first_round_pairings(mock_gara)
 
             # Verify delegation to DirectEliminationStrategy
             mock_de_strategy.assert_called_once()
             mock_instance._generate_first_round_pairings.assert_called_once_with(
-                mock_prova
+                mock_gara
             )
             assert result == []
 
     def test_generate_subsequent_round_pairings(self):
         """Test subsequent round pairings generation."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
-        mock_prova.id = 1
+        mock_gara = Mock()
+        mock_gara.id = 1
         round_number = 2
 
         # Mock Match model and query at the models.match.models level
@@ -222,7 +222,7 @@ class TestDoubleKnockoutStrategy:
                     mock_determine_phase.return_value = {"phase": "finished"}
 
                     result = strategy._generate_subsequent_round_pairings(
-                        mock_prova, round_number
+                        mock_gara, round_number
                     )
 
                     # Verify the method was called
@@ -231,7 +231,7 @@ class TestDoubleKnockoutStrategy:
     def test_calculate_player_status(self):
         """Test player status calculation."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         # Mock inscriptions
         mock_inscription1 = Mock()
@@ -244,7 +244,7 @@ class TestDoubleKnockoutStrategy:
         mock_inscription3.status = "confirmed"
         mock_inscription3.user_id = 3
 
-        mock_prova.inscriptions = [
+        mock_gara.inscriptions = [
             mock_inscription1,
             mock_inscription2,
             mock_inscription3,
@@ -253,7 +253,7 @@ class TestDoubleKnockoutStrategy:
         # Mock matches with no winners (all players active)
         matches = []
 
-        result = strategy._calculate_player_status(mock_prova, matches)
+        result = strategy._calculate_player_status(mock_gara, matches)
 
         # Verify all players are initially active
         assert result[1] == "active"
@@ -263,7 +263,7 @@ class TestDoubleKnockoutStrategy:
     def test_calculate_player_status_with_losses(self):
         """Test player status calculation with losses."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         # Mock inscriptions
         mock_inscription1 = Mock()
@@ -273,7 +273,7 @@ class TestDoubleKnockoutStrategy:
         mock_inscription2.status = "confirmed"
         mock_inscription2.user_id = 2
 
-        mock_prova.inscriptions = [mock_inscription1, mock_inscription2]
+        mock_gara.inscriptions = [mock_inscription1, mock_inscription2]
 
         # Mock matches with one loss
         mock_match = Mock()
@@ -283,7 +283,7 @@ class TestDoubleKnockoutStrategy:
         mock_match.is_bye = False
         matches = [mock_match]
 
-        result = strategy._calculate_player_status(mock_prova, matches)
+        result = strategy._calculate_player_status(mock_gara, matches)
 
         # Verify player 2 has one loss
         assert result[2] == "eliminated_once"
@@ -292,7 +292,7 @@ class TestDoubleKnockoutStrategy:
     def test_determine_bracket_phase_mixed(self):
         """Test bracket phase determination for mixed phase."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         player_status = {
             1: "active",
@@ -301,7 +301,7 @@ class TestDoubleKnockoutStrategy:
             4: "eliminated_once",
         }
 
-        result = strategy._determine_bracket_phase(mock_prova, 2, player_status)
+        result = strategy._determine_bracket_phase(mock_gara, 2, player_status)
 
         # Verify mixed phase
         assert result["phase"] == "mixed"
@@ -311,11 +311,11 @@ class TestDoubleKnockoutStrategy:
     def test_determine_bracket_phase_winners_only(self):
         """Test bracket phase determination for winners bracket only."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         player_status = {1: "active", 2: "active", 3: "eliminated_twice"}
 
-        result = strategy._determine_bracket_phase(mock_prova, 2, player_status)
+        result = strategy._determine_bracket_phase(mock_gara, 2, player_status)
 
         # Verify winners bracket phase
         assert result["phase"] == "winners_bracket"
@@ -323,7 +323,7 @@ class TestDoubleKnockoutStrategy:
     def test_determine_bracket_phase_losers_only(self):
         """Test bracket phase determination for losers bracket only."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         player_status = {
             1: "eliminated_once",
@@ -331,7 +331,7 @@ class TestDoubleKnockoutStrategy:
             3: "eliminated_twice",
         }
 
-        result = strategy._determine_bracket_phase(mock_prova, 3, player_status)
+        result = strategy._determine_bracket_phase(mock_gara, 3, player_status)
 
         # Verify losers bracket phase
         assert result["phase"] == "losers_bracket"
@@ -339,23 +339,23 @@ class TestDoubleKnockoutStrategy:
     def test_determine_bracket_phase_grand_final(self):
         """Test bracket phase determination for grand final."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         player_status = {1: "active", 2: "eliminated_once"}
 
-        result = strategy._determine_bracket_phase(mock_prova, 5, player_status)
+        result = strategy._determine_bracket_phase(mock_gara, 5, player_status)
 
         # Verify grand final phase
         assert result["phase"] == "grand_final"
 
     def test_determine_bracket_phase_finished(self):
-        """Test bracket phase determination for finished tournament."""
+        """Test bracket phase determination for finished campionato."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
 
         player_status = {1: "eliminated_twice", 2: "eliminated_twice"}
 
-        result = strategy._determine_bracket_phase(mock_prova, 6, player_status)
+        result = strategy._determine_bracket_phase(mock_gara, 6, player_status)
 
         # Verify finished phase
         assert result["phase"] == "finished"
@@ -363,8 +363,8 @@ class TestDoubleKnockoutStrategy:
     def test_generate_winners_bracket_pairings(self):
         """Test winners bracket pairings generation."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
-        mock_prova.id = 1
+        mock_gara = Mock()
+        mock_gara.id = 1
         round_number = 2
         player_status = {1: "active", 2: "active"}
         bracket_info = {"players": [1, 2]}
@@ -378,7 +378,7 @@ class TestDoubleKnockoutStrategy:
             mock_filtered_query.all.return_value = []
 
             result = strategy._generate_winners_bracket_pairings(
-                mock_prova, round_number, player_status, bracket_info
+                mock_gara, round_number, player_status, bracket_info
             )
 
             # Verify result is a list
@@ -387,8 +387,8 @@ class TestDoubleKnockoutStrategy:
     def test_generate_losers_bracket_pairings(self):
         """Test losers bracket pairings generation."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
-        mock_prova.id = 1
+        mock_gara = Mock()
+        mock_gara.id = 1
         round_number = 3
         player_status = {1: "eliminated_once", 2: "eliminated_once"}
         bracket_info = {"players": [1, 2]}
@@ -404,7 +404,7 @@ class TestDoubleKnockoutStrategy:
                 mock_get_survivors.return_value = []
 
                 result = strategy._generate_losers_bracket_pairings(
-                    mock_prova, round_number, player_status, bracket_info
+                    mock_gara, round_number, player_status, bracket_info
                 )
 
                 # Verify result is a list
@@ -413,12 +413,12 @@ class TestDoubleKnockoutStrategy:
     def test_generate_grand_final_pairings(self):
         """Test grand final pairings generation."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
+        mock_gara = Mock()
         round_number = 10
         player_status = {1: "active", 2: "eliminated_once"}
 
         result = strategy._generate_grand_final_pairings(
-            mock_prova, round_number, player_status
+            mock_gara, round_number, player_status
         )
 
         # Verify exactly one pairing is generated
@@ -428,8 +428,8 @@ class TestDoubleKnockoutStrategy:
     def test_get_recent_winners_bracket_losers(self):
         """Test getting recent winners bracket losers."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
-        mock_prova.id = 1
+        mock_gara = Mock()
+        mock_gara.id = 1
         round_number = 3
 
         # Mock Match model and query at the models.match.models level
@@ -441,7 +441,7 @@ class TestDoubleKnockoutStrategy:
             mock_filtered_query.all.return_value = []
 
             result = strategy._get_recent_winners_bracket_losers(
-                mock_prova, round_number
+                mock_gara, round_number
             )
 
             # Verify result is a list
@@ -450,8 +450,8 @@ class TestDoubleKnockoutStrategy:
     def test_get_previous_losers_bracket_survivors(self):
         """Test getting previous losers bracket survivors."""
         strategy = DoubleKnockoutStrategy()
-        mock_prova = Mock()
-        mock_prova.id = 1
+        mock_gara = Mock()
+        mock_gara.id = 1
         round_number = 4
 
         # Mock Match model and query at the models.match.models level
@@ -463,7 +463,7 @@ class TestDoubleKnockoutStrategy:
             mock_filtered_query.all.return_value = []
 
             result = strategy._get_previous_losers_bracket_survivors(
-                mock_prova, round_number
+                mock_gara, round_number
             )
 
             # Verify result is a list

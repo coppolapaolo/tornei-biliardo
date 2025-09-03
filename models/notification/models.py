@@ -1,7 +1,7 @@
 """
 Module: models/notification/models.py
 Purpose: Notification domain models for user notifications
-Requirements: SPECIFICHE.md - Notification system for match proposals and tournament updates
+Requirements: SPECIFICHE.md - Notification system for match proposals and campionato updates
 Data Structures: Notification, NotificationPreference
 """
 
@@ -28,12 +28,12 @@ class NotificationType(Enum):
     MATCH_CANCELLED = "match_cancelled"  # Match was cancelled
     MATCH_REMINDER = "match_reminder"  # Upcoming match reminder
 
-    TOURNAMENT_INVITATION = "tournament_invitation"  # Invited to tournament
+    TOURNAMENT_INVITATION = "campionato_invitation"  # Invited to campionato
     TOURNAMENT_REGISTRATION = (
-        "tournament_registration"  # Tournament registration opened
+        "campionato_registration"  # Campionato registration opened
     )
-    TOURNAMENT_STARTING = "tournament_starting"  # Tournament is starting
-    TOURNAMENT_RESULTS = "tournament_results"  # Tournament results available
+    TOURNAMENT_STARTING = "campionato_starting"  # Campionato is starting
+    TOURNAMENT_RESULTS = "campionato_results"  # Campionato results available
 
     PLAYOFF_INVITATION = "playoff_invitation"  # Invited to playoffs
     PLAYOFF_DEADLINE = "playoff_deadline"  # Playoff response deadline approaching

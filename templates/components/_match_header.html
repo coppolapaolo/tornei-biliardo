@@ -14,11 +14,11 @@
         </div>
     </div>
     <small class="text-muted">
-        Prova {{ match.prova.number }} - Turno {{ match.round_number }} - {{ match.prova.discipline }}
-        {% if match.prova.best_of %}
-            (Al meglio di {{ match.prova.distance }})
+        Gara {{ match.gara.number }} - Turno {{ match.round_number }} - {{ match.gara.discipline }}
+        {% if match.gara.best_of %}
+            (Al meglio di {{ match.gara.distance }})
         {% else %}
-            ({{ match.prova.distance }} rack esatti)
+            ({{ match.gara.distance }} rack esatti)
         {% endif %}
     </small>
 </div>

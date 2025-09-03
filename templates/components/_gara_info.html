@@ -1,0 +1,41 @@
+{# templates/components/_gara_info.html #}
+<div class="col-md-8">
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-info-circle"></i> Informazioni Gara</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Data:</strong> {{ gara.date.strftime('%d/%m/%Y') }}<br>
+                    <strong>Disciplina:</strong> {{ gara.discipline }}<br>
+                    <strong>Distanza:</strong> 
+                    {% if gara.best_of %}
+                        Al meglio di {{ gara.distance }} (vince con {{ gara.get_winning_score() }})
+                    {% else %}
+                        {{ gara.distance }} rack esatti
+                    {% endif %}<br>
+                    <strong>Turni:</strong> {{ gara.rounds_count }}
+                </div>
+                <div class="col-md-6">
+                    {% if gara.location %}
+                        <strong>Luogo:</strong> {{ gara.location }}<br>
+                    {% endif %}
+                    <strong>Partecipanti:</strong> {{ gara.min_participants }}{% if gara.max_participants %} - {{ gara.max_participants }}{% else %} - illimitati{% endif %}<br>
+                    <strong>Quota:</strong> 
+                    {% if gara.entry_fee > 0 %}
+                        €{{ "%.2f"|format(gara.entry_fee) }}
+                    {% else %}
+                        Gratuita
+                    {% endif %}<br>
+                    <strong>Iscritti:</strong> {{ inscriptions|length }}{% if gara.max_participants %}/{{ gara.max_participants }}{% endif %}
+                </div>
+            </div>
+            {% if gara.description %}
+                <hr>
+                <strong>Descrizione:</strong><br>
+                <p class="mb-0">{{ gara.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

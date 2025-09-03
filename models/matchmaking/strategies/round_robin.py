@@ -1,7 +1,7 @@
 """
 Module: models/matchmaking/strategies/round_robin.py
 Purpose: Round Robin pairing strategy implementation
-Requirements: SPECIFICHE.md - Round Robin tournament format
+Requirements: SPECIFICHE.md - Round Robin campionato format
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ class RoundRobinStrategy(PairingStrategy):
     # PairingStrategy metadata
     name = "round_robin"
     display_name = "Round Robin"
-    description = "Round Robin tournament where everyone plays everyone else"
+    description = "Round Robin campionato where everyone plays everyone else"
     min_players = 3
     max_players = 16
     supports_byes = True
@@ -29,11 +29,11 @@ class RoundRobinStrategy(PairingStrategy):
     def __init__(self):
         self.strategy_name = "round_robin"
 
-    def validate(self, prova: object) -> ValidationResult:
-        """Validate if Round Robin can be used for this prova."""
+    def validate(self, gara: object) -> ValidationResult:
+        """Validate if Round Robin can be used for this gara."""
         try:
             # Get active inscriptions
-            inscriptions = getattr(prova, "inscriptions", [])
+            inscriptions = getattr(gara, "inscriptions", [])
             active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_count = len(active_inscriptions)
 
@@ -55,15 +55,15 @@ class RoundRobinStrategy(PairingStrategy):
                 player_count - 1 if player_count % 2 == 0 else player_count
             )
 
-            # Check if prova has rounds_count and validate
+            # Check if gara has rounds_count and validate
             if (
-                hasattr(prova, "rounds_count")
-                and getattr(prova, "rounds_count", 0) < required_rounds
+                hasattr(gara, "rounds_count")
+                and getattr(gara, "rounds_count", 0) < required_rounds
             ):
                 return ValidationResult(
                     ok=False,
                     messages=(
-                        f"Round Robin requires {required_rounds} rounds, but prova has {getattr(prova, 'rounds_count', 0)}",
+                        f"Round Robin requires {required_rounds} rounds, but gara has {getattr(gara, 'rounds_count', 0)}",
                     ),
                 )
 
@@ -72,21 +72,21 @@ class RoundRobinStrategy(PairingStrategy):
         except Exception as e:
             return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
 
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(prova, round_number)
+        return self._generate_round_pairings(gara, round_number)
 
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
-        return self._generate_round_pairings(prova, round_number)
+        return self._generate_round_pairings(gara, round_number)
 
     def _generate_round_pairings(
-        self, prova: object, round_number: int
+        self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
         try:
             # Get active players
-            inscriptions = getattr(prova, "inscriptions", [])
+            inscriptions = getattr(gara, "inscriptions", [])
             active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_ids = [i.user_id for i in active_inscriptions]
 

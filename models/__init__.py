@@ -7,7 +7,7 @@ backward compatibility with existing code.
 Phase Status:
 - ✅ Base infrastructure complete
 - ✅ User domain extracted and modularized
-- ✅ Tournament domain extracted
+- ✅ Campionato domain extracted
 - ✅ Competition domain extracted
 - ✅ Match domain extracted
 - ✅ Classification domain extracted
@@ -31,8 +31,8 @@ from .base import (
 from .user.models import User, TournamentDirector, DirectorRequest
 
 # PHASE 2 SPRINT 1 COMPLETE: All domains separated
-from .tournament.models import Tournament
-from .competition.models import Prova, Inscription
+from .campionato.models import Campionato
+from .competition.models import Gara, Inscription
 from .match.models import Match, Rack, MatchResult, TrioMatch
 from .match.set_models import Set, SetRack
 from .match.multi_discipline_service import MultiDisciplineService
@@ -109,10 +109,10 @@ __all__ = [
     "User",
     "TournamentDirector",
     "DirectorRequest",
-    # Tournament domain models (Phase 2 Sprint 1)
-    "Tournament",
+    # Campionato domain models (Phase 2 Sprint 1)
+    "Campionato",
     # Competition domain models (Phase 2 Sprint 1)
-    "Prova",
+    "Gara",
     "Inscription",
     # Match domain models (Phase 2 Sprint 1)
     "Match",

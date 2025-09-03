@@ -1,7 +1,7 @@
 """
 Module: models/orchestration/service.py
 Purpose: Cross-domain service orchestration for complex business operations
-Requirements: Coordinate operations across User, Tournament, Competition, Match, Rating, and Challenge domains
+Requirements: Coordinate operations across User, Campionato, Competition, Match, Rating, and Challenge domains
 """
 
 from __future__ import annotations
@@ -13,8 +13,8 @@ from enum import Enum
 import logging
 
 from ..user.services import UserService
-from ..tournament.services import TournamentService
-from ..competition.services import ProvaService
+from ..campionato.services import TournamentService
+from ..competition.services import GaraService
 from ..matchmaking.service import MatchmakingService
 from ..rating.services import CategoryService
 
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class OperationType(Enum):
     """Types of orchestrated operations."""
 
-    TOURNAMENT_SETUP = "tournament_setup"
+    TOURNAMENT_SETUP = "campionato_setup"
     COMPETITION_LIFECYCLE = "competition_lifecycle"
     ROUND_GENERATION = "round_generation"
     RESULT_PROCESSING = "result_processing"
@@ -92,48 +92,48 @@ class DomainOrchestrator:
         self.matchmaking = matchmaking_service
         self._operation_history: List[OperationResult] = []
 
-    def setup_complete_tournament(
+    def setup_complete_campionato(
         self,
-        tournament_data: Dict[str, Any],
+        campionato_data: Dict[str, Any],
         competition_configs: List[Dict[str, Any]],
         auto_assign_categories: bool = True,
         setup_handicap_rules: bool = True,
     ) -> OperationResult:
-        """Orchestrate complete tournament setup across multiple domains."""
+        """Orchestrate complete campionato setup across multiple domains."""
 
         start_time = datetime.utcnow()
-        affected_domains = ["tournament", "competition", "user", "rating"]
+        affected_domains = ["campionato", "competition", "user", "rating"]
 
         try:
-            # Phase 1: Create tournament
-            tournament = TournamentService.create_tournament(
-                name=tournament_data["name"],
-                description=tournament_data.get("description"),
-                start_date=tournament_data["start_date"],
-                end_date=tournament_data.get("end_date"),
-                creator_id=tournament_data["creator_id"],
-                max_participants=tournament_data.get("max_participants"),
+            # Phase 1: Create campionato
+            campionato = TournamentService.create_campionato(
+                name=campionato_data["name"],
+                description=campionato_data.get("description"),
+                start_date=campionato_data["start_date"],
+                end_date=campionato_data.get("end_date"),
+                creator_id=campionato_data["creator_id"],
+                max_participants=campionato_data.get("max_participants"),
             )
 
             # Phase 2: Create competitions
             competitions = []
             for comp_config in competition_configs:
-                comp_config["tournament_id"] = tournament.id
-                competition = ProvaService.create_prova(**comp_config)
+                comp_config["campionato_id"] = campionato.id
+                competition = GaraService.create_gara(**comp_config)
                 competitions.append(competition)
 
             # Phase 3: Auto-assign categories if requested
             category_assignments = []
             if auto_assign_categories:
                 category_assignments = self._auto_assign_player_categories(
-                    tournament.id
+                    campionato.id
                 )
                 affected_domains.append("rating")
 
             # Phase 4: Setup handicap rules if requested
             handicap_rules = []
             if setup_handicap_rules:
-                handicap_rules = self._setup_tournament_handicap_rules(tournament.id)
+                handicap_rules = self._setup_campionato_handicap_rules(campionato.id)
 
             # Phase 5: Initialize matchmaking for each competition
             matchmaking_configs = []
@@ -145,9 +145,9 @@ class DomainOrchestrator:
             execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
 
             result_data = {
-                "tournament": {
-                    "id": tournament.id,
-                    "name": tournament.name,
+                "campionato": {
+                    "id": campionato.id,
+                    "name": campionato.name,
                     "competitions_count": len(competitions),
                 },
                 "competitions": [{"id": c.id, "name": c.name} for c in competitions],
@@ -165,7 +165,7 @@ class DomainOrchestrator:
 
             self._operation_history.append(result)
             logger.info(
-                f"Tournament setup completed: {tournament.name} ({tournament.id})"
+                f"Campionato setup completed: {campionato.name} ({campionato.id})"
             )
 
             return result
@@ -175,13 +175,13 @@ class DomainOrchestrator:
 
             result = OperationResult.failure_result(
                 operation_type=OperationType.TOURNAMENT_SETUP,
-                errors=[f"Tournament setup failed: {str(e)}"],
+                errors=[f"Campionato setup failed: {str(e)}"],
                 execution_time_ms=execution_time,
                 affected_domains=affected_domains,
             )
 
             self._operation_history.append(result)
-            logger.error(f"Tournament setup failed: {str(e)}")
+            logger.error(f"Campionato setup failed: {str(e)}")
 
             return result
 
@@ -330,24 +330,24 @@ class DomainOrchestrator:
     # Private helper methods
 
     def _auto_assign_player_categories(
-        self, tournament_id: int
+        self, campionato_id: int
     ) -> List[Dict[str, Any]]:
-        """Auto-assign categories to tournament participants."""
+        """Auto-assign categories to campionato participants."""
         # Implementation would analyze player history and assign appropriate categories
         # For now, return empty list
         return []
 
-    def _setup_tournament_handicap_rules(
-        self, tournament_id: int
+    def _setup_campionato_handicap_rules(
+        self, campionato_id: int
     ) -> List[Dict[str, Any]]:
-        """Setup handicap rules for tournament."""
-        # Implementation would create tournament-specific handicap rules
+        """Setup handicap rules for campionato."""
+        # Implementation would create campionato-specific handicap rules
         return []
 
-    def _initialize_competition_matchmaking(self, prova_id: int) -> Dict[str, Any]:
+    def _initialize_competition_matchmaking(self, gara_id: int) -> Dict[str, Any]:
         """Initialize matchmaking configuration for competition."""
         return {
-            "prova_id": prova_id,
+            "gara_id": gara_id,
             "strategy": "amalfi",
             "supports_handicaps": True,
             "supports_x_replacement": True,

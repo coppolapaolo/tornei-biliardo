@@ -16,7 +16,7 @@ from utils import (
     create_round_matches,
     calculate_round_classification,
     create_default_users,
-    create_sample_tournament,
+    create_sample_campionato,
     create_admin_if_not_exists,
     create_round_matches_amalfi_compatible,
 )
@@ -254,26 +254,26 @@ class TestIndividualMatchPlayerRequiredDecorator:
 class TestRackManagerRequiredDecorator:
     """Test rack_manager_required decorator implementation."""
 
-    def test_rack_manager_required_valid_tournament(self):
-        """Test rack_manager_required with valid tournament."""
+    def test_rack_manager_required_valid_campionato(self):
+        """Test rack_manager_required with valid campionato."""
         with patch("utils.Rack") as mock_rack, patch(
-            "utils.tournament_manager_required"
-        ) as mock_tournament_manager:
+            "utils.campionato_manager_required"
+        ) as mock_campionato_manager:
 
-            # Setup rack with tournament
+            # Setup rack with campionato
             mock_match = Mock()
-            mock_prova = Mock()
-            mock_prova.tournament_id = 5
-            mock_match.prova = mock_prova
+            mock_gara = Mock()
+            mock_gara.campionato_id = 5
+            mock_match.gara = mock_gara
             mock_rack_instance = Mock()
             mock_rack_instance.match = mock_match
             mock_rack.query.get_or_404.return_value = mock_rack_instance
 
-            # Mock the tournament_manager_required decorator
+            # Mock the campionato_manager_required decorator
             def mock_decorator(f):
                 return f
 
-            mock_tournament_manager.return_value = mock_decorator
+            mock_campionato_manager.return_value = mock_decorator
 
             @rack_manager_required
             def test_function(rack_id=1):
@@ -287,26 +287,26 @@ class TestRackManagerRequiredDecorator:
 class TestTrioManagerRequiredDecorator:
     """Test trio_manager_required decorator implementation."""
 
-    def test_trio_manager_required_valid_tournament(self):
-        """Test trio_manager_required with valid tournament."""
+    def test_trio_manager_required_valid_campionato(self):
+        """Test trio_manager_required with valid campionato."""
         with patch("utils.TrioMatch") as mock_trio, patch(
-            "utils.tournament_manager_required"
-        ) as mock_tournament_manager:
+            "utils.campionato_manager_required"
+        ) as mock_campionato_manager:
 
-            # Setup trio with tournament
+            # Setup trio with campionato
             mock_match = Mock()
-            mock_prova = Mock()
-            mock_prova.tournament_id = 5
-            mock_match.prova = mock_prova
+            mock_gara = Mock()
+            mock_gara.campionato_id = 5
+            mock_match.gara = mock_gara
             mock_trio_instance = Mock()
             mock_trio_instance.match = mock_match
             mock_trio.query.get_or_404.return_value = mock_trio_instance
 
-            # Mock the tournament_manager_required decorator
+            # Mock the campionato_manager_required decorator
             def mock_decorator(f):
                 return f
 
-            mock_tournament_manager.return_value = mock_decorator
+            mock_campionato_manager.return_value = mock_decorator
 
             @trio_manager_required
             def test_function(trio_id=1):
@@ -324,9 +324,9 @@ class TestCreateRoundMatches:
         """Test create_round_matches with even number of players."""
         with patch("utils.Match") as mock_match, patch("utils.db") as mock_db:
 
-            # Setup prova
-            mock_prova = Mock()
-            mock_prova.id = 1
+            # Setup gara
+            mock_gara = Mock()
+            mock_gara.id = 1
 
             # Setup players
             mock_player1 = Mock()
@@ -339,7 +339,7 @@ class TestCreateRoundMatches:
             mock_match_instance = Mock()
             mock_match.return_value = mock_match_instance
 
-            matches = create_round_matches(mock_prova, players, 1)
+            matches = create_round_matches(mock_gara, players, 1)
 
             assert len(matches) == 1
             mock_db.session.add_all.assert_called_once()
@@ -349,12 +349,12 @@ class TestCreateRoundMatches:
         """Test create_round_matches with odd number of players (bye)."""
         with patch("utils.Match") as mock_match, patch("utils.db") as mock_db:
 
-            # Setup prova
-            mock_prova = Mock()
-            mock_prova.id = 1
-            mock_prova.best_of = True
-            mock_prova.get_winning_score.return_value = 5
-            mock_prova.distance = 7
+            # Setup gara
+            mock_gara = Mock()
+            mock_gara.id = 1
+            mock_gara.best_of = True
+            mock_gara.get_winning_score.return_value = 5
+            mock_gara.distance = 7
 
             # Setup players (odd number)
             mock_player1 = Mock()
@@ -369,7 +369,7 @@ class TestCreateRoundMatches:
             mock_match_instance = Mock()
             mock_match.return_value = mock_match_instance
 
-            matches = create_round_matches(mock_prova, players, 1)
+            matches = create_round_matches(mock_gara, players, 1)
 
             # Should create 2 matches (1 bye + 1 regular)
             assert len(matches) == 2
@@ -382,9 +382,9 @@ class TestCreateRoundMatches:
             "utils.Match"
         ) as mock_match, patch("utils.db") as mock_db:
 
-            # Setup prova
-            mock_prova = Mock()
-            mock_prova.id = 1
+            # Setup gara
+            mock_gara = Mock()
+            mock_gara.id = 1
 
             # Setup inscriptions with users
             mock_user1 = Mock()
@@ -403,7 +403,7 @@ class TestCreateRoundMatches:
             mock_match_instance = Mock()
             mock_match.return_value = mock_match_instance
 
-            matches = create_round_matches(mock_prova, inscriptions, 1)
+            matches = create_round_matches(mock_gara, inscriptions, 1)
 
             assert len(matches) == 1
             mock_db.session.add_all.assert_called_once()
@@ -543,37 +543,37 @@ class TestCreateDefaultUsers:
 
 
 class TestCreateSampleTournament:
-    """Test create_sample_tournament function implementation."""
+    """Test create_sample_campionato function implementation."""
 
-    def test_create_sample_tournament(self):
-        """Test create_sample_tournament function."""
-        with patch("utils.Tournament") as mock_tournament, patch(
+    def test_create_sample_campionato(self):
+        """Test create_sample_campionato function."""
+        with patch("utils.Campionato") as mock_campionato, patch(
             "utils.db"
-        ) as mock_db, patch("utils.ProvaService") as mock_prova_service, patch(
+        ) as mock_db, patch("utils.GaraService") as mock_gara_service, patch(
             "builtins.print"
         ):  # Suppress print output
 
-            # Setup mock tournaments
-            mock_tournament1 = Mock()
-            mock_tournament1.id = 1
-            mock_tournament1.name = "Torneo Primavera 2025"
-            mock_tournament2 = Mock()
-            mock_tournament2.id = 2
-            mock_tournament2.name = "Coppa Estate 2025"
-            mock_tournament.side_effect = [mock_tournament1, mock_tournament2]
+            # Setup mock campionati
+            mock_campionato1 = Mock()
+            mock_campionato1.id = 1
+            mock_campionato1.name = "Campionato Primavera 2025"
+            mock_campionato2 = Mock()
+            mock_campionato2.id = 2
+            mock_campionato2.name = "Coppa Estate 2025"
+            mock_campionato.side_effect = [mock_campionato1, mock_campionato2]
 
-            tournament1, tournament2 = create_sample_tournament()
+            tournament1, tournament2 = create_sample_campionato()
 
-            assert tournament1 == mock_tournament1
-            assert tournament2 == mock_tournament2
+            assert tournament1 == mock_campionato1
+            assert tournament2 == mock_campionato2
 
-            # Verify tournament creation
-            assert mock_tournament.call_count == 2
+            # Verify campionato creation
+            assert mock_campionato.call_count == 2
             assert mock_db.session.add.call_count == 2
-            assert mock_db.session.commit.call_count == 3  # 2 for tournaments + 1 final
+            assert mock_db.session.commit.call_count == 3  # 2 for campionati + 1 final
 
-            # Verify prova creation
-            assert mock_prova_service.create_prova.call_count == 3
+            # Verify gara creation
+            assert mock_gara_service.create_gara.call_count == 3
 
 
 class TestCreateAdminIfNotExists:
@@ -666,9 +666,9 @@ class TestCreateRoundMatchesAmalfiCompatible:
         """Test create_round_matches_amalfi_compatible with even number of players."""
         with patch("utils.Match") as mock_match, patch("utils.db") as mock_db:
 
-            # Setup prova
-            mock_prova = Mock()
-            mock_prova.id = 1
+            # Setup gara
+            mock_gara = Mock()
+            mock_gara.id = 1
 
             # Setup players
             mock_player1 = Mock()
@@ -681,7 +681,7 @@ class TestCreateRoundMatchesAmalfiCompatible:
             mock_match_instance = Mock()
             mock_match.return_value = mock_match_instance
 
-            matches = create_round_matches_amalfi_compatible(mock_prova, players, 1)
+            matches = create_round_matches_amalfi_compatible(mock_gara, players, 1)
 
             assert len(matches) == 1
             mock_db.session.add_all.assert_called_once()
@@ -692,11 +692,11 @@ class TestCreateRoundMatchesAmalfiCompatible:
         """Test create_round_matches_amalfi_compatible with odd number of players."""
         with patch("utils.Match") as mock_match, patch("utils.db") as mock_db:
 
-            # Setup prova
-            mock_prova = Mock()
-            mock_prova.id = 1
-            mock_prova.best_of = True
-            mock_prova.get_winning_score.return_value = 5
+            # Setup gara
+            mock_gara = Mock()
+            mock_gara.id = 1
+            mock_gara.best_of = True
+            mock_gara.get_winning_score.return_value = 5
 
             # Setup players (odd number)
             mock_player1 = Mock()
@@ -711,7 +711,7 @@ class TestCreateRoundMatchesAmalfiCompatible:
             mock_match_instance = Mock()
             mock_match.return_value = mock_match_instance
 
-            matches = create_round_matches_amalfi_compatible(mock_prova, players, 1)
+            matches = create_round_matches_amalfi_compatible(mock_gara, players, 1)
 
             # Should create 2 matches (1 bye + 1 regular)
             assert len(matches) == 2

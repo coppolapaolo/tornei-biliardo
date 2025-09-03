@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document verifies the completion status of the tornei-biliardo application refactoring and ensures alignment with the requirements specified in SPECIFICHE.md. The refactoring has been successfully completed according to the roadmap defined in ADR-0001 and subsequent implementation steps.
+This document verifies the completion status of the campionati-biliardo application refactoring and ensures alignment with the requirements specified in SPECIFICHE.md. The refactoring has been successfully completed according to the roadmap defined in ADR-0001 and subsequent implementation steps.
 
 ## Architecture
 
@@ -33,17 +33,17 @@ graph TD
 - **Routes**: `/routes/user.py` with user administration endpoints
 - **Alignment**: Supports three user types (guest, player, director) as specified in SPECIFICHE.md
 
-### ✅ Tournament Management Domain
-- **Models**: Tournament data model with lifecycle management
-- **Services**: TournamentService with state machine for tournament lifecycle
-- **Routes**: `/routes/admin/tournament.py` with CRUD operations
-- **Alignment**: Supports tournament creation, modification, and deletion by admin/director as specified
+### ✅ Campionato Management Domain
+- **Models**: Campionato data model with lifecycle management
+- **Services**: TournamentService with state machine for campionato lifecycle
+- **Routes**: `/routes/admin/campionato.py` with CRUD operations
+- **Alignment**: Supports campionato creation, modification, and deletion by admin/director as specified
 
-### ✅ Competition (Prova) Management Domain
+### ✅ Competition (Gara) Management Domain
 - **Models**: Competition data model with lifecycle management
-- **Services**: ProvaService with state machine for competition lifecycle
+- **Services**: GaraService with state machine for competition lifecycle
 - **Routes**: `/routes/admin/competition.py` with CRUD operations and Amalfi algorithm integration
-- **Alignment**: Supports prova creation, management, and standalone prova functionality as specified
+- **Alignment**: Supports gara creation, management, and standalone gara functionality as specified
 
 ### ✅ Match Management Domain
 - **Models**: Match and Rack data models with state management
@@ -54,7 +54,7 @@ graph TD
 ### ✅ Classification Domain
 - **Models**: Classification data model with standings calculation
 - **Services**: ClassificationService with Amalfi engine integration
-- **Alignment**: Supports tournament/competition standings calculation and anti-reincontro logic as specified
+- **Alignment**: Supports campionato/competition standings calculation and anti-reincontro logic as specified
 
 ### ✅ Matchmaking Domain
 - **Models**: Matchmaking models with strategy pattern
@@ -73,8 +73,8 @@ graph TD
 ## API Endpoints Reference
 
 ### Admin Routes
-- `/admin/tournaments` - Tournament management
-- `/admin/competitions` - Competition (Prova) management
+- `/admin/campionati` - Campionato management
+- `/admin/competitions` - Competition (Gara) management
 - `/admin/matches` - Match management
 - `/admin/users` - User administration
 
@@ -84,9 +84,9 @@ graph TD
 - `/player/matches` - Individual match proposals
 
 ### Public Routes
-- `/` - Home page with tournament listings
+- `/` - Home page with campionato listings
 - `/login`, `/register` - Authentication
-- `/tournaments/<id>` - Tournament details
+- `/campionati/<id>` - Campionato details
 
 ## Data Models & ORM Mapping
 
@@ -97,21 +97,21 @@ User
 ├── username
 ├── email
 ├── role (player/director/admin)
-└── relationships to tournaments, matches, etc.
+└── relationships to campionati, matches, etc.
 
-Tournament
+Campionato
 ├── id
 ├── name
 ├── status
-├── competitions (prova)
+├── competitions (gara)
 └── classifications
 
-Competition (Prova)
+Competition (Gara)
 ├── id
 ├── name
 ├── status
 ├── matches
-└── tournament_id
+└── campionato_id
 
 Match
 ├── id
@@ -123,20 +123,20 @@ Match
 
 Classification
 ├── id
-├── tournament_id
+├── campionato_id
 ├── player_id
 └── standings
 ```
 
 ## Business Logic Layer
 
-### Tournament Service
-- Manages tournament lifecycle (SETUP → REGISTRATION_OPEN → IN_PROGRESS → COMPLETED)
+### Campionato Service
+- Manages campionato lifecycle (SETUP → REGISTRATION_OPEN → IN_PROGRESS → COMPLETED)
 - Handles director assignment and access control
-- Coordinates with competition services for tournament execution
+- Coordinates with competition services for campionato execution
 
 ### Competition Service
-- Manages prova lifecycle and state transitions
+- Manages gara lifecycle and state transitions
 - Integrates with Amalfi engine for player pairing
 - Handles trio match logic for odd player counts
 
@@ -146,7 +146,7 @@ Classification
 - Manages match state transitions
 
 ### Classification Service
-- Calculates tournament/competition standings
+- Calculates campionato/competition standings
 - Implements anti-reincontro logic
 - Integrates scoring strategies (Classic, Fargo, Elo)
 
@@ -199,17 +199,17 @@ Classification
 ## SPECIFICHE.md Alignment Verification
 
 ### ✅ User Types Implementation
-- **Guest**: Unauthenticated users can view public tournaments and standings
-- **Player**: Registered users can register for tournaments, view personal stats
-- **Director**: Players with director privileges can create/manage tournaments
+- **Guest**: Unauthenticated users can view public campionati and standings
+- **Player**: Registered users can register for campionati, view personal stats
+- **Director**: Players with director privileges can create/manage campionati
 
-### ✅ Tournament Management
-- Admin/director can create, modify, delete tournaments
-- Tournaments are collections of competitions (prove) with overall standings
+### ✅ Campionato Management
+- Admin/director can create, modify, delete campionati
+- Campionati are collections of competitions (gare) with overall standings
 - Soft delete implementation preserves match statistics for players
 
-### ✅ Competition (Prova) Management
-- Competitions are part of tournaments with multiple rounds
+### ✅ Competition (Gara) Management
+- Competitions are part of campionati with multiple rounds
 - Standalone competitions supported
 - Player registration with waitlist functionality
 - Pairing strategies (Amalfi, Round Robin, Elimination, etc.) implemented
@@ -229,7 +229,7 @@ Classification
 - Handicap support based on player category/rating
 
 ### ✅ Classification System
-- Standings calculation for rounds, competitions, and tournaments
+- Standings calculation for rounds, competitions, and campionati
 - Tiebreaker mechanisms (spot shot rally, single rack matches)
 - Integration with scoring strategies (Classic, Fargo, Elo)
 
@@ -269,7 +269,7 @@ Classification
 
 ## Conclusion
 
-The tornei-biliardo application refactoring has been successfully completed with all milestones achieved:
+The campionati-biliardo application refactoring has been successfully completed with all milestones achieved:
 
 1. **Route Blueprint Decomposition** ✅ - Monolithic routes split into domain-specific blueprints
 2. **Template Componentization** ✅ - Large templates refactored into reusable components

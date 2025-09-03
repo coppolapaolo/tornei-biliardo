@@ -27,7 +27,7 @@ class MatchmakingOrchestrator:
 
     def create_round_with_handicaps(
         self,
-        prova_id: int,
+        gara_id: int,
         round_number: int,
         strategy_name: str = "amalfi",
         apply_handicaps: bool = True,
@@ -35,18 +35,18 @@ class MatchmakingOrchestrator:
     ) -> Dict[str, Any]:
         """Create round with automatic handicap calculation."""
 
-        # Get prova and validate
-        from ..competition.models import Prova
+        # Get gara and validate
+        from ..competition.models import Gara
 
-        prova = db.session.get(Prova, prova_id)
-        if prova is None:
+        gara = db.session.get(Gara, gara_id)
+        if gara is None:
             from flask import abort
 
             abort(404)
 
         # Generate pairings
         pairings = self._matchmaking.run(
-            strategy_name=strategy_name, prova=prova, round_number=round_number
+            strategy_name=strategy_name, gara=gara, round_number=round_number
         )
 
         # Apply handicaps if requested
@@ -77,7 +77,7 @@ class MatchmakingOrchestrator:
         matches = []
         for enhanced in enhanced_pairings:
             match_data = {
-                "prova_id": prova_id,
+                "gara_id": gara_id,
                 "round_number": round_number,
                 "player1_id": enhanced["pairing"].player1_id,
                 "player2_id": enhanced["pairing"].player2_id,
@@ -100,14 +100,14 @@ class MatchmakingOrchestrator:
         }
 
     def suggest_x_replacement_strategies(
-        self, prova_id: int, user_id: int, round_number: int
+        self, gara_id: int, user_id: int, round_number: int
     ) -> List[Dict[str, Any]]:
         """Suggest X replacement strategies (bye alternatives)."""
 
         strategies = []
 
         # Strategy 1: Challenge completion
-        suitable_challenge = ChallengeService.get_challenge_for_x_replacement(prova_id)
+        suitable_challenge = ChallengeService.get_challenge_for_x_replacement(gara_id)
         if suitable_challenge:
             strategies.append(
                 {
@@ -122,7 +122,7 @@ class MatchmakingOrchestrator:
 
         # Strategy 2: Individual match proposal
         available_players = self._get_available_players_for_individual_match(
-            prova_id, user_id, round_number
+            gara_id, user_id, round_number
         )
         if available_players:
             strategies.append(
@@ -137,7 +137,7 @@ class MatchmakingOrchestrator:
             )
 
         # Strategy 3: Previous round makeup (if any incomplete)
-        incomplete_matches = self._get_user_incomplete_matches(prova_id, user_id)
+        incomplete_matches = self._get_user_incomplete_matches(gara_id, user_id)
         if incomplete_matches:
             strategies.append(
                 {
@@ -205,22 +205,22 @@ class MatchmakingOrchestrator:
         return suggested_format
 
     def _get_available_players_for_individual_match(
-        self, prova_id: int, user_id: int, round_number: int
+        self, gara_id: int, user_id: int, round_number: int
     ) -> List[Dict[str, Any]]:
         """Get players available for individual match during bye."""
 
-        # Get players in same prova
+        # Get players in same gara
         from ..competition.models import Inscription
         from ..match.models import Match
         from ..user.models import User
 
-        # Get all players in prova
-        inscriptions = Inscription.query.filter_by(prova_id=prova_id).all()
+        # Get all players in gara
+        inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
         player_ids = [i.user_id for i in inscriptions if not i.is_withdrawn]
 
         # Get players who are not currently playing
         playing_matches = Match.query.filter(
-            Match.prova_id == prova_id,
+            Match.gara_id == gara_id,
             Match.__table__.c.status.in_(["pending", "playing"]),
         ).all()
 
@@ -265,13 +265,13 @@ class MatchmakingOrchestrator:
         return available_players
 
     def _get_user_incomplete_matches(
-        self, prova_id: int, user_id: int
+        self, gara_id: int, user_id: int
     ) -> List[Dict[str, Any]]:
         """Get user's incomplete matches."""
         from ..match.models import Match
 
         incomplete_matches = Match.query.filter(
-            Match.prova_id == prova_id,
+            Match.gara_id == gara_id,
             Match.__table__.c.status.in_(["pending", "playing"]),
             db.or_(Match.player1_id == user_id, Match.player2_id == user_id),
         ).all()
@@ -293,7 +293,7 @@ class MatchmakingOrchestrator:
 
 
 class MatchmakingService:
-    """Enhanced service for tournament pairing with strategy pattern."""
+    """Enhanced service for campionato pairing with strategy pattern."""
 
     def __init__(self, registry: Optional[EngineRegistry] = None):
         self._registry = registry or EngineRegistry()
@@ -317,7 +317,7 @@ class MatchmakingService:
     def run(
         self,
         strategy_name: str,
-        prova: object,
+        gara: object,
         round_number: int,
         preview: bool = False,
     ) -> Sequence[Pairing]:
@@ -328,18 +328,18 @@ class MatchmakingService:
             raise ValueError(f"Unknown strategy: {strategy_name}")
 
         if preview:
-            return strategy.preview(prova, round_number)
+            return strategy.preview(gara, round_number)
         else:
-            return strategy.propose(prova, round_number)
+            return strategy.propose(gara, round_number)
 
-    def validate(self, strategy_name: str, prova: object) -> Dict[str, Any]:
-        """Validate prova for specific strategy."""
+    def validate(self, strategy_name: str, gara: object) -> Dict[str, Any]:
+        """Validate gara for specific strategy."""
         try:
             strategy = self._registry.get(strategy_name)
         except KeyError:
             raise ValueError(f"Unknown strategy: {strategy_name}")
 
-        result = strategy.validate(prova)
+        result = strategy.validate(gara)
         return {
             "valid": result.ok,
             "messages": result.messages,

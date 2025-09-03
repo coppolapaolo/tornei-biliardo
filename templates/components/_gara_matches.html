@@ -1,0 +1,85 @@
+{# templates/components/_gara_matches.html #}
+{% if matches %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-gamepad"></i> Partite</h5>
+    </div>
+    <div class="card-body">
+        {% for round_num in range(1, gara.rounds_count + 1) %}
+            {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
+            {% if round_matches %}
+                <h6 class="mt-3 mb-2">Turno {{ round_num }}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Giocatore 1</th>
+                                <th>vs</th>
+                                <th>Giocatore 2</th>
+                                <th>Risultato</th>
+                                <th>Stato</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in round_matches %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ match.player1.username }}</strong>
+                                        {% if match.winner_id == match.player1_id %}
+                                            <i class="fas fa-crown text-warning ms-1"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">vs</td>
+                                    <td>
+                                        {% if match.is_bye %}
+                                            <em class="text-muted">Bye</em>
+                                        {% else %}
+                                            <strong>{{ match.player2.username }}</strong>
+                                            {% if match.winner_id == match.player2_id %}
+                                                <i class="fas fa-crown text-warning ms-1"></i>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.status == 'completed' %}
+                                            <span class="badge bg-success">
+                                                {{ match.player1_score }} - {{ match.player2_score }}
+                                            </span>
+                                        {% elif match.status == 'playing' and (match.player1_score > 0 or match.player2_score > 0) %}
+                                            <span class="badge bg-info">
+                                                {{ match.player1_score }} - {{ match.player2_score }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.is_bye %}
+                                            <span class="badge bg-info">Bye</span>
+                                        {% elif match.status == 'pending' %}
+                                            <span class="badge bg-warning">In Attesa</span>
+                                        {% elif match.status == 'playing' %}
+                                            <span class="badge bg-primary">In Corso</span>
+                                        {% elif match.status == 'completed' %}
+                                            <span class="badge bg-success">Completata</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not match.is_bye %}
+                                            <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

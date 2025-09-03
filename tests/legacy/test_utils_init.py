@@ -58,7 +58,7 @@ class TestUserPermissions:
 
     def test_user_permissions_methods_exist(self):
         """Test that UserPermissions methods exist."""
-        assert hasattr(UserPermissions, "can_inscribe_to_prova")
+        assert hasattr(UserPermissions, "can_inscribe_to_gara")
         assert hasattr(UserPermissions, "can_view_profile")
         assert hasattr(UserPermissions, "can_delete_account")
         assert hasattr(UserPermissions, "show_admin_management")
@@ -140,12 +140,12 @@ class TestRouteDecorators:
 #     @patch('utils.db')
 #     def test_create_round_matches(self, mock_db):
 #         """Test create_round_matches function."""
-#         # Create mock prova
-#         mock_prova = MagicMock()
-#         mock_prova.id = 1
-#         mock_prova.best_of = True
-#         mock_prova.get_winning_score.return_value = 5
-#         mock_prova.distance = 5
+#         # Create mock gara
+#         mock_gara = MagicMock()
+#         mock_gara.id = 1
+#         mock_gara.best_of = True
+#         mock_gara.get_winning_score.return_value = 5
+#         mock_gara.distance = 5
 #
 #         # Create mock players
 #         mock_player1 = MagicMock()
@@ -155,7 +155,7 @@ class TestRouteDecorators:
 #         players = [mock_player1, mock_player2]
 #
 #         # Call function
-#         matches = create_round_matches(mock_prova, players, 1)
+#         matches = create_round_matches(mock_gara, players, 1)
 #
 #         # Verify
 #         assert isinstance(matches, list)
@@ -209,31 +209,31 @@ class TestRouteDecorators:
 #         mock_db.session.commit.assert_called_once()
 #
 #     @patch('utils.db')
-#     @patch('utils.Tournament')
-#     @patch('utils.models.competition.services.ProvaService')
-#     def test_create_sample_tournament(
+#     @patch('utils.Campionato')
+#     @patch('utils.models.competition.services.GaraService')
+#     def test_create_sample_campionato(
 #         self,
-#         mock_prova_service,
-#         mock_tournament,
+#         mock_gara_service,
+#         mock_campionato,
 #         mock_db
 #     ):
-#         """Test create_sample_tournament function."""
+#         """Test create_sample_campionato function."""
 #         # Setup mocks
-#         mock_tournament1 = MagicMock()
-#         mock_tournament1.id = 1
-#         mock_tournament1.name = "Torneo Primavera 2025"
-#         mock_tournament2 = MagicMock()
-#         mock_tournament2.id = 2
-#         mock_tournament2.name = "Coppa Estate 2025"
-#         mock_tournament.side_effect = [mock_tournament1, mock_tournament2]
+#         mock_campionato1 = MagicMock()
+#         mock_campionato1.id = 1
+#         mock_campionato1.name = "Campionato Primavera 2025"
+#         mock_campionato2 = MagicMock()
+#         mock_campionato2.id = 2
+#         mock_campionato2.name = "Coppa Estate 2025"
+#         mock_campionato.side_effect = [mock_campionato1, mock_campionato2]
 #
 #         # Call function
-#         tournament1, tournament2 = create_sample_tournament()
+#         tournament1, tournament2 = create_sample_campionato()
 #
 #         # Verify
 #         assert tournament1 is not None
 #         assert tournament2 is not None
-#         assert tournament1.name == "Torneo Primavera 2025"
+#         assert tournament1.name == "Campionato Primavera 2025"
 #         assert tournament2.name == "Coppa Estate 2025"
 #
 #     @patch('utils.current_app')
@@ -264,12 +264,12 @@ class TestRouteDecorators:
 #     @patch('utils.db')
 #     def test_create_round_matches_amalfi_compatible(self, mock_db):
 #         """Test create_round_matches_amalfi_compatible function."""
-#         # Create mock prova
-#         mock_prova = MagicMock()
-#         mock_prova.id = 1
-#         mock_prova.best_of = True
-#         mock_prova.get_winning_score.return_value = 5
-#         mock_prova.distance = 5
+#         # Create mock gara
+#         mock_gara = MagicMock()
+#         mock_gara.id = 1
+#         mock_gara.best_of = True
+#         mock_gara.get_winning_score.return_value = 5
+#         mock_gara.distance = 5
 #
 #         # Create mock players
 #         mock_player1 = MagicMock()
@@ -279,7 +279,7 @@ class TestRouteDecorators:
 #         players = [mock_player1, mock_player2]
 #
 #         # Call function
-#         matches = create_round_matches_amalfi_compatible(mock_prova, players, 1)
+#         matches = create_round_matches_amalfi_compatible(mock_gara, players, 1)
 #
 #         # Verify
 #         assert isinstance(matches, list)

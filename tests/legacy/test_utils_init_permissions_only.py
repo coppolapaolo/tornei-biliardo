@@ -11,20 +11,20 @@ class TestUserPermissionsDetailed:
     """Test UserPermissions methods for full branch coverage."""
 
     @patch("utils.current_user")
-    def test_can_inscribe_to_prova_all_cases(self, mock_user):
-        """Test all branches of can_inscribe_to_prova."""
+    def test_can_inscribe_to_gara_all_cases(self, mock_user):
+        """Test all branches of can_inscribe_to_gara."""
         # Case 1: Authenticated non-admin (should return True)
         mock_user.is_authenticated = True
         mock_user.is_admin = False
-        assert UserPermissions.can_inscribe_to_prova() is True
+        assert UserPermissions.can_inscribe_to_gara() is True
 
         # Case 2: Authenticated admin (should return False)
         mock_user.is_admin = True
-        assert UserPermissions.can_inscribe_to_prova() is False
+        assert UserPermissions.can_inscribe_to_gara() is False
 
         # Case 3: Unauthenticated (should return False)
         mock_user.is_authenticated = False
-        assert UserPermissions.can_inscribe_to_prova() is False
+        assert UserPermissions.can_inscribe_to_gara() is False
 
     @patch("utils.current_user")
     def test_can_view_profile_all_cases(self, mock_user):

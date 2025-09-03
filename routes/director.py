@@ -1,4 +1,4 @@
-"""Director routes for tournament and standalone competition management."""
+"""Director routes for campionato and standalone competition management."""
 
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
@@ -6,9 +6,9 @@ from flask_login import login_required, current_user
 from functools import wraps
 
 from app import db
-from models.competition.models import Prova, WithdrawPolicy
-from models.competition.services import ProvaService
-from models.tournament.models import Tournament, TournamentDirector
+from models.competition.models import Gara, WithdrawPolicy
+from models.competition.services import GaraService
+from models.campionato.models import Campionato, TournamentDirector
 
 
 director_bp = Blueprint("director", __name__, url_prefix="/director")
@@ -27,15 +27,15 @@ def director_required(f):
 
 @director_bp.route("/create_standalone", methods=["GET", "POST"])
 @director_required
-def create_prova_standalone():
-    """Crea prova standalone (director o admin)"""
+def create_gara_standalone():
+    """Crea gara standalone (director o admin)"""
     if request.method == "POST":
         try:
             # Campi base
             name = request.form.get("name", "").strip()
             if not name:
                 flash("Il nome della competizione è obbligatorio!", "error")
-                return redirect(url_for("director.create_prova_standalone"))
+                return redirect(url_for("director.create_gara_standalone"))
 
             date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
             
@@ -55,10 +55,10 @@ def create_prova_standalone():
             best_of = not exact_number
             withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
 
-            # Crea la prova standalone usando il service layer (senza tournament_id)
-            prova = ProvaService.create_prova(
-                tournament_id=None,  # Prove standalone non hanno torneo
-                number=1,  # Sempre 1 per prove standalone
+            # Crea la gara standalone usando il service layer (senza campionato_id)
+            gara = GaraService.create_gara(
+                campionato_id=None,  # Gare standalone non hanno campionato
+                number=1,  # Sempre 1 per gare standalone
                 name=name,
                 date=date,
                 location=location,
@@ -75,25 +75,25 @@ def create_prova_standalone():
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
-            return redirect(url_for("admin.competition.prova_detail", prova_id=prova.id))
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 
         except ValueError as e:
             flash(f"Errore nella creazione: {str(e)}", "error")
-            return redirect(url_for("director.create_prova_standalone"))
+            return redirect(url_for("director.create_gara_standalone"))
         except Exception as e:
             flash(f"Errore imprevisto: {str(e)}", "error")
-            return redirect(url_for("director.create_prova_standalone"))
+            return redirect(url_for("director.create_gara_standalone"))
 
     # GET request - show form
     # Recupera luoghi utilizzati in precedenza
-    recent_locations = db.session.query(Prova.location).distinct().filter(
-        Prova.location.isnot(None), 
-        Prova.location != ""
+    recent_locations = db.session.query(Gara.location).distinct().filter(
+        Gara.location.isnot(None), 
+        Gara.location != ""
     ).limit(10).all()
     recent_locations = [loc[0] for loc in recent_locations if loc[0]]
     
     return render_template(
-        "director/prova_create_standalone.html",
+        "director/gara_create_standalone.html",
         WithdrawPolicy=WithdrawPolicy,
         recent_locations=recent_locations
     )

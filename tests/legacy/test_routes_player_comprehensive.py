@@ -6,7 +6,7 @@ Targeting 276 statements with 196 missed (29% coverage) for maximum impact towar
 from unittest.mock import Mock, patch
 from datetime import datetime
 
-from models.status_enum import MatchStatus, ProvaStatus
+from models.status_enum import MatchStatus, GaraStatus
 
 
 class TestMatchProposalRoutes:
@@ -258,7 +258,7 @@ class TestMatchProposalRoutes:
 
 
 class TestPlayerDashboardAndProvaRoutes:
-    """Tests for player dashboard and prova-related routes."""
+    """Tests for player dashboard and gara-related routes."""
 
     @patch("routes.player.redirect")
     @patch("routes.player.url_for")
@@ -277,14 +277,14 @@ class TestPlayerDashboardAndProvaRoutes:
     @patch("routes.player.abort")
     @patch("routes.player.db")
     @patch("routes.player.current_user")
-    def test_prova_detail_not_found(self, mock_user, mock_db, mock_abort):
-        """Test prova detail when prova not found."""
+    def test_gara_detail_not_found(self, mock_user, mock_db, mock_abort):
+        """Test gara detail when gara not found."""
         mock_user.id = 1
         mock_db.session.get.return_value = None
 
-        from routes.player import prova_detail
+        from routes.player import gara_detail
 
-        prova_detail(999)
+        gara_detail(999)
 
         mock_abort.assert_called_once_with(404)
 
@@ -294,7 +294,7 @@ class TestPlayerDashboardAndProvaRoutes:
     @patch("routes.player.Inscription")
     @patch("routes.player.db")
     @patch("routes.player.current_user")
-    def test_prova_detail_not_inscribed(
+    def test_gara_detail_not_inscribed(
         self,
         mock_user,
         mock_db,
@@ -303,33 +303,33 @@ class TestPlayerDashboardAndProvaRoutes:
         mock_url_for,
         mock_redirect,
     ):
-        """Test prova detail when user not inscribed."""
+        """Test gara detail when user not inscribed."""
         mock_user.id = 1
-        mock_prova = Mock(id=123)
-        mock_db.session.get.return_value = mock_prova
+        mock_gara = Mock(id=123)
+        mock_db.session.get.return_value = mock_gara
         mock_inscription.query.filter_by.return_value.first.return_value = None
         mock_url_for.return_value = "/dashboard"
         mock_redirect.return_value = "redirect_response"
 
-        from routes.player import prova_detail
+        from routes.player import gara_detail
 
-        result = prova_detail(123)
+        result = gara_detail(123)
 
         assert result == "redirect_response"
-        mock_flash.assert_called_once_with("Non sei iscritto a questa prova.", "error")
+        mock_flash.assert_called_once_with("Non sei iscritto a questa gara.", "error")
 
     @patch("routes.player.render_template")
     @patch("routes.player.Match")
     @patch("routes.player.Inscription")
     @patch("routes.player.db")
     @patch("routes.player.current_user")
-    def test_prova_detail_success(
+    def test_gara_detail_success(
         self, mock_user, mock_db, mock_inscription, mock_match, mock_render
     ):
-        """Test successful prova detail view."""
+        """Test successful gara detail view."""
         mock_user.id = 1
-        mock_prova = Mock(id=123)
-        mock_db.session.get.return_value = mock_prova
+        mock_gara = Mock(id=123)
+        mock_db.session.get.return_value = mock_gara
         mock_db.or_ = Mock()
 
         mock_inscription_obj = Mock()
@@ -341,16 +341,16 @@ class TestPlayerDashboardAndProvaRoutes:
         mock_match.query.filter_by.return_value.filter.return_value.order_by.return_value.all.return_value = (
             mock_matches
         )
-        mock_render.return_value = "prova_detail_template"
+        mock_render.return_value = "gara_detail_template"
 
-        from routes.player import prova_detail
+        from routes.player import gara_detail
 
-        result = prova_detail(123)
+        result = gara_detail(123)
 
-        assert result == "prova_detail_template"
+        assert result == "gara_detail_template"
         mock_render.assert_called_once_with(
-            "player/prova_detail.html",
-            prova=mock_prova,
+            "player/gara_detail.html",
+            gara=mock_gara,
             inscription=mock_inscription_obj,
             matches=mock_matches,
         )
@@ -361,12 +361,12 @@ class TestPlayerDashboardAndProvaRoutes:
     @patch("routes.player.db")
     @patch("routes.player.Inscription")
     @patch("routes.player.datetime")
-    @patch("routes.player.Prova")
+    @patch("routes.player.Gara")
     @patch("routes.player.current_user")
-    def test_inscribe_to_prova_success(
+    def test_inscribe_to_gara_success(
         self,
         mock_user,
-        mock_prova_class,
+        mock_gara_class,
         mock_datetime,
         mock_inscription_class,
         mock_db,
@@ -374,32 +374,32 @@ class TestPlayerDashboardAndProvaRoutes:
         mock_url_for,
         mock_redirect,
     ):
-        """Test successful prova inscription."""
+        """Test successful gara inscription."""
         mock_user.id = 1
-        mock_prova = Mock()
-        mock_prova.status = ProvaStatus.INSCRIPTION.value
-        mock_prova.number = 3
-        mock_prova.tournament_id = 456
-        mock_prova_class.query.get_or_404.return_value = mock_prova
+        mock_gara = Mock()
+        mock_gara.status = GaraStatus.INSCRIPTION.value
+        mock_gara.number = 3
+        mock_gara.campionato_id = 456
+        mock_gara_class.query.get_or_404.return_value = mock_gara
 
         mock_now = datetime(2024, 1, 22, 10, 0, 0)
         mock_datetime.utcnow.return_value = mock_now
-        mock_prova.inscription_start = datetime(2024, 1, 20, 9, 0, 0)
-        mock_prova.inscription_end = datetime(2024, 1, 25, 18, 0, 0)
+        mock_gara.inscription_start = datetime(2024, 1, 20, 9, 0, 0)
+        mock_gara.inscription_end = datetime(2024, 1, 25, 18, 0, 0)
 
         mock_inscription_class.query.filter_by.return_value.first.return_value = None
 
         mock_url_for.return_value = "/dashboard"
         mock_redirect.return_value = "redirect_response"
 
-        from routes.player import inscribe_to_prova
+        from routes.player import inscribe_to_gara
 
-        result = inscribe_to_prova(123)
+        result = inscribe_to_gara(123)
 
         assert result == "redirect_response"
         mock_db.session.add.assert_called_once()
         mock_db.session.commit.assert_called_once()
-        mock_flash.assert_called_once_with("Iscrizione alla Prova 3 completata!")
+        mock_flash.assert_called_once_with("Iscrizione alla Gara 3 completata!")
 
 
 class TestMatchAndRackRoutes:

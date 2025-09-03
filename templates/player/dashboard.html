@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard Giocatore - Torneo Biliardo{% endblock %}
+{% block title %}Dashboard Giocatore - Campionato Biliardo{% endblock %}
 
 {% block content %}
-{% include "components/_tournament_selection_header.html" %}
+{% include "components/_campionato_selection_header.html" %}
 
-{% if selected_tournament %}
-    {% include "components/_tournament_info_alert.html" %}
+{% if selected_campionato %}
+    {% include "components/_campionato_info_alert.html" %}
 
     <div class="row">
         <div class="col-md-8">
@@ -19,26 +19,26 @@
         </div>
 
         <div class="col-md-4">
-            {% include "components/_tournament_info_card.html" %}
-            {% include "components/_managed_tournaments_card.html" %}
+            {% include "components/_campionato_info_card.html" %}
+            {% include "components/_managed_campionatos_card.html" %}
             {% include "components/_quick_actions_dashboard.html" %}
         </div>
     </div>
 {% else %}
     <div class="alert alert-warning">
-        <h4>Nessun torneo attivo</h4>
-        <p>Al momento non ci sono tornei attivi.</p>
+        <h4>Nessun campionato attivo</h4>
+        <p>Al momento non ci sono campionati attivi.</p>
     </div>
 {% endif %}
 {% endblock %}
 
-{% include "components/_new_tournament_modal.html" %}
+{% include "components/_new_campionato_modal.html" %}
 
 {% block scripts %}
 <script>
 function unsubscribeFromProva(provaId, provaNumber) {
-    if (confirm(`Sei sicuro di volerti disiscrivere dalla Prova ${provaNumber}?`)) {
-        fetch(`/player/prova/${provaId}/unsubscribe`, {
+    if (confirm(`Sei sicuro di volerti disiscrivere dalla Gara ${provaNumber}?`)) {
+        fetch(`/player/gara/${provaId}/unsubscribe`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

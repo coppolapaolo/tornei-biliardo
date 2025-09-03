@@ -1,5 +1,5 @@
 # models/exceptions.py
-"""Shared exception classes for the tornei-biliardo application."""
+"""Shared exception classes for the campionati-biliardo application."""
 
 
 class InvalidTransitionError(ValueError):

@@ -20,24 +20,24 @@ class TestAmalfiEngineComprehensive:
 
     def setup_method(self):
         """Setup method for creating common test objects."""
-        # Create mock prova and tournament
-        self.mock_prova = MagicMock()
-        self.mock_tournament = MagicMock()
-        self.mock_prova.tournament = self.mock_tournament
-        self.mock_prova.id = 1
-        self.mock_prova.min_participants = 3
-        self.mock_prova.rounds_count = 5
-        self.mock_prova.best_of = True
-        self.mock_prova.distance = 50
-        self.mock_prova.withdraw_policy = "FORFEIT"
+        # Create mock gara and campionato
+        self.mock_gara = MagicMock()
+        self.mock_campionato = MagicMock()
+        self.mock_gara.campionato = self.mock_campionato
+        self.mock_gara.id = 1
+        self.mock_gara.min_participants = 3
+        self.mock_gara.rounds_count = 5
+        self.mock_gara.best_of = True
+        self.mock_gara.distance = 50
+        self.mock_gara.withdraw_policy = "FORFEIT"
 
         # Create engine instance
-        self.engine = AmalfiEngine(self.mock_prova)
+        self.engine = AmalfiEngine(self.mock_gara)
 
     def test_amalfi_engine_initialization(self):
         """Test AmalfiEngine initialization."""
-        assert self.engine.prova == self.mock_prova
-        assert self.engine.tournament == self.mock_tournament
+        assert self.engine.gara == self.mock_gara
+        assert self.engine.campionato == self.mock_campionato
 
     @patch("amalfi.engine.db")
     def test_create_first_round_success(self, mock_db):
@@ -154,7 +154,7 @@ class TestAmalfiEngineComprehensive:
     def test_inscriptions_for_pairing_exclude_withdrawn(self, mock_db):
         """Test _inscriptions_for_pairing with EXCLUDE withdraw policy."""
         # Setup
-        self.mock_prova.withdraw_policy = "EXCLUDE"
+        self.mock_gara.withdraw_policy = "EXCLUDE"
 
         # Mock query chain
         mock_query = MagicMock()
@@ -173,7 +173,7 @@ class TestAmalfiEngineComprehensive:
     def test_inscriptions_for_pairing_forfeit_policy(self, mock_db):
         """Test _inscriptions_for_pairing with FORFEIT withdraw policy."""
         # Setup
-        self.mock_prova.withdraw_policy = "FORFEIT"
+        self.mock_gara.withdraw_policy = "FORFEIT"
 
         # Mock query chain
         mock_query = MagicMock()
@@ -204,7 +204,7 @@ class TestAmalfiEngineComprehensive:
         mock_anti_rematch.return_value = False
         result = self.engine._is_valid_pairing(1, 2, set())
         assert result is False
-        mock_anti_rematch.assert_called_with(self.mock_prova.id, 1, 2)
+        mock_anti_rematch.assert_called_with(self.mock_gara.id, 1, 2)
 
     @patch("amalfi.engine.anti_rematch_allowed")
     def test_is_valid_pairing_valid(self, mock_anti_rematch):
@@ -280,7 +280,7 @@ class TestAmalfiEngineComprehensive:
     def test_finalize_forfeit_matches_no_forfeit_policy(self, mock_db):
         """Test _finalize_forfeit_matches with non-FORFEIT policy."""
         # Setup
-        self.mock_prova.withdraw_policy = "EXCLUDE"
+        self.mock_gara.withdraw_policy = "EXCLUDE"
         matches: List[Match] = [MagicMock(spec=Match)]
 
         # Call method

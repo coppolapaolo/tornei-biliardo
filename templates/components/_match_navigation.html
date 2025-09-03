@@ -1,11 +1,11 @@
 <!-- Navigation Sidebar Component -->
 <div class="mt-3">
     {% if current_user.is_admin %}
-        <a href="{{ url_for('admin.competition.prova_detail', prova_id=match.prova_id) }}" 
+        <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}" 
            class="btn btn-outline-secondary w-100 mb-2">
-            <i class="fas fa-arrow-left"></i> Torna alla Prova
+            <i class="fas fa-arrow-left"></i> Torna alla Gara
         </a>
-        <a href="{{ url_for('admin.competition.prova_results_overview', prova_id=match.prova_id) }}" 
+        <a href="{{ url_for('admin.competition.gara_results_overview', gara_id=match.gara_id) }}" 
            class="btn btn-outline-info w-100">
             <i class="fas fa-list-alt"></i> Overview Risultati
         </a>

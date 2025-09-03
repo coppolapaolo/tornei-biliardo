@@ -1,5 +1,5 @@
 {# templates/components/_amalfi_system.html #}
-{% if prova.tournament.tournament_type == 'Amalfi' and prova.status in ['playing', 'completed'] %}
+{% if gara.campionato.campionato_type == 'Amalfi' and gara.status in ['playing', 'completed'] %}
 <div class="card border-primary">
     <div class="card-header bg-primary bg-opacity-10">
         <h5><i class="fas fa-brain"></i> Sistema Amalfi</h5>
@@ -13,15 +13,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <strong>Turno Attuale:</strong> {{ prova.current_round }}/{{ prova.rounds_count }}<br>
+                                <strong>Turno Attuale:</strong> {{ gara.current_round }}/{{ gara.rounds_count }}<br>
                                 <strong>Modalità:</strong> 
-                                {% if prova.tournament.without_x %}
+                                {% if gara.campionato.without_x %}
                                     Senza X (Trii)
                                 {% else %}
                                     Con X (Bye)
                                 {% endif %}<br>
-                                {% if prova.current_round > 1 %}
-                                    <strong>Salto Corrente:</strong> {{ prova.rounds_count - prova.current_round }}
+                                {% if gara.current_round > 1 %}
+                                    <strong>Salto Corrente:</strong> {{ gara.rounds_count - gara.current_round }}
                                 {% endif %}
                             </small>
                         </div>
@@ -37,12 +37,12 @@
                 </div>
                 
                 <!-- Classifiche per Turno -->
-                {% if prova.current_round > 0 %}
+                {% if gara.current_round > 0 %}
                     <div class="mb-3">
                         <h6>Classifiche per Turno</h6>
                         <div class="btn-group" role="group">
-                            {% for r in range(1, prova.current_round + 1) %}
-                                <a href="{{ url_for('admin.competition.amalfi_classification', prova_id=prova.id, round_number=r) }}" 
+                            {% for r in range(1, gara.current_round + 1) %}
+                                <a href="{{ url_for('admin.competition.amalfi_classification', gara_id=gara.id, round_number=r) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     Turno {{ r }}
                                 </a>
@@ -55,16 +55,16 @@
             <div class="col-md-4">
                 <!-- Azioni Turni -->
                 <div class="d-grid gap-2">
-                    {% if prova.current_round < prova.rounds_count %}
-                        {% set next_round = prova.current_round + 1 %}
+                    {% if gara.current_round < gara.rounds_count %}
+                        {% set next_round = gara.current_round + 1 %}
                         
                         <!-- Verifica se turno corrente è completato e prossimo non ancora avviato -->
                         {% set next_round_started = matches|selectattr("round_number", "equalto", next_round)|list|length > 0 %}
-                        {% set current_round_matches = matches|selectattr("round_number", "equalto", prova.current_round)|list %}
+                        {% set current_round_matches = matches|selectattr("round_number", "equalto", gara.current_round)|list %}
                         {% set current_round_completed_matches = current_round_matches|selectattr("status", "equalto", "completed")|list %}
                         {% set current_round_is_completed = current_round_matches|length > 0 and current_round_completed_matches|length == current_round_matches|length %}
                         
-                        {% if not next_round_started and (prova.current_round == 0 or current_round_is_completed) %}
+                        {% if not next_round_started and (gara.current_round == 0 or current_round_is_completed) %}
                             
                             <button class="btn btn-info btn-sm" 
                                     onclick="previewAmalfiRound({{ next_round }})">
@@ -87,7 +87,7 @@
                             <div class="alert alert-warning p-2">
                                 <small>
                                     <i class="fas fa-hourglass-half"></i>
-                                    Completa il Turno {{ prova.current_round }} per procedere
+                                    Completa il Turno {{ gara.current_round }} per procedere
                                 </small>
                             </div>
                         {% endif %}
@@ -109,7 +109,7 @@
                             <i class="fas fa-check-circle"></i> Valida Config
                         </button>
                         {# TODO: Implementare endpoint amalfi_encounters
-                        <a href="{{ url_for('admin.competition.amalfi_encounters', prova_id=prova.id) }}" 
+                        <a href="{{ url_for('admin.competition.amalfi_encounters', gara_id=gara.id) }}" 
                            class="btn btn-outline-info btn-sm">
                             <i class="fas fa-network-wired"></i> Matrice Incontri
                         </a>

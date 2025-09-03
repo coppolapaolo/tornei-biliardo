@@ -186,12 +186,12 @@ class TestChallengeService:
 
                 # Call the method
                 result = ChallengeService.start_challenge_attempt(
-                    user_id=1, challenge_id=1, prova_id=1, round_number=1
+                    user_id=1, challenge_id=1, gara_id=1, round_number=1
                 )
 
                 # Verify
                 mock_attempt_class.assert_called_once_with(
-                    user_id=1, challenge_id=1, prova_id=1, round_number=1
+                    user_id=1, challenge_id=1, gara_id=1, round_number=1
                 )
                 mock_db.session.add.assert_called_once_with(mock_attempt)
                 mock_db.session.commit.assert_called_once()
@@ -342,7 +342,7 @@ class TestChallengeService:
             mock_attempt_query.filter_by.side_effect = filter_by_side_effect
 
             # Call the method
-            result = ChallengeService.get_challenge_for_x_replacement(prova_id=1)
+            result = ChallengeService.get_challenge_for_x_replacement(gara_id=1)
 
             # Verify - should return challenge 2 (least used)
             assert result == mock_challenge2
@@ -358,7 +358,7 @@ class TestChallengeService:
             mock_filtered_query.all.return_value = []
 
             # Call the method
-            result = ChallengeService.get_challenge_for_x_replacement(prova_id=1)
+            result = ChallengeService.get_challenge_for_x_replacement(gara_id=1)
 
             # Verify
             assert result is None
@@ -374,12 +374,12 @@ class TestChallengeService:
 
             # Call the method
             result = ChallengeService.create_x_replacement_attempt(
-                user_id=1, prova_id=1, round_number=1, challenge_id=5
+                user_id=1, gara_id=1, round_number=1, challenge_id=5
             )
 
             # Verify
             mock_start_attempt.assert_called_once_with(
-                user_id=1, challenge_id=5, prova_id=1, round_number=1
+                user_id=1, challenge_id=5, gara_id=1, round_number=1
             )
             assert result == mock_attempt
 
@@ -401,13 +401,13 @@ class TestChallengeService:
 
                 # Call the method
                 result = ChallengeService.create_x_replacement_attempt(
-                    user_id=1, prova_id=1, round_number=1
+                    user_id=1, gara_id=1, round_number=1
                 )
 
                 # Verify
                 mock_get_challenge.assert_called_once_with(1)
                 mock_start_attempt.assert_called_once_with(
-                    user_id=1, challenge_id=3, prova_id=1, round_number=1
+                    user_id=1, challenge_id=3, gara_id=1, round_number=1
                 )
                 assert result == mock_attempt
 
@@ -423,7 +423,7 @@ class TestChallengeService:
                 ValueError, match="No suitable challenge available for X replacement"
             ):
                 ChallengeService.create_x_replacement_attempt(
-                    user_id=1, prova_id=1, round_number=1
+                    user_id=1, gara_id=1, round_number=1
                 )
 
     def test_complete_x_replacement_attempt_success(self):

@@ -12,9 +12,9 @@
           <span class="badge {{ m | status_badge_class }} ms-2">{{ m | status_text }}</span>
         </h6>
         <p class="mb-2">
-          <strong>Prova {{ m.prova.number }}</strong> – Turno {{ m.round_number }}/{{ m.prova.rounds_count }}
-          <br><small class="text-muted">{{ m.prova.discipline }} –
-            {% if m.prova.best_of %}Al meglio di {{ m.prova.distance }}{% else %}{{ m.prova.distance }} rack esatti{% endif %}
+          <strong>Gara {{ m.gara.number }}</strong> – Turno {{ m.round_number }}/{{ m.gara.rounds_count }}
+          <br><small class="text-muted">{{ m.gara.discipline }} –
+            {% if m.gara.best_of %}Al meglio di {{ m.gara.distance }}{% else %}{{ m.gara.distance }} rack esatti{% endif %}
           </small>
         </p>
         <div class="d-flex justify-content-between align-items-center">

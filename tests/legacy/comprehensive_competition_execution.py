@@ -28,16 +28,16 @@ try:
 
     mock_db = MagicMock()
 
-    mock_tournament = MagicMock()
-    mock_tournament.query.filter_by.return_value.all.return_value = []
+    mock_campionato = MagicMock()
+    mock_campionato.query.filter_by.return_value.all.return_value = []
 
-    mock_prova = MagicMock()
-    mock_prova_instance = MagicMock()
-    mock_prova_instance.id = 1
-    mock_prova_instance.can_be_modified.return_value = True
-    mock_prova_instance.tournament_id = 1
-    mock_prova.query.filter_by.return_value.first.return_value = None
-    mock_db.session.get.return_value = mock_prova_instance
+    mock_gara = MagicMock()
+    mock_gara_instance = MagicMock()
+    mock_gara_instance.id = 1
+    mock_gara_instance.can_be_modified.return_value = True
+    mock_gara_instance.campionato_id = 1
+    mock_gara.query.filter_by.return_value.first.return_value = None
+    mock_db.session.get.return_value = mock_gara_instance
 
     mock_inscription = MagicMock()
     mock_inscription.query.filter_by.return_value.all.return_value = []
@@ -45,7 +45,7 @@ try:
     mock_match = MagicMock()
     mock_match.query.filter_by.return_value.order_by.return_value.all.return_value = []
 
-    mock_prova_service = MagicMock()
+    mock_gara_service = MagicMock()
 
     # Execute the functions with mocks to improve coverage
     print("Executing route functions...")
@@ -53,49 +53,49 @@ try:
     # Mock the Flask dependencies and execute functions
     with patch("routes.admin.competition.current_user", mock_current_user), patch(
         "routes.admin.competition.db", mock_db
-    ), patch("routes.admin.competition.Tournament", mock_tournament), patch(
-        "routes.admin.competition.Prova", mock_prova
+    ), patch("routes.admin.competition.Campionato", mock_campionato), patch(
+        "routes.admin.competition.Gara", mock_gara
     ), patch(
         "routes.admin.competition.Inscription", mock_inscription
     ), patch(
         "routes.admin.competition.Match", mock_match
     ), patch(
-        "routes.admin.competition.ProvaService", mock_prova_service
+        "routes.admin.competition.GaraService", mock_gara_service
     ):
 
         # Execute each function to improve coverage
         try:
-            print("Executing create_prova_standalone...")
-            routes.admin.competition.create_prova_standalone()
+            print("Executing create_gara_standalone...")
+            routes.admin.competition.create_gara_standalone()
         except Exception as e:
             print(
-                f"create_prova_standalone raised exception "
+                f"create_gara_standalone raised exception "
                 f"(expected): {type(e).__name__}"
             )
 
         try:
-            print("Executing create_prova...")
-            routes.admin.competition.create_prova()
+            print("Executing create_gara...")
+            routes.admin.competition.create_gara()
         except Exception as e:
-            print(f"create_prova raised exception (expected): {type(e).__name__}")
+            print(f"create_gara raised exception (expected): {type(e).__name__}")
 
         try:
-            print("Executing edit_prova...")
-            routes.admin.competition.edit_prova(1)
+            print("Executing edit_gara...")
+            routes.admin.competition.edit_gara(1)
         except Exception as e:
-            print(f"edit_prova raised exception (expected): {type(e).__name__}")
+            print(f"edit_gara raised exception (expected): {type(e).__name__}")
 
         try:
-            print("Executing delete_prova...")
-            routes.admin.competition.delete_prova(1)
+            print("Executing delete_gara...")
+            routes.admin.competition.delete_gara(1)
         except Exception as e:
-            print(f"delete_prova raised exception (expected): {type(e).__name__}")
+            print(f"delete_gara raised exception (expected): {type(e).__name__}")
 
         try:
-            print("Executing prova_detail...")
-            routes.admin.competition.prova_detail(1)
+            print("Executing gara_detail...")
+            routes.admin.competition.gara_detail(1)
         except Exception as e:
-            print(f"prova_detail raised exception (expected): {type(e).__name__}")
+            print(f"gara_detail raised exception (expected): {type(e).__name__}")
 
         try:
             print("Executing open_inscriptions...")
@@ -111,7 +111,7 @@ try:
 
         # Try to execute some more functions if they exist
         additional_functions = [
-            "prova_results_overview",
+            "gara_results_overview",
             "amalfi_classification",
             "amalfi_start_round",
             "trio_add_rack",
@@ -125,11 +125,11 @@ try:
                     func = getattr(routes.admin.competition, func_name)
                     # Call with appropriate parameters
                     if func_name in ["amalfi_classification", "amalfi_start_round"]:
-                        func(1, 1)  # prova_id, round_number
+                        func(1, 1)  # gara_id, round_number
                     elif func_name in ["trio_add_rack", "trio_reset"]:
                         func(1)  # trio_id
                     else:
-                        func(1)  # prova_id
+                        func(1)  # gara_id
                 except Exception as e:
                     print(
                         f"{func_name} raised exception (expected): {type(e).__name__}"

@@ -84,14 +84,14 @@ class ChallengeService:
     def start_challenge_attempt(
         user_id: int,
         challenge_id: int,
-        prova_id: Optional[int] = None,
+        gara_id: Optional[int] = None,
         round_number: Optional[int] = None,
     ) -> ChallengeAttempt:
         """Start a new challenge attempt."""
         attempt = ChallengeAttempt(
             user_id=user_id,
             challenge_id=challenge_id,
-            prova_id=prova_id,
+            gara_id=gara_id,
             round_number=round_number,
         )
 
@@ -140,8 +140,8 @@ class ChallengeService:
             return True
 
     @staticmethod
-    def get_challenge_for_x_replacement(prova_id: int) -> Optional[Challenge]:
-        """Get a suitable challenge for X replacement in tournament."""
+    def get_challenge_for_x_replacement(gara_id: int) -> Optional[Challenge]:
+        """Get a suitable challenge for X replacement in campionato."""
         # Find challenges that can be used for X replacement
         suitable_challenges = (
             db.session.query(Challenge)
@@ -152,12 +152,12 @@ class ChallengeService:
         if not suitable_challenges:
             return None
 
-        # Prefer challenges that haven't been used much in this prova
+        # Prefer challenges that haven't been used much in this gara
         challenge_usage = {}
         for challenge in suitable_challenges:
             usage_count = (
                 db.session.query(ChallengeAttempt)
-                .filter_by(challenge_id=challenge.id, prova_id=prova_id)
+                .filter_by(challenge_id=challenge.id, gara_id=gara_id)
                 .count()
             )
             challenge_usage[challenge.id] = usage_count
@@ -173,15 +173,15 @@ class ChallengeService:
     @staticmethod
     def create_x_replacement_attempt(
         user_id: int,
-        prova_id: int,
+        gara_id: int,
         round_number: int,
         challenge_id: Optional[int] = None,
     ) -> ChallengeAttempt:
-        """Create a challenge attempt to replace X in tournament."""
+        """Create a challenge attempt to replace X in campionato."""
 
         final_challenge_id: int
         if challenge_id is None:
-            challenge = ChallengeService.get_challenge_for_x_replacement(prova_id)
+            challenge = ChallengeService.get_challenge_for_x_replacement(gara_id)
             if not challenge:
                 raise ValueError("No suitable challenge available for X replacement")
             final_challenge_id = challenge.id
@@ -191,7 +191,7 @@ class ChallengeService:
         attempt = ChallengeService.start_challenge_attempt(
             user_id=user_id,
             challenge_id=final_challenge_id,
-            prova_id=prova_id,
+            gara_id=gara_id,
             round_number=round_number,
         )
 
@@ -216,7 +216,7 @@ class ChallengeService:
         if notes:
             attempt.notes = notes
 
-        # Create equivalent match result for tournament classification
+        # Create equivalent match result for campionato classification
         ChallengeService._create_x_replacement_match_result(attempt)
 
         return attempt
@@ -230,7 +230,7 @@ class ChallengeService:
         match = (
             db.session.query(Match)
             .filter_by(
-                prova_id=attempt.prova_id,
+                gara_id=attempt.gara_id,
                 round_number=attempt.round_number,
                 player1_id=attempt.user_id,
                 is_bye=True,
@@ -240,7 +240,7 @@ class ChallengeService:
 
         if not match:
             match = Match(
-                prova_id=attempt.prova_id,
+                gara_id=attempt.gara_id,
                 round_number=attempt.round_number,
                 player1_id=attempt.user_id,
                 player2_id=None,

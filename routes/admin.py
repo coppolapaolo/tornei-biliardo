@@ -3,8 +3,8 @@
 Admin routes - STEP 1 REFACTORING COMPLETED
 
 This file has been decomposed into domain-specific blueprints:
-- routes/admin/tournament.py - Tournament management
-- routes/admin/competition.py - Prova/competition management  
+- routes/admin/campionato.py - Campionato management
+- routes/admin/competition.py - Gara/competition management  
 - routes/admin/match.py - Match and rack management
 - routes/admin/user.py - User administration
 - routes/admin/dashboard.py - Admin dashboard
@@ -26,8 +26,8 @@ The original file has been backed up to routes/admin_backup.py
 
 # URLs preserved:
 # /admin/ -> dashboard (routes/admin/dashboard.py)
-# /admin/tournament/* -> tournament management (routes/admin/tournament.py)
-# /admin/prova/* -> competition management (routes/admin/competition.py)
+# /admin/campionato/* -> campionato management (routes/admin/campionato.py)
+# /admin/gara/* -> competition management (routes/admin/competition.py)
 # /admin/match/* -> match management (routes/admin/match.py)
 # /admin/rack/* -> rack management (routes/admin/match.py)
 # /admin/users -> user management (routes/admin/user.py)

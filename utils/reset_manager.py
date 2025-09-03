@@ -14,12 +14,12 @@ from sqlalchemy import text
 
 from models.base import db
 from models import User
-from models.tournament.models import Tournament
+from models.campionato.models import Campionato
 from models.user.models import TournamentDirector
 from models.user.services import UserService
 from models.user.role_enum import UserRole
-from models.competition.services import ProvaService, InscriptionService
-from models.status_enum import ProvaStatus
+from models.competition.services import GaraService, InscriptionService
+from models.status_enum import GaraStatus
 from utils import create_admin_if_not_exists
 
 
@@ -38,7 +38,7 @@ class ResetManager:
             },
             'demo': {
                 'name': 'Reset Demo',
-                'description': 'Crea admin, torneo "La Garetta", 8 giocatori, mario, pino con iscrizioni',
+                'description': 'Crea admin, campionato "La Garetta", 8 giocatori, mario, pino con iscrizioni',
                 'function': self.reset_demo,
                 'deletable': False
             }
@@ -100,7 +100,7 @@ class ResetManager:
         }
     
     def reset_demo(self) -> Dict[str, Any]:
-        """Reset demo con torneo La Garetta e giocatori"""
+        """Reset demo con campionato La Garetta e giocatori"""
         # Drop e ricrea tutte le tabelle
         db.drop_all()
         db.create_all()
@@ -121,24 +121,24 @@ class ResetManager:
         for n in range(1, 9):
             uname = f"player{n:02d}"
             player = UserService.create_user(
-                uname, f"{uname}@tornei.com", "123456", role="player"
+                uname, f"{uname}@campionati.com", "123456", role="player"
             )
             players.append(player)
         
-        # Crea torneo La Garetta
-        garetta = Tournament(name="La Garetta", tournament_type="Amalfi")
+        # Crea campionato La Garetta
+        garetta = Campionato(name="La Garetta", campionato_type="Amalfi")
         db.session.add(garetta)
         db.session.flush()
         
-        # Crea prova con parametri specificati
+        # Crea gara con parametri specificati
         today = date.today()
-        prova_garetta = ProvaService.create_prova(
+        gara_garetta = GaraService.create_gara(
             name="La Garetta",
             number=1,
             date=today + timedelta(days=7),
             discipline="9-ball",
             distance=5,
-            tournament_id=garetta.id,
+            campionato_id=garetta.id,
             director_id=admin.id,
             min_inscriptions=6,
             matchmaking_type="Amalfi",
@@ -148,8 +148,8 @@ class ResetManager:
         )
         
         # Apri iscrizioni
-        ProvaService.to_inscription(
-            prova_garetta.id,
+        GaraService.to_inscription(
+            gara_garetta.id,
             datetime.now(),
             datetime.now() + timedelta(days=6)
         )
@@ -157,7 +157,7 @@ class ResetManager:
         # Iscrivi 5 giocatori (mario, pino e i primi 3 player)
         inscribed_users = [mario, pino] + players[:3]
         for user in inscribed_users:
-            InscriptionService.inscribe_user(user.id, prova_garetta.id)
+            InscriptionService.inscribe_user(user.id, gara_garetta.id)
         
         db.session.commit()
         
@@ -169,8 +169,8 @@ class ResetManager:
                 'mario': mario,
                 'pino': pino,
                 'players': players,
-                'tournament': garetta,
-                'prova': prova_garetta,
+                'campionato': garetta,
+                'gara': gara_garetta,
                 'inscribed_count': len(inscribed_users)
             }
         }
@@ -303,7 +303,7 @@ class ResetManager:
         if admin is None:
             cfg = current_app.config if has_app_context() else {}
             username = (cfg.get("ADMIN_USERNAME") or "admin").strip()
-            email = (cfg.get("ADMIN_EMAIL") or f"{username}@tournament.local").strip()
+            email = (cfg.get("ADMIN_EMAIL") or f"{username}@campionato.local").strip()
             password = (cfg.get("ADMIN_PASSWORD") or "admin123").strip()
             
             existing = (
@@ -328,10 +328,10 @@ class ResetManager:
                 db_path = db_uri.replace('sqlite:///', '')
                 # Se il percorso è relativo, potrebbe essere nella directory instance
                 if not os.path.isabs(db_path):
-                    # Prova prima nella directory corrente
+                    # Gara prima nella directory corrente
                     if os.path.exists(db_path):
                         return db_path
-                    # Poi prova nella directory instance
+                    # Poi gara nella directory instance
                     instance_path = os.path.join('instance', db_path)
                     if os.path.exists(instance_path):
                         return instance_path
@@ -339,10 +339,10 @@ class ResetManager:
         
         # Fallback: cerca il database nelle posizioni comuni
         possible_paths = [
-            'instance/billiard_tournament.db',
-            'billiard_tournament.db',
-            os.path.join(os.getcwd(), 'instance', 'billiard_tournament.db'),
-            os.path.join(os.getcwd(), 'billiard_tournament.db')
+            'instance/billiard_campionato.db',
+            'billiard_campionato.db',
+            os.path.join(os.getcwd(), 'instance', 'billiard_campionato.db'),
+            os.path.join(os.getcwd(), 'billiard_campionato.db')
         ]
         
         for path in possible_paths:

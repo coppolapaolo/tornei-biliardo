@@ -255,7 +255,7 @@ class TestChallengeRoutes:
             # Verify the service method was called with correct arguments
             mock_service.create_x_replacement_attempt.assert_called_once_with(
                 user_id=player_user.id,
-                prova_id=1,
+                gara_id=1,
                 round_number=1,
                 challenge_id=1,
             )
@@ -289,7 +289,7 @@ class TestChallengeRoutes:
             mock_attempt = MagicMock()
             mock_attempt.id = 1
             mock_attempt.user_id = player_user.id
-            mock_attempt.prova_id = 1
+            mock_attempt.gara_id = 1
             mock_attempt_query_get.return_value = mock_attempt
 
             mock_completed_attempt = MagicMock()
@@ -300,7 +300,7 @@ class TestChallengeRoutes:
             )
 
             mock_redirect.return_value = "Redirect response"
-            mock_url_for.return_value = "/admin/prova/1"  # Mock the URL
+            mock_url_for.return_value = "/admin/gara/1"  # Mock the URL
             mock_jsonify.return_value = MagicMock()
 
             # Test form data

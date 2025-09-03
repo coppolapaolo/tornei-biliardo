@@ -111,17 +111,17 @@ class PairingStrategy(ABC):
     requires_classification: bool = False
 
     @abstractmethod
-    def validate(self, prova: object) -> ValidationResult:
-        """Validate prova state for this strategy."""
+    def validate(self, gara: object) -> ValidationResult:
+        """Validate gara state for this strategy."""
         ...
 
     @abstractmethod
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Generate preview without side effects."""
         ...
 
     @abstractmethod
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Generate actual pairings with side effects."""
         ...
 
@@ -147,7 +147,7 @@ class BaseStrategy(PairingStrategy):
         self._last_metrics: Optional[StrategyMetrics] = None
         self._execution_start: Optional[datetime] = None
 
-    def validate(self, prova: object) -> ValidationResult:
+    def validate(self, gara: object) -> ValidationResult:
         """Template method for validation with common checks."""
         validation_start = datetime.utcnow()
 
@@ -155,10 +155,10 @@ class BaseStrategy(PairingStrategy):
         warnings = []
 
         # Common validations
-        if not hasattr(prova, "inscriptions"):
-            errors.append("Prova must have inscriptions attribute")
+        if not hasattr(gara, "inscriptions"):
+            errors.append("Gara must have inscriptions attribute")
         else:
-            active_inscriptions = self._get_active_inscriptions(prova)
+            active_inscriptions = self._get_active_inscriptions(gara)
             player_count = len(active_inscriptions)
 
             if player_count < self.min_players:
@@ -175,7 +175,7 @@ class BaseStrategy(PairingStrategy):
                 )
 
         # Strategy-specific validation
-        strategy_validation = self._validate_strategy_specific(prova)
+        strategy_validation = self._validate_strategy_specific(gara)
         errors.extend(strategy_validation.get("errors", []))
         warnings.extend(strategy_validation.get("warnings", []))
 
@@ -186,20 +186,20 @@ class BaseStrategy(PairingStrategy):
         else:
             return ValidationResult.success(warnings=warnings)
 
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Template method for preview generation."""
         self._execution_start = datetime.utcnow()
 
         # Validate first
-        validation = self.validate(prova)
+        validation = self.validate(gara)
         if not validation.ok:
             raise ValueError(f"Validation failed: {'; '.join(validation.errors)}")
 
         # Get active players
-        active_inscriptions = self._get_active_inscriptions(prova)
+        active_inscriptions = self._get_active_inscriptions(gara)
 
         # Pre-processing hook
-        processed_data = self._preprocess_data(prova, active_inscriptions, round_number)
+        processed_data = self._preprocess_data(gara, active_inscriptions, round_number)
 
         # Generate pairings (strategy-specific)
         pairings = self._generate_pairings(
@@ -207,27 +207,27 @@ class BaseStrategy(PairingStrategy):
         )
 
         # Post-processing hook
-        enhanced_pairings = self._postprocess_pairings(pairings, prova, round_number)
+        enhanced_pairings = self._postprocess_pairings(pairings, gara, round_number)
 
         # Record metrics
         self._record_metrics(enhanced_pairings, validation_time_ms=0.0)
 
         return enhanced_pairings
 
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Template method for actual pairing generation with side effects."""
         self._execution_start = datetime.utcnow()
 
         # Validate first
-        validation = self.validate(prova)
+        validation = self.validate(gara)
         if not validation.ok:
             raise ValueError(f"Validation failed: {'; '.join(validation.errors)}")
 
         # Get active players
-        active_inscriptions = self._get_active_inscriptions(prova)
+        active_inscriptions = self._get_active_inscriptions(gara)
 
         # Pre-processing hook
-        processed_data = self._preprocess_data(prova, active_inscriptions, round_number)
+        processed_data = self._preprocess_data(gara, active_inscriptions, round_number)
 
         # Generate pairings (strategy-specific)
         pairings = self._generate_pairings(
@@ -235,10 +235,10 @@ class BaseStrategy(PairingStrategy):
         )
 
         # Post-processing hook
-        enhanced_pairings = self._postprocess_pairings(pairings, prova, round_number)
+        enhanced_pairings = self._postprocess_pairings(pairings, gara, round_number)
 
         # Apply side effects
-        self._apply_side_effects(enhanced_pairings, prova, round_number)
+        self._apply_side_effects(enhanced_pairings, gara, round_number)
 
         # Record metrics
         self._record_metrics(enhanced_pairings, validation_time_ms=0.0)
@@ -260,42 +260,42 @@ class BaseStrategy(PairingStrategy):
     ) -> Sequence[Pairing]:
         """Generate the actual pairings (strategy-specific logic)."""
 
-    def _validate_strategy_specific(self, prova: object) -> Dict[str, List[str]]:
+    def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
         """Override for strategy-specific validation."""
         return {"errors": [], "warnings": []}
 
     def _preprocess_data(
-        self, prova: object, active_inscriptions: List[Any], round_number: int
+        self, gara: object, active_inscriptions: List[Any], round_number: int
     ) -> Dict[str, Any]:
         """Override for strategy-specific preprocessing."""
         return {
-            "prova": prova,
+            "gara": gara,
             "players": [i.user_id for i in active_inscriptions],
             "round_number": round_number,
         }
 
     def _postprocess_pairings(
-        self, pairings: Sequence[Pairing], prova: object, round_number: int
+        self, pairings: Sequence[Pairing], gara: object, round_number: int
     ) -> Sequence[Pairing]:
         """Override for strategy-specific postprocessing."""
         return pairings
 
     def _apply_side_effects(
-        self, pairings: Sequence[Pairing], prova: object, round_number: int
+        self, pairings: Sequence[Pairing], gara: object, round_number: int
     ) -> None:
         """Override for strategy-specific side effects (e.g., updating classification)."""
 
     # Helper methods
 
-    def _get_active_inscriptions(self, prova: object) -> List[Any]:
-        """Get active inscriptions for the prova."""
-        inscriptions = getattr(prova, "inscriptions", [])
+    def _get_active_inscriptions(self, gara: object) -> List[Any]:
+        """Get active inscriptions for the gara."""
+        inscriptions = getattr(gara, "inscriptions", [])
         return [
             i for i in inscriptions if hasattr(i, "status") and i.status == "confirmed"
         ]
 
     def _calculate_pairing_quality(
-        self, player1_id: int, player2_id: int, prova: object
+        self, player1_id: int, player2_id: int, gara: object
     ) -> float:
         """Calculate quality score for a pairing (0.0 = poor, 1.0 = excellent)."""
         # Base implementation: random quality

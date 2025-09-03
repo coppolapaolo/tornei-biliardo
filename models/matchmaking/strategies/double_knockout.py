@@ -1,7 +1,7 @@
 """
 Module: models/matchmaking/strategies/double_knockout.py
 Purpose: Double Knockout (double elimination) pairing strategy implementation
-Requirements: SPECIFICHE.md - Double knockout tournament format
+Requirements: SPECIFICHE.md - Double knockout campionato format
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from typing import Sequence, List, Optional, Dict, TYPE_CHECKING, Any
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
-    from models.competition.models import Prova
+    from models.competition.models import Gara
 
 
 class DoubleKnockoutStrategy(PairingStrategy):
@@ -21,7 +21,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
     # PairingStrategy metadata
     name = "double_knockout"
     display_name = "Double Knockout"
-    description = "Double elimination tournament format with winners and losers bracket"
+    description = "Double elimination campionato format with winners and losers bracket"
     min_players = 4
     max_players = 64
     supports_byes = True
@@ -30,11 +30,11 @@ class DoubleKnockoutStrategy(PairingStrategy):
     def __init__(self):
         self.strategy_name = "double_knockout"
 
-    def validate(self, prova: object) -> ValidationResult:
-        """Validate if Double Knockout can be used for this prova."""
+    def validate(self, gara: object) -> ValidationResult:
+        """Validate if Double Knockout can be used for this gara."""
         try:
             # Get active inscriptions
-            inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
             active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
             player_count = len(active_inscriptions)
 
@@ -55,13 +55,13 @@ class DoubleKnockoutStrategy(PairingStrategy):
             required_rounds = self.get_total_rounds_needed(player_count)
 
             if (
-                getattr(prova, "rounds_count", None) is not None
-                and getattr(prova, "rounds_count") < required_rounds
+                getattr(gara, "rounds_count", None) is not None
+                and getattr(gara, "rounds_count") < required_rounds
             ):
                 return ValidationResult(
                     ok=False,
                     messages=(
-                        f"Double Knockout requires approximately {required_rounds} rounds, but prova has {getattr(prova, 'rounds_count', 'unknown')}",
+                        f"Double Knockout requires approximately {required_rounds} rounds, but gara has {getattr(gara, 'rounds_count', 'unknown')}",
                     ),
                 )
 
@@ -70,42 +70,42 @@ class DoubleKnockoutStrategy(PairingStrategy):
         except Exception as e:
             return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
 
-    def preview(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
 
-    def propose(self, prova: object, round_number: int) -> Sequence[Pairing]:
+    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Propose actual pairings for the round."""
-        return self._generate_round_pairings(prova, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
 
     def _generate_round_pairings(
-        self, prova: object, round_number: int
+        self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Double Knockout."""
         try:
             from typing import cast
 
             if round_number == 1:
-                return self._generate_first_round_pairings(cast("Prova", prova))
+                return self._generate_first_round_pairings(cast("Gara", gara))
             else:
                 return self._generate_subsequent_round_pairings(
-                    cast("Prova", prova), round_number
+                    cast("Gara", gara), round_number
                 )
 
         except Exception as e:
             print(f"Error generating Double Knockout pairings: {e}")
             return []
 
-    def _generate_first_round_pairings(self, prova: "Prova") -> List[Pairing]:
+    def _generate_first_round_pairings(self, gara: "Gara") -> List[Pairing]:
         """Generate first round pairings (winners bracket only)."""
         from .direct_elimination import DirectEliminationStrategy
 
         # First round is identical to direct elimination
         de_strategy = DirectEliminationStrategy()
-        return de_strategy._generate_first_round_pairings(prova)
+        return de_strategy._generate_first_round_pairings(gara)
 
     def _generate_subsequent_round_pairings(
-        self, prova: "Prova", round_number: int
+        self, gara: "Gara", round_number: int
     ) -> List[Pairing]:
         """Generate pairings for subsequent rounds with winners and losers brackets."""
         from ...match.models import Match
@@ -115,57 +115,57 @@ class DoubleKnockoutStrategy(PairingStrategy):
         from sqlalchemy import text
 
         all_matches = (
-            Match.query.filter_by(prova_id=prova.id, status="completed")
+            Match.query.filter_by(gara_id=gara.id, status="completed")
             .filter(text("round_number < :round_number"))
             .params(round_number=round_number)
             .all()
         )
 
         # Track player status: active, eliminated_once, eliminated_twice
-        player_status = self._calculate_player_status(prova, all_matches)
+        player_status = self._calculate_player_status(gara, all_matches)
 
         # Determine bracket phase
-        bracket_info = self._determine_bracket_phase(prova, round_number, player_status)
+        bracket_info = self._determine_bracket_phase(gara, round_number, player_status)
 
         pairings = []
 
         if bracket_info["phase"] == "winners_bracket":
             pairings.extend(
                 self._generate_winners_bracket_pairings(
-                    prova, round_number, player_status, bracket_info
+                    gara, round_number, player_status, bracket_info
                 )
             )
         elif bracket_info["phase"] == "losers_bracket":
             pairings.extend(
                 self._generate_losers_bracket_pairings(
-                    prova, round_number, player_status, bracket_info
+                    gara, round_number, player_status, bracket_info
                 )
             )
         elif bracket_info["phase"] == "mixed":
             # Both brackets active
             pairings.extend(
                 self._generate_winners_bracket_pairings(
-                    prova, round_number, player_status, bracket_info
+                    gara, round_number, player_status, bracket_info
                 )
             )
             pairings.extend(
                 self._generate_losers_bracket_pairings(
-                    prova, round_number, player_status, bracket_info
+                    gara, round_number, player_status, bracket_info
                 )
             )
         elif bracket_info["phase"] == "grand_final":
             pairings.extend(
-                self._generate_grand_final_pairings(prova, round_number, player_status)
+                self._generate_grand_final_pairings(gara, round_number, player_status)
             )
 
         return pairings
 
-    def _calculate_player_status(self, prova: "Prova", matches: List) -> Dict[int, str]:
+    def _calculate_player_status(self, gara: "Gara", matches: List) -> Dict[int, str]:
         """Calculate current status of each player."""
         player_status = {}
 
         # Get all players
-        inscriptions = list(prova.inscriptions)  # type: ignore[arg-type]
+        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
         active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
         for inscription in active_inscriptions:
             player_status[inscription.user_id] = "active"
@@ -192,7 +192,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
         return player_status
 
     def _determine_bracket_phase(
-        self, prova: "Prova", round_number: int, player_status: Dict[int, str]
+        self, gara: "Gara", round_number: int, player_status: Dict[int, str]
     ) -> Dict[str, Any]:
         """Determine which bracket phase we're in."""
         active_players = [
@@ -223,7 +223,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
 
     def _generate_winners_bracket_pairings(
         self,
-        prova: "Prova",
+        gara: "Gara",
         round_number: int,
         player_status: Dict[int, str],
         bracket_info: Dict,
@@ -241,7 +241,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
 
         previous_winners_matches = (
             Match.query.filter_by(
-                prova_id=prova.id, round_number=round_number - 1, status="completed"
+                gara_id=gara.id, round_number=round_number - 1, status="completed"
             )
             .filter(Match.notes != "losers_bracket")
             .all()
@@ -252,7 +252,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
             if match.winner_id and match.winner_id in active_players:
                 winners.append(match.winner_id)
 
-        # If this is early in tournament and we don't have enough previous matches,
+        # If this is early in campionato and we don't have enough previous matches,
         # just pair available active players
         if not winners:
             winners = active_players
@@ -277,7 +277,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
 
     def _generate_losers_bracket_pairings(
         self,
-        prova: "Prova",
+        gara: "Gara",
         round_number: int,
         player_status: Dict[int, str],
         bracket_info: Dict,
@@ -292,11 +292,11 @@ class DoubleKnockoutStrategy(PairingStrategy):
 
         # Get recent losers from winners bracket
 
-        recent_losers = self._get_recent_winners_bracket_losers(prova, round_number)
+        recent_losers = self._get_recent_winners_bracket_losers(gara, round_number)
 
         # Get survivors from previous losers bracket
         previous_losers_survivors = self._get_previous_losers_bracket_survivors(
-            prova, round_number
+            gara, round_number
         )
 
         # Combine and pair
@@ -314,7 +314,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
         return pairings
 
     def _generate_grand_final_pairings(
-        self, prova: "Prova", round_number: int, player_status: Dict[int, str]
+        self, gara: "Gara", round_number: int, player_status: Dict[int, str]
     ) -> List[Pairing]:
         """Generate grand final pairing between winners and losers bracket champions."""
         active_players = [
@@ -335,7 +335,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
         return []
 
     def _get_recent_winners_bracket_losers(
-        self, prova: "Prova", round_number: int
+        self, gara: "Gara", round_number: int
     ) -> List[int]:
         """Get players who just lost in winners bracket."""
         from ...match.models import Match
@@ -343,7 +343,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
         # Look at recent winners bracket matches
         recent_matches = (
             Match.query.filter_by(
-                prova_id=prova.id, round_number=round_number - 1, status="completed"
+                gara_id=gara.id, round_number=round_number - 1, status="completed"
             )
             .filter(Match.notes != "losers_bracket")
             .all()
@@ -360,7 +360,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
         return losers
 
     def _get_previous_losers_bracket_survivors(
-        self, prova: "Prova", round_number: int
+        self, gara: "Gara", round_number: int
     ) -> List[int]:
         """Get players who survived previous losers bracket round."""
         from ...match.models import Match
@@ -368,7 +368,7 @@ class DoubleKnockoutStrategy(PairingStrategy):
         # Look for losers bracket matches from previous round
         previous_losers_matches = (
             Match.query.filter_by(
-                prova_id=prova.id, round_number=round_number - 1, status="completed"
+                gara_id=gara.id, round_number=round_number - 1, status="completed"
             )
             .filter(Match.notes == "losers_bracket")
             .all()

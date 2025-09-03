@@ -25,7 +25,7 @@ from utils import (
     create_round_matches,
     calculate_round_classification,
     create_default_users,
-    create_sample_tournament,
+    create_sample_campionato,
     create_admin_if_not_exists,
     create_round_matches_amalfi_compatible,
 )
@@ -59,7 +59,7 @@ class TestUtils:
     def test_user_permissions_class(self):
         """Test UserPermissions class methods."""
         # Test that all methods exist
-        assert hasattr(UserPermissions, "can_inscribe_to_prova")
+        assert hasattr(UserPermissions, "can_inscribe_to_gara")
         assert hasattr(UserPermissions, "can_view_profile")
         assert hasattr(UserPermissions, "can_delete_account")
         assert hasattr(UserPermissions, "show_admin_management")
@@ -131,10 +131,10 @@ class TestUtils:
     def test_create_round_matches(self, mock_match, mock_db):
         """Test create_round_matches function."""
         # Setup mocks
-        mock_prova = MagicMock()
-        mock_prova.id = 1
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 3
+        mock_gara = MagicMock()
+        mock_gara.id = 1
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 3
 
         mock_user1 = MagicMock()
         mock_user1.id = 1
@@ -154,7 +154,7 @@ class TestUtils:
         mock_match_instance = MagicMock()
         mock_match.return_value = mock_match_instance
 
-        result = create_round_matches(mock_prova, players, 1)
+        result = create_round_matches(mock_gara, players, 1)
 
         # Verify
         assert len(result) == 1
@@ -166,10 +166,10 @@ class TestUtils:
     def test_create_round_matches_odd_players(self, mock_match, mock_db):
         """Test create_round_matches function with odd number of players."""
         # Setup mocks
-        mock_prova = MagicMock()
-        mock_prova.id = 1
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 3
+        mock_gara = MagicMock()
+        mock_gara.id = 1
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 3
 
         mock_user1 = MagicMock()
         mock_user1.id = 1
@@ -195,7 +195,7 @@ class TestUtils:
         mock_match_instance = MagicMock()
         mock_match.return_value = mock_match_instance
 
-        result = create_round_matches(mock_prova, players, 1)
+        result = create_round_matches(mock_gara, players, 1)
 
         # Verify - should have 2 matches (1 bye + 1 regular)
         assert len(result) == 2
@@ -224,11 +224,11 @@ class TestUtils:
         mock_db.session.add_all.assert_called_once()
         mock_db.session.commit.assert_called_once()
 
-    def test_create_sample_tournament(self):
-        """Test create_sample_tournament function."""
+    def test_create_sample_campionato(self):
+        """Test create_sample_campionato function."""
         # This function is complex and requires extensive mocking
         # For now, just verify it exists and can be called
-        assert create_sample_tournament is not None
+        assert create_sample_campionato is not None
 
     def test_create_admin_if_not_exists(self):
         """Test create_admin_if_not_exists function."""
@@ -241,10 +241,10 @@ class TestUtils:
     def test_create_round_matches_amalfi_compatible(self, mock_match, mock_db):
         """Test create_round_matches_amalfi_compatible function."""
         # Setup mocks
-        mock_prova = MagicMock()
-        mock_prova.id = 1
-        mock_prova.best_of = True
-        mock_prova.get_winning_score.return_value = 3
+        mock_gara = MagicMock()
+        mock_gara.id = 1
+        mock_gara.best_of = True
+        mock_gara.get_winning_score.return_value = 3
 
         mock_user1 = MagicMock()
         mock_user1.id = 1
@@ -264,7 +264,7 @@ class TestUtils:
         mock_match_instance = MagicMock()
         mock_match.return_value = mock_match_instance
 
-        result = create_round_matches_amalfi_compatible(mock_prova, players, 1)
+        result = create_round_matches_amalfi_compatible(mock_gara, players, 1)
 
         # Verify
         assert len(result) == 1

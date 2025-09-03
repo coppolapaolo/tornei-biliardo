@@ -1,7 +1,7 @@
 # amalfi/__init__.py - Sistema Abbinamenti Amalfi
 
 """
-Sistema Amalfi per abbinamenti automatici tornei biliardo.
+Sistema Amalfi per abbinamenti automatici campionati biliardo.
 
 Funzionalità principali:
 - Algoritmo salto dinamico per turni successivi

@@ -1,5 +1,5 @@
 # models/scoring/policies.py
-"""Scoring policy interface and implementations for tournament classifications."""
+"""Scoring policy interface and implementations for campionato classifications."""
 
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Any
@@ -9,7 +9,7 @@ from models.user.models import User
 class ScoringPolicy(ABC):
     """Abstract base class for scoring policies.
 
-    Defines the interface for calculating player standings in tournaments.
+    Defines the interface for calculating player standings in campionati.
     """
 
     @abstractmethod
@@ -19,7 +19,7 @@ class ScoringPolicy(ABC):
         """Calculate player standings based on match results.
 
         Args:
-            players: List of players in the tournament
+            players: List of players in the campionato
             match_results: List of match results with player scores
 
         Returns:

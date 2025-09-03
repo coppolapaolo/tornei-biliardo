@@ -111,51 +111,51 @@ class TestMainRoutes:
             mock_redirect.assert_called_once_with("/dashboard")
 
     @patch("routes.main.render_template")
-    @patch("routes.main.Tournament")
+    @patch("routes.main.Campionato")
     @patch("routes.main.current_user")
-    def test_index_no_active_tournaments(self, mock_user, mock_tournament, mock_render):
-        """Test index route with no active tournaments."""
+    def test_index_no_active_campionatos(self, mock_user, mock_campionato, mock_render):
+        """Test index route with no active campionati."""
         mock_user.is_authenticated = False
-        mock_tournament.query.filter_by.return_value.order_by.return_value.all.return_value = (
+        mock_campionato.query.filter_by.return_value.order_by.return_value.all.return_value = (
             []
         )
-        mock_render.return_value = "no_tournament_template"
+        mock_render.return_value = "no_campionato_template"
 
         from routes.main import index
 
         result = index()
 
-        assert result == "no_tournament_template"
-        mock_render.assert_called_once_with("no_tournament.html")
+        assert result == "no_campionato_template"
+        mock_render.assert_called_once_with("no_campionato.html")
 
     @patch("routes.main.render_template")
     @patch("routes.main.Classification")
-    @patch("routes.main.Prova")
-    @patch("routes.main.Tournament")
+    @patch("routes.main.Gara")
+    @patch("routes.main.Campionato")
     @patch("routes.main.current_user")
-    def test_index_with_active_tournaments(
-        self, mock_user, mock_tournament, mock_prova, mock_classification, mock_render
+    def test_index_with_active_campionatos(
+        self, mock_user, mock_campionato, mock_gara, mock_classification, mock_render
     ):
-        """Test index route with active tournaments."""
+        """Test index route with active campionati."""
         mock_user.is_authenticated = False
 
-        # Mock tournaments
-        mock_tournament1 = Mock()
-        mock_tournament1.id = 1
-        mock_tournament1.name = "Tournament 1"
-        mock_tournament2 = Mock()
-        mock_tournament2.id = 2
-        mock_tournament2.name = "Tournament 2"
+        # Mock campionati
+        mock_campionato1 = Mock()
+        mock_campionato1.id = 1
+        mock_campionato1.name = "Campionato 1"
+        mock_campionato2 = Mock()
+        mock_campionato2.id = 2
+        mock_campionato2.name = "Campionato 2"
 
-        mock_tournaments = [mock_tournament1, mock_tournament2]
-        mock_tournament.query.filter_by.return_value.order_by.return_value.all.return_value = (
-            mock_tournaments
+        mock_campionatos = [mock_campionato1, mock_campionato2]
+        mock_campionato.query.filter_by.return_value.order_by.return_value.all.return_value = (
+            mock_campionatos
         )
 
         # Mock upcoming provas
-        mock_upcoming_provas = [Mock(), Mock()]
-        mock_prova.query.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
-            mock_upcoming_provas
+        mock_upcoming_garas = [Mock(), Mock()]
+        mock_gara.query.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
+            mock_upcoming_garas
         )
 
         # Mock top classifications
@@ -176,8 +176,8 @@ class TestMainRoutes:
         mock_render.assert_called_once()
         call_args = mock_render.call_args[1]
         assert "tournaments_data" in call_args
-        assert "active_tournaments" in call_args
-        assert call_args["active_tournaments"] == mock_tournaments
+        assert "active_campionatos" in call_args
+        assert call_args["active_campionatos"] == mock_campionatos
         assert len(call_args["tournaments_data"]) == 2
 
     @patch("routes.main.Config")

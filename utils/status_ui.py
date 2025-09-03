@@ -7,15 +7,15 @@ Dependencies: Flask (jinja_env), markupsafe.Markup, models.status_enum
 
 
 Copertura ambito Sprint 4 estesa:
-- Prova (persistito + real_status derivato)
-- Tournament (stato derivato)
+- Gara (persistito + real_status derivato)
+- Campionato (stato derivato)
 - Match
 - DirectorRequest
 - Playoff.confirmation_status (legacy)
 
 Nota fix: oltre ai *filtri* Jinja, qui esponiamo anche **funzioni globali**
 `status_badge`, `status_badge_class`, `status_text` per consentire l'uso diretto
-nei template come `{{ status_badge(obj, 'prova') }}` senza importare macro.
+nei template come `{{ status_badge(obj, 'gara') }}` senza importare macro.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from markupsafe import Markup, escape
 
 # Enum centralizzati (string-based, DB invariato)
 from models.status_enum import (
-    ProvaStatus,
+    GaraStatus,
     ProvaDerivedStatus,
     TournamentStatus,
     MatchStatus,
@@ -34,11 +34,11 @@ from models.status_enum import (
     PlayoffConfirmationStatus,
 )
 
-# Opzionale: funzione pura per stato torneo (se presente)
+# Opzionale: funzione pura per stato campionato (se presente)
 try:  # import soft per evitare hard dependency
-    from models.tournament.services import compute_tournament_status  # type: ignore
+    from models.campionato.services import compute_campionato_status  # type: ignore
 except Exception:  # pragma: no cover - fallback su metodo del model
-    compute_tournament_status = None  # type: ignore
+    compute_campionato_status = None  # type: ignore
 
 
 class StatusPresenter:
@@ -48,9 +48,9 @@ class StatusPresenter:
     Ritorno: tuple (css_class, text)
     """
 
-    # --------------------- PROVA ---------------------
+    # --------------------- GARA ---------------------
     @staticmethod
-    def prova(o: Any) -> Tuple[str, str]:
+    def gara(o: Any) -> Tuple[str, str]:
         # Persistito: setup/inscription/playing/completed
         # UI: si usa il "real status" se disponibile
         status_value: Optional[str] = None
@@ -65,7 +65,7 @@ class StatusPresenter:
             except Exception:
                 real_value = None
 
-        s = real_value or status_value or ProvaStatus.SETUP.value
+        s = real_value or status_value or GaraStatus.SETUP.value
 
         mapping: Dict[str, Tuple[str, str]] = {
             # Derived/UI
@@ -80,23 +80,23 @@ class StatusPresenter:
             ProvaDerivedStatus.ROUND_COMPLETED.value: ("bg-info", "Turno Completato"),
             ProvaDerivedStatus.TOURNAMENT_COMPLETED.value: (
                 "bg-dark",
-                "Prova Completata",
+                "Gara Completata",
             ),
             # Persistiti
-            ProvaStatus.SETUP.value: ("bg-warning", "Setup"),
-            ProvaStatus.INSCRIPTION.value: ("bg-info", "Iscrizioni Aperte"),
-            ProvaStatus.PLAYING.value: ("bg-success", "In Corso"),
-            ProvaStatus.COMPLETED.value: ("bg-dark", "Completata"),
+            GaraStatus.SETUP.value: ("bg-warning", "Setup"),
+            GaraStatus.INSCRIPTION.value: ("bg-info", "Iscrizioni Aperte"),
+            GaraStatus.PLAYING.value: ("bg-success", "In Corso"),
+            GaraStatus.COMPLETED.value: ("bg-dark", "Completata"),
         }
         return mapping.get(s, ("bg-secondary", "Sconosciuto"))
 
-    # ------------------- TOURNAMENT -------------------
+    # ------------------- CAMPIONATO -------------------
     @staticmethod
-    def tournament(o: Any) -> Tuple[str, str]:
+    def campionato(o: Any) -> Tuple[str, str]:
         # Preferisci funzione pura se disponibile, altrimenti delega al model
-        if compute_tournament_status is not None:
+        if compute_campionato_status is not None:
             try:
-                s = compute_tournament_status(o)
+                s = compute_campionato_status(o)
             except Exception:
                 s = None
         else:
@@ -184,10 +184,10 @@ def _resolve_kind(obj: Any, kind: Optional[str]) -> str:
         return kind
     # hint per deduzione automatica
     n = obj.__class__.__name__.lower() if hasattr(obj, "__class__") else ""
-    if "prova" in n:
-        return "prova"
-    if "tournament" in n:
-        return "tournament"
+    if "gara" in n:
+        return "gara"
+    if "campionato" in n:
+        return "campionato"
     if "match" in n:
         return "match"
     if "directorrequest" in n or "director_request" in n:
@@ -200,10 +200,10 @@ def _resolve_kind(obj: Any, kind: Optional[str]) -> str:
 
 def _present(obj: Any, kind: Optional[str]) -> Tuple[str, str]:
     k = _resolve_kind(obj, kind)
-    if k == "prova":
-        return StatusPresenter.prova(obj)
-    if k == "tournament":
-        return StatusPresenter.tournament(obj)
+    if k == "gara":
+        return StatusPresenter.gara(obj)
+    if k == "campionato":
+        return StatusPresenter.campionato(obj)
     if k == "match":
         return StatusPresenter.match(obj)
     if k == "director_request":
@@ -239,7 +239,7 @@ def register_status_filters(app) -> None:
     app.jinja_env.filters["status_badge_class"] = filter_status_badge_class
     app.jinja_env.filters["status_text"] = filter_status_text
 
-    # Funzioni globali (per uso come {{ status_badge(obj, 'prova') }})
+    # Funzioni globali (per uso come {{ status_badge(obj, 'gara') }})
     app.jinja_env.globals["status_badge"] = filter_status_badge
     app.jinja_env.globals["status_badge_class"] = filter_status_badge_class
     app.jinja_env.globals["status_text"] = filter_status_text

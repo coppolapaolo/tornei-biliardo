@@ -1,6 +1,6 @@
-# 🎱 Webapp Torneo Biliardo
+# 🎱 Webapp Campionato Biliardo
 
-> **Applicazione web completa** per la gestione professionale di tornei di biliardo 
+> **Applicazione web completa** per la gestione professionale di campionati di biliardo 
 
 ---
 
@@ -9,8 +9,8 @@
 ### 🔧 **Setup Locale**
 ```bash
 # Clone repository
-git clone https://github.com/coppolapaolo/tornei-biliardo.git
-cd tornei-biliardo
+git clone https://github.com/coppolapaolo/campionati-biliardo.git
+cd campionati-biliardo
 
 # Virtual environment
 python3 -m venv venv
@@ -34,7 +34,7 @@ python app.py
 ## 📞 Supporto e Contributi
 
 ### 🐛 **Issues e Bug Reports**
-- **GitHub Issues**: [Crea Issue](https://github.com/coppolapaolo/tornei-biliardo/issues)
+- **GitHub Issues**: [Crea Issue](https://github.com/coppolapaolo/campionati-biliardo/issues)
 - **Email Support**: paolo.coppola@gmail.com
 - **Sistema Amalfi**: Report problemi algoritmi con scenario dettagliato
 
@@ -80,7 +80,7 @@ python app.py
 
 ---
 
-*🎱 Webapp professionale per tornei di biliardo con Sistema Amalfi - Sviluppata con ❤️ e Python*
+*🎱 Webapp professionale per campionati di biliardo con Sistema Amalfi - Sviluppata con ❤️ e Python*
 
 **📧 Contatti**: paolo.coppola@gmail.com  
-**🌐 Repository**: https://github.com/coppolapaolo/tornei-biliardo  
+**🌐 Repository**: https://github.com/coppolapaolo/campionati-biliardo  

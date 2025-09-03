@@ -1,4 +1,4 @@
-# routes/player.py - AGGIORNATO dashboard per multi-torneo
+# routes/player.py - AGGIORNATO dashboard per multi-campionato
 from flask.blueprints import Blueprint
 from flask.templating import render_template        # funzione reale
 from flask.globals import request                   # LocalProxy -> request
@@ -11,7 +11,7 @@ from datetime import datetime
 
 from models import (
     db,
-    Prova,
+    Gara,
     Inscription,
     Match,
     Rack,
@@ -19,10 +19,10 @@ from models import (
 )
 from models.status_enum import (
     MatchStatus,
-    ProvaStatus,
+    GaraStatus,
     DirectorRequestStatus,
 )
-from models.tournament.models import Tournament
+from models.campionato.models import Campionato
 from models.classification.models import Classification
 from models.user.models import DirectorRequest
 from models.notification.services import NotificationService
@@ -124,10 +124,10 @@ def create_match_proposal():
         User.role != UserRole.ADMIN.value
     ).all()
     
-    # Ottieni i luoghi già utilizzati nelle prove esistenti
-    recent_locations = db.session.query(Prova.location).distinct().filter(
-        Prova.location.isnot(None), 
-        Prova.location != ""
+    # Ottieni i luoghi già utilizzati nelle gare esistenti
+    recent_locations = db.session.query(Gara.location).distinct().filter(
+        Gara.location.isnot(None), 
+        Gara.location != ""
     ).limit(20).all()
     locations = [{"name": loc[0]} for loc in recent_locations if loc[0]]
 
@@ -191,26 +191,26 @@ def dashboard():
 
 
 # Il resto delle route rimane uguale...
-@player_bp.route("/prova/<int:prova_id>")
+@player_bp.route("/gara/<int:gara_id>")
 @login_required
 @player_required
-def prova_detail(prova_id):
-    """Dettaglio prova con iscrizioni e partite dell'utente"""
-    prova = db.session.get(Prova, prova_id)
-    if prova is None:
+def gara_detail(gara_id):
+    """Dettaglio gara con iscrizioni e partite dell'utente"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
         abort(404)
 
-    # Verifica che l'utente sia iscritto alla prova
+    # Verifica che l'utente sia iscritto alla gara
     inscription = Inscription.query.filter_by(
-        prova_id=prova_id, user_id=current_user.id
+        gara_id=gara_id, user_id=current_user.id
     ).first()
 
     if not inscription:
-        flash("Non sei iscritto a questa prova.", "error")
+        flash("Non sei iscritto a questa gara.", "error")
         return redirect(url_for("dashboard.dashboard"))
 
     matches = (
-        Match.query.filter_by(prova_id=prova_id)
+        Match.query.filter_by(gara_id=gara_id)
         .filter(
             db.or_(
                 Match.player1_id == current_user.id,
@@ -222,45 +222,45 @@ def prova_detail(prova_id):
     )
 
     return render_template(
-        "player/prova_detail.html",
-        prova=prova,
+        "player/gara_detail.html",
+        gara=gara,
         inscription=inscription,
         matches=matches,
     )
 
 
-@player_bp.route("/prova/<int:prova_id>/inscribe", methods=["POST"])
+@player_bp.route("/gara/<int:gara_id>/inscribe", methods=["POST"])
 @login_required
 @player_only
-def inscribe_to_prova(prova_id):
-    """Iscriviti a una prova"""
-    prova = Prova.query.get_or_404(prova_id)
+def inscribe_to_gara(gara_id):
+    """Iscriviti a una gara"""
+    gara = Gara.query.get_or_404(gara_id)
 
     # Verifica che le iscrizioni siano aperte
     now = datetime.utcnow()
     if (
-        prova.status != ProvaStatus.INSCRIPTION.value
-        or now < prova.inscription_start
-        or now > prova.inscription_end
+        gara.status != GaraStatus.INSCRIPTION.value
+        or now < gara.inscription_start
+        or now > gara.inscription_end
     ):
         flash("Le iscrizioni non sono disponibili.")
         return redirect(url_for("main.index"))
 
     # Verifica che non sia già iscritto
     existing = Inscription.query.filter_by(
-        user_id=current_user.id, prova_id=prova_id
+        user_id=current_user.id, gara_id=gara_id
     ).first()
     if existing:
-        flash("Sei già iscritto a questa prova.")
+        flash("Sei già iscritto a questa gara.")
         return redirect(url_for("player.dashboard"))
 
-    inscription = Inscription(user_id=current_user.id, prova_id=prova_id)
+    inscription = Inscription(user_id=current_user.id, gara_id=gara_id)
     db.session.add(inscription)
     db.session.commit()
 
-    flash(f"Iscrizione alla Prova {prova.number} completata!")
-    # Redirect mantenendo il torneo selezionato
-    return redirect(url_for("player.dashboard", tournament_id=prova.tournament_id))
+    flash(f"Iscrizione alla Gara {gara.number} completata!")
+    # Redirect mantenendo il campionato selezionato
+    return redirect(url_for("player.dashboard", campionato_id=gara.campionato_id))
 
 
 @player_bp.route("/match/<int:match_id>")
@@ -320,9 +320,9 @@ def profile():
     # Iscrizioni dell'utente
     inscriptions = (
         Inscription.query.filter_by(user_id=current_user.id)
-        .join(Prova)
-        .join(Tournament)
-        .order_by(Tournament.created_at.desc(), Prova.number.desc())
+        .join(Gara)
+        .join(Campionato)
+        .order_by(Campionato.created_at.desc(), Gara.number.desc())
         .all()
     )
 
@@ -333,10 +333,10 @@ def profile():
                 Match.player1_id == current_user.id, Match.player2_id == current_user.id
             )
         )
-        .join(Prova)
-        .join(Tournament)
+        .join(Gara)
+        .join(Campionato)
         .order_by(
-            Tournament.created_at.desc(), Prova.number.desc(), Match.round_number.desc()
+            Campionato.created_at.desc(), Gara.number.desc(), Match.round_number.desc()
         )
         .all()
     )
@@ -353,11 +353,11 @@ def profile():
     )
     win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
 
-    # Classifiche per torneo
+    # Classifiche per campionato
     classifications = (
         Classification.query.filter_by(user_id=current_user.id)
-        .join(Tournament)
-        .order_by(Tournament.created_at.desc())
+        .join(Campionato)
+        .order_by(Campionato.created_at.desc())
         .all()
     )
 
@@ -373,7 +373,7 @@ def profile():
         "lost_matches": total_matches - won_matches,
         "win_percentage": round(win_percentage, 1),
         "tournaments_played": len(
-            set([insc.prova.tournament_id for insc in inscriptions])
+            set([insc.gara.campionato_id for insc in inscriptions])
         ),
     }
 
@@ -576,24 +576,24 @@ def delete_account():
 # ============ DISISCRIZIONE TORNEI ============
 
 
-@player_bp.route("/prova/<int:prova_id>/unsubscribe", methods=["POST"])
+@player_bp.route("/gara/<int:gara_id>/unsubscribe", methods=["POST"])
 @login_required
 @player_only
-def unsubscribe_from_prova(prova_id):
-    """Disiscrizione da una prova"""
-    prova = Prova.query.get_or_404(prova_id)
+def unsubscribe_from_gara(gara_id):
+    """Disiscrizione da una gara"""
+    gara = Gara.query.get_or_404(gara_id)
 
     # Verifica che l'utente sia iscritto
     inscription = Inscription.query.filter_by(
-        user_id=current_user.id, prova_id=prova_id
+        user_id=current_user.id, gara_id=gara_id
     ).first()
     if not inscription:
-        flash("Non sei iscritto a questa prova.")
+        flash("Non sei iscritto a questa gara.")
         return redirect(url_for("player.dashboard"))
 
-    # Verifica che la prova non sia ancora iniziata
-    if prova.status not in [ProvaStatus.SETUP.value, ProvaStatus.INSCRIPTION.value]:
-        flash("Impossibile disiscreversi: la prova è già iniziata!")
+    # Verifica che la gara non sia ancora iniziata
+    if gara.status not in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]:
+        flash("Impossibile disiscreversi: la gara è già iniziata!")
         return redirect(url_for("player.dashboard"))
 
     # Verifica che non ci siano partite già create
@@ -601,7 +601,7 @@ def unsubscribe_from_prova(prova_id):
         db.or_(
             Match.player1_id == current_user.id, Match.player2_id == current_user.id
         ),
-        Match.prova_id == prova_id,
+        Match.gara_id == gara_id,
     ).first()
 
     if existing_matches:
@@ -612,9 +612,9 @@ def unsubscribe_from_prova(prova_id):
     db.session.delete(inscription)
     db.session.commit()
 
-    flash(f"Disiscrizione dalla Prova {prova.number} completata!")
-    # Redirect mantenendo il torneo selezionato
-    return redirect(url_for("player.dashboard", tournament_id=prova.tournament_id))
+    flash(f"Disiscrizione dalla Gara {gara.number} completata!")
+    # Redirect mantenendo il campionato selezionato
+    return redirect(url_for("player.dashboard", campionato_id=gara.campionato_id))
 
 
 # ============ SISTEMA CONFERMA/RIMOZIONE PUNTI ============

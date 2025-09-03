@@ -14,13 +14,13 @@
                     <div class="col-4">
                         <label class="form-label">{{ match.player1.username }}</label>
                         <input type="number" class="form-control" name="player1_score" 
-                               min="0" max="{{ match.prova.distance }}" 
+                               min="0" max="{{ match.gara.distance }}" 
                                value="{{ match.player1_score }}" required>
                     </div>
                     <div class="col-4">
                         <label class="form-label">{{ match.player2.username }}</label>
                         <input type="number" class="form-control" name="player2_score" 
-                               min="0" max="{{ match.prova.distance }}" 
+                               min="0" max="{{ match.gara.distance }}" 
                                value="{{ match.player2_score }}" required>
                     </div>
                     <div class="col-4">
@@ -31,10 +31,10 @@
                     </div>
                 </div>
                 <small class="text-muted">
-                    {% if match.prova.best_of %}
-                        Al meglio di {{ match.prova.distance }}: uno dei giocatori deve raggiungere {{ match.prova.get_winning_score() }} punti
+                    {% if match.gara.best_of %}
+                        Al meglio di {{ match.gara.distance }}: uno dei giocatori deve raggiungere {{ match.gara.get_winning_score() }} punti
                     {% else %}
-                        {{ match.prova.distance }} rack esatti: la somma deve essere esattamente {{ match.prova.distance }}
+                        {{ match.gara.distance }} rack esatti: la somma deve essere esattamente {{ match.gara.distance }}
                     {% endif %}
                 </small>
             </form>

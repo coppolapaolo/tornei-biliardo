@@ -1,7 +1,7 @@
 """
 Module: models/playoff/models.py
-Purpose: Playoff domain models for tournament playoffs system
-Requirements: SPECIFICHE.md - Playoff system with qualification criteria and special tournaments
+Purpose: Playoff domain models for campionato playoffs system
+Requirements: SPECIFICHE.md - Playoff system with qualification criteria and special campionati
 Data Structures: PlayoffConfiguration, PlayoffQualification, PlayoffTournament
 """
 
@@ -39,13 +39,13 @@ class QualificationStatus(Enum):
 
 
 class PlayoffConfiguration(BaseModel, TimestampMixin):
-    """Configuration for tournament playoffs."""
+    """Configuration for campionato playoffs."""
 
     __tablename__ = "playoff_configuration"
 
     id = db.Column(db.Integer, primary_key=True)
-    tournament_id = db.Column(
-        db.Integer, db.ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False
+    campionato_id = db.Column(
+        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"), nullable=False
     )
 
     # Configuration details
@@ -57,14 +57,14 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
     # Qualification criteria
     max_participants = db.Column(db.Integer, nullable=False)
-    min_provas_played = db.Column(
+    min_garas_played = db.Column(
         db.Integer, nullable=True
     )  # Minimum provas to qualify
     qualification_criteria = db.Column(
         db.Text, nullable=False
     )  # JSON string with criteria
 
-    # Playoff tournament details
+    # Playoff campionato details
     location = db.Column(db.String(255), nullable=True)
     scheduled_date = db.Column(db.DateTime, nullable=True)
     entry_fee = db.Column(db.Numeric(10, 2), nullable=True)
@@ -73,19 +73,19 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     auto_generate = db.Column(
         db.Boolean, nullable=False, default=True
-    )  # Auto-generate at tournament end
+    )  # Auto-generate at campionato end
 
     # Response deadline
     response_deadline = db.Column(db.DateTime, nullable=True)
 
     # Relationships
-    tournament = db.relationship("Tournament")
+    campionato = db.relationship("Campionato")
     qualifications = db.relationship(
         "PlayoffQualification",
         back_populates="configuration",
         cascade="all, delete-orphan",
     )
-    playoff_tournament = db.relationship(
+    playoff_campionato = db.relationship(
         "PlayoffTournament", back_populates="configuration", uselist=False
     )
 
@@ -106,9 +106,9 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
         criteria = self.get_qualification_criteria()
 
-        # Get tournament final classification
+        # Get campionato final classification
         classifications = (
-            Classification.query.filter_by(tournament_id=self.tournament_id)
+            Classification.query.filter_by(campionato_id=self.campionato_id)
             .order_by(Classification.position)
             .all()
         )
@@ -183,22 +183,22 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
     def _meets_minimum_requirements(self, user_id: int) -> bool:
         """Check if user meets minimum requirements for playoff."""
-        if not self.min_provas_played:
+        if not self.min_garas_played:
             return True
 
-        from ..competition.models import Inscription, Prova
+        from ..competition.models import Inscription, Gara
 
         provas_played = (
-            Inscription.query.join(Prova)
+            Inscription.query.join(Gara)
             .filter(
                 Inscription.user_id == user_id,
-                Prova.tournament_id == self.tournament_id,
-                Prova.status == "completed",
+                Gara.campionato_id == self.campionato_id,
+                Gara.status == "completed",
             )
             .count()
         )
 
-        return provas_played >= self.min_provas_played
+        return provas_played >= self.min_garas_played
 
     def _evaluate_custom_criteria(
         self, classification: "Classification", criteria: Dict[str, Any]
@@ -249,7 +249,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
         return qualifications
 
     def __repr__(self) -> str:
-        return f"<PlayoffConfiguration {self.name} for Tournament {self.tournament_id}>"
+        return f"<PlayoffConfiguration {self.name} for Campionato {self.campionato_id}>"
 
 
 class PlayoffQualification(BaseModel, TimestampMixin):
@@ -335,9 +335,9 @@ class PlayoffQualification(BaseModel, TimestampMixin):
 
 
 class PlayoffTournament(BaseModel, TimestampMixin):
-    """The actual playoff tournament/prova."""
+    """The actual playoff campionato/gara."""
 
-    __tablename__ = "playoff_tournament"
+    __tablename__ = "playoff_campionato"
 
     id = db.Column(db.Integer, primary_key=True)
     configuration_id = db.Column(
@@ -345,11 +345,11 @@ class PlayoffTournament(BaseModel, TimestampMixin):
         db.ForeignKey("playoff_configuration.id", ondelete="CASCADE"),
         nullable=False,
     )
-    prova_id = db.Column(
-        db.Integer, db.ForeignKey("prova.id"), nullable=True
-    )  # The actual playoff prova
+    gara_id = db.Column(
+        db.Integer, db.ForeignKey("gara.id"), nullable=True
+    )  # The actual playoff gara
 
-    # Tournament details
+    # Campionato details
     name = db.Column(db.String(100), nullable=False)
     status = db.Column(
         db.String(20), nullable=False, default="setup"
@@ -358,7 +358,7 @@ class PlayoffTournament(BaseModel, TimestampMixin):
     # Schedule
     registration_start = db.Column(db.DateTime, nullable=True)
     registration_end = db.Column(db.DateTime, nullable=True)
-    tournament_date = db.Column(db.DateTime, nullable=True)
+    campionato_date = db.Column(db.DateTime, nullable=True)
     location = db.Column(db.String(255), nullable=True)
 
     # Configuration
@@ -372,9 +372,9 @@ class PlayoffTournament(BaseModel, TimestampMixin):
 
     # Relationships
     configuration = db.relationship(
-        "PlayoffConfiguration", back_populates="playoff_tournament"
+        "PlayoffConfiguration", back_populates="playoff_campionato"
     )
-    prova = db.relationship("Prova")
+    gara = db.relationship("Gara")
     winner = db.relationship("User", foreign_keys=[winner_id])
 
     def start_registration(self) -> None:
@@ -391,39 +391,39 @@ class PlayoffTournament(BaseModel, TimestampMixin):
             status=QualificationStatus.CONFIRMED
         ).all()
 
-        if not self.prova_id:
-            # Create the playoff prova if it doesn't exist
-            # TODO: Fix ProvaService.create_prova call with proper parameters
-            # prova = ProvaService.create_prova(
-            #     tournament_id=self.configuration.tournament_id,
+        if not self.gara_id:
+            # Create the playoff gara if it doesn't exist
+            # TODO: Fix GaraService.create_gara call with proper parameters
+            # gara = GaraService.create_gara(
+            #     campionato_id=self.configuration.campionato_id,
             #     director_id=1,  # Admin or first director
             #     name=self.name,
             #     location=self.location or "TBD",
-            #     date=self.tournament_date or datetime.utcnow(),
+            #     date=self.campionato_date or datetime.utcnow(),
             #     is_playoff=True
             # )
-            # self.prova_id = prova.id
+            # self.gara_id = gara.id
             pass
 
         # Auto-inscribe confirmed players
         for qualification in confirmed_qualifications:
             try:
-                # TODO: Fix ProvaService.inscribe_user call - method doesn't exist
-                # ProvaService.inscribe_user(self.prova_id, qualification.user_id)
+                # TODO: Fix GaraService.inscribe_user call - method doesn't exist
+                # GaraService.inscribe_user(self.gara_id, qualification.user_id)
                 # self.confirmed_participants += 1
                 pass
             except Exception as e:
                 print(f"Failed to inscribe user {qualification.user_id}: {e}")
 
-    def complete_tournament(self, winner_id: Optional[int] = None) -> None:
-        """Mark tournament as completed."""
+    def complete_campionato(self, winner_id: Optional[int] = None) -> None:
+        """Mark campionato as completed."""
         self.status = "completed"
         self.completed_at = datetime.utcnow()
         if winner_id:
             self.winner_id = winner_id
 
     def get_qualified_players(self) -> List["PlayoffQualification"]:
-        """Get all qualified players for this tournament."""
+        """Get all qualified players for this campionato."""
         confirmed_quals = self.configuration.qualifications.filter_by(
             status=QualificationStatus.CONFIRMED
         ).all()

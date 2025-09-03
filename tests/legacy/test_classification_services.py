@@ -18,53 +18,53 @@ class TestClassificationService:
 
     def test_get_scoring_policy_classic(self):
         """Test getting classic scoring policy."""
-        mock_tournament = Mock()
-        mock_tournament.scoring_policy = "classic"
+        mock_campionato = Mock()
+        mock_campionato.scoring_policy = "classic"
 
-        result = ClassificationService._get_scoring_policy(mock_tournament)
+        result = ClassificationService._get_scoring_policy(mock_campionato)
 
         assert result.__class__.__name__ == "ClassicScoringPolicy"
 
     def test_get_scoring_policy_fargo(self):
         """Test getting Fargo scoring policy."""
-        mock_tournament = Mock()
-        mock_tournament.scoring_policy = "fargo"
+        mock_campionato = Mock()
+        mock_campionato.scoring_policy = "fargo"
 
-        result = ClassificationService._get_scoring_policy(mock_tournament)
+        result = ClassificationService._get_scoring_policy(mock_campionato)
 
         assert result.__class__.__name__ == "FargoRatingScoringPolicy"
 
     def test_get_scoring_policy_elo(self):
         """Test getting Elo scoring policy."""
-        mock_tournament = Mock()
-        mock_tournament.scoring_policy = "elo"
+        mock_campionato = Mock()
+        mock_campionato.scoring_policy = "elo"
 
-        result = ClassificationService._get_scoring_policy(mock_tournament)
+        result = ClassificationService._get_scoring_policy(mock_campionato)
 
         assert result.__class__.__name__ == "EloRatingScoringPolicy"
 
     def test_get_scoring_policy_default(self):
         """Test getting default scoring policy for unknown policy."""
-        mock_tournament = Mock()
-        mock_tournament.scoring_policy = "unknown"
+        mock_campionato = Mock()
+        mock_campionato.scoring_policy = "unknown"
 
-        result = ClassificationService._get_scoring_policy(mock_tournament)
+        result = ClassificationService._get_scoring_policy(mock_campionato)
 
         assert result.__class__.__name__ == "ClassicScoringPolicy"
 
-    def test_update_tournament_classification_success(self):
-        """Test updating tournament classification successfully."""
+    def test_update_campionato_classification_success(self):
+        """Test updating campionato classification successfully."""
         with patch("models.classification.services.db") as mock_db:
-            # Mock tournament
-            mock_tournament = Mock()
-            mock_tournament.scoring_policy = "classic"
+            # Mock campionato
+            mock_campionato = Mock()
+            mock_campionato.scoring_policy = "classic"
 
             # Mock db.session.get
-            mock_db.session.get.return_value = mock_tournament
+            mock_db.session.get.return_value = mock_campionato
 
             # Mock provas and matches
-            mock_prova1 = Mock()
-            mock_prova2 = Mock()
+            mock_gara1 = Mock()
+            mock_gara2 = Mock()
             mock_match1 = Mock()
             mock_match1.status = "completed"
             mock_match1.is_bye = False
@@ -80,15 +80,15 @@ class TestClassificationService:
             mock_match2.player1_score = 2
             mock_match2.player2_score = 2
 
-            mock_prova1.matches = [mock_match1]
-            mock_prova2.matches = [mock_match2]
+            mock_gara1.matches = [mock_match1]
+            mock_gara2.matches = [mock_match2]
 
             # Mock bulk_load_relationships
             with patch(
                 "models.classification.services.bulk_load_relationships"
             ) as mock_bulk_load:
                 mock_bulk_query = Mock()
-                mock_bulk_query.all.return_value = [mock_prova1, mock_prova2]
+                mock_bulk_query.all.return_value = [mock_gara1, mock_gara2]
                 mock_bulk_load.return_value = mock_bulk_query
 
                 # Mock players
@@ -154,24 +154,24 @@ class TestClassificationService:
                     mock_db.session.commit = Mock()
 
                     # Call the method
-                    result = ClassificationService.update_tournament_classification(1)
+                    result = ClassificationService.update_campionato_classification(1)
 
                     # Verify
                     assert len(result) == 3
                     mock_db.session.get.assert_called_once()
 
-    def test_update_tournament_classification_not_found(self):
-        """Test updating tournament classification when tournament doesn't exist."""
+    def test_update_campionato_classification_not_found(self):
+        """Test updating campionato classification when campionato doesn't exist."""
         # Patch the specific method at the correct location
         with patch("models.classification.services.db.session.get") as mock_get:
             mock_get.return_value = None
 
             # Call the method and expect ValueError
-            with pytest.raises(ValueError, match="Tournament 1 not found"):
-                ClassificationService.update_tournament_classification(1)
+            with pytest.raises(ValueError, match="Campionato 1 not found"):
+                ClassificationService.update_campionato_classification(1)
 
-    def test_get_tournament_standings(self):
-        """Test getting tournament standings."""
+    def test_get_campionato_standings(self):
+        """Test getting campionato standings."""
         mock_classifications = [Mock(), Mock(), Mock()]
 
         # Patch the specific method at the correct location
@@ -188,32 +188,32 @@ class TestClassificationService:
             mock_options.order_by.return_value = mock_order_by
             mock_order_by.all.return_value = mock_classifications
 
-            result = ClassificationService.get_tournament_standings(1)
+            result = ClassificationService.get_campionato_standings(1)
 
             # Check the result
             assert len(result) == 3
             # Verify the filter_by was called with correct arguments
-            mock_query_instance.filter_by.assert_called_once_with(tournament_id=1)
+            mock_query_instance.filter_by.assert_called_once_with(campionato_id=1)
 
     def test_get_player_statistics_summary_no_standings(self):
         """Test getting player statistics summary with no standings."""
         with patch.object(
-            ClassificationService, "get_tournament_standings", return_value=[]
+            ClassificationService, "get_campionato_standings", return_value=[]
         ) as mock_get_standings:
             result = ClassificationService.get_player_statistics_summary(1)
 
             assert result["total_players"] == 0
             assert result["completed"] is False
 
-    def test_invalidate_tournament_cache(self):
-        """Test invalidating tournament cache."""
+    def test_invalidate_campionato_cache(self):
+        """Test invalidating campionato cache."""
         with patch(
             "models.classification.services.cache_manager"
         ) as mock_cache_manager:
-            ClassificationService.invalidate_tournament_cache(1)
+            ClassificationService.invalidate_campionato_cache(1)
 
             mock_cache_manager.invalidate_by_tags.assert_called_once_with(
-                ["tournament:1"]
+                ["campionato:1"]
             )
 
     def test_get_player_statistics_summary_with_standings(self):
@@ -237,7 +237,7 @@ class TestClassificationService:
         mock_standings = [mock_classification1, mock_classification2]
 
         with patch(
-            "models.classification.services.ClassificationService.get_tournament_standings"
+            "models.classification.services.ClassificationService.get_campionato_standings"
         ) as mock_get_standings:
             mock_get_standings.return_value = mock_standings
 
@@ -254,7 +254,7 @@ class TestClassificationService:
     def test_get_player_statistics_summary_no_standings(self):
         """Test getting player statistics summary with no standings."""
         with patch.object(
-            ClassificationService, "get_tournament_standings"
+            ClassificationService, "get_campionato_standings"
         ) as mock_get_standings:
             mock_get_standings.return_value = []
 
@@ -286,7 +286,7 @@ class TestRoundClassificationService:
             result = RoundClassificationService.get_round_standings(1, 2)
 
             assert result == mock_classifications
-            mock_query.filter_by.assert_called_once_with(prova_id=1, round_number=2)
+            mock_query.filter_by.assert_called_once_with(gara_id=1, round_number=2)
 
     def test_get_player_progression(self):
         """Test getting player progression."""
@@ -305,7 +305,7 @@ class TestRoundClassificationService:
             result = RoundClassificationService.get_player_progression(1, 1)
 
             assert result == mock_classifications
-            mock_query.filter_by.assert_called_once_with(prova_id=1, user_id=1)
+            mock_query.filter_by.assert_called_once_with(gara_id=1, user_id=1)
 
     def test_calculate_and_save_round_classification(self):
         """Test calculating and saving round classification."""
@@ -398,7 +398,7 @@ class TestPlayerEncounterService:
         mock_match = Mock()
         mock_match.is_bye = False
         mock_match.player2_id = 2
-        mock_match.prova_id = 1
+        mock_match.gara_id = 1
         mock_match.player1_id = 1
         mock_match.round_number = 1
 
@@ -408,7 +408,7 @@ class TestPlayerEncounterService:
             PlayerEncounterService.record_match_encounters(mock_match)
 
             mock_player_encounter.record_encounter.assert_called_once_with(
-                prova_id=1, player1_id=1, player2_id=2, round_number=1
+                gara_id=1, player1_id=1, player2_id=2, round_number=1
             )
 
     def test_get_encounter_matrix(self):

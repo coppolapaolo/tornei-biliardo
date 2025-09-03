@@ -41,28 +41,28 @@ class TestAdminRoutesSmokeTests:
         # Let's check what we actually get and handle it appropriately
         assert response.status_code in [200, 302, 403]
 
-    def test_tournament_routes_accessible(self, client, admin_user):
-        """Test that tournament management routes are accessible."""
+    def test_campionato_routes_accessible(self, client, admin_user):
+        """Test that campionato management routes are accessible."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
             sess["_fresh"] = True
 
-        # Test tournament creation endpoint exists
+        # Test campionato creation endpoint exists
         response = client.post(
-            "/admin/tournament/create", data={"name": "Test Tournament"}
+            "/admin/campionato/create", data={"name": "Test Campionato"}
         )
         # Should not be 404 (route exists) or 500 (blueprint error)
         assert response.status_code != 404
         assert response.status_code != 500
 
     def test_competition_routes_accessible(self, client, admin_user):
-        """Test that competition (prova) management routes are accessible."""
+        """Test that competition (gara) management routes are accessible."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
             sess["_fresh"] = True
 
-        # Test prova creation endpoint exists
-        response = client.get("/admin/prova/create_standalone")
+        # Test gara creation endpoint exists
+        response = client.get("/admin/gara/create_standalone")
         # Should not be 404 (route exists) or 500 (blueprint error)
         assert response.status_code != 404
         assert response.status_code != 500
@@ -107,8 +107,8 @@ class TestAdminRoutesSmokeTests:
                 # Test that URL generation works for all major admin routes
                 urls_to_test = [
                     ("admin.dashboard.dashboard",),
-                    ("admin.tournament.create_tournament",),
-                    ("admin.competition.create_prova_standalone",),
+                    ("admin.campionato.create_campionato",),
+                    ("admin.competition.create_gara_standalone",),
                     ("admin.user.users_list",),
                     ("admin.user.director_requests",),
                 ]
@@ -128,7 +128,7 @@ class TestAdminRoutesSmokeTests:
 
         expected_files = [
             "__init__.py",
-            "tournament.py",
+            "campionato.py",
             "competition.py",
             "match.py",
             "user.py",
@@ -144,7 +144,7 @@ class TestAdminRoutesSmokeTests:
         try:
             # This should not raise any import errors
             from routes.admin import admin_bp
-            from routes.admin.tournament import tournament_bp
+            from routes.admin.campionato import campionato_bp
             from routes.admin.competition import competition_bp
             from routes.admin.match import match_bp
             from routes.admin.user import user_bp
@@ -152,7 +152,7 @@ class TestAdminRoutesSmokeTests:
 
             # Verify blueprints are properly initialized
             assert admin_bp.name == "admin"
-            assert tournament_bp.name == "tournament"
+            assert campionato_bp.name == "campionato"
             assert competition_bp.name == "competition"
             assert match_bp.name == "match"
             assert user_bp.name == "user"
@@ -177,24 +177,24 @@ def admin_user(db_session):
 @pytest.fixture
 def sample_match(db_session, admin_user):
     """Create a sample match for testing."""
-    from models import Tournament, Prova, Match
+    from models import Campionato, Gara, Match
     from datetime import date
 
     # Create test data
-    tournament = Tournament(name="Test Tournament", is_active=True)
-    db_session.add(tournament)
+    campionato = Campionato(name="Test Campionato", is_active=True)
+    db_session.add(campionato)
     db_session.flush()
 
-    prova = Prova(
-        tournament_id=tournament.id,
+    gara = Gara(
+        campionato_id=campionato.id,
         number=1,
-        name="Test Prova",
+        name="Test Gara",
         date=date.today(),
         discipline="9-ball",
         distance=5,
         rounds_count=3,
     )
-    db_session.add(prova)
+    db_session.add(gara)
     db_session.flush()
 
     # Create test players
@@ -206,7 +206,7 @@ def sample_match(db_session, admin_user):
     db_session.flush()
 
     match = Match(
-        prova_id=prova.id, player1_id=player1.id, player2_id=player2.id, round_number=1
+        gara_id=gara.id, player1_id=player1.id, player2_id=player2.id, round_number=1
     )
     db_session.add(match)
     db_session.commit()

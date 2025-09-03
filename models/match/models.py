@@ -19,8 +19,8 @@ class Match(db.Model):
     __tablename__ = "match"
 
     id = db.Column(db.Integer, primary_key=True)
-    prova_id = db.Column(
-        db.Integer, db.ForeignKey("prova.id", ondelete="CASCADE"), nullable=False
+    gara_id = db.Column(
+        db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
     )
     round_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3
 
@@ -355,34 +355,34 @@ class Match(db.Model):
             "sets": sets_summary,
         }
 
-    def _check_and_complete_prova_if_needed(self, match_obj):
-        """Controlla se tutti i match della prova sono completati e completa automaticamente la prova"""
+    def _check_and_complete_gara_if_needed(self, match_obj):
+        """Controlla se tutti i match della gara sono completati e completa automaticamente la gara"""
         try:
-            from models.competition.services import ProvaService
-            from models.competition.models import Prova
-            from models.status_enum import ProvaStatus
+            from models.competition.services import GaraService
+            from models.competition.models import Gara
+            from models.status_enum import GaraStatus
             
-            if not match_obj.prova_id:
+            if not match_obj.gara_id:
                 return
             
-            prova = db.session.get(Prova, match_obj.prova_id)
-            if not prova or prova.status != ProvaStatus.PLAYING.value:
+            gara = db.session.get(Gara, match_obj.gara_id)
+            if not gara or gara.status != GaraStatus.PLAYING.value:
                 return
             
-            # Controlla se tutti i match della prova sono completati
-            all_matches = db.session.query(Match).filter_by(prova_id=prova.id).all()
+            # Controlla se tutti i match della gara sono completati
+            all_matches = db.session.query(Match).filter_by(gara_id=gara.id).all()
             completed_matches = [m for m in all_matches if m.status == 'completed']
             
-            # Se tutti i match sono completati e abbiamo finito tutti i round, completa la prova
+            # Se tutti i match sono completati e abbiamo finito tutti i round, completa la gara
             if (len(completed_matches) == len(all_matches) and 
-                prova.current_round >= prova.rounds_count):
+                gara.current_round >= gara.rounds_count):
                 
-                ProvaService.complete(prova.id)
-                print(f"Prova {prova.id} automaticamente completata dopo il completamento dell'ultimo match")
+                GaraService.complete(gara.id)
+                print(f"Gara {gara.id} automaticamente completata dopo il completamento dell'ultimo match")
                 
         except Exception as e:
             # Log l'errore ma non bloccare il completamento del match
-            print(f"Errore nel completamento automatico della prova: {e}")
+            print(f"Errore nel completamento automatico della gara: {e}")
 
 
 class Rack(db.Model):
@@ -539,8 +539,8 @@ class TrioMatch(db.Model):
                 match_obj.player1_score = self.player1_racks
                 match_obj.player2_score = self.player2_racks
                 
-                # Controlla se tutti i match della prova sono completati e completa automaticamente la prova
-                match_obj._check_and_complete_prova_if_needed(match_obj)
+                # Controlla se tutti i match della gara sono completati e completa automaticamente la gara
+                match_obj._check_and_complete_gara_if_needed(match_obj)
 
         # Ruota i giocatori per il prossimo rack
         self._rotate_players()

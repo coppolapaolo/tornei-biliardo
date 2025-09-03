@@ -7,15 +7,15 @@
 {% include "components/_player_dashboard_content.html" %}
 {% endblock %}
 
-{% if vm.caps and vm.caps.can_create_tournament %}
-  {% include "components/_tournament_create_modal.html" %}
+{% if vm.caps and vm.caps.can_create_campionato %}
+  {% include "components/_campionato_create_modal.html" %}
 {% endif %}
 
 {% block scripts %}
 <script>
 function unsubscribeFromProva(provaId, provaNumber) {
-  if (confirm(`Sei sicuro di volerti disiscrivere dalla Prova ${provaNumber}?`)) {
-    fetch(`/player/prova/${provaId}/unsubscribe`, {
+  if (confirm(`Sei sicuro di volerti disiscrivere dalla Gara ${provaNumber}?`)) {
+    fetch(`/player/gara/${provaId}/unsubscribe`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'}
     }).then(r => { if (r.ok) location.reload(); else alert('Errore durante la disiscrizione'); })

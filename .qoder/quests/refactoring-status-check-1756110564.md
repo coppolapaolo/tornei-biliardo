@@ -1,10 +1,10 @@
-# Refactoring Status Check and Continuation Plan for Tornei Biliardo
+# Refactoring Status Check and Continuation Plan for Campionati Biliardo
 
 ## 1. Overview
 
-This document analyzes the current status of the refactoring efforts for the Tornei Biliardo web application based on the provided documentation and codebase. The refactoring follows a comprehensive roadmap defined in ADR-0001 with a 5-milestone approach to address technical debt and establish a maintainable architecture based on Domain-Driven Design principles.
+This document analyzes the current status of the refactoring efforts for the Campionati Biliardo web application based on the provided documentation and codebase. The refactoring follows a comprehensive roadmap defined in ADR-0001 with a 5-milestone approach to address technical debt and establish a maintainable architecture based on Domain-Driven Design principles.
 
-The application allows organizing billiards tournaments with features for player registration, match scheduling, result tracking, and standings calculation. It supports multiple user roles (admin, director, player) and implements the Amalfi algorithm for automatic player pairing.
+The application allows organizing billiards campionati with features for player registration, match scheduling, result tracking, and standings calculation. It supports multiple user roles (admin, director, player) and implements the Amalfi algorithm for automatic player pairing.
 
 ## 2. Current Refactoring Status
 
@@ -13,12 +13,12 @@ The application allows organizing billiards tournaments with features for player
 #### Milestone 1: Route Blueprint Decomposition ✅ COMPLETE
 The monolithic `routes/admin.py` file (1,442 lines) has been successfully decomposed into domain-specific Flask Blueprints:
 
-1. **Tournament Domain** (`routes/admin/tournament.py`) - 204 lines
-   - Tournament lifecycle management (CRUD, activation, director management)
-   - 8 endpoints covering tournament operations
+1. **Campionato Domain** (`routes/admin/campionato.py`) - 204 lines
+   - Campionato lifecycle management (CRUD, activation, director management)
+   - 8 endpoints covering campionato operations
 
 2. **Competition Domain** (`routes/admin/competition.py`) - 605 lines
-   - Prova (competition) management, Amalfi system, trio matches
+   - Gara (competition) management, Amalfi system, trio matches
    - 15+ endpoints covering creation, configuration, Amalfi algorithm
 
 3. **Match Domain** (`routes/admin/match.py`) - 282 lines
@@ -55,10 +55,10 @@ The monolithic `routes/admin.py` file (1,442 lines) has been successfully decomp
 - Eliminate all `db.session` usage from routes
 
 #### Milestone 4: Scoring Strategy Pattern ⏳ PLANNED
-**Objective**: Implement configurable scoring policies for tournaments
+**Objective**: Implement configurable scoring policies for campionati
 - Define `ScoringPolicy` interface
 - Implement multiple scoring strategies
-- Enable per-tournament scoring configuration
+- Enable per-campionato scoring configuration
 
 #### Milestone 5: Core Cleanup & Shared Utilities ⏳ PLANNED
 **Objective**: Centralize shared concerns and eliminate code duplication
@@ -91,8 +91,8 @@ The application now follows a clean layered architecture:
 The codebase is organized into feature-based modules under the `models` directory, representing distinct bounded contexts:
 
 1. **User Domain**: Manages user accounts, authentication, and role-based access control
-2. **Tournament Domain**: Handles tournament configuration and lifecycle management
-3. **Competition Domain**: Manages individual tournament events (referred to as "prova" in Italian)
+2. **Campionato Domain**: Handles campionato configuration and lifecycle management
+3. **Competition Domain**: Manages individual campionato events (referred to as "gara" in Italian)
 4. **Match Domain**: Tracks matches, results, and scoring details
 5. **Classification Domain**: Calculates and maintains player standings
 6. **Matchmaking Domain**: Implements pairing algorithms including Amalfi
@@ -105,11 +105,11 @@ The codebase is organized into feature-based modules under the `models` director
 The service layer has been partially implemented with domain-specific services:
 
 - **UserService**: Core user management operations with transaction management
-- **TournamentService**: Tournament lifecycle management
-- **ProvaService**: Competition management with state machine for status transitions
+- **TournamentService**: Campionato lifecycle management
+- **GaraService**: Competition management with state machine for status transitions
 - **MatchService**: Match management with state machine facade
 - **RackService**: Rack management with business logic
-- **ClassificationService**: Tournament standings calculation with caching
+- **ClassificationService**: Campionato standings calculation with caching
 - **MatchmakingOrchestrator**: Advanced cross-domain matchmaking operations
 
 ### 3.4 Blueprint Structure
@@ -120,8 +120,8 @@ The route structure has been successfully refactored:
 routes/
 ├── admin/
 │   ├── __init__.py           # Blueprint registration and URL mapping
-│   ├── tournament.py         # Tournament management endpoints
-│   ├── competition.py        # Prova/competition management  
+│   ├── campionato.py         # Campionato management endpoints
+│   ├── competition.py        # Gara/competition management  
 │   ├── match.py             # Match and result management
 │   ├── user.py              # User administration
 │   └── dashboard.py         # Admin dashboard views
@@ -187,7 +187,7 @@ routes/
 1. **Strategy Pattern Implementation** (Milestone 4)
    - Define scoring policy interface
    - Implement multiple scoring strategies
-   - Enable per-tournament configuration
+   - Enable per-campionato configuration
 
 2. **Error Handling Unification** (Milestone 5)
    - Centralize exception handling
@@ -266,7 +266,7 @@ Each milestone must meet strict quality criteria:
 
 ## 9. Conclusion
 
-The refactoring of the Tornei Biliardo application is approximately 20% complete, with Milestone 1 (Route Blueprint Decomposition) successfully finished. The foundation for a clean, maintainable architecture has been established, with clear domain separation and preserved functionality.
+The refactoring of the Campionati Biliardo application is approximately 20% complete, with Milestone 1 (Route Blueprint Decomposition) successfully finished. The foundation for a clean, maintainable architecture has been established, with clear domain separation and preserved functionality.
 
 To complete the refactoring and achieve the full benefits outlined in ADR-0001, the next steps should focus on template componentization, service layer completion, and comprehensive test coverage expansion. With proper execution of the outlined roadmap, the application will achieve:
 

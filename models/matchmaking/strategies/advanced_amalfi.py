@@ -3,7 +3,7 @@ from typing import Sequence, Dict, Any, List, Optional
 from dataclasses import dataclass
 
 from .base import BaseStrategy, Pairing, ValidationResult
-from models.competition.models import Prova
+from models.competition.models import Gara
 from models.challenge.models import Challenge
 from models.classification.models import RoundClassification
 from models.matchmaking.strategies.amalfi_adapter import AmalfiStrategy
@@ -40,16 +40,16 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         self._base_strategy = base_amalfi_strategy
         self._options = AdvancedPairingOptions()
 
-    def validate(self, prova: object) -> ValidationResult:
-        """Validate prova for advanced Amalfi strategy."""
-        # Cast to Prova for type safety
-        prova_obj: Prova = prova  # type: ignore
+    def validate(self, gara: object) -> ValidationResult:
+        """Validate gara for advanced Amalfi strategy."""
+        # Cast to Gara for type safety
+        gara_obj: Gara = gara  # type: ignore
 
         # Use base strategy validation
-        base_result = self._base_strategy.validate(prova)
+        base_result = self._base_strategy.validate(gara)
 
         # Get strategy-specific validation
-        strategy_validation = self._validate_strategy_specific(prova_obj)
+        strategy_validation = self._validate_strategy_specific(gara_obj)
 
         # Combine results
         all_errors = list(base_result.errors) + strategy_validation.get("errors", [])
@@ -65,22 +65,22 @@ class AdvancedAmalfiStrategy(BaseStrategy):
                 warnings=all_warnings,
             )
 
-    def _validate_strategy_specific(self, prova: object) -> Dict[str, List[str]]:
-        """Validate prova for advanced Amalfi strategy."""
-        # Cast to Prova for type safety
-        prova_obj: Prova = prova  # type: ignore
+    def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
+        """Validate gara for advanced Amalfi strategy."""
+        # Cast to Gara for type safety
+        gara_obj: Gara = gara  # type: ignore
 
         errors = []
         warnings = []
 
         # Use base validation first
-        base_validation = self._base_strategy.validate(prova)
+        base_validation = self._base_strategy.validate(gara)
         if not base_validation.ok:
             errors.extend(base_validation.errors)
             warnings.extend(base_validation.warnings)
 
         # Additional validations for advanced features
-        if self._options.allow_trio_matches and prova_obj.without_x:
+        if self._options.allow_trio_matches and gara_obj.without_x:
             warnings.append("Trio matches enabled with 'without X' mode - may conflict")
 
         return {"errors": errors, "warnings": warnings}
@@ -92,7 +92,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         preview_mode: bool = True,
     ) -> Sequence[Pairing]:
         """Generate advanced pairings with X-replacement and trio support."""
-        prova: Prova = processed_data["prova"]
+        gara: Gara = processed_data["gara"]
 
         # Get base Amalfi pairings
         base_pairings = self._base_strategy._generate_pairings(
@@ -110,7 +110,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             ):
                 # Try to replace X with alternative
                 replacement = self._generate_x_replacement(
-                    prova, pairing.player1_id, round_number, preview_mode
+                    gara, pairing.player1_id, round_number, preview_mode
                 )
                 if replacement:
                     enhanced_pairings.append(replacement)
@@ -118,7 +118,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
                     enhanced_pairings.append(pairing)
             elif len(pairing.players) > 2 and self._options.allow_trio_matches:
                 # Handle trio matches
-                trio_pairing = self._enhance_trio_match(pairing, prova, round_number)
+                trio_pairing = self._enhance_trio_match(pairing, gara, round_number)
                 enhanced_pairings.append(trio_pairing)
             else:
                 enhanced_pairings.append(pairing)
@@ -126,14 +126,14 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return enhanced_pairings
 
     def _generate_x_replacement(
-        self, prova: Prova, player_id: int, round_number: int, preview_mode: bool
+        self, gara: Gara, player_id: int, round_number: int, preview_mode: bool
     ) -> Optional[Pairing]:
         """Generate X replacement using challenges or individual matches."""
 
         # Try challenge-based replacement first
         if self._options.use_challenges_for_x:
             challenge_replacement = self._try_challenge_replacement(
-                prova, player_id, round_number, preview_mode
+                gara, player_id, round_number, preview_mode
             )
             if challenge_replacement:
                 return challenge_replacement
@@ -141,7 +141,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         # Try individual match replacement
         if self._options.use_individual_matches_for_x:
             individual_replacement = self._try_individual_match_replacement(
-                prova, player_id, round_number, preview_mode
+                gara, player_id, round_number, preview_mode
             )
             if individual_replacement:
                 return individual_replacement
@@ -149,11 +149,11 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return None
 
     def _try_challenge_replacement(
-        self, prova: Prova, player_id: int, round_number: int, preview_mode: bool
+        self, gara: Gara, player_id: int, round_number: int, preview_mode: bool
     ) -> Optional[Pairing]:
         """Try to replace X with a challenge."""
         # Find suitable challenge for this player
-        suitable_challenge = self._find_suitable_challenge(prova, player_id)
+        suitable_challenge = self._find_suitable_challenge(gara, player_id)
 
         if suitable_challenge:
             # Create a "challenge pairing" that will be handled specially
@@ -171,11 +171,11 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return None
 
     def _try_individual_match_replacement(
-        self, prova: Prova, player_id: int, round_number: int, preview_mode: bool
+        self, gara: Gara, player_id: int, round_number: int, preview_mode: bool
     ) -> Optional[Pairing]:
         """Try to replace X with an individual match."""
         # Find suitable opponent for individual match
-        suitable_opponent = self._find_suitable_opponent(prova, player_id, round_number)
+        suitable_opponent = self._find_suitable_opponent(gara, player_id, round_number)
 
         if suitable_opponent:
             # Create individual match pairing
@@ -193,7 +193,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return None
 
     def _enhance_trio_match(
-        self, pairing: Pairing, prova: Prova, round_number: int
+        self, pairing: Pairing, gara: Gara, round_number: int
     ) -> Pairing:
         """Enhance trio match with additional metadata."""
         # Add trio-specific metadata
@@ -209,16 +209,16 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return trio_pairing
 
     def _find_suitable_challenge(
-        self, prova: Prova, player_id: int
+        self, gara: Gara, player_id: int
     ) -> Optional[Challenge]:
         """Find a suitable challenge for X replacement."""
-        # Look for challenges that are appropriate for this player and prova
+        # Look for challenges that are appropriate for this player and gara
         from models.challenge.services import ChallengeService
 
         try:
             # Get challenges suitable for X replacement
             suitable_challenge = ChallengeService.get_challenge_for_x_replacement(
-                prova.id
+                gara.id
             )
 
             return suitable_challenge
@@ -229,11 +229,11 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return None
 
     def _find_suitable_opponent(
-        self, prova: Prova, player_id: int, round_number: int
+        self, gara: Gara, player_id: int, round_number: int
     ) -> Optional[int]:
         """Find a suitable opponent for individual match replacement."""
         # Get players who also have bye or are available
-        active_players = self._get_active_players(prova)
+        active_players = self._get_active_players(gara)
 
         # Exclude current player
         other_players = [p for p in active_players if p != player_id]
@@ -244,7 +244,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         # Try to find player with similar ranking
         if round_number > 1:
             similar_ranked = self._find_similar_ranked_player(
-                player_id, other_players, prova.id, round_number
+                player_id, other_players, gara.id, round_number
             )
             if similar_ranked:
                 return similar_ranked
@@ -252,10 +252,10 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         # Return first available player
         return other_players[0] if other_players else None
 
-    def _get_active_players(self, prova: Prova) -> List[int]:
+    def _get_active_players(self, gara: Gara) -> List[int]:
         """Get list of active player IDs."""
         # Handle the relationship properly
-        inscriptions = getattr(prova, "inscriptions", [])
+        inscriptions = getattr(gara, "inscriptions", [])
         if not inscriptions:
             return []
 
@@ -271,13 +271,13 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             return []
 
     def _find_similar_ranked_player(
-        self, player_id: int, candidate_ids: List[int], prova_id: int, round_number: int
+        self, player_id: int, candidate_ids: List[int], gara_id: int, round_number: int
     ) -> Optional[int]:
         """Find player with similar ranking."""
         try:
             # Get current round classifications
             classifications = RoundClassification.query.filter_by(
-                prova_id=prova_id, round_number=round_number - 1
+                gara_id=gara_id, round_number=round_number - 1
             ).all()
 
             # Create position mapping
@@ -302,44 +302,44 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             return None
 
     def _apply_side_effects(
-        self, pairings: Sequence[Pairing], prova: object, round_number: int
+        self, pairings: Sequence[Pairing], gara: object, round_number: int
     ) -> None:
         """Apply side effects for advanced pairings."""
-        # Cast to Prova for type safety
-        prova_obj: Prova = prova  # type: ignore
+        # Cast to Gara for type safety
+        gara_obj: Gara = gara  # type: ignore
 
         # Let base strategy handle standard side effects
-        self._base_strategy._apply_side_effects(pairings, prova, round_number)
+        self._base_strategy._apply_side_effects(pairings, gara, round_number)
 
         # Apply additional side effects for advanced features
         for pairing in pairings:
             if "Challenge:" in (pairing.notes or ""):
                 # Record challenge assignment
-                self._record_challenge_assignment(prova_obj, pairing, round_number)
+                self._record_challenge_assignment(gara_obj, pairing, round_number)
             elif "Individual match" in (pairing.notes or ""):
                 # Record individual match intention
                 self._record_individual_match_intention(
-                    prova_obj, pairing, round_number
+                    gara_obj, pairing, round_number
                 )
 
     def _record_challenge_assignment(
-        self, prova: Prova, pairing: Pairing, round_number: int
+        self, gara: Gara, pairing: Pairing, round_number: int
     ) -> None:
         """Record challenge assignment for X replacement."""
         # This would typically update some tracking system
 
     def _record_individual_match_intention(
-        self, prova: Prova, pairing: Pairing, round_number: int
+        self, gara: Gara, pairing: Pairing, round_number: int
     ) -> None:
         """Record intention to create individual match for X replacement."""
         # This would typically update some tracking system
 
     def _postprocess_pairings(
-        self, pairings: Sequence[Pairing], prova: object, round_number: int
+        self, pairings: Sequence[Pairing], gara: object, round_number: int
     ) -> Sequence[Pairing]:
         """Postprocess pairings with quality improvements."""
-        # Cast to Prova for type safety
-        prova_obj: Prova = prova  # type: ignore
+        # Cast to Gara for type safety
+        gara_obj: Gara = gara  # type: ignore
 
         # Apply anti-rematch logic to improve pairing quality
         enhanced_pairings = []
@@ -348,7 +348,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             if not pairing.is_bye and len(pairing.players) >= 2:
                 # Calculate enhanced quality based on anti-rematch
                 quality = self._calculate_enhanced_pairing_quality(
-                    pairing, prova_obj, round_number
+                    pairing, gara_obj, round_number
                 )
 
                 enhanced_pairing = Pairing(
@@ -367,7 +367,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
         return enhanced_pairings
 
     def _calculate_enhanced_pairing_quality(
-        self, pairing: Pairing, prova: Prova, round_number: int
+        self, pairing: Pairing, gara: Gara, round_number: int
     ) -> float:
         """Calculate enhanced pairing quality with anti-rematch consideration."""
         base_quality = pairing.pairing_quality or 0.5
@@ -377,7 +377,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
 
         if len(pairing.players) >= 2:
             player1_id, player2_id = pairing.players[0], pairing.players[1]
-            have_played = PlayerEncounter.have_played(prova.id, player1_id, player2_id)
+            have_played = PlayerEncounter.have_played(gara.id, player1_id, player2_id)
 
             if have_played:
                 # Reduce quality for rematch

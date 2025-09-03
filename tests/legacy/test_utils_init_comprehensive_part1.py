@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 # Import functions to test
 from utils import (
-    prova_manager_required,
+    gara_manager_required,
     match_manager_required,
     UserPermissions,
     player_only,
@@ -31,14 +31,14 @@ def mock_user():
 
 
 class TestProvaManagerRequired:
-    """Test prova_manager_required decorator implementation."""
+    """Test gara_manager_required decorator implementation."""
 
-    def test_prova_manager_required_decorator_exists(self):
-        """Test that prova_manager_required decorator exists and is callable."""
-        assert callable(prova_manager_required)
+    def test_gara_manager_required_decorator_exists(self):
+        """Test that gara_manager_required decorator exists and is callable."""
+        assert callable(gara_manager_required)
 
         # Test that it can decorate a function
-        @prova_manager_required
+        @gara_manager_required
         def test_function():
             return "success"
 
@@ -63,30 +63,30 @@ class TestMatchManagerRequired:
 class TestUserPermissionsImplementation:
     """Test UserPermissions static methods implementation."""
 
-    def test_can_inscribe_to_prova_authenticated_player(self):
-        """Test can_inscribe_to_prova for authenticated non-admin."""
+    def test_can_inscribe_to_gara_authenticated_player(self):
+        """Test can_inscribe_to_gara for authenticated non-admin."""
         with patch("utils.current_user") as mock_user:
             mock_user.is_authenticated = True
             mock_user.is_admin = False
 
-            result = UserPermissions.can_inscribe_to_prova()
+            result = UserPermissions.can_inscribe_to_gara()
             assert result is True
 
-    def test_can_inscribe_to_prova_admin(self):
-        """Test can_inscribe_to_prova for admin."""
+    def test_can_inscribe_to_gara_admin(self):
+        """Test can_inscribe_to_gara for admin."""
         with patch("utils.current_user") as mock_user:
             mock_user.is_authenticated = True
             mock_user.is_admin = True
 
-            result = UserPermissions.can_inscribe_to_prova()
+            result = UserPermissions.can_inscribe_to_gara()
             assert result is False
 
-    def test_can_inscribe_to_prova_unauthenticated(self):
-        """Test can_inscribe_to_prova for unauthenticated user."""
+    def test_can_inscribe_to_gara_unauthenticated(self):
+        """Test can_inscribe_to_gara for unauthenticated user."""
         with patch("utils.current_user") as mock_user:
             mock_user.is_authenticated = False
 
-            result = UserPermissions.can_inscribe_to_prova()
+            result = UserPermissions.can_inscribe_to_gara()
             assert result is False
 
     def test_can_view_profile_variations(self):
@@ -210,8 +210,8 @@ class TestPlayerOnlyDecorator:
 class TestPlayerRequiredDecorator:
     """Test player_required decorator implementation."""
 
-    def test_player_required_missing_prova_id(self):
-        """Test player_required when prova_id is missing."""
+    def test_player_required_missing_gara_id(self):
+        """Test player_required when gara_id is missing."""
         with patch("utils.abort") as mock_abort:
 
             @player_required
@@ -234,13 +234,13 @@ class TestPlayerRequiredDecorator:
             )
 
             @player_required
-            def test_function(prova_id=1):
+            def test_function(gara_id=1):
                 return "success"
 
-            result = test_function(prova_id=1)
+            result = test_function(gara_id=1)
             assert result == "success"
             mock_inscription.query.filter_by.assert_called_once_with(
-                user_id=1, prova_id=1
+                user_id=1, gara_id=1
             )
 
     def test_player_required_not_enrolled(self):
@@ -259,13 +259,13 @@ class TestPlayerRequiredDecorator:
             mock_redirect.return_value = "redirect_response"
 
             @player_required
-            def test_function(prova_id=1):
+            def test_function(gara_id=1):
                 return "success"
 
-            result = test_function(prova_id=1)
+            result = test_function(gara_id=1)
             assert result == "redirect_response"
             mock_flash.assert_called_once_with(
-                "Non sei iscritto a questa prova.", "error"
+                "Non sei iscritto a questa gara.", "error"
             )
 
 

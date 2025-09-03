@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Modifica Gara {{ gara.number }} - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Modifica Gara {{ gara.number }}</h1>
+        <p class="text-muted mb-0">{{ gara.campionato.name }}</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Annulla
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        {% include "components/_gara_edit_form.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Aggiorna il testo della modalità di gioco e gestisce l'abilitazione
+document.addEventListener('DOMContentLoaded', function() {
+    const distanceInput = document.getElementById('distance');
+    const exactNumberCheck = document.getElementById('exact_number');
+    const gameModeText = document.getElementById('game-mode-text');
+    
+    function updateGameModeText() {
+        const distance = parseInt(distanceInput.value) || 7;
+        const isExactNumber = exactNumberCheck.checked;
+        const isDistanceOdd = distance % 2 === 1;
+        
+        // Abilita/disabilita la checkbox in base al numero di rack
+        if (isDistanceOdd && distance > 1) {
+            exactNumberCheck.disabled = false;
+            exactNumberCheck.parentElement.parentElement.style.opacity = '1';
+        } else {
+            exactNumberCheck.disabled = true;
+            exactNumberCheck.checked = false;
+            exactNumberCheck.parentElement.parentElement.style.opacity = '0.5';
+        }
+        
+        if (isExactNumber && !exactNumberCheck.disabled) {
+            gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
+        } else {
+            const winScore = Math.floor(distance / 2) + 1;
+            gameModeText.textContent = 'Al meglio di ' + distance + ' (vince con ' + winScore + ')';
+        }
+    }
+    
+    if (distanceInput && exactNumberCheck && gameModeText) {
+        distanceInput.addEventListener('input', updateGameModeText);
+        exactNumberCheck.addEventListener('change', updateGameModeText);
+        updateGameModeText(); // Iniziale
+    }
+});
+</script>
+{% endblock %}

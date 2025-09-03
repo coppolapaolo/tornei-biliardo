@@ -9,11 +9,11 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
 from models.base import db
-from models.tournament.models import Tournament, TournamentDirector
-from models.competition.models import Prova, Inscription
+from models.campionato.models import Campionato, TournamentDirector
+from models.competition.models import Gara, Inscription
 from models.match.models import Match as TournamentMatch
 from models.user.models import User
-from models.status_enum import ProvaStatus
+from models.status_enum import GaraStatus
 
 
 # -----------------------
@@ -70,7 +70,7 @@ def _compute_user_stats(user_id: int) -> dict[str, Any]:
 # -----------------------
 @dataclass
 class CapabilityVM:
-    can_create_tournament: bool = False
+    can_create_campionato: bool = False
     can_create_standalone: bool = False
     can_register_self: bool = True  # gli admin in genere no
 
@@ -79,25 +79,25 @@ class CapabilityVM:
 class DashboardVM:
     # comuni
     title: str
-    tournaments: List[Tournament]
+    campionati: List[Campionato]
     caps: CapabilityVM
 
     # selezione
-    selected_tournament: Optional[Tournament] = None
-    selected_prova: Optional[Prova] = None
+    selected_campionato: Optional[Campionato] = None
+    selected_gara: Optional[Gara] = None
     selector_items: Optional[
         List[dict]
     ] = None  # [{"kind":"t"|"p","id":int,"label":str,"selected":bool}]
 
     # sezioni admin/director
-    standalone_provas: Optional[List[Prova]] = None  # standalone che GESTISCO
+    standalone_garas: Optional[List[Gara]] = None  # standalone che GESTISCO
 
     # sezioni player-like
-    available_provas: Optional[
-        List[Prova]
-    ] = None  # prove del torneo selezionato con iscrizioni aperte
+    available_garas: Optional[
+        List[Gara]
+    ] = None  # gare del campionato selezionato con iscrizioni aperte
     standalone_available: Optional[
-        List[Prova]
+        List[Gara]
     ] = None  # standalone aperte (come giocatore)
     my_inscriptions: Optional[List[Inscription]] = None
     my_standalone_inscriptions: Optional[List[Inscription]] = None
@@ -107,7 +107,7 @@ class DashboardVM:
 
     # extra
     user_stats: Optional[dict[str, Any]] = None
-    managed_tournaments: Optional[List[Tournament]] = None
+    managed_campionatos: Optional[List[Campionato]] = None
     can_manage_directors: bool = False
     debug_mode: bool = False
 
@@ -127,101 +127,101 @@ class DashboardService:
 
     # ---- query helpers ------------------------------------------------
     @staticmethod
-    def _tournaments_q():
+    def _campionatos_q():
         # joinedload per poter calcolare la prima data utile nel selector
         return (
-            db.session.query(Tournament)
-            .options(joinedload(getattr(Tournament, "provas")))
-            .order_by(Tournament.created_at.desc())
+            db.session.query(Campionato)
+            .options(joinedload(getattr(Campionato, "provas")))
+            .order_by(Campionato.created_at.desc())
         )
 
     @staticmethod
-    def _managed_tournaments_q(user_id: int):
+    def _managed_campionatos_q(user_id: int):
         return (
-            db.session.query(Tournament)
-            .join(TournamentDirector, TournamentDirector.tournament_id == Tournament.id)
+            db.session.query(Campionato)
+            .join(TournamentDirector, TournamentDirector.campionato_id == Campionato.id)
             .filter(TournamentDirector.user_id == user_id)
-            .options(joinedload(getattr(Tournament, "provas")))
-            .order_by(Tournament.created_at.desc())
+            .options(joinedload(getattr(Campionato, "provas")))
+            .order_by(Campionato.created_at.desc())
         )
 
     @staticmethod
     def _standalone_q():
-        # NIENTE soft-delete su Prova (non previsto ad oggi)
+        # NIENTE soft-delete su Gara (non previsto ad oggi)
         return (
-            db.session.query(Prova)
-            .filter(Prova.tournament_id.is_(None))
-            .order_by(Prova.date.asc().nullslast(), Prova.name.asc())
+            db.session.query(Gara)
+            .filter(Gara.campionato_id.is_(None))
+            .order_by(Gara.date.asc().nullslast(), Gara.name.asc())
         )
 
     @staticmethod
-    def _annotate_provas_with_flags(provas: Optional[List[Prova]]) -> List[Prova]:
-        """Arricchisce le Prove per la UI con flag derivati (no logica in Jinja)."""
+    def _annotate_garas_with_flags(provas: Optional[List[Gara]]) -> List[Gara]:
+        """Arricchisce le Gare per la UI con flag derivati (no logica in Jinja)."""
         if not provas:
             return []
         for p in provas:
             # True se le iscrizioni sono aperte (enum centralizzato)
-            p.is_inscription_open = p.get_real_status() == ProvaStatus.INSCRIPTION.value
+            p.is_inscription_open = p.get_real_status() == GaraStatus.INSCRIPTION.value
         return provas
 
     @staticmethod
     def _standalone_available_for_user(
         user_id: int, *, exclude_director_id: Optional[int] = None
-    ) -> List[Prova]:
+    ) -> List[Gara]:
         """
         Standalone disponibili per iscrizione:
-        - stato = INSCRIPTION o SETUP (mostra tutte le prove non ancora iniziate)
+        - stato = INSCRIPTION o SETUP (mostra tutte le gare non ancora iniziate)
         - utente NON già iscritto
         - opzionale: escludi quelle gestite da exclude_director_id
             (evita duplicati su director)
         """
-        subq_all_my_prova_ids = (
-            select(Inscription.prova_id)
+        subq_all_my_gara_ids = (
+            select(Inscription.gara_id)
             .where(Inscription.user_id == user_id)
             .scalar_subquery()
         )
 
         q = DashboardService._standalone_q().filter(
             or_(
-                Prova.status == ProvaStatus.INSCRIPTION.value,
-                Prova.status == ProvaStatus.SETUP.value
+                Gara.status == GaraStatus.INSCRIPTION.value,
+                Gara.status == GaraStatus.SETUP.value
             ),
-            ~Prova.id.in_(subq_all_my_prova_ids),
+            ~Gara.id.in_(subq_all_my_gara_ids),
         )
 
-        if exclude_director_id is not None and hasattr(Prova, "director_id"):
+        if exclude_director_id is not None and hasattr(Gara, "director_id"):
             q = q.filter(
                 or_(
-                    Prova.director_id.is_(None),
-                    Prova.director_id != exclude_director_id,
+                    Gara.director_id.is_(None),
+                    Gara.director_id != exclude_director_id,
                 )
             )
 
         provas = q.all()
         
-        # Aggiungi il campo is_inscription_open (come in _available_provas_for_user)
+        # Aggiungi il campo is_inscription_open (come in _available_garas_for_user)
         for p in provas:
-            p.is_inscription_open = p.get_real_status() == ProvaStatus.INSCRIPTION.value
+            p.is_inscription_open = p.get_real_status() == GaraStatus.INSCRIPTION.value
         
         return provas
 
-    # ---- selector unico (tornei + standalone) ------------------------
+    # ---- selector unico (campionati + standalone) ------------------------
     @staticmethod
     def _build_selector_items(
-        tournaments: Iterable[Tournament],
-        standalones: Iterable[Prova],
+        campionati: Iterable[Campionato],
+        standalones: Iterable[Gara],
         *,
-        selected_tournament_id: Optional[int],
-        selected_prova_id: Optional[int],
+        selected_campionato_id: Optional[int],
+        selected_gara_id: Optional[int],
     ) -> List[dict]:
         """
         Lista mista ordinata per data crescente:
-        - Torneo: data = min(data delle sue Prove con data non nulla) se disponibile,
+        - Campionato: data = min(data delle sue Gare con data non nulla) se disponibile,
             altrimenti None (in coda).
         - Standalone: data = p.date (può essere None).
         """
 
-        def _t_date(t: Tournament) -> Optional[date_cls]:
+        def _t_date(t: Campionato) -> Optional[date_cls]:
             # Safely access the provas relationship
             try:
                 # Get the provas - either already loaded or load them
@@ -241,7 +241,7 @@ class DashboardService:
 
         items: List[Tuple[Optional[date_cls], dict]] = []
 
-        for t in tournaments:
+        for t in campionati:
             items.append(
                 (
                     _t_date(t),
@@ -250,7 +250,7 @@ class DashboardService:
                         "id": t.id,
                         "label": t.name,
                         "selected": (
-                            selected_tournament_id == t.id and selected_prova_id is None
+                            selected_campionato_id == t.id and selected_gara_id is None
                         ),
                     },
                 )
@@ -264,7 +264,7 @@ class DashboardService:
                         "kind": "p",
                         "id": p.id,
                         "label": p.name,
-                        "selected": (selected_prova_id == p.id),
+                        "selected": (selected_gara_id == p.id),
                     },
                 )
             )
@@ -278,60 +278,60 @@ class DashboardService:
         is_admin = _role_truthy(user, "is_admin")
         is_director = _role_truthy(user, "is_director")
         return CapabilityVM(
-            can_create_tournament=is_admin or is_director,
+            can_create_campionato=is_admin or is_director,
             can_create_standalone=is_admin or is_director,
             can_register_self=not is_admin,
         )
 
     # ---- sezioni "player-like" riusabili ------------------------------
     @staticmethod
-    def _build_player_sections(user_id: int, selected: Optional[Tournament]) -> dict:
-        """Costruisce available_provas, my_inscriptions, current_matches,
-        recent_matches per il torneo selezionato."""
-        available_provas: List[Prova] = []
+    def _build_player_sections(user_id: int, selected: Optional[Campionato]) -> dict:
+        """Costruisce available_garas, my_inscriptions, current_matches,
+        recent_matches per il campionato selezionato."""
+        available_garas: List[Gara] = []
         my_regs: List[Inscription] = []
         my_upcoming: List[TournamentMatch] = []
         my_recent: List[TournamentMatch] = []
 
         if not selected:
             return {
-                "available_provas": available_provas,
+                "available_garas": available_garas,
                 "my_inscriptions": my_regs,
                 "current_matches": my_upcoming,
                 "recent_matches": my_recent,
             }
 
-        subq_my_prova_ids = (
-            select(Inscription.prova_id)
+        subq_my_gara_ids = (
+            select(Inscription.gara_id)
             .where(Inscription.user_id == user_id)
             .scalar_subquery()
         )
 
-        available_provas = (
-            db.session.query(Prova)
+        available_garas = (
+            db.session.query(Gara)
             .filter(
-                Prova.tournament_id == selected.id,
-                Prova.status == ProvaStatus.INSCRIPTION.value,
-                ~Prova.id.in_(subq_my_prova_ids),
+                Gara.campionato_id == selected.id,
+                Gara.status == GaraStatus.INSCRIPTION.value,
+                ~Gara.id.in_(subq_my_gara_ids),
             )
-            .order_by(Prova.date.asc().nullslast(), Prova.number.asc())
+            .order_by(Gara.date.asc().nullslast(), Gara.number.asc())
             .all()
         )
 
         my_regs = (
             db.session.query(Inscription)
-            .join(Prova, Prova.id == Inscription.prova_id)
-            .filter(Inscription.user_id == user_id, Prova.tournament_id == selected.id)
-            .options(joinedload(Inscription.prova))
-            .order_by(Prova.date.desc().nullslast(), Prova.number.desc())
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(Inscription.user_id == user_id, Gara.campionato_id == selected.id)
+            .options(joinedload(Inscription.gara))
+            .order_by(Gara.date.desc().nullslast(), Gara.number.desc())
             .all()
         )
 
         my_upcoming = (
             db.session.query(TournamentMatch)
-            .join(Prova, Prova.id == TournamentMatch.prova_id)
+            .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                Prova.tournament_id == selected.id,
+                Gara.campionato_id == selected.id,
                 TournamentMatch.status == "playing",  # type: ignore[operator]
                 or_(
                     TournamentMatch.player1_id == user_id,
@@ -346,9 +346,9 @@ class DashboardService:
 
         my_recent = (
             db.session.query(TournamentMatch)
-            .join(Prova, Prova.id == TournamentMatch.prova_id)
+            .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                Prova.tournament_id == selected.id,
+                Gara.campionato_id == selected.id,
                 TournamentMatch.status == "completed",  # type: ignore[operator]
                 or_(
                     TournamentMatch.player1_id == user_id,
@@ -363,7 +363,7 @@ class DashboardService:
         )
 
         return {
-            "available_provas": available_provas,
+            "available_garas": available_garas,
             "my_inscriptions": my_regs,
             "current_matches": my_upcoming,
             "recent_matches": my_recent,
@@ -421,32 +421,32 @@ class DashboardService:
     # ---- ADMIN --------------------------------------------------------
     @staticmethod
     def for_admin() -> DashboardVM:
-        tournaments = DashboardService._tournaments_q().all()
-        standalone = DashboardService._annotate_provas_with_flags(
+        campionati = DashboardService._campionatos_q().all()
+        standalone = DashboardService._annotate_garas_with_flags(
             DashboardService._standalone_q().all()
         )
         caps = CapabilityVM(
-            can_create_tournament=True,
+            can_create_campionato=True,
             can_create_standalone=True,
             can_register_self=False,
         )
 
         # Note: Admin dashboard doesn't include individual match proposals
-        # as it's focused on tournament/prova management
+        # as it's focused on campionato/gara management
 
         return DashboardVM(
             title="Dashboard Amministratore",
-            tournaments=tournaments,
-            selected_tournament=None,
-            selected_prova=None,
+            campionati=campionati,
+            selected_campionato=None,
+            selected_gara=None,
             selector_items=DashboardService._build_selector_items(
-                tournaments=tournaments,
+                campionati=campionati,
                 standalones=standalone,
-                selected_tournament_id=None,
-                selected_prova_id=None,
+                selected_campionato_id=None,
+                selected_gara_id=None,
             ),
-            standalone_provas=standalone,
-            available_provas=None,
+            standalone_garas=standalone,
+            available_garas=None,
             standalone_available=None,
             my_inscriptions=None,
             my_standalone_inscriptions=None,
@@ -454,7 +454,7 @@ class DashboardService:
             recent_matches=None,
             can_inscribe=False,
             user_stats=None,
-            managed_tournaments=None,
+            managed_campionatos=None,
             can_manage_directors=True,
             caps=caps,
             debug_mode=False,
@@ -467,8 +467,8 @@ class DashboardService:
     @staticmethod
     def for_director(
         user_id: int,
-        selected_tournament_id: Optional[int] = None,
-        selected_prova_id: Optional[int] = None,
+        selected_campionato_id: Optional[int] = None,
+        selected_gara_id: Optional[int] = None,
     ) -> DashboardVM:
         user = db.session.get(User, user_id)
         if not user:
@@ -476,30 +476,30 @@ class DashboardService:
 
         caps = DashboardService._caps_for(user)
 
-        managed = DashboardService._managed_tournaments_q(user_id).all()
-        tournaments = DashboardService._tournaments_q().all()
-        standalones_all: List[Prova] = DashboardService._standalone_q().all()
-        has_director = hasattr(Prova, "director_id")
+        managed = DashboardService._managed_campionatos_q(user_id).all()
+        campionati = DashboardService._campionatos_q().all()
+        standalones_all: List[Gara] = DashboardService._standalone_q().all()
+        has_director = hasattr(Gara, "director_id")
 
-        # torneo selezionato: esplicito -> primo gestito -> primo globale
+        # campionato selezionato: esplicito -> primo gestito -> primo globale
         selected = (
-            db.session.get(Tournament, selected_tournament_id)
-            if selected_tournament_id
+            db.session.get(Campionato, selected_campionato_id)
+            if selected_campionato_id
             else None
         )
         if not selected and managed:
             selected = managed[0]
         if not selected:
-            selected = tournaments[0] if tournaments else None
+            selected = campionati[0] if campionati else None
 
-        # Prova standalone selezionata (solo se davvero standalone)
-        selected_prova = (
-            db.session.get(Prova, selected_prova_id) if selected_prova_id else None
+        # Gara standalone selezionata (solo se davvero standalone)
+        selected_gara = (
+            db.session.get(Gara, selected_gara_id) if selected_gara_id else None
         )
-        if selected_prova and selected_prova.tournament_id is not None:
-            selected_prova = None
+        if selected_gara and selected_gara.campionato_id is not None:
+            selected_gara = None
 
-        # sezioni player-like per torneo selezionato
+        # sezioni player-like per campionato selezionato
         player_sections = DashboardService._build_player_sections(user_id, selected)
 
         # Individual match sections
@@ -513,44 +513,44 @@ class DashboardService:
         # mie iscrizioni a standalone
         my_standalone_regs = (
             db.session.query(Inscription)
-            .join(Prova, Prova.id == Inscription.prova_id)
-            .filter(Inscription.user_id == user_id, Prova.tournament_id.is_(None))
-            .options(joinedload(Inscription.prova))
-            .order_by(Prova.date.desc().nullslast())
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(Inscription.user_id == user_id, Gara.campionato_id.is_(None))
+            .options(joinedload(Inscription.gara))
+            .order_by(Gara.date.desc().nullslast())
             .all()
         )
 
         # standalone gestite
-        standalone_owned: List[Prova] = [
+        standalone_owned: List[Gara] = [
             p for p in standalones_all if has_director and p.director_id == user_id
         ]
-        standalone_owned = DashboardService._annotate_provas_with_flags(
+        standalone_owned = DashboardService._annotate_garas_with_flags(
             standalone_owned
         )
 
-        # permesso gestione director nel torneo selezionato
+        # permesso gestione director nel campionato selezionato
         can_manage_directors = False
         if selected:
             can_manage_directors = _role_truthy(user, "is_admin") or (
                 db.session.query(TournamentDirector)
-                .filter_by(user_id=user_id, tournament_id=selected.id)
+                .filter_by(user_id=user_id, campionato_id=selected.id)
                 .first()
                 is not None
             )
 
         return DashboardVM(
             title="Dashboard Direttore",
-            tournaments=tournaments,
-            selected_tournament=selected,
-            selected_prova=selected_prova,
+            campionati=campionati,
+            selected_campionato=selected,
+            selected_gara=selected_gara,
             selector_items=DashboardService._build_selector_items(
-                tournaments=tournaments,
+                campionati=campionati,
                 standalones=standalones_all,
-                selected_tournament_id=selected.id if selected else None,
-                selected_prova_id=selected_prova.id if selected_prova else None,
+                selected_campionato_id=selected.id if selected else None,
+                selected_gara_id=selected_gara.id if selected_gara else None,
             ),
-            standalone_provas=standalone_owned,
-            available_provas=player_sections["available_provas"],
+            standalone_garas=standalone_owned,
+            available_garas=player_sections["available_garas"],
             standalone_available=standalone_available,
             my_inscriptions=player_sections["my_inscriptions"],
             my_standalone_inscriptions=my_standalone_regs,
@@ -558,7 +558,7 @@ class DashboardService:
             recent_matches=player_sections["recent_matches"],
             can_inscribe=not _role_truthy(user, "is_admin"),
             user_stats=_compute_user_stats(user_id),
-            managed_tournaments=managed,
+            managed_campionatos=managed,
             can_manage_directors=can_manage_directors,
             caps=caps,
             match_proposals=individual_sections["match_proposals"],
@@ -570,8 +570,8 @@ class DashboardService:
     @staticmethod
     def for_player(
         user_id: int,
-        selected_tournament_id: Optional[int] = None,
-        selected_prova_id: Optional[int] = None,
+        selected_campionato_id: Optional[int] = None,
+        selected_gara_id: Optional[int] = None,
     ) -> DashboardVM:
         user = db.session.get(User, user_id)
         if not user:
@@ -579,22 +579,22 @@ class DashboardService:
 
         caps = DashboardService._caps_for(user)
 
-        tournaments = DashboardService._tournaments_q().all()
-        standalones_all: List[Prova] = DashboardService._standalone_q().all()
+        campionati = DashboardService._campionatos_q().all()
+        standalones_all: List[Gara] = DashboardService._standalone_q().all()
 
         selected = (
-            db.session.get(Tournament, selected_tournament_id)
-            if selected_tournament_id
+            db.session.get(Campionato, selected_campionato_id)
+            if selected_campionato_id
             else None
         )
         if not selected:
-            selected = tournaments[0] if tournaments else None
+            selected = campionati[0] if campionati else None
 
-        selected_prova = (
-            db.session.get(Prova, selected_prova_id) if selected_prova_id else None
+        selected_gara = (
+            db.session.get(Gara, selected_gara_id) if selected_gara_id else None
         )
-        if selected_prova and selected_prova.tournament_id is not None:
-            selected_prova = None
+        if selected_gara and selected_gara.campionato_id is not None:
+            selected_gara = None
 
         player_sections = DashboardService._build_player_sections(user_id, selected)
 
@@ -605,26 +605,26 @@ class DashboardService:
 
         my_standalone_regs = (
             db.session.query(Inscription)
-            .join(Prova, Prova.id == Inscription.prova_id)
-            .filter(Inscription.user_id == user_id, Prova.tournament_id.is_(None))
-            .options(joinedload(Inscription.prova))
-            .order_by(Prova.date.desc().nullslast())
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(Inscription.user_id == user_id, Gara.campionato_id.is_(None))
+            .options(joinedload(Inscription.gara))
+            .order_by(Gara.date.desc().nullslast())
             .all()
         )
 
         return DashboardVM(
             title="Dashboard Giocatore",
-            tournaments=tournaments,
-            selected_tournament=selected,
-            selected_prova=selected_prova,
+            campionati=campionati,
+            selected_campionato=selected,
+            selected_gara=selected_gara,
             selector_items=DashboardService._build_selector_items(
-                tournaments=tournaments,
+                campionati=campionati,
                 standalones=standalones_all,
-                selected_tournament_id=selected.id if selected else None,
-                selected_prova_id=selected_prova.id if selected_prova else None,
+                selected_campionato_id=selected.id if selected else None,
+                selected_gara_id=selected_gara.id if selected_gara else None,
             ),
-            standalone_provas=None,  # non usata su player
-            available_provas=player_sections["available_provas"],
+            standalone_garas=None,  # non usata su player
+            available_garas=player_sections["available_garas"],
             standalone_available=standalone_available,
             my_inscriptions=player_sections["my_inscriptions"],
             my_standalone_inscriptions=my_standalone_regs,
@@ -632,7 +632,7 @@ class DashboardService:
             recent_matches=player_sections["recent_matches"],
             can_inscribe=True,  # i player possono iscriversi
             user_stats=_compute_user_stats(user_id),
-            managed_tournaments=None,
+            managed_campionatos=None,
             can_manage_directors=False,
             caps=caps,
             match_proposals=individual_sections["match_proposals"],

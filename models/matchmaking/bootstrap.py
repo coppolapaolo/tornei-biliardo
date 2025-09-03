@@ -6,13 +6,13 @@ from .strategies.round_robin import RoundRobinStrategy
 from .strategies.direct_elimination import DirectEliminationStrategy
 from .strategies.double_knockout import DoubleKnockoutStrategy
 from .strategies.random_anti_rematch import RandomAntiRematchStrategy
-from .bindings.amalfi_binding import validate_prova, propose_pairings
+from .bindings.amalfi_binding import validate_gara, propose_pairings
 
 _registry = EngineRegistry()
 
 # Register Amalfi strategy (existing)
 _registry.register(
-    AmalfiStrategy(validate_fn=validate_prova, propose_fn=propose_pairings)  # type: ignore
+    AmalfiStrategy(validate_fn=validate_gara, propose_fn=propose_pairings)  # type: ignore
 )
 
 # Register new strategies

@@ -32,9 +32,9 @@ class TestMatchmakingServiceIntegration(unittest.TestCase):
 
     def test_run_with_advanced_strategy(self):
         """Test running matchmaking with advanced strategy."""
-        # Create a mock prova
-        mock_prova = Mock()
-        mock_prova.id = 1
+        # Create a mock gara
+        mock_gara = Mock()
+        mock_gara.id = 1
 
         # Mock the registry to return our strategy
         with patch.object(self.service._registry, "get") as mock_get:
@@ -46,19 +46,19 @@ class TestMatchmakingServiceIntegration(unittest.TestCase):
             mock_get.return_value = mock_strategy
 
             # Run the matchmaking
-            pairings = self.service.run("advanced_amalfi", mock_prova, 1, preview=True)
+            pairings = self.service.run("advanced_amalfi", mock_gara, 1, preview=True)
 
             # Verify the results
             self.assertEqual(len(pairings), 1)
             self.assertEqual(pairings[0].players, (1, 2))
             mock_get.assert_called_once_with("advanced_amalfi")
-            mock_strategy.preview.assert_called_once_with(mock_prova, 1)
+            mock_strategy.preview.assert_called_once_with(mock_gara, 1)
 
     def test_validate_with_advanced_strategy(self):
         """Test validation with advanced strategy."""
-        # Create a mock prova
-        mock_prova = Mock()
-        mock_prova.id = 1
+        # Create a mock gara
+        mock_gara = Mock()
+        mock_gara.id = 1
 
         # Mock the registry to return our strategy
         with patch.object(self.service._registry, "get") as mock_get:
@@ -69,13 +69,13 @@ class TestMatchmakingServiceIntegration(unittest.TestCase):
             )
             mock_get.return_value = mock_strategy
 
-            # Validate the prova
-            result = self.service.validate("advanced_amalfi", mock_prova)
+            # Validate the gara
+            result = self.service.validate("advanced_amalfi", mock_gara)
 
             # Verify the results
             self.assertTrue(result["valid"])
             mock_get.assert_called_once_with("advanced_amalfi")
-            mock_strategy.validate.assert_called_once_with(mock_prova)
+            mock_strategy.validate.assert_called_once_with(mock_gara)
 
     def test_get_available_strategies(self):
         """Test getting available strategies."""
@@ -102,23 +102,23 @@ class TestMatchmakingServiceIntegration(unittest.TestCase):
 
     def test_strategy_not_found(self):
         """Test behavior when strategy is not found."""
-        # Create a mock prova
-        mock_prova = Mock()
-        mock_prova.id = 1
+        # Create a mock gara
+        mock_gara = Mock()
+        mock_gara.id = 1
 
         with self.assertRaises(ValueError) as context:
-            self.service.run("nonexistent_strategy", mock_prova, 1, preview=True)
+            self.service.run("nonexistent_strategy", mock_gara, 1, preview=True)
 
         self.assertIn("Unknown strategy", str(context.exception))
 
     def test_validation_strategy_not_found(self):
         """Test validation behavior when strategy is not found."""
-        # Create a mock prova
-        mock_prova = Mock()
-        mock_prova.id = 1
+        # Create a mock gara
+        mock_gara = Mock()
+        mock_gara.id = 1
 
         with self.assertRaises(ValueError) as context:
-            self.service.validate("nonexistent_strategy", mock_prova)
+            self.service.validate("nonexistent_strategy", mock_gara)
 
         self.assertIn("Unknown strategy", str(context.exception))
 

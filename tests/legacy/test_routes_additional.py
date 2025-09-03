@@ -76,13 +76,13 @@ class TestPlayerRoutes:
 
             assert response.status_code in [200, 404]
 
-    def test_player_tournaments_route(self, client, player_user):
-        """Test player tournaments route."""
+    def test_player_campionatos_route(self, client, player_user):
+        """Test player campionati route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
         with patch("flask_login.current_user", player_user):
-            response = client.get(f"/player/{player_user.id}/tournaments")
+            response = client.get(f"/player/{player_user.id}/campionati")
 
             assert response.status_code in [200, 404]
 
@@ -215,7 +215,7 @@ class TestAdminCompetitionRoutes:
 
         data = {
             "name": "Test Competition",
-            "tournament_type": "Amalfi",
+            "campionato_type": "Amalfi",
             "discipline": "palla 9",
             "distance": 7,
         }
@@ -279,72 +279,72 @@ class TestAdminCompetitionRoutes:
 
 
 class TestAdminTournamentRoutes:
-    """Test admin tournament routes functionality."""
+    """Test admin campionato routes functionality."""
 
-    def test_admin_tournament_list(self, client, admin_user):
-        """Test admin tournament list route."""
+    def test_admin_campionato_list(self, client, admin_user):
+        """Test admin campionato list route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
         with patch("flask_login.current_user", admin_user):
-            response = client.get("/admin/tournament/")
+            response = client.get("/admin/campionato/")
 
             assert response.status_code in [200, 302, 404]
 
-    def test_admin_tournament_create_get(self, client, admin_user):
-        """Test admin tournament create GET route."""
+    def test_admin_campionato_create_get(self, client, admin_user):
+        """Test admin campionato create GET route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
         with patch("flask_login.current_user", admin_user):
-            response = client.get("/admin/tournament/create")
+            response = client.get("/admin/campionato/create")
 
             assert response.status_code in [200, 302, 404]
 
-    def test_admin_tournament_create_post(self, client, admin_user):
-        """Test admin tournament create POST route."""
+    def test_admin_campionato_create_post(self, client, admin_user):
+        """Test admin campionato create POST route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
         data = {
-            "name": "Test Tournament",
-            "tournament_type": "Amalfi",
+            "name": "Test Campionato",
+            "campionato_type": "Amalfi",
             "start_date": "2024-01-01",
             "end_date": "2024-01-07",
         }
 
         with patch("flask_login.current_user", admin_user):
-            response = client.post("/admin/tournament/create", data=data)
+            response = client.post("/admin/campionato/create", data=data)
 
             assert response.status_code in [200, 302, 404]
 
-    def test_admin_tournament_view(self, client, admin_user):
-        """Test admin tournament view route."""
+    def test_admin_campionato_view(self, client, admin_user):
+        """Test admin campionato view route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
         with patch("flask_login.current_user", admin_user):
-            response = client.get("/admin/tournament/1")
+            response = client.get("/admin/campionato/1")
 
             assert response.status_code in [200, 302, 404]
 
-    def test_admin_tournament_edit_get(self, client, admin_user):
-        """Test admin tournament edit GET route."""
+    def test_admin_campionato_edit_get(self, client, admin_user):
+        """Test admin campionato edit GET route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
         with patch("flask_login.current_user", admin_user):
-            response = client.get("/admin/tournament/1/edit")
+            response = client.get("/admin/campionato/1/edit")
 
             assert response.status_code in [200, 302, 404]
 
-    def test_admin_tournament_delete(self, client, admin_user):
-        """Test admin tournament delete route."""
+    def test_admin_campionato_delete(self, client, admin_user):
+        """Test admin campionato delete route."""
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
         with patch("flask_login.current_user", admin_user):
-            response = client.post("/admin/tournament/1/delete")
+            response = client.post("/admin/campionato/1/delete")
 
             assert response.status_code in [200, 302, 404]
 
@@ -442,7 +442,7 @@ class TestRoutePermissions:
     def test_unauthenticated_access_to_protected_routes(self, client):
         """Test unauthenticated access to protected routes."""
         protected_routes = [
-            "/admin/tournament/",
+            "/admin/campionato/",
             "/admin/user/",
             "/admin/competition/",
             "/player/edit",
@@ -459,7 +459,7 @@ class TestRoutePermissions:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        admin_routes = ["/admin/tournament/", "/admin/user/", "/admin/competition/"]
+        admin_routes = ["/admin/campionato/", "/admin/user/", "/admin/competition/"]
 
         with patch("flask_login.current_user", player_user):
             for route in admin_routes:
@@ -472,7 +472,7 @@ class TestRoutePermissions:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
-        admin_routes = ["/admin/tournament/", "/admin/user/", "/admin/competition/"]
+        admin_routes = ["/admin/campionato/", "/admin/user/", "/admin/competition/"]
 
         with patch("flask_login.current_user", admin_user):
             for route in admin_routes:
@@ -496,7 +496,7 @@ class TestRouteErrorHandling:
             sess["_user_id"] = str(admin_user.id)
 
         invalid_id_routes = [
-            "/admin/tournament/999999",
+            "/admin/campionato/999999",
             "/admin/user/999999/edit",
             "/player/999999",
         ]
@@ -516,7 +516,7 @@ class TestRouteErrorHandling:
         data = {"invalid": "data"}
 
         with patch("flask_login.current_user", admin_user):
-            response = client.post("/admin/tournament/create", data=data)
+            response = client.post("/admin/campionato/create", data=data)
 
             # Should handle invalid data gracefully
             assert response.status_code in [200, 302, 400, 404]
@@ -527,7 +527,7 @@ class TestAPIRoutes:
 
     def test_api_route_response_format(self, client):
         """Test API route response format."""
-        api_routes = ["/api/tournaments", "/api/users", "/api/matches"]
+        api_routes = ["/api/campionati", "/api/users", "/api/matches"]
 
         for route in api_routes:
             response = client.get(route)
