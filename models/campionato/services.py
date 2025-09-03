@@ -349,7 +349,7 @@ class TournamentService(DomainService):
         if not campionato:
             raise ValueError("Campionato not found")
 
-        provas = self._execute_with_tracking(
+        gare = self._execute_with_tracking(
             lambda: (
                 Gara.query.filter_by(campionato_id=campionato_id)
                 .order_by(Gara.number)
@@ -372,7 +372,7 @@ class TournamentService(DomainService):
 
         return {
             "campionato": campionato,
-            "provas": provas,
+            "gare": provas,
             "candidate_directors": candidate_directors,
         }
 
@@ -460,7 +460,7 @@ class TournamentService(DomainService):
             raise ValueError("Campionato not found")
 
         # Get all provas for this campionato
-        provas = self._execute_with_tracking(
+        gare = self._execute_with_tracking(
             lambda: Gara.query.filter_by(campionato_id=campionato_id).all()
         )
         gara_ids = [p.id for p in provas]
@@ -484,7 +484,7 @@ class TournamentService(DomainService):
 
         # Status distribution
         status_counts = {}
-        for gara in provas:
+        for gara in gare:
             status = getattr(gara, "status", "unknown")
             status_counts[status] = status_counts.get(status, 0) + 1
 
@@ -504,7 +504,7 @@ class TournamentService(DomainService):
         from sqlalchemy import func, distinct
         
         # Trova tutte le gare del campionato
-        provas = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
+        gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
         
         # Giocatori unici che hanno mai partecipato al campionato
         unique_players_query = (
@@ -684,7 +684,7 @@ def compute_campionato_status(campionato: Campionato) -> str:
 
     Ritorna la stringa dello stato (compat con UI/template esistenti).
     """
-    provas = getattr(campionato, "provas", []) or []
+    gare = getattr(campionato, "gare", []) or []
     if not provas:
         return TournamentStatus.SETUP.value
 

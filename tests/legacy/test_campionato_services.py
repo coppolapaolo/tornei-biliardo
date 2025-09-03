@@ -334,13 +334,13 @@ class TestTournamentService:
 
                     # Verify the result
                     assert result["campionato"] == mock_campionato
-                    assert result["provas"] == mock_garas
+                    assert result["gare"] == mock_garas
                     assert result["candidate_directors"] == mock_directors
 
     def test_calculate_campionato_status(self):
         """Test calculating campionato status."""
         mock_campionato = Mock()
-        mock_campionato.provas = []  # Empty list for this test
+        mock_campionato.gare = []  # Empty list for this test
 
         with patch("models.campionato.services.db") as mock_db:
             # Mock db.session.get to return the campionato
@@ -361,7 +361,7 @@ class TestComputeTournamentStatus:
     def test_compute_campionato_status_no_garas(self):
         """Test computing status for campionato with no provas."""
         mock_campionato = Mock()
-        mock_campionato.provas = []
+        mock_campionato.gare = []
 
         result = compute_campionato_status(mock_campionato)
 
@@ -377,7 +377,7 @@ class TestComputeTournamentStatus:
         mock_gara2.status = GaraStatus.SETUP.value
 
         mock_campionato = Mock()
-        mock_campionato.provas = [mock_gara1, mock_gara2]
+        mock_campionato.gare = [mock_gara1, mock_gara2]
 
         result = compute_campionato_status(mock_campionato)
 
@@ -393,7 +393,7 @@ class TestComputeTournamentStatus:
         mock_gara2.status = GaraStatus.SETUP.value
 
         mock_campionato = Mock()
-        mock_campionato.provas = [mock_gara1, mock_gara2]
+        mock_campionato.gare = [mock_gara1, mock_gara2]
 
         result = compute_campionato_status(mock_campionato)
 
@@ -409,7 +409,7 @@ class TestComputeTournamentStatus:
         mock_gara2.status = GaraStatus.COMPLETED.value
 
         mock_campionato = Mock()
-        mock_campionato.provas = [mock_gara1, mock_gara2]
+        mock_campionato.gare = [mock_gara1, mock_gara2]
 
         result = compute_campionato_status(mock_campionato)
 
@@ -425,7 +425,7 @@ class TestComputeTournamentStatus:
         mock_gara2.status = GaraStatus.SETUP.value
 
         mock_campionato = Mock()
-        mock_campionato.provas = [mock_gara1, mock_gara2]
+        mock_campionato.gare = [mock_gara1, mock_gara2]
 
         result = compute_campionato_status(mock_campionato)
 

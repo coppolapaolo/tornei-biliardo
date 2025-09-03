@@ -188,7 +188,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
         from ..competition.models import Inscription, Gara
 
-        provas_played = (
+        gare_played = (
             Inscription.query.join(Gara)
             .filter(
                 Inscription.user_id == user_id,
@@ -198,7 +198,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
             .count()
         )
 
-        return provas_played >= self.min_garas_played
+        return gare_played >= self.min_garas_played
 
     def _evaluate_custom_criteria(
         self, classification: "Classification", criteria: Dict[str, Any]

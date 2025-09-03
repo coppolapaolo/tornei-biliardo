@@ -44,7 +44,7 @@ class Campionato(db.Model):
     deleted_reason = db.Column(db.String(255), nullable=True)
 
     # Relazioni
-    provas = db.relationship(
+    gare = db.relationship(
         "Gara", backref="campionato", lazy=True, cascade="all, delete-orphan"
     )
     directors = db.relationship(
@@ -66,8 +66,8 @@ class Campionato(db.Model):
     def can_be_modified(self):
         """Verifica se il campionato può essere modificato"""
         # Fix: Properly access the relationship collection
-        provas = getattr(self, "provas", [])
-        for gara in provas:
+        gare = getattr(self, "gare", [])
+        for gara in gare:
             if gara.status in ["inscription", "playing", "completed"]:
                 return False
         return True
@@ -75,21 +75,21 @@ class Campionato(db.Model):
     def can_be_deleted(self):
         """Verifica se il campionato può essere cancellato"""
         # Fix: Properly access the relationship collection
-        provas = getattr(self, "provas", [])
-        for gara in provas:
+        gare = getattr(self, "gare", [])
+        for gara in gare:
             if getattr(gara, "inscriptions", []):  # Se ha iscrizioni
                 return False
         return True
 
     def get_status(self):
         """Restituisce lo status del campionato"""
-        provas = getattr(self, "provas", [])
-        if not provas:
+        gare = getattr(self, "gare", [])
+        if not gare:
             return "setup"
 
-        has_playing = any(p.status == "playing" for p in provas)
-        has_completed = any(p.status == "completed" for p in provas)
-        has_inscription = any(p.status == "inscription" for p in provas)
+        has_playing = any(p.status == "playing" for p in gare)
+        has_completed = any(p.status == "completed" for p in gare)
+        has_inscription = any(p.status == "inscription" for p in gare)
 
         if has_playing:
             return "in_progress"
@@ -103,8 +103,8 @@ class Campionato(db.Model):
     def can_be_hard_deleted(self) -> bool:
         """Check if campionato can be permanently deleted (no matches played)."""
         # Fix: Properly access the relationship collections
-        provas = getattr(self, "provas", [])
-        for gara in provas:
+        gare = getattr(self, "gare", [])
+        for gara in gare:
             matches = getattr(gara, "matches", [])
             for match in matches:
                 if match.status in ["completed", "playing"]:
@@ -170,8 +170,8 @@ class Campionato(db.Model):
         self.is_active = False
 
         # Also soft delete related provas
-        provas = getattr(self, "provas", [])
-        for gara in provas:
+        gare = getattr(self, "gare", [])
+        for gara in gare:
             if hasattr(gara, "soft_delete"):
                 # Fix: Ensure we pass a string to gara.soft_delete()
                 delete_reason = (

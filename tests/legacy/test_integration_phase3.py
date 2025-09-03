@@ -376,8 +376,8 @@ class TestCrossDomainOrchestration:
         assert found_campionato is not None
 
         # Verify competitions were created
-        provas = Gara.query.filter_by(campionato_id=found_campionato.id).all()
-        assert len(provas) == 2
+        gare = Gara.query.filter_by(campionato_id=found_campionato.id).all()
+        assert len(gare) == 2
 
 
 class TestExtendedDomainIntegration:

@@ -66,14 +66,14 @@ class ClassificationService:
         scoring_policy = ClassificationService._get_scoring_policy(campionato)
 
         # Get all provas for this campionato with optimized loading
-        provas_query = db.session.query(Gara).filter_by(campionato_id=campionato_id)
-        provas = bulk_load_relationships(provas_query, "matches", "inscriptions").all()
+        gare_query = db.session.query(Gara).filter_by(campionato_id=campionato_id)
+        gare = bulk_load_relationships(gare_query, "matches", "inscriptions").all()
 
         # Get all players in the campionato
         player_ids = set()
         match_results = []
 
-        for gara in provas:
+        for gara in gare:
             # Get completed matches - already loaded via selectinload
             matches = [
                 match
@@ -125,14 +125,14 @@ class ClassificationService:
                 # Classic scoring policy
                 classification.total_matches_won = score_data["matches_won"]
                 classification.total_point_difference = score_data["rack_diff"]
-                classification.provas_played = len(score_data.get("provas_played", []))
+                classification.gare_played = len(score_data.get("gare_played", []))
             else:
                 # For other policies, use default values
                 classification.total_matches_won = getattr(score_data, "wins", 0) or 0
                 classification.total_point_difference = (
                     getattr(score_data, "rack_diff", 0) or 0
                 )
-                classification.provas_played = 0
+                classification.gare_played = 0
 
             db.session.add(classification)
             classifications.append(classification)

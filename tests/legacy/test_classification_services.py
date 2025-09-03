@@ -118,15 +118,15 @@ class TestClassificationService:
                     mock_policy.calculate_standings.return_value = [
                         (
                             mock_player1,
-                            {"matches_won": 1, "rack_diff": 2, "provas_played": [1]},
+                            {"matches_won": 1, "rack_diff": 2, "gare_played": [1]},
                         ),
                         (
                             mock_player2,
-                            {"matches_won": 1, "rack_diff": 0, "provas_played": [1, 2]},
+                            {"matches_won": 1, "rack_diff": 0, "gare_played": [1, 2]},
                         ),
                         (
                             mock_player3,
-                            {"matches_won": 0, "rack_diff": -2, "provas_played": [2]},
+                            {"matches_won": 0, "rack_diff": -2, "gare_played": [2]},
                         ),
                     ]
                     mock_policy_class.return_value = mock_policy

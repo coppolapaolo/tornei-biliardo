@@ -133,10 +133,10 @@ class TestClassificationService:
         # Mock scoring policy
         mock_policy = Mock()
         mock_policy.calculate_standings.return_value = [
-            (mock_players[0], {"matches_won": 2, "rack_diff": 5, "provas_played": [1]}),
+            (mock_players[0], {"matches_won": 2, "rack_diff": 5, "gare_played": [1]}),
             (
                 mock_players[1],
-                {"matches_won": 1, "rack_diff": -5, "provas_played": [1]},
+                {"matches_won": 1, "rack_diff": -5, "gare_played": [1]},
             ),
         ]
         mock_get_policy.return_value = mock_policy
@@ -196,7 +196,7 @@ class TestClassificationService:
         # Mock scoring policy
         mock_policy = Mock()
         mock_policy.calculate_standings.return_value = [
-            (mock_players[0], {"matches_won": 2, "rack_diff": 5, "provas_played": [1]}),
+            (mock_players[0], {"matches_won": 2, "rack_diff": 5, "gare_played": [1]}),
         ]
         mock_get_policy.return_value = mock_policy
 

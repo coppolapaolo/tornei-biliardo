@@ -68,8 +68,8 @@ class TestTournamentModel:
         db_session.commit()
 
         # Test relationship access
-        assert len(campionato.provas) == 1
-        assert campionato.provas[0].name == "Test Gara"
+        assert len(campionato.gare) == 1
+        assert campionato.gare[0].name == "Test Gara"
 
     def test_campionato_status_transitions(self, db_session):
         """Test campionato status transitions."""
@@ -347,7 +347,7 @@ class TestTournamentService:
             mock_export_data = {
                 "campionato": {"name": "Test Campionato"},
                 "participants": [],
-                "provas": [],
+                "gare": [],
                 "matches": [],
             }
             mock_export.return_value = mock_export_data

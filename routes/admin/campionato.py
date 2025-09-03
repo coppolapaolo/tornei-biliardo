@@ -58,7 +58,7 @@ def campionato_detail(campionato_id):
     # Use the service layer instead of direct database access
     campionato_data = campionato_service.get_campionato_detail_data(campionato_id)
     campionato = campionato_data["campionato"]
-    provas = campionato_data["provas"]
+    gare = campionato_data["gare"]
     candidate_directors = campionato_data["candidate_directors"]
 
     can_manage_directors = current_user.is_admin or any(
@@ -88,7 +88,7 @@ def campionato_detail(campionato_id):
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
-        provas=provas,
+        gare =provas,
         users=candidate_directors,
         can_manage_directors=can_manage_directors,
         campionato_stats=campionato_stats,

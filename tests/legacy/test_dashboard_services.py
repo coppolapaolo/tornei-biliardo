@@ -258,7 +258,7 @@ class TestDashboardServiceSelectorHelpers:
         mock_gara.date = date(2023, 1, 1)
 
         # Mock the provas relationship on campionato
-        mock_campionato.provas = []
+        mock_campionato.gare = []
 
         result = DashboardService._build_selector_items(
             [mock_campionato],

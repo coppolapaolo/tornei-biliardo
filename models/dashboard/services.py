@@ -131,7 +131,7 @@ class DashboardService:
         # joinedload per poter calcolare la prima data utile nel selector
         return (
             db.session.query(Campionato)
-            .options(joinedload(getattr(Campionato, "provas")))
+            .options(joinedload(getattr(Campionato, "gare")))
             .order_by(Campionato.created_at.desc())
         )
 
@@ -141,7 +141,7 @@ class DashboardService:
             db.session.query(Campionato)
             .join(TournamentDirector, TournamentDirector.campionato_id == Campionato.id)
             .filter(TournamentDirector.user_id == user_id)
-            .options(joinedload(getattr(Campionato, "provas")))
+            .options(joinedload(getattr(Campionato, "gare")))
             .order_by(Campionato.created_at.desc())
         )
 
@@ -197,13 +197,13 @@ class DashboardService:
                 )
             )
 
-        provas = q.all()
+        gare = q.all()
         
         # Aggiungi il campo is_inscription_open (come in _available_garas_for_user)
-        for p in provas:
+        for p in gare:
             p.is_inscription_open = p.get_real_status() == GaraStatus.INSCRIPTION.value
         
-        return provas
+        return gare
 
     # ---- selector unico (campionati + standalone) ------------------------
     @staticmethod
@@ -222,18 +222,18 @@ class DashboardService:
         """
 
         def _t_date(t: Campionato) -> Optional[date_cls]:
-            # Safely access the provas relationship
+            # Safely access the gare relationship
             try:
-                # Get the provas - either already loaded or load them
-                provas_attr = getattr(t, "provas", None)
-                if provas_attr is None:
+                # Get the gare - either already loaded or load them
+                gare_attr = getattr(t, "gare", None)
+                if gare_attr is None:
                     return None
 
                 # Convert to list to handle both collections and query objects
-                provas_list = (
-                    list(provas_attr) if hasattr(provas_attr, "__iter__") else []
+                gare_list = (
+                    list(gare_attr) if hasattr(gare_attr, "__iter__") else []
                 )
-                dates = [p.date for p in provas_list if getattr(p, "date", None)]
+                dates = [p.date for p in gare_list if getattr(p, "date", None)]
             except (AttributeError, TypeError):
                 # Fallback if relationship access fails
                 dates = []

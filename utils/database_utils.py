@@ -13,7 +13,7 @@ def get_database_stats():
         return {
             "users": User.query.count(),
             "campionati": Campionato.query.count(),
-            "provas": Gara.query.count(),
+            "gare": Gara.query.count(),
             "inscriptions": Inscription.query.count(),
             "matches": Match.query.count(),
         }
