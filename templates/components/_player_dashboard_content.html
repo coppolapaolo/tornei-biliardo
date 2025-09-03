@@ -1,92 +1,62 @@
 {# templates/components/_player_dashboard_content.html #}
-<!-- Standalone Available Competitions -->
-{% if vm.standalone_available and vm.standalone_available|length %}
-<div class="card mb-4" id="standalone-available" data-test="player-standalone-available">
-  <div class="card-header"><h5 class="mb-0">🎯 Competizioni Standalone Disponibili</h5></div>
-  <div class="card-body table-responsive">
-    <table class="table table-striped align-middle">
-      <thead>
-        <tr>
-          <th>Nome</th><th>Data</th><th>Luogo</th><th>Organizzatore</th>
-          <th>Disciplina</th><th>Scadenza Iscrizioni</th><th>Azione</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for p in vm.standalone_available %}
-        <tr class="{% if vm.selected_gara and vm.selected_gara.id == p.id %}table-active{% endif %}">
-          <td><strong>{{ p.name }}</strong> <span class="badge bg-info ms-2">Standalone</span></td>
-          <td>{{ p.date.strftime('%d/%m/%Y') if p.date else '-' }}</td>
-          <td>{{ p.location or '-' }}</td>
-          <td>{{ p.get_organizer().username if p.get_organizer else '-' }}</td>
-          <td>{{ p.discipline|replace('_', ' ')|title }}</td>
-          <td><span class="text-danger">{{ p.inscription_end.strftime('%d/%m %H:%M') if p.inscription_end else '-' }}</span></td>
-          <td>
-            {% if p.status == 'inscription' %}
-              <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=p.id) }}">
-               <button type="submit" class="btn btn-sm btn-success">
-                  <i class="fas fa-user-plus"></i> Iscriviti
-                </button>
-              </form>
-            {% elif p.status == 'setup' %}
-              <span class="badge bg-secondary">In preparazione</span>
-            {% else %}
-              <span class="badge bg-warning">{{ p.status|title }}</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+{# NUOVO: Dashboard unificata player - mostra campionati e gare disponibili insieme ordinati per data #}
+
+{% if vm.unified_items and vm.unified_items|length %}
+  {% include "components/_unified_cards.html" %}
+{% else %}
+  {% include "components/_dashboard_empty_state.html" %}
 {% endif %}
 
-{% if vm.selected_campionato %}
-  <!-- Info campionato selezionato -->
-  {% include "components/_campionato_info_alert.html" %}
-
-  <div class="row">
-    <!-- COLONNA SINISTRA -->
-    <div class="col-md-8">
-
-      <!-- Individual Match Opportunities -->
-      {% include "components/_match_opportunities.html" %}
-      
-      <!-- Recent Individual Matches -->
-      {% include "components/_individual_matches.html" %}
-
-      <!-- Gare disponibili per iscrizione -->
-      {% include "components/_available_garas.html" %}
-
-      <!-- Le mie iscrizioni -->
-      {% include "components/_my_inscriptions.html" %}
-
-      <!-- Le mie iscrizioni a Standalone -->
-      {% include "components/_my_standalone_inscriptions.html" %}
-
-      <!-- Partite in corso -->
-      {% include "components/_current_matches.html" %}
-
-      <!-- Ultime partite giocate -->
-      {% include "components/_recent_matches.html" %}
-
-    </div>
-
-    <!-- COLONNA DESTRA -->
-    <div class="col-md-4">
-      <!-- Campionato Info -->
-      {% include "components/_campionato_info.html" %}
-
-      <!-- Managed Campionati -->
-      {% include "components/_managed_campionatos.html" %}
-
-      <!-- Quick Actions -->
-      {% include "components/_quick_actions.html" %}
+<!-- Individual Match Opportunities for Players -->
+{% if vm.match_opportunities and vm.match_opportunities|length %}
+<div class="card mt-4">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-handshake"></i> Match Opportunities ({{ vm.match_opportunities|length }})</h5>
+      <a href="{{ url_for('player.match_proposals') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-list"></i> View All
+      </a>
     </div>
   </div>
-
-{% else %}
-  {% if not vm.standalone_available or vm.standalone_available|length == 0 %}
-    {% include "components/_dashboard_empty_state.html" %}
-  {% endif %}
+  <div class="card-body">
+    <div class="row">
+      {% for proposal in vm.match_opportunities %}
+      <div class="col-md-6 mb-3">
+        <div class="card border-success">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="card-title">{{ proposal.discipline.replace('_', ' ').title() }} Match</h6>
+              <span class="badge bg-success">Open</span>
+            </div>
+            <p class="card-text">
+              <small class="text-muted">
+                <i class="fas fa-user"></i> {{ proposal.proposer.username }}<br>
+                <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
+                <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') }}<br>
+                <i class="fas fa-trophy"></i> {{ proposal.distance }} {{ 'Best of' if proposal.best_of else 'Race to' }}
+              </small>
+            </p>
+            {% if proposal.entry_fee %}
+            <p class="card-text"><strong>Entry Fee: €{{ proposal.entry_fee }}</strong></p>
+            {% endif %}
+            
+            <div class="mt-3">
+              <form method="POST" action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}">
+                <button type="submit" class="btn btn-sm btn-success">
+                  <i class="fas fa-handshake"></i> Join Match
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-3">
+      <a href="{{ url_for('player.create_match_proposal') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Create Match Proposal
+      </a>
+    </div>
+  </div>
+</div>
 {% endif %}

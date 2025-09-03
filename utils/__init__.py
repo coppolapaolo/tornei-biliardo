@@ -59,12 +59,27 @@ def gara_manager_required(fn):
         if getattr(current_user, "is_admin", False):
             return fn(*args, **kwargs)
 
-        # Standalone: serve essere DIRECTOR e essere il director assegnato
+        # Standalone: serve essere DIRECTOR e essere il director assegnato o co-direttore
         if gara and getattr(gara, "campionato_id", None) is None:
-            if not (
-                getattr(current_user, "is_director", False)
-                and gara.director_id == current_user.id
-            ):
+            if not getattr(current_user, "is_director", False):
+                abort(403)
+            
+            # Director principale
+            if gara.director_id == current_user.id:
+                return fn(*args, **kwargs)
+            
+            # Co-direttore via DirectorAssignment
+            from models.user.models import DirectorAssignment
+            is_co_director = (
+                db.session.query(DirectorAssignment)
+                .filter(
+                    DirectorAssignment.entity_type == 'gara',
+                    DirectorAssignment.entity_id == gara_id,
+                    DirectorAssignment.user_id == current_user.id
+                )
+                .first() is not None
+            )
+            if not is_co_director:
                 abort(403)
             return fn(*args, **kwargs)
 
@@ -334,13 +349,29 @@ def rack_manager_required(f):
         if getattr(current_user, "is_admin", False):
             return f(*args, **kwargs)
 
-        # Standalone: serve essere DIRECTOR e essere il director assegnato
+        # Standalone: serve essere DIRECTOR e essere il director assegnato o co-direttore
         if campionato_id is None:  # Gara standalone
-            if not (
-                getattr(current_user, "is_director", False)
-                and hasattr(gara, "director_id")
-                and gara.director_id == current_user.id
-            ):
+            if not getattr(current_user, "is_director", False):
+                flash("Non puoi gestire i rack di questa gara.", "error")
+                return redirect(url_for("dashboard.dashboard"))
+            
+            # Director principale
+            if hasattr(gara, "director_id") and gara.director_id == current_user.id:
+                return f(*args, **kwargs)
+            
+            # Co-direttore via DirectorAssignment
+            from models.user.models import DirectorAssignment
+            gara_id = gara.id
+            is_co_director = (
+                db.session.query(DirectorAssignment)
+                .filter(
+                    DirectorAssignment.entity_type == 'gara',
+                    DirectorAssignment.entity_id == gara_id,
+                    DirectorAssignment.user_id == current_user.id
+                )
+                .first() is not None
+            )
+            if not is_co_director:
                 flash("Non puoi gestire i rack di questa gara.", "error")
                 return redirect(url_for("dashboard.dashboard"))
             return f(*args, **kwargs)

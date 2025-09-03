@@ -49,11 +49,18 @@ class PermissionChecker:
         # Director can manage assigned campionati
         if user.is_director:
             try:
-                from .models import TournamentDirector
+                from .models import DirectorAssignment
+                from models.base import db
 
-                assignment = TournamentDirector.query.filter_by(
-                    user_id=user.id, campionato_id=campionato_id
-                ).first()
+                assignment = (
+                    db.session.query(DirectorAssignment)
+                    .filter(
+                        DirectorAssignment.entity_type == 'campionato',
+                        DirectorAssignment.entity_id == campionato_id,
+                        DirectorAssignment.user_id == user.id
+                    )
+                    .first()
+                )
                 return assignment is not None
             except Exception:
                 # If we're outside application context or other issues, return False
@@ -84,7 +91,7 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Director can manage competitions in their campionati
+        # Director can manage competitions in their campionati OR standalone gare they manage
         if user.is_director:
             try:
                 # Import here to avoid circular imports during transition
@@ -92,9 +99,28 @@ class PermissionChecker:
 
                 competition = db.session.get(Gara, competition_id)
                 if competition:
-                    return PermissionChecker.can_manage_campionato(
-                        user, competition.campionato_id
-                    )
+                    # For gare in campionati
+                    if competition.campionato_id:
+                        return PermissionChecker.can_manage_campionato(
+                            user, competition.campionato_id
+                        )
+                    # For standalone gare
+                    else:
+                        # Director principale
+                        if hasattr(competition, 'director_id') and competition.director_id == user.id:
+                            return True
+                        # Co-direttore via DirectorAssignment
+                        from .models import DirectorAssignment
+                        is_co_director = (
+                            db.session.query(DirectorAssignment)
+                            .filter(
+                                DirectorAssignment.entity_type == 'gara',
+                                DirectorAssignment.entity_id == competition_id,
+                                DirectorAssignment.user_id == user.id
+                            )
+                            .first() is not None
+                        )
+                        return is_co_director
             except Exception:
                 # If we're outside application context or other issues, return False
                 return False
@@ -417,11 +443,17 @@ class PermissionChecker:
         if permission_level == "manage" and user.is_director:
             # Directors see only their assigned campionati
             try:
-                from .models import TournamentDirector
+                from .models import DirectorAssignment
+                from models.base import db
 
                 managed_ids = [
-                    td.campionato_id
-                    for td in TournamentDirector.query.filter_by(user_id=user.id).all()
+                    da.entity_id for da in 
+                    db.session.query(DirectorAssignment)
+                    .filter(
+                        DirectorAssignment.entity_type == 'campionato',
+                        DirectorAssignment.user_id == user.id
+                    )
+                    .all()
                 ]
                 return [t for t in campionati if t.id in managed_ids]
             except Exception:

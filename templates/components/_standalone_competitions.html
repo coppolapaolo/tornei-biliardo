@@ -1,53 +1,13 @@
 {# templates/components/_standalone_competitions.html #}
 <!-- Competizioni Standalone Disponibili -->
 {% if standalone_available %}
-<div class="card mb-4">
-    <div class="card-header">
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">🎯 Competizioni Standalone Disponibili</h5>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-<th>Data</th>
-<th>Luogo</th>
-<th>Organizzatore</th>
-<th>Disciplina</th>
-<th>Scadenza Iscrizioni</th>
-<th>Azione</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for gara in standalone_available %}
-                    <tr>
-                        <td>
-                            <strong>{{ gara.name }}</strong>
-                            <span class="badge bg-info ms-2">Standalone</span>
-                        </td>
-                        <td>{{ gara.date.strftime('%d/%m/%Y') }}</td>
-                        <td>{{ gara.location or '-' }}</td>
-                        <td>{{ gara.get_organizer().username }}</td>
-                        <td>{{ gara.discipline|replace('_', ' ')|title }}</td>
-                        <td>
-                            <span class="text-danger">
-                                {{ gara.inscription_end.strftime('%d/%m %H:%M') }}
-                            </span>
-                        </td>
-                        <td>
-                            <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" 
-                                  style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-user-plus"></i> Iscriviti
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    
+    {# Riutilizza il componente card per consistenza visiva #}
+    {% set provas = standalone_available %}
+    {% include "components/_gara_cards.html" %}
 </div>
 {% endif %}

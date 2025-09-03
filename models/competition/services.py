@@ -467,12 +467,15 @@ class GaraService:
         - oppure Campionato Director del campionato (via TournamentDirector)
         """
         # import locale per evitare cicli
-        from models.user.models import TournamentDirector
+        from models.user.models import DirectorAssignment
 
         # Subquery degli id campionato in cui l'utente è Campionato Director
         td_subq = (
-            db.session.query(TournamentDirector.campionato_id)
-            .filter(TournamentDirector.user_id == director_id)
+            db.session.query(DirectorAssignment.entity_id)
+            .filter(
+                DirectorAssignment.user_id == director_id,
+                DirectorAssignment.entity_type == 'campionato'
+            )
             .subquery()
         )
 
@@ -660,6 +663,71 @@ class GaraService:
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
         return ProvaStateMachine.complete(gara)
+
+    @staticmethod
+    def add_director(gara_id: int, user_id: int, assigned_by_id: int) -> bool:
+        """Aggiunge un co-direttore alla gara.
+        
+        Returns:
+            True se aggiunto con successo, False se già esistente
+            
+        Raises:
+            ValueError se l'utente è admin
+        """
+        from models.user.models import User, DirectorAssignment
+
+        # Verifica che l'utente non sia admin
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            raise ValueError("Gli admin non possono essere direttori di gara")
+
+        # Controlla se già esiste
+        existing = (
+            db.session.query(DirectorAssignment)
+            .filter_by(
+                entity_type='gara',
+                entity_id=gara_id,
+                user_id=user_id
+            )
+            .first()
+        )
+        if existing:
+            return False
+
+        # Crea associazione
+        director_assoc = DirectorAssignment(
+            entity_type='gara',
+            entity_id=gara_id,
+            user_id=user_id,
+            assigned_by_id=assigned_by_id
+        )
+        db.session.add(director_assoc)
+        db.session.commit()
+        return True
+
+    @staticmethod
+    def remove_director(gara_id: int, user_id: int) -> bool:
+        """Rimuove un co-direttore dalla gara.
+        
+        Returns:
+            True se rimosso con successo, False se non trovato
+        """
+        from models.user.models import DirectorAssignment
+
+        director_assoc = (
+            db.session.query(DirectorAssignment)
+            .filter_by(
+                entity_type='gara',
+                entity_id=gara_id,
+                user_id=user_id
+            )
+            .first()
+        )
+        if director_assoc:
+            db.session.delete(director_assoc)
+            db.session.commit()
+            return True
+        return False
 
 
 class InscriptionService:

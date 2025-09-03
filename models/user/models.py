@@ -166,7 +166,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
             return Campionato.query.all()
         if self.is_director:
-            return [assoc.campionato for assoc in self.campionato_director_associations]
+            return [assoc.campionato for assoc in self.director_assignments if assoc.entity_type == 'campionato' and assoc.campionato]
         return []
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -230,32 +230,46 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CAMPIONATO DIRECTOR ASSOCIATION
+# DIRECTOR ASSIGNMENT (GENERIC)
 # ────────────────────────────────────────────────────────────────────────────────
-class TournamentDirector(BaseModel):
-    __tablename__ = "campionato_director"
+class DirectorAssignment(BaseModel):
+    __tablename__ = "director_assignment"
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    campionato_id = db.Column(
-        db.Integer,
-        db.ForeignKey("campionato.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
+    entity_type = db.Column(db.String(20), primary_key=True)  # 'campionato' o 'gara'
+    entity_id = db.Column(db.Integer, primary_key=True)
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Relationships
     director = db.relationship(
-        "User", foreign_keys=[user_id], backref="campionato_director_associations"
+        "User", foreign_keys=[user_id], backref="director_assignments"
     )
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
-    campionato = db.relationship(
-        "Campionato",
-        backref=backref(
-            "directors_association",
-            cascade="all, delete-orphan",
-            passive_deletes=True,
-        ),
-    )
+    
+    @property
+    def campionato(self):
+        """Get campionato if this is a campionato assignment."""
+        if self.entity_type == 'campionato':
+            from models.campionato.models import Campionato
+            return db.session.get(Campionato, self.entity_id)
+        return None
+    
+    @property
+    def gara(self):
+        """Get gara if this is a gara assignment."""
+        if self.entity_type == 'gara':
+            from models.competition.models import Gara
+            return db.session.get(Gara, self.entity_id)
+        return None
+
+    def __repr__(self):
+        return f"<DirectorAssignment {self.user_id} -> {self.entity_type}:{self.entity_id}>"
+
+
+# Legacy aliases for backward compatibility
+TournamentDirector = DirectorAssignment  # Backward compatibility
+GaraDirector = DirectorAssignment  # Backward compatibility
 
 
 # ────────────────────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-<!-- Directors Management Component for Campionato -->
+<!-- Directors Management Component for Gara -->
 {% from 'components/_directors_management.html' import directors_management %}
 {% set ctx = {
     'show_admin_management': show_admin_management,
@@ -7,4 +7,4 @@
     'can_manage_directors': can_manage_directors,
     'current_user': current_user
 } %}
-{{ directors_management(campionato, 'admin.campionato.add_director', 'admin.campionato.remove_director', 'campionato_id', **ctx) }}
+{{ directors_management(gara, 'admin.competition.add_director', 'admin.competition.remove_director', 'gara_id', **ctx) }}

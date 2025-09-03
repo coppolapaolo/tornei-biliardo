@@ -90,6 +90,21 @@ class Gara(db.Model):
         "User", foreign_keys=[director_id], backref="standalone_garas"
     )
 
+    # Co-directors relationship (similar to campionati)
+    @property 
+    def directors(self):
+        """Get co-directors for this gara."""
+        from models.user.models import DirectorAssignment, User
+        return (
+            db.session.query(User)
+            .join(DirectorAssignment, User.id == DirectorAssignment.user_id)
+            .filter(
+                DirectorAssignment.entity_type == 'gara',
+                DirectorAssignment.entity_id == self.id
+            )
+            .all()
+        )
+
     # Property per identificare se è standalone
     @property
     def is_standalone(self):

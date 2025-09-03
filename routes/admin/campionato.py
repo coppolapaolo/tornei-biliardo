@@ -61,8 +61,16 @@ def campionato_detail(campionato_id):
     gare = campionato_data["gare"]
     candidate_directors = campionato_data["candidate_directors"]
 
-    can_manage_directors = current_user.is_admin or any(
-        td.user_id == current_user.id for td in campionato.directors_association
+    # Controlla se l'utente può gestire director per questo campionato
+    from models.user.models import DirectorAssignment
+    can_manage_directors = current_user.is_admin or (
+        db.session.query(DirectorAssignment)
+        .filter(
+            DirectorAssignment.entity_type == 'campionato',
+            DirectorAssignment.entity_id == campionato.id,
+            DirectorAssignment.user_id == current_user.id
+        )
+        .first() is not None
     )
 
     # Calcola statistiche avanzate del campionato  
@@ -74,7 +82,7 @@ def campionato_detail(campionato_id):
     
     # Trova gare completate o gare "playing" ma con tutti i round completati
     eligible_garas = []
-    for p in provas:
+    for p in gare:
         if p.status == 'completed':
             eligible_garas.append(p)
         elif p.status == 'playing' and p.current_round > p.rounds_count:
@@ -88,7 +96,7 @@ def campionato_detail(campionato_id):
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
-        gare =provas,
+        gare=gare,
         users=candidate_directors,
         can_manage_directors=can_manage_directors,
         campionato_stats=campionato_stats,

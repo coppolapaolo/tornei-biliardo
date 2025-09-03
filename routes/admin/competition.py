@@ -138,14 +138,20 @@ def create_gara():
         abort(404)
 
     # Verifica permessi sul campionato
+    from models.user.models import DirectorAssignment
+    is_campionato_director = (
+        db.session.query(DirectorAssignment)
+        .filter(
+            DirectorAssignment.entity_type == 'campionato',
+            DirectorAssignment.entity_id == campionato_id,
+            DirectorAssignment.user_id == current_user.id
+        )
+        .first() is not None
+    )
+    
     if not (
         current_user.is_admin
-        or (
-            current_user.is_director
-            and any(
-                td.user_id == current_user.id for td in campionato.directors_association
-            )
-        )
+        or (current_user.is_director and is_campionato_director)
     ):
         flash("Non puoi creare gare in questo campionato.", "error")
         return redirect(url_for("dashboard.dashboard"))
@@ -357,11 +363,34 @@ def gara_detail(gara_id):
         .all()
     )
 
+    # Director management context
+    from models.user.models import User
+    
+    # Get available users for director selection (directors only, exclude admins)
+    users = (
+        User.query.filter(User.role == "director")
+        .filter(User.deleted_at.is_(None))
+        .order_by(User.username)
+        .all()
+    )
+    
+    # Permission checks for director management
+    can_manage_directors = current_user.is_admin or (
+        current_user.is_director and 
+        (gara.director_id == current_user.id if gara.is_standalone else True)
+    )
+    show_admin_management = current_user.is_admin
+    show_director_management = current_user.is_director and can_manage_directors
+    
     return render_template(
         "admin/gara_detail.html",
         gara=gara,
         inscriptions=inscriptions,
         matches=matches,
+        users=users,
+        can_manage_directors=can_manage_directors,
+        show_admin_management=show_admin_management,
+        show_director_management=show_director_management,
     )
 
 
@@ -669,3 +698,51 @@ def trio_reset(trio_id):
         return jsonify({"error": str(ve)}), 500
     except Exception as e:
         return jsonify({"error": f"Errore durante reset trio: {str(e)}"}), 500
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# DIRECTOR MANAGEMENT
+# ────────────────────────────────────────────────────────────────────────────────
+
+@competition_bp.route("/<int:gara_id>/add_director", methods=["POST"])
+@login_required
+@gara_manager_required
+def add_director(gara_id):
+    """Aggiunge un co‑direttore alla gara"""
+    new_director_id = int(request.form["user_id"])
+
+    try:
+        success = GaraService.add_director(
+            gara_id=gara_id,
+            user_id=new_director_id,
+            assigned_by_id=current_user.id,
+        )
+
+        if success:
+            flash("Direttore aggiunto con successo.")
+        else:
+            flash("Utente già presente come direttore.", "warning")
+
+    except ValueError as e:
+        flash(str(e), "error")
+    except Exception as e:
+        flash(f"Errore durante l'aggiunta del direttore: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/remove_director", methods=["POST"])
+@login_required
+@gara_manager_required
+def remove_director(gara_id):
+    """Rimuove un co‑direttore dalla gara"""
+    director_id = int(request.form["user_id"])
+
+    success = GaraService.remove_director(gara_id=gara_id, user_id=director_id)
+
+    if success:
+        flash("Direttore rimosso con successo.")
+    else:
+        flash("Errore: direttore non trovato.", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

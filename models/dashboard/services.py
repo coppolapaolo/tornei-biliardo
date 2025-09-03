@@ -9,7 +9,8 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
 from models.base import db
-from models.campionato.models import Campionato, TournamentDirector
+from models.campionato.models import Campionato
+from models.user.models import DirectorAssignment
 from models.competition.models import Gara, Inscription
 from models.match.models import Match as TournamentMatch
 from models.user.models import User
@@ -73,6 +74,20 @@ class CapabilityVM:
     can_create_campionato: bool = False
     can_create_standalone: bool = False
     can_register_self: bool = True  # gli admin in genere no
+    can_create_match_proposal: bool = False
+
+
+@dataclass  
+class UnifiedDashboardItem:
+    """Elemento unificato per dashboard (campionato o gara)"""
+    type: str  # 'campionato' o 'gara'
+    id: int
+    name: str
+    entity: Any  # Campionato o Gara
+    next_prova_date: Optional[date_cls] = None
+    sort_key: str = ""  # Per ordinamento alfabetico se no date
+    can_manage: bool = False  # Se l'utente può gestire questo elemento
+    can_view_details: bool = True  # Se l'utente può vedere i dettagli
 
 
 @dataclass
@@ -82,6 +97,9 @@ class DashboardVM:
     campionati: List[Campionato]
     caps: CapabilityVM
 
+    # NUOVO: elementi unificati ordinati per data
+    unified_items: List[UnifiedDashboardItem] = None
+
     # selezione
     selected_campionato: Optional[Campionato] = None
     selected_gara: Optional[Gara] = None
@@ -89,7 +107,7 @@ class DashboardVM:
         List[dict]
     ] = None  # [{"kind":"t"|"p","id":int,"label":str,"selected":bool}]
 
-    # sezioni admin/director
+    # sezioni admin/director (DEPRECATE - mantenute per compatibilità)
     standalone_garas: Optional[List[Gara]] = None  # standalone che GESTISCO
 
     # sezioni player-like
@@ -127,6 +145,118 @@ class DashboardService:
 
     # ---- query helpers ------------------------------------------------
     @staticmethod
+    def _build_unified_items(
+        campionati: List[Campionato], 
+        standalone_garas: List[Gara],
+        user_role: str = 'player',  # 'admin', 'director', 'player'
+        user_id: Optional[int] = None
+    ) -> List[UnifiedDashboardItem]:
+        """
+        Crea lista unificata di campionati e gare standalone ordinata per data prossima prova.
+        
+        user_role determina quale tipo di elementi includere:
+        - admin: tutti i campionati + tutte le standalone
+        - director: campionati gestiti + standalone gestite + standalone disponibili
+        - player: tutti i campionati + standalone disponibili
+        """
+        items = []
+        
+        # Aggiungi campionati
+        for campionato in campionati:
+            # Calcola la prossima data per i campionati
+            next_date = None
+            try:
+                gare_list = list(campionato.gare) if hasattr(campionato, 'gare') else []
+                future_dates = [p.date for p in gare_list if getattr(p, 'date', None) and p.date >= date_cls.today()]
+                next_date = min(future_dates) if future_dates else None
+            except (AttributeError, TypeError):
+                next_date = None
+            
+            # Calcola permessi per campionato
+            can_manage = False
+            can_view_details = True
+            
+            if user_role == 'admin':
+                can_manage = True
+            elif user_role == 'director' and user_id:
+                # Director può gestire se è co-direttore
+                is_co_director = (
+                    db.session.query(DirectorAssignment)
+                    .filter(
+                        DirectorAssignment.entity_type == 'campionato',
+                        DirectorAssignment.entity_id == campionato.id,
+                        DirectorAssignment.user_id == user_id
+                    )
+                    .first() is not None
+                )
+                
+                
+                can_manage = is_co_director
+                can_view_details = is_co_director  # Director può vedere dettagli solo se può gestire
+            elif user_role == 'player':
+                can_view_details = False  # Player non può vedere dettagli di gestione
+                
+            items.append(UnifiedDashboardItem(
+                type='campionato',
+                id=campionato.id,
+                name=campionato.name,
+                entity=campionato,
+                next_prova_date=next_date,
+                sort_key=campionato.name.lower(),
+                can_manage=can_manage,
+                can_view_details=can_view_details
+            ))
+        
+        # Aggiungi gare standalone  
+        for gara in standalone_garas:
+            gara_name = gara.name or f'Gara {gara.number or ""}'
+            
+            # Calcola permessi per gara
+            can_manage = False
+            can_view_details = True
+            
+            if user_role == 'admin':
+                can_manage = True
+            elif user_role == 'director' and user_id:
+                # Director può gestire se è direttore principale O co-direttore
+                is_main_director = hasattr(gara, 'director_id') and gara.director_id == user_id
+                is_co_director = (
+                    db.session.query(DirectorAssignment)
+                    .filter(
+                        DirectorAssignment.entity_type == 'gara',
+                        DirectorAssignment.entity_id == gara.id,
+                        DirectorAssignment.user_id == user_id
+                    )
+                    .first() is not None
+                )
+                
+                
+                can_manage = is_main_director or is_co_director
+                can_view_details = is_main_director or is_co_director  # Director può vedere dettagli solo se può gestire
+            elif user_role == 'player':
+                can_view_details = False  # Player non può vedere dettagli di gestione
+                
+            items.append(UnifiedDashboardItem(
+                type='gara',
+                id=gara.id, 
+                name=gara_name,
+                entity=gara,
+                next_prova_date=getattr(gara, 'date', None),
+                sort_key=gara_name.lower(),
+                can_manage=can_manage,
+                can_view_details=can_view_details
+            ))
+        
+        # Ordina: prima per data (None alla fine), poi alfabetico
+        items.sort(key=lambda x: (
+            x.next_prova_date is None,  # None alla fine
+            x.next_prova_date or date_cls.max,  # Per ordinamento date
+            x.sort_key  # Alfabetico per elementi senza data
+        ))
+        
+        return items
+
+    @staticmethod
     def _campionatos_q():
         # joinedload per poter calcolare la prima data utile nel selector
         return (
@@ -139,8 +269,10 @@ class DashboardService:
     def _managed_campionatos_q(user_id: int):
         return (
             db.session.query(Campionato)
-            .join(TournamentDirector, TournamentDirector.campionato_id == Campionato.id)
-            .filter(TournamentDirector.user_id == user_id)
+            .join(DirectorAssignment, 
+                  (DirectorAssignment.entity_type == 'campionato') & 
+                  (DirectorAssignment.entity_id == Campionato.id) &
+                  (DirectorAssignment.user_id == user_id))
             .options(joinedload(getattr(Campionato, "gare")))
             .order_by(Campionato.created_at.desc())
         )
@@ -190,12 +322,24 @@ class DashboardService:
         )
 
         if exclude_director_id is not None and hasattr(Gara, "director_id"):
+            # Escludi gare dove l'utente è direttore principale
             q = q.filter(
                 or_(
                     Gara.director_id.is_(None),
                     Gara.director_id != exclude_director_id,
                 )
             )
+            
+            # Escludi anche gare dove l'utente è co-direttore
+            co_director_gara_ids = (
+                db.session.query(DirectorAssignment.entity_id)
+                .filter(
+                    DirectorAssignment.entity_type == 'gara',
+                    DirectorAssignment.user_id == exclude_director_id
+                )
+                .scalar_subquery()
+            )
+            q = q.filter(~Gara.id.in_(co_director_gara_ids))
 
         gare = q.all()
         
@@ -277,10 +421,12 @@ class DashboardService:
     def _caps_for(user: User) -> CapabilityVM:
         is_admin = _role_truthy(user, "is_admin")
         is_director = _role_truthy(user, "is_director")
+        is_player = _role_truthy(user, "is_player")
         return CapabilityVM(
             can_create_campionato=is_admin or is_director,
             can_create_standalone=is_admin or is_director,
             can_register_self=not is_admin,
+            can_create_match_proposal=is_player and not is_admin,
         )
 
     # ---- sezioni "player-like" riusabili ------------------------------
@@ -429,14 +575,18 @@ class DashboardService:
             can_create_campionato=True,
             can_create_standalone=True,
             can_register_self=False,
+            can_create_match_proposal=False,
         )
 
-        # Note: Admin dashboard doesn't include individual match proposals
-        # as it's focused on campionato/gara management
+        # NUOVO: elementi unificati
+        unified_items = DashboardService._build_unified_items(
+            campionati, standalone, user_role='admin', user_id=None
+        )
 
         return DashboardVM(
             title="Dashboard Amministratore",
             campionati=campionati,
+            unified_items=unified_items,
             selected_campionato=None,
             selected_gara=None,
             selector_items=DashboardService._build_selector_items(
@@ -445,7 +595,7 @@ class DashboardService:
                 selected_campionato_id=None,
                 selected_gara_id=None,
             ),
-            standalone_garas=standalone,
+            standalone_garas=standalone,  # mantenuto per compatibilità
             available_garas=None,
             standalone_available=None,
             my_inscriptions=None,
@@ -520,10 +670,26 @@ class DashboardService:
             .all()
         )
 
-        # standalone gestite
-        standalone_owned: List[Gara] = [
-            p for p in standalones_all if has_director and p.director_id == user_id
-        ]
+        # standalone gestite (director principale O co-direttore)
+        standalone_owned: List[Gara] = []
+        if has_director:
+            for gara in standalones_all:
+                # Director principale
+                if gara.director_id == user_id:
+                    standalone_owned.append(gara)
+                else:
+                    # Co-direttore via DirectorAssignment
+                    is_co_director = (
+                        db.session.query(DirectorAssignment)
+                        .filter(
+                            DirectorAssignment.entity_type == 'gara',
+                            DirectorAssignment.entity_id == gara.id,
+                            DirectorAssignment.user_id == user_id
+                        )
+                        .first() is not None
+                    )
+                    if is_co_director:
+                        standalone_owned.append(gara)
         standalone_owned = DashboardService._annotate_garas_with_flags(
             standalone_owned
         )
@@ -532,15 +698,26 @@ class DashboardService:
         can_manage_directors = False
         if selected:
             can_manage_directors = _role_truthy(user, "is_admin") or (
-                db.session.query(TournamentDirector)
-                .filter_by(user_id=user_id, campionato_id=selected.id)
+                db.session.query(DirectorAssignment)
+                .filter(
+                    DirectorAssignment.entity_type == 'campionato',
+                    DirectorAssignment.entity_id == selected.id,
+                    DirectorAssignment.user_id == user_id
+                )
                 .first()
                 is not None
             )
 
+        # NUOVO: elementi unificati per director (gestite + disponibili)
+        all_standalone_for_director = standalone_owned + standalone_available
+        unified_items = DashboardService._build_unified_items(
+            campionati, all_standalone_for_director, user_role='director', user_id=user_id
+        )
+
         return DashboardVM(
             title="Dashboard Direttore",
             campionati=campionati,
+            unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
             selector_items=DashboardService._build_selector_items(
@@ -549,7 +726,7 @@ class DashboardService:
                 selected_campionato_id=selected.id if selected else None,
                 selected_gara_id=selected_gara.id if selected_gara else None,
             ),
-            standalone_garas=standalone_owned,
+            standalone_garas=standalone_owned,  # mantenuto per compatibilità
             available_garas=player_sections["available_garas"],
             standalone_available=standalone_available,
             my_inscriptions=player_sections["my_inscriptions"],
@@ -612,9 +789,15 @@ class DashboardService:
             .all()
         )
 
+        # NUOVO: elementi unificati per player (campionati + standalone disponibili)
+        unified_items = DashboardService._build_unified_items(
+            campionati, standalone_available, user_role='player', user_id=user_id
+        )
+
         return DashboardVM(
             title="Dashboard Giocatore",
             campionati=campionati,
+            unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
             selector_items=DashboardService._build_selector_items(

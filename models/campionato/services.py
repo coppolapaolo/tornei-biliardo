@@ -60,7 +60,7 @@ class TournamentService(DomainService):
         self._track_domain_access()
 
         # Import locale per evitare import circolari
-        from models.user.models import User, TournamentDirector
+        from models.user.models import User, DirectorAssignment
 
         user = self._execute_with_tracking(
             lambda: db.session.get(User, creator_user_id)
@@ -85,9 +85,10 @@ class TournamentService(DomainService):
         # Se l'utente è un direttore (non admin), assegnalo automaticamente
         if user.is_director and not user.is_admin:
             assignment = self._execute_with_tracking(
-                lambda: TournamentDirector(
+                lambda: DirectorAssignment(
+                    entity_type='campionato',
+                    entity_id=campionato.id,
                     user_id=creator_user_id,
-                    campionato_id=campionato.id,
                     assigned_by_id=creator_user_id,
                 )
             )
@@ -152,7 +153,7 @@ class TournamentService(DomainService):
         self._track_domain_access()
 
         # Import locale per evitare import circolari
-        from models.user.models import User, TournamentDirector
+        from models.user.models import User, DirectorAssignment
 
         user = self._execute_with_tracking(lambda: db.session.get(User, user_id))
         if not user:
@@ -162,8 +163,10 @@ class TournamentService(DomainService):
             raise ValueError("Gli admin non vanno assegnati come direttori.")
 
         existing = self._execute_with_tracking(
-            lambda: TournamentDirector.query.filter_by(
-                user_id=user_id, campionato_id=campionato_id
+            lambda: DirectorAssignment.query.filter_by(
+                entity_type='campionato',
+                entity_id=campionato_id,
+                user_id=user_id
             ).first()
         )
 
@@ -171,9 +174,10 @@ class TournamentService(DomainService):
             return False  # Già esistente
 
         assignment = self._execute_with_tracking(
-            lambda: TournamentDirector(
+            lambda: DirectorAssignment(
+                entity_type='campionato',
+                entity_id=campionato_id,
                 user_id=user_id,
-                campionato_id=campionato_id,
                 assigned_by_id=assigned_by_id,
             )
         )
@@ -191,11 +195,13 @@ class TournamentService(DomainService):
         self._track_domain_access()
 
         # Import locale per evitare import circolari
-        from models.user.models import TournamentDirector
+        from models.user.models import DirectorAssignment
 
         assignment = self._execute_with_tracking(
-            lambda: TournamentDirector.query.filter_by(
-                user_id=user_id, campionato_id=campionato_id
+            lambda: DirectorAssignment.query.filter_by(
+                entity_type='campionato',
+                entity_id=campionato_id,
+                user_id=user_id
             ).first()
         )
 
@@ -358,7 +364,16 @@ class TournamentService(DomainService):
         )
 
         # ID dei direttori già assegnati a questo campionato
-        assigned_ids = [td.user_id for td in campionato.directors_association]
+        from models.user.models import DirectorAssignment
+        assigned_ids = [
+            da.user_id for da in 
+            db.session.query(DirectorAssignment)
+            .filter(
+                DirectorAssignment.entity_type == 'campionato',
+                DirectorAssignment.entity_id == campionato_id
+            )
+            .all()
+        ]
 
         # Solo utenti role='director' che non sono già assegnati
         candidate_directors = self._execute_with_tracking(
@@ -372,7 +387,7 @@ class TournamentService(DomainService):
 
         return {
             "campionato": campionato,
-            "gare": provas,
+            "gare": gare,
             "candidate_directors": candidate_directors,
         }
 
@@ -400,7 +415,16 @@ class TournamentService(DomainService):
             raise ValueError("Campionato not found")
 
         # ID dei direttori già assegnati a questo campionato
-        assigned_ids = [td.user_id for td in campionato.directors_association]
+        from models.user.models import DirectorAssignment
+        assigned_ids = [
+            da.user_id for da in 
+            db.session.query(DirectorAssignment)
+            .filter(
+                DirectorAssignment.entity_type == 'campionato',
+                DirectorAssignment.entity_id == campionato_id
+            )
+            .all()
+        ]
 
         # Solo utenti role='director' che non sono già assegnati
         candidate_directors = self._execute_with_tracking(
