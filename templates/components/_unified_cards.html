@@ -160,8 +160,8 @@
                   {% endif %}
                 {% endif %}
                 
-                {# Pulsante iscrizione per player (solo per gare) #}
-                {% if not item.can_manage and item.entity.get_real_status() == 'inscription' %}
+                {# Pulsante iscrizione per player e direttori (solo per gare) - mai per admin #}
+                {% if not current_user.is_admin and item.entity.get_real_status() == 'inscription' %}
                   {% set ns = namespace(inscribed=false) %}
                   {% for ins in item.entity.inscriptions %}
                     {% if ins.user_id == current_user.id %}{% set ns.inscribed = true %}{% endif %}

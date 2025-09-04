@@ -1,11 +1,7 @@
 {# templates/components/_player_dashboard_content.html #}
-{# NUOVO: Dashboard unificata player - mostra campionati e gare disponibili insieme ordinati per data #}
+{# Dashboard con sezioni separate per gare e campionati #}
 
-{% if vm.unified_items and vm.unified_items|length %}
-  {% include "components/_unified_cards.html" %}
-{% else %}
-  {% include "components/_dashboard_empty_state.html" %}
-{% endif %}
+{% include "components/_separated_dashboard_content.html" %}
 
 <!-- Individual Match Opportunities for Players -->
 {% if vm.match_opportunities and vm.match_opportunities|length %}

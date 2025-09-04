@@ -1,5 +1,5 @@
 {# templates/components/_amalfi_system.html #}
-{% if gara.campionato.campionato_type == 'Amalfi' and gara.status in ['playing', 'completed'] %}
+{% if (gara.campionato and gara.campionato.campionato_type == 'Amalfi' and gara.status in ['playing', 'completed']) or (gara.is_standalone and gara.rounds_count > 1 and gara.status in ['playing', 'completed']) %}
 <div class="card border-primary">
     <div class="card-header bg-primary bg-opacity-10">
         <h5><i class="fas fa-brain"></i> Sistema Amalfi</h5>
@@ -15,7 +15,7 @@
                             <small class="text-muted">
                                 <strong>Turno Attuale:</strong> {{ gara.current_round }}/{{ gara.rounds_count }}<br>
                                 <strong>Modalità:</strong> 
-                                {% if gara.campionato.without_x %}
+                                {% if gara.campionato and gara.campionato.without_x %}
                                     Senza X (Trii)
                                 {% else %}
                                     Con X (Bye)

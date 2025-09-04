@@ -259,8 +259,8 @@ def inscribe_to_gara(gara_id):
     db.session.commit()
 
     flash(f"Iscrizione alla Gara {gara.number} completata!")
-    # Redirect mantenendo il campionato selezionato
-    return redirect(url_for("player.dashboard", campionato_id=gara.campionato_id))
+    # Redirect alla dashboard appropriata
+    return redirect(url_for("dashboard.dashboard"))
 
 
 @player_bp.route("/match/<int:match_id>")
@@ -274,7 +274,7 @@ def match_detail(match_id):
 
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
 
-    return render_template("player/match_detail.html", match=match, racks=racks)
+    return render_template("match_detail.html", match=match, racks=racks)
 
 
 @player_bp.route("/match/<int:match_id>/report_rack", methods=["POST"])
@@ -308,6 +308,36 @@ def report_rack_result(match_id):
         return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
 
 
+@player_bp.route("/match/<int:match_id>/add_rack", methods=["POST"])
+@login_required
+@match_player_required
+def add_rack(match_id):
+    """Aggiunge un rack alla partita (stessa logica di report_rack_result)"""
+    match = db.session.get(Match, match_id)
+    if match is None:
+        return jsonify({"error": "Partita non trovata"}), 404
+
+    winner_id = int(request.form["winner_id"])
+
+    # Verifica che il vincitore sia uno dei giocatori della partita
+    if winner_id not in [match.player1_id, match.player2_id]:
+        return jsonify({"error": "Giocatore non valido"}), 400
+
+    # Usa il service layer
+    try:
+        result = RackService.add_rack_with_score_update(
+            match_id=match_id,
+            winner_id=winner_id,
+            reported_by_id=current_user.id,
+            validated_by_admin=False,  # Player report, needs admin validation
+        )
+        return jsonify(result)
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+
+
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
 
 
@@ -317,16 +347,16 @@ def report_rack_result(match_id):
 def profile():
     """Profilo personale del giocatore"""
 
-    # Iscrizioni dell'utente
+    # Iscrizioni dell'utente (incluse gare standalone)
     inscriptions = (
         Inscription.query.filter_by(user_id=current_user.id)
         .join(Gara)
-        .join(Campionato)
-        .order_by(Campionato.created_at.desc(), Gara.number.desc())
+        .outerjoin(Campionato)  # LEFT JOIN per includere gare standalone
+        .order_by(Campionato.created_at.desc().nullslast(), Gara.date.desc())
         .all()
     )
 
-    # Partite giocate
+    # Partite giocate (incluse gare standalone)
     matches = (
         Match.query.filter(
             db.or_(
@@ -334,9 +364,9 @@ def profile():
             )
         )
         .join(Gara)
-        .join(Campionato)
+        .outerjoin(Campionato)  # LEFT JOIN per includere gare standalone
         .order_by(
-            Campionato.created_at.desc(), Gara.number.desc(), Match.round_number.desc()
+            Campionato.created_at.desc().nullslast(), Gara.date.desc(), Match.round_number.desc()
         )
         .all()
     )
@@ -366,15 +396,27 @@ def profile():
         :10
     ]
 
+    # Conta solo i campionati con gare completate dove l'utente ha partecipato
+    completed_tournaments = set([
+        insc.gara.campionato_id 
+        for insc in inscriptions 
+        if insc.gara.campionato_id is not None and insc.gara.status == 'completed'
+    ])
+    
+    # Conta solo le gare completate
+    completed_provas = len([
+        insc for insc in inscriptions 
+        if insc.gara.status == 'completed'
+    ])
+
     stats = {
         "total_inscriptions": len(inscriptions),
         "total_matches": total_matches,
         "won_matches": won_matches,
         "lost_matches": total_matches - won_matches,
         "win_percentage": round(win_percentage, 1),
-        "tournaments_played": len(
-            set([insc.gara.campionato_id for insc in inscriptions])
-        ),
+        "tournaments_played": len(completed_tournaments),
+        "provas_played": completed_provas,
     }
 
     return render_template(

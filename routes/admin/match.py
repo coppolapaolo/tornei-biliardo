@@ -74,6 +74,13 @@ def set_match_result_direct(match_id):
 
         # Usa il service layer invece del direct database access
         RackService.set_match_result_direct(match_id, player1_score, player2_score)
+        
+        # Dopo aver impostato il risultato, controlla se ci sono turni da aggiornare
+        from models.match.models import Match
+        from models.competition.services import GaraService
+        match = Match.query.get(match_id)
+        if match and match.gara_id:
+            GaraService.update_round_progression(match.gara_id)
 
         flash("Risultato impostato con successo!")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
@@ -94,6 +101,13 @@ def reset_match(match_id):
     try:
         # Usa il service layer invece del direct database access
         RackService.reset_match_complete(match_id)
+        
+        # Dopo aver resettato il match, controlla se ci sono turni da aggiornare
+        from models.match.models import Match
+        from models.competition.services import GaraService
+        match = Match.query.get(match_id)
+        if match and match.gara_id:
+            GaraService.update_round_progression(match.gara_id)
 
         flash("Partita resettata con successo!")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
@@ -115,8 +129,21 @@ def reset_match(match_id):
 def remove_rack_admin(rack_id):
     """Rimuovi un rack (admin)"""
     try:
+        # Prima ottieni le info del match per il round update
+        from models.rack.models import Rack
+        from models.competition.services import GaraService
+        rack = Rack.query.get(rack_id)
+        gara_id = None
+        if rack and rack.match and rack.match.gara_id:
+            gara_id = rack.match.gara_id
+        
         # Usa il service layer invece del direct database access
         result = RackService.remove_rack_admin(rack_id)
+        
+        # Dopo aver rimosso il rack, controlla se ci sono turni da aggiornare
+        if gara_id:
+            GaraService.update_round_progression(gara_id)
+        
         return jsonify(result)
 
     except ValueError as ve:

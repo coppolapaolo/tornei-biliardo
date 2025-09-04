@@ -118,37 +118,107 @@ class AmalfiEngine:
         return matches_data
 
     def _preview_amalfi_round(self, round_number: int) -> List[Dict]:
-        """Genera l'anteprima di un turno Amalfi senza persistere"""
-        # Per ora ritorniamo un'anteprima semplificata
-        inscriptions = self._inscriptions_for_pairing()
-        if len(inscriptions) < self.gara.min_participants:
-            raise ValueError(f"Servono almeno {self.gara.min_participants} iscritti")
+        """Genera l'anteprima di un turno Amalfi senza persistere usando l'algoritmo completo"""
+        # Ottieni la classificazione del round precedente
+        classification = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=self.gara.id, round_number=round_number - 1)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         
+        if not classification:
+            raise ValueError(f"Classificazione del round {round_number - 1} non trovata")
+        
+        # Calcola il salto
+        salto = self.gara.rounds_count - round_number
+        self._current_salto = salto
+        
+        # Simula l'algoritmo Amalfi per l'anteprima
         matches_data = []
-        players = [ins for ins in inscriptions]
+        matched_players: set[int] = set()
         
-        # Implementazione semplificata - in realtà dovrebbe usare l'algoritmo Amalfi completo
-        i = 0
-        while i < len(players):
-            if i + 1 < len(players):
+        for current_class in classification:
+            if current_class.user_id in matched_players:
+                continue
+
+            # Trova il target usando la stessa logica di _find_amalfi_target
+            target_class = self._find_amalfi_target_preview(
+                current_class, classification, matched_players, salto
+            )
+
+            if target_class:
                 matches_data.append({
                     "type": "normal",
-                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
-                    "player2": {"id": players[i+1].user_id, "username": players[i+1].user.username}
+                    "player1": {"id": current_class.user_id, "username": current_class.user.username},
+                    "player2": {"id": target_class.user_id, "username": target_class.user.username}
                 })
-                i += 2
-            else:
+                matched_players.update({current_class.user_id, target_class.user_id})
+
+        # Gestisci giocatori non abbinati (bye o trio)
+        unmatched = [c for c in classification if c.user_id not in matched_players]
+        if unmatched:
+            if len(unmatched) == 1:
                 matches_data.append({
-                    "type": "bye",
-                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
+                    "type": "bye", 
+                    "player1": {"id": unmatched[0].user_id, "username": unmatched[0].user.username},
                     "player2": None
                 })
-                i += 1
-        
-        # Salto fittizio per ora
-        self._current_salto = round_number
+            # Gestione trii se necessario - per ora semplificata
         
         return matches_data
+
+    def _find_amalfi_target_preview(
+        self,
+        current_class: RoundClassification,
+        classification: List[RoundClassification],
+        matched_players: set[int],
+        salto: int,
+    ) -> Optional[RoundClassification]:
+        """Versione preview di _find_amalfi_target - stessa logica senza persistenza"""
+        players_count = len(classification)
+        current_position = current_class.position
+        target_position = current_position + 1 + salto
+
+        attempts = 0
+        max_attempts = players_count * 2  # due giri completi max
+        fallback_target = None  # Per rematches forzati
+
+        while attempts < max_attempts:
+            if target_position > players_count:
+                target_position -= players_count
+
+            target_class = next(
+                (c for c in classification if c.position == target_position), None
+            )
+
+            if target_class:
+                # Controlla se è già abbinato
+                if target_class.user_id in matched_players:
+                    target_position += 1
+                    attempts += 1
+                    continue
+                
+                # Controlla self-pairing
+                if current_class.user_id == target_class.user_id:
+                    target_position += 1
+                    attempts += 1
+                    continue
+                
+                # Se non ha mai giocato insieme, è perfetto
+                if anti_rematch_allowed(self.gara.id, current_class.user_id, target_class.user_id):
+                    return target_class
+                
+                # Altrimenti salva come fallback per rematch forzato
+                if fallback_target is None:
+                    fallback_target = target_class
+
+            # prossima posizione
+            target_position += 1
+            attempts += 1
+
+        # Se non troviamo nessun abbinamento senza rematch, usiamo il fallback
+        return fallback_target
 
     # ────────────────────────────────────────────────────────────────────────────
     # Primo turno
@@ -339,10 +409,11 @@ class AmalfiEngine:
     ) -> Optional[RoundClassification]:
         players_count = len(classification)
         current_position = current_class.position
-        target_position = current_position + salto
+        target_position = current_position + 1 + salto
 
         attempts = 0
         max_attempts = players_count * 2  # due giri completi max
+        fallback_target = None  # Per rematches forzati
 
         while attempts < max_attempts:
             if target_position > players_count:
@@ -352,16 +423,33 @@ class AmalfiEngine:
                 (c for c in classification if c.position == target_position), None
             )
 
-            if target_class and self._is_valid_pairing(
-                current_class.user_id, target_class.user_id, matched_players
-            ):
-                return target_class
+            if target_class:
+                # Controlla se è già abbinato
+                if target_class.user_id in matched_players:
+                    target_position += 1
+                    attempts += 1
+                    continue
+                
+                # Controlla self-pairing
+                if current_class.user_id == target_class.user_id:
+                    target_position += 1
+                    attempts += 1
+                    continue
+                
+                # Se non ha mai giocato insieme, è perfetto
+                if anti_rematch_allowed(self.gara.id, current_class.user_id, target_class.user_id):
+                    return target_class
+                
+                # Altrimenti salva come fallback per rematch forzato
+                if fallback_target is None:
+                    fallback_target = target_class
 
             # gara posizione successiva
             target_position += 1
             attempts += 1
 
-        return None
+        # Se non troviamo nessun abbinamento senza rematch, usiamo il fallback
+        return fallback_target
 
     def _is_valid_pairing(
         self, p1_id: int, p2_id: int, matched_players: set[int]

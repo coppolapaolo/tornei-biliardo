@@ -519,15 +519,27 @@ class UserService:
         )
         win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
 
+        # Conta solo i campionati con gare completate dove l'utente ha partecipato
+        completed_tournaments = set([
+            insc.gara.campionato_id 
+            for insc in inscriptions 
+            if insc.gara.campionato_id is not None and insc.gara.status == 'completed'
+        ])
+        
+        # Conta solo le gare completate
+        completed_provas = len([
+            insc for insc in inscriptions 
+            if insc.gara.status == 'completed'
+        ])
+
         stats = {
             "total_inscriptions": len(inscriptions),
             "total_matches": total_matches,
             "won_matches": won_matches,
             "lost_matches": total_matches - won_matches,
             "win_percentage": round(win_percentage, 1),
-            "tournaments_played": len(
-                set([insc.gara.campionato_id for insc in inscriptions])
-            ),
+            "tournaments_played": len(completed_tournaments),
+            "provas_played": completed_provas,
         }
 
         return stats

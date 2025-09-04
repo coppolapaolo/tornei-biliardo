@@ -26,7 +26,7 @@
 {% include "components/_gara_results_stats.html" %}
 
 <!-- Partite per Turno -->
-{% for round_num in range(1, gara.rounds_count + 1) %}
+{% for round_num in range(gara.rounds_count, 0, -1) %}
     {% set round_matches = matches_by_round.get(round_num, []) %}
     {% include "components/_gara_round_section.html" %}
 {% endfor %}

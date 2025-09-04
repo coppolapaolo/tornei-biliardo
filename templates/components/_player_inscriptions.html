@@ -6,21 +6,43 @@
     </div>
     <div class="card-body">
         {% if inscriptions %}
-            {% set campionati = inscriptions|groupby('gara.campionato.name') %}
-            {% for campionato_name, campionato_inscriptions in campionati %}
-                <h6>{{ campionato_name }}</h6>
+            {% set campionato_inscriptions = inscriptions|selectattr('gara.campionato') %}
+            {% set standalone_inscriptions = inscriptions|rejectattr('gara.campionato') %}
+            
+            {# Iscrizioni per campionato #}
+            {% if campionato_inscriptions %}
+                {% set campionati = campionato_inscriptions|groupby('gara.campionato.name') %}
+                {% for campionato_name, camp_inscriptions in campionati %}
+                    <h6><i class="fas fa-trophy text-warning me-1"></i>{{ campionato_name }}</h6>
+                    <ul class="list-unstyled mb-3">
+                        {% for inscription in camp_inscriptions %}
+                            <li>
+                                <small>
+                                    Gara {{ inscription.gara.number }} - 
+                                    {{ inscription.gara.date.strftime('%d/%m/%Y') }}
+                                    {{ status_badge(inscription.gara, 'gara') }}
+                                </small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            {% endif %}
+            
+            {# Iscrizioni standalone #}
+            {% if standalone_inscriptions %}
+                <h6><i class="fas fa-bullseye text-primary me-1"></i>Gare Singole</h6>
                 <ul class="list-unstyled mb-3">
-                    {% for inscription in campionato_inscriptions %}
+                    {% for inscription in standalone_inscriptions %}
                         <li>
                             <small>
-                                Gara {{ inscription.gara.number }} - 
+                                {{ inscription.gara.name or ('Gara ' ~ inscription.gara.number) }} - 
                                 {{ inscription.gara.date.strftime('%d/%m/%Y') }}
                                 {{ status_badge(inscription.gara, 'gara') }}
                             </small>
                         </li>
                     {% endfor %}
                 </ul>
-            {% endfor %}
+            {% endif %}
         {% else %}
             <div class="alert alert-info">
                 <small>

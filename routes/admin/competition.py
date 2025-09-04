@@ -330,33 +330,6 @@ def gara_detail(gara_id):
     # Forza un refresh per assicurarsi di avere i dati più aggiornati
     db.session.refresh(gara)
     
-    # Ottieni iscrizioni ordinate per classifica attuale
-    inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
-    
-    # Se ci sono turni giocati, ordina per classifica
-    if gara.current_round > 0:
-        from models.classification.models import RoundClassification
-        
-        # Cerca la classifica più recente disponibile (partendo dal turno corrente e scendendo)
-        latest_classification = None
-        for round_num in range(gara.current_round, 0, -1):
-            latest_classification = RoundClassification.query.filter_by(
-                gara_id=gara_id, round_number=round_num
-            ).order_by(RoundClassification.position).all()
-            if latest_classification:
-                break
-        
-        if latest_classification:
-            # Crea un dizionario per ordinare le iscrizioni per posizione in classifica
-            position_map = {cls.user_id: cls.position for cls in latest_classification}
-            inscriptions.sort(key=lambda ins: position_map.get(ins.user_id, 999))
-        else:
-            # Fallback: ordina per initial_order se non c'è classifica
-            inscriptions.sort(key=lambda ins: ins.initial_order or 999)
-    else:
-        # Prima dell'inizio: ordina per initial_order
-        inscriptions.sort(key=lambda ins: ins.initial_order or 999)
-    
     matches = (
         Match.query.filter_by(gara_id=gara_id)
         .order_by(Match.round_number, Match.id)
@@ -364,23 +337,96 @@ def gara_detail(gara_id):
     )
 
     # Director management context
-    from models.user.models import User
+    from models.user.models import User, DirectorAssignment
     
-    # Get available users for director selection (directors only, exclude admins)
-    users = (
-        User.query.filter(User.role == "director")
-        .filter(User.deleted_at.is_(None))
+    # Ottieni iscrizioni ordinate alfabeticamente per username (dopo import User)
+    inscriptions = (
+        Inscription.query.filter_by(gara_id=gara_id)
+        .join(User, Inscription.user_id == User.id)
         .order_by(User.username)
         .all()
     )
     
+    # Get already assigned directors for this gara
+    assigned_director_ids = (
+        db.session.query(DirectorAssignment.user_id)
+        .filter(
+            DirectorAssignment.entity_type == 'gara',
+            DirectorAssignment.entity_id == gara.id
+        )
+        .all()
+    )
+    assigned_director_ids = [d[0] for d in assigned_director_ids]
+    
+    # Also add the principal director if it's a standalone gara
+    if gara.is_standalone and gara.director_id:
+        assigned_director_ids.append(gara.director_id)
+    
+    # Get available users for director selection (directors only, exclude admins, already assigned, and current user)
+    query = (
+        User.query.filter(User.role == "director")
+        .filter(User.deleted_at.is_(None))
+        .filter(User.id != current_user.id)  # Exclude current user
+    )
+    
+    # Exclude already assigned directors only if there are any
+    if assigned_director_ids:
+        query = query.filter(~User.id.in_(assigned_director_ids))
+    
+    users = query.order_by(User.username).all()
+    
     # Permission checks for director management
+    # Check if user is a director of this specific gara OR the campionato
+    
+    # Check if user is a director of this gara
+    is_gara_director = (
+        db.session.query(DirectorAssignment)
+        .filter(
+            DirectorAssignment.entity_type == 'gara',
+            DirectorAssignment.entity_id == gara.id,
+            DirectorAssignment.user_id == current_user.id
+        )
+        .first() is not None
+    )
+    
+    # Check if user is a director of the campionato (if gara is not standalone)
+    is_campionato_director = False
+    if not gara.is_standalone and gara.campionato_id:
+        is_campionato_director = (
+            db.session.query(DirectorAssignment)
+            .filter(
+                DirectorAssignment.entity_type == 'campionato',
+                DirectorAssignment.entity_id == gara.campionato_id,
+                DirectorAssignment.user_id == current_user.id
+            )
+            .first() is not None
+        )
+    
+    # Any director (principal or co-director) can manage other directors
     can_manage_directors = current_user.is_admin or (
-        current_user.is_director and 
-        (gara.director_id == current_user.id if gara.is_standalone else True)
+        current_user.is_director and (
+            is_gara_director or is_campionato_director or
+            (gara.is_standalone and gara.director_id == current_user.id)
+        )
     )
     show_admin_management = current_user.is_admin
     show_director_management = current_user.is_director and can_manage_directors
+    
+    # Ottieni l'ultima classificazione disponibile (sempre mostrata dal round 1 in poi)
+    current_round_classification = None
+    latest_round_with_classification = None
+    
+    if gara.current_round > 0:
+        # Cerca la classificazione più recente disponibile (partendo dal round corrente)
+        for round_num in range(gara.current_round, 0, -1):
+            classification = RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=round_num
+            ).order_by(RoundClassification.position).all()
+            
+            if classification:
+                current_round_classification = classification
+                latest_round_with_classification = round_num
+                break
     
     return render_template(
         "admin/gara_detail.html",
@@ -391,6 +437,8 @@ def gara_detail(gara_id):
         can_manage_directors=can_manage_directors,
         show_admin_management=show_admin_management,
         show_director_management=show_director_management,
+        current_round_classification=current_round_classification,
+        latest_round_with_classification=latest_round_with_classification,
     )
 
 
@@ -410,10 +458,7 @@ def open_inscriptions(gara_id):
     # Usa il service layer invece del direct database access
     try:
         GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
-        flash(
-            "Iscrizioni aperte! Gli orari sono gestiti "
-            "automaticamente nel tuo timezone locale."
-        )
+        flash("Iscrizioni aperte!")
     except ValueError as ve:
         flash(str(ve), "error")
 
@@ -536,6 +581,9 @@ def amalfi_classification(gara_id, round_number):
     # Statistiche aggiuntive
     total_players = len(classification)
     inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
+    
+    # Aggiungi tutti i matches per la navigazione turni
+    all_matches = Match.query.filter_by(gara_id=gara_id).all()
 
     return render_template(
         "admin/amalfi_classification.html",
@@ -544,6 +592,7 @@ def amalfi_classification(gara_id, round_number):
         classification=classification,
         total_players=total_players,
         inscriptions=inscriptions,
+        matches=all_matches,
     )
 
 

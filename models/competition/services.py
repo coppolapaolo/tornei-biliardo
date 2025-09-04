@@ -266,7 +266,13 @@ class GaraService:
     def modify_inscription_dates(
         gara_id: int, inscription_start: datetime, inscription_end: datetime
     ) -> Gara:
-        """Modifica le date di iscrizione per una gara."""
+        """Modifica le date di iscrizione per una gara.
+        
+        Permette di:
+        - Estendere il periodo di iscrizione (più tempo per iscriversi)
+        - Accorciare il periodo (chiudere prima)
+        - Modificare le date se non ancora iniziate
+        """
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
@@ -280,16 +286,47 @@ class GaraService:
             raise ValueError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
+        
+        # Verifica che la fine iscrizioni non sia dopo la data della gara
+        if gara.date and inscription_end.date() > gara.date:
+            raise ValueError(
+                "Le iscrizioni non possono terminare dopo la data della gara!"
+            )
 
+        # Salva le vecchie date per confronto
+        old_start = gara.inscription_start
+        old_end = gara.inscription_end
+        current_status = gara.status or GaraStatus.SETUP.value
+        
+        # Aggiorna le date
         gara.inscription_start = inscription_start
         gara.inscription_end = inscription_end
 
-        # Gestione automatica dello stato in base alle date
+        # Gestione intelligente dello stato
         now = datetime.utcnow()
+        
+        # Se le iscrizioni devono ancora iniziare
         if inscription_start > now:
-            gara = ProvaStateMachine.reopen_setup(gara)
+            # Solo se non siamo già in setup, torniamo in setup
+            if current_status == GaraStatus.INSCRIPTION.value:
+                gara = ProvaStateMachine.reopen_setup(gara)
+        
+        # Se siamo nel periodo di iscrizione
         elif inscription_start <= now <= inscription_end:
-            gara = ProvaStateMachine.to_inscription(gara)
+            # Solo se non siamo già in inscription, passiamo a inscription
+            if current_status == GaraStatus.SETUP.value:
+                gara = ProvaStateMachine.to_inscription(gara)
+            # Se siamo già in inscription, non fare nulla (solo aggiorna le date)
+        
+        # Se le iscrizioni sono terminate
+        elif now > inscription_end:
+            # Se eravamo in inscription e ora sono scadute, manteniamo inscription
+            # (sarà il sistema a gestire la transizione quando si avvia il turno)
+            pass
+        
+        # Commit delle modifiche
+        db.session.add(gara)
+        db.session.commit()
 
         return gara
 
@@ -728,6 +765,47 @@ class GaraService:
             db.session.commit()
             return True
         return False
+    
+    @staticmethod
+    def update_round_progression(gara_id: int) -> None:
+        """Aggiorna la progressione dei turni e calcola le classifiche quando necessario"""
+        from models.match.models import Match
+        from models.status_enum import MatchStatus
+        from models.classification.models import RoundClassification
+        
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return
+            
+        # Controlla ogni turno per vedere se è completato e aggiorna current_round
+        for round_num in range(1, gara.rounds_count + 1):
+            round_matches = Match.query.filter_by(gara_id=gara_id, round_number=round_num).all()
+            
+            if not round_matches:
+                # Nessun match in questo turno, ferma qui
+                break
+                
+            # Controlla se tutti i match del turno sono completati
+            all_completed = all(m.status == MatchStatus.COMPLETED.value for m in round_matches)
+            
+            if all_completed:
+                # Aggiorna current_round se necessario
+                if gara.current_round < round_num:
+                    gara.current_round = round_num
+                    
+                # Calcola/aggiorna classificazione per questo turno se non esiste
+                existing_classification = RoundClassification.query.filter_by(
+                    gara_id=gara_id, round_number=round_num
+                ).first()
+                
+                if not existing_classification:
+                    print(f"Calculating classification for round {round_num}")
+                    RoundClassification.calculate_classification_after_round(gara_id, round_num)
+            else:
+                # Turno incompleto, ferma qui
+                break
+        
+        db.session.commit()
 
 
 class InscriptionService:

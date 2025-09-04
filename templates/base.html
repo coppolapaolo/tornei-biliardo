@@ -112,15 +112,7 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    {%if not current_user.is_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
-                    </li>
-                    {% endif %}
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
-                        </li>
                         {% if current_user.is_admin %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin.user.users_list') }}">
@@ -159,6 +151,9 @@
                                     {% endif %}
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
+                                    <i class="fas fa-cog"></i> Dashboard
+                                </a></li>
                                 {% if can_view_profile %}
                                     <li><a class="dropdown-item" href="{{ url_for('player.profile') }}">
                                         <i class="fas fa-id-card"></i> Il mio Profilo
@@ -166,20 +161,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                 {% endif %}
                                 
-                                {% if show_director_management %}
-                                    <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
-                                        <i class="fas fa-trophy"></i> Director Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin.competition.create_gara_standalone') }}">
-                                        <i class="fas fa-plus"></i> Nuova Gara Singola
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                {% endif %}
-
                                 {% if show_admin_management %}
-                                    <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
-                                        <i class="fas fa-cog"></i> Dashboard
-                                    </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.user.users_list') }}">
                                         <i class="fas fa-users"></i> Gestione Utenti
                                     </a></li>
@@ -276,7 +258,6 @@
                     <div class="debug-item">
                         <strong>Quick Actions:</strong><br>
                         <a href="{{ url_for('main.reset_database') }}" class="text-warning">Reset DB</a> |
-                        <a href="/admin" class="text-info">Admin Panel</a> |
                         <a href="#" onclick="saveCurrentReset(); return false;" class="text-success">Save Reset</a>
                     </div>
                     <div class="debug-item">
@@ -293,6 +274,24 @@
                            class="btn btn-secondary quick-login-btn">
                             Pino
                         </a>
+                    </div>
+                    <div class="debug-item">
+                        <strong>Quick Actions:</strong><br>
+                        <a href="{{ url_for('main.debug_create_player') }}" 
+                           class="btn btn-success quick-login-btn">
+                            + Player
+                        </a>
+                        {% if request.endpoint == 'admin.competition.gara_detail' and gara and gara.id %}
+                        <a href="{{ url_for('main.debug_fill_gara', gara_id=gara.id) }}" 
+                           class="btn btn-warning quick-login-btn">
+                            Fill Gara
+                        </a>
+                        <a href="{{ url_for('main.debug_complete_current_round', gara_id=gara.id) }}" 
+                           class="btn btn-info quick-login-btn"
+                           onclick="return confirm('Completare i match in corso del turno attuale con risultati random?')">
+                            Complete Round
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -80,9 +80,15 @@
                 {% endif %}
                 
             {% elif gara.status == 'playing' %}
-                <div class="alert alert-info p-2">
-                    <small><strong>Turno {{ gara.current_round }}/{{ gara.rounds_count }} in corso</strong></small>
-                </div>
+                {% if gara.get_real_status() == 'round_completed' %}
+                    <div class="alert alert-success p-2">
+                        <small><strong>Turno {{ gara.current_round }}/{{ gara.rounds_count }} completato</strong></small>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info p-2">
+                        <small><strong>Turno {{ gara.current_round }}/{{ gara.rounds_count }} in corso</strong></small>
+                    </div>
+                {% endif %}
             {% endif %}
             
             <!-- Azioni aggiuntive -->

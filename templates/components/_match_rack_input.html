@@ -1,9 +1,9 @@
 <!-- Rack Input Component -->
-{% if match.status != 'completed' and (current_user.id in [match.player1_id, match.player2_id] or current_user.is_admin) %}
+{% if match.status != 'completed' and (current_user.id in [match.player1_id, match.player2_id] or current_user.is_admin or current_user.is_director) %}
 <div class="card bg-light mb-3">
     <div class="card-body">
         <h6>
-            {% if current_user.is_admin %}
+            {% if current_user.is_admin or current_user.is_director %}
                 Aggiungi rack singolo
             {% else %}
                 Aggiungi risultato rack

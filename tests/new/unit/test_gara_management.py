@@ -1,0 +1,694 @@
+"""Unit tests for gara (competition) management."""
+
+import pytest
+from datetime import date, timedelta
+
+from models import User, Gara, Inscription
+from models.user.models import DirectorAssignment
+from models.user.role_enum import UserRole
+from models.competition.models import WithdrawPolicy
+from models.status_enum import GaraStatus
+from models.campionato.services import TournamentService
+from models.competition.services import GaraService
+
+
+@pytest.mark.unit
+class TestGaraModel:
+    """Test Gara model functionality."""
+
+    def test_create_gara(self, db_session):
+        """Test creating a gara."""
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = Gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="Test Competition",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            status=GaraStatus.SETUP.value,
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        assert gara.id is not None
+        assert gara.name == "Test Competition"
+        assert gara.date == tomorrow
+        assert gara.location == "Test Location"
+        assert gara.description == "Test description"
+        assert gara.rounds_count == 3
+        assert gara.min_participants == 4
+        assert gara.max_participants == 16
+        assert gara.entry_fee == 15.0
+        assert gara.discipline == "palla 9"
+        assert gara.distance == 7
+        assert gara.best_of is True
+        assert gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value
+        assert gara.status == GaraStatus.SETUP.value
+
+    def test_gara_disciplines(self, db_session):
+        """Test different gara disciplines."""
+        disciplines = ["palla 9", "palla 8", "palla 10", "snooker"]
+        tomorrow = date.today() + timedelta(days=1)
+
+        for discipline in disciplines:
+            gara = Gara(
+                campionato_id=None,
+                number=1,
+                name=f"Test {discipline}",
+                date=tomorrow,
+                discipline=discipline,
+                distance=7,
+                best_of=True,
+            )
+            db_session.add(gara)
+
+        db_session.commit()
+
+        saved_gare = Gara.query.all()
+        assert len(saved_gare) == 4
+
+        for gara, expected_discipline in zip(saved_gare, disciplines):
+            assert gara.discipline == expected_discipline
+
+    def test_gara_best_of_vs_exact(self, db_session):
+        """Test best_of vs exact number scoring."""
+        tomorrow = date.today() + timedelta(days=1)
+
+        # Best of 7 (first to 4 wins)
+        best_of_gara = Gara(
+            campionato_id=None,
+            number=1,
+            name="Best of 7",
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+        )
+
+        # Exactly 7 racks
+        exact_gara = Gara(
+            campionato_id=None,
+            number=1,
+            name="Exactly 7",
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            best_of=False,
+        )
+
+        db_session.add_all([best_of_gara, exact_gara])
+        db_session.commit()
+
+        # Test winning score calculation
+        assert best_of_gara.get_winning_score() == 4  # (7+1)/2 = 4
+        assert exact_gara.get_winning_score() == 7  # Exactly 7
+
+    def test_gara_withdraw_policies(self, db_session):
+        """Test different withdraw policies."""
+        tomorrow = date.today() + timedelta(days=1)
+        policies = [
+            WithdrawPolicy.EXCLUDE,
+            WithdrawPolicy.FORFEIT,
+        ]
+
+        for policy in policies:
+            gara = Gara(
+                campionato_id=None,
+                number=1,
+                name=f"Test {policy.value}",
+                date=tomorrow,
+                discipline="palla 9",
+                distance=7,
+                best_of=True,
+                withdraw_policy=policy.value,
+            )
+            db_session.add(gara)
+
+        db_session.commit()
+
+        saved_gare = Gara.query.all()
+        assert len(saved_gare) == 3
+
+    def test_gara_can_be_modified(self, db_session):
+        """Test gara modification rules."""
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = Gara(
+            campionato_id=None,
+            number=1,
+            name="Modifiable Competition",
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            status=GaraStatus.SETUP.value,
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        # Initially should be modifiable
+        assert gara.can_be_modified() is True
+
+        # Add inscription
+        player = User(
+            username="player", email="player@test.com", role=UserRole.PLAYER.value
+        )
+        db_session.add(player)
+        db_session.commit()
+
+        inscription = Inscription(user_id=player.id, gara_id=gara.id)
+        db_session.add(inscription)
+        db_session.commit()
+
+        # Now should not be modifiable
+        assert gara.can_be_modified() is False
+
+    def test_gara_can_be_deleted(self, db_session):
+        """Test gara deletion rules."""
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = Gara(
+            campionato_id=None,
+            number=1,
+            name="Deletable Competition",
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            status=GaraStatus.SETUP.value,
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        # Initially should be deletable
+        assert gara.can_be_deleted() is True
+
+        # Add inscription
+        player = User(
+            username="player", email="player@test.com", role=UserRole.PLAYER.value
+        )
+        db_session.add(player)
+        db_session.commit()
+
+        inscription = Inscription(user_id=player.id, gara_id=gara.id)
+        db_session.add(inscription)
+        db_session.commit()
+
+        # Now should not be deletable
+        assert gara.can_be_deleted() is False
+
+    def test_gara_status_transitions(self, db_session):
+        """Test gara status transitions."""
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = Gara(
+            campionato_id=None,
+            number=1,
+            name="Status Test Competition",
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            status=GaraStatus.SETUP.value,
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        # Test status transitions
+        valid_statuses = [
+            GaraStatus.INSCRIPTION.value,
+            GaraStatus.PLAYING.value,
+            GaraStatus.COMPLETED.value,
+        ]
+
+        for status in valid_statuses:
+            gara.status = status
+            db_session.commit()
+            assert gara.status == status
+
+
+@pytest.mark.unit
+class TestGaraService:
+    """Test GaraService functionality."""
+
+    def test_create_standalone_gara(self, db_session):
+        """Test creating standalone gara."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add(director)
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="Standalone Competition",
+            date=tomorrow,
+            location="Test Location",
+            description="Test standalone gara",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        assert gara is not None
+        assert gara.campionato_id is None
+        assert gara.name == "Standalone Competition"
+        assert gara.date == tomorrow
+        assert gara.director_id == director.id
+        assert gara.status == GaraStatus.SETUP.value
+
+    def test_create_campionato_gara(self, db_session):
+        """Test creating gara within campionato."""
+        # Create director and campionato
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add(director)
+        db_session.commit()
+
+        tournament_service = TournamentService()
+        campionato = tournament_service.create_campionato_with_director(
+            name="Test Tournament",
+            creator_user_id=director.id,
+            campionato_type="Amalfi",
+        )
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=campionato.id,
+            number=1,
+            name="Tournament Competition",
+            date=tomorrow,
+            location="Test Location",
+            description="Test tournament gara",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+        )
+
+        assert gara is not None
+        assert gara.campionato_id == campionato.id
+        assert gara.name == "Tournament Competition"
+        assert gara.date == tomorrow
+        assert gara.director_id is None  # Not set for campionato gare
+
+    def test_update_gara(self, db_session):
+        """Test updating gara."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add(director)
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Original Name",
+            date=tomorrow,
+            location="Original Location",
+            description="Original description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        next_week = date.today() + timedelta(days=7)
+
+        # Update gara
+        updated_gara = GaraService.update_gara(
+            gara_id=gara.id,
+            name="Updated Name",
+            date=next_week,
+            location="Updated Location",
+            description="Updated description",
+            rounds_count=4,
+            min_participants=6,
+            max_participants=20,
+            entry_fee=20.0,
+            discipline="palla 8",
+            distance=5,
+            best_of=False,
+            withdraw_policy=WithdrawPolicy.FORFEIT.value,
+        )
+
+        assert updated_gara.name == "Updated Name"
+        assert updated_gara.date == next_week
+        assert updated_gara.location == "Updated Location"
+        assert updated_gara.description == "Updated description"
+        assert updated_gara.rounds_count == 4
+        assert updated_gara.min_participants == 6
+        assert updated_gara.max_participants == 20
+        assert updated_gara.entry_fee == 20.0
+        assert updated_gara.discipline == "palla 8"
+        assert updated_gara.distance == 5
+        assert updated_gara.best_of is False
+        assert updated_gara.withdraw_policy == WithdrawPolicy.FORFEIT.value
+
+    def test_update_gara_with_inscriptions(self, db_session):
+        """Test updating gara that has inscriptions (should fail)."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        player = User(
+            username="player", email="player@test.com", role=UserRole.PLAYER.value
+        )
+        db_session.add_all([director, player])
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Gara with Inscriptions",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        # Add inscription
+        inscription = Inscription(user_id=player.id, gara_id=gara.id)
+        db_session.add(inscription)
+        db_session.commit()
+
+        # Try to update - should raise ValueError
+        with pytest.raises(ValueError):
+            GaraService.update_gara(
+                gara_id=gara.id,
+                name="New Name",
+                date=date.today() + timedelta(days=7),
+                location="New Location",
+            )
+
+    def test_delete_gara(self, db_session):
+        """Test deleting gara."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add(director)
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Gara to Delete",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+        gara_id = gara.id
+
+        # Delete gara
+        GaraService.delete_gara(gara_id)
+
+        # Check it's deleted
+        deleted_gara = db_session.get(Gara, gara_id)
+        assert deleted_gara is None
+
+    def test_delete_gara_with_inscriptions(self, db_session):
+        """Test deleting gara that has inscriptions (should fail)."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        player = User(
+            username="player", email="player@test.com", role=UserRole.PLAYER.value
+        )
+        db_session.add_all([director, player])
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Gara with Inscriptions",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        # Add inscription
+        inscription = Inscription(user_id=player.id, gara_id=gara.id)
+        db_session.add(inscription)
+        db_session.commit()
+
+        # Try to delete - should raise ValueError
+        with pytest.raises(ValueError):
+            GaraService.delete_gara(gara.id)
+
+    def test_get_gara_by_id(self, db_session):
+        """Test getting gara by ID."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add(director)
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Test Competition",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        # Get gara by ID
+        retrieved_gara = GaraService.get_gara_by_id(gara.id)
+
+        assert retrieved_gara is not None
+        assert retrieved_gara.id == gara.id
+        assert retrieved_gara.name == "Test Competition"
+
+    def test_get_gara_by_id_not_found(self, db_session):
+        """Test getting non-existent gara."""
+        retrieved_gara = GaraService.get_gara_by_id(99999)
+        assert retrieved_gara is None
+
+    def test_add_director_to_standalone_gara(self, db_session):
+        """Test adding co-director to standalone gara."""
+        # Create directors
+        main_director = User(
+            username="main_director",
+            email="main@test.com",
+            role=UserRole.DIRECTOR.value,
+        )
+        co_director = User(
+            username="co_director", email="co@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add_all([main_director, co_director])
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Multi-Director Competition",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=main_director.id,
+        )
+
+        # Add co-director
+        assignment = DirectorAssignment(
+            user_id=co_director.id,
+            entity_type="gara",
+            entity_id=gara.id,
+            assigned_by_id=main_director.id,
+        )
+        db_session.add(assignment)
+        db_session.commit()
+
+        # Check assignment was created
+        saved_assignment = (
+            db_session.query(DirectorAssignment)
+            .filter(
+                DirectorAssignment.entity_type == "gara",
+                DirectorAssignment.entity_id == gara.id,
+                DirectorAssignment.user_id == co_director.id,
+            )
+            .first()
+        )
+        assert saved_assignment is not None
+        assert saved_assignment.assigned_by_id == main_director.id
+
+    def test_gara_inscription_management(self, db_session):
+        """Test gara inscription management."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        players = []
+        for i in range(5):
+            player = User(
+                username=f"player{i}",
+                email=f"player{i}@test.com",
+                role=UserRole.PLAYER.value,
+            )
+            players.append(player)
+
+        db_session.add(director)
+        db_session.add_all(players)
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Inscription Test",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=10,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        # Add inscriptions
+        inscriptions = []
+        for player in players:
+            inscription = Inscription(user_id=player.id, gara_id=gara.id)
+            inscriptions.append(inscription)
+            db_session.add(inscription)
+
+        db_session.commit()
+
+        # Check inscriptions were added using query
+        inscriptions_count = (
+            db_session.query(Inscription).filter_by(gara_id=gara.id).count()
+        )
+        assert inscriptions_count == 5
+
+        # All players should be inscribed
+        inscriptions = db_session.query(Inscription).filter_by(gara_id=gara.id).all()
+        inscribed_user_ids = {insc.user_id for insc in inscriptions}
+        expected_user_ids = {player.id for player in players}
+        assert inscribed_user_ids == expected_user_ids
+
+    def test_gara_status_management(self, db_session):
+        """Test gara status management through service."""
+        director = User(
+            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+        )
+        db_session.add(director)
+        db_session.commit()
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Status Management Test",
+            date=tomorrow,
+            location="Test Location",
+            description="Test description",
+            rounds_count=3,
+            min_participants=4,
+            max_participants=16,
+            entry_fee=15.0,
+            discipline="palla 9",
+            distance=7,
+            best_of=True,
+            withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+            director_id=director.id,
+        )
+
+        # Initially should be in SETUP status
+        assert gara.status == GaraStatus.SETUP.value
+
+        # Change to INSCRIPTION status
+        gara.status = GaraStatus.INSCRIPTION.value
+        db_session.commit()
+
+        # Verify status change
+        db_session.refresh(gara)
+        assert gara.status == GaraStatus.INSCRIPTION.value

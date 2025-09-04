@@ -32,8 +32,11 @@ function addRackWin(winnerId) {
     const buttons = document.querySelectorAll('button[onclick^="addRackWin"]');
     buttons.forEach(btn => btn.disabled = true);
     
-    // Determina l'URL corretto in base al ruolo utente
+    // Determina l'URL corretto in base ai permessi utente
     {% if current_user.is_admin %}
+        const url = `/admin/match/{{ match.id }}/add_rack`;
+    {% elif current_user.is_director %}
+        // Director usa l'endpoint admin se può gestire questa gara
         const url = `/admin/match/{{ match.id }}/add_rack`;
     {% else %}
         const url = `/player/match/{{ match.id }}/add_rack`;

@@ -34,8 +34,8 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <!-- Azioni Admin -->
-                                {% if current_user.is_admin %}
+                                <!-- Azioni Admin/Director -->
+                                {% if current_user.is_admin or current_user.is_director %}
                                     <div class="btn-group" role="group">
                                         <button class="btn btn-sm btn-danger" 
                                                 onclick="removeRackAdmin({{ rack.id }})">

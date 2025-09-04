@@ -190,11 +190,21 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         lost_matches = total_matches - won_matches
         win_percentage = (won_matches / total_matches * 100) if total_matches else 0
 
+        # Conta solo i campionati con almeno una gara completata dove l'utente ha partecipato
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
+            .filter(Gara.status == 'completed')  # Solo gare completate
             .with_entities(Gara.campionato_id)
             .distinct()
+            .count()
+        )
+        
+        # Conta le gare completate dove l'utente ha partecipato
+        provas_played = (
+            Inscription.query.filter_by(user_id=self.id)
+            .join(Gara)
+            .filter(Gara.status == 'completed')  # Solo gare completate
             .count()
         )
 
@@ -211,6 +221,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             "lost_matches": lost_matches,
             "win_percentage": round(win_percentage, 1),
             "tournaments_played": tournaments_played,
+            "provas_played": provas_played,
             "total_racks_won": total_racks_won,
             "total_racks_played": total_racks_played,
             "rack_win_percentage": round(rack_win_percentage, 1),

@@ -1,0 +1,441 @@
+{# templates/components/_separated_dashboard_content.html #}
+{# Dashboard con sezioni separate per gare e campionati #}
+
+{# Sezione 0: Partite Attive (priorità massima) #}
+{% if not current_user.is_admin and vm.current_matches %}
+<div class="mb-4">
+  <h4><i class="fas fa-gamepad text-danger"></i> Le Tue Partite</h4>
+  <div class="row">
+    {% for match in vm.current_matches %}
+      <div class="col-md-6 col-lg-4 mb-3">
+        {% set is_completed = match.status == 'completed' %}
+        {% set is_winner = (current_user.id == match.winner_id) if is_completed else false %}
+        {% set border_class = 'border-success' if (is_completed and is_winner) else ('border-warning' if is_completed else 'border-danger') %}
+        {% set bg_class = 'bg-success' if (is_completed and is_winner) else ('bg-warning' if is_completed else 'bg-danger') %}
+        
+        <div class="card h-100 {{ border_class }} border-2">
+          <div class="card-header py-2 {{ bg_class }} bg-opacity-10">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="flex-grow-1">
+                <h6 class="mb-1">
+                  {% if is_completed %}
+                    <i class="fas fa-check-circle text-success me-1"></i>
+                  {% else %}
+                    <i class="fas fa-fire text-danger me-1"></i>
+                  {% endif %}
+                  Turno {{ match.round_number }}
+                </h6>
+                <small class="text-muted">
+                  {{ match.gara.name or ('Gara ' ~ match.gara.number) }}
+                  {% if match.gara.campionato %}
+                    <br>{{ match.gara.campionato.name }}
+                  {% endif %}
+                </small>
+              </div>
+              <div class="text-end">
+                {% if is_completed %}
+                  {% if is_winner %}
+                    <span class="badge bg-success">Vinta</span>
+                  {% else %}
+                    <span class="badge bg-warning">Persa</span>
+                  {% endif %}
+                {% else %}
+                  <span class="badge bg-danger">In Corso</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body py-2">
+            <div class="mb-2">
+              <strong>vs {{ match.player1.username if match.player2_id == current_user.id else match.player2.username }}</strong>
+            </div>
+            
+            {# Risultato finale o punteggio attuale #}
+            {% if match.player1_score or match.player2_score %}
+            <div class="mb-2">
+              {% if is_completed %}
+                {# Partita completata - evidenzia il punteggio del giocatore corrente #}
+                {% if current_user.id == match.player1_id %}
+                  {# L'utente è player1 - evidenzia il suo punteggio #}
+                  <span class="badge {{ 'bg-success' if is_winner else 'bg-warning' }} fs-6">{{ match.player1_score }}</span>
+                  <span class="mx-2">-</span>
+                  <span class="badge bg-secondary fs-6">{{ match.player2_score }}</span>
+                {% else %}
+                  {# L'utente è player2 - evidenzia il suo punteggio #}
+                  <span class="badge bg-secondary fs-6">{{ match.player1_score }}</span>
+                  <span class="mx-2">-</span>
+                  <span class="badge {{ 'bg-success' if is_winner else 'bg-warning' }} fs-6">{{ match.player2_score }}</span>
+                {% endif %}
+                <div class="mt-1">
+                  <small class="{{ 'text-success fw-bold' if is_winner else 'text-warning fw-bold' }}">
+                    {{ 'Hai vinto!' if is_winner else 'Hai perso' }}
+                  </small>
+                </div>
+              {% else %}
+                {# Partita in corso - punteggio normale #}
+                <span class="badge bg-primary">{{ match.player1_score }}</span>
+                <span class="mx-2">-</span>
+                <span class="badge bg-primary">{{ match.player2_score }}</span>
+              {% endif %}
+            </div>
+            {% endif %}
+            
+            <small class="text-muted">
+              <i class="fas fa-trophy me-1"></i>{{ match.gara.discipline|replace('_',' ')|title }}
+              - {{ ('Al meglio di ' ~ match.gara.distance) if match.gara.best_of else (match.gara.distance ~ ' rack') }}
+            </small>
+          </div>
+          
+          <div class="card-footer py-2 bg-transparent">
+            {% if is_completed %}
+              <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+                 class="btn {{ 'btn-success' if is_winner else 'btn-warning' }} btn-sm w-100">
+                <i class="fas fa-eye"></i> Vedi Risultato
+              </a>
+            {% else %}
+              <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+                 class="btn btn-danger btn-sm w-100">
+                <i class="fas fa-play"></i> Gioca Partita
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# Sezione 1: Gare Disponibili #}
+<div class="mb-4">
+  <h4><i class="fas fa-bullseye text-primary"></i> Gare Disponibili</h4>
+  {% set available_garas = [] %}
+  
+  {# Raccogli tutte le gare interessanti (iscrizioni aperte, in corso, o round completato) #}
+  {% for item in vm.unified_items %}
+    {% if item.type == 'gara' and item.entity.get_real_status() in ['inscription', 'playing', 'round_completed'] %}
+      {% set _ = available_garas.append(item) %}
+    {% elif item.type == 'campionato' %}
+      {# Aggiungi le gare del campionato interessanti #}
+      {% for gara in item.entity.gare %}
+        {% if gara.get_real_status() in ['inscription', 'playing', 'round_completed'] %}
+          {% set _ = available_garas.append({
+            'type': 'gara',
+            'id': gara.id,
+            'name': gara.name or ('Gara ' ~ gara.number),
+            'entity': gara,
+            'next_prova_date': gara.date,
+            'campionato_name': item.entity.name,
+            'can_manage': item.can_manage,
+            'can_view_details': item.can_manage or current_user.is_admin
+          }) %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+  
+  {# Ordina per data #}
+  {% set available_garas = available_garas|sort(attribute='next_prova_date') %}
+  
+  {% if available_garas %}
+    <div class="row">
+      {% for item in available_garas %}
+        <div class="col-md-6 col-lg-4 mb-3">
+          {% set ns = namespace(user_inscribed=false) %}
+          {% if not current_user.is_admin %}
+            {% for ins in item.entity.inscriptions %}
+              {% if ins.user_id == current_user.id %}{% set ns.user_inscribed = true %}{% endif %}
+            {% endfor %}
+          {% endif %}
+          <div class="card h-100 {% if ns.user_inscribed %}border-success border-2{% endif %}">
+            <div class="card-header py-2 {% if ns.user_inscribed %}bg-success bg-opacity-10{% endif %}">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">
+                    <i class="fas fa-bullseye text-primary me-1"></i>
+                    {{ item.name }}
+                    {% if item.campionato_name %}
+                      <small class="text-muted d-block">{{ item.campionato_name }}</small>
+                    {% elif item.entity.is_standalone %}
+                      <small class="text-muted d-block">Gara Singola</small>
+                    {% endif %}
+                  </h6>
+                  <small class="text-muted">
+                    {{ item.entity.discipline|replace('_',' ')|title if item.entity.discipline }}
+                    {% if item.entity.distance %}
+                      • {{ ('Al meglio di ' ~ item.entity.distance) if item.entity.best_of else (item.entity.distance ~ ' rack') }}
+                    {% endif %}
+                  </small>
+                </div>
+                <div class="text-end">
+                  {% if item.entity.get_real_status() == 'round_completed' %}
+                    {% if ns.user_inscribed %}
+                      <span class="badge bg-primary me-1">Iscritto</span>
+                    {% endif %}
+                    <span class="badge bg-success">Turno Completato</span>
+                  {% elif item.entity.get_real_status() == 'playing' %}
+                    {% if ns.user_inscribed %}
+                      <span class="badge bg-primary me-1">Iscritto</span>
+                    {% endif %}
+                    <span class="badge bg-warning">In Corso</span>
+                  {% elif ns.user_inscribed %}
+                    <span class="badge bg-primary">Iscritto</span>
+                  {% else %}
+                    <span class="badge bg-success">Iscrizioni Aperte</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-body py-2">
+              {# Data e luogo #}
+              <div class="mb-2">
+                {% if item.next_prova_date %}
+                  <small class="text-success fw-bold">
+                    <i class="fas fa-calendar me-1"></i>
+                    {{ item.next_prova_date.strftime('%d/%m/%Y') }}
+                  </small>
+                {% endif %}
+                
+                {% if item.entity.location %}
+                  <small class="text-muted d-block">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ item.entity.location }}
+                  </small>
+                {% endif %}
+                
+                {% if item.entity.inscription_end %}
+                  <small class="text-warning d-block mt-1">
+                    <i class="fas fa-clock"></i>
+                    Scade: {{ item.entity.inscription_end.strftime('%d/%m %H:%M') }}
+                  </small>
+                {% endif %}
+              </div>
+              
+              {# Info specifiche per stato gara #}
+              {% if item.entity.get_real_status() == 'playing' %}
+                {# Gara in corso - mostra info turno #}
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-warning fw-bold">
+                    <i class="fas fa-play-circle me-1"></i>
+                    Turno {{ item.entity.current_round|default(1) }}
+                    {% if item.entity.total_rounds %}/ {{ item.entity.total_rounds }}{% endif %}
+                  </small>
+                  <small class="text-muted">
+                    <i class="fas fa-users me-1"></i>
+                    {{ item.entity.inscriptions|length }} giocatori
+                  </small>
+                </div>
+              {% else %}
+                {# Gara con iscrizioni aperte - mostra quota e iscritti #}
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    {% if item.entity.entry_fee and item.entity.entry_fee > 0 %}
+                      Quota: €{{ "%.2f"|format(item.entity.entry_fee) }}
+                    {% else %}
+                      Gratuita
+                    {% endif %}
+                  </small>
+                  <small class="text-muted">
+                    <i class="fas fa-users me-1"></i>
+                    {{ item.entity.inscriptions|length }}{% if item.entity.max_participants %}/{{ item.entity.max_participants }}{% endif %}
+                  </small>
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="card-footer py-2 bg-transparent">
+              <div class="btn-group w-100" role="group">
+                {# Pulsanti per gare in corso o normali #}
+                {% if item.entity.get_real_status() == 'playing' %}
+                  {# Gara in corso - pulsanti specifici #}
+                  {% if item.can_view_details %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-eye"></i> Dettagli
+                    </a>
+                  {% endif %}
+                  
+                  {% if not current_user.is_admin %}
+                    
+                    {# Trova il match del giocatore corrente in questa gara #}
+                    {% for match in vm.current_matches|default([]) %}
+                      {% if match.gara_id == item.id and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
+                        <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+                           class="btn btn-warning btn-sm">
+                          <i class="fas fa-play"></i> Vedi Match
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  
+                {% else %}
+                  {# Gara normale (iscrizioni aperte) #}
+                  {% if item.can_view_details %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-eye"></i> Dettagli
+                    </a>
+                  {% endif %}
+                  
+                  {# Pulsante iscrizione/disiscrizione #}
+                  {% if not current_user.is_admin %}
+                    {% set ns = namespace(inscribed=false) %}
+                    {% for ins in item.entity.inscriptions %}
+                      {% if ins.user_id == current_user.id %}{% set ns.inscribed = true %}{% endif %}
+                    {% endfor %}
+                    
+                    {% if not ns.inscribed %}
+                      <a href="#" onclick="inscribeToGara({{ item.id }}); return false;" 
+                         class="btn btn-success btn-sm">
+                        <i class="fas fa-user-plus"></i> Iscriviti
+                      </a>
+                    {% else %}
+                      <a href="#" onclick="unsubscribeFromGara({{ item.id }}); return false;" 
+                         class="btn btn-danger btn-sm">
+                        <i class="fas fa-user-minus"></i> Disiscrivi
+                      </a>
+                    {% endif %}
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> Nessuna gara con iscrizioni aperte al momento.
+    </div>
+  {% endif %}
+</div>
+
+{# Sezione 2: Campionati #}
+<div class="mb-4">
+  <h4><i class="fas fa-trophy text-warning"></i> Campionati</h4>
+  {% set campionati = [] %}
+  
+  {# Raccogli tutti i campionati #}
+  {% for item in vm.unified_items %}
+    {% if item.type == 'campionato' %}
+      {% set _ = campionati.append(item) %}
+    {% endif %}
+  {% endfor %}
+  
+  {% if campionati %}
+    <div class="row">
+      {% for item in campionati %}
+        <div class="col-md-6 col-lg-4 mb-3">
+          <div class="card h-100 {% if not item.entity.is_active %}border-secondary{% endif %}">
+            <div class="card-header py-2">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">
+                    <i class="fas fa-trophy text-warning me-1"></i>
+                    {{ item.name }}
+                  </h6>
+                  <small class="text-muted">
+                    {{ item.entity.campionato_type }} • {{ item.entity.gare|length }} gare
+                  </small>
+                </div>
+                <div class="text-end">
+                  <span class="badge {{ item.entity | status_badge_class }} fs-6">
+                    {{ item.entity | status_text }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-body py-2">
+              {# Info campionato #}
+              <div class="mb-2">
+                {% if item.next_prova_date %}
+                  <small class="text-success fw-bold">
+                    <i class="fas fa-calendar me-1"></i>
+                    Prossima: {{ item.next_prova_date.strftime('%d/%m/%Y') }}
+                  </small>
+                {% else %}
+                  <small class="text-muted">
+                    <i class="fas fa-calendar-times me-1"></i>
+                    Nessuna gara programmata
+                  </small>
+                {% endif %}
+              </div>
+              
+              {# Badges campionato #}
+              <div class="d-flex justify-content-between align-items-center">
+                <small>
+                  {% if item.entity.without_x %}<span class="badge bg-info me-1">Senza X</span>{% endif %}
+                  {% if item.entity.final_playoffs %}<span class="badge bg-success me-1">Playoff</span>{% endif %}
+                  {% if item.entity.challenge_mode %}<span class="badge bg-warning me-1">Challenge</span>{% endif %}
+                </small>
+              </div>
+              
+              {# Mini classifica (top 3) se disponibile #}
+              {% if item.entity.gare|selectattr('status', 'equalto', 'completed')|list %}
+                <div class="mt-2 border-top pt-2">
+                  <small class="text-muted fw-bold">Classifica:</small>
+                  <small class="text-muted d-block">
+                    {# TODO: Mostrare top 3 dalla classifica generale #}
+                    <em>Visualizza dettagli per la classifica completa</em>
+                  </small>
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="card-footer py-2 bg-transparent">
+              <div class="btn-group w-100" role="group">
+                {# Pulsante dettagli per gestori #}
+                {% if item.can_view_details %}
+                  <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}" 
+                     class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye"></i> Gestione
+                  </a>
+                {% else %}
+                  {# Per ora mostra solo badge senza link per i player #}
+                  <button class="btn btn-outline-info btn-sm" disabled>
+                    <i class="fas fa-chart-line"></i> Classifica
+                  </button>
+                {% endif %}
+                
+                {# Pulsante modifica per gestori #}
+                {% if item.can_manage and item.entity.can_be_modified() %}
+                  <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=item.id) }}" 
+                     class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> Nessun campionato disponibile al momento.
+    </div>
+  {% endif %}
+</div>
+
+{# Script per gestire iscrizione e disiscrizione #}
+<script>
+function inscribeToGara(garaId) {
+    // Crea un form nascosto e invialo direttamente
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/player/gara/' + garaId + '/inscribe';
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function unsubscribeFromGara(garaId) {
+    // Crea un form nascosto e invialo direttamente
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/player/gara/' + garaId + '/unsubscribe';
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>

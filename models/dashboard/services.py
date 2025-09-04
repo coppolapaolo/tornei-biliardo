@@ -473,12 +473,25 @@ class DashboardService:
             .all()
         )
 
+        # DEBUG: Controlla TUTTI i match dell'utente per debug
+        all_user_matches = (
+            db.session.query(TournamentMatch)
+            .join(Gara, Gara.id == TournamentMatch.gara_id)
+            .filter(
+                or_(
+                    TournamentMatch.player1_id == user_id,
+                    TournamentMatch.player2_id == user_id,
+                ),
+            )
+            .all()
+        )
+        
+        # Partite attive (in corso + recenti completate)
         my_upcoming = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                Gara.campionato_id == selected.id,
-                TournamentMatch.status == "playing",  # type: ignore[operator]
+                TournamentMatch.status.in_(["pending", "playing", "completed"]),  # Include pending, playing e completed
                 or_(
                     TournamentMatch.player1_id == user_id,
                     TournamentMatch.player2_id == user_id,
@@ -487,6 +500,7 @@ class DashboardService:
             .order_by(
                 TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
             )
+            .limit(10)  # Limita per non mostrare troppe partite vecchie
             .all()
         )
 
@@ -669,6 +683,16 @@ class DashboardService:
             .order_by(Gara.date.desc().nullslast())
             .all()
         )
+        
+        # Raccogli TUTTE le iscrizioni dell'utente (per tutte le gare)
+        all_my_inscriptions = (
+            db.session.query(Inscription)
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(Inscription.user_id == user_id)
+            .options(joinedload(Inscription.gara))
+            .order_by(Gara.date.asc().nullslast())
+            .all()
+        )
 
         # standalone gestite (director principale O co-direttore)
         standalone_owned: List[Gara] = []
@@ -708,10 +732,9 @@ class DashboardService:
                 is not None
             )
 
-        # NUOVO: elementi unificati per director (gestite + disponibili)
-        all_standalone_for_director = standalone_owned + standalone_available
+        # NUOVO: elementi unificati per director (TUTTE le gare standalone)
         unified_items = DashboardService._build_unified_items(
-            campionati, all_standalone_for_director, user_role='director', user_id=user_id
+            campionati, standalones_all, user_role='director', user_id=user_id
         )
 
         return DashboardVM(
@@ -729,7 +752,7 @@ class DashboardService:
             standalone_garas=standalone_owned,  # mantenuto per compatibilità
             available_garas=player_sections["available_garas"],
             standalone_available=standalone_available,
-            my_inscriptions=player_sections["my_inscriptions"],
+            my_inscriptions=all_my_inscriptions,  # Tutte le iscrizioni
             my_standalone_inscriptions=my_standalone_regs,
             current_matches=player_sections["current_matches"],
             recent_matches=player_sections["recent_matches"],
@@ -788,10 +811,22 @@ class DashboardService:
             .order_by(Gara.date.desc().nullslast())
             .all()
         )
+        
+        # Raccogli TUTTE le iscrizioni dell'utente (per tutte le gare)
+        all_my_inscriptions = (
+            db.session.query(Inscription)
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(Inscription.user_id == user_id)
+            .options(joinedload(Inscription.gara))
+            .order_by(Gara.date.asc().nullslast())
+            .all()
+        )
 
         # NUOVO: elementi unificati per player (campionati + standalone disponibili)
+        # Includiamo TUTTE le gare standalone per il player
+        all_standalone_garas = DashboardService._standalone_q().all()
         unified_items = DashboardService._build_unified_items(
-            campionati, standalone_available, user_role='player', user_id=user_id
+            campionati, all_standalone_garas, user_role='player', user_id=user_id
         )
 
         return DashboardVM(
@@ -809,7 +844,7 @@ class DashboardService:
             standalone_garas=None,  # non usata su player
             available_garas=player_sections["available_garas"],
             standalone_available=standalone_available,
-            my_inscriptions=player_sections["my_inscriptions"],
+            my_inscriptions=all_my_inscriptions,  # Tutte le iscrizioni
             my_standalone_inscriptions=my_standalone_regs,
             current_matches=player_sections["current_matches"],
             recent_matches=player_sections["recent_matches"],
