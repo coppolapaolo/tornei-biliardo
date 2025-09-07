@@ -254,11 +254,21 @@ def inscribe_to_gara(gara_id):
         flash("Sei già iscritto a questa gara.")
         return redirect(url_for("player.dashboard"))
 
-    inscription = Inscription(user_id=current_user.id, gara_id=gara_id)
-    db.session.add(inscription)
-    db.session.commit()
-
-    flash(f"Iscrizione alla Gara {gara.number} completata!")
+    # Usa il service per gestire automaticamente la logica waitlist
+    from models.competition.services import InscriptionService
+    
+    inscription = InscriptionService.inscribe_user(
+        user_id=current_user.id, 
+        gara_id=gara_id
+    )
+    
+    if inscription:
+        if inscription.is_waitlist:
+            flash(f"Aggiunto alla lista d'attesa per Gara {gara.number} (posizione {inscription.waitlist_position})!")
+        else:
+            flash(f"Iscrizione alla Gara {gara.number} completata!")
+    else:
+        flash("Errore durante l'iscrizione.", "error")
     # Redirect alla dashboard appropriata
     return redirect(url_for("dashboard.dashboard"))
 
@@ -650,11 +660,15 @@ def unsubscribe_from_gara(gara_id):
         flash("Impossibile disiscreversi: ci sono già partite programmate!")
         return redirect(url_for("player.dashboard"))
 
-    # Procedi con la disiscrizione
-    db.session.delete(inscription)
-    db.session.commit()
-
-    flash(f"Disiscrizione dalla Gara {gara.number} completata!")
+    # Procedi con la disiscrizione usando il servizio
+    from models.competition.services import InscriptionService
+    success = InscriptionService.uninscribe_user(current_user.id, gara_id)
+    
+    if success:
+        flash(f"Disiscrizione dalla Gara {gara.number} completata!")
+    else:
+        flash("Errore durante la disiscrizione.", "error")
+    
     # Redirect mantenendo il campionato selezionato
     return redirect(url_for("player.dashboard", campionato_id=gara.campionato_id))
 
