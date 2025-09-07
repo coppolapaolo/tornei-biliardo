@@ -90,14 +90,23 @@
                 </small>
                 <small class="text-muted">
                   <i class="fas fa-users me-1"></i>
-                  {{ item.entity.inscriptions|length }}{% if item.entity.max_participants %}/{{ item.entity.max_participants }}{% endif %}
+                  {{ item.entity.get_active_inscriptions_count() }}{% if item.entity.max_participants %}/{{ item.entity.max_participants }}{% endif %}
+                  {% if item.entity.get_waitlist_count() > 0 %}
+                    <span class="text-warning ms-1">
+                      <i class="fas fa-clock"></i> +{{ item.entity.get_waitlist_count() }}
+                    </span>
+                  {% endif %}
                 </small>
               </div>
 
               {# Stato iscrizioni per gare #}
               {% if item.entity.get_real_status() == 'inscription' %}
                 <div class="mt-2">
-                  <span class="badge bg-success fs-6">Iscrizioni aperte</span>
+                  {% if item.entity.is_full() %}
+                    <span class="badge bg-warning fs-6">Massimo raggiunto</span>
+                  {% else %}
+                    <span class="badge bg-success fs-6">Iscrizioni aperte</span>
+                  {% endif %}
                   {% if item.entity.inscription_end %}
                     <small class="text-warning d-block mt-1">
                       <i class="fas fa-clock"></i>
@@ -162,15 +171,29 @@
                 
                 {# Pulsante iscrizione per player e direttori (solo per gare) - mai per admin #}
                 {% if not current_user.is_admin and item.entity.get_real_status() == 'inscription' %}
-                  {% set ns = namespace(inscribed=false) %}
+                  {% set ns = namespace(inscribed=false, is_waitlist=false) %}
                   {% for ins in item.entity.inscriptions %}
-                    {% if ins.user_id == current_user.id %}{% set ns.inscribed = true %}{% endif %}
+                    {% if ins.user_id == current_user.id %}
+                      {% set ns.inscribed = true %}
+                      {% if ins.is_waitlist %}{% set ns.is_waitlist = true %}{% endif %}
+                    {% endif %}
                   {% endfor %}
                   {% if not ns.inscribed %}
-                    <a href="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" 
-                       class="btn btn-success btn-sm">
-                      <i class="fas fa-user-plus"></i> Iscriviti
-                    </a>
+                    {% if item.entity.is_full() %}
+                      <a href="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" 
+                         class="btn btn-warning btn-sm">
+                        <i class="fas fa-clock"></i> Lista d'attesa
+                      </a>
+                    {% else %}
+                      <a href="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" 
+                         class="btn btn-success btn-sm">
+                        <i class="fas fa-user-plus"></i> Iscriviti
+                      </a>
+                    {% endif %}
+                  {% elif ns.inscribed and ns.is_waitlist %}
+                    <span class="btn btn-secondary btn-sm disabled">
+                      <i class="fas fa-clock"></i> In lista d'attesa
+                    </span>
                   {% endif %}
                 {% endif %}
               {% endif %}

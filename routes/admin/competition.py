@@ -52,7 +52,10 @@ def create_gara_standalone():
                 flash("Il nome della competizione è obbligatorio!", "error")
                 return redirect(url_for("admin.competition.create_gara_standalone"))
 
-            date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+            date_str = request.form["date"]
+            time_str = request.form.get("time", "20:00")
+            datetime_obj = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+            date = datetime_obj.date()
             
             # Campi opzionali
             location = request.form.get("location", "").strip()
@@ -70,6 +73,35 @@ def create_gara_standalone():
             best_of = not exact_number
             withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
 
+            # Strategy configuration
+            matchmaking_strategy = request.form.get("matchmaking_strategy", "amalfi")
+            first_round_policy = request.form.get("first_round_policy", "random")
+            odd_number_policy = request.form.get("odd_number_policy", "bye")
+            anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
+            rating_type = request.form.get("rating_type", "fargo")
+            
+            # Validazione della configurazione delle strategie
+            from models.matchmaking.configuration import StrategyConfiguration, MatchmakingStrategy, FirstRoundPolicy, OddNumberPolicy, RatingType
+            
+            try:
+                strategy_config = StrategyConfiguration(
+                    strategy=MatchmakingStrategy(matchmaking_strategy),
+                    first_round_policy=FirstRoundPolicy(first_round_policy),
+                    odd_number_policy=OddNumberPolicy(odd_number_policy),
+                    anti_rematch_enabled=anti_rematch_enabled,
+                    rounds_count=rounds_count,
+                    rating_type=RatingType(rating_type) if first_round_policy == "rating" else None
+                )
+                
+                # Valida la configurazione con la distanza
+                errors = strategy_config.validate(distance=distance)
+                if errors:
+                    flash(f"Configurazione non valida: {', '.join(errors)}", "error")
+                    return redirect(url_for("admin.competition.create_gara_standalone"))
+            except ValueError as e:
+                flash(f"Configurazione strategia non valida: {str(e)}", "error")
+                return redirect(url_for("admin.competition.create_gara_standalone"))
+
             # Crea la gara standalone usando il service layer (senza campionato_id)
             gara = GaraService.create_gara(
                 campionato_id=None,  # Gare standalone non hanno campionato
@@ -86,7 +118,12 @@ def create_gara_standalone():
                 distance=distance,
                 best_of=best_of,
                 withdraw_policy=withdraw_policy,
-                director_id=current_user.id  # L'admin che crea è il direttore
+                director_id=current_user.id,  # L'admin che crea è il direttore
+                matchmaking_strategy=matchmaking_strategy,
+                first_round_policy=first_round_policy,
+                odd_number_policy=odd_number_policy,
+                anti_rematch_enabled=anti_rematch_enabled,
+                rating_type=rating_type
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
@@ -107,11 +144,39 @@ def create_gara_standalone():
     ).limit(10).all()
     recent_locations = [loc[0] for loc in recent_locations if loc[0]]
     
+    # Ottieni le strategie disponibili
+    available_strategies = GaraService.get_available_strategies()
+    
     return render_template(
         "admin/gara_create_standalone.html",
         WithdrawPolicy=WithdrawPolicy,
-        recent_locations=recent_locations
+        recent_locations=recent_locations,
+        available_strategies=available_strategies
     )
+
+
+@competition_bp.route("/api/strategy_constraints/<strategy>")
+@login_required
+@admin_required
+def get_strategy_constraints(strategy):
+    """API endpoint per ottenere i vincoli di una strategia."""
+    from models.matchmaking.configuration import STRATEGY_CONSTRAINTS, MatchmakingStrategy
+    
+    try:
+        strategy_enum = MatchmakingStrategy(strategy)
+        constraints = STRATEGY_CONSTRAINTS.get(strategy_enum, {})
+        
+        return jsonify({
+            "success": True,
+            "constraints": constraints,
+            "display_name": strategy.replace("_", " ").title(),
+            "description": constraints.get("description", "")
+        })
+    except ValueError:
+        return jsonify({
+            "success": False,
+            "error": f"Strategia '{strategy}' non valida"
+        }), 400
 
 
 @competition_bp.route("/create", methods=["POST"])
@@ -255,8 +320,21 @@ def edit_gara(gara_id):
 
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+    # Get available strategies for the form
+    available_strategies = GaraService.get_available_strategies()
+    
+    # Get recent locations for datalist
+    recent_locations = db.session.query(Gara.location).distinct().filter(
+        Gara.location.isnot(None), Gara.location != ""
+    ).limit(10).all()
+    recent_locations = [loc[0] for loc in recent_locations if loc[0]]
+    
     return render_template(
-        "admin/gara_edit.html", gara=gara, WithdrawPolicy=WithdrawPolicy
+        "admin/gara_edit.html", 
+        gara=gara, 
+        WithdrawPolicy=WithdrawPolicy,
+        available_strategies=available_strategies,
+        recent_locations=recent_locations
     )
 
 
@@ -794,4 +872,41 @@ def remove_director(gara_id):
     else:
         flash("Errore: direttore non trovato.", "error")
 
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/admin_uninscribe/<int:user_id>", methods=["POST"])
+@login_required
+@gara_manager_required
+def admin_uninscribe_user(gara_id, user_id):
+    """Disiscrive un utente dalla gara (solo admin/direttori)."""
+    from models.competition.services import InscriptionService
+    from models.notification.services import NotificationService
+    from models.user.models import User
+    from models.competition.models import Gara
+    
+    try:
+        # Verifica che l'utente esista
+        user = db.session.get(User, user_id)
+        if not user:
+            flash("Utente non trovato.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        
+        # Verifica che la gara esista
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            flash("Gara non trovata.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        
+        # Esegui la disiscrizione
+        success = InscriptionService.admin_uninscribe_user(user_id, gara_id, current_user.id)
+        
+        if success:
+            flash(f"Utente {user.username} discritto con successo.", "success")
+        else:
+            flash("Errore: utente non iscritto a questa gara.", "error")
+            
+    except Exception as e:
+        flash(f"Errore durante la disiscrizione: {str(e)}", "error")
+    
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

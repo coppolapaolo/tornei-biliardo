@@ -83,6 +83,9 @@ instance/
 .bash_history
 .python_history
 
+# Claude Code
+.claude/
+
 ---
 export_script.py
 repository_export_*.md

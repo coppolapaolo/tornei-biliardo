@@ -21,8 +21,20 @@
                     <tbody>
                         {% for match in matches %}
                             <tr>
-                                <td>{{ match.gara.campionato.name }}</td>
-                                <td>{{ match.gara.number }}</td>
+                                <td>
+                                    {% if match.gara.campionato %}
+                                        {{ match.gara.campionato.name }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if match.gara.campionato %}
+                                        Gara {{ match.gara.number }}
+                                    {% else %}
+                                        {{ match.gara.name }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ match.round_number }}</td>
                                 <td>
                                     {% if match.is_bye %}

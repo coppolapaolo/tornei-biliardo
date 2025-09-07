@@ -14,7 +14,7 @@
                 
             {% elif gara.get_real_status() == 'inscription' %}
                 <button class="btn btn-primary w-100 mb-2" onclick="startFirstRound({{ gara.id }})"
-                        {% if inscriptions|length < gara.min_participants %}disabled{% endif %}>
+                        {% if gara.get_active_inscriptions_count() < gara.min_participants %}disabled{% endif %}>
                     <i class="fas fa-play"></i> Avvia Primo Turno
                 </button>
                 
@@ -25,7 +25,7 @@
                 {% endif %}
                 
                 <small class="text-muted d-block text-center">
-                    Servono {{ gara.min_participants }} iscritti ({{ inscriptions|length }} attuali)
+                    Servono {{ gara.min_participants }} iscritti ({{ gara.get_active_inscriptions_count() }} attuali)
                 </small>
                 
                 {% if gara.inscription_end %}
@@ -45,7 +45,7 @@
                     <small><i class="fas fa-exclamation-triangle"></i> Iscrizioni scadute!</small>
                 </div>
                 
-                {% if gara.can_modify_inscription_dates() and inscriptions|length >= gara.min_participants %}
+                {% if gara.can_modify_inscription_dates() and gara.get_active_inscriptions_count() >= gara.min_participants %}
                     <button class="btn btn-primary w-100 mb-1" onclick="startFirstRound({{ gara.id }})">
                         <i class="fas fa-play"></i> Avvia Primo Turno
                     </button>
@@ -59,7 +59,7 @@
                     <button class="btn btn-danger w-100 mb-2" onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }})">
                         <i class="fas fa-times-circle"></i> Cancella Gara
                     </button>
-                    <small class="text-muted d-block text-center">Servono {{ gara.min_participants }} iscritti ({{ inscriptions|length }} attuali)</small>
+                    <small class="text-muted d-block text-center">Servono {{ gara.min_participants }} iscritti ({{ gara.get_active_inscriptions_count() }} attuali)</small>
                 {% endif %}
                 
             {% elif gara.get_real_status() == 'inscription_not_started' %}

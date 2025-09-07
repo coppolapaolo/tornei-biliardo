@@ -15,7 +15,14 @@
           </small>
           {% if ins.gara.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ ins.gara.location }}</small>{% endif %}
           {{ status_badge(ins.gara, 'gara') }}
-          <small class="text-muted ms-2"><i class="fas fa-users"></i> {{ ins.gara.inscriptions|length }} iscritti</small>
+          <small class="text-muted ms-2">
+            <i class="fas fa-users"></i> {{ ins.gara.get_active_inscriptions_count() }} iscritti
+            {% if ins.gara.get_waitlist_count() > 0 %}
+              <span class="text-warning ms-1">
+                <i class="fas fa-clock"></i> +{{ ins.gara.get_waitlist_count() }}
+              </span>
+            {% endif %}
+          </small>
         </div>
         <div>
           {% if ins.gara.status in ['setup','inscription'] %}

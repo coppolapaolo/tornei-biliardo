@@ -127,6 +127,9 @@ class GaraService:
                 "Una Gara deve avere un campionato_id o un director_id (standalone)."
             )
 
+        # Estrai configurazione strategia se presente
+        strategy_config = kwargs.pop('strategy_config', None)
+        
         gara = Gara(
             number=number,
             name=name,
@@ -137,6 +140,16 @@ class GaraService:
             director_id=director_id,
             **kwargs,
         )
+        
+        # Applica configurazione strategia se fornita
+        if strategy_config:
+            GaraService.apply_strategy_configuration(gara, strategy_config)
+        
+        # Valida la configurazione
+        errors = gara.validate_strategy_configuration()
+        if errors:
+            raise ValueError(f"Configurazione non valida: {', '.join(errors)}")
+        
         db.session.add(gara)
         db.session.commit()
         return gara
@@ -368,24 +381,75 @@ class GaraService:
         return gara
 
     @staticmethod
-    def create_amalfi_round(
-        gara_id: int, round_number: int
-    ) -> tuple[int, int, int, int]:
-        """Crea un turno Amalfi con gestione degli errori.
+    def create_round_with_strategy(gara_id: int, round_number: int) -> tuple[int, int, int, int]:
+        """Crea un turno usando la strategia configurata nella gara.
 
         Returns:
             Tuple con (total_matches, normal_matches, bye_matches, trio_matches)
         """
         from models.match.models import Match, TrioMatch
-        from amalfi import create_amalfi_round_matches
 
         try:
             gara = db.session.get(Gara, gara_id)
             if not gara:
                 raise ValueError(f"Gara {gara_id} non trovata")
 
-            # Usa il binding Amalfi esistente
-            create_amalfi_round_matches(gara, round_number)
+            # Verifica precondizioni
+            if round_number < 1 or round_number > gara.rounds_count:
+                raise ValueError(f"Turno {round_number} non valido")
+
+            # Ottieni la strategia configurata
+            strategy_name = gara.matchmaking_strategy or "amalfi"
+            
+            # Se è Amalfi, usa il binding esistente per compatibilità
+            if strategy_name in ["amalfi", "advanced_amalfi"]:
+                from amalfi import create_amalfi_round_matches
+                create_amalfi_round_matches(gara, round_number)
+            else:
+                # Usa il registry per altre strategie
+                from models.matchmaking.registry import StrategyRegistry
+                from models.matchmaking.configuration import StrategyConfiguration
+                
+                registry = StrategyRegistry()
+                strategy = registry.get_strategy(strategy_name)
+                if not strategy:
+                    raise ValueError(f"Strategia '{strategy_name}' non trovata")
+                
+                # Crea la configurazione dalla gara
+                config = StrategyConfiguration.from_gara(gara)
+                
+                # Ottieni i giocatori iscritti
+                from models.competition.models import Inscription
+                inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
+                player_ids = [insc.user_id for insc in inscriptions]
+                
+                # Genera gli abbinamenti
+                pairings = strategy.generate_pairings(
+                    players=player_ids,
+                    round_number=round_number,
+                    total_rounds=gara.rounds_count,
+                    previous_pairings=[],  # TODO: recupera abbinamenti precedenti
+                    configuration=config.to_dict()
+                )
+                
+                # Crea i match nel database
+                for pairing in pairings:
+                    if len(pairing) == 2:
+                        # Match normale o con X
+                        match = Match(
+                            gara_id=gara_id,
+                            round_number=round_number,
+                            player1_id=pairing[0],
+                            player2_id=pairing[1] if pairing[1] != 'X' else None,
+                            is_bye=pairing[1] == 'X',
+                            discipline=gara.discipline,
+                            distance=gara.distance,
+                            best_of=gara.best_of
+                        )
+                        db.session.add(match)
+                    elif len(pairing) == 3:
+                        # Match trio - TODO: implementare
+                        pass
 
             # Conta i risultati
             matches = (
@@ -409,6 +473,17 @@ class GaraService:
         except Exception as e:
             db.session.rollback()
             raise ValueError(f"Errore durante la creazione del turno: {str(e)}")
+    
+    @staticmethod
+    def create_amalfi_round(
+        gara_id: int, round_number: int
+    ) -> tuple[int, int, int, int]:
+        """Crea un turno Amalfi (retrocompatibilità).
+
+        Returns:
+            Tuple con (total_matches, normal_matches, bye_matches, trio_matches)
+        """
+        return GaraService.create_round_with_strategy(gara_id, round_number)
 
     @staticmethod
     def add_trio_rack(trio_id: int, winner_id: int) -> dict:
@@ -739,8 +814,113 @@ class GaraService:
             assigned_by_id=assigned_by_id
         )
         db.session.add(director_assoc)
+        
+        # Invia notifica al nuovo co-direttore
+        try:
+            from models.notification.services import NotificationService
+            from models.notification.models import NotificationType, NotificationPriority
+            from models.competition.models import Gara
+            
+            gara = db.session.get(Gara, gara_id)
+            gara_name = gara.name or f"Gara {gara.number}"
+            
+            if gara.campionato:
+                gara_name += f" del campionato '{gara.campionato.name}'"
+            
+            notification_result = NotificationService.create_notification(
+                user_id=user_id,
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                title="Nominato co-direttore",
+                message=f"Sei stato nominato co-direttore della {gara_name}",
+                priority=NotificationPriority.NORMAL
+            )
+            print(f"DEBUG: Director notification created for user {user_id}: {notification_result}")
+        except Exception as e:
+            print(f"DEBUG: Error creating director notification for user {user_id}: {e}")
+        
         db.session.commit()
         return True
+
+    # -----------------------------
+    # STRATEGY CONFIGURATION
+    # -----------------------------
+    @staticmethod
+    def apply_strategy_configuration(gara: Gara, config: dict) -> None:
+        """Applica una configurazione di strategia a una gara."""
+        from models.matchmaking.configuration import StrategyConfiguration
+        
+        if isinstance(config, StrategyConfiguration):
+            config_dict = config.to_dict()
+        else:
+            config_dict = config
+        
+        # Applica i campi di configurazione
+        for key, value in config_dict.items():
+            if hasattr(gara, key):
+                setattr(gara, key, value)
+    
+    @staticmethod
+    def update_strategy_configuration(gara_id: int, config: dict) -> Gara:
+        """Aggiorna la configurazione di strategia di una gara esistente."""
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+        
+        # Verifica che la gara sia in stato SETUP
+        if gara.status != GaraStatus.SETUP.value:
+            raise ValueError("La strategia può essere modificata solo in fase di setup")
+        
+        # Applica la nuova configurazione
+        GaraService.apply_strategy_configuration(gara, config)
+        
+        # Valida la configurazione
+        errors = gara.validate_strategy_configuration()
+        if errors:
+            raise ValueError(f"Configurazione non valida: {', '.join(errors)}")
+        
+        # Se la strategia ha turni fissi, ricalcola il numero di turni
+        constraints = gara.get_strategy_constraints()
+        if constraints["fixed_rounds"]:
+            num_inscribed = len(gara.inscriptions) if hasattr(gara, 'inscriptions') else 0
+            if num_inscribed > 0:
+                gara.rounds_count = gara.calculate_rounds_for_strategy(num_inscribed)
+        
+        db.session.commit()
+        return gara
+    
+    @staticmethod
+    def get_available_strategies() -> dict:
+        """Restituisce le strategie disponibili con le loro configurazioni."""
+        from models.matchmaking.configuration import STRATEGY_CONSTRAINTS, MatchmakingStrategy
+        
+        strategies = {}
+        for strategy in MatchmakingStrategy:
+            constraints = STRATEGY_CONSTRAINTS.get(strategy, {})
+            strategies[strategy.value] = {
+                "name": strategy.value,
+                "display_name": strategy.value.replace("_", " ").title(),
+                "description": constraints.get("description", ""),
+                "constraints": constraints
+            }
+        return strategies
+    
+    @staticmethod
+    def validate_strategy_for_inscriptions(gara_id: int, new_strategy: str) -> tuple[bool, str]:
+        """Valida se una strategia può essere applicata dato il numero di iscritti."""
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return False, "Gara non trovata"
+        
+        num_inscribed = len(gara.inscriptions) if hasattr(gara, 'inscriptions') else 0
+        
+        # Alcune strategie hanno requisiti minimi di giocatori
+        if new_strategy == "direct_elimination" and num_inscribed < 2:
+            return False, "Eliminazione diretta richiede almeno 2 giocatori"
+        
+        if new_strategy == "round_robin" and num_inscribed < 3:
+            return False, "Round robin richiede almeno 3 giocatori"
+        
+        return True, ""
 
     @staticmethod
     def remove_director(gara_id: int, user_id: int) -> bool:
@@ -813,7 +993,12 @@ class InscriptionService:
 
     @staticmethod
     def inscribe_user(user_id: int, gara_id: int) -> Optional[Inscription]:
-        """Registra un utente a una gara se non già iscritto."""
+        """Registra un utente a una gara se non già iscritto.
+        
+        Se la gara è piena, l'utente viene messo in lista d'attesa.
+        """
+        from models.competition.models import Gara
+        
         existing = (
             db.session.query(Inscription)
             .filter_by(user_id=user_id, gara_id=gara_id)
@@ -821,7 +1006,25 @@ class InscriptionService:
         )
         if existing:
             return existing
-        ins = Inscription(user_id=user_id, gara_id=gara_id)
+        
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return None
+            
+        # Verifica se la gara è piena
+        is_waitlist = gara.is_full()
+        waitlist_position = None
+        
+        if is_waitlist:
+            # Calcola la posizione in lista d'attesa
+            waitlist_position = gara.get_waitlist_count() + 1
+        
+        ins = Inscription(
+            user_id=user_id, 
+            gara_id=gara_id,
+            is_waitlist=is_waitlist,
+            waitlist_position=waitlist_position
+        )
         db.session.add(ins)
         db.session.commit()
         return ins
@@ -829,16 +1032,159 @@ class InscriptionService:
     @staticmethod
     def uninscribe_user(user_id: int, gara_id: int) -> bool:
         """Cancella l'iscrizione di un utente dalla gara.
+        
+        Se l'utente non era in lista d'attesa, promuove il primo della lista d'attesa.
+        Invia notifica al promosso.
 
         Returns: True se rimossa, False se non trovata.
         """
+        from models.competition.models import Gara
+        from models.notification.services import NotificationService
+        
         inscription = (
             db.session.query(Inscription)
             .filter_by(user_id=user_id, gara_id=gara_id)
             .first()
         )
         if inscription:
+            was_active = not inscription.is_waitlist and not inscription.is_withdrawn
+            gara_id_for_promotion = inscription.gara_id
+            
             db.session.delete(inscription)
+            
+            # Se l'utente era attivo (non in lista d'attesa), promuovi il primo della lista d'attesa
+            if was_active:
+                gara = db.session.get(Gara, gara_id_for_promotion)
+                if gara:
+                    first_waitlist = (
+                        db.session.query(Inscription)
+                        .filter_by(gara_id=gara_id_for_promotion, is_waitlist=True, is_withdrawn=False)
+                        .order_by(Inscription.waitlist_position.asc())
+                        .first()
+                    )
+                    
+                    if first_waitlist:
+                        # Promuovi dalla lista d'attesa
+                        first_waitlist.is_waitlist = False
+                        first_waitlist.waitlist_position = None
+                        
+                        # Ricalcola le posizioni degli altri in lista d'attesa
+                        remaining_waitlist = (
+                            db.session.query(Inscription)
+                            .filter_by(gara_id=gara_id_for_promotion, is_waitlist=True, is_withdrawn=False)
+                            .order_by(Inscription.waitlist_position.asc())
+                            .all()
+                        )
+                        
+                        for i, insc in enumerate(remaining_waitlist, 1):
+                            insc.waitlist_position = i
+                        
+                        # Invia notifica al promosso
+                        try:
+                            from models.notification.models import NotificationType, NotificationPriority
+                            
+                            notification_result = NotificationService.create_notification(
+                                user_id=first_waitlist.user_id,
+                                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                                title="Posto disponibile!",
+                                message=f"Sei stato promosso dalla lista d'attesa per la gara '{gara.name or f'Gara {gara.number}'}'",
+                                priority=NotificationPriority.HIGH
+                            )
+                            print(f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}")
+                        except Exception as e:
+                            print(f"DEBUG: Error creating promotion notification for user {first_waitlist.user_id}: {e}")
+            
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def admin_uninscribe_user(user_id: int, gara_id: int, admin_user_id: int) -> bool:
+        """Disiscrive un utente dalla gara da parte di admin/direttore.
+        
+        Invia notifica all'utente discritto e promuove il primo della lista d'attesa se applicabile.
+        
+        Returns: True se rimossa, False se non trovata.
+        """
+        from models.competition.models import Gara
+        from models.notification.services import NotificationService
+        from models.user.models import User
+        
+        inscription = (
+            db.session.query(Inscription)
+            .filter_by(user_id=user_id, gara_id=gara_id)
+            .first()
+        )
+        
+        if inscription:
+            gara = db.session.get(Gara, gara_id)
+            admin_user = db.session.get(User, admin_user_id)
+            user = db.session.get(User, user_id)
+            
+            was_active = not inscription.is_waitlist and not inscription.is_withdrawn
+            gara_name = gara.name or f"Gara {gara.number}"
+            admin_role = "admin" if admin_user.is_admin else "direttore di gara"
+            
+            # Invia notifica all'utente discritto
+            try:
+                from models.notification.models import NotificationType, NotificationPriority
+                
+                message = f"L'{admin_role} ha annullato la tua iscrizione alla {gara_name}"
+                if inscription.is_waitlist:
+                    message = f"L'{admin_role} ti ha rimosso dalla lista d'attesa per la {gara_name}"
+                
+                notification_result = NotificationService.create_notification(
+                    user_id=user_id,
+                    notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                    title="Iscrizione annullata",
+                    message=message,
+                    priority=NotificationPriority.HIGH
+                )
+                print(f"DEBUG: Notification created for user {user_id}: {notification_result}")
+            except Exception as e:
+                print(f"DEBUG: Error creating notification for user {user_id}: {e}")
+            
+            # Rimuovi l'iscrizione
+            db.session.delete(inscription)
+            
+            # Se l'utente era attivo (non in lista d'attesa), promuovi il primo della lista d'attesa
+            if was_active:
+                first_waitlist = (
+                    db.session.query(Inscription)
+                    .filter_by(gara_id=gara_id, is_waitlist=True, is_withdrawn=False)
+                    .order_by(Inscription.waitlist_position.asc())
+                    .first()
+                )
+                
+                if first_waitlist:
+                    # Promuovi dalla lista d'attesa
+                    first_waitlist.is_waitlist = False
+                    first_waitlist.waitlist_position = None
+                    
+                    # Ricalcola le posizioni degli altri in lista d'attesa
+                    remaining_waitlist = (
+                        db.session.query(Inscription)
+                        .filter_by(gara_id=gara_id, is_waitlist=True, is_withdrawn=False)
+                        .order_by(Inscription.waitlist_position.asc())
+                        .all()
+                    )
+                    
+                    for i, insc in enumerate(remaining_waitlist, 1):
+                        insc.waitlist_position = i
+                    
+                    # Invia notifica al promosso
+                    try:
+                        notification_result = NotificationService.create_notification(
+                            user_id=first_waitlist.user_id,
+                            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                            title="Posto disponibile!",
+                            message=f"Sei stato promosso dalla lista d'attesa per la {gara_name}",
+                            priority=NotificationPriority.HIGH
+                        )
+                        print(f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}")
+                    except Exception as e:
+                        print(f"DEBUG: Error creating promotion notification for user {first_waitlist.user_id}: {e}")
+            
             db.session.commit()
             return True
         return False

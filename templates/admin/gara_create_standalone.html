@@ -23,10 +23,16 @@
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="date" class="form-label">Data</label>
                                     <input type="date" class="form-control" id="date" name="date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="time" class="form-label">Ora</label>
+                                    <input type="time" class="form-control" id="time" name="time" value="20:00">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -47,6 +53,70 @@
                             <label for="description" class="form-label">Descrizione</label>
                             <textarea class="form-control" id="description" name="description" rows="3"
                                       placeholder="Descrizione della competizione..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Strategia di Abbinamento</h5>
+                        
+                        <div class="mb-3">
+                            <label for="matchmaking_strategy" class="form-label">Tipo di Competizione</label>
+                            <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
+                                {% for strategy_key, strategy_info in available_strategies.items() %}
+                                    <option value="{{ strategy_key }}" 
+                                            {% if strategy_key == 'amalfi' %}selected{% endif %}
+                                            data-description="{{ strategy_info.description }}">
+                                        {{ strategy_info.display_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small id="strategy_description" class="form-text text-muted"></small>
+                        </div>
+                        
+                        <div class="mb-3" id="anti_rematch_section">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="anti_rematch_enabled" 
+                                       name="anti_rematch_enabled" checked>
+                                <label class="form-check-label" for="anti_rematch_enabled">
+                                    Evita reincontri tra giocatori
+                                </label>
+                                <small class="form-text text-muted d-block">Dipende dal tipo di competizione selezionato</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="strategy_config_section">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
+                                    <select class="form-select" id="first_round_policy" name="first_round_policy">
+                                        <option value="random">Casuale</option>
+                                        <option value="rating">Basato su Rating</option>
+                                        <option value="classification">Basato su Classifica</option>
+                                    </select>
+                                    <div id="rating_type_section" class="mt-2" style="display: none;">
+                                        <label for="rating_type" class="form-label">Tipo Rating</label>
+                                        <select class="form-select" id="rating_type" name="rating_type">
+                                            <option value="fargo">Fargo Rating</option>
+                                            <option value="elo">Elo Rating</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="odd_number_policy" class="form-label">Gestione Giocatori Dispari</label>
+                                    <select class="form-select" id="odd_number_policy" name="odd_number_policy">
+                                        <option value="bye">X (vinto a tavolino)</option>
+                                        <option value="bye_with_challenge">X con Challenge</option>
+                                        <option value="trio">Match a 3 Giocatori</option>
+                                    </select>
+                                    <small id="trio_warning" class="form-text text-warning" style="display: none;">
+                                        Match a 3 disponibile solo fino a distanza 7
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,7 +183,7 @@
                         <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                            <label class="form-label">Gestione ritiri</label>
+                            <label class="form-label">Gestione Forfait</label>
                             <select class="form-select" name="withdraw_policy" required>
                                 <option value="{{ WithdrawPolicy.EXCLUDE.value }}">Exclude (X/Trio)</option>
                                 <option value="{{ WithdrawPolicy.FORFEIT.value }}">Forfeit (vittoria avversario)</option>
@@ -147,13 +217,119 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Strategy configuration management
+    const strategySelect = document.getElementById('matchmaking_strategy');
+    const firstRoundSelect = document.getElementById('first_round_policy');
+    const oddPolicySelect = document.getElementById('odd_number_policy');
+    const antiRematchCheck = document.getElementById('anti_rematch_enabled');
+    const roundsInput = document.getElementById('rounds_count');
+    const strategyDescription = document.getElementById('strategy_description');
+    const trioWarning = document.getElementById('trio_warning');
+    
+    // Exact number logic elements (moved up from below)
     const distanceInput = document.getElementById('distance');
     const exactNumberCheckbox = document.getElementById('exact_number');
     const exactNumberContainer = document.getElementById('exact_number_container');
     
+    // Store strategy constraints
+    const strategyConstraints = {{ available_strategies | tojson }};
+    
+    function updateStrategyUI() {
+        const selectedStrategy = strategySelect.value;
+        const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
+        
+        // Update description
+        const selectedOption = strategySelect.options[strategySelect.selectedIndex];
+        strategyDescription.textContent = selectedOption.dataset.description || '';
+        
+        // Update first round policy options
+        const allowedFirstPolicies = constraints.first_round_policies || ['random'];
+        Array.from(firstRoundSelect.options).forEach(option => {
+            if (option.value) {
+                option.disabled = !allowedFirstPolicies.includes(option.value);
+                if (option.disabled && option.selected) {
+                    firstRoundSelect.value = allowedFirstPolicies[0];
+                }
+            }
+        });
+        
+        // Update odd number policy options
+        const allowedOddPolicies = constraints.odd_policies || ['bye'];
+        Array.from(oddPolicySelect.options).forEach(option => {
+            if (option.value) {
+                option.disabled = !allowedOddPolicies.includes(option.value);
+                if (option.disabled && option.selected) {
+                    oddPolicySelect.value = allowedOddPolicies[0];
+                }
+            }
+        });
+        
+        // Update anti-rematch checkbox
+        if (constraints.anti_rematch === false) {
+            antiRematchCheck.checked = false;
+            antiRematchCheck.disabled = true;
+        } else {
+            antiRematchCheck.disabled = false;
+            if (constraints.anti_rematch_required) {
+                antiRematchCheck.checked = true;
+            }
+        }
+        
+        // Update anti-rematch section visibility based on strategy
+        const antiRematchSection = document.getElementById('anti_rematch_section');
+        if (constraints.anti_rematch === false) {
+            antiRematchSection.style.display = 'none';
+        } else {
+            antiRematchSection.style.display = 'block';
+        }
+        
+        // Update rounds input based on fixed_rounds
+        if (constraints.fixed_rounds) {
+            roundsInput.setAttribute('data-fixed', 'true');
+            // Il numero di turni verrà calcolato automaticamente in base agli iscritti
+            roundsInput.setAttribute('title', 'Numero turni calcolato automaticamente in base agli iscritti');
+        } else {
+            roundsInput.removeAttribute('data-fixed');
+            roundsInput.removeAttribute('title');
+        }
+        
+        updateTrioWarning();
+    }
+    
+    function updateTrioWarning() {
+        const distance = parseInt(distanceInput.value) || 0;
+        const oddPolicy = oddPolicySelect.value;
+        
+        if (oddPolicy === 'trio' && distance > 7) {
+            trioWarning.style.display = 'block';
+            oddPolicySelect.value = 'bye';
+        } else {
+            trioWarning.style.display = 'none';
+        }
+    }
+    
+    // Listen for first round policy changes to show/hide rating type
+    firstRoundSelect.addEventListener('change', function() {
+        const ratingSection = document.getElementById('rating_type_section');
+        if (firstRoundSelect.value === 'rating') {
+            ratingSection.style.display = 'block';
+        } else {
+            ratingSection.style.display = 'none';
+        }
+    });
+    
+    // Listen for strategy changes
+    strategySelect.addEventListener('change', updateStrategyUI);
+    oddPolicySelect.addEventListener('change', updateTrioWarning);
+    
+    // Initial update
+    updateStrategyUI();
+    
     function updateExactNumberAvailability() {
         const distance = parseInt(distanceInput.value) || 0;
         const isOdd = distance % 2 === 1;
+        
+        console.log('Updating exact number - Distance:', distance, 'Is odd:', isOdd); // Debug
         
         if (isOdd && distance > 0) {
             exactNumberCheckbox.disabled = false;
@@ -167,10 +343,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Controllo iniziale
     updateExactNumberAvailability();
+    // Richiama anche dopo un piccolo delay nel caso ci siano problemi di timing
+    setTimeout(updateExactNumberAvailability, 100);
     
     // Ascolta i cambiamenti della distanza
-    distanceInput.addEventListener('input', updateExactNumberAvailability);
-    distanceInput.addEventListener('change', updateExactNumberAvailability);
+    distanceInput.addEventListener('input', function() {
+        updateExactNumberAvailability();
+        updateTrioWarning();
+    });
+    distanceInput.addEventListener('change', function() {
+        updateExactNumberAvailability();
+        updateTrioWarning();
+    });
 });
 </script>
 {% endblock %}

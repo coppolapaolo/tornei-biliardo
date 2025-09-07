@@ -71,6 +71,23 @@ class Gara(db.Model):
         db.String(10), nullable=False, default=WithdrawPolicy.EXCLUDE.value
     )
 
+    # Matchmaking strategy configuration
+    matchmaking_strategy = db.Column(
+        db.String(50), nullable=False, default="amalfi"
+    )  # amalfi, round_robin, direct_elimination, double_knockout, random
+    first_round_policy = db.Column(
+        db.String(50), default="random"
+    )  # random, rating, classification
+    odd_number_policy = db.Column(
+        db.String(50), default="bye"
+    )  # bye, trio (trio solo per alcune strategie e distanze)
+    anti_rematch_enabled = db.Column(
+        db.Boolean, default=True
+    )  # Evita reincontri tra giocatori
+    rating_type = db.Column(
+        db.String(20), default="fargo"
+    )  # Tipo di rating da usare: fargo, elo
+
     # Relazioni
     inscriptions = db.relationship(
         "Inscription",
@@ -198,6 +215,90 @@ class Gara(db.Model):
         inscriptions_list = getattr(self, "inscriptions", []) or []
         return any(insc.user_id == user_id for insc in inscriptions_list)
 
+    def validate_strategy_configuration(self):
+        """Valida la coerenza tra strategia di abbinamento e configurazioni."""
+        errors = []
+        
+        # Validazioni per round robin
+        if self.matchmaking_strategy == "round_robin":
+            if self.first_round_policy != "random":
+                errors.append("Round robin supporta solo abbinamento casuale")
+            if self.odd_number_policy == "trio":
+                errors.append("Round robin non supporta match a tre")
+        
+        # Validazioni per eliminazione diretta
+        elif self.matchmaking_strategy == "direct_elimination":
+            if self.odd_number_policy == "trio":
+                errors.append("Eliminazione diretta non supporta match a tre")
+        
+        # Validazioni per strategia casuale
+        elif self.matchmaking_strategy == "random":
+            if self.first_round_policy != "random":
+                errors.append("Strategia casuale usa sempre abbinamento casuale")
+        
+        # Validazioni per trio matches
+        if self.odd_number_policy == "trio":
+            if self.distance > 7:
+                errors.append("Match a tre supportati solo fino a distanza 7")
+            if self.matchmaking_strategy not in ["amalfi", "random"]:
+                errors.append(f"Match a tre non supportati con strategia {self.matchmaking_strategy}")
+        
+        return errors
+
+    def calculate_rounds_for_strategy(self, num_players):
+        """Calcola il numero di turni ottimale per la strategia e numero di giocatori."""
+        if self.matchmaking_strategy == "round_robin":
+            return num_players - 1 if num_players > 1 else 1
+        elif self.matchmaking_strategy == "direct_elimination":
+            import math
+            return math.ceil(math.log2(num_players)) if num_players > 1 else 1
+        elif self.matchmaking_strategy == "double_knockout":
+            import math
+            # Double elimination richiede circa 2 * log2(n) turni
+            return 2 * math.ceil(math.log2(num_players)) if num_players > 1 else 1
+        else:
+            # Per amalfi e random, usa il valore configurato o un default sensato
+            return self.rounds_count or min(num_players - 1, 5)
+
+    def get_strategy_constraints(self):
+        """Restituisce i vincoli della strategia selezionata."""
+        constraints = {
+            "round_robin": {
+                "first_round_policies": ["random"],
+                "odd_policies": ["bye"],
+                "fixed_rounds": True,
+                "anti_rematch": False,
+                "allow_trio": False
+            },
+            "direct_elimination": {
+                "first_round_policies": ["random", "rating", "classification"],
+                "odd_policies": ["bye"],
+                "fixed_rounds": True,
+                "anti_rematch": False,
+                "allow_trio": False
+            },
+            "double_knockout": {
+                "first_round_policies": ["random", "rating", "classification"],
+                "odd_policies": ["bye"],
+                "fixed_rounds": True,
+                "anti_rematch": False,
+                "allow_trio": False
+            },
+            "amalfi": {
+                "first_round_policies": ["random", "rating", "classification"],
+                "odd_policies": ["bye", "bye_with_challenge", "trio"],
+                "fixed_rounds": False,
+                "anti_rematch": True
+            },
+            "random": {
+                "first_round_policies": ["random"],
+                "odd_policies": ["bye", "bye_with_challenge", "trio"],
+                "fixed_rounds": False,
+                "anti_rematch": True
+            }
+        }
+        return constraints.get(self.matchmaking_strategy, constraints["amalfi"])
+
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
         # Permetti modifica in setup, inscription, o quando le iscrizioni sono scadute
@@ -234,6 +335,24 @@ class Gara(db.Model):
         self.min_participants = source_gara.min_participants
         self.max_participants = source_gara.max_participants
         self.entry_fee = source_gara.entry_fee
+    
+    def get_active_inscriptions_count(self):
+        """Conta le iscrizioni attive (non in lista d'attesa e non ritirate)"""
+        return len([i for i in self.inscriptions if not i.is_withdrawn and not i.is_waitlist])
+    
+    def get_waitlist_count(self):
+        """Conta i giocatori in lista d'attesa"""
+        return len([i for i in self.inscriptions if i.is_waitlist and not i.is_withdrawn])
+    
+    def is_full(self):
+        """Verifica se la gara ha raggiunto il numero massimo di partecipanti"""
+        if not self.max_participants:
+            return False
+        return self.get_active_inscriptions_count() >= self.max_participants
+    
+    def has_waitlist(self):
+        """Verifica se la gara ha una lista d'attesa attiva"""
+        return self.max_participants is not None and self.is_full()
 
     def __repr__(self):
         if self.is_standalone:
@@ -258,6 +377,10 @@ class Inscription(db.Model):
 
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)
+    
+    # Lista d'attesa
+    is_waitlist = db.Column(db.Boolean, default=False, nullable=False)
+    waitlist_position = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.gara_id}>"

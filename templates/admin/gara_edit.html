@@ -24,28 +24,119 @@
 
 {% block scripts %}
 <script>
-// Aggiorna il testo della modalità di gioco e gestisce l'abilitazione
 document.addEventListener('DOMContentLoaded', function() {
+    // Strategy configuration management
+    const strategySelect = document.getElementById('matchmaking_strategy');
+    const firstRoundSelect = document.getElementById('first_round_policy');
+    const oddPolicySelect = document.getElementById('odd_number_policy');
+    const antiRematchCheck = document.getElementById('anti_rematch_enabled');
+    const strategyDescription = document.getElementById('strategy_description');
+    const trioWarning = document.getElementById('trio_warning');
+    
+    // Exact number logic elements
     const distanceInput = document.getElementById('distance');
-    const exactNumberCheck = document.getElementById('exact_number');
+    const exactNumberCheckbox = document.getElementById('exact_number');
+    const exactNumberContainer = document.getElementById('exact_number_container');
     const gameModeText = document.getElementById('game-mode-text');
     
-    function updateGameModeText() {
-        const distance = parseInt(distanceInput.value) || 7;
-        const isExactNumber = exactNumberCheck.checked;
-        const isDistanceOdd = distance % 2 === 1;
+    // Store strategy constraints (if available)
+    const strategyConstraints = {{ available_strategies | tojson }};
+    
+    function updateStrategyUI() {
+        if (!strategySelect) return;
         
-        // Abilita/disabilita la checkbox in base al numero di rack
-        if (isDistanceOdd && distance > 1) {
-            exactNumberCheck.disabled = false;
-            exactNumberCheck.parentElement.parentElement.style.opacity = '1';
-        } else {
-            exactNumberCheck.disabled = true;
-            exactNumberCheck.checked = false;
-            exactNumberCheck.parentElement.parentElement.style.opacity = '0.5';
+        const selectedStrategy = strategySelect.value;
+        const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
+        
+        // Update description
+        const selectedOption = strategySelect.options[strategySelect.selectedIndex];
+        if (strategyDescription) {
+            strategyDescription.textContent = selectedOption.dataset.description || '';
         }
         
-        if (isExactNumber && !exactNumberCheck.disabled) {
+        // Update first round policy options
+        if (firstRoundSelect) {
+            const allowedFirstPolicies = constraints.first_round_policies || ['random'];
+            Array.from(firstRoundSelect.options).forEach(option => {
+                if (option.value) {
+                    option.disabled = !allowedFirstPolicies.includes(option.value);
+                    if (option.disabled && option.selected) {
+                        firstRoundSelect.value = allowedFirstPolicies[0];
+                    }
+                }
+            });
+        }
+        
+        // Update odd number policy options
+        if (oddPolicySelect) {
+            const allowedOddPolicies = constraints.odd_policies || ['bye'];
+            Array.from(oddPolicySelect.options).forEach(option => {
+                if (option.value) {
+                    option.disabled = !allowedOddPolicies.includes(option.value);
+                    if (option.disabled && option.selected) {
+                        oddPolicySelect.value = allowedOddPolicies[0];
+                    }
+                }
+            });
+        }
+        
+        // Update anti-rematch checkbox
+        if (antiRematchCheck) {
+            if (constraints.anti_rematch === false) {
+                antiRematchCheck.checked = false;
+                antiRematchCheck.disabled = true;
+            } else {
+                antiRematchCheck.disabled = false;
+                if (constraints.anti_rematch_required) {
+                    antiRematchCheck.checked = true;
+                }
+            }
+        }
+        
+        updateTrioWarning();
+    }
+    
+    function updateTrioWarning() {
+        if (!distanceInput || !oddPolicySelect || !trioWarning) return;
+        
+        const distance = parseInt(distanceInput.value) || 0;
+        const oddPolicy = oddPolicySelect.value;
+        
+        if (oddPolicy === 'trio' && distance > 7) {
+            trioWarning.style.display = 'block';
+            oddPolicySelect.value = 'bye';
+        } else {
+            trioWarning.style.display = 'none';
+        }
+    }
+    
+    function updateExactNumberAvailability() {
+        if (!distanceInput || !exactNumberCheckbox) return;
+        
+        const distance = parseInt(distanceInput.value) || 0;
+        const isOdd = distance % 2 === 1;
+        
+        console.log('Updating exact number - Distance:', distance, 'Is odd:', isOdd); // Debug
+        
+        if (isOdd && distance > 0) {
+            exactNumberCheckbox.disabled = false;
+            if (exactNumberContainer) exactNumberContainer.style.opacity = '1';
+        } else {
+            exactNumberCheckbox.disabled = true;
+            exactNumberCheckbox.checked = false;
+            if (exactNumberContainer) exactNumberContainer.style.opacity = '0.5';
+        }
+        
+        updateGameModeText();
+    }
+    
+    function updateGameModeText() {
+        if (!distanceInput || !exactNumberCheckbox || !gameModeText) return;
+        
+        const distance = parseInt(distanceInput.value) || 0;
+        const isExactNumber = exactNumberCheckbox.checked;
+        
+        if (isExactNumber && !exactNumberCheckbox.disabled) {
             gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
         } else {
             const winScore = Math.floor(distance / 2) + 1;
@@ -53,11 +144,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    if (distanceInput && exactNumberCheck && gameModeText) {
-        distanceInput.addEventListener('input', updateGameModeText);
-        exactNumberCheck.addEventListener('change', updateGameModeText);
-        updateGameModeText(); // Iniziale
+    // Listen for first round policy changes to show/hide rating type
+    if (firstRoundSelect) {
+        firstRoundSelect.addEventListener('change', function() {
+            const ratingSection = document.getElementById('rating_type_section');
+            if (ratingSection) {
+                if (firstRoundSelect.value === 'rating') {
+                    ratingSection.style.display = 'block';
+                } else {
+                    ratingSection.style.display = 'none';
+                }
+            }
+        });
     }
+    
+    // Listen for strategy changes
+    if (strategySelect) {
+        strategySelect.addEventListener('change', updateStrategyUI);
+    }
+    if (oddPolicySelect) {
+        oddPolicySelect.addEventListener('change', updateTrioWarning);
+    }
+    
+    // Listen for distance changes
+    if (distanceInput) {
+        distanceInput.addEventListener('input', function() {
+            updateExactNumberAvailability();
+            updateTrioWarning();
+        });
+        distanceInput.addEventListener('change', function() {
+            updateExactNumberAvailability();
+            updateTrioWarning();
+        });
+    }
+    
+    if (exactNumberCheckbox) {
+        exactNumberCheckbox.addEventListener('change', updateGameModeText);
+    }
+    
+    // Initial updates
+    updateStrategyUI();
+    updateExactNumberAvailability();
+    // Richiama anche dopo un piccolo delay nel caso ci siano problemi di timing
+    setTimeout(function() {
+        updateStrategyUI();
+        updateExactNumberAvailability();
+    }, 100);
 });
 </script>
 {% endblock %}

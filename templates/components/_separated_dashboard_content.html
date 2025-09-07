@@ -142,14 +142,20 @@
     <div class="row">
       {% for item in available_garas %}
         <div class="col-md-6 col-lg-4 mb-3">
-          {% set ns = namespace(user_inscribed=false) %}
+          {% set ns = namespace(user_inscribed=false, is_waitlist=false, waitlist_position=0) %}
           {% if not current_user.is_admin %}
             {% for ins in item.entity.inscriptions %}
-              {% if ins.user_id == current_user.id %}{% set ns.user_inscribed = true %}{% endif %}
+              {% if ins.user_id == current_user.id %}
+                {% set ns.user_inscribed = true %}
+                {% if ins.is_waitlist %}
+                  {% set ns.is_waitlist = true %}
+                  {% set ns.waitlist_position = ins.waitlist_position %}
+                {% endif %}
+              {% endif %}
             {% endfor %}
           {% endif %}
-          <div class="card h-100 {% if ns.user_inscribed %}border-success border-2{% endif %}">
-            <div class="card-header py-2 {% if ns.user_inscribed %}bg-success bg-opacity-10{% endif %}">
+          <div class="card h-100 {% if ns.user_inscribed and not ns.is_waitlist %}border-success border-2{% elif ns.is_waitlist %}border-warning border-2{% endif %}">
+            <div class="card-header py-2 {% if ns.user_inscribed and not ns.is_waitlist %}bg-success bg-opacity-10{% elif ns.is_waitlist %}bg-warning bg-opacity-10{% endif %}">
               <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
                   <h6 class="mb-1">
@@ -170,19 +176,29 @@
                 </div>
                 <div class="text-end">
                   {% if item.entity.get_real_status() == 'round_completed' %}
-                    {% if ns.user_inscribed %}
+                    {% if ns.user_inscribed and not ns.is_waitlist %}
                       <span class="badge bg-primary me-1">Iscritto</span>
+                    {% elif ns.is_waitlist %}
+                      <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
                     {% endif %}
                     <span class="badge bg-success">Turno Completato</span>
                   {% elif item.entity.get_real_status() == 'playing' %}
-                    {% if ns.user_inscribed %}
+                    {% if ns.user_inscribed and not ns.is_waitlist %}
                       <span class="badge bg-primary me-1">Iscritto</span>
+                    {% elif ns.is_waitlist %}
+                      <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
                     {% endif %}
                     <span class="badge bg-warning">In Corso</span>
-                  {% elif ns.user_inscribed %}
+                  {% elif ns.user_inscribed and not ns.is_waitlist %}
                     <span class="badge bg-primary">Iscritto</span>
+                  {% elif ns.is_waitlist %}
+                    <span class="badge bg-warning">Lista d'attesa #{{ ns.waitlist_position }}</span>
                   {% else %}
-                    <span class="badge bg-success">Iscrizioni Aperte</span>
+                    {% if item.entity.is_full() %}
+                      <span class="badge bg-warning">Massimo raggiunto</span>
+                    {% else %}
+                      <span class="badge bg-success">Iscrizioni Aperte</span>
+                    {% endif %}
                   {% endif %}
                 </div>
               </div>
@@ -223,7 +239,7 @@
                   </small>
                   <small class="text-muted">
                     <i class="fas fa-users me-1"></i>
-                    {{ item.entity.inscriptions|length }} giocatori
+                    {{ item.entity.get_active_inscriptions_count() }} giocatori
                   </small>
                 </div>
               {% else %}
@@ -238,7 +254,12 @@
                   </small>
                   <small class="text-muted">
                     <i class="fas fa-users me-1"></i>
-                    {{ item.entity.inscriptions|length }}{% if item.entity.max_participants %}/{{ item.entity.max_participants }}{% endif %}
+                    {{ item.entity.get_active_inscriptions_count() }}{% if item.entity.max_participants %}/{{ item.entity.max_participants }}{% endif %}
+                    {% if item.entity.get_waitlist_count() > 0 %}
+                      <span class="text-warning ms-1">
+                        <i class="fas fa-clock"></i> +{{ item.entity.get_waitlist_count() }}
+                      </span>
+                    {% endif %}
                   </small>
                 </div>
               {% endif %}
@@ -280,20 +301,23 @@
                   
                   {# Pulsante iscrizione/disiscrizione #}
                   {% if not current_user.is_admin %}
-                    {% set ns = namespace(inscribed=false) %}
-                    {% for ins in item.entity.inscriptions %}
-                      {% if ins.user_id == current_user.id %}{% set ns.inscribed = true %}{% endif %}
-                    {% endfor %}
-                    
-                    {% if not ns.inscribed %}
-                      <a href="#" onclick="inscribeToGara({{ item.id }}); return false;" 
-                         class="btn btn-success btn-sm">
-                        <i class="fas fa-user-plus"></i> Iscriviti
-                      </a>
+                    {% if not ns.user_inscribed %}
+                      {% if item.entity.is_full() %}
+                        <a href="#" onclick="inscribeToGara({{ item.id }}); return false;" 
+                           class="btn btn-warning btn-sm">
+                          <i class="fas fa-clock"></i> Lista d'attesa
+                        </a>
+                      {% else %}
+                        <a href="#" onclick="inscribeToGara({{ item.id }}); return false;" 
+                           class="btn btn-success btn-sm">
+                          <i class="fas fa-user-plus"></i> Iscriviti
+                        </a>
+                      {% endif %}
                     {% else %}
                       <a href="#" onclick="unsubscribeFromGara({{ item.id }}); return false;" 
                          class="btn btn-danger btn-sm">
-                        <i class="fas fa-user-minus"></i> Disiscrivi
+                        <i class="fas fa-user-minus"></i> 
+                        {% if ns.is_waitlist %}Esci da lista d'attesa{% else %}Disiscrivi{% endif %}
                       </a>
                     {% endif %}
                   {% endif %}
