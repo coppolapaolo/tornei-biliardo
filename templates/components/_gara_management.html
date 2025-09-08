@@ -89,6 +89,16 @@
                         <small><strong>Turno {{ gara.current_round }}/{{ gara.rounds_count }} in corso</strong></small>
                     </div>
                 {% endif %}
+                
+                <!-- Pulsante per cancellare l'avvio del primo turno -->
+                {% if gara.can_cancel_first_round() %}
+                    <button class="btn btn-warning w-100 mb-2" onclick="cancelFirstRound({{ gara.id }})">
+                        <i class="fas fa-undo"></i> Annulla Avvio Primo Turno
+                    </button>
+                    <small class="text-muted d-block text-center mb-2">
+                        <i class="fas fa-info-circle"></i> Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati
+                    </small>
+                {% endif %}
             {% endif %}
             
             <!-- Azioni aggiuntive -->

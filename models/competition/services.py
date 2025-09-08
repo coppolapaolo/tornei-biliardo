@@ -381,6 +381,61 @@ class GaraService:
         return gara
 
     @staticmethod
+    def cancel_first_round_startup(gara_id: int) -> Gara:
+        """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
+        
+        Riporta la gara allo stato 'inscription' e rimuove tutte le partite del primo turno.
+        Utilizzabile solo se il primo turno è stato avviato ma nessun risultato è stato inserito.
+        """
+        from models.match.models import Match, TrioMatch
+        from models.status_enum import MatchStatus
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+
+        # Verifica che siamo al primo turno
+        if gara.current_round != 1:
+            raise ValueError("Questa funzione può essere usata solo per cancellare l'avvio del primo turno")
+
+        # Verifica che non ci siano risultati inseriti (neanche parziali)
+        first_round_matches = Match.query.filter_by(gara_id=gara_id, round_number=1).all()
+        
+        if not first_round_matches:
+            raise ValueError("Non ci sono partite del primo turno da cancellare")
+
+        # Controlla che non ci siano risultati inseriti (neanche parziali)
+        for match in first_round_matches:
+            if (match.player1_score > 0 or match.player2_score > 0 or 
+                match.status != MatchStatus.PENDING.value):
+                raise ValueError("Impossibile cancellare l'avvio: sono già stati inseriti risultati (anche parziali)")
+
+        # Rimuovi tutte le partite del primo turno
+        try:
+            # Rimuovi eventuali trii collegati
+            for match in first_round_matches:
+                trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+                if trio:
+                    db.session.delete(trio)
+            
+            # Rimuovi tutte le partite
+            for match in first_round_matches:
+                db.session.delete(match)
+
+            # Riporta la gara allo stato inscription
+            gara.current_round = 0
+            gara.status = GaraStatus.INSCRIPTION.value
+            
+            db.session.add(gara)
+            db.session.commit()
+            
+            return gara
+            
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(f"Errore durante la cancellazione del primo turno: {str(e)}")
+
+    @staticmethod
     def create_round_with_strategy(gara_id: int, round_number: int) -> tuple[int, int, int, int]:
         """Crea un turno usando la strategia configurata nella gara.
 

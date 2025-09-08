@@ -314,6 +314,30 @@ class Gara(db.Model):
         inscriptions_list = getattr(self, "inscriptions", []) or []
         return not inscriptions_list and self.status == GaraStatus.SETUP.value
 
+    def can_cancel_first_round(self):
+        """Verifica se l'avvio del primo turno può essere cancellato"""
+        if self.current_round != 1:
+            return False
+        if self.status != GaraStatus.PLAYING.value:
+            return False
+        
+        # Verifica che non ci siano risultati inseriti nelle partite del primo turno
+        try:
+            from models.match.models import Match
+            first_round_matches = Match.query.filter_by(gara_id=self.id, round_number=1).all()
+            if not first_round_matches:
+                return False
+            
+            # Controlla che non ci siano risultati inseriti (neanche parziali)
+            for match in first_round_matches:
+                if (match.player1_score > 0 or match.player2_score > 0 or 
+                    match.status != MatchStatus.PENDING.value):
+                    return False
+            
+            return True
+        except Exception:
+            return False
+
     def get_winning_score(self):
         """Restituisce il punteggio per vincere"""
         if self.best_of:

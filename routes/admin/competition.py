@@ -582,6 +582,20 @@ def start_first_round(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
+@competition_bp.route("/<int:gara_id>/cancel_first_round", methods=["POST"])
+@login_required
+@gara_manager_required
+def cancel_first_round(gara_id):
+    """Cancella l'avvio del primo turno se non ci sono risultati"""
+    try:
+        GaraService.cancel_first_round_startup(gara_id)
+        flash("Avvio del primo turno cancellato con successo! La gara è tornata allo stato di iscrizioni.", "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
 @competition_bp.route("/<int:gara_id>/results_overview")
 @login_required
 @gara_manager_required
