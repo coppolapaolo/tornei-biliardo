@@ -118,7 +118,11 @@ function deleteProva(provaId, provaNumber) {
             }
         }).then(response => {
             if (response.ok) {
+                {% if gara.campionato_id %}
                 window.location.href = '/admin/campionato/{{ gara.campionato_id }}';
+                {% else %}
+                window.location.href = '/dashboard';
+                {% endif %}
             }
         });
     }
@@ -133,7 +137,11 @@ function cancelProvaWithNotifications(provaId, provaNumber) {
             }
         }).then(response => {
             if (response.ok) {
+                {% if gara.campionato_id %}
                 window.location.href = '/admin/campionato/{{ gara.campionato_id }}';
+                {% else %}
+                window.location.href = '/dashboard';
+                {% endif %}
             } else {
                 response.text().then(text => {
                     alert('Errore durante la cancellazione: ' + text);
@@ -450,6 +458,27 @@ function validateAmalfiConfig() {
             console.error('Error:', error);
             alert('Errore di rete durante la validazione');
         });
+}
+
+function closeInscriptions(provaId) {
+    if (confirm('Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.')) {
+        fetch(`/admin/gara/${provaId}/close_inscriptions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                response.text().then(text => {
+                    alert('Errore durante la chiusura: ' + text);
+                });
+            }
+        }).catch(error => {
+            alert('Errore di rete durante la chiusura delle iscrizioni');
+        });
+    }
 }
 </script>
 {% endblock %}

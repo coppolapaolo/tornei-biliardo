@@ -230,11 +230,10 @@ class DashboardService:
                     .first() is not None
                 )
                 
-                
                 can_manage = is_main_director or is_co_director
-                can_view_details = is_main_director or is_co_director  # Director può vedere dettagli solo se può gestire
+                can_view_details = True  # Director può sempre vedere tutte le gare standalone
             elif user_role == 'player':
-                can_view_details = False  # Player non può vedere dettagli di gestione
+                can_view_details = True  # Player può vedere gare standalone per iscriversi
                 
             items.append(UnifiedDashboardItem(
                 type='gara',

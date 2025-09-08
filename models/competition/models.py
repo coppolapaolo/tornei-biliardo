@@ -39,6 +39,7 @@ class Gara(db.Model):
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
     date = db.Column(db.Date, nullable=False)
+    time = db.Column(db.Time, nullable=True)  # Ora della gara
 
     # NUOVI CAMPI
     location = db.Column(db.String(200))  # Luogo della gara

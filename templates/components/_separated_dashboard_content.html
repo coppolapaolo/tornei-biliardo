@@ -114,7 +114,7 @@
   
   {# Raccogli tutte le gare interessanti (iscrizioni aperte, in corso, o round completato) #}
   {% for item in vm.unified_items %}
-    {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
+    {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
       {% set _ = available_garas.append(item) %}
     {% elif item.type == 'campionato' %}
       {# Aggiungi le gare del campionato interessanti #}
@@ -196,6 +196,8 @@
                       <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
                     {% endif %}
                     <span class="badge bg-warning">In Corso</span>
+                  {% elif item.entity.get_real_status() == GaraStatus.SETUP.value %}
+                    <span class="badge bg-secondary">In Preparazione</span>
                   {% elif ns.user_inscribed and not ns.is_waitlist %}
                     <span class="badge bg-primary">Iscritto</span>
                   {% elif ns.is_waitlist %}
@@ -305,8 +307,17 @@
                     {% endfor %}
                   {% endif %}
                   
+                {% elif item.entity.get_real_status() == GaraStatus.SETUP.value %}
+                  {# Gara in setup - solo dettagli per chi può gestirla #}
+                  {% if item.can_manage %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                       class="btn btn-outline-primary btn-sm w-100">
+                      <i class="fas fa-cog"></i> Gestisci
+                    </a>
+                  {% endif %}
+                  
                 {% else %}
-                  {# Gara normale (iscrizioni aperte) #}
+                  {# Gara con iscrizioni aperte #}
                   {% if item.can_view_details %}
                     <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
                        class="btn btn-outline-primary btn-sm">
@@ -314,8 +325,8 @@
                     </a>
                   {% endif %}
                   
-                  {# Pulsante iscrizione/disiscrizione #}
-                  {% if not current_user.is_admin %}
+                  {# Pulsante iscrizione/disiscrizione solo se iscrizioni sono aperte #}
+                  {% if not current_user.is_admin and item.entity.get_real_status() == GaraStatus.INSCRIPTION.value %}
                     {% if not ns.user_inscribed %}
                       {% if item.entity.is_full() %}
                         <a href="#" onclick="inscribeToGara({{ item.id }}); return false;" 

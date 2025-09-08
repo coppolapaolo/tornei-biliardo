@@ -7,8 +7,8 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <strong>Data:</strong> {{ gara.date.strftime('%d/%m/%Y') }}<br>
-                    <strong>Disciplina:</strong> {{ gara.discipline }}<br>
+                    <strong>Data:</strong> {{ gara.date.strftime('%d/%m/%Y') }}{% if gara.time %} {{ gara.time.strftime('%H:%M') }}{% endif %}<br>
+                    <strong>Disciplina:</strong> {{ gara.discipline.replace('_', ' ') }}<br>
                     <strong>Distanza:</strong> 
                     {% if gara.best_of %}
                         Al meglio di {{ gara.distance }} (vince con {{ gara.get_winning_score() }})

@@ -32,7 +32,7 @@ from utils import (
     director_or_admin_required,
     trio_manager_required,
 )
-from models.competition.services import GaraService
+from models.competition.services import GaraService, ProvaStateMachine
 from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
 from models.classification.models import RoundClassification
 
@@ -57,6 +57,7 @@ def create_gara_standalone():
             time_str = request.form.get("time", "20:00")
             datetime_obj = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
             date = datetime_obj.date()
+            time = datetime_obj.time()
             
             # Campi opzionali
             location = request.form.get("location", "").strip()
@@ -109,6 +110,7 @@ def create_gara_standalone():
                 number=1,  # Sempre 1 per gare standalone
                 name=name,
                 date=date,
+                time=time,
                 location=location,
                 description=description,
                 rounds_count=rounds_count,
@@ -347,8 +349,11 @@ def delete_gara(gara_id):
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         abort(404)
+    
+    # Determina se è standalone prima della cancellazione
+    is_standalone = gara.campionato_id is None
     campionato_id = gara.campionato_id
-    gara_name = f"Gara {gara.number}"
+    gara_name = gara.name if gara.name else f"Gara {gara.number}"
 
     # Usa il service layer invece del direct database access
     try:
@@ -358,11 +363,11 @@ def delete_gara(gara_id):
         flash(str(ve), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    if not campionato_id:
+    # Redirect appropriato: home per standalone, campionato detail per gare di campionato
+    if is_standalone:
         return redirect(url_for("dashboard.dashboard"))
-    return redirect(
-        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-    )
+    else:
+        return redirect(url_for("admin.campionato.campionato_detail", campionato_id=campionato_id))
 
 
 @competition_bp.route("/<int:gara_id>/cancel", methods=["POST"])
@@ -594,6 +599,37 @@ def cancel_first_round(gara_id):
     except ValueError as ve:
         flash(str(ve), "error")
 
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/close_inscriptions", methods=["POST"])
+@login_required
+@gara_manager_required
+def close_inscriptions(gara_id):
+    """Chiude le iscrizioni e torna la gara allo stato setup se non ci sono iscritti"""
+    try:
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            flash("Gara non trovata.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        
+        # Verifica che la gara sia in stato inscription
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            flash("La gara non è in stato di iscrizione.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        
+        # Verifica che non ci siano iscrizioni attive
+        if gara.get_active_inscriptions_count() > 0:
+            flash("Non è possibile chiudere le iscrizioni quando ci sono già degli iscritti.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        
+        # Usa il service layer per tornare allo stato setup
+        ProvaStateMachine.reopen_setup(gara)
+        flash("Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.", "success")
+        
+    except Exception as e:
+        flash(f"Errore durante la chiusura delle iscrizioni: {str(e)}", "error")
+    
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
