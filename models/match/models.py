@@ -190,9 +190,13 @@ class Match(db.Model):
         if self.player1_score >= self.match_distance:
             self.winner_id = self.player1_id
             self.status = "completed"
+            # Check if all matches in gara are completed and auto-complete gara
+            self._check_and_complete_gara_if_needed(self)
         elif self.player2_score >= self.match_distance:
             self.winner_id = self.player2_id
             self.status = "completed"
+            # Check if all matches in gara are completed and auto-complete gara
+            self._check_and_complete_gara_if_needed(self)
         else:
             # Move to next set
             self.current_set_number += 1

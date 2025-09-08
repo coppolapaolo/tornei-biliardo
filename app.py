@@ -90,6 +90,15 @@ def create_app(config_name=None):
             "unread_notifications_count": unread_count,
         }
 
+    # Context processor per enum
+    @app.context_processor
+    def inject_enums():
+        """Inject enums into all Jinja2 templates"""
+        from models.status_enum import GaraStatus
+        return {
+            "GaraStatus": GaraStatus,
+        }
+
     # Filtri Jinja per status
     register_status_filters(app)
 

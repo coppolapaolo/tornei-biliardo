@@ -25,13 +25,17 @@
           </small>
         </div>
         <div>
-          {% if ins.gara.status in ['setup','inscription'] %}
+          {% if ins.gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
             <button class="btn btn-outline-danger btn-sm" onclick="unsubscribeFromProva({{ ins.gara.id }}, {{ ins.gara.number }})">
               <i class="fas fa-user-minus"></i> Disiscriviti
             </button>
-          {% elif ins.gara.status == 'playing' %}
+          {% elif ins.gara.status == GaraStatus.PLAYING.value %}
             <a class="btn btn-outline-info btn-sm" href="{{ url_for('admin.competition.gara_detail', gara_id=ins.gara.id) }}">
               <i class="fas fa-eye"></i> Vedi Partite
+            </a>
+          {% elif ins.gara.status == GaraStatus.COMPLETED.value %}
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.competition.gara_detail', gara_id=ins.gara.id) }}">
+              <i class="fas fa-trophy"></i> Vedi Risultati
             </a>
           {% endif %}
         </div>

@@ -114,12 +114,12 @@
   
   {# Raccogli tutte le gare interessanti (iscrizioni aperte, in corso, o round completato) #}
   {% for item in vm.unified_items %}
-    {% if item.type == 'gara' and item.entity.get_real_status() in ['inscription', 'playing', 'round_completed'] %}
+    {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
       {% set _ = available_garas.append(item) %}
     {% elif item.type == 'campionato' %}
       {# Aggiungi le gare del campionato interessanti #}
       {% for gara in item.entity.gare %}
-        {% if gara.get_real_status() in ['inscription', 'playing', 'round_completed'] %}
+        {% if gara.get_real_status() in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
           {% set _ = available_garas.append({
             'type': 'gara',
             'id': gara.id,
@@ -175,14 +175,21 @@
                   </small>
                 </div>
                 <div class="text-end">
-                  {% if item.entity.get_real_status() == 'round_completed' %}
+                  {% if item.entity.get_real_status() in [GaraStatus.COMPLETED.value, 'campionato_completed'] %}
+                    {% if ns.user_inscribed and not ns.is_waitlist %}
+                      <span class="badge bg-primary me-1">Iscritto</span>
+                    {% elif ns.is_waitlist %}
+                      <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
+                    {% endif %}
+                    <span class="badge bg-dark">Gara Completata</span>
+                  {% elif item.entity.get_real_status() == 'round_completed' %}
                     {% if ns.user_inscribed and not ns.is_waitlist %}
                       <span class="badge bg-primary me-1">Iscritto</span>
                     {% elif ns.is_waitlist %}
                       <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
                     {% endif %}
                     <span class="badge bg-success">Turno Completato</span>
-                  {% elif item.entity.get_real_status() == 'playing' %}
+                  {% elif item.entity.get_real_status() == GaraStatus.PLAYING.value %}
                     {% if ns.user_inscribed and not ns.is_waitlist %}
                       <span class="badge bg-primary me-1">Iscritto</span>
                     {% elif ns.is_waitlist %}
@@ -229,7 +236,7 @@
               </div>
               
               {# Info specifiche per stato gara #}
-              {% if item.entity.get_real_status() == 'playing' %}
+              {% if item.entity.get_real_status() == GaraStatus.PLAYING.value %}
                 {# Gara in corso - mostra info turno #}
                 <div class="d-flex justify-content-between align-items-center">
                   <small class="text-warning fw-bold">
@@ -267,8 +274,16 @@
             
             <div class="card-footer py-2 bg-transparent">
               <div class="btn-group w-100" role="group">
-                {# Pulsanti per gare in corso o normali #}
-                {% if item.entity.get_real_status() == 'playing' %}
+                {# Pulsanti per gare completate #}
+                {% if item.entity.get_real_status() in [GaraStatus.COMPLETED.value, 'campionato_completed'] %}
+                  {# Gara completata - pulsante per vedere risultati #}
+                  <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                     class="btn btn-outline-success btn-sm w-100">
+                    <i class="fas fa-trophy"></i> Vedi Risultati
+                  </a>
+                  
+                {# Pulsanti per gare in corso #}
+                {% elif item.entity.get_real_status() == GaraStatus.PLAYING.value %}
                   {# Gara in corso - pulsanti specifici #}
                   {% if item.can_view_details %}
                     <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
