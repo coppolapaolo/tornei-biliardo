@@ -130,7 +130,6 @@ def remove_rack_admin(rack_id):
     """Rimuovi un rack (admin)"""
     try:
         # Prima ottieni le info del match per il round update
-        from models.rack.models import Rack
         from models.competition.services import GaraService
         rack = Rack.query.get(rack_id)
         gara_id = None

@@ -361,6 +361,7 @@ def rack_manager_required(f):
             
             # Co-direttore via DirectorAssignment
             from models.user.models import DirectorAssignment
+            from models import db  # Local import to avoid circular dependency
             gara_id = gara.id
             is_co_director = (
                 db.session.query(DirectorAssignment)
