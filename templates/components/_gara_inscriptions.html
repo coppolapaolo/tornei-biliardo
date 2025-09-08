@@ -26,7 +26,7 @@
                             <small class="text-muted d-block">Iscritto il {{ inscription.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                         </div>
                         
-                        {% if current_user.is_admin or current_user.is_director %}
+                        {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
                             <form class="d-inline" method="POST" action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
                                   onsubmit="return confirm('Sei sicuro di voler disiscrivere {{ inscription.user.username }}? L\'utente riceverà una notifica.')">
                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Disiscrive utente">
@@ -52,7 +52,7 @@
                             <small class="text-muted d-block">In lista dal {{ inscription.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                         </div>
                         
-                        {% if current_user.is_admin or current_user.is_director %}
+                        {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
                             <form class="d-inline" method="POST" action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
                                   onsubmit="return confirm('Sei sicuro di voler rimuovere {{ inscription.user.username }} dalla lista d\'attesa?')">
                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Rimuove dalla lista d'attesa">

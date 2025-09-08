@@ -912,6 +912,11 @@ def admin_uninscribe_user(gara_id, user_id):
             flash("Gara non trovata.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
         
+        # Verifica che la gara sia ancora in fase di iscrizioni
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            flash("Non è possibile disiscrivere utenti quando il primo turno è già iniziato.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        
         # Esegui la disiscrizione
         success = InscriptionService.admin_uninscribe_user(user_id, gara_id, current_user.id)
         
