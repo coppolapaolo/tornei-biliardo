@@ -29,6 +29,7 @@ from models.competition.models import WithdrawPolicy
 from utils import (
     gara_manager_required,
     admin_required,
+    director_or_admin_required,
     trio_manager_required,
 )
 from models.competition.services import GaraService
@@ -41,9 +42,9 @@ competition_bp = Blueprint("competition", __name__)
 
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
 @login_required
-@admin_required
+@director_or_admin_required
 def create_gara_standalone():
-    """Crea gara standalone (solo admin)"""
+    """Crea gara standalone (admin o director)"""
     if request.method == "POST":
         try:
             # Campi base
