@@ -338,6 +338,28 @@ class Gara(db.Model):
         except Exception:
             return False
 
+    def can_cancel_current_round(self):
+        """Verifica se l'avvio del turno corrente può essere cancellato"""
+        if self.status != GaraStatus.PLAYING.value:
+            return False
+        
+        # Verifica che non ci siano risultati inseriti nelle partite del turno corrente
+        try:
+            from models.match.models import Match
+            current_round_matches = Match.query.filter_by(gara_id=self.id, round_number=self.current_round).all()
+            if not current_round_matches:
+                return False
+            
+            # Controlla che non ci siano risultati inseriti (neanche parziali)
+            for match in current_round_matches:
+                if (match.player1_score > 0 or match.player2_score > 0 or 
+                    match.status != MatchStatus.PENDING.value):
+                    return False
+            
+            return True
+        except Exception:
+            return False
+
     def get_winning_score(self):
         """Restituisce il punteggio per vincere"""
         if self.best_of:

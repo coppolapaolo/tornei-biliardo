@@ -596,6 +596,19 @@ def cancel_first_round(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
+@competition_bp.route("/<int:gara_id>/cancel_current_round", methods=["POST"])
+@login_required
+@gara_manager_required
+def cancel_current_round(gara_id):
+    """Cancella l'avvio del turno corrente se non ci sono risultati"""
+    try:
+        gara = GaraService.cancel_current_round_startup(gara_id)
+        flash(f"Avvio del turno {gara.current_round + 1} cancellato con successo!", "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
 @competition_bp.route("/<int:gara_id>/results_overview")
 @login_required
 @gara_manager_required

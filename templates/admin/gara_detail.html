@@ -90,6 +90,25 @@ function cancelFirstRound(provaId) {
     }
 }
 
+function cancelCurrentRound(provaId) {
+    if (confirm('Sei sicuro di voler cancellare l\'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.')) {
+        fetch(`/admin/gara/${provaId}/cancel_current_round`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                response.text().then(text => {
+                    alert('Errore durante la cancellazione: ' + text);
+                });
+            }
+        });
+    }
+}
+
 function deleteProva(provaId, provaNumber) {
     if (confirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
         fetch(`/admin/gara/${provaId}/delete`, {

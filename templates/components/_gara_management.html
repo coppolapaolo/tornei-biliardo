@@ -98,6 +98,13 @@
                     <small class="text-muted d-block text-center mb-2">
                         <i class="fas fa-info-circle"></i> Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati
                     </small>
+                {% elif gara.can_cancel_current_round() %}
+                    <button class="btn btn-warning w-100 mb-2" onclick="cancelCurrentRound({{ gara.id }})">
+                        <i class="fas fa-undo"></i> Annulla Avvio Turno {{ gara.current_round }}
+                    </button>
+                    <small class="text-muted d-block text-center mb-2">
+                        <i class="fas fa-info-circle"></i> Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati
+                    </small>
                 {% endif %}
             {% endif %}
             

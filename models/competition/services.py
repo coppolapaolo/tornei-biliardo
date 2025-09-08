@@ -412,11 +412,27 @@ class GaraService:
 
         # Rimuovi tutte le partite del primo turno
         try:
+            from models.classification.models import PlayerEncounter, RoundClassification
+            
             # Rimuovi eventuali trii collegati
             for match in first_round_matches:
                 trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
                 if trio:
                     db.session.delete(trio)
+            
+            # Rimuovi i PlayerEncounter del primo turno per ripristinare l'anti-rematch
+            encounters_to_remove = db.session.query(PlayerEncounter).filter_by(
+                gara_id=gara_id, round_number=1
+            ).all()
+            for encounter in encounters_to_remove:
+                db.session.delete(encounter)
+                
+            # Rimuovi le RoundClassification del primo turno
+            classifications_to_remove = db.session.query(RoundClassification).filter_by(
+                gara_id=gara_id, round_number=1
+            ).all()
+            for classification in classifications_to_remove:
+                db.session.delete(classification)
             
             # Rimuovi tutte le partite
             for match in first_round_matches:
@@ -434,6 +450,84 @@ class GaraService:
         except Exception as e:
             db.session.rollback()
             raise ValueError(f"Errore durante la cancellazione del primo turno: {str(e)}")
+
+    @staticmethod
+    def cancel_current_round_startup(gara_id: int) -> Gara:
+        """Cancella l'avvio del turno corrente se non sono stati inseriti risultati.
+        
+        Decrementa il current_round e rimuove tutte le partite del turno corrente.
+        Utilizzabile solo se non sono stati inseriti risultati (anche parziali).
+        """
+        from models.match.models import Match, TrioMatch
+        from models.status_enum import MatchStatus, GaraStatus
+        
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+            
+        # Verifica che siamo in stato playing
+        if gara.status != GaraStatus.PLAYING.value:
+            raise ValueError("La gara deve essere in stato playing")
+            
+        current_round = gara.current_round
+        if current_round <= 0:
+            raise ValueError("Non c'è un turno corrente da cancellare")
+            
+        # Verifica che non ci siano risultati inseriti (neanche parziali)
+        current_round_matches = Match.query.filter_by(gara_id=gara_id, round_number=current_round).all()
+        
+        if not current_round_matches:
+            raise ValueError("Non ci sono partite del turno corrente da cancellare")
+            
+        # Controlla che non ci siano risultati inseriti (neanche parziali)
+        for match in current_round_matches:
+            if (match.player1_score > 0 or match.player2_score > 0 or 
+                match.status != MatchStatus.PENDING.value):
+                raise ValueError("Impossibile cancellare l'avvio: sono già stati inseriti risultati (anche parziali)")
+        
+        # Rimuovi tutte le partite del turno corrente e dati correlati
+        try:
+            from models.classification.models import PlayerEncounter, RoundClassification
+            
+            # Rimuovi eventuali trii collegati
+            for match in current_round_matches:
+                trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+                if trio:
+                    db.session.delete(trio)
+            
+            # Rimuovi i PlayerEncounter del turno corrente per ripristinare l'anti-rematch
+            encounters_to_remove = db.session.query(PlayerEncounter).filter_by(
+                gara_id=gara_id, round_number=current_round
+            ).all()
+            for encounter in encounters_to_remove:
+                db.session.delete(encounter)
+                
+            # Rimuovi le RoundClassification del turno corrente
+            classifications_to_remove = db.session.query(RoundClassification).filter_by(
+                gara_id=gara_id, round_number=current_round
+            ).all()
+            for classification in classifications_to_remove:
+                db.session.delete(classification)
+            
+            # Rimuovi tutte le partite
+            for match in current_round_matches:
+                db.session.delete(match)
+                
+            # Decrementa il current_round
+            gara.current_round = current_round - 1
+            
+            # Se torniamo al turno 0, riporta allo stato inscription
+            if gara.current_round == 0:
+                gara.status = GaraStatus.INSCRIPTION.value
+                
+            db.session.add(gara)
+            db.session.commit()
+            
+            return gara
+            
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(f"Errore durante la cancellazione del turno corrente: {str(e)}")
 
     @staticmethod
     def create_round_with_strategy(gara_id: int, round_number: int) -> tuple[int, int, int, int]:
