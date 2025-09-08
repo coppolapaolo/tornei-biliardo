@@ -2,7 +2,7 @@
 {% if vm.can_inscribe and vm.available_garas and vm.available_garas|length %}
 <div class="card mb-4">
   <div class="card-header">
-    <h5 class="mb-0"><i class="fas fa-calendar-plus"></i> Gare Disponibili ({{ vm.available_garas|length }})</h5>
+    <h5 class="mb-0"><i class="fas fa-calendar-plus"></i> Gare ({{ vm.available_garas|length }})</h5>
   </div>
   <div class="card-body">
     {% for p in vm.available_garas %}
