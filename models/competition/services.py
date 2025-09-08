@@ -356,8 +356,8 @@ class GaraService:
         if gara.current_round != 0:
             raise ValueError("La gara è già iniziata!")
 
-        # Verifica numero minimo partecipanti
-        inscriptions = db.session.query(Inscription).filter_by(gara_id=gara_id).all()
+        # Verifica numero minimo partecipanti (escludi lista d'attesa)
+        inscriptions = db.session.query(Inscription).filter_by(gara_id=gara_id, is_waitlist=False).all()
         if len(inscriptions) < gara.min_participants:
             raise ValueError(
                 f"Servono almeno {gara.min_participants} iscritti per avviare la gara!"
@@ -473,9 +473,9 @@ class GaraService:
                 # Crea la configurazione dalla gara
                 config = StrategyConfiguration.from_gara(gara)
                 
-                # Ottieni i giocatori iscritti
+                # Ottieni i giocatori iscritti (escludi lista d'attesa)
                 from models.competition.models import Inscription
-                inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
+                inscriptions = Inscription.query.filter_by(gara_id=gara_id, is_waitlist=False).all()
                 player_ids = [insc.user_id for insc in inscriptions]
                 
                 # Genera gli abbinamenti

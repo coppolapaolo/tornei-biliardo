@@ -516,7 +516,7 @@ class AmalfiEngine:
         db.session.add(bye)
 
     def _inscriptions_for_pairing(self) -> list[Inscription]:
-        q = db.session.query(Inscription).filter_by(gara_id=self.gara.id)
+        q = db.session.query(Inscription).filter_by(gara_id=self.gara.id, is_waitlist=False)
         if self.gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             q = q.filter_by(is_withdrawn=False)
         return q.all()
