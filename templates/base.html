@@ -119,6 +119,11 @@
                                     <i class="fas fa-users"></i> Utenti
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.venue.venues_list') }}">
+                                    <i class="fas fa-building"></i> Sale Biliardo
+                                </a>
+                            </li>
                         {% endif %}
                     {% endif %}
                     {% if debug_info.debug_mode %}
@@ -164,6 +169,9 @@
                                 {% if show_admin_management %}
                                     <li><a class="dropdown-item" href="{{ url_for('admin.user.users_list') }}">
                                         <i class="fas fa-users"></i> Gestione Utenti
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.venue.venues_list') }}">
+                                        <i class="fas fa-building"></i> Sale Biliardo
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.user.director_requests') }}">
                                         <i class="fas fa-user-tie"></i> Richieste Director

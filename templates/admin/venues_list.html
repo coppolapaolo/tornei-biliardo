@@ -1,0 +1,133 @@
+<!-- templates/admin/venues_list.html - Lista sale biliardo per admin -->
+{% extends "base.html" %}
+
+{% block title %}Gestione Sale Biliardo - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-building"></i> Gestione Sale Biliardo</h1>
+    <div>
+        <a href="{{ url_for('admin.venue.create_venue') }}" class="btn btn-success me-2">
+            <i class="fas fa-plus"></i> Nuova Sala
+        </a>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Tutte le Sale Biliardo ({{ venues_with_stats|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if venues_with_stats %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Indirizzo</th>
+                            <th>Città</th>
+                            <th>Tavoli</th>
+                            <th>Utenti Attivi</th>
+                            <th>Partite</th>
+                            <th>Recensioni</th>
+                            <th>Stato</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venue_data in venues_with_stats %}
+                            {% set venue = venue_data.venue %}
+                            {% set stats = venue_data.stats %}
+                            <tr>
+                                <td>
+                                    <strong>{{ venue.name }}</strong>
+                                    {% if venue.verified %}
+                                        <span class="badge bg-success ms-1">
+                                            <i class="fas fa-check-circle"></i> Verificata
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ venue.address or '-' }}</td>
+                                <td>{{ venue.city or '-' }}</td>
+                                <td>
+                                    {% if venue.number_of_tables %}
+                                        <span class="badge bg-info">{{ venue.number_of_tables }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non specificato</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ stats.active_users_count }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ stats.total_matches_played }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">{{ stats.reviews_count }}</span>
+                                    {% if stats.average_rating > 0 %}
+                                        <small class="text-muted">
+                                            (★ {{ stats.average_rating }})
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if venue.is_active %}
+                                        <span class="badge bg-success">Attiva</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Disattivata</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> Dettagli
+                                        </a>
+                                        <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Modifica
+                                        </a>
+                                        {% if venue.is_active %}
+                                        <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}" 
+                                              method="POST" style="display: inline;"
+                                              onsubmit="return confirm('Disattivare la sala {{ venue.name }}?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-times"></i> Disattiva
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <h5><i class="fas fa-building"></i> Nessuna Sala Biliardo</h5>
+                <p>Non ci sono ancora sale biliardo registrate.</p>
+                <a href="{{ url_for('admin.venue.create_venue') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Aggiungi la Prima Sala
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if debug_info.debug_mode %}
+<div class="mt-4">
+    <div class="alert alert-dark">
+        <h6><i class="fas fa-bug"></i> DEBUG - Venues Stats</h6>
+        <small>
+            Total venues: {{ venues_with_stats|length }}<br>
+            Verified venues: {{ venues_with_stats|selectattr("venue.verified")|list|length }}<br>
+            Active venues: {{ venues_with_stats|selectattr("venue.is_active")|list|length }}
+        </small>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,356 @@
+<!-- templates/admin/venue_detail.html - Dettagli sala biliardo per admin -->
+{% extends "base.html" %}
+
+{% block title %}{{ venue.name }} - Sala Biliardo{% endblock %}
+
+{% block extra_head %}
+<style>
+    .venue-photo {
+        max-width: 300px;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: block;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-building"></i> {{ venue.name }}</h1>
+    <div>
+        <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" class="btn btn-primary me-2">
+            <i class="fas fa-edit"></i> Modifica
+        </a>
+        <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Lista
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Informazioni Principali -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h5><i class="fas fa-info-circle"></i> Informazioni Generali</h5>
+                <div>
+                    {% if venue.verified %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle"></i> Verificata
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning">
+                            <i class="fas fa-clock"></i> Non Verificata
+                        </span>
+                    {% endif %}
+                    <form action="{{ url_for('admin.venue.verify_venue', venue_id=venue.id) }}" 
+                          method="POST" style="display: inline;" class="ms-2">
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                            {% if venue.verified %}
+                                <i class="fas fa-times"></i> Rimuovi Verifica
+                            {% else %}
+                                <i class="fas fa-check"></i> Verifica
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome:</strong> {{ venue.name }}</p>
+                        <p><strong>Indirizzo:</strong> {{ venue.address or 'Non specificato' }}</p>
+                        <p><strong>Città:</strong> {{ venue.city or 'Non specificata' }}</p>
+                        <p><strong>CAP:</strong> {{ venue.postal_code or 'Non specificato' }}</p>
+                        <p><strong>Paese:</strong> {{ venue.country }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Telefono:</strong> 
+                            {% if venue.phone %}
+                                <a href="tel:{{ venue.phone }}">{{ venue.phone }}</a>
+                            {% else %}
+                                Non specificato
+                            {% endif %}
+                        </p>
+                        <p><strong>Email:</strong> 
+                            {% if venue.email %}
+                                <a href="mailto:{{ venue.email }}">{{ venue.email }}</a>
+                            {% else %}
+                                Non specificata
+                            {% endif %}
+                        </p>
+                        <p><strong>Sito Web:</strong> 
+                            {% if venue.website %}
+                                <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>
+                            {% else %}
+                                Non specificato
+                            {% endif %}
+                        </p>
+                        <p><strong>Tariffa Oraria:</strong> 
+                            {% if venue.hourly_rate %}
+                                {{ venue.hourly_rate }} {{ venue.currency }}
+                            {% else %}
+                                Non specificata
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tavoli e Servizi -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-table"></i> Tavoli e Servizi</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Numero Tavoli:</strong> {{ venue.number_of_tables or 'Non specificato' }}</p>
+                        
+                        <!-- Gestione numerazione tavoli -->
+                        <div class="mt-3">
+                            <strong>Numerazione Tavoli:</strong>
+                            {% set table_numbers = [] %}
+                            {% for amenity in venue.get_amenities() %}
+                                {% if amenity.startswith("Tavoli:") %}
+                                    {% set _ = table_numbers.append(amenity) %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if table_numbers %}
+                                <p class="text-success">{{ table_numbers[0].replace("Tavoli: ", "") }}</p>
+                            {% else %}
+                                <p class="text-muted">Standard (1-{{ venue.number_of_tables or 'N' }})</p>
+                            {% endif %}
+                            
+                            <form action="{{ url_for('admin.venue.update_table_numbers', venue_id=venue.id) }}" 
+                                  method="POST" class="mt-2">
+                                <div class="input-group">
+                                    <input type="text" 
+                                           name="table_numbers" 
+                                           class="form-control" 
+                                           placeholder="es: 1,2,3,A,B,C"
+                                           value="{% if table_numbers %}{{ table_numbers[0].replace('Tavoli: ', '') }}{% endif %}">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-save"></i> Aggiorna
+                                    </button>
+                                </div>
+                                <small class="text-muted">Inserisci i numeri/nomi dei tavoli separati da virgola</small>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Tipi di Tavoli:</strong></p>
+                        {% set table_types = stats.table_types %}
+                        {% if table_types %}
+                            <ul class="list-unstyled">
+                                {% for type in table_types %}
+                                    <li><i class="fas fa-check text-success"></i> {{ type }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Non specificati</p>
+                        {% endif %}
+                        
+                        <p><strong>Servizi:</strong></p>
+                        {% set filtered_amenities = [] %}
+                        {% for amenity in stats.amenities %}
+                            {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
+                                {% set _ = filtered_amenities.append(amenity) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if filtered_amenities %}
+                            <ul class="list-unstyled">
+                                {% for amenity in filtered_amenities %}
+                                    <li><i class="fas fa-check text-success"></i> {{ amenity }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Non specificati</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posizione -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-map-marker-alt"></i> Posizione</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <p class="mb-2">
+                            <strong><i class="fas fa-home"></i> Indirizzo Completo:</strong><br>
+                            <span class="text-primary">{{ venue.get_full_address() }}</span>
+                        </p>
+                        
+                        {% if venue.latitude and venue.longitude %}
+                        <p class="mb-2">
+                            <strong><i class="fas fa-map-pin"></i> Coordinate GPS:</strong><br>
+                            <code>{{ venue.latitude }}, {{ venue.longitude }}</code>
+                        </p>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}" 
+                               target="_blank" 
+                               class="btn btn-outline-primary me-2">
+                                <i class="fab fa-google"></i> Apri in Google Maps
+                            </a>
+                            
+                            <a href="https://www.openstreetmap.org/search?query={{ venue.get_full_address()|urlencode }}" 
+                               target="_blank" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-map"></i> Apri in OpenStreetMap
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Come Arrivare</strong><br>
+                            <small class="text-muted">
+                                Usa i pulsanti qui sopra per aprire l'indirizzo nelle mappe online e ottenere indicazioni stradali.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar con Statistiche e Foto -->
+    <div class="col-lg-4">
+        <!-- Statistiche -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Statistiche</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Utenti Attivi:</span>
+                    <span class="badge bg-primary fs-6">{{ stats.active_users_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Partite Giocate:</span>
+                    <span class="badge bg-success fs-6">{{ stats.total_matches_played }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Recensioni:</span>
+                    <span class="badge bg-warning fs-6">{{ stats.reviews_count }}</span>
+                </div>
+                {% if stats.average_rating > 0 %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Valutazione Media:</span>
+                    <span class="text-warning">
+                        {% for i in range(5) %}
+                            {% if i < stats.average_rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="text-muted">({{ stats.average_rating }})</span>
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Foto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-camera"></i> Foto</h5>
+            </div>
+            <div class="card-body">
+                {% set photos = [] %}
+                {% for amenity in venue.get_amenities() %}
+                    {% if amenity.startswith("Foto:") %}
+                        {% set _ = photos.append(amenity) %}
+                    {% endif %}
+                {% endfor %}
+                {% if photos %}
+                    {% for photo in photos %}
+                        {% set photo_path = photo.replace("Foto: ", "") %}
+                        <img src="{{ url_for('static', filename=photo_path) }}" 
+                             alt="Foto {{ venue.name }}" 
+                             class="venue-photo mb-2">
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">Nessuna foto caricata</p>
+                {% endif %}
+                
+                <form action="{{ url_for('admin.venue.upload_photo', venue_id=venue.id) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data"
+                      class="mt-3">
+                    <div class="mb-3">
+                        <input type="file" 
+                               name="photo" 
+                               class="form-control" 
+                               accept="image/*" 
+                               required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload"></i> Carica Foto
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Orari -->
+        {% if venue.business_hours %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-clock"></i> Orari</h5>
+            </div>
+            <div class="card-body">
+                <pre class="text-muted">{{ venue.business_hours }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recensioni -->
+{% if reviews %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-star"></i> Recensioni ({{ reviews|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% for review in reviews %}
+            <div class="border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ review.user.username }}</strong>
+                    <div class="text-warning">
+                        {% for i in range(5) %}
+                            {% if i < review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if review.title %}
+                    <h6 class="mt-2">{{ review.title }}</h6>
+                {% endif %}
+                {% if review.comment %}
+                    <p class="text-muted">{{ review.comment }}</p>
+                {% endif %}
+                <small class="text-muted">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

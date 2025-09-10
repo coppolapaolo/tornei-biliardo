@@ -1,0 +1,261 @@
+<!-- templates/admin/venue_form.html - Form per creare/modificare sale biliardo -->
+{% extends "base.html" %}
+
+{% set is_edit = venue is not none %}
+{% block title %}{% if is_edit %}Modifica {{ venue.name }}{% else %}Nuova Sala Biliardo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-building"></i> 
+        {% if is_edit %}
+            Modifica Sala: {{ venue.name }}
+        {% else %}
+            Nuova Sala Biliardo
+        {% endif %}
+    </h1>
+    <a href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}" 
+       class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Indietro
+    </a>
+</div>
+
+<form method="POST">
+    <div class="row">
+        <!-- Informazioni Base -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Informazioni Base</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome Sala *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       value="{{ venue.name if is_edit else '' }}"
+                                       required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Indirizzo</label>
+                                <textarea class="form-control" 
+                                          id="address" 
+                                          name="address" 
+                                          rows="2">{{ venue.address if is_edit else '' }}</textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="city" class="form-label">Città</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="city" 
+                                       name="city" 
+                                       value="{{ venue.city if is_edit else '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="postal_code" class="form-label">CAP</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="postal_code" 
+                                       name="postal_code" 
+                                       value="{{ venue.postal_code if is_edit else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Telefono</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{{ venue.phone if is_edit else '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ venue.email if is_edit else '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="website" class="form-label">Sito Web</label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="website" 
+                                       name="website" 
+                                       value="{{ venue.website if is_edit else '' }}"
+                                       placeholder="https://">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="hourly_rate" class="form-label">Tariffa Oraria (€)</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="hourly_rate" 
+                                       name="hourly_rate" 
+                                       step="0.50"
+                                       min="0"
+                                       value="{{ venue.hourly_rate if is_edit and venue.hourly_rate else '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tavoli e Servizi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-table"></i> Tavoli e Servizi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="number_of_tables" class="form-label">Numero Tavoli</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="number_of_tables" 
+                                       name="number_of_tables" 
+                                       min="1"
+                                       value="{{ venue.number_of_tables if is_edit and venue.number_of_tables else '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="table_types" class="form-label">Tipi di Tavoli</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="table_types" 
+                                       name="table_types" 
+                                       value="{% if is_edit %}{{ venue.get_table_types()|join(', ') }}{% endif %}"
+                                       placeholder="es: Pool 8ft, Pool 9ft, Snooker">
+                                <small class="text-muted">Separare con virgola</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="amenities" class="form-label">Servizi</label>
+                                <textarea class="form-control" 
+                                          id="amenities" 
+                                          name="amenities" 
+                                          rows="3"
+                                          placeholder="es: Parcheggio, Bar, WiFi, Aria Condizionata">{% if is_edit %}{% set filtered_amenities = [] %}{% for amenity in venue.get_amenities() %}{% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}{% set _ = filtered_amenities.append(amenity) %}{% endif %}{% endfor %}{{ filtered_amenities|join(', ') }}{% endif %}</textarea>
+                                <small class="text-muted">Separare con virgola</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informazioni Aggiuntive -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Orari e Note</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="business_hours" class="form-label">Orari di Apertura</label>
+                        <textarea class="form-control" 
+                                  id="business_hours" 
+                                  name="business_hours" 
+                                  rows="6"
+                                  placeholder="es:
+Lunedì: 15:00-24:00
+Martedì: 15:00-24:00
+Mercoledì: Chiuso
+...">{{ venue.business_hours if is_edit else '' }}</textarea>
+                        <small class="text-muted">Formato libero - inserire orari come testo</small>
+                    </div>
+                </div>
+            </div>
+            
+            {% if is_edit %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info"></i> Stato</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Stato:</strong> 
+                        {% if venue.is_active %}
+                            <span class="badge bg-success">Attiva</span>
+                        {% else %}
+                            <span class="badge bg-danger">Disattivata</span>
+                        {% endif %}
+                    </p>
+                    
+                    <p><strong>Verificata:</strong> 
+                        {% if venue.verified %}
+                            <span class="badge bg-success">Sì</span>
+                        {% else %}
+                            <span class="badge bg-warning">No</span>
+                        {% endif %}
+                    </p>
+                    
+                    <p><strong>Creata:</strong> {{ venue.created_at.strftime('%d/%m/%Y alle %H:%M') }}</p>
+                    
+                    {% if venue.updated_at %}
+                    <p><strong>Modificata:</strong> {{ venue.updated_at.strftime('%d/%m/%Y alle %H:%M') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Pulsanti di Azione -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if is_edit %}Aggiorna Sala{% else %}Crea Sala{% endif %}
+                        </button>
+                        
+                        <a href="{% if is_edit %}{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}{% else %}{{ url_for('admin.venue.venues_list') }}{% endif %}" 
+                           class="btn btn-secondary ms-2">
+                            <i class="fas fa-times"></i> Annulla
+                        </a>
+                    </div>
+                    
+                    {% if is_edit %}
+                    <div>
+                        <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}" 
+                              method="POST" 
+                              style="display: inline;"
+                              onsubmit="return confirm('Sei sicuro di voler disattivare questa sala?')">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i> Disattiva Sala
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if not is_edit %}
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle"></i> Nota Importante</h6>
+    <p class="mb-0">
+        Le sale biliardo create qui saranno disponibili come opzioni nei menu a tendina "location" 
+        durante la creazione di gare e match individuali, integrando il sistema location esistente.
+    </p>
+</div>
+{% endif %}
+{% endblock %}

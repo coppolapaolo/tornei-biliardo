@@ -8,6 +8,7 @@ from .campionato import campionato_bp
 from .competition import competition_bp
 from .match import match_bp
 from .user import user_bp
+from .venue import venue_bp
 from .dashboard import dashboard_bp
 
 # Main admin blueprint (parent)
@@ -25,6 +26,9 @@ admin_bp.register_blueprint(match_bp, url_prefix="/match")
 
 # User domain: /admin/users, /admin/user/*, /admin/director_requests
 admin_bp.register_blueprint(user_bp)
+
+# Venue domain: /admin/venues, /admin/venue/*
+admin_bp.register_blueprint(venue_bp)
 
 # Dashboard domain: /admin/ (root)
 admin_bp.register_blueprint(dashboard_bp)
