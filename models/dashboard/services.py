@@ -796,6 +796,24 @@ class DashboardService:
             selected_gara = None
 
         player_sections = DashboardService._build_player_sections(user_id, selected)
+        
+        # Per i player, mostriamo TUTTI i match correnti, non solo quelli del campionato selezionato
+        all_current_matches = (
+            db.session.query(TournamentMatch)
+            .join(Gara, Gara.id == TournamentMatch.gara_id)
+            .filter(
+                TournamentMatch.status.in_(["pending", "playing", "completed"]),
+                or_(
+                    TournamentMatch.player1_id == user_id,
+                    TournamentMatch.player2_id == user_id,
+                ),
+            )
+            .order_by(
+                TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
+            )
+            .limit(10)
+            .all()
+        )
 
         # Individual match sections
         individual_sections = DashboardService._build_individual_match_sections(user_id)
@@ -845,7 +863,7 @@ class DashboardService:
             standalone_available=standalone_available,
             my_inscriptions=all_my_inscriptions,  # Tutte le iscrizioni
             my_standalone_inscriptions=my_standalone_regs,
-            current_matches=player_sections["current_matches"],
+            current_matches=all_current_matches,  # TUTTI i match correnti dell'utente
             recent_matches=player_sections["recent_matches"],
             can_inscribe=True,  # i player possono iscriversi
             user_stats=_compute_user_stats(user_id),

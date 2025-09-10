@@ -12,7 +12,7 @@
             <p class="mb-1"><small>📅 {{ ins.gara.date.strftime('%d/%m/%Y') if ins.gara.date else '-' }} – 📍 {{ ins.gara.location or 'Luogo da definire' }}</small></p>
             {{ status_badge(ins.gara, 'gara') }}
           </div>
-          <a href="{{ url_for('admin.competition.gara_detail', gara_id=ins.gara.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
+          <a href="{{ url_for('player.gara_detail', gara_id=ins.gara.id) }}" class="btn btn-sm btn-outline-primary">Dettagli</a>
         </div>
       </div>
       {% endfor %}

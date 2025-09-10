@@ -1,36 +1,45 @@
-{# templates/components/_amalfi_system.html #}
-{% if ((gara.campionato and gara.campionato.campionato_type == 'Amalfi') or (gara.is_standalone and gara.matchmaking_strategy == 'amalfi')) and gara.status in ['playing', 'completed'] %}
-<div class="card border-primary">
-    <div class="card-header bg-primary bg-opacity-10">
-        <h5><i class="fas fa-brain"></i> Sistema Amalfi</h5>
+{# templates/components/_round_management.html #}
+{% if gara.status in ['playing', 'completed'] and gara.rounds_count > 1 and gara.matchmaking_strategy != 'random' %}
+<div class="card border-info">
+    <div class="card-header bg-info bg-opacity-10">
+        <h5>
+            <i class="fas fa-cogs"></i> 
+            Gestione Turni - {{ gara.matchmaking_strategy.replace("_", " ").title() }}
+        </h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-8">
-                <!-- Info Algoritmo -->
+                <!-- Info Strategia -->
                 <div class="mb-3">
-                    <h6>Informazioni Algoritmo</h6>
+                    <h6>Informazioni Competizione</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <small class="text-muted">
                                 <strong>Turno Attuale:</strong> {{ gara.current_round }}/{{ gara.rounds_count }}<br>
-                                <strong>Modalità:</strong> 
-                                {% if gara.campionato and gara.campionato.without_x %}
-                                    Senza X (Trii)
+                                <strong>Strategia:</strong> {{ gara.matchmaking_strategy.replace("_", " ").title() }}<br>
+                                <strong>Anti-reincontro:</strong> 
+                                {% if gara.anti_rematch_enabled %}
+                                    <span class="text-success">Abilitato</span>
                                 {% else %}
-                                    Con X (Bye)
+                                    <span class="text-secondary">Disabilitato</span>
                                 {% endif %}<br>
-                                {% if gara.current_round > 1 %}
-                                    <strong>Salto Corrente:</strong> {{ gara.rounds_count - gara.current_round }}
-                                {% endif %}
+                                <strong>Gestione Dispari:</strong> {{ gara.odd_number_policy.replace("_", " ").title() }}
                             </small>
                         </div>
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <strong>Criteri Classifica:</strong><br>
-                                1. Vittorie (desc)<br>
-                                2. Differenza rack (desc)<br>
-                                3. Ordine precedente (asc)
+                                <strong>Primo abbinamento:</strong> {{ gara.first_round_policy.replace("_", " ").title() }}<br>
+                                {% if gara.first_round_policy == "rating" and gara.rating_type %}
+                                    <strong>Tipo Rating:</strong> {{ gara.rating_type.upper() }}<br>
+                                {% endif %}
+                                <strong>Disciplina:</strong> {{ gara.discipline.replace("_", " ").title() }}<br>
+                                <strong>Distanza:</strong> 
+                                {% if gara.best_of %}
+                                    Al meglio di {{ gara.distance }}
+                                {% else %}
+                                    Esattamente {{ gara.distance }}
+                                {% endif %}
                             </small>
                         </div>
                     </div>
@@ -43,7 +52,7 @@
                         <div class="btn-group" role="group">
                             {% for r in range(1, gara.current_round + 1) %}
                                 <a href="{{ url_for('admin.competition.amalfi_classification', gara_id=gara.id, round_number=r) }}" 
-                                   class="btn btn-sm btn-outline-primary">
+                                   class="btn btn-sm btn-outline-info">
                                     Turno {{ r }}
                                 </a>
                             {% endfor %}
@@ -67,12 +76,12 @@
                         {% if not next_round_started and (gara.current_round == 0 or current_round_is_completed) %}
                             
                             <button class="btn btn-info btn-sm" 
-                                    onclick="previewAmalfiRound({{ next_round }})">
+                                    onclick="previewRound({{ next_round }})">
                                 <i class="fas fa-eye"></i> Anteprima Turno {{ next_round }}
                             </button>
                             
                             <button class="btn btn-success btn-sm" 
-                                    onclick="startAmalfiRound({{ next_round }})">
+                                    onclick="startRound({{ next_round }})">
                                 <i class="fas fa-play"></i> Avvia Turno {{ next_round }}
                             </button>
                             
@@ -105,15 +114,9 @@
                         <hr>
                         <h6 class="text-muted">Debug Tools</h6>
                         <button class="btn btn-outline-warning btn-sm" 
-                                onclick="validateAmalfiConfig()">
+                                onclick="validateStrategyConfig()">
                             <i class="fas fa-check-circle"></i> Valida Config
                         </button>
-                        {# TODO: Implementare endpoint amalfi_encounters
-                        <a href="{{ url_for('admin.competition.amalfi_encounters', gara_id=gara.id) }}" 
-                           class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-network-wired"></i> Matrice Incontri
-                        </a>
-                        #}
                     {% endif %}
                 </div>
             </div>

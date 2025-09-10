@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gara.name or ('Gara ' ~ gara.number) }} - Dettagli{% endblock %}
+
+{% block content %}
+<!-- Header Gara -->
+{% include "components/_gara_header.html" %}
+
+<!-- Info Gara -->
+<div class="row mb-4">
+    {% include "components/_gara_info.html" %}
+    
+    <!-- Info Iscrizione / Status Guest -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                {% if current_user.is_authenticated %}
+                    <h5><i class="fas fa-user-check"></i> La Tua Iscrizione</h5>
+                {% else %}
+                    <h5><i class="fas fa-eye"></i> Visualizzazione Pubblica</h5>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if current_user.is_authenticated %}
+                    {% if inscription %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Sei iscritto a questa gara
+                            {% if inscription.is_waitlist %}
+                                <br><small><i class="fas fa-clock"></i> In lista d'attesa</small>
+                            {% endif %}
+                        </div>
+                        
+                        <p><strong>Data iscrizione:</strong> {{ inscription.inscription_date.strftime('%d/%m/%Y %H:%M') if inscription.inscription_date else 'N/D' }}</p>
+                        
+                        {% if inscription.initial_order %}
+                            <p><strong>Ordine sorteggio:</strong> {{ inscription.initial_order }}</p>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Stai visualizzando questa gara come ospite
+                            <br><small>Non sei iscritto ma puoi vedere i risultati e la classifica</small>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-primary">
+                        <i class="fas fa-users"></i> Visualizzazione pubblica
+                        <br><small>Puoi vedere tutti i risultati e la classifica in tempo reale</small>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-sign-in-alt"></i> Accedi per iscriverti
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Le Tue Partite (solo per utenti loggati e iscritti) -->
+{% if matches %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-table-tennis"></i> Le Tue Partite ({{ matches|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% for match in matches %}
+                <div class="card mb-3 {% if match.status == 'completed' %}border-success{% elif match.status == 'playing' %}border-primary{% endif %}">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <h6 class="text-muted mb-0">Turno {{ match.round_number }}</h6>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {% if match.is_bye %}
+                                    <h5 class="mb-1">
+                                        <strong>{{ match.player1.username }}</strong> vs <em class="text-muted">X (Bye)</em>
+                                    </h5>
+                                {% else %}
+                                    <h5 class="mb-1">
+                                        <strong>{{ match.player1.username }}</strong> 
+                                        vs 
+                                        <strong>{{ match.player2.username }}</strong>
+                                    </h5>
+                                {% endif %}
+                                
+                                {% if match.status == 'completed' and match.winner %}
+                                    <small class="text-success">
+                                        <i class="fas fa-trophy"></i> Vincitore: {{ match.winner.username }}
+                                    </small>
+                                {% elif match.status == 'playing' %}
+                                    <small class="text-primary">
+                                        <i class="fas fa-play"></i> Partita in corso
+                                    </small>
+                                {% else %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> In attesa
+                                    </small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-2 text-center">
+                                {% if match.status == 'completed' %}
+                                    <h4 class="mb-0">{{ match.player1_score }} - {{ match.player2_score }}</h4>
+                                {% elif match.status == 'playing' %}
+                                    <h4 class="mb-0 text-muted">{{ match.player1_score }} - {{ match.player2_score }}</h4>
+                                {% else %}
+                                    <h4 class="mb-0 text-muted">- -</h4>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-2">
+                                {% if current_user.is_authenticated and match.status in ['playing', 'pending'] and not match.is_bye %}
+                                    <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+                                       class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-play"></i> Gioca
+                                    </a>
+                                {% elif match.status == 'completed' %}
+                                    <span class="badge bg-success">Completata</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Tutte le Partite -->
+{% if all_matches %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Tutte le Partite ({{ all_matches|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% set matches_by_round = all_matches|groupby('round_number') %}
+                {% for round_number, round_matches in matches_by_round %}
+                <h6 class="mt-3 mb-3"><i class="fas fa-circle-notch"></i> Turno {{ round_number }}</h6>
+                
+                {% for match in round_matches %}
+                <div class="card mb-2 {% if match.status == 'completed' %}border-success{% elif match.status == 'playing' %}border-primary{% endif %}">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                {% if match.is_bye %}
+                                    <strong>{{ match.player1.username }}</strong> vs <em class="text-muted">X (Bye)</em>
+                                {% else %}
+                                    <strong>{{ match.player1.username }}</strong> 
+                                    vs 
+                                    <strong>{{ match.player2.username }}</strong>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3 text-center">
+                                {% if match.status == 'completed' %}
+                                    <h5 class="mb-0">{{ match.player1_score }} - {{ match.player2_score }}</h5>
+                                {% elif match.status == 'playing' %}
+                                    <h5 class="mb-0 text-muted">{{ match.player1_score }} - {{ match.player2_score }}</h5>
+                                {% else %}
+                                    <h5 class="mb-0 text-muted">- -</h5>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3">
+                                {% if match.status == 'completed' and match.winner %}
+                                    <small class="text-success">
+                                        <i class="fas fa-trophy"></i> {{ match.winner.username }}
+                                    </small>
+                                {% elif match.status == 'playing' %}
+                                    <small class="text-primary">
+                                        <i class="fas fa-play"></i> In corso
+                                    </small>
+                                {% else %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> In attesa
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Classificazione -->
+{% if current_round_classification %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-trophy"></i> Classifica (Turno {{ latest_round_with_classification }})</h5>
+            </div>
+            <div class="card-body">
+                {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+                    {% include "components/_detailed_classification.html" %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Navigazione -->
+<div class="row">
+    <div class="col-12 text-center">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+            </a>
+        {% else %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Torna alla Home
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

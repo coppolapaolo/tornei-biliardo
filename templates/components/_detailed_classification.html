@@ -12,7 +12,13 @@
                             <th width="10%">Pos.</th>
                             <th width="25%">Giocatore</th>
                             <th width="15%">Vittorie</th>
-                            <th width="15%">Diff. Rack</th>
+                            <th width="15%">
+                                {% if classification and classification[0].gara.matchmaking_strategy == 'random' %}
+                                    Rack Totali
+                                {% else %}
+                                    Diff. Rack
+                                {% endif %}
+                            </th>
                             <th width="15%">Pos. Prec.</th>
                             <th width="20%">Movimento</th>
                         </tr>
@@ -39,12 +45,18 @@
                                     <span class="badge bg-success">{{ player_class.matches_won }}</span>
                                 </td>
                                 <td>
-                                    {% if player_class.rack_difference > 0 %}
-                                        <span class="text-success">+{{ player_class.rack_difference }}</span>
-                                    {% elif player_class.rack_difference < 0 %}
-                                        <span class="text-danger">{{ player_class.rack_difference }}</span>
+                                    {% if classification[0].gara.matchmaking_strategy == 'random' %}
+                                        {# For Random strategy, show total racks won without +/- signs #}
+                                        <span class="badge bg-primary">{{ player_class.rack_difference }}</span>
                                     {% else %}
-                                        <span class="text-muted">0</span>
+                                        {# For other strategies, show rack difference with +/- signs #}
+                                        {% if player_class.rack_difference > 0 %}
+                                            <span class="text-success">+{{ player_class.rack_difference }}</span>
+                                        {% elif player_class.rack_difference < 0 %}
+                                            <span class="text-danger">{{ player_class.rack_difference }}</span>
+                                        {% else %}
+                                            <span class="text-muted">0</span>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                                 <td>

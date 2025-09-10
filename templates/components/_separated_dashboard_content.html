@@ -279,19 +279,33 @@
                 {# Pulsanti per gare completate #}
                 {% if item.entity.get_real_status() in [GaraStatus.COMPLETED.value, 'campionato_completed'] %}
                   {# Gara completata - pulsante per vedere risultati #}
-                  <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
-                     class="btn btn-outline-success btn-sm w-100">
-                    <i class="fas fa-trophy"></i> Vedi Risultati
-                  </a>
+                  {% if current_user.is_admin or (current_user.is_director and item.can_manage) %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                       class="btn btn-outline-success btn-sm w-100">
+                      <i class="fas fa-trophy"></i> Vedi Risultati
+                    </a>
+                  {% else %}
+                    <a href="{{ url_for('main.gara_detail_public', gara_id=item.id) }}" 
+                       class="btn btn-outline-success btn-sm w-100">
+                      <i class="fas fa-trophy"></i> Vedi Risultati
+                    </a>
+                  {% endif %}
                   
                 {# Pulsanti per gare in corso #}
                 {% elif item.entity.get_real_status() == GaraStatus.PLAYING.value %}
                   {# Gara in corso - pulsanti specifici #}
                   {% if item.can_view_details %}
-                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
-                       class="btn btn-outline-primary btn-sm">
-                      <i class="fas fa-eye"></i> Dettagli
-                    </a>
+                    {% if current_user.is_admin or (current_user.is_director and item.can_manage) %}
+                      <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                         class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> Dettagli
+                      </a>
+                    {% else %}
+                      <a href="{{ url_for('main.gara_detail_public', gara_id=item.id) }}" 
+                         class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> Dettagli
+                      </a>
+                    {% endif %}
                   {% endif %}
                   
                   {% if not current_user.is_admin %}
@@ -319,10 +333,17 @@
                 {% else %}
                   {# Gara con iscrizioni aperte #}
                   {% if item.can_view_details %}
-                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
-                       class="btn btn-outline-primary btn-sm">
-                      <i class="fas fa-eye"></i> Dettagli
-                    </a>
+                    {% if current_user.is_admin or (current_user.is_director and item.can_manage) %}
+                      <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                         class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> Dettagli
+                      </a>
+                    {% else %}
+                      <a href="{{ url_for('main.gara_detail_public', gara_id=item.id) }}" 
+                         class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> Dettagli
+                      </a>
+                    {% endif %}
                   {% endif %}
                   
                   {# Pulsante iscrizione/disiscrizione solo se iscrizioni sono aperte #}

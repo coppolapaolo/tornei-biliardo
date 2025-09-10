@@ -577,11 +577,18 @@ def modify_inscription_dates(gara_id):
 @login_required
 @gara_manager_required
 def start_first_round(gara_id):
-    """Avvia primo turno della gara"""
+    """Avvia primo turno della gara (o tutti i turni per strategia Random)"""
     # Usa il service layer invece del direct database access
     try:
+        from models import db, Gara
+        gara = db.session.get(Gara, gara_id)
+        
         GaraService.start_first_round(gara_id)
-        flash("Primo turno avviato!")
+        
+        if gara and gara.matchmaking_strategy == "random":
+            flash("Gara avviata! Tutti i turni sono stati creati.", "success")
+        else:
+            flash("Primo turno avviato!", "success")
     except ValueError as ve:
         flash(str(ve), "error")
 
@@ -836,6 +843,140 @@ def amalfi_start_round(gara_id, round_number):
         details = []
         if n_normal:
             details.append(f"Abbinamenti normali: {n_normal}")
+        if n_bye:
+            details.append(f"Partite vs X: {n_bye}")
+        if n_trio:
+            details.append(f"Trii: {n_trio}")
+
+        return jsonify({
+            "success": True, 
+            "message": message,
+            "details": details,
+            "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
+        })
+
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Errore durante la creazione del turno: {str(e)}"})
+
+
+@competition_bp.route("/<int:gara_id>/preview_round/<int:round_number>")
+@login_required
+@gara_manager_required
+def preview_round_generic(gara_id, round_number):
+    """Anteprima di un turno con la strategia configurata nella gara"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
+        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+    
+    try:
+        # Validazioni preliminari
+        if round_number < 1 or round_number > gara.rounds_count:
+            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
+            
+        if round_number <= gara.current_round:
+            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
+            
+        if round_number != gara.current_round + 1:
+            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
+
+        # Usa la strategia appropriata per il preview
+        strategy_name = gara.matchmaking_strategy
+        
+        if strategy_name == "amalfi":
+            from amalfi.engine import AmalfiEngine
+            engine = AmalfiEngine(gara)
+            preview_data = engine.preview_round_pairings(round_number)
+            
+            return jsonify({
+                "success": True,
+                "matches": preview_data["matches"],
+                "stats": preview_data["stats"],
+                "salto": preview_data.get("salto", 0),
+                "strategy": "amalfi"
+            })
+        else:
+            # Per altre strategie, usa il service layer per il preview
+            preview_data = GaraService.preview_round_with_strategy(gara_id, round_number)
+            
+            return jsonify({
+                "success": True,
+                "matches": preview_data.get("matches", []),
+                "stats": preview_data.get("stats", {}),
+                "strategy": strategy_name
+            })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@competition_bp.route(
+    "/<int:gara_id>/start_round/<int:round_number>", methods=["POST"]
+)
+@login_required
+@gara_manager_required
+def start_round_generic(gara_id, round_number):
+    """Avvia un turno specifico con la strategia configurata nella gara"""
+    gara = Gara.query.get_or_404(gara_id)
+    
+    try:
+        # Validazioni preliminari
+        if round_number < 1 or round_number > gara.rounds_count:
+            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
+            
+        # Controlla se il turno è già stato avviato (idempotenza)
+        existing_matches = Match.query.filter_by(
+            gara_id=gara_id, round_number=round_number
+        ).first()
+        if existing_matches:
+            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
+            
+        if round_number != gara.current_round + 1:
+            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
+
+        # Validazione specifica per strategia (solo Amalfi ha validazioni speciali)
+        if gara.matchmaking_strategy == "amalfi":
+            validation = validate_amalfi_configuration(gara)
+            if not validation["is_valid"]:
+                errors = "; ".join(validation["errors"])
+                return jsonify({"success": False, "error": f"Errore configurazione: {errors}"})
+
+        # Controlla turni precedenti completati
+        if round_number > 1:
+            prev_matches = Match.query.filter_by(
+                gara_id=gara_id, round_number=round_number - 1
+            ).all()
+            incomplete_prev = [
+                m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
+            ]
+            if incomplete_prev:
+                return jsonify({"success": False, "error": f"Completa prima tutte le partite del turno {round_number-1}!"})
+
+        # Crea il turno usando la strategia configurata
+        total, n_normal, n_bye, n_trio = GaraService.create_round_with_strategy(
+            gara_id, round_number
+        )
+
+        # Aggiorna lo stato della gara
+        if gara.status != GaraStatus.PLAYING.value:
+            gara = GaraService.start_playing(gara.id)
+        
+        # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
+        db.session.refresh(gara)
+        
+        # Aggiorna il turno corrente DOPO il cambio di stato
+        gara.current_round = round_number
+        db.session.add(gara)
+        db.session.commit()
+
+        # Messaggio di successo
+        strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
+        message = f"Turno {round_number} avviato con strategia {strategy_name}!"
+        details = [f"Partite totali: {total}"]
+        
+        if n_normal:
+            details.append(f"Partite normali: {n_normal}")
         if n_bye:
             details.append(f"Partite vs X: {n_bye}")
         if n_trio:

@@ -15,7 +15,8 @@
                     {% else %}
                         {{ gara.distance }} rack esatti
                     {% endif %}<br>
-                    <strong>Turni:</strong> {{ gara.rounds_count }}
+                    <strong>Turni:</strong> {{ gara.rounds_count }}<br>
+                    <strong>Strategia:</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}
                 </div>
                 <div class="col-md-6">
                     {% if gara.location %}
@@ -33,7 +34,14 @@
                         <span class="text-warning ms-1">
                             <i class="fas fa-clock"></i> +{{ gara.get_waitlist_count() }}
                         </span>
-                    {% endif %}
+                    {% endif %}<br>
+                    <strong>Anti-reincontro:</strong> 
+                    {% if gara.anti_rematch_enabled %}
+                        <span class="text-success">Abilitato</span>
+                    {% else %}
+                        <span class="text-secondary">Disabilitato</span>
+                    {% endif %}<br>
+                    <strong>Numero dispari:</strong> {{ gara.odd_number_policy.replace('_', ' ').title() }}
                 </div>
             </div>
             {% if gara.description %}

@@ -26,3 +26,7 @@ class EngineRegistry:
 
     def available(self) -> list[str]:
         return sorted(self._strategies.keys())
+
+
+# Alias per compatibilità
+StrategyRegistry = EngineRegistry

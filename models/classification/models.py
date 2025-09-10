@@ -97,6 +97,9 @@ class RoundClassification(db.Model):
 
         This method aggregates match results up to the specified round
         and creates/updates RoundClassification entries for all players.
+        
+        For Random strategy: classification is based on total racks won
+        For other strategies: classification is based on matches won, then rack difference
 
         Args:
             gara_id: ID of the gara
@@ -106,6 +109,12 @@ class RoundClassification(db.Model):
             List of (player_id, stats) tuples sorted by classification
         """
         from models.match.models import Match
+        from models.competition.models import Gara
+        
+        # Get gara to determine matchmaking strategy
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} not found")
 
         # Get all completed matches up to this round
         completed_matches = (
@@ -151,15 +160,27 @@ class RoundClassification(db.Model):
         for player_id, stats in player_stats.items():
             stats["rack_difference"] = stats["rack_won"] - stats["rack_lost"]
 
-        # Sort players by classification criteria
-        sorted_players = sorted(
-            player_stats.items(),
-            key=lambda x: (
-                -x[1]["matches_won"],  # Primary: matches won
-                -x[1]["rack_difference"],  # Secondary: rack difference
-                x[0],  # Tertiary: player ID for stability
-            ),
-        )
+        # Sort players by classification criteria based on strategy
+        if gara.matchmaking_strategy == "random":
+            # For Random strategy: order by total racks won (descending), then rack difference, then player ID
+            sorted_players = sorted(
+                player_stats.items(),
+                key=lambda x: (
+                    -x[1]["rack_won"],  # Primary: total racks won
+                    -x[1]["rack_difference"],  # Secondary: rack difference
+                    x[0],  # Tertiary: player ID for stability
+                ),
+            )
+        else:
+            # For other strategies (Amalfi, etc): order by matches won, then rack difference
+            sorted_players = sorted(
+                player_stats.items(),
+                key=lambda x: (
+                    -x[1]["matches_won"],  # Primary: matches won
+                    -x[1]["rack_difference"],  # Secondary: rack difference
+                    x[0],  # Tertiary: player ID for stability
+                ),
+            )
 
         # Create/update round classifications
         for position, (player_id, stats) in enumerate(sorted_players, 1):
@@ -192,7 +213,12 @@ class RoundClassification(db.Model):
                 # Update existing
                 classification.position = position
                 classification.matches_won = stats["matches_won"]
-                classification.rack_difference = stats["rack_difference"]
+                # For Random strategy, store total racks won in rack_difference field for display
+                # For other strategies, store actual rack difference
+                if gara.matchmaking_strategy == "random":
+                    classification.rack_difference = stats["rack_won"]  # Store total racks won
+                else:
+                    classification.rack_difference = stats["rack_difference"]  # Store rack difference
                 classification.previous_position = previous_position
             else:
                 # Create new
@@ -202,7 +228,9 @@ class RoundClassification(db.Model):
                     user_id=player_id,
                     position=position,
                     matches_won=stats["matches_won"],
-                    rack_difference=stats["rack_difference"],
+                    # For Random strategy, store total racks won in rack_difference field
+                    # For other strategies, store actual rack difference
+                    rack_difference=stats["rack_won"] if gara.matchmaking_strategy == "random" else stats["rack_difference"],
                     previous_position=previous_position,
                 )
                 db.session.add(classification)

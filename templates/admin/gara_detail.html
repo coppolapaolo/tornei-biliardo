@@ -18,9 +18,10 @@
     </div>
 </div>
 
-<!-- Sistema Amalfi Section -->
+<!-- Gestione Turni Section -->
 <div class="row mb-4">
     <div class="col-12">
+        {% include "components/_round_management.html" %}
         {% include "components/_amalfi_system.html" %}
     </div>
 </div>
@@ -56,8 +57,15 @@
 
 {% block scripts %}
 <script>
-function startFirstRound(provaId) {
-    if (confirm('Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.')) {
+function startFirstRound(provaId, strategy) {
+    let message;
+    if (strategy === 'random') {
+        message = 'Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.';
+    } else {
+        message = 'Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.';
+    }
+    
+    if (confirm(message)) {
         fetch(`/admin/gara/${provaId}/start_first_round`, {
             method: 'POST',
             headers: {
@@ -66,7 +74,14 @@ function startFirstRound(provaId) {
         }).then(response => {
             if (response.ok) {
                 location.reload();
+            } else {
+                response.text().then(text => {
+                    alert('Errore durante l\'avvio: ' + text);
+                });
             }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Errore di rete durante l\'avvio della gara');
         });
     }
 }
@@ -458,6 +473,173 @@ function validateAmalfiConfig() {
             console.error('Error:', error);
             alert('Errore di rete durante la validazione');
         });
+}
+
+// ============ FUNZIONI GENERICHE PER TUTTE LE STRATEGIE ============
+
+function previewRound(roundNumber) {
+    previewingRound = roundNumber;
+    const modal = new bootstrap.Modal(document.getElementById('amalfiPreviewModal'));
+    const modalTitle = document.getElementById('modalRoundNumber');
+    const content = document.getElementById('amalfiPreviewContent');
+    const confirmBtn = document.getElementById('confirmStartRound');
+    
+    // Setup modal
+    modalTitle.textContent = roundNumber;
+    confirmBtn.style.display = 'none';
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+            </div>
+            <p class="mt-2">Generazione abbinamenti in corso...</p>
+        </div>
+    `;
+    
+    // Mostra modal
+    modal.show();
+    
+    // Fetch preview
+    fetch(`/admin/gara/{{ gara.id }}/preview_round/${roundNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayGenericPreview(data);
+                confirmBtn.style.display = 'block';
+                confirmBtn.onclick = () => confirmStartRound(roundNumber);
+            } else {
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Errore:</strong> ${data.error}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Errore di rete:</strong> ${error.message}
+                </div>
+            `;
+        });
+}
+
+function displayGenericPreview(data) {
+    const content = document.getElementById('amalfiPreviewContent');
+    
+    let html = `
+        <!-- Statistiche Anteprima -->
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Strategia:</strong> <span class="badge bg-primary">${data.strategy.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Totali:</strong> <span class="badge bg-info">${data.stats.total}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Normali:</strong> <span class="badge bg-success">${data.stats.normal || 0}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Speciali:</strong> <span class="badge bg-warning">${(data.stats.trio || 0) + (data.stats.bye || 0)}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Abbinamenti Dettagliati -->
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="35%">Giocatore 1</th>
+                        <th width="10%" class="text-center">vs</th>
+                        <th width="35%">Giocatore 2</th>
+                        <th width="20%">Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    data.matches.forEach((match, index) => {
+        let player2Content = '';
+        let typeContent = '';
+        let rowClass = '';
+        
+        if (match.type === 'normal') {
+            player2Content = `<strong>${match.player2.username}</strong>`;
+            typeContent = `<span class="badge bg-primary">Normale</span>`;
+        } else if (match.type === 'trio') {
+            const players = match.players.map(p => p.username).join(', ');
+            player2Content = `<strong>${players}</strong>`;
+            typeContent = `<span class="badge bg-warning">Trio</span>`;
+            rowClass = 'table-warning';
+        } else if (match.type === 'bye') {
+            player2Content = `<em class="text-muted">X (Bye)</em>`;
+            typeContent = `<span class="badge bg-info">Bye</span>`;
+            rowClass = 'table-info';
+        }
+        
+        html += `
+            <tr class="${rowClass}">
+                <td><strong>${match.player1.username}</strong></td>
+                <td class="text-center">
+                    <i class="fas fa-arrow-right text-muted"></i>
+                </td>
+                <td>${player2Content}</td>
+                <td>${typeContent}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+}
+
+function startRound(roundNumber) {
+    // Disabilita pulsanti per evitare doppi click
+    const buttons = document.querySelectorAll('button[onclick*="startRound"], button[onclick*="previewRound"]');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    fetch(`/admin/gara/{{ gara.id }}/start_round/${roundNumber}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`${data.message}\n\n${data.details.join('\n')}`);
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                location.reload();
+            }
+        } else {
+            alert(`Errore: ${data.error}`);
+            buttons.forEach(btn => btn.disabled = false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore di rete durante la creazione del turno');
+        buttons.forEach(btn => btn.disabled = false);
+    });
+}
+
+function confirmStartRound(roundNumber) {
+    if (confirm(`Confermi l'avvio del Turno ${roundNumber} con gli abbinamenti mostrati?\n\nQuesta azione creerà le partite e non potrà essere annullata.`)) {
+        // Chiudi modal
+        bootstrap.Modal.getInstance(document.getElementById('amalfiPreviewModal')).hide();
+        
+        // Avvia turno
+        startRound(roundNumber);
+    }
 }
 
 function closeInscriptions(provaId) {

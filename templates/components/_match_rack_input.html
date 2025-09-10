@@ -1,5 +1,17 @@
 <!-- Rack Input Component -->
 {% if match.status != 'completed' and (current_user.id in [match.player1_id, match.player2_id] or current_user.is_admin or current_user.is_director) %}
+{% if match.gara.best_of %}
+    {# Caso "al meglio di N" - controlla se uno dei giocatori ha raggiunto il punteggio vincente #}
+    {% set winning_score = match.gara.get_winning_score() %}
+    {% set match_completed = (match.player1_score >= winning_score or match.player2_score >= winning_score) %}
+    {% set limit_message = "punteggio vincente (" ~ winning_score ~ ")" %}
+{% else %}
+    {# Caso "esattamente N" - controlla se il totale ha raggiunto il limite #}
+    {% set total_racks = match.player1_score + match.player2_score %}
+    {% set match_completed = (total_racks >= match.gara.distance) %}
+    {% set limit_message = "limite totale (" ~ match.gara.distance ~ " rack)" %}
+{% endif %}
+
 <div class="card bg-light mb-3">
     <div class="card-body">
         <h6>
@@ -12,17 +24,27 @@
         <div class="row">
             <div class="col-6">
                 <button class="btn btn-outline-primary w-100" 
-                        onclick="addRackWin({{ match.player1_id }})">
-                    Punto {{ match.player1.username }}
+                        onclick="addRackWin({{ match.player1_id }})"
+                        {% if match_completed %}disabled{% endif %}>
+                    Rack {{ match.player1.username }}
                 </button>
             </div>
             <div class="col-6">
                 <button class="btn btn-outline-primary w-100" 
-                        onclick="addRackWin({{ match.player2_id }})">
-                    Punto {{ match.player2.username }}
+                        onclick="addRackWin({{ match.player2_id }})"
+                        {% if match_completed %}disabled{% endif %}>
+                    Rack {{ match.player2.username }}
                 </button>
             </div>
         </div>
+        {% if match_completed %}
+        <div class="mt-2">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                {{ limit_message }}
+            </small>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endif %}

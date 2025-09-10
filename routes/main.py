@@ -1,8 +1,8 @@
 # routes/main.py - AGGIORNATO per correggere import path
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user, logout_user
 from datetime import date
-from models import db, Campionato, Gara, Classification, User
+from models import db, Campionato, Gara, Classification, User, Inscription, Match
 from config import Config
 
 
@@ -164,6 +164,72 @@ def quick_login(username):
     flash(f"Quick login effettuato come {username}!")
 
     return redirect(url_for("dashboard.dashboard"))
+
+
+@main_bp.route("/gara/<int:gara_id>")
+def gara_detail_public(gara_id):
+    """Dettaglio gara pubblico - visibile anche ai guest non loggati"""
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
+        abort(404)
+    
+    # Per i guest (non loggati), inscription è sempre None e matches è sempre vuoto
+    inscription = None
+    matches = []
+    
+    # Se l'utente è loggato, controlla se è iscritto
+    if current_user.is_authenticated:
+        inscription = Inscription.query.filter_by(
+            gara_id=gara_id, user_id=current_user.id
+        ).first()
+        
+        # Se è iscritto, mostra le sue partite
+        if inscription:
+            matches = (
+                Match.query.filter_by(gara_id=gara_id)
+                .filter(
+                    db.or_(
+                        Match.player1_id == current_user.id,
+                        Match.player2_id == current_user.id,
+                    )
+                )
+                .order_by(Match.round_number, Match.id)
+                .all()
+            )
+    
+    # Recupera tutte le partite per mostrare l'andamento della gara
+    all_matches = (
+        Match.query.filter_by(gara_id=gara_id)
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+    
+    # Ottieni l'ultima classificazione disponibile
+    current_round_classification = None
+    latest_round_with_classification = None
+    
+    if gara.current_round > 0:
+        from models.classification.models import RoundClassification
+        for round_num in range(gara.current_round, 0, -1):
+            classification = RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=round_num
+            ).order_by(RoundClassification.position).all()
+            
+            if classification:
+                current_round_classification = classification
+                latest_round_with_classification = round_num
+                break
+    
+    # Usa un template pubblico dedicato
+    return render_template(
+        "public/gara_detail.html",
+        gara=gara,
+        inscription=inscription,
+        matches=matches,
+        all_matches=all_matches,
+        current_round_classification=current_round_classification,
+        latest_round_with_classification=latest_round_with_classification,
+    )
 
 
 @main_bp.route("/reset/save", methods=["POST"])

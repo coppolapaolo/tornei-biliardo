@@ -205,27 +205,58 @@ def gara_detail(gara_id):
         gara_id=gara_id, user_id=current_user.id
     ).first()
 
-    if not inscription:
-        flash("Non sei iscritto a questa gara.", "error")
-        return redirect(url_for("dashboard.dashboard"))
-
-    matches = (
-        Match.query.filter_by(gara_id=gara_id)
-        .filter(
-            db.or_(
-                Match.player1_id == current_user.id,
-                Match.player2_id == current_user.id,
+    # Se l'utente è iscritto, mostra solo le sue partite
+    # Se non è iscritto, può comunque vedere la gara ma senza le sue partite
+    if inscription:
+        matches = (
+            Match.query.filter_by(gara_id=gara_id)
+            .filter(
+                db.or_(
+                    Match.player1_id == current_user.id,
+                    Match.player2_id == current_user.id,
+                )
             )
+            .order_by(Match.round_number, Match.id)
+            .all()
         )
-        .order_by(Match.round_number, Match.id)
-        .all()
-    )
+    else:
+        # Utente non iscritto: nessuna partita personale
+        matches = []
+    
+    # Per gli utenti non iscritti, recupera tutte le partite per mostrare l'andamento della gara
+    all_matches = None
+    if not inscription:
+        all_matches = (
+            Match.query.filter_by(gara_id=gara_id)
+            .order_by(Match.round_number, Match.id)
+            .all()
+        )
 
+    # Ottieni l'ultima classificazione disponibile (copiato dalla logica admin)
+    current_round_classification = None
+    latest_round_with_classification = None
+    
+    if gara.current_round > 0:
+        # Cerca la classificazione più recente disponibile
+        from models.classification.models import RoundClassification
+        for round_num in range(gara.current_round, 0, -1):
+            classification = RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=round_num
+            ).order_by(RoundClassification.position).all()
+            
+            if classification:
+                current_round_classification = classification
+                latest_round_with_classification = round_num
+                break
+    
     return render_template(
         "player/gara_detail.html",
         gara=gara,
         inscription=inscription,
         matches=matches,
+        all_matches=all_matches,
+        current_round_classification=current_round_classification,
+        latest_round_with_classification=latest_round_with_classification,
     )
 
 

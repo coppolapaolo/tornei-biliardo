@@ -13,9 +13,14 @@
                 </button>
                 
             {% elif gara.get_real_status() == 'inscription' %}
-                <button class="btn btn-primary w-100 mb-2" onclick="startFirstRound({{ gara.id }})"
+                <button class="btn btn-primary w-100 mb-2" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
                         {% if gara.get_active_inscriptions_count() < gara.min_participants %}disabled{% endif %}>
-                    <i class="fas fa-play"></i> Avvia Primo Turno
+                    <i class="fas fa-play"></i> 
+                    {% if gara.matchmaking_strategy == 'random' %}
+                        Avvia Gara
+                    {% else %}
+                        Avvia Primo Turno
+                    {% endif %}
                 </button>
                 
                 {% if gara.can_modify_inscription_dates() %}
@@ -52,8 +57,13 @@
                 </div>
                 
                 {% if gara.can_modify_inscription_dates() and gara.get_active_inscriptions_count() >= gara.min_participants %}
-                    <button class="btn btn-primary w-100 mb-1" onclick="startFirstRound({{ gara.id }})">
-                        <i class="fas fa-play"></i> Avvia Primo Turno
+                    <button class="btn btn-primary w-100 mb-1" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')">
+                        <i class="fas fa-play"></i> 
+                        {% if gara.matchmaking_strategy == 'random' %}
+                            Avvia Gara
+                        {% else %}
+                            Avvia Primo Turno
+                        {% endif %}
                     </button>
                     <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
                         <i class="fas fa-edit"></i> Estendi Iscrizioni
