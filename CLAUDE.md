@@ -4,7 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Flask-based billiards campionato management web application with an advanced campionato algorithm called "Sistema Amalfi". The app manages players, campionati, matches, and provides statistical tracking.
+This is a Flask-based **community platform for American Pool enthusiasts** that aspires to become the central hub for pool players. While currently focused on tournament organization and match management, the platform is designed to support any pool-related activity and foster a vibrant community of players.
+
+**Current Features:**
+- Tournament (campionati) and competition (gare) organization
+- Individual match proposals and community meetups
+- Player statistics and performance tracking
+- Flexible matchmaking strategies (Amalfi, Round-Robin, Elimination, Random)
+- Challenge system for skill development
+- Venue management and location-based features
+
+**Community Vision:**
+- Central platform for pool players to connect and organize
+- Support for all American Pool disciplines (8-ball, 9-ball, 10-ball, One Pocket, etc.)
+- Future expansion to any pool-related activities and events
+- Player rating systems and skill development tools
+- Social features for building the pool community
 
 ## Commands
 
@@ -59,24 +74,75 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 - **Service Layer Pattern**: Business logic separated into service modules with transaction support
 - **Strategy Pattern**: Configurable matchmaking algorithms (Amalfi, round-robin, elimination)
 
+### Directory Documentation
+Each major directory contains detailed documentation in its own CLAUDE.md file:
+- **[models/CLAUDE.md](models/CLAUDE.md)**: Domain models, database architecture, and data structures
+- **[routes/CLAUDE.md](routes/CLAUDE.md)**: API endpoints, request handling, and route organization
+- **[templates/CLAUDE.md](templates/CLAUDE.md)**: UI components, template architecture, and frontend patterns
+- **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy, test organization, and quality assurance
+
 ### Key Components
 
-#### Amalfi Engine (`amalfi/`)
-Core campionato algorithm for automatic player matchmaking:
-- Dynamic round pairing with anti-rematch logic
-- Handles odd players with trio matches or byes
+#### Matchmaking Engine (`amalfi/` + `models/matchmaking/`)
+Flexible tournament pairing system with multiple strategies:
+- **Amalfi Strategy**: Dynamic pairing based on remaining rounds with anti-rematch logic
+- **Round-Robin**: All-play-all tournament format
+- **Direct Elimination**: Knockout tournament system
+- **Random Strategy**: Random pairing with anti-rematch protection
+- Configurable first round policies (random, classification-based, rating-based)
+- Flexible odd-player handling (byes, trio matches, challenges)
 - Real-time classification updates
-- Entry point: `AmalfiEngine.create_round_matches()`
+- Entry point: Strategy pattern through `MatchmakingService`
 
 #### Models (`models/`)
-Domain-organized with extensive relationships:
-- **Base**: `base.py` contains common model functionality
-- **User**: Player management with soft delete and permissions
-- **Competition**: Campionati, rounds (Gara), matches
-- **Matchmaking**: Pairing strategies and encounter tracking
-- **Rating**: Player rating system
-- **Challenge**: Individual challenges between players
-- **Notification**: System notifications
+Domain-Driven Design architecture with modular organization:
+
+##### Core Infrastructure
+- **Base**: `base.py` - Modular mixins (UtilityMixin, TimestampMixin, SoftDeleteMixin, AuditMixin)
+- **Status Enums**: `status_enum.py` - Centralized state enumerations (GaraStatus, MatchStatus, TournamentStatus)
+- **Custom Fields**: `fields.py` - EncryptedString for sensitive data (email, phone)
+- **Exceptions**: Domain-specific exception handling
+
+##### Primary Business Domains
+
+**User Domain** (`user/`):
+- `User`: Core user entity with role-based permissions, soft delete, encrypted personal data
+- `TournamentDirector`, `DirectorRequest`: Director promotion system
+- `VenueManagerRequest`, `VenueManagement`: Location management permissions
+
+**Competition Domain** (`competition/`):
+- `Gara`: Competition rounds (standalone or campionato-based) with time, location, description
+- `Inscription`: Player registration for competitions with waitlist support
+
+**Match Domain** (`match/`):
+- `Match`: Core match entity with multi-set support, current set tracking
+- `Rack`, `MatchResult`: Detailed scoring system for individual racks
+- `TrioMatch`: Three-player match support for odd numbers
+- `Set`, `SetRack`: Multi-set match models for advanced competitions
+
+**Matchmaking Domain** (`matchmaking/`):
+- Strategy pattern implementation with configurable algorithms
+- `AmalfiBinding`: Integration with Amalfi engine
+- Strategies: `AdvancedAmalfi`, `RoundRobin`, `DirectElimination`, `RandomAntiRematch`
+- Configuration and policy management
+
+##### Specialized Domains
+
+**Classification** (`classification/`): Player rankings and encounter tracking
+**Individual Match** (`individual_match/`): Match proposal system with invitations and status management
+**Challenge** (`challenge/`): Skill challenges and attempts with favorites
+**Exam** (`exam/`): Challenge-based examination system
+**Rating** (`rating/`): Player rating system with handicap rules and categories
+**Notification** (`notification/`): Comprehensive notification system with templates and preferences
+**Location** (`location/`): Billiard halls and user location availability
+**Playoff** (`playoff/`): Elimination tournaments with qualification system
+**Tiebreaker** (`tiebreaker/`): Spot shots and rally attempts for tie resolution
+
+##### Cross-Domain Services
+- **Orchestration**: Multi-domain operation coordination with OperationResult tracking
+- **Transaction**: Distributed transaction management
+- **Caching**: Performance optimization with cache manager
+- **Optimization**: Query optimizer for database performance
 
 #### Routes (`routes/`)
 RESTful endpoints organized by domain:
@@ -121,26 +187,47 @@ Shared utilities:
 
 ## Key Business Logic
 
-### Campionato Flow
-1. **Campionato Creation**: Admin/Director creates campionati with multiple rounds (Gara)
-2. **Player Registration**: Players register for individual rounds with waitlist support
-3. **Matchmaking**: Amalfi algorithm creates optimal pairings avoiding rematches
-4. **Match Execution**: Players compete in rounds with real-time scoring
-5. **Classification**: Automatic ranking updates after each round
-6. **Playoffs**: Optional elimination rounds after main campionato
+### Community Platform Features
+
+#### Individual Match System
+- **Match Proposals**: Players can invite others for casual games
+- **Open Invitations**: Community-wide match requests
+- **Location Integration**: Find players and venues nearby
+- **Flexible Scheduling**: Accommodate different availability patterns
+
+#### Tournament System
+
+##### Campionato Flow
+1. **Community Building**: Players join the platform and connect with local pool enthusiasts
+2. **Tournament Organization**: Admin/Directors create tournaments (campionati) and competitions (gare)
+3. **Individual Matches**: Players propose and organize casual matches with community members
+4. **Skill Development**: Challenge system for practicing and improving technique
+5. **Event Management**: Flexible system supporting various pool-related activities
+6. **Social Features**: Player profiles, statistics, and community interaction
+7. **Venue Integration**: Location-based features for finding places to play
+8. **Future Expansion**: Platform designed to accommodate any pool-related community activity
 
 ### User Roles
-- **Admin**: System administrator (configured in environment)
-- **Director**: Can create/manage campionati (elevated player)
-- **Player**: Can register and participate in campionati
-- **Guest**: Visitor access only
+- **Admin**: System administrator and community moderator
+- **Director**: Tournament organizers and community leaders (elevated players)
+- **Player**: Community members who can participate in all activities
+- **Guest**: Visitors exploring the community
 
-### Amalfi Algorithm
-Advanced matchmaking system that:
-- Pairs players based on remaining rounds and current standings
-- Prevents player rematches throughout campionato
-- Handles odd numbers via trio matches or bye rounds
-- Maintains competitive balance while avoiding repetitive matchups
+### Community-Centered Design
+Platform built to foster pool community growth and engagement:
+
+**Core Community Features**:
+- **Player Connections**: Connect with local and regional pool players
+- **Match Organization**: From casual games to formal tournaments
+- **Skill Development**: Challenge system and performance tracking
+- **Venue Integration**: Find and connect players at billiard halls
+- **Social Interaction**: Player profiles, statistics, and community building
+
+**Tournament Flexibility**:
+- **Multiple Strategies**: Amalfi, Round-Robin, Elimination, Random pairing
+- **All Pool Disciplines**: 8-ball, 9-ball, 10-ball, One Pocket, Straight Pool
+- **Flexible Formats**: From casual meetups to formal championships
+- **Scalable Events**: Support for any size community event
 
 ## Recent Development History
 
@@ -161,14 +248,14 @@ Major bug fix session addressing multiple competition workflow issues:
 
 #### Technical Solutions Implemented
 - Enhanced `GaraService` with cancellation and notification workflows
-- Added preview functionality to `AmalfiEngine` without database modifications  
+- Added preview functionality to matchmaking engine without database modifications
 - Improved database transaction handling in competition endpoints
 - Added comprehensive error handling and validation throughout competition workflow
 - Implemented intelligent classification fallback logic for guest home page
 - Fixed template endpoint references and permission decorators for standalone competitions
 
 #### Files Modified (21 files, +468/-77 lines)
-- Backend services: `models/competition/services.py`, `amalfi/engine.py`, `routes/admin/competition.py`
+- Backend services: `models/competition/services.py`, matchmaking engine, `routes/admin/competition.py`
 - UI components: Multiple template files in `templates/components/` and `templates/admin/`
 - Status system: `utils/status_ui.py` for badge text corrections
 - Database models: Enhanced validation in `models/competition/models.py`
@@ -209,4 +296,45 @@ Complete redesign and enhancement of the individual match proposals system:
 - Application runs on `http://localhost:5000` by default
 - Production deployment on PythonAnywhere platform
 - Comprehensive testing revealed and fixed multiple edge cases in competition workflow
-- Amalfi campionato system now fully supports preview, idempotent operations, and fallback classification display
+- Flexible matchmaking system now fully supports strategy preview, idempotent operations, and fallback classification display
+- All matchmaking strategies (Amalfi, Round-Robin, Elimination, Random) are fully implemented and tested
+
+## Documentation Structure
+
+This project maintains comprehensive documentation at multiple levels:
+
+### Root Documentation
+- **CLAUDE.md**: Project overview, commands, and architecture summary
+- **README.md**: User-facing project description and setup instructions
+
+### Directory-Specific Documentation
+Each major component has detailed documentation in its subdirectory:
+
+1. **[models/CLAUDE.md](models/CLAUDE.md)**: 
+   - Domain-Driven Design architecture
+   - Model organization and relationships
+   - Database schema and mixins
+   - Development guidelines for data layer
+
+2. **[routes/CLAUDE.md](routes/CLAUDE.md)**:
+   - RESTful API organization
+   - Authentication and authorization patterns
+   - Request handling and response patterns
+   - Security considerations
+
+3. **[templates/CLAUDE.md](templates/CLAUDE.md)**:
+   - Component-based UI architecture
+   - Bootstrap 5 integration
+   - Template organization and reusability
+   - Accessibility and responsive design
+
+4. **[tests/CLAUDE.md](tests/CLAUDE.md)**:
+   - Testing strategy and organization
+   - Unit, integration, and E2E test approaches
+   - Coverage targets and quality metrics
+   - Performance and security testing
+
+### Navigation
+- Start with this root CLAUDE.md for project overview
+- Dive into specific directories for detailed technical information
+- Each subdirectory documentation is self-contained but cross-references related components
