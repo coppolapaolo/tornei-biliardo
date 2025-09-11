@@ -68,11 +68,7 @@ class TestCompleteUserJourney:
         client.post("/auth/login", data={"username": "admin", "password": "admin123"})
 
         response = client.post(
-            f"/admin/director_requests/{director_request.id}/process",
-            data={
-                "status": "approved",
-                "admin_notes": "Approved for tournament organization",
-            },
+            f"/admin/director_requests/{director_request.id}/approve",
             follow_redirects=True,
         )
 

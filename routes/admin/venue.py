@@ -12,6 +12,7 @@ from models.location.services import LocationService
 from models.user.services import VenueManagerRequestService, VenueManagementService
 from models.user.models import VenueManagerRequest, User
 from utils import admin_required, venue_manager_required
+from flask_login import login_required
 from models.base import db
 
 # Venue management blueprint
@@ -19,44 +20,67 @@ venue_bp = Blueprint("venue", __name__)
 
 
 @venue_bp.route("/venues")
-@admin_required
+@login_required
 def venues_list():
-    """Lista di tutte le sale biliardo (integrata con sistema location esistente)"""
+    """Lista delle sale biliardo - vista role-based (Content Negotiation Pattern)"""
+    from flask_login import current_user
+    from models.user.services import VenueManagerRequestService
+    
     venues = (
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )
 
-    # Get statistics for each venue
-    venues_with_stats = []
-    for venue in venues:
-        try:
-            stats = LocationService.get_location_statistics(venue.id)
-            venues_with_stats.append({"venue": venue, "stats": stats})
-        except Exception:
-            # Fallback if stats fail
-            venues_with_stats.append(
-                {
-                    "venue": venue,
-                    "stats": {
-                        "active_users_count": 0,
-                        "total_matches_played": 0,
-                    },
-                }
-            )
+    if current_user.is_admin:
+        # Vista completa admin con statistiche
+        venues_with_stats = []
+        for venue in venues:
+            try:
+                stats = LocationService.get_location_statistics(venue.id)
+                venues_with_stats.append({"venue": venue, "stats": stats})
+            except Exception:
+                # Fallback if stats fail
+                venues_with_stats.append(
+                    {
+                        "venue": venue,
+                        "stats": {
+                            "active_users_count": 0,
+                            "total_matches_played": 0,
+                        },
+                    }
+                )
+        return render_template(
+            "admin/venues_list.html", venues_with_stats=venues_with_stats
+        )
+    else:
+        # Vista semplificata per player/director
+        venues_with_managers = []
+        for venue in venues:
+            manager = VenueManagementService.get_venue_manager(venue.id)
+            venues_with_managers.append({
+                'venue': venue,
+                'manager': manager,
+                'can_request_management': not current_user.is_admin and not current_user.is_venue_manager
+            })
+        
+        # Check if user has pending venue manager requests
+        has_pending_requests = VenueManagerRequestService.has_pending_request_for_venue(current_user.id) if not current_user.is_admin else False
+        
+        return render_template(
+            "player/venues.html", 
+            venues_with_managers=venues_with_managers,
+            has_pending_requests=has_pending_requests
+        )
 
-    return render_template(
-        "admin/venues_list.html", venues_with_stats=venues_with_stats
-    )
 
-
-@venue_bp.route("/venue/<int:venue_id>")
-@venue_manager_required
+@venue_bp.route("/venues/<int:venue_id>")
+@login_required
 def venue_detail(venue_id):
-    """Scheda dettagliata sala biliardo"""
+    """Scheda dettagliata sala biliardo - vista role-based"""
+    from flask_login import current_user
+    
     venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
+    if not venue or not venue.is_active:
         from flask import abort
-
         abort(404)
 
     # Get venue statistics
@@ -73,32 +97,52 @@ def venue_detail(venue_id):
     # Get venue manager
     manager = VenueManagementService.get_venue_manager(venue_id)
     
-    # Get approved venue manager requests (users eligible to be assigned)
-    approved_requests = VenueManagerRequestService.get_requests_by_status("approved")
-    eligible_users = [req.user for req in approved_requests]
-    
-    # Also include current admins and directors who can manage venues
-    all_users = User.query.filter(User.role.in_(["admin", "director"])).all()
-    eligible_users.extend(all_users)
-    
-    # Remove duplicates and current manager
-    unique_users = {}
-    for user in eligible_users:
-        if user.id not in unique_users and (not manager or user.id != manager.id):
-            unique_users[user.id] = user
-    
-    eligible_users = list(unique_users.values())
+    if current_user.is_admin or current_user.can_manage_venue(venue_id):
+        # Vista completa admin/manager
+        # Get approved venue manager requests (users eligible to be assigned)
+        approved_requests = VenueManagerRequestService.get_requests_by_status("approved")
+        eligible_users = [req.user for req in approved_requests]
+        
+        # Also include current admins and directors who can manage venues
+        all_users = User.query.filter(User.role.in_(["admin", "director"])).all()
+        eligible_users.extend(all_users)
+        
+        # Remove duplicates and current manager
+        unique_users = {}
+        for user in eligible_users:
+            if user.id not in unique_users and (not manager or user.id != manager.id):
+                unique_users[user.id] = user
+        
+        eligible_users = list(unique_users.values())
 
-    return render_template(
-        "admin/venue_detail.html", 
-        venue=venue, 
-        stats=stats,
-        manager=manager,
-        eligible_users=eligible_users
-    )
+        return render_template(
+            "admin/venue_detail.html", 
+            venue=venue, 
+            stats=stats,
+            manager=manager,
+            eligible_users=eligible_users
+        )
+    else:
+        # Vista semplificata player/director
+        # Check if current user can manage this venue
+        can_manage = current_user.can_manage_venue(venue_id)
+        
+        # Check if user has pending requests
+        has_pending_requests = False
+        if not current_user.is_admin:
+            has_pending_requests = VenueManagerRequestService.has_pending_request_for_venue(current_user.id)
+        
+        return render_template(
+            "player/venue_detail.html", 
+            venue=venue, 
+            stats=stats,
+            manager=manager,
+            can_manage=can_manage,
+            has_pending_requests=has_pending_requests
+        )
 
 
-@venue_bp.route("/venue/new", methods=["GET", "POST"])
+@venue_bp.route("/venues/new", methods=["GET", "POST"])
 @admin_required
 def create_venue():
     """Crea nuova sala biliardo"""
@@ -152,7 +196,7 @@ def create_venue():
     return render_template("admin/venue_form.html", venue=None)
 
 
-@venue_bp.route("/venue/<int:venue_id>/edit", methods=["GET", "POST"])
+@venue_bp.route("/venues/<int:venue_id>/edit", methods=["GET", "POST"])
 @venue_manager_required
 def edit_venue(venue_id):
     """Modifica sala biliardo"""
@@ -205,7 +249,7 @@ def edit_venue(venue_id):
     return render_template("admin/venue_form.html", venue=venue)
 
 
-@venue_bp.route("/venue/<int:venue_id>/delete", methods=["POST"])
+@venue_bp.route("/venues/<int:venue_id>/delete", methods=["POST"])
 @admin_required
 def delete_venue(venue_id):
     """Disattiva sala biliardo (soft delete)"""
@@ -225,7 +269,7 @@ def delete_venue(venue_id):
     return redirect(url_for("admin.venue.venues_list"))
 
 
-@venue_bp.route("/venue/<int:venue_id>/verify", methods=["POST"])
+@venue_bp.route("/venues/<int:venue_id>/verify", methods=["POST"])
 @venue_manager_required
 def verify_venue(venue_id):
     """Verifica sala biliardo"""
@@ -246,7 +290,7 @@ def verify_venue(venue_id):
     return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
 
 
-@venue_bp.route("/venue/<int:venue_id>/table_numbers", methods=["POST"])
+@venue_bp.route("/venues/<int:venue_id>/table_numbers", methods=["POST"])
 @venue_manager_required
 def update_table_numbers(venue_id):
     """Aggiorna numerazione tavoli"""
@@ -282,7 +326,7 @@ def update_table_numbers(venue_id):
     return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
 
 
-@venue_bp.route("/venue/<int:venue_id>/photo", methods=["POST"])
+@venue_bp.route("/venues/<int:venue_id>/photo", methods=["POST"])
 @venue_manager_required
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""

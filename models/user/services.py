@@ -949,12 +949,19 @@ class VenueManagerRequestService:
         if not venue:
             raise ValueError("Venue not found")
 
-        # Check if user already has a pending request for this venue
+        # Check if user already has ANY request for this venue (due to unique constraint)
         existing_request = VenueManagerRequest.query.filter_by(
-            user_id=user_id, venue_id=venue_id, status="pending"
+            user_id=user_id, venue_id=venue_id
         ).first()
         if existing_request:
-            raise ValueError(f"You already have a pending request for {venue.name}")
+            if existing_request.status == "pending":
+                raise ValueError(f"You already have a pending request for {venue.name}")
+            elif existing_request.status == "approved":
+                raise ValueError(f"You are already approved to manage {venue.name}")
+            elif existing_request.status == "rejected":
+                raise ValueError(f"Your previous request for {venue.name} was rejected. Contact admin for reconsideration.")
+            else:  # cancelled or other status
+                raise ValueError(f"You already have a {existing_request.status} request for {venue.name}")
 
         # Check if venue is already managed (contested request)
         from .services import VenueManagementService
@@ -970,6 +977,26 @@ class VenueManagerRequestService:
         )
         db.session.add(request)
         db.session.commit()
+
+        # Send notification about new request to all admins
+        from ..notification.services import NotificationService
+        from ..notification.models import NotificationType, NotificationPriority
+        from .role_enum import UserRole
+        
+        message = f"Nuova richiesta di gestione per la sala '{venue.name}' da {user.username}."
+        if is_contested:
+            message += " ATTENZIONE: Questa sala ha già un gestore (richiesta di contenzioso)."
+        
+        # Notify all admins
+        admins = User.query.filter_by(role=UserRole.ADMIN.value).all()
+        for admin in admins:
+            NotificationService.create_notification(
+                user_id=admin.id,
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                title=f"Richiesta Gestore Sala: {venue.name}",
+                message=message,
+                priority=NotificationPriority.HIGH if is_contested else NotificationPriority.NORMAL,
+            )
 
         return request
 
@@ -1217,17 +1244,8 @@ class VenueManagementService:
         db.session.add(assignment)
         db.session.commit()
 
-        # Send notification to user
-        from ..notification.services import NotificationService
-        from ..notification.models import NotificationType, NotificationPriority
-
-        NotificationService.create_notification(
-            user_id=user_id,
-            notification_type=NotificationType.ACCOUNT_UPDATE,
-            title="Assegnazione Gestione Sala",
-            message=f"Sei stato assegnato come gestore della sala '{venue.name}'. Ora puoi modificarla e gestirla.",
-            priority=NotificationPriority.HIGH,
-        )
+        # Note: Notification is sent by higher-level service (VenueManagerRequestService.process_request)
+        # to avoid duplication when called from venue manager request approval workflow
 
         return assignment
 
