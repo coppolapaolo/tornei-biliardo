@@ -1,0 +1,204 @@
+<!-- templates/admin/venue_manager_requests.html - Gestione richieste gestore sala -->
+{% extends "base.html" %}
+
+{% block title %}Richieste Gestore Sala - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-hand-paper"></i> Richieste Gestore Sala</h1>
+    <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Torna alle Sale
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Tutte le Richieste ({{ requests|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if requests %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Utente</th>
+                            <th>Sala</th>
+                            <th>Richiesta</th>
+                            <th>Stato</th>
+                            <th>Processata</th>
+                            <th>Processata da</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                            <tr>
+                                <td>
+                                    <strong>{{ request.user.username }}</strong><br>
+                                    <small class="text-muted">
+                                        {% if request.user.is_director %}
+                                            <i class="fas fa-trophy"></i> Director
+                                        {% else %}
+                                            <i class="fas fa-user"></i> Player
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <strong>{{ request.venue.name }}</strong><br>
+                                    <small class="text-muted">{{ request.venue.city or 'Città N/A' }}</small>
+                                    {% if request.is_contested %}
+                                        <br><span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> CONTENZIOSO
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ request.requested_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                    {% if request.notes %}
+                                        <br><em>"{{ request.notes }}"</em>
+                                    {% endif %}
+                                    {% if request.admin_notes %}
+                                        <br><strong>Admin:</strong> <em>"{{ request.admin_notes }}"</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.status == "pending" %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock"></i> In Attesa
+                                        </span>
+                                    {% elif request.status == "approved" %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Approvata
+                                        </span>
+                                    {% elif request.status == "rejected" %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Rifiutata
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.processed_at %}
+                                        <small class="text-muted">{{ request.processed_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.processed_by %}
+                                        {{ request.processed_by.username }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.status == "pending" %}
+                                        <div class="btn-group" role="group">
+                                            <!-- Approve Button -->
+                                            <form method="POST" 
+                                                  action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}" 
+                                                  style="display: inline;"
+                                                  onsubmit="return confirm('Approvi questa richiesta?')">
+                                                <input type="hidden" name="action" value="approve">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Approva">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Reject Button -->
+                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#rejectModal{{ request.id }}" 
+                                                    title="Rifiuta">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Reject Modal -->
+                                        <div class="modal fade" id="rejectModal{{ request.id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Rifiuta Richiesta</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form method="POST" action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}">
+                                                        <div class="modal-body">
+                                                            <p>Stai per rifiutare la richiesta di <strong>{{ request.user.username }}</strong> per gestire <strong>{{ request.venue.name }}</strong>.</p>
+                                                            {% if request.is_contested %}
+                                                                <div class="alert alert-warning">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                    <strong>Richiesta di contenzioso:</strong> Questa sala ha già un gestore.
+                                                                </div>
+                                                            {% endif %}
+                                                            <div class="mb-3">
+                                                                <label for="notes{{ request.id }}" class="form-label">Motivo del rifiuto{% if request.is_contested %} (importante per contenzioso){% else %} (opzionale){% endif %}</label>
+                                                                <textarea class="form-control" name="admin_notes" id="notes{{ request.id }}" rows="3" 
+                                                                          placeholder="{% if request.is_contested %}Spiega perché mantieni l'attuale gestore...{% else %}Spiega perché la richiesta è stata rifiutata...{% endif %}"
+                                                                          {% if request.is_contested %}required{% endif %}></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <input type="hidden" name="action" value="reject">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <i class="fas fa-times"></i> Rifiuta
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-hand-paper fa-3x mb-3"></i>
+                <h4>Nessuna richiesta</h4>
+                <p>Non ci sono ancora richieste per diventare gestore di sala.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+{% set pending_count = requests|selectattr("status", "equalto", "pending")|list|length %}
+{% set approved_count = requests|selectattr("status", "equalto", "approved")|list|length %}
+{% set rejected_count = requests|selectattr("status", "equalto", "rejected")|list|length %}
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3>{{ pending_count }}</h3>
+                <p class="mb-0">In Attesa</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check fa-2x mb-2"></i>
+                <h3>{{ approved_count }}</h3>
+                <p class="mb-0">Approvate</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-times fa-2x mb-2"></i>
+                <h3>{{ rejected_count }}</h3>
+                <p class="mb-0">Rifiutate</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

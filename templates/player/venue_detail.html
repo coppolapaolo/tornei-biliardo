@@ -1,0 +1,302 @@
+<!-- templates/player/venue_detail.html - Dettagli sala biliardo per player e director -->
+{% extends "base.html" %}
+
+{% block title %}{{ venue.name }} - Sala Biliardo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-building"></i> {{ venue.name }}</h1>
+    <div>
+        {% if can_manage %}
+            <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" class="btn btn-primary me-2">
+                <i class="fas fa-edit"></i> Gestisci Sala
+            </a>
+        {% endif %}
+        <a href="{{ url_for('player.venues') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alle Sale
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Informazioni Principali -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h5><i class="fas fa-info-circle"></i> Informazioni Generali</h5>
+                <div>
+                    {% if venue.verified %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle"></i> Verificata
+                        </span>
+                    {% elif venue.can_be_verified() %}
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-clock"></i> In Attesa di Verifica
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="fas fa-info-circle"></i> Dati Incompleti
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome:</strong> {{ venue.name }}</p>
+                        <p><strong>Indirizzo:</strong> {{ venue.address or 'Non specificato' }}</p>
+                        <p><strong>Città:</strong> {{ venue.city or 'Non specificata' }}</p>
+                        <p><strong>CAP:</strong> {{ venue.postal_code or 'Non specificato' }}</p>
+                        <p><strong>Paese:</strong> {{ venue.country }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Telefono:</strong> 
+                            {% if venue.phone %}
+                                <a href="tel:{{ venue.phone }}">{{ venue.phone }}</a>
+                            {% else %}
+                                Non specificato
+                            {% endif %}
+                        </p>
+                        <p><strong>Email:</strong> 
+                            {% if venue.email %}
+                                <a href="mailto:{{ venue.email }}">{{ venue.email }}</a>
+                            {% else %}
+                                Non specificata
+                            {% endif %}
+                        </p>
+                        <p><strong>Sito Web:</strong> 
+                            {% if venue.website %}
+                                <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>
+                            {% else %}
+                                Non specificato
+                            {% endif %}
+                        </p>
+                        <p><strong>Tariffa Oraria:</strong> 
+                            {% if venue.hourly_rate %}
+                                {{ venue.hourly_rate }} {{ venue.currency }}
+                            {% else %}
+                                Non specificata
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tavoli e Servizi -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-table"></i> Tavoli e Servizi</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Numero Tavoli:</strong> {{ venue.number_of_tables or 'Non specificato' }}</p>
+                        
+                        <p><strong>Tipi di Tavoli:</strong></p>
+                        {% set table_types = stats.table_types %}
+                        {% if table_types %}
+                            <ul class="list-unstyled">
+                                {% for type in table_types %}
+                                    <li><i class="fas fa-check text-success"></i> {{ type }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Non specificati</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Servizi:</strong></p>
+                        {% set filtered_amenities = [] %}
+                        {% for amenity in stats.amenities %}
+                            {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
+                                {% set _ = filtered_amenities.append(amenity) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if filtered_amenities %}
+                            <ul class="list-unstyled">
+                                {% for amenity in filtered_amenities %}
+                                    <li><i class="fas fa-check text-success"></i> {{ amenity }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Non specificati</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posizione -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-map-marker-alt"></i> Come Arrivare</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    <strong><i class="fas fa-home"></i> Indirizzo Completo:</strong><br>
+                    <span class="text-primary">{{ venue.get_full_address() }}</span>
+                </p>
+                
+                <div class="mt-3">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}" 
+                       target="_blank" 
+                       class="btn btn-outline-primary me-2">
+                        <i class="fab fa-google"></i> Apri in Google Maps
+                    </a>
+                    
+                    <a href="https://www.openstreetmap.org/search?query={{ venue.get_full_address()|urlencode }}" 
+                       target="_blank" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-map"></i> Apri in OpenStreetMap
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar con Statistiche -->
+    <div class="col-lg-4">
+        <!-- Gestione -->
+        {% if manager %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-user-cog"></i> Gestione</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <i class="fas fa-user-circle fa-3x text-primary mb-2"></i>
+                    <h6>{{ manager.username }}</h6>
+                    <small class="text-muted">Gestore della Sala</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Richiesta Gestione -->
+        {% if not current_user.is_admin and not manager and not can_manage %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-hand-paper"></i> Diventa Gestore</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Vuoi gestire questa sala? I gestori possono modificare informazioni, servizi e dettagli della sala.</p>
+                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#venueManagerRequestModal">
+                    <i class="fas fa-hand-paper"></i> Richiedi Gestione
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stato Richieste -->
+        {% if not current_user.is_admin and has_pending_requests %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-clock"></i> Richieste in Corso</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Hai richieste di gestione sala in attesa.</p>
+                <a href="{{ url_for('player.my_venue_requests') }}" class="btn btn-outline-warning btn-sm w-100">
+                    <i class="fas fa-list"></i> Vedi le mie Richieste
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Statistiche -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Statistiche</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Utenti Attivi:</span>
+                    <span class="badge bg-primary fs-6">{{ stats.active_users_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Partite Giocate:</span>
+                    <span class="badge bg-success fs-6">{{ stats.total_matches_played }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Foto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-camera"></i> Foto</h5>
+            </div>
+            <div class="card-body">
+                {% set photos = [] %}
+                {% for amenity in venue.get_amenities() %}
+                    {% if amenity.startswith("Foto:") %}
+                        {% set _ = photos.append(amenity) %}
+                    {% endif %}
+                {% endfor %}
+                {% if photos %}
+                    {% for photo in photos %}
+                        {% set photo_path = photo.replace("Foto: ", "") %}
+                        <img src="{{ url_for('static', filename=photo_path) }}" 
+                             alt="Foto {{ venue.name }}" 
+                             class="img-fluid mb-2 rounded">
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">Nessuna foto disponibile</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per richiesta gestore sala -->
+{% if not current_user.is_admin and not manager and not can_manage %}
+<div class="modal fade" id="venueManagerRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-hand-paper"></i> Richiesta Gestione per {{ venue.name }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('player.request_venue_manager') }}">
+                <input type="hidden" name="venue_id" value="{{ venue.id }}">
+                <div class="modal-body">
+                    <p>Vuoi diventare gestore di <strong>{{ venue.name }}</strong>?</p>
+                    {% if manager %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Attenzione:</strong> Questa sala ha già un gestore ({{ manager.username }}). 
+                            La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore.
+                        </div>
+                    {% endif %}
+                    <p>I gestori sala possono:</p>
+                    <ul>
+                        <li>Modificare le informazioni della sala</li>
+                        <li>Aggiornare servizi e dettagli</li>
+                        <li>Caricare foto della sala</li>
+                        <li>Gestire la numerazione dei tavoli</li>
+                    </ul>
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        L'amministratore valuterà la tua richiesta specifica per questa sala.
+                    </p>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Motivazione{% if manager %} (importante per contenzioso){% else %} (opzionale){% endif %}</label>
+                        <textarea class="form-control" name="notes" id="notes" rows="3" 
+                                  placeholder="{% if manager %}Spiega perché dovresti gestire questa sala invece dell'attuale gestore...{% else %}Perché vuoi gestire questa sala? Hai esperienza con sale biliardo?{% endif %}"
+                                  {% if manager %}required{% endif %}></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Invia Richiesta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from ..base import db
-from .models import BilliardHall, UserLocationAvailability, LocationReview, DayOfWeek
+from .models import BilliardHall, UserLocationAvailability, DayOfWeek
 
 
 class LocationService:
@@ -213,90 +213,14 @@ class LocationService:
 
         total_matches = IndividualMatch.query.filter_by(location=hall.name).count()
 
-        # Count reviews
-        reviews = LocationReview.query.filter_by(
-            billiard_hall_id=billiard_hall_id, is_approved=True, is_hidden=False
-        ).all()
-
-        # Calculate average ratings
-        avg_rating = 0
-        if reviews:
-            avg_rating = sum(review.rating for review in reviews) / len(reviews)
-
         return {
             "billiard_hall": hall,
             "active_users_count": active_users_count,
             "total_matches_played": total_matches,
-            "reviews_count": len(reviews),
-            "average_rating": round(avg_rating, 1),
             "table_types": hall.get_table_types(),
             "amenities": hall.get_amenities(),
         }
 
-    @staticmethod
-    def add_location_review(
-        user_id: int,
-        billiard_hall_id: int,
-        rating: int,
-        title: Optional[str] = None,
-        comment: Optional[str] = None,
-        table_quality: Optional[int] = None,
-        atmosphere: Optional[int] = None,
-        service: Optional[int] = None,
-        value_for_money: Optional[int] = None,
-    ) -> LocationReview:
-        """Add or update a location review."""
-
-        # Validate rating
-        if not 1 <= rating <= 5:
-            raise ValueError("Rating must be between 1 and 5")
-
-        # Check for existing review
-        existing_review = LocationReview.query.filter_by(
-            user_id=user_id, billiard_hall_id=billiard_hall_id
-        ).first()
-
-        if existing_review:
-            # Update existing review
-            existing_review.rating = rating
-            existing_review.title = title
-            existing_review.comment = comment
-            existing_review.table_quality = table_quality
-            existing_review.atmosphere = atmosphere
-            existing_review.service = service
-            existing_review.value_for_money = value_for_money
-            existing_review.updated_at = datetime.utcnow()
-            review = existing_review
-        else:
-            # Create new review
-            review = LocationReview(
-                user_id=user_id,
-                billiard_hall_id=billiard_hall_id,
-                rating=rating,
-                title=title,
-                comment=comment,
-                table_quality=table_quality,
-                atmosphere=atmosphere,
-                service=service,
-                value_for_money=value_for_money,
-            )
-            db.session.add(review)
-
-        db.session.commit()
-        return review
-
-    @staticmethod
-    def get_location_reviews(
-        billiard_hall_id: int, approved_only: bool = True
-    ) -> List[LocationReview]:
-        """Get reviews for a billiard hall."""
-
-        query = LocationReview.query.filter_by(billiard_hall_id=billiard_hall_id)
-
-        if approved_only:
-            query = query.filter_by(is_approved=True, is_hidden=False)
-
-        return query.order_by(LocationReview.created_at.desc()).all()
 
     @staticmethod
     def suggest_locations_for_match(

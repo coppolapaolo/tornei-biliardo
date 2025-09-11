@@ -914,3 +914,423 @@ class UserDeletionService:
         """
         user.soft_delete()
         db.session.commit()
+
+
+class VenueManagerRequestService:
+    """Service class for handling venue manager requests."""
+
+    @staticmethod
+    def create_request(user_id: int, venue_id: int, notes: str = None) -> "VenueManagerRequest":
+        """
+        Create venue manager request for a specific venue.
+
+        Args:
+            user_id: ID of user requesting venue manager role
+            venue_id: ID of venue to manage
+            notes: Optional notes for the request
+
+        Returns:
+            VenueManagerRequest: Created request
+
+        Raises:
+            ValueError: If user not found, venue not found, or already has pending request for this venue
+        """
+        from .models import VenueManagerRequest
+        from models import BilliardHall
+        
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        if user.is_admin:
+            raise ValueError("Admin users don't need to request venue manager role")
+
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError("Venue not found")
+
+        # Check if user already has a pending request for this venue
+        existing_request = VenueManagerRequest.query.filter_by(
+            user_id=user_id, venue_id=venue_id, status="pending"
+        ).first()
+        if existing_request:
+            raise ValueError(f"You already have a pending request for {venue.name}")
+
+        # Check if venue is already managed (contested request)
+        from .services import VenueManagementService
+        current_manager = VenueManagementService.get_venue_manager(venue_id)
+        is_contested = current_manager is not None
+
+        # Create new request
+        request = VenueManagerRequest(
+            user_id=user_id, 
+            venue_id=venue_id, 
+            notes=notes,
+            is_contested=is_contested
+        )
+        db.session.add(request)
+        db.session.commit()
+
+        return request
+
+    @staticmethod
+    def process_request(
+        request_id: int, admin_user: User, approve: bool, notes: str = None
+    ) -> "VenueManagerRequest":
+        """
+        Process a venue manager request (approve or reject).
+
+        Args:
+            request_id: ID of the venue manager request to process
+            admin_user: Admin user processing the request
+            approve: Whether to approve (True) or reject (False) the request
+            notes: Optional notes for the decision
+
+        Returns:
+            VenueManagerRequest: The processed request
+
+        Raises:
+            ValueError: If request not found
+            PermissionError: If admin_user is not an admin
+        """
+        from .models import VenueManagerRequest
+        
+        # Check if user is admin
+        if not admin_user.is_admin:
+            raise PermissionError("Only administrators can process venue manager requests")
+
+        # Get the request
+        request = db.session.get(VenueManagerRequest, request_id)
+        if not request:
+            raise ValueError("Venue manager request not found")
+
+        # Process the request
+        if approve:
+            request.approve(admin_user, notes)
+            # Send notification to user about approval
+            from ..notification.services import NotificationService
+            from ..notification.models import NotificationType, NotificationPriority
+
+            message = f"La tua richiesta per gestire '{request.venue.name}' è stata approvata! Ora puoi gestire questa sala."
+            if notes:
+                message += f" Nota dell'admin: {notes}"
+
+            NotificationService.create_notification(
+                user_id=request.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title=f"Richiesta Gestore '{request.venue.name}' Approvata",
+                message=message,
+                priority=NotificationPriority.HIGH,
+            )
+
+            # If it was a contested request, notify the previous manager
+            if request.is_contested:
+                from .services import VenueManagementService
+                previous_assignments = VenueManagementService.get_venue_assignments(request.venue_id)
+                for assignment in previous_assignments:
+                    if assignment.user_id != request.user_id and assignment.is_active:
+                        assignment.revoke(admin_user)  # Revoke previous manager
+                        NotificationService.create_notification(
+                            user_id=assignment.user_id,
+                            notification_type=NotificationType.ACCOUNT_UPDATE,
+                            title=f"Gestione Sala '{request.venue.name}' Revocata",
+                            message=f"La gestione della sala '{request.venue.name}' è stata assegnata a un altro utente. Contatta l'amministratore per maggiori informazioni.",
+                            priority=NotificationPriority.HIGH,
+                        )
+        else:
+            request.reject(admin_user, notes)
+            # Send notification to user about rejection
+            from ..notification.services import NotificationService
+            from ..notification.models import NotificationType, NotificationPriority
+
+            message = f"La tua richiesta per gestire '{request.venue.name}' è stata rifiutata."
+            if notes:
+                message += f" Motivo: {notes}"
+            message += " Per maggiori informazioni, contatta l'amministratore."
+
+            NotificationService.create_notification(
+                user_id=request.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title=f"Richiesta Gestore '{request.venue.name}' Rifiutata",
+                message=message,
+                priority=NotificationPriority.NORMAL,
+            )
+
+        db.session.commit()
+        return request
+
+    @staticmethod
+    def get_requests_by_status(status: str) -> List["VenueManagerRequest"]:
+        """
+        Get venue manager requests by status.
+
+        Args:
+            status: Status to filter by
+
+        Returns:
+            List of venue manager requests with specified status
+        """
+        from .models import VenueManagerRequest
+        return VenueManagerRequest.query.filter_by(status=status).all()
+
+    @staticmethod
+    def get_pending_request_by_user(user_id: int) -> "VenueManagerRequest":
+        """
+        Get pending venue manager request by user.
+
+        Args:
+            user_id: ID of user to check for pending request
+
+        Returns:
+            VenueManagerRequest if found, None otherwise
+        """
+        from .models import VenueManagerRequest
+        return VenueManagerRequest.query.filter_by(
+            user_id=user_id, status="pending"
+        ).first()
+
+    @staticmethod
+    def get_user_requests(user_id: int) -> List["VenueManagerRequest"]:
+        """
+        Get all venue manager requests by user.
+
+        Args:
+            user_id: ID of user
+
+        Returns:
+            List of all venue manager requests by the user
+        """
+        from .models import VenueManagerRequest
+        return VenueManagerRequest.query.filter_by(user_id=user_id).order_by(VenueManagerRequest.requested_at.desc()).all()
+
+    @staticmethod
+    def has_pending_request_for_venue(user_id: int, venue_id: int = None) -> bool:
+        """
+        Check if user has pending requests for specific venue or any venue.
+        
+        Args:
+            user_id: ID of user to check
+            venue_id: Optional - check for specific venue. If None, checks for any pending request
+            
+        Returns:
+            bool: True if user has pending request(s)
+        """
+        from .models import VenueManagerRequest
+        query = VenueManagerRequest.query.filter_by(user_id=user_id, status="pending")
+        if venue_id is not None:
+            query = query.filter_by(venue_id=venue_id)
+        return query.first() is not None
+
+    @staticmethod
+    def cancel_request(request_id: int, user: User) -> "VenueManagerRequest":
+        """
+        Cancel a pending venue manager request.
+
+        Args:
+            request_id: ID of request to cancel
+            user: User who owns the request
+
+        Returns:
+            VenueManagerRequest: Cancelled request
+
+        Raises:
+            ValueError: If request not found or user doesn't own it
+        """
+        from .models import VenueManagerRequest
+        
+        request = db.session.get(VenueManagerRequest, request_id)
+        if not request:
+            raise ValueError("Request not found")
+        
+        if request.user_id != user.id and not user.is_admin:
+            raise ValueError("You can only cancel your own requests")
+        
+        if request.status != "pending":
+            raise ValueError("Only pending requests can be cancelled")
+        
+        request.cancel()
+        db.session.commit()
+        
+        return request
+
+    @staticmethod
+    def get_all_requests() -> List["VenueManagerRequest"]:
+        """
+        Get all venue manager requests.
+
+        Returns:
+            List of all venue manager requests
+        """
+        from .models import VenueManagerRequest
+        return VenueManagerRequest.query.order_by(VenueManagerRequest.requested_at.desc()).all()
+
+
+class VenueManagementService:
+    """Service class for managing venue assignments."""
+
+    @staticmethod
+    def assign_venue_manager(
+        user_id: int, venue_id: int, assigned_by: User
+    ) -> "VenueManagement":
+        """
+        Assign a user as manager of a venue.
+
+        Args:
+            user_id: ID of user to assign as manager
+            venue_id: ID of venue to assign
+            assigned_by: Admin user making the assignment
+
+        Returns:
+            VenueManagement: Created assignment
+
+        Raises:
+            ValueError: If user/venue not found or venue already has manager
+            PermissionError: If assigned_by is not admin
+        """
+        from .models import VenueManagement
+        from ..location.models import BilliardHall
+        
+        if not assigned_by.is_admin:
+            raise PermissionError("Only administrators can assign venue managers")
+
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError("Venue not found")
+
+        # Check if venue already has an active manager
+        existing_assignment = VenueManagement.query.filter_by(
+            venue_id=venue_id, is_active=True
+        ).first()
+        if existing_assignment:
+            raise ValueError("Venue already has an active manager")
+
+        # Create assignment
+        assignment = VenueManagement(
+            user_id=user_id,
+            venue_id=venue_id,
+            assigned_by_id=assigned_by.id
+        )
+        db.session.add(assignment)
+        db.session.commit()
+
+        # Send notification to user
+        from ..notification.services import NotificationService
+        from ..notification.models import NotificationType, NotificationPriority
+
+        NotificationService.create_notification(
+            user_id=user_id,
+            notification_type=NotificationType.ACCOUNT_UPDATE,
+            title="Assegnazione Gestione Sala",
+            message=f"Sei stato assegnato come gestore della sala '{venue.name}'. Ora puoi modificarla e gestirla.",
+            priority=NotificationPriority.HIGH,
+        )
+
+        return assignment
+
+    @staticmethod
+    def revoke_venue_manager(
+        assignment_id: int, revoked_by: User
+    ) -> "VenueManagement":
+        """
+        Revoke venue manager assignment.
+
+        Args:
+            assignment_id: ID of assignment to revoke
+            revoked_by: Admin user revoking the assignment
+
+        Returns:
+            VenueManagement: Revoked assignment
+
+        Raises:
+            ValueError: If assignment not found
+            PermissionError: If revoked_by is not admin
+        """
+        from .models import VenueManagement
+        
+        if not revoked_by.is_admin:
+            raise PermissionError("Only administrators can revoke venue manager assignments")
+
+        assignment = db.session.get(VenueManagement, assignment_id)
+        if not assignment:
+            raise ValueError("Venue management assignment not found")
+
+        assignment.revoke(revoked_by)
+        db.session.commit()
+
+        # Send notification to user
+        from ..notification.services import NotificationService
+        from ..notification.models import NotificationType, NotificationPriority
+
+        NotificationService.create_notification(
+            user_id=assignment.user_id,
+            notification_type=NotificationType.ACCOUNT_UPDATE,
+            title="Revoca Gestione Sala",
+            message=f"La tua gestione della sala è stata revocata dall'amministratore.",
+            priority=NotificationPriority.NORMAL,
+        )
+
+        return assignment
+
+    @staticmethod
+    def get_venue_assignments(venue_id: int) -> List["VenueManagement"]:
+        """
+        Get all assignments for a venue (including inactive ones).
+
+        Args:
+            venue_id: ID of venue
+
+        Returns:
+            List of VenueManagement assignments for the venue
+        """
+        from .models import VenueManagement
+        return VenueManagement.query.filter_by(venue_id=venue_id).all()
+
+    @staticmethod
+    def get_venue_manager(venue_id: int) -> Optional[User]:
+        """
+        Get current manager of a venue.
+
+        Args:
+            venue_id: ID of venue
+
+        Returns:
+            User who manages the venue, or None if no manager
+        """
+        from .models import VenueManagement
+        
+        assignment = VenueManagement.query.filter_by(
+            venue_id=venue_id, is_active=True
+        ).first()
+        
+        return assignment.user if assignment else None
+
+    @staticmethod
+    def get_user_venues(user_id: int) -> List["BilliardHall"]:
+        """
+        Get all venues managed by a user.
+
+        Args:
+            user_id: ID of user
+
+        Returns:
+            List of venues managed by the user
+        """
+        from .models import VenueManagement
+        from ..location.models import BilliardHall
+        
+        assignments = VenueManagement.query.filter_by(
+            user_id=user_id, is_active=True
+        ).all()
+        
+        venue_ids = [assignment.venue_id for assignment in assignments]
+        if not venue_ids:
+            return []
+            
+        return BilliardHall.query.filter(
+            BilliardHall.id.in_(venue_ids),
+            BilliardHall.is_active == True
+        ).all()

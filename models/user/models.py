@@ -107,6 +107,17 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         return self.role == UserRole.DIRECTOR.value
 
     @property
+    def is_venue_manager(self) -> bool:
+        """Check if user is assigned as manager for any venue."""
+        if self.is_admin:
+            return True
+        assignment = VenueManagement.query.filter_by(
+            user_id=self.id,
+            is_active=True
+        ).first()
+        return assignment is not None
+
+    @property
     def is_player(self) -> bool:
         return self.role == UserRole.PLAYER.value
 
@@ -155,6 +166,47 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         from .permissions import PermissionChecker
 
         return not PermissionChecker.can_manage_competition(self, competition_id)
+
+    def can_manage_venue(self, venue_id: int) -> bool:
+        """Check if user can manage a specific venue."""
+        if self.is_admin:
+            return True
+        if not self.is_venue_manager:
+            return False
+        
+        # Check if user is assigned as manager for this venue
+        assignment = VenueManagement.query.filter_by(
+            user_id=self.id,
+            venue_id=venue_id,
+            is_active=True
+        ).first()
+        return assignment is not None
+
+    def get_managed_venues(self) -> List["BilliardHall"]:
+        """Get list of venues this user can manage."""
+        if self.is_admin:
+            # Admin can manage all venues
+            from ..location.models import BilliardHall
+            return BilliardHall.query.filter_by(is_active=True).all()
+        
+        if not self.is_venue_manager:
+            return []
+        
+        # Get venues assigned to this user
+        from ..location.models import BilliardHall
+        venue_assignments = VenueManagement.query.filter_by(
+            user_id=self.id,
+            is_active=True
+        ).all()
+        
+        venue_ids = [assignment.venue_id for assignment in venue_assignments]
+        if not venue_ids:
+            return []
+            
+        return BilliardHall.query.filter(
+            BilliardHall.id.in_(venue_ids),
+            BilliardHall.is_active == True
+        ).all()
 
     # ───────────────────
     # Task 1.4 – implementations
@@ -323,3 +375,99 @@ class DirectorRequest(BaseModel):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<DirectorRequest {self.id} {self.status}>"
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# VENUE MANAGER REQUEST
+# ────────────────────────────────────────────────────────────────────────────────
+class VenueManagerRequest(BaseModel):
+    """Request to manage a specific venue."""
+    
+    __tablename__ = "venue_manager_request"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey("billiard_hall.id"), nullable=False)
+    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(
+        db.String(20), nullable=False, default="pending"
+    )  # pending|approved|rejected|cancelled|contested
+    processed_at = db.Column(db.DateTime)
+    processed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    notes = db.Column(db.Text)  # User notes when requesting
+    admin_notes = db.Column(db.Text)  # Admin notes when processing
+    is_contested = db.Column(db.Boolean, default=False)  # True if requesting already managed venue
+
+    user = db.relationship("User", foreign_keys=[user_id])
+    processed_by = db.relationship("User", foreign_keys=[processed_by_id])
+    venue = db.relationship("BilliardHall", foreign_keys=[venue_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'venue_id', name='_user_venue_request_uc'),
+    )
+
+    # state helpers ---
+    def approve(self, admin: "User", admin_notes: str | None = None) -> None:
+        """Approve venue manager request and automatically assign venue."""
+        self.status = "approved"
+        self.processed_at = datetime.utcnow()
+        self.processed_by = admin
+        if admin_notes:
+            self.admin_notes = admin_notes
+        
+        # Automatically create venue management assignment
+        from .services import VenueManagementService
+        VenueManagementService.assign_venue_manager(self.user_id, self.venue_id, admin)
+
+    def reject(self, admin: "User", admin_notes: str | None = None) -> None:
+        """Reject venue manager request."""
+        self.status = "rejected"
+        self.processed_at = datetime.utcnow()
+        self.processed_by = admin
+        if admin_notes:
+            self.admin_notes = admin_notes
+
+    def cancel(self) -> None:
+        """Cancel venue manager request."""
+        self.status = "cancelled"
+        self.processed_at = datetime.utcnow()
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<VenueManagerRequest {self.id} {self.status}>"
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# VENUE MANAGEMENT ASSIGNMENT
+# ────────────────────────────────────────────────────────────────────────────────
+class VenueManagement(BaseModel):
+    """Assignment of venue managers to specific venues."""
+    
+    __tablename__ = "venue_management"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey("billiard_hall.id"), nullable=False)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    revoked_at = db.Column(db.DateTime, nullable=True)
+    revoked_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+
+    # Relationships
+    user = db.relationship("User", foreign_keys=[user_id])
+    assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
+    revoked_by = db.relationship("User", foreign_keys=[revoked_by_id])
+    
+    # Unique constraint: one manager per venue
+    __table_args__ = (
+        db.UniqueConstraint('venue_id', 'is_active', name='uq_venue_active_manager'),
+    )
+
+    def revoke(self, admin: "User") -> None:
+        """Revoke venue management assignment."""
+        self.is_active = False
+        self.revoked_at = datetime.utcnow()
+        self.revoked_by = admin
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<VenueManagement {self.user_id} -> {self.venue_id}>"

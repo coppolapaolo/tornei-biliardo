@@ -1,0 +1,156 @@
+<!-- templates/player/venues.html - Lista sale biliardo per player e director -->
+{% extends "base.html" %}
+
+{% block title %}Sale Biliardo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-building"></i> Sale Biliardo</h1>
+    {% if has_pending_requests %}
+        <a href="{{ url_for('player.my_venue_requests') }}" class="btn btn-outline-warning">
+            <i class="fas fa-clock"></i> Richieste in Attesa
+        </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Sale Disponibili ({{ venues_with_managers|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if venues_with_managers %}
+            <div class="row">
+                {% for item in venues_with_managers %}
+                    {% set venue = item.venue %}
+                    {% set manager = item.manager %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ venue.name }}</h6>
+                                {% if venue.verified %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Verificata
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    {{ venue.city or 'Città non specificata' }}
+                                </p>
+                                
+                                {% if venue.number_of_tables %}
+                                    <p class="mb-2">
+                                        <i class="fas fa-table"></i> 
+                                        <strong>{{ venue.number_of_tables }}</strong> tavoli
+                                    </p>
+                                {% endif %}
+
+                                {% if manager %}
+                                    <p class="mb-2">
+                                        <i class="fas fa-user-cog"></i> 
+                                        <strong>Gestore:</strong> {{ manager.username }}
+                                    </p>
+                                {% else %}
+                                    <p class="mb-2 text-muted">
+                                        <i class="fas fa-user-slash"></i> 
+                                        Nessun gestore assegnato
+                                    </p>
+                                {% endif %}
+
+                                {% if venue.address %}
+                                    <p class="mb-2 small">
+                                        <i class="fas fa-home"></i> 
+                                        {{ venue.address }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('player.venue_detail', venue_id=venue.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i> Dettagli
+                                    </a>
+                                    {% if not current_user.is_admin and not manager %}
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#venueManagerRequestModal{{ venue.id }}">
+                                            <i class="fas fa-hand-paper"></i> Diventa Gestore
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-building fa-3x mb-3"></i>
+                <h4>Nessuna sala disponibile</h4>
+                <p>Non ci sono ancora sale biliardo registrate nel sistema.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal per richiesta gestore sala - uno per ogni sala -->
+{% if not current_user.is_admin %}
+    {% for item in venues_with_managers %}
+        {% set venue = item.venue %}
+        {% set manager = item.manager %}
+        {% if not manager %}
+        <div class="modal fade" id="venueManagerRequestModal{{ venue.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-hand-paper"></i> Richiesta Gestione per {{ venue.name }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{{ url_for('player.request_venue_manager') }}">
+                        <input type="hidden" name="venue_id" value="{{ venue.id }}">
+                        <div class="modal-body">
+                            <p>Vuoi diventare gestore di <strong>{{ venue.name }}</strong>?</p>
+                            {% if manager %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Attenzione:</strong> Questa sala ha già un gestore ({{ manager.username }}). 
+                                    La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore.
+                                </div>
+                            {% endif %}
+                            <p>I gestori sala possono:</p>
+                            <ul>
+                                <li>Modificare le informazioni della sala</li>
+                                <li>Aggiornare servizi e dettagli</li>
+                                <li>Caricare foto della sala</li>
+                                <li>Gestire la numerazione dei tavoli</li>
+                            </ul>
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                L'amministratore valuterà la tua richiesta specifica per questa sala.
+                            </p>
+                            
+                            <div class="mb-3">
+                                <label for="notes{{ venue.id }}" class="form-label">Motivazione{% if manager %} (importante per contenzioso){% else %} (opzionale){% endif %}</label>
+                                <textarea class="form-control" name="notes" id="notes{{ venue.id }}" rows="3" 
+                                          placeholder="{% if manager %}Spiega perché dovresti gestire questa sala invece dell'attuale gestore...{% else %}Perché vuoi gestire questa sala? Hai esperienza con sale biliardo?{% endif %}"
+                                          {% if manager %}required{% endif %}></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Invia Richiesta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

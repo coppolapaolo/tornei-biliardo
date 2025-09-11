@@ -93,6 +93,10 @@ def campionato_detail(campionato_id):
         last_completed_gara_number = max(p.number for p in eligible_garas)
         general_classification = campionato_service.calculate_general_classification(campionato_id)
 
+    # Get verified venues for location suggestions
+    from models.location.models import BilliardHall
+    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
+
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
@@ -103,6 +107,7 @@ def campionato_detail(campionato_id):
         campionato_stats=campionato_stats,
         general_classification=general_classification,
         last_completed_gara_number=last_completed_gara_number,
+        verified_venues=verified_venues,
     )
 
 

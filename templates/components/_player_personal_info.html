@@ -29,7 +29,7 @@
         {% if current_user.role == 'player' and not current_user.director_request %}
         <form action="{{ url_for('player.request_director') }}" method="POST" style="display: inline;">
             <button type="submit" class="btn btn-sm btn-outline-success">
-                <i class="fas fa-user-tie"></i> Richiedi ruolo Director
+                <i class="fas fa-user-tie"></i> Richiedi ruolo di Direttore di Gara
             </button>
         </form>
         {% endif %}

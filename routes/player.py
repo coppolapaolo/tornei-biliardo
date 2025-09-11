@@ -27,7 +27,8 @@ from models.classification.models import Classification
 from models.user.models import DirectorRequest
 from models.notification.services import NotificationService
 from models.notification.models import NotificationType, NotificationPriority
-from models.user.services import UserDeletionService, UserService
+from models.user.services import UserDeletionService, UserService, VenueManagerRequestService, VenueManagementService
+from models.user.models import VenueManagerRequest
 from utils import (
     player_only,
     player_required,
@@ -35,8 +36,56 @@ from utils import (
     rack_player_required,
 )
 from models.match.services import MatchService, RackService
+from models.location.models import BilliardHall
+from models.location.services import LocationService
 
 player_bp = Blueprint("player", __name__)
+
+
+def _handle_venue_creation_player(location: str) -> str:
+    """
+    Handle venue creation/validation for match proposals.
+    If location doesn't match verified venues, create as non-verified.
+    Returns the location string to use.
+    """
+    if not location or not location.strip():
+        return location
+    
+    location = location.strip()
+    
+    # Check if location matches existing verified venue
+    existing_venue = BilliardHall.query.filter_by(
+        name=location, 
+        is_active=True, 
+        verified=True
+    ).first()
+    
+    if existing_venue:
+        return location
+    
+    # Check if location matches existing non-verified venue
+    existing_unverified = BilliardHall.query.filter_by(
+        name=location, 
+        is_active=True
+    ).first()
+    
+    if existing_unverified:
+        return location
+    
+    # Create new non-verified venue
+    try:
+        new_venue = LocationService.create_billiard_hall(
+            name=location,
+            added_by_id=current_user.id,
+            # Set as non-verified (verified=False is default)
+            # Note: number_of_tables is None, so it cannot be verified yet
+        )
+        flash(f"Nuovo luogo '{location}' aggiunto. Per la verifica serve anche il numero di tavoli.", "info")
+    except Exception as e:
+        # If creation fails, continue with original location
+        flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
+    
+    return location
 
 
 # Individual Match Proposal Routes
@@ -66,6 +115,9 @@ def create_match_proposal():
             if not location:
                 flash("Location is required", "error")
                 raise ValueError("Location is required")
+            
+            # Handle venue auto-creation
+            location = _handle_venue_creation_player(location)
             scheduled_str = request.form.get("scheduled_at")
             if not scheduled_str:
                 flash("Scheduled time is required", "error")
@@ -124,15 +176,12 @@ def create_match_proposal():
         User.role != UserRole.ADMIN.value
     ).all()
     
-    # Ottieni i luoghi già utilizzati nelle gare esistenti
-    recent_locations = db.session.query(Gara.location).distinct().filter(
-        Gara.location.isnot(None), 
-        Gara.location != ""
-    ).limit(20).all()
-    locations = [{"name": loc[0]} for loc in recent_locations if loc[0]]
+    # Get verified venues instead of recent locations
+    from models.location.models import BilliardHall
+    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
 
     return render_template(
-        "player/create_match_proposal.html", users=users, locations=locations
+        "player/create_match_proposal.html", users=users, verified_venues=verified_venues
     )
 
 
@@ -597,6 +646,157 @@ def mark_notification_read(notification_id):
         return redirect(notification.action_url)
 
     return redirect(url_for("player.notifications"))
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# VENUE MANAGEMENT ROUTES
+# ────────────────────────────────────────────────────────────────────────────────
+
+@player_bp.route("/venues")
+@login_required
+def venues():
+    """Lista semplificata delle sale biliardo per player e director"""
+    # Get all active venues
+    venues = BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
+    
+    # Get venue managers for each venue
+    venues_with_managers = []
+    for venue in venues:
+        manager = VenueManagementService.get_venue_manager(venue.id)
+        venues_with_managers.append({
+            'venue': venue,
+            'manager': manager,
+            'can_request_management': not current_user.is_admin and not current_user.is_venue_manager
+        })
+    
+    # Check if user has pending venue manager requests
+    from models.user.services import VenueManagerRequestService
+    has_pending_requests = VenueManagerRequestService.has_pending_request_for_venue(current_user.id) if not current_user.is_admin else False
+    
+    return render_template(
+        "player/venues.html", 
+        venues_with_managers=venues_with_managers,
+        has_pending_requests=has_pending_requests
+    )
+
+
+@player_bp.route("/venues/<int:venue_id>")
+@login_required
+def venue_detail(venue_id):
+    """Dettagli di una sala biliardo (vista semplificata)"""
+    venue = db.session.get(BilliardHall, venue_id)
+    if not venue or not venue.is_active:
+        abort(404)
+    
+    # Get venue statistics
+    try:
+        stats = LocationService.get_location_statistics(venue_id)
+    except Exception:
+        stats = {
+            "active_users_count": 0,
+            "total_matches_played": 0,
+            "table_types": [],
+            "amenities": [],
+        }
+    
+    # Get venue manager
+    manager = VenueManagementService.get_venue_manager(venue_id)
+    
+    # Check if current user can manage this venue
+    can_manage = current_user.can_manage_venue(venue_id)
+    
+    # Check if user has pending requests
+    has_pending_requests = False
+    if not current_user.is_admin:
+        has_pending_requests = VenueManagerRequestService.has_pending_request_for_venue(current_user.id)
+    
+    return render_template(
+        "player/venue_detail.html", 
+        venue=venue, 
+        stats=stats,
+        manager=manager,
+        can_manage=can_manage,
+        has_pending_requests=has_pending_requests
+    )
+
+
+@player_bp.route("/request_venue_manager", methods=["POST"])
+@login_required
+def request_venue_manager():
+    """Richiesta per diventare gestore di una sala specifica"""
+    if current_user.is_admin:
+        flash("Gli amministratori non hanno bisogno di richiedere il ruolo di gestore sala.", "info")
+        return redirect(url_for("player.venues"))
+    
+    venue_id = request.form.get("venue_id")
+    notes = request.form.get("notes", "").strip()
+    
+    if not venue_id:
+        flash("Errore: Sala non specificata.", "error")
+        return redirect(url_for("player.venues"))
+    
+    try:
+        from models.user.services import VenueManagerRequestService
+        new_request = VenueManagerRequestService.create_request(current_user.id, int(venue_id), notes)
+        
+        # Send notification about new request
+        from models.notification.services import NotificationService
+        from models.notification.models import NotificationType, NotificationPriority
+        from models import BilliardHall
+        
+        venue = db.session.get(BilliardHall, venue_id)
+        message = f"Nuova richiesta di gestione per la sala '{venue.name}' da {current_user.username}."
+        if new_request.is_contested:
+            message += " ATTENZIONE: Questa sala ha già un gestore (richiesta di contenzioso)."
+        
+        # Notify all admins
+        from models.user.models import User, UserRole
+        admins = User.query.filter_by(role=UserRole.ADMIN.value).all()
+        for admin in admins:
+            NotificationService.create_notification(
+                user_id=admin.id,
+                notification_type=NotificationType.SYSTEM,
+                title=f"Richiesta Gestore Sala: {venue.name}",
+                message=message,
+                priority=NotificationPriority.HIGH if new_request.is_contested else NotificationPriority.NORMAL,
+            )
+        
+        flash_message = f"Richiesta per gestire '{venue.name}' inviata con successo!"
+        if new_request.is_contested:
+            flash_message += " Nota: questa sala ha già un gestore, l'admin valuterà la tua richiesta."
+        flash(flash_message, "success")
+        
+    except ValueError as e:
+        flash(str(e), "error")
+    
+    return redirect(url_for("player.venues"))
+
+
+@player_bp.route("/cancel_venue_manager_request/<int:request_id>", methods=["POST"])
+@login_required
+def cancel_venue_manager_request(request_id):
+    """Annulla una richiesta per diventare gestore di sala"""
+    try:
+        from models.user.services import VenueManagerRequestService
+        VenueManagerRequestService.cancel_request(request_id, current_user)
+        flash("Richiesta annullata con successo.", "success")
+    except Exception as e:
+        flash(f"Errore nell'annullare la richiesta: {str(e)}", "error")
+    
+    return redirect(url_for("player.venues"))
+
+
+@player_bp.route("/my_venue_requests")
+@login_required
+def my_venue_requests():
+    """Visualizza le richieste di gestione venue dell'utente"""
+    if current_user.is_admin:
+        return redirect(url_for("admin.venue.venue_manager_requests"))
+    
+    from models.user.services import VenueManagerRequestService
+    requests = VenueManagerRequestService.get_user_requests(current_user.id)
+    
+    return render_template("player/my_venue_requests.html", requests=requests)
 
 
 @player_bp.route("/notifications/mark_all_read", methods=["POST"])

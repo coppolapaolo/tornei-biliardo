@@ -113,15 +113,15 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('player.venues') }}">
+                                <i class="fas fa-building"></i> Sale Biliardo
+                            </a>
+                        </li>
                         {% if current_user.is_admin %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin.user.users_list') }}">
                                     <i class="fas fa-users"></i> Utenti
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.venue.venues_list') }}">
-                                    <i class="fas fa-building"></i> Sale Biliardo
                                 </a>
                             </li>
                         {% endif %}
@@ -155,6 +155,14 @@
                                         <span class="badge bg-danger rounded-pill ms-2">{{ unread_notifications_count }}</span>
                                     {% endif %}
                                 </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('player.venues') }}">
+                                    <i class="fas fa-building"></i> Sale Biliardo
+                                </a></li>
+                                {% if not current_user.is_admin %}
+                                    <li><a class="dropdown-item" href="{{ url_for('player.my_venue_requests') }}">
+                                        <i class="fas fa-hand-paper"></i> Le mie Richieste Gestore
+                                    </a></li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}">
                                     <i class="fas fa-cog"></i> Dashboard
@@ -172,6 +180,9 @@
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.venue.venues_list') }}">
                                         <i class="fas fa-building"></i> Sale Biliardo
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.venue.venue_manager_requests') }}">
+                                        <i class="fas fa-hand-paper"></i> Richieste Gestore Sala
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('admin.user.director_requests') }}">
                                         <i class="fas fa-user-tie"></i> Richieste Director

@@ -15,9 +15,9 @@ Created: 2025-08-01
 Updated: Task 1.4 - Added comprehensive services
 """
 
-from .models import User, TournamentDirector, DirectorRequest
+from .models import User, TournamentDirector, DirectorRequest, VenueManagerRequest, VenueManagement
 from .permissions import PermissionChecker, RoleRequirement
-from .services import UserService, DirectorRequestService, UserStatsService
+from .services import UserService, DirectorRequestService, UserStatsService, VenueManagerRequestService, VenueManagementService
 
 # Export all public classes and functions
 __all__ = [
@@ -25,6 +25,8 @@ __all__ = [
     "User",
     "TournamentDirector",
     "DirectorRequest",
+    "VenueManagerRequest",
+    "VenueManagement",
     # Permissions
     "PermissionChecker",
     "RoleRequirement",
@@ -32,6 +34,8 @@ __all__ = [
     "UserService",
     "DirectorRequestService",
     "UserStatsService",
+    "VenueManagerRequestService",
+    "VenueManagementService",
 ]
 
 # Domain version and metadata
@@ -51,6 +55,8 @@ def get_user_models():
         "User": User,
         "TournamentDirector": TournamentDirector,
         "DirectorRequest": DirectorRequest,
+        "VenueManagerRequest": VenueManagerRequest,
+        "VenueManagement": VenueManagement,
     }
 
 
@@ -65,6 +71,8 @@ def get_user_services():
         "UserService": UserService,
         "DirectorRequestService": DirectorRequestService,
         "UserStatsService": UserStatsService,
+        "VenueManagerRequestService": VenueManagerRequestService,
+        "VenueManagementService": VenueManagementService,
     }
 
 

@@ -32,7 +32,6 @@
                             <th>Tavoli</th>
                             <th>Utenti Attivi</th>
                             <th>Partite</th>
-                            <th>Recensioni</th>
                             <th>Stato</th>
                             <th>Azioni</th>
                         </tr>
@@ -44,11 +43,6 @@
                             <tr>
                                 <td>
                                     <strong>{{ venue.name }}</strong>
-                                    {% if venue.verified %}
-                                        <span class="badge bg-success ms-1">
-                                            <i class="fas fa-check-circle"></i> Verificata
-                                        </span>
-                                    {% endif %}
                                 </td>
                                 <td>{{ venue.address or '-' }}</td>
                                 <td>{{ venue.city or '-' }}</td>
@@ -66,18 +60,24 @@
                                     <span class="badge bg-secondary">{{ stats.total_matches_played }}</span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-warning text-dark">{{ stats.reviews_count }}</span>
-                                    {% if stats.average_rating > 0 %}
-                                        <small class="text-muted">
-                                            (★ {{ stats.average_rating }})
-                                        </small>
-                                    {% endif %}
-                                </td>
-                                <td>
                                     {% if venue.is_active %}
                                         <span class="badge bg-success">Attiva</span>
                                     {% else %}
                                         <span class="badge bg-danger">Disattivata</span>
+                                    {% endif %}
+                                    <br>
+                                    {% if venue.verified %}
+                                        <span class="badge bg-success mt-1">
+                                            <i class="fas fa-check-circle"></i> Verificata
+                                        </span>
+                                    {% elif venue.can_be_verified() %}
+                                        <span class="badge bg-warning text-dark mt-1">
+                                            <i class="fas fa-clock"></i> Pronta per verifica
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary mt-1">
+                                            <i class="fas fa-info-circle"></i> Dati incompleti
+                                        </span>
                                     {% endif %}
                                 </td>
                                 <td>

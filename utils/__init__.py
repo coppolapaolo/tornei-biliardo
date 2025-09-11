@@ -90,7 +90,7 @@ def gara_manager_required(fn):
 
 
 def match_manager_required(f):
-    """Permette l’inserimento dei risultati match solo a chi gestisce il match."""
+    """Permette l'inserimento dei risultati match solo a chi gestisce il match."""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -99,6 +99,24 @@ def match_manager_required(f):
             abort(400)  # Bad request if match_id is missing
         if not PermissionChecker.can_insert_match_results(current_user, match_id):
             abort(403)
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def venue_manager_required(f):
+    """Permette l'accesso solo a chi gestisce la venue specificata."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        venue_id = kwargs.get("venue_id")
+        if venue_id is None:
+            abort(400)  # Bad request if venue_id is missing
+        
+        # Check if user can manage this venue
+        if not current_user.can_manage_venue(venue_id):
+            abort(403)
+        
         return f(*args, **kwargs)
 
     return decorated_function

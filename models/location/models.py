@@ -193,6 +193,15 @@ class BilliardHall(BaseModel, TimestampMixin):
 
         return ", ".join(parts)
 
+    def can_be_verified(self) -> bool:
+        """Check if hall meets minimum requirements for verification."""
+        # Minimum requirements: name (always present) and number of tables
+        return self.number_of_tables is not None and self.number_of_tables > 0
+
+    def is_complete_for_verification(self) -> bool:
+        """Check if hall has all required data for verification."""
+        return self.can_be_verified()
+
     def __repr__(self) -> str:
         return f"<BilliardHall {self.name}>"
 
@@ -331,60 +340,3 @@ class UserLocationAvailability(BaseModel, TimestampMixin):
         return f"<UserLocationAvailability {self.user_id} @ {self.billiard_hall.name}>"
 
 
-class LocationReview(BaseModel, TimestampMixin):
-    """User reviews for billiard halls."""
-
-    __tablename__ = "location_review"
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(
-        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
-    )
-    billiard_hall_id = db.Column(
-        db.Integer,
-        db.ForeignKey("billiard_hall.id", ondelete="CASCADE"),
-        nullable=False,
-    )
-
-    # Review details
-    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
-    title = db.Column(db.String(255), nullable=True)
-    comment = db.Column(db.Text, nullable=True)
-
-    # Review aspects
-    table_quality = db.Column(db.Integer, nullable=True)  # 1-5
-    atmosphere = db.Column(db.Integer, nullable=True)  # 1-5
-    service = db.Column(db.Integer, nullable=True)  # 1-5
-    value_for_money = db.Column(db.Integer, nullable=True)  # 1-5
-
-    # Moderation
-    is_approved = db.Column(db.Boolean, nullable=False, default=True)
-    is_hidden = db.Column(db.Boolean, nullable=False, default=False)
-
-    # Relationships
-    user = db.relationship("User", foreign_keys=[user_id])
-    billiard_hall = db.relationship("BilliardHall")
-
-    # Unique constraint: one review per user per location
-    __table_args__ = (
-        db.UniqueConstraint(
-            "user_id", "billiard_hall_id", name="uq_user_location_review"
-        ),
-    )
-
-    def get_overall_rating(self) -> float:
-        """Calculate overall rating from individual aspects."""
-        aspects = [
-            self.table_quality,
-            self.atmosphere,
-            self.service,
-            self.value_for_money,
-        ]
-        valid_aspects = [rating for rating in aspects if rating is not None]
-
-        if valid_aspects:
-            return sum(valid_aspects) / len(valid_aspects)
-        return self.rating
-
-    def __repr__(self) -> str:
-        return f"<LocationReview {self.user_id} -> {self.billiard_hall.name}: {self.rating}★>"

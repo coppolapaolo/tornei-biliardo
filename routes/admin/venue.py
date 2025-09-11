@@ -9,7 +9,9 @@ from PIL import Image, ImageOps
 
 from models import BilliardHall
 from models.location.services import LocationService
-from utils import admin_required
+from models.user.services import VenueManagerRequestService, VenueManagementService
+from models.user.models import VenueManagerRequest, User
+from utils import admin_required, venue_manager_required
 from models.base import db
 
 # Venue management blueprint
@@ -38,8 +40,6 @@ def venues_list():
                     "stats": {
                         "active_users_count": 0,
                         "total_matches_played": 0,
-                        "reviews_count": 0,
-                        "average_rating": 0,
                     },
                 }
             )
@@ -50,7 +50,7 @@ def venues_list():
 
 
 @venue_bp.route("/venue/<int:venue_id>")
-@admin_required
+@venue_manager_required
 def venue_detail(venue_id):
     """Scheda dettagliata sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -62,20 +62,39 @@ def venue_detail(venue_id):
     # Get venue statistics
     try:
         stats = LocationService.get_location_statistics(venue_id)
-        reviews = LocationService.get_location_reviews(venue_id)
     except Exception:
         stats = {
             "active_users_count": 0,
             "total_matches_played": 0,
-            "reviews_count": 0,
-            "average_rating": 0,
             "table_types": [],
             "amenities": [],
         }
-        reviews = []
+
+    # Get venue manager
+    manager = VenueManagementService.get_venue_manager(venue_id)
+    
+    # Get approved venue manager requests (users eligible to be assigned)
+    approved_requests = VenueManagerRequestService.get_requests_by_status("approved")
+    eligible_users = [req.user for req in approved_requests]
+    
+    # Also include current admins and directors who can manage venues
+    all_users = User.query.filter(User.role.in_(["admin", "director"])).all()
+    eligible_users.extend(all_users)
+    
+    # Remove duplicates and current manager
+    unique_users = {}
+    for user in eligible_users:
+        if user.id not in unique_users and (not manager or user.id != manager.id):
+            unique_users[user.id] = user
+    
+    eligible_users = list(unique_users.values())
 
     return render_template(
-        "admin/venue_detail.html", venue=venue, stats=stats, reviews=reviews
+        "admin/venue_detail.html", 
+        venue=venue, 
+        stats=stats,
+        manager=manager,
+        eligible_users=eligible_users
     )
 
 
@@ -134,7 +153,7 @@ def create_venue():
 
 
 @venue_bp.route("/venue/<int:venue_id>/edit", methods=["GET", "POST"])
-@admin_required
+@venue_manager_required
 def edit_venue(venue_id):
     """Modifica sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -207,7 +226,7 @@ def delete_venue(venue_id):
 
 
 @venue_bp.route("/venue/<int:venue_id>/verify", methods=["POST"])
-@admin_required
+@venue_manager_required
 def verify_venue(venue_id):
     """Verifica sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -228,7 +247,7 @@ def verify_venue(venue_id):
 
 
 @venue_bp.route("/venue/<int:venue_id>/table_numbers", methods=["POST"])
-@admin_required
+@venue_manager_required
 def update_table_numbers(venue_id):
     """Aggiorna numerazione tavoli"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -264,7 +283,7 @@ def update_table_numbers(venue_id):
 
 
 @venue_bp.route("/venue/<int:venue_id>/photo", methods=["POST"])
-@admin_required
+@venue_manager_required
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -385,3 +404,71 @@ def _allowed_file(filename):
     """Check if file extension is allowed"""
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# VENUE MANAGER REQUESTS MANAGEMENT
+# ────────────────────────────────────────────────────────────────────────────────
+
+@venue_bp.route("/manager-requests")
+@admin_required
+def venue_manager_requests():
+    """Lista delle richieste per diventare gestori di sale"""
+    requests = VenueManagerRequestService.get_all_requests()
+    return render_template("admin/venue_manager_requests.html", requests=requests)
+
+
+@venue_bp.route("/manager-requests/<int:request_id>/process", methods=["POST"])
+@admin_required
+def process_venue_manager_request(request_id):
+    """Processa (approva/rifiuta) una richiesta di gestore sala"""
+    action = request.form.get("action")  # approve or reject
+    admin_notes = request.form.get("admin_notes", "").strip()
+    
+    try:
+        from flask_login import current_user
+        if action == "approve":
+            VenueManagerRequestService.process_request(request_id, current_user, True, admin_notes)
+            flash("Richiesta approvata con successo!", "success")
+        elif action == "reject":
+            VenueManagerRequestService.process_request(request_id, current_user, False, admin_notes)
+            flash("Richiesta rifiutata.", "info")
+        else:
+            flash("Azione non valida.", "error")
+    except Exception as e:
+        flash(f"Errore nel processare la richiesta: {str(e)}", "error")
+    
+    return redirect(url_for("admin.venue.venue_manager_requests"))
+
+
+@venue_bp.route("/<int:venue_id>/assign-manager", methods=["POST"])
+@admin_required
+def assign_venue_manager(venue_id):
+    """Assegna un gestore a una sala"""
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("Seleziona un utente da assegnare come gestore.", "error")
+        return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
+    
+    try:
+        from flask_login import current_user
+        VenueManagementService.assign_venue_manager(int(user_id), venue_id, current_user)
+        flash("Gestore assegnato con successo!", "success")
+    except Exception as e:
+        flash(f"Errore nell'assegnare il gestore: {str(e)}", "error")
+    
+    return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
+
+
+@venue_bp.route("/assignments/<int:assignment_id>/revoke", methods=["POST"])
+@admin_required
+def revoke_venue_manager(assignment_id):
+    """Revoca l'assegnazione di un gestore sala"""
+    try:
+        from flask_login import current_user
+        assignment = VenueManagementService.revoke_venue_manager(assignment_id, current_user)
+        flash("Gestione sala revocata con successo!", "success")
+        return redirect(url_for("admin.venue.venue_detail", venue_id=assignment.venue_id))
+    except Exception as e:
+        flash(f"Errore nel revocare la gestione: {str(e)}", "error")
+        return redirect(url_for("admin.venue.venues_list"))

@@ -28,7 +28,7 @@ from .base import (
 )
 
 # PHASE 1 COMPLETE: User domain imported from modular structure
-from .user.models import User, TournamentDirector, DirectorRequest
+from .user.models import User, TournamentDirector, DirectorRequest, VenueManagerRequest, VenueManagement
 
 # PHASE 2 SPRINT 1 COMPLETE: All domains separated
 from .campionato.models import Campionato
@@ -79,7 +79,6 @@ from .notification.models import (
 from .location.models import (
     BilliardHall,
     UserLocationAvailability,
-    LocationReview,
     DayOfWeek,
 )
 from .tiebreaker.models import (
@@ -109,6 +108,8 @@ __all__ = [
     "User",
     "TournamentDirector",
     "DirectorRequest",
+    "VenueManagerRequest",
+    "VenueManagement",
     # Campionato domain models (Phase 2 Sprint 1)
     "Campionato",
     # Competition domain models (Phase 2 Sprint 1)
@@ -171,7 +172,6 @@ __all__ = [
     # Location domain models (Phase 3)
     "BilliardHall",
     "UserLocationAvailability",
-    "LocationReview",
     "DayOfWeek",
     # Tiebreaker domain models (Phase 4)
     "Tiebreaker",

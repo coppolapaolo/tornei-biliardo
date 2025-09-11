@@ -35,9 +35,57 @@ from utils import (
 from models.competition.services import GaraService, ProvaStateMachine
 from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
 from models.classification.models import RoundClassification
+from models.location.models import BilliardHall
+from models.location.services import LocationService
 
 # Competition management blueprint
 competition_bp = Blueprint("competition", __name__)
+
+
+def _handle_venue_creation(location: str) -> str:
+    """
+    Handle venue creation/validation for competitions.
+    If location doesn't match verified venues, create as non-verified.
+    Returns the location string to use.
+    """
+    if not location or not location.strip():
+        return location
+    
+    location = location.strip()
+    
+    # Check if location matches existing verified venue
+    existing_venue = BilliardHall.query.filter_by(
+        name=location, 
+        is_active=True, 
+        verified=True
+    ).first()
+    
+    if existing_venue:
+        return location
+    
+    # Check if location matches existing non-verified venue
+    existing_unverified = BilliardHall.query.filter_by(
+        name=location, 
+        is_active=True
+    ).first()
+    
+    if existing_unverified:
+        return location
+    
+    # Create new non-verified venue
+    try:
+        new_venue = LocationService.create_billiard_hall(
+            name=location,
+            added_by_id=current_user.id,
+            # Set as non-verified (verified=False is default)
+            # Note: number_of_tables is None, so it cannot be verified yet
+        )
+        flash(f"Nuovo luogo '{location}' aggiunto. Per la verifica serve anche il numero di tavoli.", "info")
+    except Exception as e:
+        # If creation fails, continue with original location
+        flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
+    
+    return location
 
 
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
@@ -61,6 +109,8 @@ def create_gara_standalone():
             
             # Campi opzionali
             location = request.form.get("location", "").strip()
+            # Handle venue auto-creation
+            location = _handle_venue_creation(location)
             description = request.form.get("description", "").strip()
             rounds_count = int(request.form.get("rounds_count", 3))
             min_participants = int(request.form.get("min_participants", 2))
@@ -140,12 +190,9 @@ def create_gara_standalone():
             return redirect(url_for("admin.competition.create_gara_standalone"))
 
     # GET request - show form
-    # Recupera luoghi utilizzati in precedenza
-    recent_locations = db.session.query(Gara.location).distinct().filter(
-        Gara.location.isnot(None), 
-        Gara.location != ""
-    ).limit(10).all()
-    recent_locations = [loc[0] for loc in recent_locations if loc[0]]
+    # Get verified venues instead of recent locations
+    from models.location.models import BilliardHall
+    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
     
     # Ottieni le strategie disponibili
     available_strategies = GaraService.get_available_strategies()
@@ -153,7 +200,7 @@ def create_gara_standalone():
     return render_template(
         "admin/gara_create_standalone.html",
         WithdrawPolicy=WithdrawPolicy,
-        recent_locations=recent_locations,
+        verified_venues=verified_venues,
         available_strategies=available_strategies
     )
 
@@ -239,7 +286,9 @@ def create_gara():
     date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
 
     # Nuovi campi
-    location = request.form.get("location", "")
+    location = request.form.get("location", "").strip()
+    # Handle venue auto-creation
+    location = _handle_venue_creation(location)
     description = request.form.get("description", "")
     rounds_count = int(request.form.get("rounds_count", 3))
     min_participants = int(request.form.get("min_participants", 2))
@@ -300,11 +349,15 @@ def edit_gara(gara_id):
             exact_number = "exact_number" in request.form
             best_of = not exact_number
 
+            # Handle venue auto-creation for location
+            location = request.form.get("location", "").strip()
+            location = _handle_venue_creation(location)
+            
             GaraService.update_gara(
                 gara_id=gara_id,
                 name=request.form.get("name", gara.name),
                 date_str=request.form["date"],
-                location=request.form.get("location", ""),
+                location=location,
                 description=request.form.get("description", ""),
                 rounds_count=int(request.form.get("rounds_count", 3)),
                 min_participants=int(request.form.get("min_participants", 2)),
@@ -326,18 +379,16 @@ def edit_gara(gara_id):
     # Get available strategies for the form
     available_strategies = GaraService.get_available_strategies()
     
-    # Get recent locations for datalist
-    recent_locations = db.session.query(Gara.location).distinct().filter(
-        Gara.location.isnot(None), Gara.location != ""
-    ).limit(10).all()
-    recent_locations = [loc[0] for loc in recent_locations if loc[0]]
+    # Get verified venues instead of recent locations
+    from models.location.models import BilliardHall
+    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
     
     return render_template(
         "admin/gara_edit.html", 
         gara=gara, 
         WithdrawPolicy=WithdrawPolicy,
         available_strategies=available_strategies,
-        recent_locations=recent_locations
+        verified_venues=verified_venues
     )
 
 

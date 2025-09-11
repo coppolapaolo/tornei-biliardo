@@ -39,12 +39,21 @@
                                 <div class="mb-3">
                                     <label for="location" class="form-label">Luogo</label>
                                     <input type="text" class="form-control" id="location" name="location" 
-                                           placeholder="es. Circolo Biliardo Milano" list="locations">
-                                    <datalist id="locations">
-                                        {% for location in recent_locations %}
-                                            <option value="{{ location }}">
-                                        {% endfor %}
+                                           placeholder="es. Circolo Biliardo Milano" 
+                                           list="venue-suggestions"
+                                           autocomplete="off">
+                                    <datalist id="venue-suggestions">
+                                        <!-- Venue verificate -->
+                                        {% if verified_venues %}
+                                            {% for venue in verified_venues %}
+                                            <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or 'Città non specificata' }}</option>
+                                            {% endfor %}
+                                        {% endif %}
                                     </datalist>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Seleziona da sale verificate o inserisci nuovo nome
+                                    </small>
                                 </div>
                             </div>
                         </div>
