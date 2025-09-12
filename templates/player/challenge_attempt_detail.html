@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Tentativo Challenge - {{ attempt.challenge.get_display_name() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('challenge.challenge_catalog') }}">Challenge</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Tentativo Challenge</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>
+                        <i class="fas fa-{{ 'flag-checkered' if attempt.completed else 'play' }} text-{{ 'success' if attempt.completed else 'primary' }}"></i> 
+                        {{ 'Tentativo Completato' if attempt.completed else 'Tentativo in Corso' }}
+                    </h2>
+                    <p class="text-muted mb-0">Challenge: {{ attempt.challenge.get_display_name() }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna al Catalogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attempt Details -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Challenge Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Dettagli Challenge
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>{{ attempt.challenge.get_display_name() }}</h6>
+                            <p class="text-muted">{{ attempt.challenge.description }}</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            {% if attempt.challenge.pass_fail_only %}
+                                <span class="badge bg-info fs-6">Pass/Fail</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">{{ attempt.challenge.min_score }}-{{ attempt.challenge.max_score }} punti</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attempt Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Stato del Tentativo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar fa-2x text-primary mb-2"></i>
+                                <h6>Iniziato</h6>
+                                <small class="text-muted">{{ attempt.attempted_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-{{ 'check-circle' if attempt.completed else 'clock' }} fa-2x text-{{ 'success' if attempt.completed else 'warning' }} mb-2"></i>
+                                <h6>Stato</h6>
+                                <span class="badge bg-{{ 'success' if attempt.completed else 'warning' }}">
+                                    {{ 'Completato' if attempt.completed else 'In Corso' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if attempt.completed %}
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                                <h6>Risultato</h6>
+                                {% if attempt.challenge.pass_fail_only %}
+                                    <span class="badge bg-{{ 'success' if attempt.passed else 'danger' }}">
+                                        {{ 'Passato' if attempt.passed else 'Fallito' }}
+                                    </span>
+                                {% else %}
+                                    <strong>{{ attempt.score or 'N/A' }}/{{ attempt.challenge.max_score }}</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                                <h6>Completato</h6>
+                                <small class="text-muted">{{ attempt.attempted_at.strftime('%d/%m/%Y %H:%M') if attempt.attempted_at else 'N/A' }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if attempt.notes %}
+                    <hr>
+                    <div class="mt-3">
+                        <h6><i class="fas fa-sticky-note"></i> Note:</h6>
+                        <p class="text-muted">{{ attempt.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Complete Attempt Form (if not completed) -->
+            {% if not attempt.completed %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-flag-checkered"></i> Completa Tentativo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="completeAttemptForm" method="POST" action="{{ url_for('challenge.complete_attempt', attempt_id=attempt.id) }}">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Hai completato la challenge? Inserisci il tuo risultato qui sotto.
+                        </div>
+
+                        {% if attempt.challenge.pass_fail_only %}
+                            <!-- Pass/Fail Selection -->
+                            <div class="mb-3">
+                                <label class="form-label">Risultato <span class="text-danger">*</span></label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="passed" id="passed_true" value="true" required>
+                                            <label class="form-check-label" for="passed_true">
+                                                <i class="fas fa-check-circle text-success"></i> <strong>Passato</strong>
+                                                <br><small class="text-muted">Hai superato la challenge</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="passed" id="passed_false" value="false" required>
+                                            <label class="form-check-label" for="passed_false">
+                                                <i class="fas fa-times-circle text-danger"></i> <strong>Fallito</strong>
+                                                <br><small class="text-muted">Non sei riuscito a superare la challenge</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Score Input -->
+                            <div class="mb-3">
+                                <label for="score" class="form-label">
+                                    Punteggio <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="score" 
+                                           name="score"
+                                           min="{{ attempt.challenge.min_score }}"
+                                           max="{{ attempt.challenge.max_score }}"
+                                           placeholder="Inserisci il tuo punteggio..."
+                                           required>
+                                    <span class="input-group-text">/ {{ attempt.challenge.max_score }}</span>
+                                </div>
+                                <div class="form-text">Range valido: {{ attempt.challenge.min_score }} - {{ attempt.challenge.max_score }} punti</div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Note (opzionale)</label>
+                            <textarea class="form-control" 
+                                      id="notes" 
+                                      name="notes"
+                                      rows="3"
+                                      placeholder="Aggiungi note o commenti sul tuo tentativo..."
+                                      maxlength="500"></textarea>
+                            <div class="form-text">Descrivi come è andata o aggiungi osservazioni</div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-flag-checkered"></i> Completa Tentativo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <!-- Performance Analysis (if completed) -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Analisi Prestazione
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if attempt.challenge.pass_fail_only %}
+                        {% if attempt.passed %}
+                            <div class="text-success">
+                                <i class="fas fa-trophy fa-3x mb-3"></i>
+                                <h4>Complimenti!</h4>
+                                <p>Hai superato questa challenge con successo.</p>
+                            </div>
+                        {% else %}
+                            <div class="text-warning">
+                                <i class="fas fa-redo fa-3x mb-3"></i>
+                                <h4>Riprova!</h4>
+                                <p>Non sei riuscito a superare la challenge questa volta, ma puoi riprovare!</p>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% set percentage = (attempt.score / attempt.challenge.max_score * 100) if attempt.score else 0 %}
+                        <div class="text-{{ 'success' if percentage >= 70 else 'warning' if percentage >= 50 else 'danger' }}">
+                            {% if percentage >= 90 %}
+                                <i class="fas fa-star fa-3x mb-3"></i>
+                                <h4>Eccellente!</h4>
+                                <p>Prestazione straordinaria: {{ percentage|round(1) }}%</p>
+                            {% elif percentage >= 70 %}
+                                <i class="fas fa-thumbs-up fa-3x mb-3"></i>
+                                <h4>Buona Prestazione!</h4>
+                                <p>Risultato soddisfacente: {{ percentage|round(1) }}%</p>
+                            {% elif percentage >= 50 %}
+                                <i class="fas fa-redo fa-3x mb-3"></i>
+                                <h4>Puoi Migliorare</h4>
+                                <p>Risultato: {{ percentage|round(1) }}% - Riprova per migliorare!</p>
+                            {% else %}
+                                <i class="fas fa-redo fa-3x mb-3"></i>
+                                <h4>Riprova!</h4>
+                                <p>Risultato: {{ percentage|round(1) }}% - Non scoraggiarti, riprova!</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('challenge.start_attempt', challenge_id=attempt.challenge.id) }}" class="btn btn-primary">
+                            <i class="fas fa-redo"></i> Riprova Challenge
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('completeAttemptForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.text();
+            })
+            .then(html => {
+                if (typeof html === 'string') {
+                    // Replace page content if there were errors
+                    document.open();
+                    document.write(html);
+                    document.close();
+                }
+            })
+            .catch(error => {
+                console.error('Error completing attempt:', error);
+                alert('Errore nel completare il tentativo. Riprova.');
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

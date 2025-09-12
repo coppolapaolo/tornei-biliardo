@@ -1,5 +1,5 @@
 {# templates/components/_gara_management.html #}
-<div class="col-md-4">
+<div>
     <!-- Gestione Stato Gara -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -8,6 +8,18 @@
         </div>
         <div class="card-body">
             {% if gara.status == 'setup' %}
+                {% if gara.matchmaking_strategy == 'random' %}
+                    {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
+                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
+                        <i class="fas fa-trophy"></i> 
+                        {% if has_challenges %}
+                            Gestisci Challenge
+                        {% else %}
+                            Aggiungi Challenge
+                        {% endif %}
+                    </button>
+                {% endif %}
+                
                 <button class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
                     <i class="fas fa-door-open"></i> Apri Iscrizioni
                 </button>
@@ -22,6 +34,12 @@
                         Avvia Primo Turno
                     {% endif %}
                 </button>
+                
+                {% if gara.matchmaking_strategy == 'random' %}
+                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
+                        <i class="fas fa-trophy"></i> Gestisci Challenge
+                    </button>
+                {% endif %}
                 
                 {% if gara.can_modify_inscription_dates() %}
                     <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
@@ -104,6 +122,13 @@
                     <div class="alert alert-info p-2">
                         <small><strong>Turno {{ gara.current_round }}/{{ gara.rounds_count }} in corso</strong></small>
                     </div>
+                {% endif %}
+                
+                {% if gara.matchmaking_strategy == 'random' %}
+                    <a href="{{ url_for('admin.competition.get_gara_challenge_classification', gara_id=gara.id) }}" 
+                       class="btn btn-info w-100 mb-2">
+                        <i class="fas fa-chart-line"></i> Classifica Challenge
+                    </a>
                 {% endif %}
                 
                 <!-- Pulsante per cancellare l'avvio del primo turno -->

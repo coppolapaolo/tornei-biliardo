@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Challenge - {{ challenge.get_display_name() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-trophy text-warning"></i> {{ challenge.get_display_name() }}</h2>
+                    <p class="text-muted mb-0">Dettaglio Challenge</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna al Catalogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Detail Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {% include "challenge/_challenge_detail.html" %}
+            
+            <!-- Action Buttons -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <!-- Try Challenge (Players/Directors only, not Admin) -->
+                    {% if not current_user.is_admin %}
+                        <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" 
+                           class="btn btn-success btn-lg me-3">
+                            <i class="fas fa-play"></i> Prova Questa Challenge
+                        </a>
+                    {% endif %}
+                    
+                    <!-- Edit/Delete (for creators and admins) -->
+                    {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
+                        <a href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}" 
+                           class="btn btn-primary me-2">
+                            <i class="fas fa-edit"></i> Modifica
+                        </a>
+                        
+                        <button class="btn btn-danger" onclick="deleteChallenge({{ challenge.id }})">
+                            <i class="fas fa-trash"></i> Elimina
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteChallenge(challengeId) {
+    if (confirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.')) {
+        fetch(`/challenge/${challengeId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '{{ url_for("challenge.challenge_catalog") }}';
+            } else {
+                alert('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting challenge:', error);
+            alert('Errore di rete nell\'eliminazione della challenge');
+        });
+    }
+}
+</script>
+{% endblock %}

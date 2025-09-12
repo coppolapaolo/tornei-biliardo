@@ -500,6 +500,60 @@ def profile():
         if insc.gara.status == 'completed'
     ])
 
+    # Challenge statistics
+    challenge_stats = None
+    challenge_history = []
+    try:
+        from models.challenge import GaraChallengeAttempt, GaraChallenge, Challenge
+        
+        # Get all challenge attempts by this user
+        user_attempts = (
+            GaraChallengeAttempt.query
+            .filter_by(user_id=current_user.id, completed=True)
+            .join(GaraChallenge)
+            .join(Challenge)
+            .order_by(GaraChallengeAttempt.attempted_at.desc())  # type: ignore[attr-defined]
+            .all()
+        )
+        
+        if user_attempts:
+            # Calculate overall challenge statistics
+            total_attempts = len(user_attempts)
+            unique_challenges = len(set(attempt.gara_challenge.challenge_id for attempt in user_attempts))
+            unique_garas = len(set(attempt.gara_challenge.gara_id for attempt in user_attempts))
+            
+            # Calculate average score (only for numeric challenges)
+            numeric_attempts = [attempt for attempt in user_attempts if attempt.score is not None and not attempt.gara_challenge.challenge.pass_fail_only]
+            avg_score = sum(attempt.score for attempt in numeric_attempts) / len(numeric_attempts) if numeric_attempts else 0
+            
+            # Calculate pass rate (for pass/fail challenges)
+            pass_fail_attempts = [attempt for attempt in user_attempts if attempt.gara_challenge.challenge.pass_fail_only]
+            pass_rate = (sum(1 for attempt in pass_fail_attempts if attempt.passed) / len(pass_fail_attempts) * 100) if pass_fail_attempts else 0
+            
+            challenge_stats = {
+                "total_attempts": total_attempts,
+                "unique_challenges": unique_challenges,
+                "unique_garas": unique_garas,
+                "avg_score": round(avg_score, 1),
+                "pass_rate": round(pass_rate, 1),
+            }
+            
+            # Build challenge history (last 20 attempts)
+            for attempt in user_attempts[:20]:
+                challenge_history.append({
+                    "challenge_name": attempt.gara_challenge.challenge.name,
+                    "gara_name": attempt.gara_challenge.gara.name,
+                    "score": attempt.score,
+                    "passed": attempt.passed,
+                    "attempted_at": attempt.attempted_at,
+                    "is_pass_fail": attempt.gara_challenge.challenge.pass_fail_only,
+                    "max_score": attempt.gara_challenge.challenge.max_score,
+                })
+    
+    except Exception as e:
+        # If challenge module is not available or there's an error, just skip
+        pass
+
     stats = {
         "total_inscriptions": len(inscriptions),
         "total_matches": total_matches,
@@ -517,6 +571,8 @@ def profile():
         matches=recent_matches,
         classifications=classifications,
         stats=stats,
+        challenge_stats=challenge_stats,
+        challenge_history=challenge_history,
     )
 
 

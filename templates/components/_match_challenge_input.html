@@ -1,0 +1,345 @@
+{# templates/components/_match_challenge_input.html #}
+<!-- Challenge Input Component (solo per gare Random con challenge attive) -->
+{% if available_challenges and (current_user.is_admin or current_user.is_director) %}
+<div class="card bg-info bg-opacity-10 border-info mb-3">
+    <div class="card-header bg-info bg-opacity-25">
+        <h6><i class="fas fa-trophy text-warning"></i> Challenge Attive</h6>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info alert-sm mb-3">
+            <i class="fas fa-info-circle"></i> 
+            Registra i tentativi delle challenge per entrambi i giocatori.
+        </div>
+
+        {% for gara_challenge in available_challenges %}
+        <div class="challenge-section mb-4 border rounded p-3 bg-light">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h6 class="text-primary">
+                        <i class="fas fa-bullseye"></i> {{ gara_challenge.challenge.name }}
+                        <small class="text-muted">(dopo turno {{ gara_challenge.round_number }})</small>
+                    </h6>
+                    <p class="mb-2 small text-muted">{{ gara_challenge.challenge.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            {% if gara_challenge.challenge.pass_fail_only %}
+                                <span class="badge bg-secondary">Pass/Fail</span>
+                            {% else %}
+                                <span class="badge bg-primary">{{ gara_challenge.challenge.min_score }}-{{ gara_challenge.challenge.max_score }}</span>
+                            {% endif %}
+                            <span class="badge bg-info">Max {{ gara_challenge.max_attempts }} tentativi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form class="challenge-attempt-form" data-gara-challenge-id="{{ gara_challenge.id }}">
+                <div class="row">
+                    <!-- Player 1 Input -->
+                    {% if match.player1 %}
+                    <div class="col-md-6">
+                        <div class="player-challenge-section border rounded p-2">
+                            <h6 class="text-primary mb-2">
+                                <i class="fas fa-user"></i> {{ match.player1.username }}
+                                {% set p1_progress = player_challenge_progress.get(match.player1.id, {}) %}
+                                {% if p1_progress %}
+                                    {% set challenge_data = p1_progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first %}
+                                    {% if challenge_data %}
+                                        <small class="text-muted">
+                                            ({{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }} - 
+                                            migliore: {{ challenge_data.best_score }})
+                                        </small>
+                                    {% endif %}
+                                {% endif %}
+                            </h6>
+                            
+                            {% set p1_challenge_data = None %}
+                            {% if p1_progress %}
+                                {% set p1_challenge_data = p1_progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first %}
+                            {% endif %}
+                            
+                            {% if p1_challenge_data and not p1_challenge_data.can_attempt %}
+                                <div class="alert alert-warning alert-sm">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    Tentativi esauriti ({{ p1_challenge_data.attempts_count }}/{{ p1_challenge_data.max_attempts }})
+                                </div>
+                            {% else %}
+                                <div class="attempt-inputs" data-player-id="{{ match.player1.id }}">
+                                    {% for attempt_num in range(1, gara_challenge.max_attempts + 1) %}
+                                        {% set remaining = gara_challenge.max_attempts %}
+                                        {% if p1_challenge_data %}
+                                            {% set remaining = gara_challenge.max_attempts - p1_challenge_data.attempts_count %}
+                                        {% endif %}
+                                        
+                                        {% if attempt_num <= remaining %}
+                                        <div class="mb-2">
+                                            <label class="form-label small">Tentativo {{ attempt_num }}</label>
+                                            <div class="row">
+                                                {% if gara_challenge.challenge.pass_fail_only %}
+                                                    <div class="col-12">
+                                                        <select class="form-select form-select-sm" 
+                                                                name="attempt_{{ attempt_num }}_passed" 
+                                                                data-attempt="{{ attempt_num }}">
+                                                            <option value="">Seleziona risultato</option>
+                                                            <option value="true">✓ Superata</option>
+                                                            <option value="false">✗ Fallita</option>
+                                                        </select>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="col-8">
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               name="attempt_{{ attempt_num }}_score" 
+                                                               data-attempt="{{ attempt_num }}"
+                                                               min="{{ gara_challenge.challenge.min_score }}" 
+                                                               max="{{ gara_challenge.challenge.max_score }}" 
+                                                               placeholder="Punteggio">
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <button type="button" class="btn btn-success btn-sm w-100"
+                                                                onclick="recordChallengeAttempt({{ gara_challenge.id }}, {{ match.player1.id }}, {{ attempt_num }})">
+                                                            <i class="fas fa-save"></i>
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if gara_challenge.challenge.pass_fail_only %}
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            onclick="recordChallengeAttempts({{ gara_challenge.id }}, {{ match.player1.id }})">
+                                        <i class="fas fa-save"></i> Salva Tentativi
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Player 2 Input -->
+                    {% if match.player2 %}
+                    <div class="col-md-6">
+                        <div class="player-challenge-section border rounded p-2">
+                            <h6 class="text-danger mb-2">
+                                <i class="fas fa-user"></i> {{ match.player2.username }}
+                                {% set p2_progress = player_challenge_progress.get(match.player2.id, {}) %}
+                                {% if p2_progress %}
+                                    {% set challenge_data = p2_progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first %}
+                                    {% if challenge_data %}
+                                        <small class="text-muted">
+                                            ({{ challenge_data.attempts_count }}/{{ challenge_data.max_attempts }} - 
+                                            migliore: {{ challenge_data.best_score }})
+                                        </small>
+                                    {% endif %}
+                                {% endif %}
+                            </h6>
+                            
+                            {% set p2_challenge_data = None %}
+                            {% if p2_progress %}
+                                {% set p2_challenge_data = p2_progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first %}
+                            {% endif %}
+                            
+                            {% if p2_challenge_data and not p2_challenge_data.can_attempt %}
+                                <div class="alert alert-warning alert-sm">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    Tentativi esauriti ({{ p2_challenge_data.attempts_count }}/{{ p2_challenge_data.max_attempts }})
+                                </div>
+                            {% else %}
+                                <div class="attempt-inputs" data-player-id="{{ match.player2.id }}">
+                                    {% for attempt_num in range(1, gara_challenge.max_attempts + 1) %}
+                                        {% set remaining = gara_challenge.max_attempts %}
+                                        {% if p2_challenge_data %}
+                                            {% set remaining = gara_challenge.max_attempts - p2_challenge_data.attempts_count %}
+                                        {% endif %}
+                                        
+                                        {% if attempt_num <= remaining %}
+                                        <div class="mb-2">
+                                            <label class="form-label small">Tentativo {{ attempt_num }}</label>
+                                            <div class="row">
+                                                {% if gara_challenge.challenge.pass_fail_only %}
+                                                    <div class="col-12">
+                                                        <select class="form-select form-select-sm" 
+                                                                name="attempt_{{ attempt_num }}_passed" 
+                                                                data-attempt="{{ attempt_num }}">
+                                                            <option value="">Seleziona risultato</option>
+                                                            <option value="true">✓ Superata</option>
+                                                            <option value="false">✗ Fallita</option>
+                                                        </select>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="col-8">
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               name="attempt_{{ attempt_num }}_score" 
+                                                               data-attempt="{{ attempt_num }}"
+                                                               min="{{ gara_challenge.challenge.min_score }}" 
+                                                               max="{{ gara_challenge.challenge.max_score }}" 
+                                                               placeholder="Punteggio">
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <button type="button" class="btn btn-success btn-sm w-100"
+                                                                onclick="recordChallengeAttempt({{ gara_challenge.id }}, {{ match.player2.id }}, {{ attempt_num }})">
+                                                            <i class="fas fa-save"></i>
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if gara_challenge.challenge.pass_fail_only %}
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            onclick="recordChallengeAttempts({{ gara_challenge.id }}, {{ match.player2.id }})">
+                                        <i class="fas fa-save"></i> Salva Tentativi
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        {% endfor %}
+
+        <!-- Challenge Progress Summary -->
+        {% if player_challenge_progress %}
+        <div class="mt-4 pt-3 border-top">
+            <h6><i class="fas fa-chart-line"></i> Riepilogo Progress Challenge</h6>
+            <div class="row">
+                {% if match.player1 and player_challenge_progress.get(match.player1.id) %}
+                <div class="col-md-6">
+                    <div class="card card-sm">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ match.player1.username }}</h6>
+                            {% set p1_progress = player_challenge_progress[match.player1.id] %}
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-success">Migliori: {{ p1_progress.total_best_score }}</span>
+                                <span class="badge bg-info">Totale: {{ p1_progress.total_all_attempts }}</span>
+                                <span class="badge bg-primary">Challenge: {{ p1_progress.challenges_attempted }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if match.player2 and player_challenge_progress.get(match.player2.id) %}
+                <div class="col-md-6">
+                    <div class="card card-sm">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ match.player2.username }}</h6>
+                            {% set p2_progress = player_challenge_progress[match.player2.id] %}
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-success">Migliori: {{ p2_progress.total_best_score }}</span>
+                                <span class="badge bg-info">Totale: {{ p2_progress.total_all_attempts }}</span>
+                                <span class="badge bg-primary">Challenge: {{ p2_progress.challenges_attempted }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Challenge attempt recording functions
+function recordChallengeAttempt(garaChallengeId, playerId, attemptNum) {
+    const section = document.querySelector(`[data-player-id="${playerId}"]`);
+    const scoreInput = section.querySelector(`[name="attempt_${attemptNum}_score"]`);
+    const passedSelect = section.querySelector(`[name="attempt_${attemptNum}_passed"]`);
+    
+    let data = {
+        gara_challenge_id: garaChallengeId,
+        user_id: playerId,
+        round_when_attempted: {{ match.round_number or 'null' }}
+    };
+    
+    if (scoreInput) {
+        const score = parseInt(scoreInput.value);
+        if (isNaN(score)) {
+            alert('Inserire un punteggio valido');
+            return;
+        }
+        data.score = score;
+    } else if (passedSelect) {
+        const passed = passedSelect.value;
+        if (!passed) {
+            alert('Selezionare un risultato');
+            return;
+        }
+        data.passed = passed === 'true';
+    }
+    
+    fetch('/admin/match/record_challenge_attempt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Tentativo registrato con successo!');
+            location.reload(); // Ricarica per aggiornare i dati
+        } else {
+            alert('Errore: ' + (result.error || 'Errore sconosciuto'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore di rete durante la registrazione del tentativo');
+    });
+}
+
+function recordChallengeAttempts(garaChallengeId, playerId) {
+    const section = document.querySelector(`[data-player-id="${playerId}"]`);
+    const passedSelects = section.querySelectorAll(`[name^="attempt_"][name$="_passed"]`);
+    
+    const attempts = [];
+    for (let select of passedSelects) {
+        if (select.value) {
+            const attemptNum = select.getAttribute('data-attempt');
+            attempts.push({
+                gara_challenge_id: garaChallengeId,
+                user_id: playerId,
+                passed: select.value === 'true',
+                round_when_attempted: {{ match.round_number or 'null' }}
+            });
+        }
+    }
+    
+    if (attempts.length === 0) {
+        alert('Selezionare almeno un risultato');
+        return;
+    }
+    
+    fetch('/admin/match/record_challenge_attempts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ attempts: attempts })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(`${attempts.length} tentativo/i registrato/i con successo!`);
+            location.reload(); // Ricarica per aggiornare i dati
+        } else {
+            alert('Errore: ' + (result.error || 'Errore sconosciuto'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore di rete durante la registrazione dei tentativi');
+    });
+}
+</script>
+{% endif %}

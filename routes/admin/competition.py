@@ -1177,3 +1177,284 @@ def admin_uninscribe_user(gara_id, user_id):
         flash(f"Errore durante la disiscrizione: {str(e)}", "error")
     
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# CHALLENGE MANAGEMENT (Random Tournaments only)
+# ────────────────────────────────────────────────────────────────────────────────
+
+@competition_bp.route("/<int:gara_id>/challenges")
+@login_required
+@gara_manager_required
+def get_gara_challenges(gara_id):
+    """Get active challenges for a gara (AJAX endpoint)."""
+    from models.challenge import GaraChallengeService
+    
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+
+    # Solo per gare Random
+    if gara.matchmaking_strategy != "random":
+        return jsonify({"success": False, "error": "Challenge disponibili solo per tornei Random"}), 400
+
+    try:
+        gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
+        challenges_data = []
+        
+        for gara_challenge in gara_challenges:
+            challenges_data.append({
+                "id": gara_challenge.id,
+                "challenge_id": gara_challenge.challenge_id,
+                "challenge_name": gara_challenge.challenge.name,
+                "challenge_description": gara_challenge.challenge.description,
+                "challenge_image_filename": gara_challenge.challenge.image_filename,
+                "round_number": gara_challenge.round_number,
+                "max_attempts": gara_challenge.max_attempts,
+                "is_active": gara_challenge.is_active,
+            })
+
+        return jsonify({
+            "success": True,
+            "challenges": challenges_data
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@competition_bp.route("/<int:gara_id>/add_challenge", methods=["POST"])
+@login_required
+@gara_manager_required
+def add_challenge_to_gara(gara_id):
+    """Add a challenge to a gara (AJAX endpoint)."""
+    from models.challenge import GaraChallengeService
+    
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+
+    # Solo per gare Random
+    if gara.matchmaking_strategy != "random":
+        return jsonify({"success": False, "error": "Challenge disponibili solo per tornei Random"}), 400
+
+    # Solo se la gara non è ancora iniziata (SETUP o INSCRIPTION)
+    if gara.status not in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]:
+        return jsonify({"success": False, "error": "Non è possibile aggiungere challenge dopo l'inizio della gara"}), 400
+
+    try:
+        # Validazione input
+        challenge_id_str = request.form.get("challenge_id", "").strip()
+        if not challenge_id_str:
+            return jsonify({"success": False, "error": "Devi selezionare una challenge"}), 400
+        
+        challenge_id = int(challenge_id_str)
+        round_number = int(request.form["round_number"])
+        max_attempts = int(request.form["max_attempts"])
+
+        gara_challenge = GaraChallengeService.add_challenge_to_gara(
+            gara_id=gara_id,
+            challenge_id=challenge_id,
+            round_number=round_number,
+            max_attempts=max_attempts,
+            added_by_id=current_user.id
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Challenge aggiunta con successo",
+            "gara_challenge_id": gara_challenge.id
+        })
+
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Errore durante l'aggiunta della challenge: {str(e)}"}), 500
+
+
+@competition_bp.route("/<int:gara_id>/remove_challenge", methods=["POST"])
+@login_required
+@gara_manager_required
+def remove_challenge_from_gara(gara_id):
+    """Remove a challenge from a gara (AJAX endpoint)."""
+    from models.challenge import GaraChallengeService, GaraChallenge
+    
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+
+    # Solo per gare Random
+    if gara.matchmaking_strategy != "random":
+        return jsonify({"success": False, "error": "Challenge disponibili solo per tornei Random"}), 400
+
+    try:
+        data = request.get_json()
+        gara_challenge_id = data.get("gara_challenge_id")
+        
+        if not gara_challenge_id:
+            return jsonify({"success": False, "error": "ID gara challenge mancante"}), 400
+
+        # Verifica che la gara challenge appartenga alla gara corretta
+        gara_challenge = GaraChallenge.query.get(gara_challenge_id)
+        if not gara_challenge or gara_challenge.gara_id != gara_id:
+            return jsonify({"success": False, "error": "Challenge non trovata"}), 404
+
+        # Rimuovi la challenge (o disattivala se ci sono già tentativi)
+        success = GaraChallengeService.remove_challenge_from_gara(
+            gara_id, gara_challenge.challenge_id, gara_challenge.round_number
+        )
+
+        if success:
+            return jsonify({
+                "success": True,
+                "message": "Challenge rimossa con successo"
+            })
+        else:
+            return jsonify({"success": False, "error": "Challenge non trovata"}), 404
+
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Errore durante la rimozione della challenge: {str(e)}"}), 500
+
+
+@competition_bp.route("/challenges/available")
+@login_required
+@admin_required
+def get_available_challenges():
+    """Get all available challenges for selection (AJAX endpoint)."""
+    from models.challenge import Challenge
+    
+    try:
+        challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.name).all()
+        
+        challenges_data = []
+        for challenge in challenges:
+            challenges_data.append({
+                "id": challenge.id,
+                "name": challenge.name,
+                "description": challenge.description,
+                "pass_fail_only": challenge.pass_fail_only,
+                "min_score": challenge.min_score,
+                "max_score": challenge.max_score,
+                "image_filename": challenge.image_filename,
+            })
+
+        return jsonify({
+            "success": True,
+            "challenges": challenges_data
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@competition_bp.route("/challenges/create", methods=["POST"])
+@login_required
+@admin_required  
+def create_new_challenge():
+    """Create a new challenge (AJAX endpoint)."""
+    from models.challenge import ChallengeService
+    import os
+    from werkzeug.utils import secure_filename
+    from flask import current_app
+    
+    try:
+        name = request.form["name"].strip()
+        description = request.form["description"].strip()
+        pass_fail_only = request.form.get("pass_fail_only", "false").lower() == "true"
+        
+        if not name or not description:
+            return jsonify({"success": False, "error": "Nome e descrizione sono obbligatori"}), 400
+
+        # Handle score ranges for numeric challenges
+        min_score = 0
+        max_score = 100
+        if not pass_fail_only:
+            try:
+                min_score = int(request.form.get("min_score", 0))
+                max_score = int(request.form.get("max_score", 100))
+                if min_score >= max_score:
+                    return jsonify({"success": False, "error": "Il punteggio minimo deve essere inferiore al massimo"}), 400
+            except ValueError:
+                return jsonify({"success": False, "error": "Punteggi non validi"}), 400
+
+        # Handle image upload
+        image_path = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                # Check file size (max 5MB)
+                file.seek(0, os.SEEK_END)
+                file_size = file.tell()
+                file.seek(0)
+                
+                if file_size > 5 * 1024 * 1024:  # 5MB
+                    return jsonify({"success": False, "error": "Immagine troppo grande (max 5MB)"}), 400
+
+                filename = secure_filename(file.filename)
+                if filename:
+                    # Ensure uploads directory exists
+                    uploads_dir = os.path.join(current_app.instance_path, 'uploads', 'challenges')
+                    os.makedirs(uploads_dir, exist_ok=True)
+                    
+                    # Save file
+                    file_path = os.path.join(uploads_dir, filename)
+                    file.save(file_path)
+                    image_path = f"uploads/challenges/{filename}"
+
+        # Create the challenge
+        challenge = ChallengeService.create_challenge(
+            name=name,
+            description=description,
+            pass_fail_only=pass_fail_only,
+            min_score=min_score,
+            max_score=max_score,
+            image_path=image_path,
+            created_by_id=current_user.id
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Challenge creata con successo",
+            "challenge_id": challenge.id,
+            "challenge_name": challenge.name
+        })
+
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Errore durante la creazione della challenge: {str(e)}"}), 500
+
+
+@competition_bp.route("/<int:gara_id>/challenge_classification")
+@login_required
+@gara_manager_required
+def get_gara_challenge_classification(gara_id):
+    """Get challenge classification for a gara."""
+    from models.challenge import GaraChallengeService
+    
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        abort(404)
+
+    # Solo per gare Random
+    if gara.matchmaking_strategy != "random":
+        flash("Classifica challenge disponibile solo per tornei Random", "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    # Verifica se ci sono challenge attive
+    if not GaraChallengeService.has_active_challenges(gara_id):
+        flash("Nessuna challenge attiva per questa gara", "info")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    # Aggiorna e ottieni la classificazione
+    classification = GaraChallengeService.update_gara_classification(gara_id)
+    challenge_stats = GaraChallengeService.get_challenge_statistics(gara_id)
+    gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
+
+    return render_template(
+        "admin/gara_challenge_classification.html",
+        gara=gara,
+        classification=classification,
+        challenge_stats=challenge_stats,
+        gara_challenges=gara_challenges,
+    )

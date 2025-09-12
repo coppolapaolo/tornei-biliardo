@@ -1,0 +1,75 @@
+{# templates/components/_gara_challenges_display.html #}
+{% if gara.matchmaking_strategy == 'random' %}
+    {% set active_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list %}
+    {% if active_challenges %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-trophy text-warning"></i> Challenge Attive ({{ active_challenges|length }})</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">Icona</th>
+                                <th>Challenge</th>
+                                <th style="width: 100px;">Tipo</th>
+                                <th style="width: 80px;">Turno</th>
+                                <th style="width: 90px;">Tentativi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gara_challenge in active_challenges %}
+                                {% set challenge = gara_challenge.challenge %}
+                                <tr>
+                                    <td class="text-center">
+                                        {% if challenge.image_filename %}
+                                            <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                                                 class="rounded" 
+                                                 style="width: 40px; height: 40px; object-fit: cover;"
+                                                 alt="Challenge Image"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                            <i class="fas fa-bullseye text-warning" style="font-size: 1.5em; display: none;"></i>
+                                        {% else %}
+                                            <i class="fas fa-bullseye text-warning" style="font-size: 1.5em;"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ challenge.get_display_name() }}</div>
+                                        {% if challenge.description|length > 80 %}
+                                            <small class="text-muted">{{ challenge.description[:80] }}...</small>
+                                        {% else %}
+                                            <small class="text-muted">{{ challenge.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if challenge.pass_fail_only %}
+                                            <span class="badge bg-info">Pass/Fail</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">Dopo il {{ gara_challenge.round_number }}°</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ gara_challenge.max_attempts }}</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Footer con informazioni aggiuntive -->
+                <div class="card-footer bg-light text-muted">
+                    <small>
+                        <i class="fas fa-info-circle"></i> 
+                        Le challenge verranno eseguite dopo il completamento del turno specificato.
+                        Ogni giocatore avrà il numero indicato di tentativi per completare la challenge.
+                    </small>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

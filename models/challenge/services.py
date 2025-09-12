@@ -18,7 +18,7 @@ class ChallengeService:
 
     @staticmethod
     def create_challenge(
-        name: str,
+        name: Optional[str],
         description: str,
         min_score: int = 0,
         max_score: int = 100,
@@ -79,6 +79,38 @@ class ChallengeService:
         general = [c for c in all_challenges if c.id not in attempted_ids]
 
         return {"favorites": favorites, "attempted": attempted, "general": general}
+
+    @staticmethod
+    def get_catalog_data(user_id: Optional[int] = None) -> Dict[str, Any]:
+        """Get complete data structure for challenge catalog."""
+        # Get all active challenges
+        all_challenges = ChallengeService.get_active_challenges()
+        
+        result = {
+            "all_challenges": all_challenges,
+            "my_challenges": [],
+            "favorite_challenges": [],
+            "user_favorites": set()
+        }
+        
+        if user_id:
+            # Get user's created challenges (for directors)
+            my_challenges = db.session.query(Challenge).filter_by(
+                created_by_id=user_id, is_active=True
+            ).all()
+            result["my_challenges"] = my_challenges
+            
+            # Get user's favorites
+            favorite_ids = {
+                fav.challenge_id
+                for fav in db.session.query(ChallengeFavorite)
+                .filter_by(user_id=user_id)
+                .all()
+            }
+            result["user_favorites"] = favorite_ids
+            result["favorite_challenges"] = [c for c in all_challenges if c.id in favorite_ids]
+        
+        return result
 
     @staticmethod
     def start_challenge_attempt(

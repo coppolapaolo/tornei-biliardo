@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Inizia Challenge - {{ challenge.get_display_name() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('challenge.challenge_catalog') }}">Challenge</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Inizia Challenge</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-play text-success"></i> Inizia Challenge</h2>
+                    <p class="text-muted mb-0">Preparati per: {{ challenge.get_display_name() }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna al Catalogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Info and Start Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Challenge Info -->
+            <div class="card mb-4">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 250px; background-color: #f8f9fa;">
+                            {% if challenge.image_filename %}
+                                <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                                     class="img-fluid rounded-start h-100"
+                                     style="object-fit: cover;"
+                                     alt="Challenge Image"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="d-none flex-column align-items-center justify-content-center text-muted h-100">
+                                    <i class="fas fa-bullseye fa-3x mb-2"></i>
+                                    <p>Immagine non disponibile</p>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-bullseye fa-3x mb-2"></i>
+                                    <p>Nessuna immagine</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ challenge.get_display_name() }}</h5>
+                            <p class="card-text">{{ challenge.description }}</p>
+                            
+                            <div class="row text-center mt-3">
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <i class="fas fa-chart-line text-primary"></i>
+                                        <h6 class="mb-0">Tipo</h6>
+                                        {% if challenge.pass_fail_only %}
+                                            <span class="badge bg-info">Pass/Fail</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }} punti</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <i class="fas fa-users text-success"></i>
+                                        <h6 class="mb-0">Partecipanti</h6>
+                                        {% set stats = challenge.get_statistics() %}
+                                        <small class="text-muted">{{ stats.unique_players }} giocatori</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Attempt Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-play"></i> Inizia il Tuo Tentativo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="startAttemptForm" method="POST">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Istruzioni:</strong> 
+                            {{ challenge.description }}
+                        </div>
+
+                        {% if challenge.pass_fail_only %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-flag-checkered"></i>
+                                Questa è una challenge <strong>Pass/Fail</strong>: dovrai indicare se hai superato la sfida oppure no.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-chart-line"></i>
+                                Questa challenge utilizza un <strong>sistema a punti</strong> da {{ challenge.min_score }} a {{ challenge.max_score }}. 
+                                Dovrai registrare il tuo punteggio al completamento.
+                            </div>
+                        {% endif %}
+
+                        <div class="text-center">
+                            <p class="text-muted">Sei pronto per iniziare questa challenge?</p>
+                            
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times"></i> Non Ora
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-play"></i> Inizia Ora!
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('startAttemptForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+            return response.text();
+        })
+        .then(html => {
+            if (typeof html === 'string') {
+                // Replace page content if there were errors
+                document.open();
+                document.write(html);
+                document.close();
+            }
+        })
+        .catch(error => {
+            console.error('Error starting attempt:', error);
+            alert('Errore nell\'iniziare la challenge. Riprova.');
+        });
+    });
+});
+</script>
+{% endblock %}

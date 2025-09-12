@@ -7,8 +7,13 @@
 
 <!-- Info Gara -->
 <div class="row mb-4">
-    {% include "components/_gara_info.html" %}
-    {% include "components/_gara_management.html" %}
+    <div class="col-md-8">
+        {% include "components/_gara_info.html" %}
+        {% include "components/_gara_challenges_display.html" %}
+    </div>
+    <div class="col-md-4">
+        {% include "components/_gara_management.html" %}
+    </div>
 </div>
 
 <!-- Directors Management -->
@@ -53,6 +58,11 @@
 
 <!-- Modal Modifica Date -->
 {% include "components/_modify_dates_modal.html" %}
+
+<!-- Modal Gestione Challenge (solo per gare Random) -->
+{% if gara.matchmaking_strategy == 'random' %}
+{% include "components/_challenge_management_modal.html" %}
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

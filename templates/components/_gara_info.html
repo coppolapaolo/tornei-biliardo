@@ -1,5 +1,5 @@
 {# templates/components/_gara_info.html #}
-<div class="col-md-8">
+<div>
     <div class="card">
         <div class="card-header">
             <h5><i class="fas fa-info-circle"></i> Informazioni Gara</h5>
@@ -35,6 +35,16 @@
                         <span class="text-secondary">Disabilitato</span>
                     {% endif %}<br>
                     <strong>Numero dispari:</strong> {{ gara.odd_number_policy.replace('_', ' ').title() }}
+                    {% if gara.matchmaking_strategy == 'random' %}
+                        <br>
+                        {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
+                        <strong>Challenge:</strong> 
+                        {% if challenge_count > 0 %}
+                            <span class="text-success">{{ challenge_count }} attive</span>
+                        {% else %}
+                            <span class="text-muted">Nessuna</span>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
             {% if gara.description %}

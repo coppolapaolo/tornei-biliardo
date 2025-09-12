@@ -1,0 +1,483 @@
+{# templates/components/_challenge_management_modal.html #}
+<!-- Modal Gestione Challenge -->
+<div class="modal fade" id="challengeManagementModal" tabindex="-1" aria-labelledby="challengeManagementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="challengeManagementModalLabel">
+                    <i class="fas fa-trophy"></i> Gestisci Challenge - {{ gara.name }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Challenge Attive -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6><i class="fas fa-list"></i> Challenge Attive</h6>
+                        <div id="activeChallengesList">
+                            <!-- Popolato via AJAX -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aggiungi Challenge -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-plus"></i> Aggiungi Challenge</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="addChallengeForm">
+                                    <input type="hidden" name="gara_id" value="{{ gara.id }}">
+                                    
+                                    <div class="row">
+                                        <!-- Selezione Challenge -->
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label class="form-label">
+                                                    <i class="fas fa-bullseye"></i> Challenge
+                                                </label>
+                                                <input type="hidden" id="challenge_id" name="challenge_id" required>
+                                                <div id="challengeSelectContainer" style="max-height: 250px; overflow-y: auto; border: 1px solid #ced4da; border-radius: 0.375rem; padding: 0.5rem;">
+                                                    <!-- Popolato via AJAX con anteprime -->
+                                                </div>
+                                                <div class="form-text mt-2">
+                                                    <small>Clicca su una challenge per selezionarla, oppure 
+                                                    <a href="#" id="createNewChallengeLink" data-bs-toggle="modal" data-bs-target="#createChallengeModal">crea una nuova challenge</a></small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dopo quale turno -->
+                                        <div class="col-md-3">
+                                            <div class="form-group mb-3">
+                                                <label for="round_number" class="form-label">
+                                                    <i class="fas fa-list-ol"></i> Dopo Turno
+                                                </label>
+                                                <select class="form-select" id="round_number" name="round_number" required>
+                                                    {% for i in range(1, gara.rounds_count + 1) %}
+                                                        <option value="{{ i }}">Dopo il {{ i }}° turno</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <div class="form-text">Quando eseguire la challenge</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Numero tentativi -->
+                                        <div class="col-md-3">
+                                            <div class="form-group mb-3">
+                                                <label for="max_attempts" class="form-label">
+                                                    <i class="fas fa-redo"></i> Tentativi
+                                                </label>
+                                                <input type="number" class="form-control" id="max_attempts" name="max_attempts" 
+                                                       value="3" min="1" max="10" required>
+                                                <div class="form-text">Tentativi per giocatore (1-10)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-plus"></i> Aggiungi Challenge alla Gara
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert per messaggi -->
+                <div id="challengeManagementAlert" class="alert alert-info mt-3" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Creazione Nuova Challenge -->
+<div class="modal fade" id="createChallengeModal" tabindex="-1" aria-labelledby="createChallengeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createChallengeModalLabel">
+                    <i class="fas fa-plus-circle"></i> Crea Nuova Challenge
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createChallengeForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <!-- Nome Challenge -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="challenge_name" class="form-label">
+                                    <i class="fas fa-tag"></i> Nome Challenge
+                                </label>
+                                <input type="text" class="form-control" id="challenge_name" name="name" maxlength="100">
+                                <div class="form-text">Nome opzionale (se vuoto, verrà generato automaticamente dalla descrizione)</div>
+                            </div>
+                        </div>
+
+                        <!-- Tipo Scoring -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="pass_fail_only" class="form-label">
+                                    <i class="fas fa-calculator"></i> Tipo Punteggio
+                                </label>
+                                <select class="form-select" id="pass_fail_only" name="pass_fail_only" required>
+                                    <option value="false">Punteggio Numerico (0-100)</option>
+                                    <option value="true">Solo Successo/Fallimento</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="scoreRangeRow">
+                        <!-- Punteggio Minimo -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="min_score" class="form-label">
+                                    <i class="fas fa-sort-numeric-down"></i> Punteggio Minimo
+                                </label>
+                                <input type="number" class="form-control" id="min_score" name="min_score" value="0" min="0">
+                            </div>
+                        </div>
+
+                        <!-- Punteggio Massimo -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="max_score" class="form-label">
+                                    <i class="fas fa-sort-numeric-up"></i> Punteggio Massimo
+                                </label>
+                                <input type="number" class="form-control" id="max_score" name="max_score" value="100" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Descrizione -->
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label for="challenge_description" class="form-label">
+                                    <i class="fas fa-align-left"></i> Descrizione
+                                </label>
+                                <textarea class="form-control" id="challenge_description" name="description" rows="4" required></textarea>
+                                <div class="form-text">Descrizione dettagliata della challenge e come eseguirla</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Immagine Challenge -->
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label for="challenge_image" class="form-label">
+                                    <i class="fas fa-image"></i> Immagine Challenge (opzionale)
+                                </label>
+                                <input type="file" class="form-control" id="challenge_image" name="image" accept="image/*">
+                                <div class="form-text">Immagine esplicativa della challenge (JPG, PNG, max 5MB)</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="submit" form="createChallengeForm" class="btn btn-success">
+                    <i class="fas fa-save"></i> Crea Challenge
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inizializza il sistema di gestione challenge quando si apre il modal
+    $('#challengeManagementModal').on('show.bs.modal', function() {
+        loadActiveChallenges();
+        loadAvailableChallenges();
+    });
+
+    // Gestione cambio tipo punteggio nella creazione challenge
+    $('#pass_fail_only').change(function() {
+        const scoreRangeRow = document.getElementById('scoreRangeRow');
+        if (this.value === 'true') {
+            scoreRangeRow.style.display = 'none';
+        } else {
+            scoreRangeRow.style.display = 'block';
+        }
+    });
+
+    // Submit form aggiunta challenge
+    $('#addChallengeForm').submit(function(e) {
+        e.preventDefault();
+        addChallengeToGara();
+    });
+
+    // Submit form creazione challenge
+    $('#createChallengeForm').submit(function(e) {
+        e.preventDefault();
+        createNewChallenge();
+    });
+});
+
+function loadActiveChallenges() {
+    const garaId = {{ gara.id }};
+    
+    fetch(`/admin/gara/${garaId}/challenges`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayActiveChallenges(data.challenges);
+            } else {
+                showChallengeAlert(data.error || 'Errore nel caricamento delle challenge', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showChallengeAlert('Errore di rete nel caricamento delle challenge', 'danger');
+        });
+}
+
+function loadAvailableChallenges() {
+    fetch('/admin/gara/challenges/available')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                populateChallengeSelect(data.challenges);
+            } else {
+                showChallengeAlert(data.error || 'Errore nel caricamento delle challenge disponibili', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showChallengeAlert('Errore di rete nel caricamento delle challenge disponibili', 'danger');
+        });
+}
+
+function displayActiveChallenges(challenges) {
+    const container = document.getElementById('activeChallengesList');
+    
+    if (challenges.length === 0) {
+        container.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle"></i> Nessuna challenge attiva per questa gara.</div>';
+        return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-sm table-striped">';
+    html += '<thead><tr><th>Challenge</th><th>Dopo Turno</th><th>Tentativi</th><th>Azioni</th></tr></thead><tbody>';
+
+    challenges.forEach(challenge => {
+        let challengeImage = '';
+        if (challenge.challenge_image_filename) {
+            challengeImage = `<img src="/static/uploads/challenges/${challenge.challenge_image_filename}" 
+                                  class="rounded me-2" 
+                                  style="width: 40px; height: 40px; object-fit: cover;"
+                                  alt="Challenge Image"
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                              <i class="fas fa-bullseye text-warning me-2" style="font-size: 1.5em; display: none;"></i>`;
+        } else {
+            challengeImage = '<i class="fas fa-bullseye text-warning me-2" style="font-size: 1.5em;"></i>';
+        }
+
+        const displayName = challenge.challenge_name || `Challenge #${challenge.challenge_id}`;
+        
+        html += `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        ${challengeImage}
+                        <div>
+                            <strong>${displayName}</strong><br>
+                            <small class="text-muted">${challenge.challenge_description.substring(0, 100)}...</small>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge bg-info">${challenge.round_number}</span></td>
+                <td><span class="badge bg-secondary">${challenge.max_attempts}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="removeChallengeFromGara(${challenge.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function populateChallengeSelect(challenges) {
+    const container = document.getElementById('challengeSelectContainer');
+    
+    if (challenges.length === 0) {
+        container.innerHTML = '<div class="text-muted text-center py-3"><i class="fas fa-exclamation-circle"></i> Nessuna challenge disponibile</div>';
+        return;
+    }
+    
+    let html = '';
+    challenges.forEach(challenge => {
+        let challengeImage = '';
+        if (challenge.image_filename) {
+            challengeImage = `<img src="/static/uploads/challenges/${challenge.image_filename}" 
+                                  class="rounded me-3" 
+                                  style="width: 50px; height: 50px; object-fit: cover;"
+                                  alt="Challenge Image"
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                              <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; display: none;"><i class="fas fa-bullseye text-muted"></i></div>`;
+        } else {
+            challengeImage = '<div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;"><i class="fas fa-bullseye text-muted"></i></div>';
+        }
+
+        const displayName = challenge.name || `Challenge #${challenge.id}`;
+        const scoreInfo = challenge.pass_fail_only ? 'Pass/Fail' : `${challenge.min_score}-${challenge.max_score}`;
+        
+        html += `
+            <div class="challenge-option border rounded p-2 mb-2" 
+                 style="cursor: pointer; transition: all 0.2s;" 
+                 data-challenge-id="${challenge.id}"
+                 onmouseover="this.style.backgroundColor='#f8f9fa'"
+                 onmouseout="this.style.backgroundColor=''"
+                 onclick="selectChallenge(${challenge.id}, '${displayName.replace(/'/g, "\\'")}')">
+                <div class="d-flex align-items-center">
+                    ${challengeImage}
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">${displayName}</div>
+                        <small class="text-muted">${challenge.description.substring(0, 80)}${challenge.description.length > 80 ? '...' : ''}</small>
+                        <div class="mt-1">
+                            <span class="badge bg-secondary">${scoreInfo}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function selectChallenge(challengeId, challengeName) {
+    // Rimuovi selezione precedente
+    document.querySelectorAll('.challenge-option').forEach(el => {
+        el.style.backgroundColor = '';
+        el.style.border = '1px solid #dee2e6';
+    });
+    
+    // Evidenzia la challenge selezionata
+    const selectedOption = document.querySelector(`[data-challenge-id="${challengeId}"]`);
+    selectedOption.style.backgroundColor = '#e3f2fd';
+    selectedOption.style.border = '2px solid #2196f3';
+    
+    // Imposta il valore nascosto
+    document.getElementById('challenge_id').value = challengeId;
+    
+    console.log(`Challenge selezionata: ${challengeName} (ID: ${challengeId})`);
+}
+
+function addChallengeToGara() {
+    const form = document.getElementById('addChallengeForm');
+    const formData = new FormData(form);
+    const garaId = {{ gara.id }};
+
+    // Debug: verifica che challenge_id sia impostato
+    const challengeId = formData.get('challenge_id');
+    console.log('Debug: challenge_id =', challengeId);
+    
+    if (!challengeId || challengeId.trim() === '') {
+        showChallengeAlert('Devi selezionare una challenge prima di aggiungerla!', 'warning');
+        return;
+    }
+
+    fetch(`/admin/gara/${garaId}/add_challenge`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showChallengeAlert('Challenge aggiunta con successo!', 'success');
+            loadActiveChallenges(); // Ricarica la lista
+            form.reset(); // Reset del form
+        } else {
+            showChallengeAlert(data.error || 'Errore nell\'aggiunta della challenge', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showChallengeAlert('Errore di rete nell\'aggiunta della challenge', 'danger');
+    });
+}
+
+function removeChallengeFromGara(garaChallengeId) {
+    if (!confirm('Sei sicuro di voler rimuovere questa challenge dalla gara?')) {
+        return;
+    }
+
+    const garaId = {{ gara.id }};
+
+    fetch(`/admin/gara/${garaId}/remove_challenge`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ gara_challenge_id: garaChallengeId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showChallengeAlert('Challenge rimossa con successo!', 'success');
+            loadActiveChallenges(); // Ricarica la lista
+        } else {
+            showChallengeAlert(data.error || 'Errore nella rimozione della challenge', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showChallengeAlert('Errore di rete nella rimozione della challenge', 'danger');
+    });
+}
+
+function createNewChallenge() {
+    const form = document.getElementById('createChallengeForm');
+    const formData = new FormData(form);
+
+    fetch('/admin/gara/challenges/create', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showChallengeAlert('Challenge creata con successo!', 'success');
+            $('#createChallengeModal').modal('hide');
+            loadAvailableChallenges(); // Ricarica la lista delle challenge disponibili
+            form.reset();
+        } else {
+            showChallengeAlert(data.error || 'Errore nella creazione della challenge', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showChallengeAlert('Errore di rete nella creazione della challenge', 'danger');
+    });
+}
+
+function showChallengeAlert(message, type) {
+    const alert = document.getElementById('challengeManagementAlert');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
+    alert.style.display = 'block';
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        alert.style.display = 'none';
+    }, 5000);
+}
+</script>

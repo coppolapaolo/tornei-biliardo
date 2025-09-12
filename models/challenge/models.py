@@ -24,7 +24,7 @@ class Challenge(BaseModel, TimestampMixin):
     __tablename__ = "challenge"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=True)
     description = db.Column(db.Text, nullable=False)
     image_path = db.Column(db.String(255), nullable=True)
 
@@ -116,8 +116,24 @@ class Challenge(BaseModel, TimestampMixin):
         # Only challenges with numeric scoring can be used for X replacement
         return not self.pass_fail_only and self.is_active
 
+    def get_display_name(self) -> str:
+        """Get display name for the challenge, with fallback for nameless challenges."""
+        if self.name:
+            return self.name
+        else:
+            # Generate a display name from description (first 50 chars)
+            short_desc = self.description[:50] + "..." if len(self.description) > 50 else self.description
+            return f"Challenge #{self.id}: {short_desc}"
+
+    @property
+    def image_filename(self) -> Optional[str]:
+        """Get just the filename from image_path for template usage."""
+        if self.image_path:
+            return self.image_path.split('/')[-1]
+        return None
+
     def __repr__(self) -> str:
-        return f"<Challenge {self.name}>"
+        return f"<Challenge {self.get_display_name()}>"
 
 
 class ChallengeAttempt(BaseModel, TimestampMixin):

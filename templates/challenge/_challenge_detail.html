@@ -1,0 +1,148 @@
+{# templates/challenge/_challenge_detail.html #}
+<div class="row">
+    <div class="col-md-6">
+        <!-- Challenge Image -->
+        <div class="card mb-3">
+            <div class="card-body text-center">
+                {% if challenge.image_filename %}
+                    <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                         class="img-fluid rounded" 
+                         style="max-height: 300px; object-fit: cover;"
+                         alt="Challenge Image"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="text-muted" style="display: none;">
+                        <i class="fas fa-bullseye fa-4x mb-2"></i>
+                        <p>Immagine non disponibile</p>
+                    </div>
+                {% else %}
+                    <div class="text-muted">
+                        <i class="fas fa-bullseye fa-4x mb-2"></i>
+                        <p>Nessuna immagine disponibile</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Challenge Info -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Dettagli Challenge
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">{{ challenge.get_display_name() }}</h6>
+                <p class="card-text">{{ challenge.description }}</p>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <i class="fas fa-chart-line text-primary"></i>
+                            <h6 class="mb-0">Tipo</h6>
+                            {% if challenge.pass_fail_only %}
+                                <span class="badge bg-info">Pass/Fail</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }} punti</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <i class="fas fa-calendar text-success"></i>
+                            <h6 class="mb-0">Creata</h6>
+                            <small class="text-muted">{{ challenge.created_at.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row text-center mt-2">
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <i class="fas fa-user text-warning"></i>
+                            <h6 class="mb-0">Creatore</h6>
+                            <small class="text-muted">
+                                {% if challenge.created_by %}
+                                    {{ challenge.created_by.username }}
+                                {% else %}
+                                    Sistema
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <i class="fas fa-chart-bar text-info"></i>
+                            <h6 class="mb-0">Status</h6>
+                            <small class="badge {{ 'bg-success' if challenge.is_active else 'bg-secondary' }}">
+                                {{ 'Attiva' if challenge.is_active else 'Inattiva' }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Challenge Statistics -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i> Statistiche Challenge
+                </h5>
+            </div>
+            <div class="card-body">
+                {% set stats = challenge.get_statistics() %}
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <h4 class="mb-0">{{ stats.unique_players }}</h4>
+                                <small class="text-muted">Giocatori Unici</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                                <h4 class="mb-0">{{ stats.total_attempts }}</h4>
+                                <small class="text-muted">Tentativi Totali</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                                <h4 class="mb-0">{{ stats.pass_rate|round(1) }}%</h4>
+                                <small class="text-muted">Tasso di Successo</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <i class="fas fa-star fa-2x text-info mb-2"></i>
+                                <h4 class="mb-0">{{ stats.average_score|round(1) if stats.average_score else 'N/A' }}</h4>
+                                <small class="text-muted">Punteggio Medio</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

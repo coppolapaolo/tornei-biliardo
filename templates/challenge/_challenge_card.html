@@ -1,0 +1,167 @@
+{# templates/challenge/_challenge_card.html #}
+<div class="col-md-6 col-lg-4 mb-4">
+    <div class="card h-100 challenge-card" data-challenge-id="{{ challenge.id }}" style="cursor: pointer; transition: transform 0.2s;">
+        <!-- Challenge Image -->
+        <div class="card-img-top position-relative" style="height: 200px; overflow: hidden;">
+            {% if challenge.image_filename %}
+                <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                     class="w-100 h-100" 
+                     style="object-fit: cover;"
+                     alt="Challenge Image"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="d-none w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                    <i class="fas fa-bullseye fa-3x text-muted"></i>
+                </div>
+            {% else %}
+                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                    <i class="fas fa-bullseye fa-3x text-muted"></i>
+                </div>
+            {% endif %}
+
+            <!-- Favorite Button -->
+            <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 favorite-btn" 
+                    data-challenge-id="{{ challenge.id }}"
+                    title="{% if challenge.id in user_favorites %}Rimuovi dai preferiti{% else %}Aggiungi ai preferiti{% endif %}">
+                {% if challenge.id in user_favorites %}
+                    <i class="fas fa-heart text-danger"></i>
+                {% else %}
+                    <i class="far fa-heart"></i>
+                {% endif %}
+            </button>
+
+            <!-- Challenge Type Badge -->
+            <div class="position-absolute bottom-0 start-0 m-2">
+                {% if challenge.pass_fail_only %}
+                    <span class="badge bg-info">Pass/Fail</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body d-flex flex-column">
+            <!-- Challenge Title -->
+            <h5 class="card-title">
+                {{ challenge.get_display_name() }}
+                {% if challenge.created_by_id == current_user.id %}
+                    <small class="text-muted">(mia)</small>
+                {% endif %}
+            </h5>
+
+            <!-- Challenge Description -->
+            <p class="card-text text-muted flex-grow-1">
+                {% if challenge.description|length > 100 %}
+                    {{ challenge.description[:100] }}...
+                {% else %}
+                    {{ challenge.description }}
+                {% endif %}
+            </p>
+
+            <!-- Challenge Stats -->
+            <div class="mb-2">
+                <small class="text-muted">
+                    <i class="fas fa-users"></i> {{ challenge.get_statistics().unique_players }} giocatori
+                    <span class="ms-2">
+                        <i class="fas fa-chart-line"></i> {{ challenge.get_statistics().total_attempts }} tentativi
+                    </span>
+                </small>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card-actions mt-auto">
+                <div class="btn-group w-100" role="group">
+                    <!-- Try Challenge (Players/Directors only, not Admin) -->
+                    {% if not current_user.is_admin %}
+                        <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-play"></i> Prova
+                        </a>
+                    {% endif %}
+
+                    <!-- View Detail -->
+                    <a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-eye"></i> Dettagli
+                    </a>
+
+                    <!-- Edit/Delete (for creators and admins) -->
+                    {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}">
+                                        <i class="fas fa-edit"></i> Modifica
+                                    </a>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item text-danger" onclick="deleteChallenge({{ challenge.id }})">
+                                        <i class="fas fa-trash"></i> Elimina
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Creator Info -->
+        <div class="card-footer bg-light">
+            <small class="text-muted">
+                <i class="fas fa-user"></i> 
+                {% if challenge.created_by %}
+                    Creata da {{ challenge.created_by.username }}
+                {% else %}
+                    Creata da Sistema
+                {% endif %}
+                <span class="ms-2">
+                    <i class="fas fa-calendar"></i> {{ challenge.created_at.strftime('%d/%m/%Y') }}
+                </span>
+            </small>
+        </div>
+    </div>
+</div>
+
+<script>
+// Hover effects per le cards
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.challenge-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+
+function deleteChallenge(challengeId) {
+    if (confirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.')) {
+        fetch(`/challenge/${challengeId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Ricarica la pagina
+            } else {
+                alert('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting challenge:', error);
+            alert('Errore di rete nell\'eliminazione della challenge');
+        });
+    }
+}
+</script>
