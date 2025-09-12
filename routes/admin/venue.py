@@ -31,23 +31,44 @@ def venues_list():
     )
 
     if current_user.is_admin:
-        # Vista completa admin con statistiche
+        # Vista completa admin con statistiche, manager e richieste
         venues_with_stats = []
         for venue in venues:
             try:
                 stats = LocationService.get_location_statistics(venue.id)
-                venues_with_stats.append({"venue": venue, "stats": stats})
             except Exception:
                 # Fallback if stats fail
-                venues_with_stats.append(
-                    {
-                        "venue": venue,
-                        "stats": {
-                            "active_users_count": 0,
-                            "total_matches_played": 0,
-                        },
-                    }
-                )
+                stats = {
+                    "active_users_count": 0,
+                    "total_matches_played": 0,
+                }
+            
+            # Get venue manager
+            manager = VenueManagementService.get_venue_manager(venue.id)
+            
+            # Get manager assignment if manager exists
+            manager_assignment = None
+            if manager:
+                from models.user.models import VenueManagement
+                manager_assignment = VenueManagement.query.filter_by(
+                    venue_id=venue.id, user_id=manager.id, is_active=True
+                ).first()
+            
+            # Get pending requests for this venue
+            from models.status_enum import VenueManagerRequestStatus
+            pending_requests = VenueManagerRequestService.get_requests_by_venue_and_status(venue.id, VenueManagerRequestStatus.PENDING)
+            
+            # Check if current user is manager of this venue
+            is_current_user_manager = manager and manager.id == current_user.id
+            
+            venues_with_stats.append({
+                "venue": venue, 
+                "stats": stats,
+                "manager": manager,
+                "manager_assignment": manager_assignment,
+                "pending_requests": pending_requests,
+                "is_current_user_manager": is_current_user_manager
+            })
         return render_template(
             "admin/venues_list.html", venues_with_stats=venues_with_stats
         )
@@ -56,10 +77,20 @@ def venues_list():
         venues_with_managers = []
         for venue in venues:
             manager = VenueManagementService.get_venue_manager(venue.id)
+            
+            # Check if current user has pending request for this specific venue
+            has_pending_request_for_venue = False
+            if not current_user.is_admin:
+                from models.status_enum import VenueManagerRequestStatus
+                has_pending_request_for_venue = VenueManagerRequestService.has_pending_request_for_venue(
+                    current_user.id, venue.id
+                )
+            
             venues_with_managers.append({
                 'venue': venue,
                 'manager': manager,
-                'can_request_management': not current_user.is_admin and not current_user.is_venue_manager
+                'can_request_management': not current_user.is_admin and not current_user.is_venue_manager,
+                'has_pending_request': has_pending_request_for_venue
             })
         
         # Check if user has pending venue manager requests
@@ -99,14 +130,12 @@ def venue_detail(venue_id):
     
     if current_user.is_admin or current_user.can_manage_venue(venue_id):
         # Vista completa admin/manager
-        # Get approved venue manager requests (users eligible to be assigned)
-        approved_requests = VenueManagerRequestService.get_requests_by_status("approved")
+        # Get all approved venue manager requests (users eligible to be assigned)
+        all_requests = VenueManagerRequestService.get_all_requests()
+        from models.status_enum import VenueManagerRequestStatus
+        approved_requests = [req for req in all_requests if req.status == VenueManagerRequestStatus.APPROVED]
         eligible_users = [req.user for req in approved_requests]
-        
-        # Also include current admins and directors who can manage venues
-        all_users = User.query.filter(User.role.in_(["admin", "director"])).all()
-        eligible_users.extend(all_users)
-        
+                
         # Remove duplicates and current manager
         unique_users = {}
         for user in eligible_users:
@@ -158,6 +187,15 @@ def create_venue():
         business_hours = request.form.get("business_hours")
         hourly_rate = request.form.get("hourly_rate")
 
+        # Validate required fields
+        if not name:
+            flash("Il nome della sala è obbligatorio", "error")
+            return render_template("admin/venue_form.html", venue=None)
+        
+        if not number_of_tables:
+            flash("Il numero di tavoli è obbligatorio", "error")
+            return render_template("admin/venue_form.html", venue=None)
+
         # Table types and amenities as comma-separated values
         table_types_str = request.form.get("table_types", "")
         table_types = [t.strip() for t in table_types_str.split(",") if t.strip()]
@@ -207,40 +245,38 @@ def edit_venue(venue_id):
         abort(404)
 
     if request.method == "POST":
-        # Get form data
-        update_data = {
-            "name": request.form.get("name"),
-            "address": request.form.get("address"),
-            "city": request.form.get("city"),
-            "postal_code": request.form.get("postal_code"),
-            "phone": request.form.get("phone"),
-            "email": request.form.get("email"),
-            "website": request.form.get("website"),
-            "business_hours": request.form.get("business_hours"),
-        }
+        # Get form data - collect in kwargs dict to avoid type issues
+        update_kwargs = {}
+        
+        # String fields
+        string_fields = ["name", "address", "city", "postal_code", "phone", "email", "website", "business_hours"]
+        for field in string_fields:
+            value = request.form.get(field)
+            if value:
+                update_kwargs[field] = value
 
-        # Handle numeric fields
+        # Numeric fields
         number_of_tables = request.form.get("number_of_tables")
         if number_of_tables:
-            update_data["number_of_tables"] = int(number_of_tables)
+            update_kwargs["number_of_tables"] = int(number_of_tables)
 
         hourly_rate = request.form.get("hourly_rate")
         if hourly_rate:
-            update_data["hourly_rate"] = float(hourly_rate)
+            update_kwargs["hourly_rate"] = float(hourly_rate)
 
         # Handle table types and amenities
         table_types_str = request.form.get("table_types", "")
         table_types = [t.strip() for t in table_types_str.split(",") if t.strip()]
         if table_types:
-            update_data["table_types"] = table_types
+            update_kwargs["table_types"] = table_types
 
         amenities_str = request.form.get("amenities", "")
         amenities = [a.strip() for a in amenities_str.split(",") if a.strip()]
         if amenities:
-            update_data["amenities"] = amenities
+            update_kwargs["amenities"] = amenities
 
         try:
-            LocationService.update_billiard_hall(venue_id, **update_data)
+            LocationService.update_billiard_hall(venue_id, **update_kwargs)
             flash("Sala biliardo aggiornata con successo!", "success")
             return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
         except Exception as e:
@@ -471,11 +507,12 @@ def process_venue_manager_request(request_id):
     
     try:
         from flask_login import current_user
+        admin_user = current_user  # type: ignore
         if action == "approve":
-            VenueManagerRequestService.process_request(request_id, current_user, True, admin_notes)
+            VenueManagerRequestService.process_request(request_id, admin_user, True, admin_notes)
             flash("Richiesta approvata con successo!", "success")
         elif action == "reject":
-            VenueManagerRequestService.process_request(request_id, current_user, False, admin_notes)
+            VenueManagerRequestService.process_request(request_id, admin_user, False, admin_notes)
             flash("Richiesta rifiutata.", "info")
         else:
             flash("Azione non valida.", "error")
@@ -496,7 +533,8 @@ def assign_venue_manager(venue_id):
     
     try:
         from flask_login import current_user
-        VenueManagementService.assign_venue_manager(int(user_id), venue_id, current_user)
+        admin_user = current_user  # type: ignore
+        VenueManagementService.assign_venue_manager(int(user_id), venue_id, admin_user)
         flash("Gestore assegnato con successo!", "success")
     except Exception as e:
         flash(f"Errore nell'assegnare il gestore: {str(e)}", "error")
@@ -510,7 +548,8 @@ def revoke_venue_manager(assignment_id):
     """Revoca l'assegnazione di un gestore sala"""
     try:
         from flask_login import current_user
-        assignment = VenueManagementService.revoke_venue_manager(assignment_id, current_user)
+        admin_user = current_user  # type: ignore
+        assignment = VenueManagementService.revoke_venue_manager(assignment_id, admin_user)
         flash("Gestione sala revocata con successo!", "success")
         return redirect(url_for("admin.venue.venue_detail", venue_id=assignment.venue_id))
     except Exception as e:

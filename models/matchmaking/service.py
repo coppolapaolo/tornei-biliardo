@@ -2,16 +2,17 @@ from __future__ import annotations
 from typing import Sequence, Dict, Any, Optional, List, TYPE_CHECKING
 from datetime import timedelta
 
-from .registry import EngineRegistry
+from .registry import EngineRegistry, PairingContext
 from .strategies.base import Pairing
 from ..base import db
 from ..match.services import MatchService
 from ..rating.services import RatingService, HandicapService
 from ..challenge.services import ChallengeService
 
-# Import the new advanced strategy
+# Import strategies
 from .strategies.advanced_amalfi import AdvancedAmalfiStrategy
 from .strategies.amalfi_adapter import AmalfiStrategy
+from .strategies.amalfi_unified_adapter import AmalfiUnifiedAdapter
 
 if TYPE_CHECKING:
     pass
@@ -304,6 +305,10 @@ class MatchmakingService:
 
     def _register_advanced_strategies(self):
         """Register advanced pairing strategies."""
+        # Register the unified Amalfi strategy
+        unified_amalfi = AmalfiUnifiedAdapter()
+        self._registry.register(unified_amalfi)
+        
         # Register the advanced Amalfi strategy
         try:
             base_amalfi = self._registry.get("amalfi")
@@ -320,10 +325,15 @@ class MatchmakingService:
         gara: object,
         round_number: int,
         preview: bool = False,
+        seed: Optional[int] = None,
     ) -> Sequence[Pairing]:
-        """Execute pairing strategy with enhanced features."""
+        """Execute pairing strategy with enhanced features and deterministic seed support."""
         try:
-            strategy = self._registry.get(strategy_name)
+            if seed is not None:
+                # Use factory to create strategy with deterministic context
+                strategy = self._registry.create_strategy(strategy_name, seed)
+            else:
+                strategy = self._registry.get(strategy_name)
         except KeyError:
             raise ValueError(f"Unknown strategy: {strategy_name}")
 

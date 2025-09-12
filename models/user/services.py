@@ -694,8 +694,9 @@ class UserService:
             raise ValueError("User is already a director or admin")
 
         # Check if user already has a pending request
+        from ..status_enum import DirectorRequestStatus
         existing_request = DirectorRequest.query.filter_by(
-            user_id=user_id, status="pending"
+            user_id=user_id, status=DirectorRequestStatus.PENDING
         ).first()
         if existing_request:
             raise ValueError("User already has a pending director request")
@@ -954,11 +955,12 @@ class VenueManagerRequestService:
             user_id=user_id, venue_id=venue_id
         ).first()
         if existing_request:
-            if existing_request.status == "pending":
+            from ..status_enum import VenueManagerRequestStatus
+            if existing_request.status == VenueManagerRequestStatus.PENDING:
                 raise ValueError(f"You already have a pending request for {venue.name}")
-            elif existing_request.status == "approved":
+            elif existing_request.status == VenueManagerRequestStatus.APPROVED:
                 raise ValueError(f"You are already approved to manage {venue.name}")
-            elif existing_request.status == "rejected":
+            elif existing_request.status == VenueManagerRequestStatus.REJECTED:
                 raise ValueError(f"Your previous request for {venue.name} was rejected. Contact admin for reconsideration.")
             else:  # cancelled or other status
                 raise ValueError(f"You already have a {existing_request.status} request for {venue.name}")
@@ -1112,8 +1114,9 @@ class VenueManagerRequestService:
             VenueManagerRequest if found, None otherwise
         """
         from .models import VenueManagerRequest
+        from ..status_enum import VenueManagerRequestStatus
         return VenueManagerRequest.query.filter_by(
-            user_id=user_id, status="pending"
+            user_id=user_id, status=VenueManagerRequestStatus.PENDING
         ).first()
 
     @staticmethod
@@ -1143,7 +1146,8 @@ class VenueManagerRequestService:
             bool: True if user has pending request(s)
         """
         from .models import VenueManagerRequest
-        query = VenueManagerRequest.query.filter_by(user_id=user_id, status="pending")
+        from ..status_enum import VenueManagerRequestStatus
+        query = VenueManagerRequest.query.filter_by(user_id=user_id, status=VenueManagerRequestStatus.PENDING)
         if venue_id is not None:
             query = query.filter_by(venue_id=venue_id)
         return query.first() is not None
@@ -1172,7 +1176,8 @@ class VenueManagerRequestService:
         if request.user_id != user.id and not user.is_admin:
             raise ValueError("You can only cancel your own requests")
         
-        if request.status != "pending":
+        from ..status_enum import VenueManagerRequestStatus
+        if request.status != VenueManagerRequestStatus.PENDING:
             raise ValueError("Only pending requests can be cancelled")
         
         request.cancel()
@@ -1183,13 +1188,62 @@ class VenueManagerRequestService:
     @staticmethod
     def get_all_requests() -> List["VenueManagerRequest"]:
         """
-        Get all venue manager requests.
+        Get all venue manager requests ordered by priority:
+        1. Pending requests (ordered by date, newest first)
+        2. All other requests (approved, rejected, cancelled) ordered by username
 
         Returns:
-            List of all venue manager requests
+            List of all venue manager requests in priority order
+        """
+        from .models import VenueManagerRequest, User
+        from ..status_enum import VenueManagerRequestStatus
+        
+        # Get pending requests first (ordered by date, newest first)
+        pending_requests = VenueManagerRequest.query.filter_by(
+            status=VenueManagerRequestStatus.PENDING
+        ).order_by(VenueManagerRequest.requested_at.desc()).all()
+        
+        # Get all other requests (not pending) ordered by username
+        other_requests = VenueManagerRequest.query.join(
+            User, VenueManagerRequest.user_id == User.id
+        ).filter(
+            VenueManagerRequest.status != VenueManagerRequestStatus.PENDING
+        ).order_by(User.username).all()
+        
+        # Combine: pending first, then others
+        return pending_requests + other_requests
+
+    @staticmethod
+    def get_requests_by_venue_and_status(venue_id: int, status: str = "pending") -> List["VenueManagerRequest"]:
+        """
+        Get venue manager requests by venue ID and status.
+
+        Args:
+            venue_id: ID of the venue
+            status: Status to filter by (default: "pending")
+
+        Returns:
+            List of venue manager requests for the venue with the given status
         """
         from .models import VenueManagerRequest
-        return VenueManagerRequest.query.order_by(VenueManagerRequest.requested_at.desc()).all()
+        from ..status_enum import VenueManagerRequestStatus
+        
+        # Convert string to enum if needed for consistency
+        if status == "pending":
+            status_enum = VenueManagerRequestStatus.PENDING
+        elif status == "approved":
+            status_enum = VenueManagerRequestStatus.APPROVED
+        elif status == "rejected":
+            status_enum = VenueManagerRequestStatus.REJECTED
+        elif status == "cancelled":
+            status_enum = VenueManagerRequestStatus.CANCELLED
+        else:
+            # Fallback to original string for backward compatibility
+            status_enum = status
+        
+        return VenueManagerRequest.query.filter_by(
+            venue_id=venue_id, status=status_enum
+        ).order_by(VenueManagerRequest.requested_at.desc()).all()
 
 
 class VenueManagementService:

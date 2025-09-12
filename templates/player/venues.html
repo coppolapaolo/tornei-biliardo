@@ -6,11 +6,6 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-building"></i> Sale Biliardo</h1>
-    {% if has_pending_requests %}
-        <a href="{{ url_for('player.my_venue_requests') }}" class="btn btn-outline-warning">
-            <i class="fas fa-clock"></i> Richieste in Attesa
-        </a>
-    {% endif %}
 </div>
 
 <div class="card">
@@ -23,6 +18,7 @@
                 {% for item in venues_with_managers %}
                     {% set venue = item.venue %}
                     {% set manager = item.manager %}
+                    {% set has_pending_request = item.has_pending_request %}
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -68,15 +64,26 @@
                             <div class="card-footer">
                                 <div class="d-flex gap-2">
                                     <a href="{{ url_for('admin.venue.venue_detail', venue_id=venue.id) }}" 
+                                        {% if manager and manager.id == current_user.id %}
+                                       class="btn btn-primary btn-sm">
+                                            <i class="fas fa-cog"></i> Gestisci
+                                        {% else %}
                                        class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-eye"></i> Dettagli
+                                            <i class="fas fa-eye"></i> Dettagli
+                                        {% endif %}
                                     </a>
                                     {% if not current_user.is_admin and not manager %}
-                                        <button type="button" class="btn btn-outline-success btn-sm" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#venueManagerRequestModal{{ venue.id }}">
-                                            <i class="fas fa-hand-paper"></i> Diventa Gestore
-                                        </button>
+                                        {% if has_pending_request %}
+                                            <a href="{{ url_for('player.my_venue_requests') }}" class="btn btn-outline-warning btn-sm">
+                                                <i class="fas fa-clock"></i> Richiesta in Attesa
+                                            </a>
+                                        {% else %}
+                                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#venueManagerRequestModal{{ venue.id }}">
+                                                <i class="fas fa-hand-paper"></i> Diventa Gestore
+                                            </button>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                             </div>

@@ -121,13 +121,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="number_of_tables" class="form-label">Numero Tavoli</label>
+                                <label for="number_of_tables" class="form-label">Numero Tavoli *</label>
                                 <input type="number" 
                                        class="form-control" 
                                        id="number_of_tables" 
                                        name="number_of_tables" 
                                        min="1"
-                                       value="{{ venue.number_of_tables if is_edit and venue.number_of_tables else '' }}">
+                                       value="{{ venue.number_of_tables if is_edit and venue.number_of_tables else '' }}"
+                                       required>
                             </div>
                             
                             <div class="mb-3">
@@ -249,13 +250,4 @@ Mercoledì: Chiuso
     </div>
 </form>
 
-{% if not is_edit %}
-<div class="alert alert-info mt-4">
-    <h6><i class="fas fa-info-circle"></i> Nota Importante</h6>
-    <p class="mb-0">
-        Le sale biliardo create qui saranno disponibili come opzioni nei menu a tendina "location" 
-        durante la creazione di gare e match individuali, integrando il sistema location esistente.
-    </p>
-</div>
-{% endif %}
 {% endblock %}

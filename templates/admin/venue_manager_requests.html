@@ -167,38 +167,4 @@
     </div>
 </div>
 
-<!-- Statistics Cards -->
-{% set pending_count = requests|selectattr("status", "equalto", "pending")|list|length %}
-{% set approved_count = requests|selectattr("status", "equalto", "approved")|list|length %}
-{% set rejected_count = requests|selectattr("status", "equalto", "rejected")|list|length %}
-
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card bg-warning text-dark">
-            <div class="card-body text-center">
-                <i class="fas fa-clock fa-2x mb-2"></i>
-                <h3>{{ pending_count }}</h3>
-                <p class="mb-0">In Attesa</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-success text-white">
-            <div class="card-body text-center">
-                <i class="fas fa-check fa-2x mb-2"></i>
-                <h3>{{ approved_count }}</h3>
-                <p class="mb-0">Approvate</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-danger text-white">
-            <div class="card-body text-center">
-                <i class="fas fa-times fa-2x mb-2"></i>
-                <h3>{{ rejected_count }}</h3>
-                <p class="mb-0">Rifiutate</p>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

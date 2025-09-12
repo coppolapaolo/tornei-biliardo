@@ -22,6 +22,7 @@ __all__ = [
     "TournamentStatus",
     "MatchStatus",
     "DirectorRequestStatus",
+    "VenueManagerRequestStatus",
     "PlayoffConfirmationStatus",
     "choices",
     "parse_enum",
@@ -96,6 +97,18 @@ class DirectorRequestStatus(_StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# VENUE MANAGER REQUEST
+# Persistito: `venue_manager_request.status` → {pending, approved, rejected, cancelled}
+# Fonte: models/user/models.py (VenueManagerRequest)
+# ──────────────────────────────────────────────────────────────────────────────
+class VenueManagerRequestStatus(_StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

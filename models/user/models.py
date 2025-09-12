@@ -356,7 +356,8 @@ class DirectorRequest(BaseModel):
 
     # state helpers ---
     def approve(self, admin: "User") -> None:
-        self.status = "approved"
+        from ..status_enum import DirectorRequestStatus
+        self.status = DirectorRequestStatus.APPROVED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
         # Get the user object and update role
@@ -367,7 +368,8 @@ class DirectorRequest(BaseModel):
             user.role = "director"
 
     def reject(self, admin: "User", notes: str | None = None) -> None:
-        self.status = "rejected"
+        from ..status_enum import DirectorRequestStatus
+        self.status = DirectorRequestStatus.REJECTED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
         if notes:
@@ -409,7 +411,8 @@ class VenueManagerRequest(BaseModel):
     # state helpers ---
     def approve(self, admin: "User", admin_notes: str | None = None) -> None:
         """Approve venue manager request and automatically assign venue."""
-        self.status = "approved"
+        from ..status_enum import VenueManagerRequestStatus
+        self.status = VenueManagerRequestStatus.APPROVED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
         if admin_notes:
@@ -421,7 +424,8 @@ class VenueManagerRequest(BaseModel):
 
     def reject(self, admin: "User", admin_notes: str | None = None) -> None:
         """Reject venue manager request."""
-        self.status = "rejected"
+        from ..status_enum import VenueManagerRequestStatus
+        self.status = VenueManagerRequestStatus.REJECTED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
         if admin_notes:
@@ -429,7 +433,8 @@ class VenueManagerRequest(BaseModel):
 
     def cancel(self) -> None:
         """Cancel venue manager request."""
-        self.status = "cancelled"
+        from ..status_enum import VenueManagerRequestStatus
+        self.status = VenueManagerRequestStatus.CANCELLED
         self.processed_at = datetime.utcnow()
 
     def __repr__(self) -> str:  # pragma: no cover
