@@ -1,30 +1,30 @@
 {# templates/challenge/_challenge_detail.html #}
 <div class="row">
-    <div class="col-md-6">
-        <!-- Challenge Image -->
+    <div class="col-md-8">
+        <!-- Challenge Image (Made Larger and More Prominent) -->
         <div class="card mb-3">
-            <div class="card-body text-center">
+            <div class="card-body text-center p-2">
                 {% if challenge.image_filename %}
                     <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
                          class="img-fluid rounded" 
-                         style="max-height: 300px; object-fit: cover;"
+                         style="max-height: 450px; width: 100%; object-fit: cover;"
                          alt="Challenge Image"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div class="text-muted" style="display: none;">
-                        <i class="fas fa-bullseye fa-4x mb-2"></i>
-                        <p>Immagine non disponibile</p>
+                    <div class="text-muted py-5" style="display: none;">
+                        <i class="fas fa-bullseye fa-5x mb-3"></i>
+                        <p class="h5">Immagine non disponibile</p>
                     </div>
                 {% else %}
-                    <div class="text-muted">
-                        <i class="fas fa-bullseye fa-4x mb-2"></i>
-                        <p>Nessuna immagine disponibile</p>
+                    <div class="text-muted py-5">
+                        <i class="fas fa-bullseye fa-5x mb-3"></i>
+                        <p class="h5">Nessuna immagine disponibile</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <div class="col-md-6">
+    <div class="col-md-4">
         <!-- Challenge Info -->
         <div class="card mb-3">
             <div class="card-header">
@@ -33,8 +33,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <h6 class="card-title">{{ challenge.get_display_name() }}</h6>
-                <p class="card-text">{{ challenge.description }}</p>
+                <p class="card-text" style="font-size: 1.1rem; line-height: 1.5;">{{ challenge.description }}</p>
                 
                 <hr>
                 

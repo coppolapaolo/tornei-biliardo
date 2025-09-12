@@ -404,3 +404,5 @@ Each major component has detailed documentation in its subdirectory:
 - Dive into specific directories for detailed technical information
 - Each subdirectory documentation is self-contained but cross-references related components
 - non cercare mai quick fix, ma scegli sempre le soluzioni piu' corrette secondo i principi di buona programmazione. non sovraingegnerizzare. Segui sempre soluzioni pulite ed eleganti
+- la app è quasi sempre in esecuzione. Non serve avviarla
+- il db e' nella cartella instance

@@ -1206,7 +1206,7 @@ def get_gara_challenges(gara_id):
             challenges_data.append({
                 "id": gara_challenge.id,
                 "challenge_id": gara_challenge.challenge_id,
-                "challenge_name": gara_challenge.challenge.name,
+                "challenge_name": gara_challenge.challenge.get_display_name(),
                 "challenge_description": gara_challenge.challenge.description,
                 "challenge_image_filename": gara_challenge.challenge.image_filename,
                 "round_number": gara_challenge.round_number,
@@ -1316,6 +1316,54 @@ def remove_challenge_from_gara(gara_id):
         return jsonify({"success": False, "error": f"Errore durante la rimozione della challenge: {str(e)}"}), 500
 
 
+@competition_bp.route("/<int:gara_id>/challenges/available")
+@login_required
+@gara_manager_required
+def get_available_challenges_for_gara(gara_id):
+    """Get available challenges for selection, excluding those already added to the gara (AJAX endpoint)."""
+    from models.challenge import Challenge
+    from models.challenge.gara_challenge_service import GaraChallengeService
+    
+    try:
+        gara = Gara.query.get_or_404(gara_id)
+        
+        # Get all active challenges
+        all_challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.description).all()
+        
+        # Get challenge IDs already assigned to this gara
+        assigned_challenges = GaraChallengeService.get_gara_challenges(gara_id)
+        assigned_challenge_ids = {gc.challenge_id for gc in assigned_challenges}
+        
+        # Filter out challenges already assigned to this gara
+        available_challenges = [c for c in all_challenges if c.id not in assigned_challenge_ids]
+        
+        challenges_data = []
+        for challenge in available_challenges:
+            # Assicura che il percorso dell'immagine sia corretto
+            image_filename = None
+            if challenge.image_path:
+                if challenge.image_path.startswith('uploads/'):
+                    image_filename = challenge.image_path.split('/')[-1]
+                else:
+                    image_filename = challenge.image_path
+                    
+            challenges_data.append({
+                "id": challenge.id,
+                "name": challenge.get_display_name(),
+                "description": challenge.description,
+                "pass_fail_only": challenge.pass_fail_only,
+                "image_filename": image_filename,
+            })
+
+        return jsonify({
+            "success": True,
+            "challenges": challenges_data
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @competition_bp.route("/challenges/available")
 @login_required
 @admin_required
@@ -1324,18 +1372,24 @@ def get_available_challenges():
     from models.challenge import Challenge
     
     try:
-        challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.name).all()
+        challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.description).all()
         
         challenges_data = []
         for challenge in challenges:
+            # Assicura che il percorso dell'immagine sia corretto
+            image_filename = None
+            if challenge.image_path:
+                if challenge.image_path.startswith('uploads/'):
+                    image_filename = challenge.image_path.split('/')[-1]
+                else:
+                    image_filename = challenge.image_path
+                    
             challenges_data.append({
                 "id": challenge.id,
-                "name": challenge.name,
+                "name": challenge.get_display_name(),
                 "description": challenge.description,
                 "pass_fail_only": challenge.pass_fail_only,
-                "min_score": challenge.min_score,
-                "max_score": challenge.max_score,
-                "image_filename": challenge.image_filename,
+                "image_filename": image_filename,
             })
 
         return jsonify({
@@ -1358,27 +1412,18 @@ def create_new_challenge():
     from flask import current_app
     
     try:
-        name = request.form["name"].strip()
         description = request.form["description"].strip()
         pass_fail_only = request.form.get("pass_fail_only", "false").lower() == "true"
         
-        if not name or not description:
-            return jsonify({"success": False, "error": "Nome e descrizione sono obbligatori"}), 400
+        if not description:
+            return jsonify({"success": False, "error": "La descrizione è obbligatoria"}), 400
 
-        # Handle score ranges for numeric challenges
-        min_score = 0
-        max_score = 100
-        if not pass_fail_only:
-            try:
-                min_score = int(request.form.get("min_score", 0))
-                max_score = int(request.form.get("max_score", 100))
-                if min_score >= max_score:
-                    return jsonify({"success": False, "error": "Il punteggio minimo deve essere inferiore al massimo"}), 400
-            except ValueError:
-                return jsonify({"success": False, "error": "Punteggi non validi"}), 400
 
-        # Handle image upload
+        # Handle image upload (required)
         image_path = None
+        if 'image' not in request.files or not request.files['image'].filename:
+            return jsonify({"success": False, "error": "L'immagine è obbligatoria"}), 400
+            
         if 'image' in request.files:
             file = request.files['image']
             if file and file.filename:
@@ -1390,24 +1435,33 @@ def create_new_challenge():
                 if file_size > 5 * 1024 * 1024:  # 5MB
                     return jsonify({"success": False, "error": "Immagine troppo grande (max 5MB)"}), 400
 
+                import uuid
+                
                 filename = secure_filename(file.filename)
                 if filename:
-                    # Ensure uploads directory exists
-                    uploads_dir = os.path.join(current_app.instance_path, 'uploads', 'challenges')
+                    # Check file extension
+                    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                    file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else None
+                    
+                    if not file_extension or file_extension not in allowed_extensions:
+                        return jsonify({"success": False, "error": "Formato file non supportato. Usa JPG, PNG, GIF o WebP"}), 400
+                    
+                    # Generate unique filename
+                    unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+                    
+                    # Ensure uploads directory exists in static folder
+                    uploads_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'challenges')
                     os.makedirs(uploads_dir, exist_ok=True)
                     
                     # Save file
-                    file_path = os.path.join(uploads_dir, filename)
+                    file_path = os.path.join(uploads_dir, unique_filename)
                     file.save(file_path)
-                    image_path = f"uploads/challenges/{filename}"
+                    image_path = f"uploads/challenges/{unique_filename}"
 
         # Create the challenge
         challenge = ChallengeService.create_challenge(
-            name=name,
             description=description,
             pass_fail_only=pass_fail_only,
-            min_score=min_score,
-            max_score=max_score,
             image_path=image_path,
             created_by_id=current_user.id
         )
@@ -1416,7 +1470,7 @@ def create_new_challenge():
             "success": True,
             "message": "Challenge creata con successo",
             "challenge_id": challenge.id,
-            "challenge_name": challenge.name
+            "challenge_name": challenge.get_display_name()
         })
 
     except ValueError as ve:

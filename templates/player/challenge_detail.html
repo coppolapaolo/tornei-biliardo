@@ -37,13 +37,8 @@
                         </a>
                     {% endif %}
                     
-                    <!-- Edit/Delete (for creators and admins) -->
+                    <!-- Delete (for creators and admins) -->
                     {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
-                        <a href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}" 
-                           class="btn btn-primary me-2">
-                            <i class="fas fa-edit"></i> Modifica
-                        </a>
-                        
                         <button class="btn btn-danger" onclick="deleteChallenge({{ challenge.id }})">
                             <i class="fas fa-trash"></i> Elimina
                         </button>
@@ -55,6 +50,7 @@
 </div>
 
 <script>
+
 function deleteChallenge(challengeId) {
     if (confirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.')) {
         fetch(`/challenge/${challengeId}/delete`, {

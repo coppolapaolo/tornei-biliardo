@@ -32,20 +32,6 @@
                 </div>
                 <div class="card-body">
                     <form id="challengeForm" method="POST" enctype="multipart/form-data">
-                        <!-- Nome Challenge -->
-                        <div class="mb-3">
-                            <label for="name" class="form-label">
-                                Nome Challenge <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="name" 
-                                   name="name"
-                                   placeholder="Inserisci un nome per la challenge..."
-                                   maxlength="100"
-                                   required>
-                            <div class="form-text">Il nome della challenge (opzionale - se vuoto viene generato automaticamente)</div>
-                        </div>
 
                         <!-- Descrizione -->
                         <div class="mb-3">
@@ -87,42 +73,16 @@
                             </div>
                         </div>
 
-                        <!-- Score Range (mostrato solo se score-based) -->
-                        <div id="score_range_section" class="mb-3">
-                            <label class="form-label">Range Punteggio</label>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="min_score" class="form-label">Punteggio Minimo</label>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="min_score" 
-                                           name="min_score"
-                                           value="0"
-                                           min="0"
-                                           max="999">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="max_score" class="form-label">Punteggio Massimo</label>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="max_score" 
-                                           name="max_score"
-                                           value="100"
-                                           min="1"
-                                           max="999">
-                                </div>
-                            </div>
-                            <div class="form-text">Definisci il range di punteggio possibile per questa challenge</div>
-                        </div>
 
                         <!-- Image Upload -->
                         <div class="mb-3">
-                            <label for="image" class="form-label">Immagine Challenge (opzionale)</label>
+                            <label for="image" class="form-label">Immagine Challenge <span class="text-danger">*</span></label>
                             <input type="file" 
                                    class="form-control" 
                                    id="image" 
                                    name="image"
-                                   accept="image/*">
+                                   accept="image/*"
+                                   required>
                             <div class="form-text">Carica un'immagine che rappresenti la challenge (formato: JPG, PNG, GIF)</div>
                         </div>
 
@@ -146,18 +106,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const scoreBasedRadio = document.getElementById('score_based');
     const passFailRadio = document.getElementById('pass_fail');
-    const scoreRangeSection = document.getElementById('score_range_section');
-    
-    function toggleScoreRange() {
-        if (passFailRadio.checked) {
-            scoreRangeSection.style.display = 'none';
-        } else {
-            scoreRangeSection.style.display = 'block';
-        }
-    }
-    
-    scoreBasedRadio.addEventListener('change', toggleScoreRange);
-    passFailRadio.addEventListener('change', toggleScoreRange);
     
     // Form submission
     document.getElementById('challengeForm').addEventListener('submit', function(e) {
@@ -168,11 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Convert scoring type to pass_fail_only boolean
         formData.append('pass_fail_only', passFailRadio.checked ? 'true' : 'false');
         
-        // If pass/fail, set score range to 0-1
-        if (passFailRadio.checked) {
-            formData.set('min_score', '0');
-            formData.set('max_score', '1');
-        }
+        // Pass/fail handling is done server-side
         
         // Submit form
         fetch(window.location.href, {

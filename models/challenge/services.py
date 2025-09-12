@@ -18,20 +18,14 @@ class ChallengeService:
 
     @staticmethod
     def create_challenge(
-        name: Optional[str],
         description: str,
-        min_score: int = 0,
-        max_score: int = 100,
+        image_path: str,
         pass_fail_only: bool = False,
-        image_path: Optional[str] = None,
         created_by_id: Optional[int] = None,
     ) -> Challenge:
         """Create a new challenge."""
         challenge = Challenge(
-            name=name,
             description=description,
-            min_score=min_score,
-            max_score=max_score,
             pass_fail_only=pass_fail_only,
             image_path=image_path,
             created_by_id=created_by_id,
@@ -82,25 +76,27 @@ class ChallengeService:
 
     @staticmethod
     def get_catalog_data(user_id: Optional[int] = None) -> Dict[str, Any]:
-        """Get complete data structure for challenge catalog."""
-        # Get all active challenges
+        """Get complete data structure for challenge catalog (only active challenges)."""
+        # Everyone sees only active challenges
         all_challenges = ChallengeService.get_active_challenges()
-        
+
         result = {
             "all_challenges": all_challenges,
             "my_challenges": [],
             "favorite_challenges": [],
-            "user_favorites": set()
+            "user_favorites": set(),
         }
-        
+
         if user_id:
-            # Get user's created challenges (for directors)
-            my_challenges = db.session.query(Challenge).filter_by(
-                created_by_id=user_id, is_active=True
-            ).all()
+            # Get user's created active challenges
+            my_challenges = (
+                db.session.query(Challenge)
+                .filter_by(created_by_id=user_id, is_active=True)
+                .all()
+            )
             result["my_challenges"] = my_challenges
-            
-            # Get user's favorites
+
+            # Get user's favorites (only from active challenges)
             favorite_ids = {
                 fav.challenge_id
                 for fav in db.session.query(ChallengeFavorite)
@@ -108,8 +104,10 @@ class ChallengeService:
                 .all()
             }
             result["user_favorites"] = favorite_ids
-            result["favorite_challenges"] = [c for c in all_challenges if c.id in favorite_ids]
-        
+            result["favorite_challenges"] = [
+                c for c in all_challenges if c.id in favorite_ids
+            ]
+
         return result
 
     @staticmethod
@@ -308,39 +306,47 @@ class ChallengeService:
         )
 
     @staticmethod
-    def update_challenge(
-        challenge_id: int,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        image_path: Optional[str] = None,
-        is_active: Optional[bool] = None,
-    ) -> Challenge:
-        """Update challenge details."""
-        challenge = db.session.get(Challenge, challenge_id)
-        if not challenge:
-            from flask import abort
-
-            abort(404)
-
-        if name is not None:
-            challenge.name = name
-        if description is not None:
-            challenge.description = description
-        if image_path is not None:
-            challenge.image_path = image_path
-        if is_active is not None:
-            challenge.is_active = is_active
-
-        db.session.commit()
-        return challenge
-
-    @staticmethod
     def delete_challenge(challenge_id: int) -> None:
-        """Delete a challenge (soft delete by marking inactive)."""
+        """
+        Delete a challenge with smart logic:
+        - Hard delete if never used (no attempts, no gara selections)
+        - Soft delete if used, but hide from all catalogs
+        """
         challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
             from flask import abort
 
             abort(404)
-        challenge.is_active = False
+
+        # Check if challenge has ever been used
+        has_attempts = (
+            db.session.query(ChallengeAttempt)
+            .filter_by(challenge_id=challenge_id)
+            .first()
+            is not None
+        )
+
+        # Check if challenge has been selected in any gara
+        # This would require checking gara_challenge_models if it exists
+        has_gara_usage = False
+        try:
+            from .gara_challenge_models import GaraChallenge
+
+            has_gara_usage = (
+                db.session.query(GaraChallenge)
+                .filter_by(challenge_id=challenge_id)
+                .first()
+                is not None
+            )
+        except ImportError:
+            # If no gara challenge relationship exists, skip this check
+            pass
+
+        if not has_attempts and not has_gara_usage:
+            # Hard delete - completely remove from database
+            db.session.delete(challenge)
+        else:
+            # Soft delete - mark as inactive but keep for historical data
+            challenge.is_active = False
+
         db.session.commit()

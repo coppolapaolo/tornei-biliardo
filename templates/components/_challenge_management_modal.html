@@ -36,7 +36,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-label">
-                                                    <i class="fas fa-bullseye"></i> Challenge
+                                                    <i class="fas fa-bullseye"></i> Drill
                                                 </label>
                                                 <input type="hidden" id="challenge_id" name="challenge_id" required>
                                                 <div id="challengeSelectContainer" style="max-height: 250px; overflow-y: auto; border: 1px solid #ced4da; border-radius: 0.375rem; padding: 0.5rem;">
@@ -113,52 +113,20 @@
             <div class="modal-body">
                 <form id="createChallengeForm" enctype="multipart/form-data">
                     <div class="row">
-                        <!-- Nome Challenge -->
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="challenge_name" class="form-label">
-                                    <i class="fas fa-tag"></i> Nome Challenge
-                                </label>
-                                <input type="text" class="form-control" id="challenge_name" name="name" maxlength="100">
-                                <div class="form-text">Nome opzionale (se vuoto, verrà generato automaticamente dalla descrizione)</div>
-                            </div>
-                        </div>
-
                         <!-- Tipo Scoring -->
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="form-group mb-3">
                                 <label for="pass_fail_only" class="form-label">
                                     <i class="fas fa-calculator"></i> Tipo Punteggio
                                 </label>
                                 <select class="form-select" id="pass_fail_only" name="pass_fail_only" required>
-                                    <option value="false">Punteggio Numerico (0-100)</option>
+                                    <option value="false">Punteggio Numerico</option>
                                     <option value="true">Solo Successo/Fallimento</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row" id="scoreRangeRow">
-                        <!-- Punteggio Minimo -->
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="min_score" class="form-label">
-                                    <i class="fas fa-sort-numeric-down"></i> Punteggio Minimo
-                                </label>
-                                <input type="number" class="form-control" id="min_score" name="min_score" value="0" min="0">
-                            </div>
-                        </div>
-
-                        <!-- Punteggio Massimo -->
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="max_score" class="form-label">
-                                    <i class="fas fa-sort-numeric-up"></i> Punteggio Massimo
-                                </label>
-                                <input type="number" class="form-control" id="max_score" name="max_score" value="100" min="1">
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="row">
                         <!-- Descrizione -->
@@ -178,10 +146,10 @@
                         <div class="col-12">
                             <div class="form-group mb-3">
                                 <label for="challenge_image" class="form-label">
-                                    <i class="fas fa-image"></i> Immagine Challenge (opzionale)
+                                    <i class="fas fa-image"></i> Immagine Challenge <span class="text-danger">*</span>
                                 </label>
-                                <input type="file" class="form-control" id="challenge_image" name="image" accept="image/*">
-                                <div class="form-text">Immagine esplicativa della challenge (JPG, PNG, max 5MB)</div>
+                                <input type="file" class="form-control" id="challenge_image" name="image" accept="image/*" required>
+                                <div class="form-text">Immagine esplicativa della challenge (JPG, PNG, GIF, WebP - max 5MB)</div>
                             </div>
                         </div>
                     </div>
@@ -204,16 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadActiveChallenges();
         loadAvailableChallenges();
     });
-
-    // Gestione cambio tipo punteggio nella creazione challenge
-    $('#pass_fail_only').change(function() {
-        const scoreRangeRow = document.getElementById('scoreRangeRow');
-        if (this.value === 'true') {
-            scoreRangeRow.style.display = 'none';
-        } else {
-            scoreRangeRow.style.display = 'block';
-        }
+    
+    // Refresh della pagina quando si chiude la modal per aggiornare le challenge attive visibili
+    $('#challengeManagementModal').on('hidden.bs.modal', function() {
+        location.reload();
     });
+
 
     // Submit form aggiunta challenge
     $('#addChallengeForm').submit(function(e) {
@@ -247,7 +211,8 @@ function loadActiveChallenges() {
 }
 
 function loadAvailableChallenges() {
-    fetch('/admin/gara/challenges/available')
+    const garaId = {{ gara.id }};
+    fetch(`/admin/gara/${garaId}/challenges/available`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -278,15 +243,12 @@ function displayActiveChallenges(challenges) {
         if (challenge.challenge_image_filename) {
             challengeImage = `<img src="/static/uploads/challenges/${challenge.challenge_image_filename}" 
                                   class="rounded me-2" 
-                                  style="width: 40px; height: 40px; object-fit: cover;"
+                                  style="width: 200px; height: 115px; object-fit: cover;"
                                   alt="Challenge Image"
-                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                              <i class="fas fa-bullseye text-warning me-2" style="font-size: 1.5em; display: none;"></i>`;
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">`;
         } else {
             challengeImage = '<i class="fas fa-bullseye text-warning me-2" style="font-size: 1.5em;"></i>';
         }
-
-        const displayName = challenge.challenge_name || `Challenge #${challenge.challenge_id}`;
         
         html += `
             <tr>
@@ -294,8 +256,7 @@ function displayActiveChallenges(challenges) {
                     <div class="d-flex align-items-center">
                         ${challengeImage}
                         <div>
-                            <strong>${displayName}</strong><br>
-                            <small class="text-muted">${challenge.challenge_description.substring(0, 100)}...</small>
+                            <small class="text-muted">${challenge.challenge_description}</small>
                         </div>
                     </div>
                 </td>
@@ -328,16 +289,12 @@ function populateChallengeSelect(challenges) {
         if (challenge.image_filename) {
             challengeImage = `<img src="/static/uploads/challenges/${challenge.image_filename}" 
                                   class="rounded me-3" 
-                                  style="width: 50px; height: 50px; object-fit: cover;"
+                                  style="width: 200px; height: 115px; object-fit: cover;"
                                   alt="Challenge Image"
-                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                              <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; display: none;"><i class="fas fa-bullseye text-muted"></i></div>`;
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
         } else {
-            challengeImage = '<div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;"><i class="fas fa-bullseye text-muted"></i></div>';
+            challengeImage = '<div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 200px; height: 115px;"><i class="fas fa-bullseye text-muted"></i></div>';
         }
-
-        const displayName = challenge.name || `Challenge #${challenge.id}`;
-        const scoreInfo = challenge.pass_fail_only ? 'Pass/Fail' : `${challenge.min_score}-${challenge.max_score}`;
         
         html += `
             <div class="challenge-option border rounded p-2 mb-2" 
@@ -345,15 +302,11 @@ function populateChallengeSelect(challenges) {
                  data-challenge-id="${challenge.id}"
                  onmouseover="this.style.backgroundColor='#f8f9fa'"
                  onmouseout="this.style.backgroundColor=''"
-                 onclick="selectChallenge(${challenge.id}, '${displayName.replace(/'/g, "\\'")}')">
+                 onclick="selectChallenge(${challenge.id})">
                 <div class="d-flex align-items-center">
                     ${challengeImage}
                     <div class="flex-grow-1">
-                        <div class="fw-bold">${displayName}</div>
                         <small class="text-muted">${challenge.description.substring(0, 80)}${challenge.description.length > 80 ? '...' : ''}</small>
-                        <div class="mt-1">
-                            <span class="badge bg-secondary">${scoreInfo}</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -403,8 +356,12 @@ function addChallengeToGara() {
     .then(data => {
         if (data.success) {
             showChallengeAlert('Challenge aggiunta con successo!', 'success');
-            loadActiveChallenges(); // Ricarica la lista
+            loadActiveChallenges(); // Ricarica la lista attive
+            loadAvailableChallenges(); // Ricarica la lista disponibili (Drill)
             form.reset(); // Reset del form
+            
+            // Reset della selezione challenge
+            document.getElementById('challenge_id').value = '';
         } else {
             showChallengeAlert(data.error || 'Errore nell\'aggiunta della challenge', 'danger');
         }
@@ -433,7 +390,8 @@ function removeChallengeFromGara(garaChallengeId) {
     .then(data => {
         if (data.success) {
             showChallengeAlert('Challenge rimossa con successo!', 'success');
-            loadActiveChallenges(); // Ricarica la lista
+            loadActiveChallenges(); // Ricarica la lista attive
+            loadAvailableChallenges(); // Ricarica la lista disponibili (Drill)
         } else {
             showChallengeAlert(data.error || 'Errore nella rimozione della challenge', 'danger');
         }
@@ -457,7 +415,16 @@ function createNewChallenge() {
         if (data.success) {
             showChallengeAlert('Challenge creata con successo!', 'success');
             $('#createChallengeModal').modal('hide');
-            loadAvailableChallenges(); // Ricarica la lista delle challenge disponibili
+            
+            // Ricarica la lista delle challenge disponibili e riaprire la modal principale
+            loadAvailableChallenges();
+            
+            // Aspetta che la modal si chiuda completamente e poi riapri la principale
+            $('#createChallengeModal').on('hidden.bs.modal.reopenMain', function() {
+                $(this).off('hidden.bs.modal.reopenMain');
+                $('#challengeManagementModal').modal('show');
+            });
+            
             form.reset();
         } else {
             showChallengeAlert(data.error || 'Errore nella creazione della challenge', 'danger');

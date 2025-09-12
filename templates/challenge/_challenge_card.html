@@ -1,8 +1,8 @@
 {# templates/challenge/_challenge_card.html #}
 <div class="col-md-6 col-lg-4 mb-4">
     <div class="card h-100 challenge-card" data-challenge-id="{{ challenge.id }}" style="cursor: pointer; transition: transform 0.2s;">
-        <!-- Challenge Image -->
-        <div class="card-img-top position-relative" style="height: 200px; overflow: hidden;">
+        <!-- Challenge Image (Made Larger) -->
+        <div class="card-img-top position-relative" style="height: 280px; overflow: hidden;">
             {% if challenge.image_filename %}
                 <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
                      class="w-100 h-100" 
@@ -10,11 +10,11 @@
                      alt="Challenge Image"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="d-none w-100 h-100 bg-light d-flex align-items-center justify-content-center">
-                    <i class="fas fa-bullseye fa-3x text-muted"></i>
+                    <i class="fas fa-bullseye fa-4x text-muted"></i>
                 </div>
             {% else %}
                 <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
-                    <i class="fas fa-bullseye fa-3x text-muted"></i>
+                    <i class="fas fa-bullseye fa-4x text-muted"></i>
                 </div>
             {% endif %}
 
@@ -34,26 +34,17 @@
                 {% if challenge.pass_fail_only %}
                     <span class="badge bg-info">Pass/Fail</span>
                 {% else %}
-                    <span class="badge bg-secondary">{{ challenge.min_score }}-{{ challenge.max_score }}</span>
+                    <span class="badge bg-secondary">Punteggio</span>
                 {% endif %}
             </div>
         </div>
 
         <div class="card-body d-flex flex-column">
-            <!-- Challenge Title -->
-            <h5 class="card-title">
-                {{ challenge.get_display_name() }}
+            <!-- Challenge Description (Now Primary Content) -->
+            <p class="card-text flex-grow-1" style="font-size: 1.1rem; line-height: 1.4;">
+                {{ challenge.description }}
                 {% if challenge.created_by_id == current_user.id %}
-                    <small class="text-muted">(mia)</small>
-                {% endif %}
-            </h5>
-
-            <!-- Challenge Description -->
-            <p class="card-text text-muted flex-grow-1">
-                {% if challenge.description|length > 100 %}
-                    {{ challenge.description[:100] }}...
-                {% else %}
-                    {{ challenge.description }}
+                    <small class="text-muted d-block mt-2">(creata da me)</small>
                 {% endif %}
             </p>
 
@@ -84,26 +75,11 @@
                         <i class="fas fa-eye"></i> Dettagli
                     </a>
 
-                    <!-- Edit/Delete (for creators and admins) -->
+                    <!-- Delete button (for creators and admins) -->
                     {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-cog"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}">
-                                        <i class="fas fa-edit"></i> Modifica
-                                    </a>
-                                </li>
-                                <li>
-                                    <button class="dropdown-item text-danger" onclick="deleteChallenge({{ challenge.id }})">
-                                        <i class="fas fa-trash"></i> Elimina
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteChallenge({{ challenge.id }})">
+                            <i class="fas fa-trash"></i> Elimina
+                        </button>
                     {% endif %}
                 </div>
             </div>
@@ -141,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
 
 function deleteChallenge(challengeId) {
     if (confirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.')) {

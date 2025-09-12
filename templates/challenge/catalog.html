@@ -34,7 +34,7 @@
                         <span class="badge bg-secondary ms-1">{{ all_challenges|length }}</span>
                     </button>
                 </li>
-                {% if current_user.is_director %}
+                {% if current_user.is_director or current_user.is_admin %}
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="my-tab" data-bs-toggle="pill" 
                                 data-bs-target="#my-challenges" type="button" role="tab">
@@ -61,8 +61,8 @@
             {% include "challenge/_challenge_grid.html" with context %}
         </div>
 
-        <!-- My Challenges Tab (Directors only) -->
-        {% if current_user.is_director %}
+        <!-- My Challenges Tab (Directors and Admins) -->
+        {% if current_user.is_director or current_user.is_admin %}
             <div class="tab-pane fade" id="my-challenges" role="tabpanel">
                 {% if my_challenges %}
                     <div class="row">

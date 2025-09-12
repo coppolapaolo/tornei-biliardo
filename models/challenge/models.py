@@ -24,13 +24,10 @@ class Challenge(BaseModel, TimestampMixin):
     __tablename__ = "challenge"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=True)
     description = db.Column(db.Text, nullable=False)
-    image_path = db.Column(db.String(255), nullable=True)
+    image_path = db.Column(db.String(255), nullable=False)
 
     # Scoring configuration
-    min_score = db.Column(db.Integer, nullable=False, default=0)
-    max_score = db.Column(db.Integer, nullable=False, default=100)
     pass_fail_only = db.Column(db.Boolean, nullable=False, default=False)
 
     # Metadata
@@ -69,7 +66,8 @@ class Challenge(BaseModel, TimestampMixin):
                 "unique_players": 0,
                 "average_score": 0,
                 "median_score": 0,
-                "max_score_count": 0,
+                "max_score_achieved": 0,
+                "perfect_score_count": 0,
                 "pass_rate": 0,
             }
 
@@ -77,7 +75,8 @@ class Challenge(BaseModel, TimestampMixin):
         scores = [attempt.score for attempt in attempts_query.all()]
         average_score = sum(scores) / len(scores)
         median_score = sorted(scores)[len(scores) // 2]
-        max_score_count = sum(1 for score in scores if score == self.max_score)
+        max_score_achieved = max(scores)
+        perfect_score_count = sum(1 for score in scores if score == max_score_achieved)
 
         if self.pass_fail_only:
             pass_rate = (
@@ -86,8 +85,8 @@ class Challenge(BaseModel, TimestampMixin):
                 * 100
             )
         else:
-            # Consider passing as achieving 70% of max score
-            passing_score = self.max_score * 0.7
+            # Consider passing as achieving 70% of best score achieved
+            passing_score = max_score_achieved * 0.7 if max_score_achieved > 0 else 0
             pass_rate = (
                 sum(1 for score in scores if score >= passing_score)
                 / total_attempts
@@ -99,7 +98,8 @@ class Challenge(BaseModel, TimestampMixin):
             "unique_players": unique_players,
             "average_score": round(average_score, 1),
             "median_score": median_score,
-            "max_score_count": max_score_count,
+            "max_score_achieved": max_score_achieved,
+            "perfect_score_count": perfect_score_count,
             "pass_rate": round(pass_rate, 1),
         }
 
@@ -117,13 +117,9 @@ class Challenge(BaseModel, TimestampMixin):
         return not self.pass_fail_only and self.is_active
 
     def get_display_name(self) -> str:
-        """Get display name for the challenge, with fallback for nameless challenges."""
-        if self.name:
-            return self.name
-        else:
-            # Generate a display name from description (first 50 chars)
-            short_desc = self.description[:50] + "..." if len(self.description) > 50 else self.description
-            return f"Challenge #{self.id}: {short_desc}"
+        """Get display name from description (first 50 chars)."""
+        short_desc = self.description[:50] + "..." if len(self.description) > 50 else self.description
+        return short_desc
 
     @property
     def image_filename(self) -> Optional[str]:
@@ -133,7 +129,7 @@ class Challenge(BaseModel, TimestampMixin):
         return None
 
     def __repr__(self) -> str:
-        return f"<Challenge {self.get_display_name()}>"
+        return f"<Challenge #{self.id}: {self.get_display_name()}>"
 
 
 class ChallengeAttempt(BaseModel, TimestampMixin):
@@ -182,9 +178,9 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
         else:
             self.score = score
             # Auto-determine pass/fail if not explicitly set
+            # Without a predefined max_score, we consider positive scores as passing
             if passed is None and score is not None:
-                passing_score = self.challenge.max_score * 0.7
-                self.passed = score >= passing_score
+                self.passed = score > 0
             else:
                 self.passed = passed
 
@@ -195,12 +191,17 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
 
         # Scale score to reasonable rack difference (0 to max expected rack difference)
         max_rack_diff = 5  # Typical maximum rack difference in a match
-        normalized_score = self.score / self.challenge.max_score
-        return int(normalized_score * max_rack_diff)
+        # Without a predefined max_score, use a simple scaling based on score value
+        if self.score <= 0:
+            return 0
+        elif self.score >= 100:  # Assume 100 as a "good" score for scaling
+            return max_rack_diff
+        else:
+            return int((self.score / 100) * max_rack_diff)
 
     def __repr__(self) -> str:
         return (
-            f"<ChallengeAttempt {self.user_id} -> {self.challenge.name}: {self.score}>"
+            f"<ChallengeAttempt {self.user_id} -> Challenge#{self.challenge_id}: {self.score}>"
         )
 
 
@@ -228,4 +229,4 @@ class ChallengeFavorite(BaseModel):
     )
 
     def __repr__(self) -> str:
-        return f"<ChallengeFavorite {self.user_id} -> {self.challenge.name}>"
+        return f"<ChallengeFavorite {self.user_id} -> Challenge#{self.challenge_id}>"
