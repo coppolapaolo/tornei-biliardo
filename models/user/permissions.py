@@ -582,7 +582,7 @@ class RoleRequirement:
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated or not current_user.is_director:
+            if not current_user.is_authenticated or (not current_user.is_director and not current_user.is_admin):
                 abort(403)
             return f(*args, **kwargs)
 
