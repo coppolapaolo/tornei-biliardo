@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 from models.user.models import User
+from models.match.models import Match
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
@@ -472,7 +473,6 @@ class TournamentService(DomainService):
             Dictionary containing campionato statistics
         """
         from models.competition.models import Gara, Inscription
-        from models.match.models import Match
 
         # Track domain access
         self._track_domain_access()
@@ -487,10 +487,10 @@ class TournamentService(DomainService):
         gare = self._execute_with_tracking(
             lambda: Gara.query.filter_by(campionato_id=campionato_id).all()
         )
-        gara_ids = [p.id for p in provas]
+        gara_ids = [p.id for p in gare]
 
         # Calculate statistics
-        total_garas = len(provas)
+        total_garas = len(gare)
         total_inscriptions = self._execute_with_tracking(
             lambda: (
                 Inscription.query.filter(Inscription.gara_id.in_(gara_ids)).count()
@@ -524,7 +524,6 @@ class TournamentService(DomainService):
     def calculate_campionato_statistics(self, campionato_id: int) -> Dict[str, Any]:
         """Calcola statistiche avanzate del campionato."""
         from models.competition.models import Gara, Inscription
-        from models.match.models import Match
         from sqlalchemy import func, distinct
         
         # Trova tutte le gare del campionato
@@ -555,7 +554,7 @@ class TournamentService(DomainService):
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == 'completed'
+                Match.status == 'completed'  # type: ignore[attr-defined]
             )
         )
         total_completed_matches = completed_matches_query.scalar() or 0
@@ -568,7 +567,7 @@ class TournamentService(DomainService):
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == 'completed'
+                Match.status == 'completed'  # type: ignore[attr-defined]
             )
         )
         total_racks_played = rack_sum_query.scalar() or 0
@@ -709,11 +708,11 @@ def compute_campionato_status(campionato: Campionato) -> str:
     Ritorna la stringa dello stato (compat con UI/template esistenti).
     """
     gare = getattr(campionato, "gare", []) or []
-    if not provas:
+    if not gare:
         return TournamentStatus.SETUP.value
 
     # Normalizza valori (stringhe) e valuta
-    values = [getattr(p, "status", GaraStatus.SETUP.value) for p in provas]
+    values = [getattr(p, "status", GaraStatus.SETUP.value) for p in gare]
 
     if any(v == GaraStatus.PLAYING.value for v in values):
         return TournamentStatus.IN_PROGRESS.value

@@ -4,6 +4,7 @@ from typing import Sequence, Dict, Any, Optional, List
 from dataclasses import dataclass
 
 from .base import BaseStrategy, Pairing, ValidationResult, StrategyMetrics
+from ..registry import PairingContext
 from models.competition.models import Gara
 from models import Match, Inscription, PlayerEncounter, RoundClassification, TrioMatch
 from amalfi.engine import AmalfiEngine
@@ -15,7 +16,7 @@ class AmalfiContext:
     
     seed: Optional[int] = None
     salto: int = 0
-    anti_rematch_data: Dict[str, Any] = None
+    anti_rematch_data: Optional[Dict[str, Any]] = None
     
     def __post_init__(self):
         if self.anti_rematch_data is None:
@@ -46,10 +47,10 @@ class AmalfiUnifiedAdapter(BaseStrategy):
 
     def __init__(self):
         super().__init__()
-        self._context: Optional['PairingContext'] = None
+        self._context: Optional[PairingContext] = None
         self._amalfi_context: Optional[AmalfiContext] = None
 
-    def set_context(self, context: 'PairingContext') -> None:
+    def set_context(self, context: PairingContext) -> None:
         """Inject PairingContext for deterministic behavior."""
         self._context = context
         # Extract or create Amalfi-specific context
@@ -59,7 +60,7 @@ class AmalfiUnifiedAdapter(BaseStrategy):
             **amalfi_ctx_data
         )
 
-    def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
+    def _validate_strategy_specific(self, gara: Gara) -> Dict[str, List[str]]:
         """Amalfi-specific validation."""
         errors = []
         warnings = []

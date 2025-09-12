@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from typing import cast
 from PIL import Image, ImageOps
 
 from models import BilliardHall
@@ -12,7 +13,7 @@ from models.location.services import LocationService
 from models.user.services import VenueManagerRequestService, VenueManagementService
 from models.user.models import VenueManagerRequest, User
 from utils import admin_required, venue_manager_required
-from flask_login import login_required
+from flask_login import login_required, current_user
 from models.base import db
 
 # Venue management blueprint
@@ -507,7 +508,7 @@ def process_venue_manager_request(request_id):
     
     try:
         from flask_login import current_user
-        admin_user = current_user  # type: ignore
+        admin_user = cast(User, current_user)
         if action == "approve":
             VenueManagerRequestService.process_request(request_id, admin_user, True, admin_notes)
             flash("Richiesta approvata con successo!", "success")
@@ -533,7 +534,7 @@ def assign_venue_manager(venue_id):
     
     try:
         from flask_login import current_user
-        admin_user = current_user  # type: ignore
+        admin_user = cast(User, current_user)
         VenueManagementService.assign_venue_manager(int(user_id), venue_id, admin_user)
         flash("Gestore assegnato con successo!", "success")
     except Exception as e:
@@ -548,7 +549,7 @@ def revoke_venue_manager(assignment_id):
     """Revoca l'assegnazione di un gestore sala"""
     try:
         from flask_login import current_user
-        admin_user = current_user  # type: ignore
+        admin_user = cast(User, current_user)
         assignment = VenueManagementService.revoke_venue_manager(assignment_id, admin_user)
         flash("Gestione sala revocata con successo!", "success")
         return redirect(url_for("admin.venue.venue_detail", venue_id=assignment.venue_id))

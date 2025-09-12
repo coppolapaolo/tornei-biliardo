@@ -670,31 +670,6 @@ class AmalfiEngine:
 
         return preview_matches
 
-    def _preview_first_round(self) -> List[Dict]:
-        inscriptions = self._inscriptions_for_pairing()
-        users = [insc.user for insc in inscriptions]
-        users_copy = users.copy()
-        random.shuffle(users_copy)
-
-        preview_matches: List[Dict] = []
-        for i in range(0, len(users_copy), 2):
-            if i + 1 < len(users_copy):
-                preview_matches.append(
-                    {
-                        "player1": users_copy[i],
-                        "player2": users_copy[i + 1],
-                        "type": "normal",
-                    }
-                )
-            else:
-                if self.campionato.without_x and preview_matches:
-                    preview_matches[-1]["type"] = "trio"
-                    preview_matches[-1]["player3"] = users_copy[i]
-                else:
-                    preview_matches.append(
-                        {"player1": users_copy[i], "player2": None, "type": "bye"}
-                    )
-        return preview_matches
 
 
 # Utility functions per compat con codice esistente

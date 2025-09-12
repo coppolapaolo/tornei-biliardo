@@ -104,10 +104,11 @@ markers =
 
 ### Test Execution
 - **Default**: `pytest` (runs unit + integration, excludes legacy)
-- **Unit only**: `pytest -m unit`
-- **Integration only**: `pytest -m integration`
-- **E2E only**: `pytest -m e2e`
-- **All including legacy**: `pytest tests/legacy/`
+- **Correct Path**: `PYTHONPATH=. pytest tests/new/` (REQUIRED for proper imports)
+- **Unit only**: `PYTHONPATH=. pytest tests/new/unit/`
+- **Integration only**: `PYTHONPATH=. pytest tests/new/integration/`
+- **E2E only**: `PYTHONPATH=. pytest tests/new/e2e/`
+- **Legacy tests**: `pytest tests/legacy/` (separate, not maintained)
 
 ## Testing Strategies
 
@@ -240,6 +241,14 @@ Tests organized by platform domains supporting community growth:
 3. **Arrange-Act-Assert**: Clear test structure pattern
 4. **Independent Tests**: No dependencies between tests
 5. **Meaningful Assertions**: Clear validation of expected outcomes
+
+### Development Workflow Integration
+**MANDATORY for all code changes:**
+1. **Run tests with correct path**: `PYTHONPATH=. pytest tests/new/`
+2. **Individual test isolation**: Each test must pass independently
+3. **Type safety**: Ensure all new test code passes `pyright` checks
+4. **Test data isolation**: Fix database state issues, not test logic
+5. **Focus on new tests**: Legacy tests (`tests/legacy/`) are not maintained
 
 ### Performance Guidelines
 - **Fast Unit Tests**: Optimize for quick feedback

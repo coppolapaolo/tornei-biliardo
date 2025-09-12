@@ -62,6 +62,9 @@ black .
 # Lint code
 flake8
 
+# Type check (MANDATORY before commits)
+pyright
+
 # Clean imports
 autoflake --remove-all-unused-imports --recursive --in-place .
 ```
@@ -179,11 +182,13 @@ Shared utilities:
 - Coverage reporting with route exclusion
 - Integration tests use actual database connections
 
-### Code Style
+### Code Style & Quality Assurance
 - **Black** formatting (88 character line length)
 - **Flake8** linting with extended ignore rules
+- **Pyright** type checking - MANDATORY for all new code (target: <20 errors total)
 - Import organization with autoflake
-- Type hints where applicable
+- Type hints REQUIRED for all new functions and methods
+- **Testing** REQUIRED for all new features and bug fixes
 
 ## Key Business Logic
 
@@ -289,12 +294,72 @@ Complete redesign and enhancement of the individual match proposals system:
 - **Templates**: Complete UI overhaul in `templates/player/match_proposals.html`, `templates/player/create_match_proposal.html`
 - **Competition System**: Enhanced standalone competition creation with optional fields and location datalist
 
+## Development Guidelines
+
+### Type Safety & Quality Standards
+**MANDATORY for all new code and modifications:**
+
+1. **Pyright Type Checking**
+   - Run `pyright` before every commit
+   - Target: Maintain <20 total errors across codebase
+   - Fix all new type errors introduced by changes
+   - Use proper type hints for all function parameters and return types
+
+2. **Import Management**
+   - Add proper imports at top-level to avoid "undefined variable" errors
+   - Use `from typing import cast` for LocalProxy conversions
+   - Import SQLAlchemy models explicitly for proper type inference
+
+3. **Common Type Patterns**
+   ```python
+   # LocalProxy casting in routes
+   user = cast(User, current_user)
+   
+   # Enum values in SQLAlchemy filters
+   .filter(Model.status.in_([Enum.VALUE.value, Enum.VALUE2.value]))
+   
+   # Optional parameters
+   def method(param: Optional[int] = None) -> List[str]:
+   
+   # Forward references
+   def method(self) -> "ModelName":
+   ```
+
+4. **SQLAlchemy Type Safety**
+   - Import model classes at module level
+   - Use `.all()` for relationship queries: `gara.inscriptions.all()`
+   - Add `# type: ignore[attr-defined]` for complex SQLAlchemy operations
+
+5. **Testing Requirements**
+   - All new features MUST have tests in `tests/new/`
+   - Run `PYTHONPATH=. pytest tests/new/` to verify
+   - Individual tests should pass independently
+   - Fix test isolation issues, not test content
+
+### Code Quality Checklist
+Before every commit:
+```bash
+# 1. Format and lint
+black .
+flake8
+
+# 2. Type check (MANDATORY)
+pyright
+
+# 3. Test new functionality
+PYTHONPATH=. pytest tests/new/
+
+# 4. Clean imports
+autoflake --remove-all-unused-imports --recursive --in-place .
+```
+
 ## Development Notes
 
 - The codebase uses Italian comments and variable names in many places
 - Git workflow uses feature branches (current: `refactor/step-1-admin-routes-split`)
 - Application runs on `http://localhost:5000` by default
 - Production deployment on PythonAnywhere platform
+- **Type Safety**: Project maintains 88% type error reduction (148→18 errors)
 - Comprehensive testing revealed and fixed multiple edge cases in competition workflow
 - Flexible matchmaking system now fully supports strategy preview, idempotent operations, and fallback classification display
 - All matchmaking strategies (Amalfi, Round-Robin, Elimination, Random) are fully implemented and tested

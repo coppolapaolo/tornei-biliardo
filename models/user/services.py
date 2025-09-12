@@ -22,7 +22,7 @@ from sqlalchemy import func, desc, or_
 from datetime import datetime
 
 from ..base import db
-from .models import User, DirectorRequest
+from .models import User, DirectorRequest, VenueManagement, VenueManagerRequest
 from ..transaction.manager import (
     DomainService,
     transactional,
@@ -31,6 +31,7 @@ from ..transaction.manager import (
 
 from models.match import Match
 from models.competition.models import Gara, Inscription
+from models.location.models import BilliardHall
 from models.status_enum import MatchStatus
 from models.user.role_enum import UserRole
 from models.classification.models import Classification
@@ -921,7 +922,7 @@ class VenueManagerRequestService:
     """Service class for handling venue manager requests."""
 
     @staticmethod
-    def create_request(user_id: int, venue_id: int, notes: str = None) -> "VenueManagerRequest":
+    def create_request(user_id: int, venue_id: int, notes: Optional[str] = None) -> "VenueManagerRequest":
         """
         Create venue manager request for a specific venue.
 
@@ -1004,7 +1005,7 @@ class VenueManagerRequestService:
 
     @staticmethod
     def process_request(
-        request_id: int, admin_user: User, approve: bool, notes: str = None
+        request_id: int, admin_user: User, approve: bool, notes: Optional[str] = None
     ) -> "VenueManagerRequest":
         """
         Process a venue manager request (approve or reject).
@@ -1134,7 +1135,7 @@ class VenueManagerRequestService:
         return VenueManagerRequest.query.filter_by(user_id=user_id).order_by(VenueManagerRequest.requested_at.desc()).all()
 
     @staticmethod
-    def has_pending_request_for_venue(user_id: int, venue_id: int = None) -> bool:
+    def has_pending_request_for_venue(user_id: int, venue_id: Optional[int] = None) -> bool:
         """
         Check if user has pending requests for specific venue or any venue.
         

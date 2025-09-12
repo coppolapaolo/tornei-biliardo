@@ -12,7 +12,7 @@ from typing import Sequence, List, Tuple, Optional, Set, TYPE_CHECKING
 from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
 
 if TYPE_CHECKING:
-    pass
+    from models.competition.models import Gara
 
 
 class RandomAntiRematchStrategy(PairingStrategy):
@@ -89,7 +89,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
                 return []
 
             # Get previous matches to avoid rematches
-            previous_pairings = self._get_previous_pairings(gara, round_number)
+            previous_pairings = self._get_previous_pairings(gara, round_number)  # type: ignore[arg-type]
 
             # Generate valid random pairings
             pairings = self._generate_valid_random_pairings(
@@ -103,7 +103,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
             return []
 
     def _get_previous_pairings(
-        self, gara: object, current_round: int
+        self, gara: 'Gara', current_round: int
     ) -> Set[Tuple[int, int]]:
         """Get all previous pairings to avoid rematches."""
         from ...match.models import Match

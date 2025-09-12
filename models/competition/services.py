@@ -233,7 +233,7 @@ class GaraService:
             # Invia notifiche a tutti i partecipanti
             if participant_ids:
                 from models.notification.services import NotificationService
-                from models.notification.models import NotificationPriority
+                from models.notification.models import NotificationPriority, NotificationType
                 
                 message = f"La {gara_name}"
                 if gara.campionato:
@@ -243,10 +243,10 @@ class GaraService:
                 for participant_id in participant_ids:
                     NotificationService.create_notification(
                         user_id=participant_id,
+                        notification_type=NotificationType.TOURNAMENT_REGISTRATION,
                         title="Gara Cancellata",
                         message=message,
-                        priority=NotificationPriority.HIGH,
-                        created_by_id=cancelled_by_id
+                        priority=NotificationPriority.HIGH
                     )
             
             db.session.commit()
@@ -1215,7 +1215,7 @@ class GaraService:
         # Se la strategia ha turni fissi, ricalcola il numero di turni
         constraints = gara.get_strategy_constraints()
         if constraints["fixed_rounds"]:
-            num_inscribed = len(gara.inscriptions) if hasattr(gara, 'inscriptions') else 0
+            num_inscribed = len(gara.inscriptions.all()) if hasattr(gara, 'inscriptions') else 0
             if num_inscribed > 0:
                 gara.rounds_count = gara.calculate_rounds_for_strategy(num_inscribed)
         
@@ -1245,7 +1245,7 @@ class GaraService:
         if not gara:
             return False, "Gara non trovata"
         
-        num_inscribed = len(gara.inscriptions) if hasattr(gara, 'inscriptions') else 0
+        num_inscribed = len(gara.inscriptions.all()) if hasattr(gara, 'inscriptions') else 0
         
         # Alcune strategie hanno requisiti minimi di giocatori
         if new_strategy == "direct_elimination" and num_inscribed < 2:

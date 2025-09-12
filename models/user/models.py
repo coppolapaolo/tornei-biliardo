@@ -18,6 +18,9 @@ from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel  # BaseModel for timestamps
 from ..fields import EncryptedString  # Encrypted field types
+
+if TYPE_CHECKING:
+    from ..location.models import BilliardHall
 from .role_enum import UserRole
 
 if TYPE_CHECKING:  # Avoid runtime circular imports

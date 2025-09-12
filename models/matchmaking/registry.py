@@ -50,7 +50,7 @@ class StrategyFactory:
         
         # Inject context if strategy supports it
         if context and hasattr(strategy, 'set_context'):
-            strategy.set_context(context)
+            strategy.set_context(context)  # type: ignore[attr-defined]
         
         return strategy
     

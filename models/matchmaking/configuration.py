@@ -44,7 +44,7 @@ class StrategyConfiguration:
     rounds_count: Optional[int] = None
     rating_type: Optional[RatingType] = None
     
-    def validate(self, num_players: int = None, distance: int = None) -> List[str]:
+    def validate(self, num_players: Optional[int] = None, distance: Optional[int] = None) -> List[str]:
         """Validate the configuration for consistency."""
         errors = []
         

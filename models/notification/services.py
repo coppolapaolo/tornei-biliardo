@@ -116,10 +116,10 @@ class NotificationService:
 
         if unread_only:
             query = query.filter(
-                Notification.status.in_(
-                    [  # type: ignore
-                        NotificationStatus.PENDING,
-                        NotificationStatus.SENT,
+                Notification.status.in_(  # type: ignore[attr-defined]
+                    [
+                        NotificationStatus.PENDING.value,
+                        NotificationStatus.SENT.value,
                     ]
                 )
             )
@@ -165,10 +165,10 @@ class NotificationService:
         notifications = (
             Notification.query.filter_by(user_id=user_id)
             .filter(
-                Notification.status.in_(
-                    [  # type: ignore
-                        NotificationStatus.PENDING,
-                        NotificationStatus.SENT,
+                Notification.status.in_(  # type: ignore[attr-defined]
+                    [
+                        NotificationStatus.PENDING.value,
+                        NotificationStatus.SENT.value,
                     ]
                 )
             )
@@ -189,10 +189,10 @@ class NotificationService:
         return (
             Notification.query.filter_by(user_id=user_id)
             .filter(
-                Notification.status.in_(
-                    [  # type: ignore
-                        NotificationStatus.PENDING,
-                        NotificationStatus.SENT,
+                Notification.status.in_(  # type: ignore[attr-defined]
+                    [
+                        NotificationStatus.PENDING.value,
+                        NotificationStatus.SENT.value,
                     ]
                 )
             )
@@ -265,8 +265,8 @@ class NotificationService:
         """Expire old notifications that have passed their expiry time."""
         expired_notifications = Notification.query.filter(
             Notification.expires_at <= datetime.utcnow(),
-            Notification.status.in_(
-                [NotificationStatus.PENDING, NotificationStatus.SENT]  # type: ignore
+            Notification.status.in_(  # type: ignore[attr-defined]
+                [NotificationStatus.PENDING, NotificationStatus.SENT]
             ),
         ).all()
 
@@ -285,8 +285,8 @@ class NotificationService:
 
         old_notifications = Notification.query.filter(
             Notification.created_at <= cutoff_date,
-            Notification.status.in_(
-                [  # type: ignore
+            Notification.status.in_(  # type: ignore[attr-defined]
+                [
                     NotificationStatus.READ,
                     NotificationStatus.DISMISSED,
                     NotificationStatus.EXPIRED,

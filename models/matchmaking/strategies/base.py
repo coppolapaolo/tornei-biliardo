@@ -179,8 +179,6 @@ class BaseStrategy(PairingStrategy):
         errors.extend(strategy_validation.get("errors", []))
         warnings.extend(strategy_validation.get("warnings", []))
 
-        (datetime.utcnow() - validation_start).total_seconds() * 1000
-
         if errors:
             return ValidationResult.failure(errors, warnings)
         else:

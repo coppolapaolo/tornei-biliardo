@@ -14,7 +14,7 @@ from models.user.models import DirectorAssignment
 from models.competition.models import Gara, Inscription
 from models.match.models import Match as TournamentMatch
 from models.user.models import User
-from models.status_enum import GaraStatus
+from models.status_enum import GaraStatus, MatchStatus
 
 
 # -----------------------
@@ -98,7 +98,7 @@ class DashboardVM:
     caps: CapabilityVM
 
     # NUOVO: elementi unificati ordinati per data
-    unified_items: List[UnifiedDashboardItem] = None
+    unified_items: Optional[List[UnifiedDashboardItem]] = None
 
     # selezione
     selected_campionato: Optional[Campionato] = None
@@ -166,7 +166,7 @@ class DashboardService:
             # Calcola la prossima data per i campionati
             next_date = None
             try:
-                gare_list = list(campionato.gare) if hasattr(campionato, 'gare') else []
+                gare_list = list(campionato.gare.all()) if hasattr(campionato, 'gare') else []
                 future_dates = [p.date for p in gare_list if getattr(p, 'date', None) and p.date >= date_cls.today()]
                 next_date = min(future_dates) if future_dates else None
             except (AttributeError, TypeError):
@@ -490,7 +490,7 @@ class DashboardService:
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_(["pending", "playing", "completed"]),  # Include pending, playing e completed
+                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value, MatchStatus.COMPLETED.value]),  # type: ignore[attr-defined]
                 or_(
                     TournamentMatch.player1_id == user_id,
                     TournamentMatch.player2_id == user_id,
@@ -802,7 +802,7 @@ class DashboardService:
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_(["pending", "playing", "completed"]),
+                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value, MatchStatus.COMPLETED.value]),  # type: ignore[attr-defined]
                 or_(
                     TournamentMatch.player1_id == user_id,
                     TournamentMatch.player2_id == user_id,

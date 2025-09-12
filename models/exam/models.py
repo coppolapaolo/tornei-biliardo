@@ -260,7 +260,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
         """Get exam progress information."""
         total_challenges = self.exam.challenges.count()
         completed_challenges = self.challenge_results.filter(
-            ExamChallengeResult.score.isnot(None)
+            ExamChallengeResult.score.isnot(None)  # type: ignore[attr-defined]
         ).count()
 
         return {

@@ -8,6 +8,7 @@ from werkzeug.exceptions import abort               # più specifico e stabile
 from flask_login import login_required, current_user, logout_user
 
 from datetime import datetime
+from typing import cast
 
 from models import (
     db,
@@ -695,7 +696,7 @@ def cancel_venue_manager_request(request_id):
     """Annulla una richiesta per diventare gestore di sala"""
     try:
         from models.user.services import VenueManagerRequestService
-        VenueManagerRequestService.cancel_request(request_id, current_user)
+        VenueManagerRequestService.cancel_request(request_id, cast(User, current_user))
         flash("Richiesta annullata con successo.", "success")
     except Exception as e:
         flash(f"Errore nell'annullare la richiesta: {str(e)}", "error")

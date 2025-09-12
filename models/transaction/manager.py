@@ -275,20 +275,6 @@ class TransactionManager:
             context.status = TransactionStatus.ROLLED_BACK
             raise
 
-        except Exception:
-            # Handle unexpected errors
-            context.status = TransactionStatus.FAILED
-            try:
-                if is_nested:
-                    db.session.rollback()
-                else:
-                    db.session.rollback()
-            except Exception as rollback_error:
-                logger.error(
-                    f"Failed to rollback transaction {transaction_id}: {rollback_error}"
-                )
-            logger.error(f"Transaction {transaction_id} failed with unexpected error")
-            raise
         finally:
             # Restore parent context
             self.current_transaction = parent_context

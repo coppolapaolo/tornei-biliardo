@@ -127,7 +127,7 @@ class RatingService:
                 PlayerCategory,
                 db.and_(
                     PlayerCategory.user_id == PlayerRating.user_id,
-                    PlayerCategory.is_active.is_(True),
+                    PlayerCategory.is_active.is_(True),  # type: ignore[attr-defined]
                 ),
             )
             .filter(PlayerCategory.id.is_(None))
@@ -138,8 +138,8 @@ class RatingService:
         # Recent rating updates
         recent_updates = (
             PlayerRating.query.order_by(
-                PlayerRating.last_updated.desc()
-            )  # type: ignore[attr-defined]
+                PlayerRating.last_updated.desc()  # type: ignore[attr-defined]
+            )
             .limit(20)
             .all()
         )
