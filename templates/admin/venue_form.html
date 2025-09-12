@@ -46,7 +46,7 @@
                                 <textarea class="form-control" 
                                           id="address" 
                                           name="address" 
-                                          rows="2">{{ venue.address if is_edit else '' }}</textarea>
+                                          rows="2">{{ (venue.address or '') if is_edit else '' }}</textarea>
                             </div>
                             
                             <div class="mb-3">
@@ -55,7 +55,7 @@
                                        class="form-control" 
                                        id="city" 
                                        name="city" 
-                                       value="{{ venue.city if is_edit else '' }}">
+                                       value="{{ (venue.city or '') if is_edit else '' }}">
                             </div>
                             
                             <div class="mb-3">
@@ -64,7 +64,7 @@
                                        class="form-control" 
                                        id="postal_code" 
                                        name="postal_code" 
-                                       value="{{ venue.postal_code if is_edit else '' }}">
+                                       value="{{ (venue.postal_code or '') if is_edit else '' }}">
                             </div>
                         </div>
                         
@@ -75,7 +75,7 @@
                                        class="form-control" 
                                        id="phone" 
                                        name="phone" 
-                                       value="{{ venue.phone if is_edit else '' }}">
+                                       value="{{ (venue.phone or '') if is_edit else '' }}">
                             </div>
                             
                             <div class="mb-3">
@@ -84,7 +84,7 @@
                                        class="form-control" 
                                        id="email" 
                                        name="email" 
-                                       value="{{ venue.email if is_edit else '' }}">
+                                       value="{{ (venue.email or '') if is_edit else '' }}">
                             </div>
                             
                             <div class="mb-3">
@@ -93,7 +93,7 @@
                                        class="form-control" 
                                        id="website" 
                                        name="website" 
-                                       value="{{ venue.website if is_edit else '' }}"
+                                       value="{{ (venue.website or '') if is_edit else '' }}"
                                        placeholder="https://">
                             </div>
                             
@@ -176,7 +176,7 @@
 Lunedì: 15:00-24:00
 Martedì: 15:00-24:00
 Mercoledì: Chiuso
-...">{{ venue.business_hours if is_edit else '' }}</textarea>
+...">{{ (venue.business_hours or '') if is_edit else '' }}</textarea>
                         <small class="text-muted">Formato libero - inserire orari come testo</small>
                     </div>
                 </div>
@@ -185,24 +185,48 @@ Mercoledì: Chiuso
             {% if is_edit %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-info"></i> Stato</h5>
+                    <h5><i class="fas fa-info-circle"></i> Stato</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>Stato:</strong> 
-                        {% if venue.is_active %}
-                            <span class="badge bg-success">Attiva</span>
-                        {% else %}
-                            <span class="badge bg-danger">Disattivata</span>
-                        {% endif %}
-                    </p>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Stato:</strong></label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="is_active" 
+                                   name="is_active" 
+                                   {% if venue.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                <span id="status-label">
+                                    {% if venue.is_active %}
+                                        <span class="badge bg-success">Attiva</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Disattivata</span>
+                                    {% endif %}
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                     
-                    <p><strong>Verificata:</strong> 
-                        {% if venue.verified %}
-                            <span class="badge bg-success">Sì</span>
-                        {% else %}
-                            <span class="badge bg-warning">No</span>
-                        {% endif %}
-                    </p>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Verificata:</strong></label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="verified" 
+                                   name="verified" 
+                                   {% if venue.verified %}checked{% endif %}>
+                            <label class="form-check-label" for="verified">
+                                <span id="verified-label">
+                                    {% if venue.verified %}
+                                        <span class="badge bg-success">Verificata</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Non Verificata</span>
+                                    {% endif %}
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                     
                     <p><strong>Creata:</strong> {{ venue.created_at.strftime('%d/%m/%Y alle %H:%M') }}</p>
                     
@@ -231,23 +255,135 @@ Mercoledì: Chiuso
                             <i class="fas fa-times"></i> Annulla
                         </a>
                     </div>
-                    
-                    {% if is_edit %}
-                    <div>
-                        <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}" 
-                              method="POST" 
-                              style="display: inline;"
-                              onsubmit="return confirm('Sei sicuro di voler disattivare questa sala?')">
-                            <button type="submit" class="btn btn-outline-danger">
-                                <i class="fas fa-trash"></i> Disattiva Sala
-                            </button>
-                        </form>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </form>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if is_edit %}
+    const venueId = {{ venue.id if venue and venue.id else 'null' }};
+    
+    if (!venueId) {
+        console.error('No venue ID found');
+        return;
+    }
+    
+    // Toggle is_active
+    const isActiveSwitch = document.getElementById('is_active');
+    const statusLabel = document.getElementById('status-label');
+    
+    if (isActiveSwitch && statusLabel) {
+        isActiveSwitch.addEventListener('change', function() {
+            const isActive = this.checked;
+            
+            // Update UI immediately
+            if (isActive) {
+                statusLabel.innerHTML = '<span class="badge bg-success">Attiva</span>';
+            } else {
+                statusLabel.innerHTML = '<span class="badge bg-danger">Disattivata</span>';
+            }
+            
+            // Send AJAX request
+            toggleVenueStatus(venueId, 'is_active', isActive, this, statusLabel);
+        });
+    }
+    
+    // Toggle verified
+    const verifiedSwitch = document.getElementById('verified');
+    const verifiedLabel = document.getElementById('verified-label');
+    
+    if (verifiedSwitch && verifiedLabel) {
+        verifiedSwitch.addEventListener('change', function() {
+            const isVerified = this.checked;
+            
+            // Update UI immediately
+            if (isVerified) {
+                verifiedLabel.innerHTML = '<span class="badge bg-success">Verificata</span>';
+            } else {
+                verifiedLabel.innerHTML = '<span class="badge bg-warning">Non Verificata</span>';
+            }
+            
+            // Send AJAX request
+            toggleVenueStatus(venueId, 'verified', isVerified, this, verifiedLabel);
+        });
+    }
+    {% else %}
+    console.log('Not in edit mode - toggles disabled');
+    {% endif %}
+});
+
+function toggleVenueStatus(venueId, field, value, switchElement, labelElement) {
+    fetch(`/admin/venues/${venueId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            field: field,
+            value: value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showFlashMessage(data.message, 'success');
+        } else {
+            // Revert UI on error
+            switchElement.checked = !value;
+            if (field === 'is_active') {
+                labelElement.innerHTML = value ? 
+                    '<span class="badge bg-danger">Disattivata</span>' :
+                    '<span class="badge bg-success">Attiva</span>';
+            } else {
+                labelElement.innerHTML = value ? 
+                    '<span class="badge bg-warning">Non Verificata</span>' :
+                    '<span class="badge bg-success">Verificata</span>';
+            }
+            showFlashMessage(data.message || 'Errore durante l\'aggiornamento', 'error');
+        }
+    })
+    .catch(error => {
+        // Revert UI on error
+        switchElement.checked = !value;
+        if (field === 'is_active') {
+            labelElement.innerHTML = value ? 
+                '<span class="badge bg-danger">Disattivata</span>' :
+                '<span class="badge bg-success">Attiva</span>';
+        } else {
+            labelElement.innerHTML = value ? 
+                '<span class="badge bg-warning">Non Verificata</span>' :
+                '<span class="badge bg-success">Verificata</span>';
+        }
+        showFlashMessage('Errore di connessione', 'error');
+    });
+}
+
+function showFlashMessage(message, type) {
+    // Create flash message element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at top of form
+    const form = document.querySelector('form');
+    if (form) {
+        form.insertBefore(alertDiv, form.firstChild);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+}
+</script>
 {% endblock %}

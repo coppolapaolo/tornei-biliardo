@@ -28,7 +28,7 @@ def venues_list():
     from models.user.services import VenueManagerRequestService
     
     venues = (
-        BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
+        BilliardHall.query.order_by(BilliardHall.is_active.desc(), BilliardHall.name).all()
     )
 
     if current_user.is_admin:
@@ -111,7 +111,12 @@ def venue_detail(venue_id):
     from flask_login import current_user
     
     venue = db.session.get(BilliardHall, venue_id)
-    if not venue or not venue.is_active:
+    if not venue:
+        from flask import abort
+        abort(404)
+    
+    # Allow admin to see inactive venues, but not regular users
+    if not venue.is_active and not current_user.is_admin:
         from flask import abort
         abort(404)
 
@@ -265,6 +270,8 @@ def edit_venue(venue_id):
         if hourly_rate:
             update_kwargs["hourly_rate"] = float(hourly_rate)
 
+        # Note: is_active and verified are now handled via AJAX toggle, not form submission
+
         # Handle table types and amenities
         table_types_str = request.form.get("table_types", "")
         table_types = [t.strip() for t in table_types_str.split(",") if t.strip()]
@@ -304,6 +311,60 @@ def delete_venue(venue_id):
         flash(f"Errore nella disattivazione: {e}", "error")
 
     return redirect(url_for("admin.venue.venues_list"))
+
+
+@venue_bp.route("/venues/<int:venue_id>/activate", methods=["POST"])
+@admin_required
+def activate_venue(venue_id):
+    """Attiva sala biliardo"""
+    venue = db.session.get(BilliardHall, venue_id)
+    if not venue:
+        from flask import abort
+        abort(404)
+
+    try:
+        venue.is_active = True
+        db.session.commit()
+        flash(f"Sala biliardo '{venue.name}' attivata.", "success")
+    except Exception as e:
+        flash(f"Errore nell'attivazione: {e}", "error")
+
+    return redirect(url_for("admin.venue.venues_list"))
+
+
+@venue_bp.route("/venues/<int:venue_id>/toggle", methods=["POST"])
+@admin_required
+def toggle_venue_status(venue_id):
+    """API AJAX per cambiare stato venue (is_active o verified)"""
+    from flask import jsonify
+    
+    venue = db.session.get(BilliardHall, venue_id)
+    if not venue:
+        return jsonify({"success": False, "message": "Sala non trovata"}), 404
+
+    try:
+        data = request.get_json()
+        field = data.get("field")
+        value = data.get("value")
+        
+        if field not in ["is_active", "verified"]:
+            return jsonify({"success": False, "message": "Campo non valido"}), 400
+            
+        # Update the field
+        setattr(venue, field, value)
+        db.session.commit()
+        
+        # Generate appropriate message
+        if field == "is_active":
+            message = f"Sala '{venue.name}' {'attivata' if value else 'disattivata'}."
+        else:
+            message = f"Sala '{venue.name}' {'verificata' if value else 'non verificata'}."
+            
+        return jsonify({"success": True, "message": message})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Errore: {str(e)}"}), 500
 
 
 @venue_bp.route("/venues/<int:venue_id>/verify", methods=["POST"])

@@ -8,21 +8,14 @@
             <div class="row">
                 <div class="col-md-6">
                     <strong>Data:</strong> {{ gara.date.strftime('%d/%m/%Y') }}{% if gara.time %} {{ gara.time.strftime('%H:%M') }}{% endif %}<br>
-                    <strong>Disciplina:</strong> {{ gara.discipline.replace('_', ' ') }}<br>
-                    <strong>Distanza:</strong> 
-                    {% if gara.best_of %}
-                        Al meglio di {{ gara.distance }} (vince con {{ gara.get_winning_score() }})
-                    {% else %}
-                        {{ gara.distance }} rack esatti
-                    {% endif %}<br>
                     <strong>Turni:</strong> {{ gara.rounds_count }}<br>
-                    <strong>Strategia:</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}
+                    <strong>Tipo torneo:</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}
                 </div>
                 <div class="col-md-6">
                     {% if gara.location %}
                         <strong>Luogo:</strong> {{ gara.location }}<br>
                     {% endif %}
-                    <strong>Partecipanti:</strong> {{ gara.min_participants }}{% if gara.max_participants %} - {{ gara.max_participants }}{% else %} - illimitati{% endif %}<br>
+                    <strong>Partecipanti:</strong> minimo {{ gara.min_participants }}{% if gara.max_participants %} fino a {{ gara.max_participants }}{% else %} senza limite{% endif %}<br>
                     <strong>Quota:</strong> 
                     {% if gara.entry_fee > 0 %}
                         €{{ "%.2f"|format(gara.entry_fee) }}

@@ -403,3 +403,4 @@ Each major component has detailed documentation in its subdirectory:
 - Start with this root CLAUDE.md for project overview
 - Dive into specific directories for detailed technical information
 - Each subdirectory documentation is self-contained but cross-references related components
+- non cercare mai quick fix, ma scegli sempre le soluzioni piu' corrette secondo i principi di buona programmazione. non sovraingegnerizzare. Segui sempre soluzioni pulite ed eleganti

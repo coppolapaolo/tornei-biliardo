@@ -48,16 +48,15 @@
                             <i class="fas fa-clock"></i> Non Verificata
                         </span>
                     {% endif %}
-                    <form action="{{ url_for('admin.venue.verify_venue', venue_id=venue.id) }}" 
-                          method="POST" style="display: inline;" class="ms-2">
-                        <button type="submit" class="btn btn-sm btn-outline-success">
-                            {% if venue.verified %}
-                                <i class="fas fa-times"></i> Rimuovi Verifica
-                            {% else %}
-                                <i class="fas fa-check"></i> Verifica
-                            {% endif %}
-                        </button>
-                    </form>
+                    {% if venue.is_active %}
+                        <span class="badge bg-success ms-2">
+                            <i class="fas fa-circle-check"></i> Attiva
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger ms-2">
+                            <i class="fas fa-circle-xmark"></i> Disattivata
+                        </span>
+                    {% endif %}
                 </div>
             </div>
             <div class="card-body">

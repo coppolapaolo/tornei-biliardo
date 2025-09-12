@@ -35,7 +35,7 @@
                                     <input type="time" class="form-control" id="time" name="time" value="20:00">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="location" class="form-label">Luogo</label>
                                     <input type="text" class="form-control" id="location" name="location" 
@@ -46,7 +46,7 @@
                                         <!-- Venue verificate -->
                                         {% if verified_venues %}
                                             {% for venue in verified_venues %}
-                                            <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or 'Città non specificata' }}</option>
+                                            <option value="{{ venue.name }}" data-tables="{{ venue.number_of_tables or 0 }}">{{ venue.name }} - {{ venue.city or 'Città non specificata' }}</option>
                                             {% endfor %}
                                         {% endif %}
                                     </datalist>
@@ -54,6 +54,14 @@
                                         <i class="fas fa-info-circle"></i> 
                                         Seleziona da sale verificate o inserisci nuovo nome
                                     </small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="number_of_tables" class="form-label">N. Tavoli</label>
+                                    <input type="number" class="form-control" id="number_of_tables" name="number_of_tables" 
+                                           placeholder="0" min="1" max="50">
+                                    <small class="text-muted">Solo per nuove sale</small>
                                 </div>
                             </div>
                         </div>
@@ -364,6 +372,38 @@ document.addEventListener('DOMContentLoaded', function() {
         updateExactNumberAvailability();
         updateTrioWarning();
     });
+
+    // Preload number of tables when venue is selected
+    const locationInput = document.getElementById('location');
+    const tablesInput = document.getElementById('number_of_tables');
+    const venueOptions = document.querySelectorAll('#venue-suggestions option');
+    
+    if (locationInput && tablesInput) {
+        locationInput.addEventListener('input', function() {
+            const selectedValue = this.value;
+            
+            // Find matching venue option
+            const matchingOption = Array.from(venueOptions).find(option => 
+                option.value === selectedValue
+            );
+            
+            if (matchingOption) {
+                // Preload tables count from verified venue
+                const tablesCount = matchingOption.getAttribute('data-tables');
+                if (tablesCount && tablesCount !== '0') {
+                    tablesInput.value = tablesCount;
+                    tablesInput.disabled = true; // Disable for existing venues
+                } else {
+                    tablesInput.value = '';
+                    tablesInput.disabled = false;
+                }
+            } else {
+                // New venue - enable manual input
+                tablesInput.value = '';
+                tablesInput.disabled = false;
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

@@ -67,7 +67,7 @@ class AmalfiEngine:
             matches = self._preview_first_round()
         else:
             matches = self._preview_amalfi_round(round_number)
-        
+
         # Calcola statistiche
         stats = {
             "total_matches": len(matches),
@@ -75,11 +75,11 @@ class AmalfiEngine:
             "bye_matches": sum(1 for m in matches if m.get("type") == "bye"),
             "trio_matches": sum(1 for m in matches if m.get("type") == "trio"),
         }
-        
+
         return {
             "matches": matches,
             "stats": stats,
-            "salto": getattr(self, "_current_salto", 0)
+            "salto": getattr(self, "_current_salto", 0),
         }
 
     def _preview_first_round(self) -> List[Dict]:
@@ -87,38 +87,52 @@ class AmalfiEngine:
         inscriptions = self._inscriptions_for_pairing()
         if len(inscriptions) < self.gara.min_participants:
             raise ValueError(f"Servono almeno {self.gara.min_participants} iscritti")
-        
+
         # Usa lo stesso seed del _create_first_round per avere gli stessi accoppiamenti
         rng = random.Random(self.gara.id)
         rng.shuffle(inscriptions)
-        
+
         matches_data = []
         players = inscriptions
-        
+
         # Usa la stessa logica del _create_first_round
         i = 0
         while i < len(players):
             if i + 1 < len(players):
                 # Match normale
-                matches_data.append({
-                    "type": "normal",
-                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
-                    "player2": {"id": players[i+1].user_id, "username": players[i+1].user.username}
-                })
+                matches_data.append(
+                    {
+                        "type": "normal",
+                        "player1": {
+                            "id": players[i].user_id,
+                            "username": players[i].user.username,
+                        },
+                        "player2": {
+                            "id": players[i + 1].user_id,
+                            "username": players[i + 1].user.username,
+                        },
+                    }
+                )
                 i += 2
             else:
                 # Player con bye
-                matches_data.append({
-                    "type": "bye",
-                    "player1": {"id": players[i].user_id, "username": players[i].user.username},
-                    "player2": None
-                })
+                matches_data.append(
+                    {
+                        "type": "bye",
+                        "player1": {
+                            "id": players[i].user_id,
+                            "username": players[i].user.username,
+                        },
+                        "player2": None,
+                    }
+                )
                 i += 1
-        
+
         return matches_data
 
     def _preview_amalfi_round(self, round_number: int) -> List[Dict]:
-        """Genera l'anteprima di un turno Amalfi senza persistere usando l'algoritmo completo"""
+        """Genera l'anteprima di un turno Amalfi senza persistere 
+        usando l'algoritmo completo"""
         # Ottieni la classificazione del round precedente
         classification = (
             db.session.query(RoundClassification)
@@ -126,18 +140,20 @@ class AmalfiEngine:
             .order_by(RoundClassification.position)
             .all()
         )
-        
+
         if not classification:
-            raise ValueError(f"Classificazione del round {round_number - 1} non trovata")
-        
+            raise ValueError(
+                f"Classificazione del round {round_number - 1} non trovata"
+            )
+
         # Calcola il salto
         salto = self.gara.rounds_count - round_number
         self._current_salto = salto
-        
+
         # Simula l'algoritmo Amalfi per l'anteprima
         matches_data = []
         matched_players: set[int] = set()
-        
+
         for current_class in classification:
             if current_class.user_id in matched_players:
                 continue
@@ -148,24 +164,37 @@ class AmalfiEngine:
             )
 
             if target_class:
-                matches_data.append({
-                    "type": "normal",
-                    "player1": {"id": current_class.user_id, "username": current_class.user.username},
-                    "player2": {"id": target_class.user_id, "username": target_class.user.username}
-                })
+                matches_data.append(
+                    {
+                        "type": "normal",
+                        "player1": {
+                            "id": current_class.user_id,
+                            "username": current_class.user.username,
+                        },
+                        "player2": {
+                            "id": target_class.user_id,
+                            "username": target_class.user.username,
+                        },
+                    }
+                )
                 matched_players.update({current_class.user_id, target_class.user_id})
 
         # Gestisci giocatori non abbinati (bye o trio)
         unmatched = [c for c in classification if c.user_id not in matched_players]
         if unmatched:
             if len(unmatched) == 1:
-                matches_data.append({
-                    "type": "bye", 
-                    "player1": {"id": unmatched[0].user_id, "username": unmatched[0].user.username},
-                    "player2": None
-                })
+                matches_data.append(
+                    {
+                        "type": "bye",
+                        "player1": {
+                            "id": unmatched[0].user_id,
+                            "username": unmatched[0].user.username,
+                        },
+                        "player2": None,
+                    }
+                )
             # Gestione trii se necessario - per ora semplificata
-        
+
         return matches_data
 
     def _find_amalfi_target_preview(
@@ -198,17 +227,19 @@ class AmalfiEngine:
                     target_position += 1
                     attempts += 1
                     continue
-                
+
                 # Controlla self-pairing
                 if current_class.user_id == target_class.user_id:
                     target_position += 1
                     attempts += 1
                     continue
-                
+
                 # Se non ha mai giocato insieme, è perfetto
-                if anti_rematch_allowed(self.gara.id, current_class.user_id, target_class.user_id):
+                if anti_rematch_allowed(
+                    self.gara.id, current_class.user_id, target_class.user_id
+                ):
                     return target_class
-                
+
                 # Altrimenti salva come fallback per rematch forzato
                 if fallback_target is None:
                     fallback_target = target_class
@@ -429,17 +460,19 @@ class AmalfiEngine:
                     target_position += 1
                     attempts += 1
                     continue
-                
+
                 # Controlla self-pairing
                 if current_class.user_id == target_class.user_id:
                     target_position += 1
                     attempts += 1
                     continue
-                
+
                 # Se non ha mai giocato insieme, è perfetto
-                if anti_rematch_allowed(self.gara.id, current_class.user_id, target_class.user_id):
+                if anti_rematch_allowed(
+                    self.gara.id, current_class.user_id, target_class.user_id
+                ):
                     return target_class
-                
+
                 # Altrimenti salva come fallback per rematch forzato
                 if fallback_target is None:
                     fallback_target = target_class
@@ -491,17 +524,17 @@ class AmalfiEngine:
             player1_id=base_match.player1_id,
             player2_id=base_match.player2_id,
             player3_id=third_player_id,
-            target_score=self.gara.get_winning_score()
-            if self.gara.best_of
-            else self.gara.distance,
+            target_score=(
+                self.gara.get_winning_score()
+                if self.gara.best_of
+                else self.gara.distance
+            ),
         )
         db.session.add(trio)
 
     def _create_bye_match(self, player_id: int, round_number: int) -> None:
         score = (
-            self.gara.get_winning_score()
-            if self.gara.best_of
-            else self.gara.distance
+            self.gara.get_winning_score() if self.gara.best_of else self.gara.distance
         )
         bye = Match(
             gara_id=self.gara.id,
@@ -516,7 +549,9 @@ class AmalfiEngine:
         db.session.add(bye)
 
     def _inscriptions_for_pairing(self) -> list[Inscription]:
-        q = db.session.query(Inscription).filter_by(gara_id=self.gara.id, is_waitlist=False)
+        q = db.session.query(Inscription).filter_by(
+            gara_id=self.gara.id, is_waitlist=False
+        )
         if self.gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             q = q.filter_by(is_withdrawn=False)
         return q.all()
@@ -669,7 +704,6 @@ class AmalfiEngine:
                 )
 
         return preview_matches
-
 
 
 # Utility functions per compat con codice esistente

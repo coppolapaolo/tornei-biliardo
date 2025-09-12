@@ -109,6 +109,10 @@ def venue_manager_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Check if user is authenticated first
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+            
         venue_id = kwargs.get("venue_id")
         if venue_id is None:
             abort(400)  # Bad request if venue_id is missing

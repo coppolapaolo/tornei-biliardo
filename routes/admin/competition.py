@@ -1,6 +1,7 @@
 # routes/admin/competition.py
 """Competition (Gara) management blueprint for admin interface."""
 
+from typing import Optional
 from flask import (
     Blueprint,
     render_template,
@@ -42,10 +43,10 @@ from models.location.services import LocationService
 competition_bp = Blueprint("competition", __name__)
 
 
-def _handle_venue_creation(location: str) -> str:
+def _handle_venue_creation(location: str, number_of_tables: Optional[int] = None) -> str:
     """
     Handle venue creation/validation for competitions.
-    If location doesn't match verified venues, create as non-verified.
+    If location doesn't match existing venues, create as disabled and non-verified.
     Returns the location string to use.
     """
     if not location or not location.strip():
@@ -53,37 +54,33 @@ def _handle_venue_creation(location: str) -> str:
     
     location = location.strip()
     
-    # Check if location matches existing verified venue
-    existing_venue = BilliardHall.query.filter_by(
-        name=location, 
-        is_active=True, 
-        verified=True
-    ).first()
+    # Check if location matches existing venue (both active and inactive)
+    existing_venue = BilliardHall.query.filter_by(name=location).first()
     
     if existing_venue:
         return location
     
-    # Check if location matches existing non-verified venue
-    existing_unverified = BilliardHall.query.filter_by(
-        name=location, 
-        is_active=True
-    ).first()
-    
-    if existing_unverified:
-        return location
-    
-    # Create new non-verified venue
-    try:
-        new_venue = LocationService.create_billiard_hall(
-            name=location,
-            added_by_id=current_user.id,
-            # Set as non-verified (verified=False is default)
-            # Note: number_of_tables is None, so it cannot be verified yet
-        )
-        flash(f"Nuovo luogo '{location}' aggiunto. Per la verifica serve anche il numero di tavoli.", "info")
-    except Exception as e:
-        # If creation fails, continue with original location
-        flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
+    # Create new disabled, non-verified venue
+    if number_of_tables and number_of_tables > 0:
+        try:
+            # Create via LocationService first
+            new_venue = LocationService.create_billiard_hall(
+                name=location,
+                added_by_id=current_user.id,
+                number_of_tables=number_of_tables
+            )
+            
+            # Then modify to set as disabled and non-verified
+            new_venue.is_active = False
+            new_venue.verified = False
+            db.session.commit()
+            
+            flash(f"Nuovo luogo '{location}' aggiunto come disattivato. Sarà verificato dall'admin.", "info")
+        except Exception as e:
+            # If creation fails, continue with original location
+            flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
+    else:
+        flash(f"Impossibile creare '{location}': specificare il numero di tavoli.", "warning")
     
     return location
 
@@ -109,8 +106,11 @@ def create_gara_standalone():
             
             # Campi opzionali
             location = request.form.get("location", "").strip()
+            number_of_tables = request.form.get("number_of_tables")
+            number_of_tables = int(number_of_tables) if number_of_tables else None
+            
             # Handle venue auto-creation
-            location = _handle_venue_creation(location)
+            location = _handle_venue_creation(location, number_of_tables)
             description = request.form.get("description", "").strip()
             rounds_count = int(request.form.get("rounds_count", 3))
             min_participants = int(request.form.get("min_participants", 2))
@@ -190,7 +190,7 @@ def create_gara_standalone():
             return redirect(url_for("admin.competition.create_gara_standalone"))
 
     # GET request - show form
-    # Get verified venues instead of recent locations
+    # Get verified venues for location suggestions
     from models.location.models import BilliardHall
     verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
     
@@ -287,8 +287,11 @@ def create_gara():
 
     # Nuovi campi
     location = request.form.get("location", "").strip()
+    number_of_tables = request.form.get("number_of_tables")
+    number_of_tables = int(number_of_tables) if number_of_tables else None
+    
     # Handle venue auto-creation
-    location = _handle_venue_creation(location)
+    location = _handle_venue_creation(location, number_of_tables)
     description = request.form.get("description", "")
     rounds_count = int(request.form.get("rounds_count", 3))
     min_participants = int(request.form.get("min_participants", 2))
@@ -351,7 +354,10 @@ def edit_gara(gara_id):
 
             # Handle venue auto-creation for location
             location = request.form.get("location", "").strip()
-            location = _handle_venue_creation(location)
+            number_of_tables = request.form.get("number_of_tables")
+            number_of_tables = int(number_of_tables) if number_of_tables else None
+            
+            location = _handle_venue_creation(location, number_of_tables)
             
             GaraService.update_gara(
                 gara_id=gara_id,
@@ -379,7 +385,7 @@ def edit_gara(gara_id):
     # Get available strategies for the form
     available_strategies = GaraService.get_available_strategies()
     
-    # Get verified venues instead of recent locations
+    # Get verified venues for location suggestions
     from models.location.models import BilliardHall
     verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
     
