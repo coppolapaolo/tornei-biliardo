@@ -17,7 +17,6 @@ from flask import (
 )
 import os
 import uuid
-from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
 from PIL import Image
 
@@ -36,51 +35,53 @@ from models.challenge.services import ChallengeService
 # Blueprint initialization
 challenge_bp = Blueprint("challenge", __name__)
 
+
 # Helper functions
 def allowed_file(filename):
     """Check if file extension is allowed."""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def save_challenge_image(image_file):
     """Save uploaded challenge image with resizing and optimization for mobile landscape viewing."""
     if not image_file or not allowed_file(image_file.filename):
         return None
-    
+
     # Generate unique filename (always use .jpg for optimized output)
     filename = f"{uuid.uuid4().hex}.jpg"
-    
+
     # Create upload directory if it doesn't exist
     if current_app.static_folder is None:
         raise ValueError("Static folder not configured")
-    upload_dir = os.path.join(current_app.static_folder, 'uploads', 'challenges')
+    upload_dir = os.path.join(current_app.static_folder, "uploads", "challenges")
     os.makedirs(upload_dir, exist_ok=True)
-    
+
     # Process and save image with optimization
     filepath = os.path.join(upload_dir, filename)
-    
+
     try:
         # Open image with PIL
         with Image.open(image_file) as img:
             # Convert to RGB if necessary (handles PNG with alpha, etc.)
-            if img.mode in ('RGBA', 'P'):
-                img = img.convert('RGB')
-            
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+
             # Calculate resize dimensions for mobile landscape (max 800x600)
             max_width, max_height = 800, 600
             img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
-            
+
             # Save with optimization for web
             img.save(
-                filepath, 
-                'JPEG', 
+                filepath,
+                "JPEG",
                 quality=85,  # Good quality but smaller file size
                 optimize=True,  # Enable optimization
-                progressive=True  # Progressive JPEG for better loading
+                progressive=True,  # Progressive JPEG for better loading
             )
-        
+
         return filename
-        
+
     except Exception as e:
         # If image processing fails, remove any partial file and return None
         if os.path.exists(filepath):
@@ -93,18 +94,22 @@ def delete_challenge_image(image_filename):
     """Delete challenge image file from disk."""
     if not image_filename:
         return
-    
+
     if current_app.static_folder is None:
         return
-        
-    filepath = os.path.join(current_app.static_folder, 'uploads', 'challenges', image_filename)
-    
+
+    filepath = os.path.join(
+        current_app.static_folder, "uploads", "challenges", image_filename
+    )
+
     try:
         if os.path.exists(filepath):
             os.remove(filepath)
             current_app.logger.info(f"Deleted challenge image: {image_filename}")
     except Exception as e:
-        current_app.logger.error(f"Failed to delete challenge image {image_filename}: {str(e)}")
+        current_app.logger.error(
+            f"Failed to delete challenge image {image_filename}: {str(e)}"
+        )
 
 
 @challenge_bp.route("/")
@@ -129,20 +134,23 @@ def create_challenge():
     try:
         if request.is_json:
             data = request.get_json()
-            image_filename = None
+            image_filename = data.get("image_path")
+            if not image_filename:
+                raise ValueError("Immagine obbligatoria per creare una challenge")
         else:
             data = request.form
             # Handle image upload
-            image_file = request.files.get('image')
+            image_file = request.files.get("image")
             image_filename = save_challenge_image(image_file) if image_file else None
 
+        # Validate that image is provided
+        if not image_filename:
+            raise ValueError("Immagine obbligatoria per creare una challenge")
+
         challenge = ChallengeService.create_challenge(
-            name=data.get("name") if data.get("name") else None,
             description=data["description"],
-            min_score=int(data.get("min_score", 0)),
-            max_score=int(data.get("max_score", 100)),
-            pass_fail_only=data.get("pass_fail_only", "false").lower() == "true",
             image_path=image_filename,
+            pass_fail_only=data.get("pass_fail_only", "false").lower() == "true",
             created_by_id=current_user.id,
         )
 
@@ -169,71 +177,6 @@ def create_challenge():
             return render_template("challenge/create.html")
 
 
-@challenge_bp.route("/<int:challenge_id>/edit", methods=["GET", "POST"])
-@director_required
-def edit_challenge(challenge_id):
-    """Edit existing challenge (directors and admins only)."""
-    challenge = db.session.get(Challenge, challenge_id)
-    if challenge is None:
-        abort(404)
-    
-    # Check if user can edit (admin can edit all, directors can edit their own)
-    can_edit = (
-        current_user.is_admin or 
-        (current_user.is_director and challenge.created_by_id == current_user.id)
-    )
-    if not can_edit:
-        abort(403)
-    
-    if request.method == "GET":
-        return render_template("challenge/edit.html", challenge=challenge)
-
-    try:
-        if request.is_json:
-            data = request.get_json()
-            image_filename = data.get("image_path")
-        else:
-            data = request.form
-            # Handle image upload
-            image_file = request.files.get('image')
-            image_filename = save_challenge_image(image_file) if image_file else None
-            # If no new image uploaded, keep existing image
-            if image_filename is None:
-                image_filename = challenge.image_filename
-            else:
-                # New image uploaded, delete old image if it exists
-                if challenge.image_filename and challenge.image_filename != image_filename:
-                    delete_challenge_image(challenge.image_filename)
-
-        updated_challenge = ChallengeService.update_challenge(
-            challenge_id=challenge_id,
-            name=data.get("name") if data.get("name") else None,
-            description=data.get("description"),
-            image_path=image_filename,
-            is_active=data.get("is_active", "false").lower() == "true"
-        )
-
-        if request.is_json:
-            return jsonify(
-                {
-                    "success": True,
-                    "challenge_id": updated_challenge.id,
-                    "message": "Challenge updated successfully",
-                }
-            )
-        else:
-            flash("Challenge updated successfully!", "success")
-            return redirect(url_for("challenge.challenge_detail", challenge_id=challenge_id))
-
-    except ValueError as e:
-        error_msg = f"Error updating challenge: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return render_template("challenge/edit.html", challenge=challenge)
-
-
 @challenge_bp.route("/<int:challenge_id>/delete", methods=["POST"])
 @director_required
 def delete_challenge(challenge_id):
@@ -241,11 +184,10 @@ def delete_challenge(challenge_id):
     challenge = db.session.get(Challenge, challenge_id)
     if challenge is None:
         abort(404)
-    
+
     # Check if user can delete (admin can delete all, directors can delete their own)
-    can_delete = (
-        current_user.is_admin or 
-        (current_user.is_director and challenge.created_by_id == current_user.id)
+    can_delete = current_user.is_admin or (
+        current_user.is_director and challenge.created_by_id == current_user.id
     )
     if not can_delete:
         abort(403)
@@ -254,10 +196,10 @@ def delete_challenge(challenge_id):
         # Delete associated image file before deleting the challenge
         if challenge.image_filename:
             delete_challenge_image(challenge.image_filename)
-        
+
         ChallengeService.delete_challenge(challenge_id)
-        
-        message = "Challenge deleted successfully"
+
+        message = "Challenge eliminata con successo"
         if request.is_json:
             return jsonify({"success": True, "message": message})
         else:
@@ -265,7 +207,7 @@ def delete_challenge(challenge_id):
             return redirect(url_for("challenge.challenge_catalog"))
 
     except Exception as e:
-        error_msg = f"Error deleting challenge: {str(e)}"
+        error_msg = f"Errore nell'eliminazione della challenge: {str(e)}"
         if request.is_json:
             return jsonify({"success": False, "error": error_msg}), 400
         else:
@@ -293,10 +235,13 @@ def start_attempt(challenge_id):
     challenge = db.session.get(Challenge, challenge_id)
     if challenge is None:
         abort(404)
-    
-    if not challenge.is_active:
-        flash("Questa challenge non è più attiva.", "warning")
-        return redirect(url_for("challenge.challenge_catalog"))
+
+    # Prevent admins from attempting challenges
+    if current_user.is_admin:
+        flash("Gli amministratori non possono provare le challenge.", "warning")
+        return redirect(
+            url_for("challenge.challenge_detail", challenge_id=challenge_id)
+        )
 
     if request.method == "GET":
         return render_template("challenge/start_attempt.html", challenge=challenge)
@@ -308,9 +253,9 @@ def start_attempt(challenge_id):
             user_id=current_user.id,
             challenge_id=challenge_id,
             gara_id=int(data["gara_id"]) if data.get("gara_id") else None,
-            round_number=int(data["round_number"])
-            if data.get("round_number")
-            else None,
+            round_number=(
+                int(data["round_number"]) if data.get("round_number") else None
+            ),
         )
 
         if request.is_json:
@@ -440,7 +385,6 @@ def challenge_statistics(challenge_id):
                     "success": True,
                     "challenge": {
                         "id": challenge.id,
-                        "name": challenge.name,
                         "description": challenge.description,
                     },
                     "statistics": statistics,
@@ -460,9 +404,7 @@ def challenge_statistics(challenge_id):
             return redirect(url_for("challenge.challenge_catalog"))
 
 
-@challenge_bp.route(
-    "/x-replacement/<int:gara_id>/<int:round_number>", methods=["POST"]
-)
+@challenge_bp.route("/x-replacement/<int:gara_id>/<int:round_number>", methods=["POST"])
 @login_required
 def create_x_replacement(gara_id, round_number):
     """Create challenge attempt for X replacement in campionato."""
@@ -481,7 +423,7 @@ def create_x_replacement(gara_id, round_number):
                 {
                     "success": True,
                     "attempt_id": attempt.id,
-                    "challenge_name": attempt.challenge.name,
+                    "challenge_description": attempt.challenge.get_display_name(),
                     "message": "X replacement challenge created",
                 }
             )

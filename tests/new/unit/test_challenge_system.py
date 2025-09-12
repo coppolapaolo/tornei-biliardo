@@ -32,9 +32,8 @@ class TestChallengeService:
         """Create a test challenge."""
         with app.app_context():
             challenge = Challenge(
-                name="Test Challenge",
-                description="Test description",
-                min_score=0,
+                description="Test challenge description for testing purposes",
+                image_path="test_image.jpg",
                 max_score=100,
                 pass_fail_only=False,
                 created_by_id=test_user.id,
@@ -50,16 +49,14 @@ class TestChallengeService:
         """Test challenge creation."""
         with app.app_context():
             challenge = ChallengeService.create_challenge(
-                name="New Challenge",
                 description="New challenge description",
-                min_score=0,
                 max_score=50,
                 pass_fail_only=False,
                 created_by_id=test_user.id
             )
             
             assert challenge.id is not None
-            assert challenge.name == "New Challenge"
+            assert challenge.get_display_name() == "New challenge description"
             assert challenge.description == "New challenge description"
             assert challenge.max_score == 50
             assert challenge.created_by_id == test_user.id
@@ -73,13 +70,12 @@ class TestChallengeService:
         """Test challenge creation without explicit name."""
         with app.app_context():
             challenge = ChallengeService.create_challenge(
-                name=None,
                 description="Challenge without name",
                 created_by_id=test_user.id
             )
             
             assert challenge.id is not None
-            assert challenge.name is None  # Should be None, name generated automatically
+            assert challenge.get_display_name() == "Challenge without name"
             assert challenge.description == "Challenge without name"
             
             # Cleanup
@@ -91,8 +87,8 @@ class TestChallengeService:
         with app.app_context():
             # Create an inactive challenge
             inactive_challenge = Challenge(
-                name="Inactive Challenge",
                 description="This should not appear",
+                image_path="inactive_image.jpg",
                 is_active=False
             )
             db.session.add(inactive_challenge)
@@ -114,7 +110,6 @@ class TestChallengeService:
         with app.app_context():
             # Create a challenge by the test user
             my_challenge = Challenge(
-                name="My Challenge",
                 description="Created by me",
                 created_by_id=test_user.id,
                 is_active=True
@@ -201,7 +196,6 @@ class TestChallengeService:
                 name="Pass/Fail Challenge",
                 description="Pass or fail",
                 pass_fail_only=True,
-                min_score=0,
                 max_score=1,
                 is_active=True
             )
@@ -311,7 +305,6 @@ class TestChallengeModel:
             challenge = Challenge(
                 name="Test Challenge",
                 description="Test description",
-                min_score=0,
                 max_score=100,
                 is_active=True
             )
@@ -349,7 +342,6 @@ class TestChallengeModel:
         with app.app_context():
             # Challenge with name
             challenge_with_name = Challenge(
-                name="My Challenge",
                 description="Test challenge"
             )
             assert challenge_with_name.get_display_name() == "My Challenge"

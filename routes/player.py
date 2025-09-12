@@ -541,7 +541,7 @@ def profile():
             # Build challenge history (last 20 attempts)
             for attempt in user_attempts[:20]:
                 challenge_history.append({
-                    "challenge_name": attempt.gara_challenge.challenge.name,
+                    "challenge_name": attempt.gara_challenge.challenge.get_display_name(),
                     "gara_name": attempt.gara_challenge.gara.name,
                     "score": attempt.score,
                     "passed": attempt.passed,
