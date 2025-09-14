@@ -86,9 +86,9 @@ def create_proposal():
             "break_rule": data.get("break_rule", "alternate"),
             "description": data.get("description"),
             "entry_fee": float(data["entry_fee"]) if data.get("entry_fee") else None,
-            "invited_user_ids": data.getlist("invited_user_ids")
-            if data.get("invited_user_ids")
-            else [],
+            "invited_user_ids": (
+                data.getlist("invited_user_ids") if data.get("invited_user_ids") else []
+            ),
         }
 
         proposal = MatchProposalService.create_proposal(**proposal_data)

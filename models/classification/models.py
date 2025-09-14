@@ -97,7 +97,7 @@ class RoundClassification(db.Model):
 
         This method aggregates match results up to the specified round
         and creates/updates RoundClassification entries for all players.
-        
+
         For Random strategy: classification is based on total racks won
         For other strategies: classification is based on matches won, then rack difference
 
@@ -110,7 +110,7 @@ class RoundClassification(db.Model):
         """
         from models.match.models import Match
         from models.competition.models import Gara
-        
+
         # Get gara to determine matchmaking strategy
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -216,9 +216,13 @@ class RoundClassification(db.Model):
                 # For Random strategy, store total racks won in rack_difference field for display
                 # For other strategies, store actual rack difference
                 if gara.matchmaking_strategy == "random":
-                    classification.rack_difference = stats["rack_won"]  # Store total racks won
+                    classification.rack_difference = stats[
+                        "rack_won"
+                    ]  # Store total racks won
                 else:
-                    classification.rack_difference = stats["rack_difference"]  # Store rack difference
+                    classification.rack_difference = stats[
+                        "rack_difference"
+                    ]  # Store rack difference
                 classification.previous_position = previous_position
             else:
                 # Create new
@@ -230,7 +234,11 @@ class RoundClassification(db.Model):
                     matches_won=stats["matches_won"],
                     # For Random strategy, store total racks won in rack_difference field
                     # For other strategies, store actual rack difference
-                    rack_difference=stats["rack_won"] if gara.matchmaking_strategy == "random" else stats["rack_difference"],
+                    rack_difference=(
+                        stats["rack_won"]
+                        if gara.matchmaking_strategy == "random"
+                        else stats["rack_difference"]
+                    ),
                     previous_position=previous_position,
                 )
                 db.session.add(classification)

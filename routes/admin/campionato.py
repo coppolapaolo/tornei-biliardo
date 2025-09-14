@@ -63,39 +63,48 @@ def campionato_detail(campionato_id):
 
     # Controlla se l'utente può gestire director per questo campionato
     from models.user.models import DirectorAssignment
+
     can_manage_directors = current_user.is_admin or (
         db.session.query(DirectorAssignment)
         .filter(
-            DirectorAssignment.entity_type == 'campionato',
+            DirectorAssignment.entity_type == "campionato",
             DirectorAssignment.entity_id == campionato.id,
-            DirectorAssignment.user_id == current_user.id
+            DirectorAssignment.user_id == current_user.id,
         )
-        .first() is not None
+        .first()
+        is not None
     )
 
-    # Calcola statistiche avanzate del campionato  
+    # Calcola statistiche avanzate del campionato
     campionato_stats = campionato_service.calculate_campionato_statistics(campionato_id)
-    
+
     # Calcola classifica generale se ci sono gare completate o gare in corso con tutti i round completati
     general_classification = None
     last_completed_gara_number = None
-    
+
     # Trova gare completate o gare "playing" ma con tutti i round completati
     eligible_garas = []
     for p in gare:
-        if p.status == 'completed':
+        if p.status == "completed":
             eligible_garas.append(p)
-        elif p.status == 'playing' and p.current_round > p.rounds_count:
+        elif p.status == "playing" and p.current_round > p.rounds_count:
             # Gara tecnicamente completata ma non ancora marcata come tale
             eligible_garas.append(p)
-    
+
     if eligible_garas:
         last_completed_gara_number = max(p.number for p in eligible_garas)
-        general_classification = campionato_service.calculate_general_classification(campionato_id)
+        general_classification = campionato_service.calculate_general_classification(
+            campionato_id
+        )
 
     # Get verified venues for location suggestions
     from models.location.models import BilliardHall
-    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
+
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
 
     return render_template(
         "admin/campionato_detail.html",

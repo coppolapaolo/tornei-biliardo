@@ -108,7 +108,7 @@ class TestDashboardService:
 
         # Create campionato NOT managed by director
         other_director = User(
-            username="other", email="other@test.com", role=UserRole.DIRECTOR.value
+            username=f"other_{unique_id}", email=f"other_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         other_director.set_password("other123")
         db_session.add(other_director)

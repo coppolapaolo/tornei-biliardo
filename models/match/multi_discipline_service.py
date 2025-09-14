@@ -305,9 +305,9 @@ class MultiDisciplineService:
             if current_set and match_set.set_number == current_set.set_number:
                 if match_set.is_multi_discipline:
                     next_rack = len(match_set.racks) + 1
-                    set_info[
-                        "next_rack_discipline"
-                    ] = match_set.get_discipline_for_rack(next_rack)
+                    set_info["next_rack_discipline"] = (
+                        match_set.get_discipline_for_rack(next_rack)
+                    )
                 else:
                     set_info["current_discipline"] = match_set.discipline
 

@@ -109,16 +109,17 @@ class Gara(db.Model):
     )
 
     # Co-directors relationship (similar to campionati)
-    @property 
+    @property
     def directors(self):
         """Get co-directors for this gara."""
         from models.user.models import DirectorAssignment, User
+
         return (
             db.session.query(User)
             .join(DirectorAssignment, User.id == DirectorAssignment.user_id)
             .filter(
-                DirectorAssignment.entity_type == 'gara',
-                DirectorAssignment.entity_id == self.id
+                DirectorAssignment.entity_type == "gara",
+                DirectorAssignment.entity_id == self.id,
             )
             .all()
         )
@@ -219,31 +220,33 @@ class Gara(db.Model):
     def validate_strategy_configuration(self):
         """Valida la coerenza tra strategia di abbinamento e configurazioni."""
         errors = []
-        
+
         # Validazioni per round robin
         if self.matchmaking_strategy == "round_robin":
             if self.first_round_policy != "random":
                 errors.append("Round robin supporta solo abbinamento casuale")
             if self.odd_number_policy == "trio":
                 errors.append("Round robin non supporta match a tre")
-        
+
         # Validazioni per eliminazione diretta
         elif self.matchmaking_strategy == "direct_elimination":
             if self.odd_number_policy == "trio":
                 errors.append("Eliminazione diretta non supporta match a tre")
-        
+
         # Validazioni per strategia casuale
         elif self.matchmaking_strategy == "random":
             if self.first_round_policy != "random":
                 errors.append("Strategia casuale usa sempre abbinamento casuale")
-        
+
         # Validazioni per trio matches
         if self.odd_number_policy == "trio":
             if self.distance > 7:
                 errors.append("Match a tre supportati solo fino a distanza 7")
             if self.matchmaking_strategy not in ["amalfi", "random"]:
-                errors.append(f"Match a tre non supportati con strategia {self.matchmaking_strategy}")
-        
+                errors.append(
+                    f"Match a tre non supportati con strategia {self.matchmaking_strategy}"
+                )
+
         return errors
 
     def calculate_rounds_for_strategy(self, num_players):
@@ -252,9 +255,11 @@ class Gara(db.Model):
             return num_players - 1 if num_players > 1 else 1
         elif self.matchmaking_strategy == "direct_elimination":
             import math
+
             return math.ceil(math.log2(num_players)) if num_players > 1 else 1
         elif self.matchmaking_strategy == "double_knockout":
             import math
+
             # Double elimination richiede circa 2 * log2(n) turni
             return 2 * math.ceil(math.log2(num_players)) if num_players > 1 else 1
         else:
@@ -269,34 +274,34 @@ class Gara(db.Model):
                 "odd_policies": ["bye"],
                 "fixed_rounds": True,
                 "anti_rematch": False,
-                "allow_trio": False
+                "allow_trio": False,
             },
             "direct_elimination": {
                 "first_round_policies": ["random", "rating", "classification"],
                 "odd_policies": ["bye"],
                 "fixed_rounds": True,
                 "anti_rematch": False,
-                "allow_trio": False
+                "allow_trio": False,
             },
             "double_knockout": {
                 "first_round_policies": ["random", "rating", "classification"],
                 "odd_policies": ["bye"],
                 "fixed_rounds": True,
                 "anti_rematch": False,
-                "allow_trio": False
+                "allow_trio": False,
             },
             "amalfi": {
                 "first_round_policies": ["random", "rating", "classification"],
                 "odd_policies": ["bye", "bye_with_challenge", "trio"],
                 "fixed_rounds": False,
-                "anti_rematch": True
+                "anti_rematch": True,
             },
             "random": {
                 "first_round_policies": ["random"],
                 "odd_policies": ["bye", "bye_with_challenge", "trio"],
                 "fixed_rounds": False,
-                "anti_rematch": True
-            }
+                "anti_rematch": True,
+            },
         }
         return constraints.get(self.matchmaking_strategy, constraints["amalfi"])
 
@@ -321,20 +326,26 @@ class Gara(db.Model):
             return False
         if self.status != GaraStatus.PLAYING.value:
             return False
-        
+
         # Verifica che non ci siano risultati inseriti nelle partite del primo turno
         try:
             from models.match.models import Match
-            first_round_matches = Match.query.filter_by(gara_id=self.id, round_number=1).all()
+
+            first_round_matches = Match.query.filter_by(
+                gara_id=self.id, round_number=1
+            ).all()
             if not first_round_matches:
                 return False
-            
+
             # Controlla che non ci siano risultati inseriti (neanche parziali)
             for match in first_round_matches:
-                if (match.player1_score > 0 or match.player2_score > 0 or 
-                    match.status != MatchStatus.PENDING.value):
+                if (
+                    match.player1_score > 0
+                    or match.player2_score > 0
+                    or match.status != MatchStatus.PENDING.value
+                ):
                     return False
-            
+
             return True
         except Exception:
             return False
@@ -343,20 +354,26 @@ class Gara(db.Model):
         """Verifica se l'avvio del turno corrente può essere cancellato"""
         if self.status != GaraStatus.PLAYING.value:
             return False
-        
+
         # Verifica che non ci siano risultati inseriti nelle partite del turno corrente
         try:
             from models.match.models import Match
-            current_round_matches = Match.query.filter_by(gara_id=self.id, round_number=self.current_round).all()
+
+            current_round_matches = Match.query.filter_by(
+                gara_id=self.id, round_number=self.current_round
+            ).all()
             if not current_round_matches:
                 return False
-            
+
             # Controlla che non ci siano risultati inseriti (neanche parziali)
             for match in current_round_matches:
-                if (match.player1_score > 0 or match.player2_score > 0 or 
-                    match.status != MatchStatus.PENDING.value):
+                if (
+                    match.player1_score > 0
+                    or match.player2_score > 0
+                    or match.status != MatchStatus.PENDING.value
+                ):
                     return False
-            
+
             return True
         except Exception:
             return False
@@ -382,21 +399,25 @@ class Gara(db.Model):
         self.min_participants = source_gara.min_participants
         self.max_participants = source_gara.max_participants
         self.entry_fee = source_gara.entry_fee
-    
+
     def get_active_inscriptions_count(self):
         """Conta le iscrizioni attive (non in lista d'attesa e non ritirate)"""
-        return len([i for i in self.inscriptions if not i.is_withdrawn and not i.is_waitlist])
-    
+        return len(
+            [i for i in self.inscriptions if not i.is_withdrawn and not i.is_waitlist]
+        )
+
     def get_waitlist_count(self):
         """Conta i giocatori in lista d'attesa"""
-        return len([i for i in self.inscriptions if i.is_waitlist and not i.is_withdrawn])
-    
+        return len(
+            [i for i in self.inscriptions if i.is_waitlist and not i.is_withdrawn]
+        )
+
     def is_full(self):
         """Verifica se la gara ha raggiunto il numero massimo di partecipanti"""
         if not self.max_participants:
             return False
         return self.get_active_inscriptions_count() >= self.max_participants
-    
+
     def has_waitlist(self):
         """Verifica se la gara ha una lista d'attesa attiva"""
         return self.max_participants is not None and self.is_full()
@@ -424,7 +445,7 @@ class Inscription(db.Model):
 
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)
-    
+
     # Lista d'attesa
     is_waitlist = db.Column(db.Boolean, default=False, nullable=False)
     waitlist_position = db.Column(db.Integer, nullable=True)

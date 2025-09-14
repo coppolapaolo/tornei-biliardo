@@ -131,7 +131,7 @@ class AmalfiEngine:
         return matches_data
 
     def _preview_amalfi_round(self, round_number: int) -> List[Dict]:
-        """Genera l'anteprima di un turno Amalfi senza persistere 
+        """Genera l'anteprima di un turno Amalfi senza persistere
         usando l'algoritmo completo"""
         # Ottieni la classificazione del round precedente
         classification = (
@@ -440,13 +440,13 @@ class AmalfiEngine:
     ) -> Optional[RoundClassification]:
         players_count = len(classification)
         current_position = current_class.position
-        
+
         # Se anti-rematch è abilitato, usa un algoritmo più completo
         if self.gara.anti_rematch_enabled:
             return self._find_target_anti_rematch(
                 current_class, classification, matched_players, salto
             )
-        
+
         # Algoritmo originale per compatibilità
         target_position = current_position + 1 + salto
         attempts = 0
@@ -499,44 +499,51 @@ class AmalfiEngine:
     ) -> Optional[RoundClassification]:
         """Algoritmo anti-rematch più rigoroso che prova tutti i giocatori disponibili."""
         current_position = current_class.position
-        
+
         # Prima: prova il target preferito Amalfi (posizione + 1 + salto)
         preferred_position = current_position + 1 + salto
         if preferred_position > len(classification):
             preferred_position -= len(classification)
-            
+
         preferred_target = next(
             (c for c in classification if c.position == preferred_position), None
         )
-        
-        if (preferred_target and 
-            preferred_target.user_id not in matched_players and
-            preferred_target.user_id != current_class.user_id and
-            anti_rematch_allowed(self.gara.id, current_class.user_id, preferred_target.user_id)):
+
+        if (
+            preferred_target
+            and preferred_target.user_id not in matched_players
+            and preferred_target.user_id != current_class.user_id
+            and anti_rematch_allowed(
+                self.gara.id, current_class.user_id, preferred_target.user_id
+            )
+        ):
             return preferred_target
-        
+
         # Se il target preferito non va bene, prova TUTTI gli altri giocatori disponibili
         # Ordina per preferenza: più vicini alla posizione target sono meglio
         available_players = [
-            c for c in classification 
-            if (c.user_id not in matched_players and 
-                c.user_id != current_class.user_id and
-                anti_rematch_allowed(self.gara.id, current_class.user_id, c.user_id))
+            c
+            for c in classification
+            if (
+                c.user_id not in matched_players
+                and c.user_id != current_class.user_id
+                and anti_rematch_allowed(self.gara.id, current_class.user_id, c.user_id)
+            )
         ]
-        
+
         if not available_players:
             # Nessun giocatore disponibile senza rematch
             return None
-        
+
         # Ordina per distanza dalla posizione target preferita
         def distance_from_preferred(player_class):
             pos_diff = abs(player_class.position - preferred_position)
             # Gestisci la circolarità (es: pos 1 è vicina a pos 6 in un torneo a 6)
             circular_diff = min(pos_diff, len(classification) - pos_diff)
             return circular_diff
-        
+
         available_players.sort(key=distance_from_preferred)
-        
+
         # Restituisci il migliore disponibile
         return available_players[0]
 
@@ -560,7 +567,9 @@ class AmalfiEngine:
     ) -> None:
         """Gestisce l'ultimo giocatore rimasto (bye oppure trasformazione in trio)."""
         decision = decide_trio_or_bye(
-            campionato_without_x=bool(self.campionato.without_x) if self.campionato else False,
+            campionato_without_x=(
+                bool(self.campionato.without_x) if self.campionato else False
+            ),
             can_trio=bool(matches),
         )
         if decision is OddResolution.TRIO and matches:

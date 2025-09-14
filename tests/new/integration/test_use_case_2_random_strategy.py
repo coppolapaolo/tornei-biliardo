@@ -16,7 +16,11 @@ import uuid
 from models import User, Gara, Match, Inscription
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
-from models.matchmaking.configuration import MatchmakingStrategy, FirstRoundPolicy, OddNumberPolicy
+from models.matchmaking.configuration import (
+    MatchmakingStrategy,
+    FirstRoundPolicy,
+    OddNumberPolicy,
+)
 from models.competition.services import GaraService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
@@ -33,7 +37,7 @@ class TestUseCaseRandomStrategyWithChallenges:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -47,7 +51,7 @@ class TestUseCaseRandomStrategyWithChallenges:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -63,11 +67,11 @@ class TestUseCaseRandomStrategyWithChallenges:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -76,7 +80,7 @@ class TestUseCaseRandomStrategyWithChallenges:
         self, admin_user: User, players_8: List[User], db_session, client
     ):
         """Test full Random strategy tournament with challenge system.
-        
+
         Workflow:
         1. Admin creates tournament with Random strategy
         2. Complete first round with random pairings
@@ -106,7 +110,7 @@ class TestUseCaseRandomStrategyWithChallenges:
             first_round_policy=FirstRoundPolicy.RANDOM.value,
             odd_number_policy=OddNumberPolicy.BYE.value,
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         assert gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value
@@ -137,12 +141,16 @@ class TestUseCaseRandomStrategyWithChallenges:
             assert match.player1_id != match.player2_id
 
         # Complete round 1 matches
-        self._complete_matches_with_results(round1_matches, [
-            (4, 3),  # Close match
-            (4, 1),  # Dominant match
-            (4, 2),  # Medium match
-            (4, 0),  # Shutout match
-        ], db_session)
+        self._complete_matches_with_results(
+            round1_matches,
+            [
+                (4, 3),  # Close match
+                (4, 1),  # Dominant match
+                (4, 2),  # Medium match
+                (4, 0),  # Shutout match
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
@@ -150,9 +158,10 @@ class TestUseCaseRandomStrategyWithChallenges:
         # Note: Challenge system would be tested separately as it requires complex setup
         # For this workflow test, we skip the challenge implementation
 
-
         # Step 6: Start second round with Random strategy
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_round_with_strategy(gara.id, 2)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_round_with_strategy(gara.id, 2)
+        )
         gara.current_round = 2
         db_session.add(gara)
         db_session.commit()
@@ -161,21 +170,29 @@ class TestUseCaseRandomStrategyWithChallenges:
         assert len(round2_matches) == 4
 
         # Verify anti-rematch is working with Random strategy
-        round1_pairings = {tuple(sorted([m.player1_id, m.player2_id])) 
-                          for m in round1_matches}
-        round2_pairings = {tuple(sorted([m.player1_id, m.player2_id])) 
-                          for m in round2_matches if not m.is_bye}
+        round1_pairings = {
+            tuple(sorted([m.player1_id, m.player2_id])) for m in round1_matches
+        }
+        round2_pairings = {
+            tuple(sorted([m.player1_id, m.player2_id]))
+            for m in round2_matches
+            if not m.is_bye
+        }
 
         rematch_count = len(round1_pairings.intersection(round2_pairings))
         assert rematch_count == 0, f"Found {rematch_count} rematches in round 2"
 
         # Complete round 2
-        self._complete_matches_with_results(round2_matches, [
-            (4, 2),
-            (4, 3),
-            (4, 1),
-            (4, 0),
-        ], db_session)
+        self._complete_matches_with_results(
+            round2_matches,
+            [
+                (4, 2),
+                (4, 3),
+                (4, 1),
+                (4, 0),
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
@@ -185,7 +202,9 @@ class TestUseCaseRandomStrategyWithChallenges:
         db_session.add(gara)
         db_session.commit()
 
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_round_with_strategy(gara.id, 3)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_round_with_strategy(gara.id, 3)
+        )
         gara.current_round = 3
         db_session.add(gara)
         db_session.commit()
@@ -198,17 +217,22 @@ class TestUseCaseRandomStrategyWithChallenges:
         assert gara.discipline == "palla_9"
 
         # Complete final round
-        self._complete_matches_with_results(round3_matches, [
-            (4, 3),
-            (4, 1),
-            (4, 2),
-            (4, 0),
-        ], db_session)
+        self._complete_matches_with_results(
+            round3_matches,
+            [
+                (4, 3),
+                (4, 1),
+                (4, 2),
+                (4, 0),
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Step 8: Verify final classification exists
         from amalfi.engine import get_amalfi_classification
+
         final_classification = get_amalfi_classification(gara.id, 3)
         assert final_classification is not None
         assert len(final_classification) == 8
@@ -229,11 +253,16 @@ class TestUseCaseRandomStrategyWithChallenges:
         for match, (winner_racks, loser_racks) in zip(matches, results):
             if match.is_bye:
                 continue
-                
+
             # Randomly choose winner (player1 or player2)
             import random
-            winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-            loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+            winner_id = (
+                match.player1_id if random.choice([True, False]) else match.player2_id
+            )
+            loser_id = (
+                match.player2_id if winner_id == match.player1_id else match.player1_id
+            )
 
             # Add racks for winner
             for rack_num in range(1, winner_racks + 1):
@@ -243,7 +272,7 @@ class TestUseCaseRandomStrategyWithChallenges:
                     winner_id=winner_id,
                     reported_by_id=winner_id,
                     confirmed_by_player=True,
-                    validated_by_admin=True
+                    validated_by_admin=True,
                 )
 
             # Add racks for loser
@@ -254,7 +283,7 @@ class TestUseCaseRandomStrategyWithChallenges:
                     winner_id=loser_id,
                     reported_by_id=loser_id,
                     confirmed_by_player=True,
-                    validated_by_admin=True
+                    validated_by_admin=True,
                 )
 
             # Complete match
@@ -272,7 +301,7 @@ class TestUseCaseRandomStrategyVariants:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -288,11 +317,11 @@ class TestUseCaseRandomStrategyVariants:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -306,11 +335,11 @@ class TestUseCaseRandomStrategyVariants:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -319,7 +348,7 @@ class TestUseCaseRandomStrategyVariants:
         self, director_user: User, players_7: List[User], db_session, client
     ):
         """Test Random strategy with 7 players and bye handling.
-        
+
         Tests:
         - Random pairings with odd numbers
         - Bye rotation across rounds
@@ -345,7 +374,7 @@ class TestUseCaseRandomStrategyVariants:
             first_round_policy="random",
             odd_number_policy="bye",  # Bye handling
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         # All 7 players inscribe
@@ -365,43 +394,55 @@ class TestUseCaseRandomStrategyVariants:
             if round_num > 1:
                 # Complete previous round first
                 prev_matches = Match.query.filter_by(
-                    gara_id=gara.id, round_number=round_num-1
+                    gara_id=gara.id, round_number=round_num - 1
                 ).all()
-                
+
                 regular_matches = [m for m in prev_matches if not m.is_bye]
-                self._complete_matches_with_results(regular_matches, [
-                    (3, 2),
-                    (3, 1), 
-                    (3, 0),
-                ], db_session)
-                
-                RoundClassification.calculate_classification_after_round(gara.id, round_num-1)
-                
+                self._complete_matches_with_results(
+                    regular_matches,
+                    [
+                        (3, 2),
+                        (3, 1),
+                        (3, 0),
+                    ],
+                    db_session,
+                )
+
+                RoundClassification.calculate_classification_after_round(
+                    gara.id, round_num - 1
+                )
+
                 # Create next round
-                total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, round_num)
+                total_matches, normal_matches, bye_matches, trio_matches = (
+                    GaraService.create_amalfi_round(gara.id, round_num)
+                )
                 gara.current_round = round_num
                 db_session.add(gara)
                 db_session.commit()
 
             # Analyze current round
-            matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
-            
+            matches = Match.query.filter_by(
+                gara_id=gara.id, round_number=round_num
+            ).all()
+
             regular_matches = [m for m in matches if not m.is_bye]
             bye_matches = [m for m in matches if m.is_bye]
-            
+
             assert len(regular_matches) == 3  # 6 players in 3 matches
-            assert len(bye_matches) == 1     # 1 player gets bye
-            assert len(matches) == 4         # Total matches
-            
+            assert len(bye_matches) == 1  # 1 player gets bye
+            assert len(matches) == 4  # Total matches
+
             # Track who got the bye
             bye_player_id = bye_matches[0].player1_id
             bye_players_by_round.append(bye_player_id)
-            
+
             print(f"Round {round_num}: Player {bye_player_id} gets bye")
 
         # Verify different players got byes (Random strategy should distribute byes)
         unique_bye_players = len(set(bye_players_by_round))
-        assert unique_bye_players >= 2, f"Only {unique_bye_players} different players got byes"
+        assert (
+            unique_bye_players >= 2
+        ), f"Only {unique_bye_players} different players got byes"
 
         print(f"✅ Random strategy with odd players completed successfully")
         print(f"   - {unique_bye_players} different players received byes")
@@ -411,7 +452,7 @@ class TestUseCaseRandomStrategyVariants:
         self, director_user: User, players_9: List[User], db_session, client
     ):
         """Test Random strategy with trio handling for odd numbers.
-        
+
         Tests:
         - 9 players with trio match option
         - Random pairings including trio matches
@@ -437,7 +478,7 @@ class TestUseCaseRandomStrategyVariants:
             first_round_policy="random",
             odd_number_policy="trio",  # Trio handling instead of bye
             anti_rematch_enabled=False,  # Disable for trio testing
-            rating_type=None
+            rating_type=None,
         )
 
         # All 9 players inscribe
@@ -452,11 +493,11 @@ class TestUseCaseRandomStrategyVariants:
 
         # Verify first round structure
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
-        
+
         regular_matches = [m for m in round1_matches if not m.is_trio and not m.is_bye]
         trio_matches_list = [m for m in round1_matches if m.is_trio]
         bye_matches = [m for m in round1_matches if m.is_bye]
-        
+
         # With 9 players and trio handling: could be 3 regular + 1 trio, or other combinations
         total_players_in_matches = 0
         for match in round1_matches:
@@ -466,51 +507,62 @@ class TestUseCaseRandomStrategyVariants:
                 total_players_in_matches += 2  # Regular match has 2 players
             else:
                 total_players_in_matches += 1  # Bye has 1 player
-        
-        assert total_players_in_matches == 9, f"Expected 9 players total, got {total_players_in_matches}"
+
+        assert (
+            total_players_in_matches == 9
+        ), f"Expected 9 players total, got {total_players_in_matches}"
         assert len(trio_matches_list) >= 1, "Should have at least one trio match"
-        
+
         # Complete regular matches
         if regular_matches:
             results = [(3, 2)] * len(regular_matches)
             self._complete_matches_with_results(regular_matches, results, db_session)
-        
+
         # Complete trio matches (more complex)
         for trio_match in trio_matches_list:
             self._complete_trio_match(trio_match, db_session)
-        
+
         RoundClassification.calculate_classification_after_round(gara.id, 1)
-        
+
         # Second round
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 2)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 2)
+        )
         gara.current_round = 2
         db_session.add(gara)
         db_session.commit()
-        
+
         round2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
-        
+
         # Complete second round
-        regular_matches_r2 = [m for m in round2_matches if not m.is_trio and not m.is_bye]
+        regular_matches_r2 = [
+            m for m in round2_matches if not m.is_trio and not m.is_bye
+        ]
         trio_matches_r2_list = [m for m in round2_matches if m.is_trio]
-        
+
         if regular_matches_r2:
             results = [(3, 1)] * len(regular_matches_r2)
             self._complete_matches_with_results(regular_matches_r2, results, db_session)
-        
+
         for trio_match in trio_matches_r2_list:
             self._complete_trio_match(trio_match, db_session)
-        
+
         RoundClassification.calculate_classification_after_round(gara.id, 2)
-        
+
         # Verify final results
         from amalfi.engine import get_amalfi_classification
+
         final_classification = get_amalfi_classification(gara.id, 2)
         assert final_classification is not None
         assert len(final_classification) == 9
-        
+
         print(f"✅ Random strategy with trio handling completed successfully")
-        print(f"   - Round 1: {len(trio_matches_list)} trio matches, {len(regular_matches)} regular matches")
-        print(f"   - Round 2: {len(trio_matches_r2_list)} trio matches, {len(regular_matches_r2)} regular matches")
+        print(
+            f"   - Round 1: {len(trio_matches_list)} trio matches, {len(regular_matches)} regular matches"
+        )
+        print(
+            f"   - Round 2: {len(trio_matches_r2_list)} trio matches, {len(regular_matches_r2)} regular matches"
+        )
         print(f"   - All 9 players have final classification")
 
     def _complete_matches_with_results(
@@ -520,10 +572,15 @@ class TestUseCaseRandomStrategyVariants:
         for match, (winner_racks, loser_racks) in zip(matches, results):
             if match.is_bye or match.is_trio:
                 continue
-                
+
             import random
-            winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-            loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+            winner_id = (
+                match.player1_id if random.choice([True, False]) else match.player2_id
+            )
+            loser_id = (
+                match.player2_id if winner_id == match.player1_id else match.player1_id
+            )
 
             # Add racks for winner
             for rack_num in range(1, winner_racks + 1):
@@ -533,7 +590,7 @@ class TestUseCaseRandomStrategyVariants:
                     winner_id=winner_id,
                     reported_by_id=winner_id,
                     confirmed_by_player=True,
-                    validated_by_admin=True
+                    validated_by_admin=True,
                 )
 
             # Add racks for loser
@@ -544,7 +601,7 @@ class TestUseCaseRandomStrategyVariants:
                     winner_id=loser_id,
                     reported_by_id=loser_id,
                     confirmed_by_player=True,
-                    validated_by_admin=True
+                    validated_by_admin=True,
                 )
 
             MatchService.to_completed(match.id)
@@ -553,16 +610,19 @@ class TestUseCaseRandomStrategyVariants:
         """Complete a trio match with realistic 3-player scoring."""
         if not trio_match.is_trio:
             return
-            
+
         # Get trio match details - implementation may vary
         # For now, just mark as completed with winner
         # (Real implementation would handle 3-player scoring)
-        
+
         import random
+
         # Simulate trio completion - player1 wins
         trio_match.winner_id = trio_match.player1_id
         trio_match.status = MatchStatus.COMPLETED.value
         db_session.add(trio_match)
         db_session.commit()
-        
-        print(f"   - Completed trio match {trio_match.id} with winner {trio_match.winner_id}")
+
+        print(
+            f"   - Completed trio match {trio_match.id} with winner {trio_match.winner_id}"
+        )

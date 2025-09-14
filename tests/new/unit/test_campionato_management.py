@@ -1,6 +1,7 @@
 """Unit tests for campionato management."""
 
 import pytest
+import uuid
 from datetime import date, timedelta
 
 from models import User, Campionato
@@ -93,9 +94,11 @@ class TestCampionatoModel:
         assert campionato.can_be_modified() is True
 
         # Add a gara with inscriptions
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -119,9 +122,11 @@ class TestCampionatoModel:
         assert campionato.can_be_modified() is True
 
         # Add inscription
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add(player)
         db_session.commit()
 
@@ -167,9 +172,11 @@ class TestCampionatoModel:
         assert campionato.can_be_deleted() is True
 
         # Add inscription
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add(player)
         db_session.commit()
 
@@ -190,9 +197,11 @@ class TestTournamentService:
     def test_create_campionato_with_director(self, db_session):
         """Test creating campionato with director assignment."""
         # Create director
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -243,9 +252,11 @@ class TestTournamentService:
     def test_get_campionato_detail_data(self, db_session):
         """Test getting campionato detail data."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -303,9 +314,11 @@ class TestTournamentService:
     def test_update_campionato(self, db_session):
         """Test updating campionato."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -338,9 +351,11 @@ class TestTournamentService:
     def test_update_campionato_with_inscriptions(self, db_session):
         """Test updating campionato that has inscriptions (should fail)."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -368,9 +383,11 @@ class TestTournamentService:
             best_of=True,
         )
 
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add(player)
         db_session.commit()
 
@@ -391,9 +408,11 @@ class TestTournamentService:
     def test_delete_campionato(self, db_session):
         """Test deleting campionato."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -426,9 +445,11 @@ class TestTournamentService:
     def test_delete_campionato_with_inscriptions(self, db_session):
         """Test deleting campionato that has inscriptions (should fail)."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -456,9 +477,11 @@ class TestTournamentService:
             best_of=True,
         )
 
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add(player)
         db_session.commit()
 
@@ -475,9 +498,11 @@ class TestTournamentService:
     def test_toggle_active_status(self, db_session):
         """Test toggling campionato active status."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -502,17 +527,21 @@ class TestTournamentService:
     def test_add_director(self, db_session):
         """Test adding co-director to campionato."""
         # Create directors
+        unique_id = str(uuid.uuid4())[:8]
         main_director = User(
-            username="main_director",
-            email="main@test.com",
+            username=f"main_director_{unique_id}",
+            email=f"main_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
+        main_director.set_password("testpass123")
         co_director = User(
-            username="co_director", email="co@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        co_director.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([main_director, co_director, admin])
         db_session.commit()
 
@@ -546,12 +575,15 @@ class TestTournamentService:
     def test_add_director_duplicate(self, db_session):
         """Test adding director who is already assigned."""
         # Create director
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([director, admin])
         db_session.commit()
 
@@ -572,17 +604,21 @@ class TestTournamentService:
     def test_remove_director(self, db_session):
         """Test removing co-director from campionato."""
         # Create directors
+        unique_id = str(uuid.uuid4())[:8]
         main_director = User(
-            username="main_director",
-            email="main@test.com",
+            username=f"main_director_{unique_id}",
+            email=f"main_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
+        main_director.set_password("testpass123")
         co_director = User(
-            username="co_director", email="co@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        co_director.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([main_director, co_director, admin])
         db_session.commit()
 
@@ -626,10 +662,11 @@ class TestTournamentService:
             role=UserRole.DIRECTOR.value,
         )
         other_director = User(
-            username="other_director",
-            email="other@test.com",
+            username=f"other_director_{unique_id}",
+            email=f"other_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
+        other_director.set_password("testpass123")
         db_session.add_all([main_director, other_director])
         db_session.commit()
 

@@ -57,9 +57,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
     # Qualification criteria
     max_participants = db.Column(db.Integer, nullable=False)
-    min_garas_played = db.Column(
-        db.Integer, nullable=True
-    )  # Minimum provas to qualify
+    min_garas_played = db.Column(db.Integer, nullable=True)  # Minimum provas to qualify
     qualification_criteria = db.Column(
         db.Text, nullable=False
     )  # JSON string with criteria

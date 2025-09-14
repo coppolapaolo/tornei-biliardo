@@ -381,16 +381,16 @@ def match_detail(match_id):
         abort(404)
 
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
-    
+
     # Get available challenges for this match's gara
     available_challenges = []
     player_challenge_progress = {}
-    
+
     if match.gara_id:
         from models.challenge.gara_challenge_service import GaraChallengeService
         from models.challenge.gara_challenge_models import GaraChallenge
         from sqlalchemy.orm import joinedload
-        
+
         # Get available challenges for this gara
         available_challenges = (
             db.session.query(GaraChallenge)
@@ -401,7 +401,7 @@ def match_detail(match_id):
             .options(joinedload(GaraChallenge.challenge))  # type: ignore[arg-type]
             .all()
         )
-        
+
         # Get player challenge progress for both players
         if match.player1_id:
             progress = GaraChallengeService.get_user_gara_challenge_progress(
@@ -409,7 +409,7 @@ def match_detail(match_id):
             )
             if progress:
                 player_challenge_progress[match.player1_id] = progress
-        
+
         if match.player2_id:
             progress = GaraChallengeService.get_user_gara_challenge_progress(
                 match.gara_id, match.player2_id
@@ -418,11 +418,11 @@ def match_detail(match_id):
                 player_challenge_progress[match.player2_id] = progress
 
     return render_template(
-        "match_detail.html", 
-        match=match, 
+        "match_detail.html",
+        match=match,
         racks=racks,
         available_challenges=available_challenges,
-        player_challenge_progress=player_challenge_progress
+        player_challenge_progress=player_challenge_progress,
     )
 
 
@@ -1348,11 +1348,11 @@ def challenge_detail(gara_challenge_id):
 
     # Get user progress for this challenge's gara
     from models.challenge.gara_challenge_service import GaraChallengeService
-    
+
     progress = GaraChallengeService.get_user_gara_challenge_progress(
         gara_challenge.gara_id, current_user.id
     )
-    
+
     challenge_data = None
     if progress:
         # Find the specific challenge data
@@ -1419,13 +1419,13 @@ def record_challenge_attempt(gara_challenge_id):
         # Record the attempt
         score = data.get("score")
         passed = data.get("passed")
-        
+
         # Convert types
         if score is not None:
             score = int(score)
         if passed is not None:
             passed = bool(passed) if isinstance(passed, bool) else passed == "true"
-        
+
         attempt = GaraChallengeService.record_challenge_attempt(
             gara_challenge_id=gara_challenge_id,
             user_id=current_user.id,

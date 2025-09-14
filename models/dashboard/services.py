@@ -614,10 +614,10 @@ class DashboardService:
         """Build challenge sections for user."""
         from ..challenge.gara_challenge_service import GaraChallengeService
         from ..challenge.gara_challenge_models import GaraChallenge
-        
+
         available_challenges = []
         player_challenge_progress = {}
-        
+
         # Get all garas where the user is inscribed (both campionato and standalone)
         inscribed_garas = (
             db.session.query(Gara)
@@ -628,16 +628,20 @@ class DashboardService:
             )
             .all()
         )
-        
+
         # If we have a selected campionato, prioritize its garas
         if selected_campionato:
-            campionato_garas = [gara for gara in inscribed_garas if gara.campionato_id == selected_campionato.id]
+            campionato_garas = [
+                gara
+                for gara in inscribed_garas
+                if gara.campionato_id == selected_campionato.id
+            ]
             # If user is inscribed in campionato garas, use those; otherwise use all inscribed garas
             target_garas = campionato_garas if campionato_garas else inscribed_garas
         else:
             # No selected campionato, use all inscribed garas
             target_garas = inscribed_garas
-        
+
         # Get available challenges for target garas
         for gara in target_garas:
             gara_challenges = (
@@ -650,7 +654,7 @@ class DashboardService:
                 .all()
             )
             available_challenges.extend(gara_challenges)
-            
+
             # Get player progress for this gara
             progress = GaraChallengeService.get_user_gara_challenge_progress(
                 gara.id, user_id

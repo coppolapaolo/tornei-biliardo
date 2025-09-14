@@ -63,21 +63,23 @@ def gara_manager_required(fn):
         if gara and getattr(gara, "campionato_id", None) is None:
             if not getattr(current_user, "is_director", False):
                 abort(403)
-            
+
             # Director principale
             if gara.director_id == current_user.id:
                 return fn(*args, **kwargs)
-            
+
             # Co-direttore via DirectorAssignment
             from models.user.models import DirectorAssignment
+
             is_co_director = (
                 db.session.query(DirectorAssignment)
                 .filter(
-                    DirectorAssignment.entity_type == 'gara',
+                    DirectorAssignment.entity_type == "gara",
                     DirectorAssignment.entity_id == gara_id,
-                    DirectorAssignment.user_id == current_user.id
+                    DirectorAssignment.user_id == current_user.id,
                 )
-                .first() is not None
+                .first()
+                is not None
             )
             if not is_co_director:
                 abort(403)
@@ -112,15 +114,15 @@ def venue_manager_required(f):
         # Check if user is authenticated first
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login"))
-            
+
         venue_id = kwargs.get("venue_id")
         if venue_id is None:
             abort(400)  # Bad request if venue_id is missing
-        
+
         # Check if user can manage this venue
         if not current_user.can_manage_venue(venue_id):
             abort(403)
-        
+
         return f(*args, **kwargs)
 
     return decorated_function
@@ -376,29 +378,31 @@ def rack_manager_required(f):
             if not getattr(current_user, "is_director", False):
                 flash("Non puoi gestire i rack di questa gara.", "error")
                 return redirect(url_for("dashboard.dashboard"))
-            
+
             # Director principale
             if hasattr(gara, "director_id") and gara.director_id == current_user.id:
                 return f(*args, **kwargs)
-            
+
             # Co-direttore via DirectorAssignment
             from models.user.models import DirectorAssignment
             from models import db  # Local import to avoid circular dependency
+
             gara_id = gara.id
             is_co_director = (
                 db.session.query(DirectorAssignment)
                 .filter(
-                    DirectorAssignment.entity_type == 'gara',
+                    DirectorAssignment.entity_type == "gara",
                     DirectorAssignment.entity_id == gara_id,
-                    DirectorAssignment.user_id == current_user.id
+                    DirectorAssignment.user_id == current_user.id,
                 )
-                .first() is not None
+                .first()
+                is not None
             )
             if not is_co_director:
                 flash("Non puoi gestire i rack di questa gara.", "error")
                 return redirect(url_for("dashboard.dashboard"))
             return f(*args, **kwargs)
-        
+
         # Gara con campionato: usa la logica standard
         def _get_tid(**_ignored):
             return campionato_id
@@ -691,9 +695,7 @@ def create_admin_if_not_exists():
     return admin
 
 
-def create_round_matches_amalfi_compatible(
-    gara, players_or_inscriptions, round_number
-):
+def create_round_matches_amalfi_compatible(gara, players_or_inscriptions, round_number):
     """Versione compatibile 'Amalfi'. Differisce per campo ``amalfi_round``."""
     from models import (
         Inscription,

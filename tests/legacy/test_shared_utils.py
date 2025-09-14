@@ -130,6 +130,7 @@ class TestSharedUtils:
 
     def test_safe_get_attr(self):
         """Test safe_get_attr function."""
+
         # Create a simple object for testing
         class TestObj:
             def __init__(self):

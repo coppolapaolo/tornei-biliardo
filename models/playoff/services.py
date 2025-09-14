@@ -310,9 +310,11 @@ class PlayoffService:
                     status=QualificationStatus.DECLINED
                 ).count(),
                 "has_campionato": config.playoff_campionato is not None,
-                "campionato_status": config.playoff_campionato.status
-                if config.playoff_campionato
-                else None,
+                "campionato_status": (
+                    config.playoff_campionato.status
+                    if config.playoff_campionato
+                    else None
+                ),
             }
 
             status["configurations"].append(config_status)

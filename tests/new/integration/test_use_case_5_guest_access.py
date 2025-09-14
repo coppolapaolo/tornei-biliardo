@@ -34,7 +34,7 @@ class TestUseCaseGuestAccess:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -50,11 +50,11 @@ class TestUseCaseGuestAccess:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -63,7 +63,7 @@ class TestUseCaseGuestAccess:
         self, director_user: User, players_8: List[User], db_session, client
     ):
         """Test guest (non-authenticated) access to public tournament listings.
-        
+
         Workflow:
         1. Create multiple tournaments in different states
         2. Guest visits home page and tournament listings
@@ -87,7 +87,7 @@ class TestUseCaseGuestAccess:
             distance=7,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Inscription phase tournament
@@ -106,13 +106,15 @@ class TestUseCaseGuestAccess:
             distance=6,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Open inscriptions for second tournament
         inscription_start = datetime.now() - timedelta(hours=1)
         inscription_end = datetime.now() + timedelta(hours=24)
-        GaraService.open_inscriptions(gara_inscription.id, inscription_start, inscription_end)
+        GaraService.open_inscriptions(
+            gara_inscription.id, inscription_start, inscription_end
+        )
 
         # Add some inscriptions
         for i, player in enumerate(players_8[:4]):
@@ -134,7 +136,7 @@ class TestUseCaseGuestAccess:
             distance=5,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Set up and start playing tournament
@@ -143,7 +145,9 @@ class TestUseCaseGuestAccess:
 
         inscription_start_playing = datetime.now() - timedelta(hours=2)
         inscription_end_playing = datetime.now() - timedelta(hours=1)
-        GaraService.open_inscriptions(gara_playing.id, inscription_start_playing, inscription_end_playing)
+        GaraService.open_inscriptions(
+            gara_playing.id, inscription_start_playing, inscription_end_playing
+        )
         GaraService.start_first_round(gara_playing.id)
 
         # Step 2: Guest visits home page (no authentication)
@@ -151,8 +155,8 @@ class TestUseCaseGuestAccess:
         assert response.status_code == 200
 
         # Should show public tournament information
-        response_data = response.data.decode('utf-8')
-        
+        response_data = response.data.decode("utf-8")
+
         # Should see tournament names in public listing (setup tournaments are hidden)
         # Setup tournaments are not shown to guests, but inscription and playing ones should be
         assert "Inscription Tournament - Guest View" in response_data
@@ -178,13 +182,18 @@ class TestUseCaseGuestAccess:
         # Step 4: Verify guest cannot access admin functions
         # Try to access admin dashboard (should redirect to login or return 401/403/404)
         response = client.get("/admin/")
-        assert response.status_code in [302, 401, 403, 404]  # Redirect to login, access denied, or not found
+        assert response.status_code in [
+            302,
+            401,
+            403,
+            404,
+        ]  # Redirect to login, access denied, or not found
 
         # Try to access competition management (should redirect or deny)
         response = client.get("/admin/competition")
         assert response.status_code in [302, 401, 403, 404]
 
-        # Try to access user management (should redirect or deny)  
+        # Try to access user management (should redirect or deny)
         response = client.get("/admin/user")
         assert response.status_code in [302, 401, 403, 404]
 
@@ -197,7 +206,7 @@ class TestUseCaseGuestAccess:
         self, director_user: User, players_8: List[User], db_session, client
     ):
         """Test guest real-time viewing of live match results.
-        
+
         Workflow:
         1. Create and start tournament with matches
         2. Guest views live tournament page
@@ -220,7 +229,7 @@ class TestUseCaseGuestAccess:
             distance=7,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # All players inscribe
@@ -238,13 +247,13 @@ class TestUseCaseGuestAccess:
         if response.status_code == 404:
             # Try alternative routes
             response = client.get(f"/gara/{gara.id}")
-            
+
         if response.status_code == 200:
-            initial_data = response.data.decode('utf-8')
-            
+            initial_data = response.data.decode("utf-8")
+
             # Should show match listings
             assert "Real-Time Viewing Tournament" in initial_data
-            
+
             # Should show current round information
             assert "Round 1" in initial_data or "Turno 1" in initial_data
 
@@ -262,8 +271,8 @@ class TestUseCaseGuestAccess:
             response = client.get(f"/gara/{gara.id}")
 
         if response.status_code == 200:
-            updated_data = response.data.decode('utf-8')
-            
+            updated_data = response.data.decode("utf-8")
+
             # Should show completed match result
             # Look for score indicators (5-2, "5 - 2", etc.)
             assert "5" in updated_data and "2" in updated_data
@@ -277,8 +286,8 @@ class TestUseCaseGuestAccess:
             response = client.get(f"/gara/{gara.id}")
 
         if response.status_code == 200:
-            final_data = response.data.decode('utf-8')
-            
+            final_data = response.data.decode("utf-8")
+
             # Should show both completed matches
             # Look for both score patterns
             score_patterns = ["5", "2", "3"]  # Both matches' scores
@@ -289,9 +298,12 @@ class TestUseCaseGuestAccess:
         # Complete all round 1 matches
         for match in round1_matches[2:]:
             import random
+
             winner_score = 5
             loser_score = random.randint(0, 4)
-            self._complete_match_with_specific_score(match, winner_score, loser_score, db_session)
+            self._complete_match_with_specific_score(
+                match, winner_score, loser_score, db_session
+            )
 
         # Update classification
         RoundClassification.calculate_classification_after_round(gara.id, 1)
@@ -300,13 +312,15 @@ class TestUseCaseGuestAccess:
         response = client.get(f"/tournament/{gara.id}/classification")
         if response.status_code == 404:
             response = client.get(f"/gara/{gara.id}/classifica")
-            
+
         if response.status_code == 200:
-            classification_data = response.data.decode('utf-8')
-            
+            classification_data = response.data.decode("utf-8")
+
             # Should show player positions and statistics
             # Look for position indicators, points, etc.
-            assert any(str(i) in classification_data for i in range(1, 9))  # Positions 1-8
+            assert any(
+                str(i) in classification_data for i in range(1, 9)
+            )  # Positions 1-8
 
         print(f"✅ Guest real-time match viewing completed successfully")
         print(f"   - Guest can view live tournament without authentication")
@@ -317,11 +331,11 @@ class TestUseCaseGuestAccess:
         self, director_user: User, players_8: List[User], db_session, client
     ):
         """Test guest visibility of overall tournament progress.
-        
+
         Workflow:
         1. Create tournament and complete first round
         2. Guest views tournament progress
-        3. Complete second round 
+        3. Complete second round
         4. Verify guest sees tournament completion
         """
         # Step 1: Create tournament
@@ -340,7 +354,7 @@ class TestUseCaseGuestAccess:
             distance=6,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Players inscribe and tournament starts
@@ -358,20 +372,26 @@ class TestUseCaseGuestAccess:
             response = client.get(f"/gara/{gara.id}")
 
         if response.status_code == 200:
-            round1_data = response.data.decode('utf-8')
-            
+            round1_data = response.data.decode("utf-8")
+
             # Should indicate current round
             assert "Round 1" in round1_data or "Turno 1" in round1_data
-            
+
             # Should show tournament is in progress
-            assert "In Progress" in round1_data or "In corso" in round1_data or "Playing" in round1_data
+            assert (
+                "In Progress" in round1_data
+                or "In corso" in round1_data
+                or "Playing" in round1_data
+            )
 
         # Step 3: Complete first round
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         for i, match in enumerate(round1_matches):
             winner_score = 4
             loser_score = i % 3  # Vary scores
-            self._complete_match_with_specific_score(match, winner_score, loser_score, db_session)
+            self._complete_match_with_specific_score(
+                match, winner_score, loser_score, db_session
+            )
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
@@ -387,8 +407,8 @@ class TestUseCaseGuestAccess:
             response = client.get(f"/gara/{gara.id}")
 
         if response.status_code == 200:
-            round2_data = response.data.decode('utf-8')
-            
+            round2_data = response.data.decode("utf-8")
+
             # Should show current round progressed
             assert "Round 2" in round2_data or "Turno 2" in round2_data
 
@@ -410,11 +430,13 @@ class TestUseCaseGuestAccess:
             response = client.get(f"/gara/{gara.id}")
 
         if response.status_code == 200:
-            completed_data = response.data.decode('utf-8')
-            
+            completed_data = response.data.decode("utf-8")
+
             # Should show tournament is completed
             completed_indicators = ["Completed", "Completata", "Finished", "Terminato"]
-            assert any(indicator in completed_data for indicator in completed_indicators)
+            assert any(
+                indicator in completed_data for indicator in completed_indicators
+            )
 
         # Final classification should be visible
         final_classification = Classification.query.filter_by(gara_id=gara.id).all()
@@ -433,8 +455,13 @@ class TestUseCaseGuestAccess:
             return
 
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Add racks for winner
         for rack_num in range(1, winner_racks + 1):
@@ -444,7 +471,7 @@ class TestUseCaseGuestAccess:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         # Add racks for loser
@@ -455,7 +482,7 @@ class TestUseCaseGuestAccess:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         MatchService.to_completed(match.id)
@@ -472,7 +499,7 @@ class TestUseCaseGuestAPIAccess:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -488,11 +515,11 @@ class TestUseCaseGuestAPIAccess:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -501,7 +528,7 @@ class TestUseCaseGuestAPIAccess:
         self, director_user: User, players_6: List[User], db_session, client
     ):
         """Test guest access to API endpoints for real-time tournament updates.
-        
+
         Tests:
         - Public API endpoints accessible without authentication
         - Real-time match data via API
@@ -524,7 +551,7 @@ class TestUseCaseGuestAPIAccess:
             distance=5,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Start tournament
@@ -544,11 +571,11 @@ class TestUseCaseGuestAPIAccess:
 
         if response.status_code == 200:
             tournament_data = response.get_json()
-            
+
             if tournament_data:
-                assert tournament_data.get('name') == "API Access Test Tournament"
-                assert tournament_data.get('discipline') == "palla_9"
-                assert tournament_data.get('location') == "API Arena"
+                assert tournament_data.get("name") == "API Access Test Tournament"
+                assert tournament_data.get("discipline") == "palla_9"
+                assert tournament_data.get("location") == "API Arena"
 
         # Test API endpoint for matches
         response = client.get(f"/api/tournament/{gara.id}/matches")
@@ -557,13 +584,13 @@ class TestUseCaseGuestAPIAccess:
 
         if response.status_code == 200:
             matches_data = response.get_json()
-            
+
             if matches_data:
                 # Should return match information
                 if isinstance(matches_data, list):
                     assert len(matches_data) == 3  # 6 players = 3 matches
-                elif isinstance(matches_data, dict) and 'matches' in matches_data:
-                    assert len(matches_data['matches']) == 3
+                elif isinstance(matches_data, dict) and "matches" in matches_data:
+                    assert len(matches_data["matches"]) == 3
 
         # Complete a match and test real-time updates
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -577,7 +604,7 @@ class TestUseCaseGuestAPIAccess:
 
         if response.status_code == 200:
             updated_matches_data = response.get_json()
-            
+
             if updated_matches_data:
                 # Should show completed match with score
                 # Implementation details may vary
@@ -585,20 +612,23 @@ class TestUseCaseGuestAPIAccess:
 
         # Test classification API
         RoundClassification.calculate_classification_after_round(gara.id, 1)
-        
+
         response = client.get(f"/api/tournament/{gara.id}/classification")
         if response.status_code == 404:
             response = client.get(f"/api/gara/{gara.id}/classification")
 
         if response.status_code == 200:
             classification_data = response.get_json()
-            
+
             if classification_data:
                 # Should return classification information
                 if isinstance(classification_data, list):
                     assert len(classification_data) == 6  # All players
-                elif isinstance(classification_data, dict) and 'classification' in classification_data:
-                    assert len(classification_data['classification']) == 6
+                elif (
+                    isinstance(classification_data, dict)
+                    and "classification" in classification_data
+                ):
+                    assert len(classification_data["classification"]) == 6
 
         print(f"✅ Guest API access for real-time updates completed successfully")
         print(f"   - Tournament API endpoints accessible without authentication")
@@ -614,8 +644,13 @@ class TestUseCaseGuestAPIAccess:
             return
 
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Add racks for winner
         for rack_num in range(1, winner_racks + 1):
@@ -625,7 +660,7 @@ class TestUseCaseGuestAPIAccess:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         # Add racks for loser
@@ -636,7 +671,7 @@ class TestUseCaseGuestAPIAccess:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         MatchService.to_completed(match.id)

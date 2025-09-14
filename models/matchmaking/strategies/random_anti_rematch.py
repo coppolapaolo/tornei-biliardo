@@ -103,7 +103,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
             return []
 
     def _get_previous_pairings(
-        self, gara: 'Gara', current_round: int
+        self, gara: "Gara", current_round: int
     ) -> Set[Tuple[int, int]]:
         """Get all previous pairings to avoid rematches."""
         from ...match.models import Match

@@ -31,7 +31,7 @@ class TestUseCaseRoundRobinMultiSet:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -45,7 +45,7 @@ class TestUseCaseRoundRobinMultiSet:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -61,11 +61,11 @@ class TestUseCaseRoundRobinMultiSet:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -74,7 +74,7 @@ class TestUseCaseRoundRobinMultiSet:
         self, admin_user: User, players_6: List[User], db_session, client
     ):
         """Test complete round-robin tournament with multi-set matches.
-        
+
         Workflow:
         1. Admin creates round-robin tournament with 2-set best-of-5 format
         2. 6 players inscribe (15 total matches in round-robin)
@@ -128,16 +128,17 @@ class TestUseCaseRoundRobinMultiSet:
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         normal_matches = [m for m in round1_matches if not m.is_bye and not m.is_trio]
         assert len(normal_matches) == 3  # 6 players = 3 matches
-        
+
         print(f"First round created {len(round1_matches)} matches")
 
         # Step 5: Complete first round matches
         for i, match in enumerate(round1_matches):
             if not match.is_bye:
                 self._complete_match_with_results(
-                    match, 
-                    winner_racks=3, loser_racks=2,  # 3-2 result
-                    db_session=db_session
+                    match,
+                    winner_racks=3,
+                    loser_racks=2,  # 3-2 result
+                    db_session=db_session,
                 )
 
         # Calculate classification after round 1
@@ -148,43 +149,50 @@ class TestUseCaseRoundRobinMultiSet:
         gara.discipline = "palla_9"
         db_session.add(gara)
         db_session.commit()
-        
+
         # Create second round
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 2)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 2)
+        )
         gara.current_round = 2
         db_session.add(gara)
         db_session.commit()
-        
+
         round2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         for match in round2_matches:
             if not match.is_bye:
                 self._complete_match_with_results(
                     match,
-                    winner_racks=3, loser_racks=1,  # 3-1 result
-                    db_session=db_session
+                    winner_racks=3,
+                    loser_racks=1,  # 3-1 result
+                    db_session=db_session,
                 )
-                
+
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Step 7: Complete third round
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 3)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 3)
+        )
         gara.current_round = 3
         db_session.add(gara)
         db_session.commit()
-        
+
         round3_matches = Match.query.filter_by(gara_id=gara.id, round_number=3).all()
         for match in round3_matches:
             if not match.is_bye:
                 self._complete_match_with_results(
                     match,
-                    winner_racks=3, loser_racks=2,  # 3-2 result
-                    db_session=db_session
+                    winner_racks=3,
+                    loser_racks=2,  # 3-2 result
+                    db_session=db_session,
                 )
-                
+
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Step 8: Verify final classification
         from amalfi.engine import get_amalfi_classification
+
         final_classification = get_amalfi_classification(gara.id, 3)
         assert final_classification is not None
         assert len(final_classification) == 6
@@ -202,7 +210,7 @@ class TestUseCaseRoundRobinMultiSet:
         self, match: Match, winner_racks: int, loser_racks: int, db_session
     ) -> None:
         """Complete a match with specified results.
-        
+
         Args:
             match: The match to complete
             winner_racks: Number of racks won by winner
@@ -213,10 +221,14 @@ class TestUseCaseRoundRobinMultiSet:
             return
 
         import random
-        
+
         # Randomly choose winner
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Add racks for winner
         for rack_num in range(1, winner_racks + 1):
@@ -226,7 +238,7 @@ class TestUseCaseRoundRobinMultiSet:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         # Add racks for loser
@@ -237,7 +249,7 @@ class TestUseCaseRoundRobinMultiSet:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         # Complete match
@@ -256,7 +268,7 @@ class TestUseCaseRoundRobinVariants:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -272,11 +284,11 @@ class TestUseCaseRoundRobinVariants:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -290,11 +302,11 @@ class TestUseCaseRoundRobinVariants:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -303,7 +315,7 @@ class TestUseCaseRoundRobinVariants:
         self, director_user: User, players_5: List[User], db_session, client
     ):
         """Test round-robin tournament with 5 players (odd number).
-        
+
         Tests:
         - Round-robin with odd number of players
         - Bye rotation in each round
@@ -329,7 +341,7 @@ class TestUseCaseRoundRobinVariants:
             first_round_policy="random",
             odd_number_policy="bye",  # Bye handling for odd numbers
             anti_rematch_enabled=False,
-            rating_type=None
+            rating_type=None,
         )
 
         # All 5 players inscribe
@@ -344,27 +356,27 @@ class TestUseCaseRoundRobinVariants:
 
         # Verify round-robin structure with odd players
         all_matches = Match.query.filter_by(gara_id=gara.id).all()
-        
+
         # With 5 players: 10 regular matches + 5 bye matches (one per round)
         regular_matches = [m for m in all_matches if not m.is_bye]
         bye_matches = [m for m in all_matches if m.is_bye]
-        
+
         expected_regular_matches = (5 * 4) // 2  # 10 matches
         expected_bye_matches = 5  # One bye per round
-        
+
         assert len(regular_matches) == expected_regular_matches
         assert len(bye_matches) == expected_bye_matches
 
         # Track bye distribution across rounds
         bye_players_by_round = {}
         matches_by_round = {}
-        
+
         for match in all_matches:
             round_num = match.round_number
             if round_num not in matches_by_round:
                 matches_by_round[round_num] = []
             matches_by_round[round_num].append(match)
-            
+
             if match.is_bye:
                 bye_players_by_round[round_num] = match.player1_id
 
@@ -372,19 +384,21 @@ class TestUseCaseRoundRobinVariants:
         for round_num in sorted(matches_by_round.keys()):
             round_matches = matches_by_round[round_num]
             regular_round_matches = [m for m in round_matches if not m.is_bye]
-            
+
             # Complete regular matches in this round
             for match in regular_round_matches:
                 self._complete_simple_match(match, (4, 3), db_session)
-            
+
             # Update classification after round
             RoundClassification.calculate_classification_after_round(gara.id, round_num)
 
         # Verify each player got exactly one bye
         bye_players = list(bye_players_by_round.values())
         unique_bye_players = set(bye_players)
-        
-        assert len(unique_bye_players) == 5, f"Expected 5 unique bye players, got {len(unique_bye_players)}"
+
+        assert (
+            len(unique_bye_players) == 5
+        ), f"Expected 5 unique bye players, got {len(unique_bye_players)}"
         assert len(bye_players) == 5, f"Expected 5 total byes, got {len(bye_players)}"
 
         # Verify each player played each other exactly once (excluding byes)
@@ -392,7 +406,9 @@ class TestUseCaseRoundRobinVariants:
         for match in regular_matches:
             p1, p2 = sorted([match.player1_id, match.player2_id])
             pairing = (p1, p2)
-            assert pairing not in player_encounters, f"Players {p1} and {p2} played more than once!"
+            assert (
+                pairing not in player_encounters
+            ), f"Players {p1} and {p2} played more than once!"
             player_encounters.add(pairing)
 
         expected_pairings = (5 * 4) // 2  # 10 unique pairings
@@ -400,14 +416,16 @@ class TestUseCaseRoundRobinVariants:
 
         print(f"✅ Round-robin with odd players completed successfully")
         print(f"   - 5 players with bye rotation: {dict(bye_players_by_round)}")
-        print(f"   - {len(regular_matches)} regular matches, {len(bye_matches)} bye matches")
+        print(
+            f"   - {len(regular_matches)} regular matches, {len(bye_matches)} bye matches"
+        )
         print(f"   - All players played each other exactly once")
 
     def test_round_robin_waitlist_management(
         self, director_user: User, players_8: List[User], db_session, client
     ):
         """Test round-robin tournament with waitlist management.
-        
+
         Tests:
         - Tournament with limited capacity
         - Waitlist functionality in round-robin
@@ -433,7 +451,7 @@ class TestUseCaseRoundRobinVariants:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=False,
-            rating_type=None
+            rating_type=None,
         )
 
         # Open inscriptions
@@ -459,7 +477,7 @@ class TestUseCaseRoundRobinVariants:
         all_inscriptions = Inscription.query.filter_by(gara_id=gara.id).all()
         confirmed_count = sum(1 for insc in all_inscriptions if not insc.is_waitlist)
         waitlist_count = sum(1 for insc in all_inscriptions if insc.is_waitlist)
-        
+
         assert confirmed_count == 6
         assert waitlist_count == 2
 
@@ -468,7 +486,7 @@ class TestUseCaseRoundRobinVariants:
 
         # Verify round-robin created for 6 confirmed players only
         all_matches = Match.query.filter_by(gara_id=gara.id).all()
-        
+
         # 6 players = 15 matches total in round-robin
         expected_matches = (6 * 5) // 2
         assert len(all_matches) == expected_matches
@@ -476,7 +494,7 @@ class TestUseCaseRoundRobinVariants:
         # Verify waitlisted players are not in any matches
         waitlisted_player_ids = {players_8[6].id, players_8[7].id}
         confirmed_player_ids = {players_8[i].id for i in range(6)}
-        
+
         active_players = set()
         for match in all_matches:
             if not match.is_bye:
@@ -506,10 +524,15 @@ class TestUseCaseRoundRobinVariants:
             return
 
         winner_racks, loser_racks = result
-        
+
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Add racks for winner
         for rack_num in range(1, winner_racks + 1):
@@ -519,7 +542,7 @@ class TestUseCaseRoundRobinVariants:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         # Add racks for loser
@@ -530,7 +553,7 @@ class TestUseCaseRoundRobinVariants:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         MatchService.to_completed(match.id)

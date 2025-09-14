@@ -50,18 +50,22 @@ def create_app(config_name=None):
                 "debug_mode": True,
                 "current_user_info": {
                     "id": current_user.id if current_user.is_authenticated else None,
-                    "username": current_user.username
-                    if current_user.is_authenticated
-                    else "Anonymous",
-                    "is_admin": current_user.is_admin
-                    if current_user.is_authenticated
-                    else False,
+                    "username": (
+                        current_user.username
+                        if current_user.is_authenticated
+                        else "Anonymous"
+                    ),
+                    "is_admin": (
+                        current_user.is_admin
+                        if current_user.is_authenticated
+                        else False
+                    ),
                 },
                 "request_endpoint": request.endpoint,
                 "request_method": request.method,
-                "database_stats": get_database_stats()
-                if current_user.is_authenticated
-                else {},
+                "database_stats": (
+                    get_database_stats() if current_user.is_authenticated else {}
+                ),
             }
         return {"debug_info": debug_info}
 
@@ -95,6 +99,7 @@ def create_app(config_name=None):
     def inject_enums():
         """Inject enums into all Jinja2 templates"""
         from models.status_enum import GaraStatus
+
         return {
             "GaraStatus": GaraStatus,
         }

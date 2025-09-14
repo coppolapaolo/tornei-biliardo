@@ -328,12 +328,16 @@ class NotificationTemplate(BaseModel, TimestampMixin):
         return {
             "title": replace_vars(self.title_template),
             "message": replace_vars(self.message_template),
-            "action_text": replace_vars(self.action_text_template)
-            if self.action_text_template
-            else None,
-            "action_url": replace_vars(self.action_url_template)
-            if self.action_url_template
-            else None,
+            "action_text": (
+                replace_vars(self.action_text_template)
+                if self.action_text_template
+                else None
+            ),
+            "action_url": (
+                replace_vars(self.action_url_template)
+                if self.action_url_template
+                else None
+            ),
         }
 
     def get_expiry_datetime(self) -> Optional[datetime]:

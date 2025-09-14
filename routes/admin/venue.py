@@ -26,10 +26,10 @@ def venues_list():
     """Lista delle sale biliardo - vista role-based (Content Negotiation Pattern)"""
     from flask_login import current_user
     from models.user.services import VenueManagerRequestService
-    
-    venues = (
-        BilliardHall.query.order_by(BilliardHall.is_active.desc(), BilliardHall.name).all()
-    )
+
+    venues = BilliardHall.query.order_by(
+        BilliardHall.is_active.desc(), BilliardHall.name
+    ).all()
 
     if current_user.is_admin:
         # Vista completa admin con statistiche, manager e richieste
@@ -43,33 +43,41 @@ def venues_list():
                     "active_users_count": 0,
                     "total_matches_played": 0,
                 }
-            
+
             # Get venue manager
             manager = VenueManagementService.get_venue_manager(venue.id)
-            
+
             # Get manager assignment if manager exists
             manager_assignment = None
             if manager:
                 from models.user.models import VenueManagement
+
                 manager_assignment = VenueManagement.query.filter_by(
                     venue_id=venue.id, user_id=manager.id, is_active=True
                 ).first()
-            
+
             # Get pending requests for this venue
             from models.status_enum import VenueManagerRequestStatus
-            pending_requests = VenueManagerRequestService.get_requests_by_venue_and_status(venue.id, VenueManagerRequestStatus.PENDING)
-            
+
+            pending_requests = (
+                VenueManagerRequestService.get_requests_by_venue_and_status(
+                    venue.id, VenueManagerRequestStatus.PENDING
+                )
+            )
+
             # Check if current user is manager of this venue
             is_current_user_manager = manager and manager.id == current_user.id
-            
-            venues_with_stats.append({
-                "venue": venue, 
-                "stats": stats,
-                "manager": manager,
-                "manager_assignment": manager_assignment,
-                "pending_requests": pending_requests,
-                "is_current_user_manager": is_current_user_manager
-            })
+
+            venues_with_stats.append(
+                {
+                    "venue": venue,
+                    "stats": stats,
+                    "manager": manager,
+                    "manager_assignment": manager_assignment,
+                    "pending_requests": pending_requests,
+                    "is_current_user_manager": is_current_user_manager,
+                }
+            )
         return render_template(
             "admin/venues_list.html", venues_with_stats=venues_with_stats
         )
@@ -78,29 +86,39 @@ def venues_list():
         venues_with_managers = []
         for venue in venues:
             manager = VenueManagementService.get_venue_manager(venue.id)
-            
+
             # Check if current user has pending request for this specific venue
             has_pending_request_for_venue = False
             if not current_user.is_admin:
                 from models.status_enum import VenueManagerRequestStatus
-                has_pending_request_for_venue = VenueManagerRequestService.has_pending_request_for_venue(
-                    current_user.id, venue.id
+
+                has_pending_request_for_venue = (
+                    VenueManagerRequestService.has_pending_request_for_venue(
+                        current_user.id, venue.id
+                    )
                 )
-            
-            venues_with_managers.append({
-                'venue': venue,
-                'manager': manager,
-                'can_request_management': not current_user.is_admin and not current_user.is_venue_manager,
-                'has_pending_request': has_pending_request_for_venue
-            })
-        
+
+            venues_with_managers.append(
+                {
+                    "venue": venue,
+                    "manager": manager,
+                    "can_request_management": not current_user.is_admin
+                    and not current_user.is_venue_manager,
+                    "has_pending_request": has_pending_request_for_venue,
+                }
+            )
+
         # Check if user has pending venue manager requests
-        has_pending_requests = VenueManagerRequestService.has_pending_request_for_venue(current_user.id) if not current_user.is_admin else False
-        
+        has_pending_requests = (
+            VenueManagerRequestService.has_pending_request_for_venue(current_user.id)
+            if not current_user.is_admin
+            else False
+        )
+
         return render_template(
-            "player/venues.html", 
+            "player/venues.html",
             venues_with_managers=venues_with_managers,
-            has_pending_requests=has_pending_requests
+            has_pending_requests=has_pending_requests,
         )
 
 
@@ -109,15 +127,17 @@ def venues_list():
 def venue_detail(venue_id):
     """Scheda dettagliata sala biliardo - vista role-based"""
     from flask_login import current_user
-    
+
     venue = db.session.get(BilliardHall, venue_id)
     if not venue:
         from flask import abort
+
         abort(404)
-    
+
     # Allow admin to see inactive venues, but not regular users
     if not venue.is_active and not current_user.is_admin:
         from flask import abort
+
         abort(404)
 
     # Get venue statistics
@@ -133,47 +153,56 @@ def venue_detail(venue_id):
 
     # Get venue manager
     manager = VenueManagementService.get_venue_manager(venue_id)
-    
+
     if current_user.is_admin or current_user.can_manage_venue(venue_id):
         # Vista completa admin/manager
         # Get all approved venue manager requests (users eligible to be assigned)
         all_requests = VenueManagerRequestService.get_all_requests()
         from models.status_enum import VenueManagerRequestStatus
-        approved_requests = [req for req in all_requests if req.status == VenueManagerRequestStatus.APPROVED]
+
+        approved_requests = [
+            req
+            for req in all_requests
+            if req.status == VenueManagerRequestStatus.APPROVED
+        ]
         eligible_users = [req.user for req in approved_requests]
-                
+
         # Remove duplicates and current manager
         unique_users = {}
         for user in eligible_users:
             if user.id not in unique_users and (not manager or user.id != manager.id):
                 unique_users[user.id] = user
-        
+
         eligible_users = list(unique_users.values())
 
         return render_template(
-            "admin/venue_detail.html", 
-            venue=venue, 
+            "admin/venue_detail.html",
+            venue=venue,
             stats=stats,
             manager=manager,
-            eligible_users=eligible_users
+            eligible_users=eligible_users,
         )
     else:
         # Vista semplificata player/director
         # Check if current user can manage this venue
         can_manage = current_user.can_manage_venue(venue_id)
-        
+
         # Check if user has pending requests
         has_pending_requests = False
         if not current_user.is_admin:
-            has_pending_requests = VenueManagerRequestService.has_pending_request_for_venue(current_user.id)
-        
+            has_pending_requests = (
+                VenueManagerRequestService.has_pending_request_for_venue(
+                    current_user.id
+                )
+            )
+
         return render_template(
-            "player/venue_detail.html", 
-            venue=venue, 
+            "player/venue_detail.html",
+            venue=venue,
             stats=stats,
             manager=manager,
             can_manage=can_manage,
-            has_pending_requests=has_pending_requests
+            has_pending_requests=has_pending_requests,
         )
 
 
@@ -197,7 +226,7 @@ def create_venue():
         if not name:
             flash("Il nome della sala è obbligatorio", "error")
             return render_template("admin/venue_form.html", venue=None)
-        
+
         if not number_of_tables:
             flash("Il numero di tavoli è obbligatorio", "error")
             return render_template("admin/venue_form.html", venue=None)
@@ -253,9 +282,18 @@ def edit_venue(venue_id):
     if request.method == "POST":
         # Get form data - collect in kwargs dict to avoid type issues
         update_kwargs = {}
-        
+
         # String fields
-        string_fields = ["name", "address", "city", "postal_code", "phone", "email", "website", "business_hours"]
+        string_fields = [
+            "name",
+            "address",
+            "city",
+            "postal_code",
+            "phone",
+            "email",
+            "website",
+            "business_hours",
+        ]
         for field in string_fields:
             value = request.form.get(field)
             if value:
@@ -320,6 +358,7 @@ def activate_venue(venue_id):
     venue = db.session.get(BilliardHall, venue_id)
     if not venue:
         from flask import abort
+
         abort(404)
 
     try:
@@ -337,7 +376,7 @@ def activate_venue(venue_id):
 def toggle_venue_status(venue_id):
     """API AJAX per cambiare stato venue (is_active o verified)"""
     from flask import jsonify
-    
+
     venue = db.session.get(BilliardHall, venue_id)
     if not venue:
         return jsonify({"success": False, "message": "Sala non trovata"}), 404
@@ -346,22 +385,24 @@ def toggle_venue_status(venue_id):
         data = request.get_json()
         field = data.get("field")
         value = data.get("value")
-        
+
         if field not in ["is_active", "verified"]:
             return jsonify({"success": False, "message": "Campo non valido"}), 400
-            
+
         # Update the field
         setattr(venue, field, value)
         db.session.commit()
-        
+
         # Generate appropriate message
         if field == "is_active":
             message = f"Sala '{venue.name}' {'attivata' if value else 'disattivata'}."
         else:
-            message = f"Sala '{venue.name}' {'verificata' if value else 'non verificata'}."
-            
+            message = (
+                f"Sala '{venue.name}' {'verificata' if value else 'non verificata'}."
+            )
+
         return jsonify({"success": True, "message": message})
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": f"Errore: {str(e)}"}), 500
@@ -499,7 +540,7 @@ def _resize_and_save_image(file, save_path, max_size=(400, 300), quality=80):
     try:
         # Open image
         image = Image.open(file.stream)
-        
+
         # Convert RGBA to RGB if necessary (for JPEG)
         if image.mode in ("RGBA", "P"):
             # Create a white background
@@ -508,36 +549,31 @@ def _resize_and_save_image(file, save_path, max_size=(400, 300), quality=80):
                 image = image.convert("RGBA")
             background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
             image = background
-        
+
         # Auto-rotate based on EXIF data
         image = ImageOps.exif_transpose(image)
-        
+
         # Resize image maintaining aspect ratio
         image.thumbnail(max_size, Image.Resampling.LANCZOS)
-        
+
         # Determine format and save
-        format_mapping = {
-            '.jpg': 'JPEG',
-            '.jpeg': 'JPEG', 
-            '.png': 'PNG',
-            '.gif': 'GIF'
-        }
-        
+        format_mapping = {".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".gif": "GIF"}
+
         file_ext = os.path.splitext(save_path)[1].lower()
-        save_format = format_mapping.get(file_ext, 'JPEG')
-        
+        save_format = format_mapping.get(file_ext, "JPEG")
+
         # Save with optimization
-        if save_format == 'JPEG':
+        if save_format == "JPEG":
             image.save(save_path, format=save_format, quality=quality, optimize=True)
-        elif save_format == 'PNG':
+        elif save_format == "PNG":
             image.save(save_path, format=save_format, optimize=True)
         else:
             image.save(save_path, format=save_format)
-            
+
     except Exception as e:
         # Fallback to regular save if image processing fails
         file.seek(0)  # Reset file pointer
-        with open(save_path, 'wb') as f:
+        with open(save_path, "wb") as f:
             f.write(file.read())
         raise e
 
@@ -551,6 +587,7 @@ def _allowed_file(filename):
 # ────────────────────────────────────────────────────────────────────────────────
 # VENUE MANAGER REQUESTS MANAGEMENT
 # ────────────────────────────────────────────────────────────────────────────────
+
 
 @venue_bp.route("/manager-requests")
 @admin_required
@@ -566,21 +603,26 @@ def process_venue_manager_request(request_id):
     """Processa (approva/rifiuta) una richiesta di gestore sala"""
     action = request.form.get("action")  # approve or reject
     admin_notes = request.form.get("admin_notes", "").strip()
-    
+
     try:
         from flask_login import current_user
+
         admin_user = cast(User, current_user)
         if action == "approve":
-            VenueManagerRequestService.process_request(request_id, admin_user, True, admin_notes)
+            VenueManagerRequestService.process_request(
+                request_id, admin_user, True, admin_notes
+            )
             flash("Richiesta approvata con successo!", "success")
         elif action == "reject":
-            VenueManagerRequestService.process_request(request_id, admin_user, False, admin_notes)
+            VenueManagerRequestService.process_request(
+                request_id, admin_user, False, admin_notes
+            )
             flash("Richiesta rifiutata.", "info")
         else:
             flash("Azione non valida.", "error")
     except Exception as e:
         flash(f"Errore nel processare la richiesta: {str(e)}", "error")
-    
+
     return redirect(url_for("admin.venue.venue_manager_requests"))
 
 
@@ -592,15 +634,16 @@ def assign_venue_manager(venue_id):
     if not user_id:
         flash("Seleziona un utente da assegnare come gestore.", "error")
         return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
-    
+
     try:
         from flask_login import current_user
+
         admin_user = cast(User, current_user)
         VenueManagementService.assign_venue_manager(int(user_id), venue_id, admin_user)
         flash("Gestore assegnato con successo!", "success")
     except Exception as e:
         flash(f"Errore nell'assegnare il gestore: {str(e)}", "error")
-    
+
     return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
 
 
@@ -610,10 +653,15 @@ def revoke_venue_manager(assignment_id):
     """Revoca l'assegnazione di un gestore sala"""
     try:
         from flask_login import current_user
+
         admin_user = cast(User, current_user)
-        assignment = VenueManagementService.revoke_venue_manager(assignment_id, admin_user)
+        assignment = VenueManagementService.revoke_venue_manager(
+            assignment_id, admin_user
+        )
         flash("Gestione sala revocata con successo!", "success")
-        return redirect(url_for("admin.venue.venue_detail", venue_id=assignment.venue_id))
+        return redirect(
+            url_for("admin.venue.venue_detail", venue_id=assignment.venue_id)
+        )
     except Exception as e:
         flash(f"Errore nel revocare la gestione: {str(e)}", "error")
         return redirect(url_for("admin.venue.venues_list"))

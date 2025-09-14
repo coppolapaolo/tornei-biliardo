@@ -31,7 +31,7 @@ class TestUseCaseCampionatoWorkflow:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -45,7 +45,7 @@ class TestUseCaseCampionatoWorkflow:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -59,7 +59,7 @@ class TestUseCaseCampionatoWorkflow:
         co_director = User(
             username=f"co_director_{unique_id}",
             email=f"co_director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         co_director.set_password("co_director123")
         db_session.add(co_director)
@@ -75,26 +75,31 @@ class TestUseCaseCampionatoWorkflow:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
 
     def test_complete_campionato_with_multiple_gare_and_strategies(
-        self, admin_user: User, director_user: User, co_director_user: User, 
-        players_10: List[User], db_session, client
+        self,
+        admin_user: User,
+        director_user: User,
+        co_director_user: User,
+        players_10: List[User],
+        db_session,
+        client,
     ):
         """Test complete campionato workflow with multiple gare.
-        
+
         Workflow:
         1. Admin creates campionato with director and co-director
         2. Create first gara (Amalfi strategy)
         3. Complete first gara and update campionato classification
-        4. Create second gara (Random strategy) 
+        4. Create second gara (Random strategy)
         5. Complete second gara and update campionato classification
         6. Create third gara (Round-robin strategy)
         7. Complete third gara and final campionato classification
@@ -109,7 +114,7 @@ class TestUseCaseCampionatoWorkflow:
             without_x=True,
             final_playoffs=True,  # Will have playoffs at end
             challenge_mode=False,
-            is_active=True
+            is_active=True,
         )
 
         assert campionato.is_active is True
@@ -121,7 +126,7 @@ class TestUseCaseCampionatoWorkflow:
             entity_type="campionato",
             entity_id=campionato.id,
             assigned_by_id=admin_user.id,
-            assigned_at=datetime.now()
+            assigned_at=datetime.now(),
         )
         db_session.add(co_director_assignment)
         db_session.commit()
@@ -146,7 +151,7 @@ class TestUseCaseCampionatoWorkflow:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         assert gara1.campionato_id == campionato.id
@@ -171,7 +176,9 @@ class TestUseCaseCampionatoWorkflow:
         ).all()
         assert len(campionato_classification_1) == 8
 
-        print(f"✅ First gara completed - {len(campionato_classification_1)} players in campionato classification")
+        print(
+            f"✅ First gara completed - {len(campionato_classification_1)} players in campionato classification"
+        )
 
         # Step 3: Create second gara (Random strategy) - overlapping players
         gara2 = GaraService.create_gara(
@@ -193,7 +200,7 @@ class TestUseCaseCampionatoWorkflow:
             first_round_policy="random",
             odd_number_policy="trio",
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         # 9 players inscribe (7 from first gara + 2 new players)
@@ -214,7 +221,9 @@ class TestUseCaseCampionatoWorkflow:
         ).all()
         assert len(campionato_classification_2) == 10  # All players now included
 
-        print(f"✅ Second gara completed - {len(campionato_classification_2)} players in campionato classification")
+        print(
+            f"✅ Second gara completed - {len(campionato_classification_2)} players in campionato classification"
+        )
 
         # Step 4: Create third gara (Round-robin strategy) - smaller group
         gara3 = GaraService.create_gara(
@@ -236,18 +245,18 @@ class TestUseCaseCampionatoWorkflow:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=False,  # Not applicable for round-robin
-            rating_type=None
+            rating_type=None,
         )
 
         # 6 best players from campionato classification qualify
         top_6_players = sorted(
-            campionato_classification_2, 
-            key=lambda x: (-x.total_points, -x.total_rack_difference)
+            campionato_classification_2,
+            key=lambda x: (-x.total_points, -x.total_rack_difference),
         )[:6]
-        
+
         gara3_player_ids = [c.user_id for c in top_6_players]
         gara3_players = [p for p in players_10 if p.id in gara3_player_ids]
-        
+
         for player in gara3_players:
             InscriptionService.inscribe_user(player.id, gara3.id)
 
@@ -259,21 +268,21 @@ class TestUseCaseCampionatoWorkflow:
             campionato.id, gara3.id
         )
 
-        final_campionato_classification = CampionatoClassification.query.filter_by(
-            campionato_id=campionato.id
-        ).order_by(
-            CampionatoClassification.position.asc()
-        ).all()
+        final_campionato_classification = (
+            CampionatoClassification.query.filter_by(campionato_id=campionato.id)
+            .order_by(CampionatoClassification.position.asc())
+            .all()
+        )
 
         assert len(final_campionato_classification) == 10
 
         # Step 5: Verify campionato completion and prepare for playoffs
         db_session.refresh(campionato)
-        
+
         # Verify all gare are associated with campionato
         campionato_gare = Gara.query.filter_by(campionato_id=campionato.id).all()
         assert len(campionato_gare) == 3
-        
+
         gara_names = [g.name for g in campionato_gare]
         assert "First Competition - Amalfi" in gara_names
         assert "Second Competition - Random" in gara_names
@@ -283,7 +292,7 @@ class TestUseCaseCampionatoWorkflow:
         director_assignments = DirectorAssignment.query.filter_by(
             entity_type="campionato", entity_id=campionato.id
         ).all()
-        
+
         assigned_directors = {da.user_id for da in director_assignments}
         assert director_user.id in assigned_directors
         assert co_director_user.id in assigned_directors
@@ -291,31 +300,32 @@ class TestUseCaseCampionatoWorkflow:
         # Step 6: Verify campionato classification logic
         # Players who participated in more gare should generally rank higher
         # (assuming equal performance)
-        
+
         participations_by_player = {}
         for player_class in final_campionato_classification:
             player_id = player_class.user_id
             participations = 0
-            
+
             # Count gara participations
             for gara in campionato_gare:
                 if Inscription.query.filter_by(
                     user_id=player_id, gara_id=gara.id, is_confirmed=True
                 ).first():
                     participations += 1
-            
+
             participations_by_player[player_id] = participations
 
         # Verify classification ordering considers multiple factors
         for i in range(len(final_campionato_classification) - 1):
             current = final_campionato_classification[i]
             next_player = final_campionato_classification[i + 1]
-            
+
             # Higher total points should rank higher
             # If points equal, better total rack difference should rank higher
-            assert (current.total_points > next_player.total_points or 
-                   (current.total_points == next_player.total_points and 
-                    current.total_rack_difference >= next_player.total_rack_difference))
+            assert current.total_points > next_player.total_points or (
+                current.total_points == next_player.total_points
+                and current.total_rack_difference >= next_player.total_rack_difference
+            )
 
         print(f"✅ Complete campionato workflow finished successfully")
         print(f"   - 3 gare completed with different strategies")
@@ -327,7 +337,7 @@ class TestUseCaseCampionatoWorkflow:
         self, director_user: User, players_10: List[User], db_session, client
     ):
         """Test campionato with minimum player requirements enforcement.
-        
+
         Tests:
         - Gara requiring minimum players
         - Campionato classification with insufficient participation
@@ -338,7 +348,7 @@ class TestUseCaseCampionatoWorkflow:
         campionato = tournament_service.create_campionato_with_director(
             name="Minimum Players Championship",
             creator_user_id=director_user.id,
-            campionato_type="Amalfi"
+            campionato_type="Amalfi",
         )
 
         # Create gara with high minimum requirement
@@ -357,7 +367,7 @@ class TestUseCaseCampionatoWorkflow:
             distance=7,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Only 10 players available (less than minimum 12)
@@ -451,12 +461,18 @@ class TestUseCaseCampionatoWorkflow:
     def _complete_match_simple(self, match: Match, db_session) -> None:
         """Complete a match with simple random results."""
         import random
-        
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Random score based on distance
-        winner_racks = (match.distance + 1) // 2 + random.randint(0, 1)  # Just over half
+        winner_racks = (match.distance + 1) // 2 + random.randint(
+            0, 1
+        )  # Just over half
         loser_racks = random.randint(0, winner_racks - 1)
 
         # Add racks
@@ -467,7 +483,7 @@ class TestUseCaseCampionatoWorkflow:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         for rack_num in range(winner_racks + 1, winner_racks + loser_racks + 1):
@@ -477,7 +493,7 @@ class TestUseCaseCampionatoWorkflow:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         MatchService.to_completed(match.id)
@@ -494,7 +510,7 @@ class TestUseCaseCampionatoVariants:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -510,11 +526,11 @@ class TestUseCaseCampionatoVariants:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -523,7 +539,7 @@ class TestUseCaseCampionatoVariants:
         self, admin_user: User, players_6: List[User], db_session, client
     ):
         """Test campionato with challenge mode enabled.
-        
+
         Tests:
         - Campionato with challenge_mode=True
         - Challenge integration across multiple gare
@@ -537,7 +553,7 @@ class TestUseCaseCampionatoVariants:
             campionato_type="Amalfi",
             challenge_mode=True,  # Enable challenge mode
             without_x=False,
-            final_playoffs=False
+            final_playoffs=False,
         )
 
         assert campionato.challenge_mode is True
@@ -558,7 +574,7 @@ class TestUseCaseCampionatoVariants:
             distance=6,
             best_of=True,
             director_id=admin_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # All players inscribe
@@ -587,7 +603,7 @@ class TestUseCaseCampionatoVariants:
         self, admin_user: User, players_6: List[User], db_session, client
     ):
         """Test campionato deactivation and reactivation workflow.
-        
+
         Tests:
         - Campionato deactivation during season
         - Impact on ongoing gare
@@ -599,7 +615,7 @@ class TestUseCaseCampionatoVariants:
             name="Deactivation Test Championship",
             creator_user_id=admin_user.id,
             campionato_type="Random",
-            is_active=True
+            is_active=True,
         )
 
         # Create and start first gara
@@ -618,7 +634,7 @@ class TestUseCaseCampionatoVariants:
             distance=5,
             best_of=True,
             director_id=admin_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         for player in players_6:
@@ -654,7 +670,7 @@ class TestUseCaseCampionatoVariants:
             distance=6,
             best_of=True,
             director_id=admin_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Reactivate campionato
@@ -683,12 +699,16 @@ class TestUseCaseCampionatoVariants:
         print(f"   - 2 gare completed across activation states")
         print(f"   - Final classification includes all participants")
 
-    def _complete_full_gara_with_challenges(self, gara: Gara, players: List[User], db_session) -> None:
+    def _complete_full_gara_with_challenges(
+        self, gara: Gara, players: List[User], db_session
+    ) -> None:
         """Complete a gara with challenge integration."""
         # This is a simplified version - in reality, challenges would be integrated
         self._complete_full_gara_simple(gara, players, db_session)
 
-    def _complete_full_gara_simple(self, gara: Gara, players: List[User], db_session) -> None:
+    def _complete_full_gara_simple(
+        self, gara: Gara, players: List[User], db_session
+    ) -> None:
         """Complete a full gara with simplified logic."""
         inscription_start = datetime.now() - timedelta(hours=1)
         inscription_end = datetime.now() + timedelta(hours=1)
@@ -703,8 +723,17 @@ class TestUseCaseCampionatoVariants:
             for match in matches:
                 if not match.is_bye:
                     import random
-                    winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-                    loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+                    winner_id = (
+                        match.player1_id
+                        if random.choice([True, False])
+                        else match.player2_id
+                    )
+                    loser_id = (
+                        match.player2_id
+                        if winner_id == match.player1_id
+                        else match.player1_id
+                    )
 
                     # Simple scoring
                     winner_racks = 3
@@ -717,17 +746,19 @@ class TestUseCaseCampionatoVariants:
                             winner_id=winner_id,
                             reported_by_id=winner_id,
                             confirmed_by_player=True,
-                            validated_by_admin=True
+                            validated_by_admin=True,
                         )
 
-                    for rack_num in range(winner_racks + 1, winner_racks + loser_racks + 1):
+                    for rack_num in range(
+                        winner_racks + 1, winner_racks + loser_racks + 1
+                    ):
                         RackService.add_rack_result(
                             match_id=match.id,
                             rack_number=rack_num,
                             winner_id=loser_id,
                             reported_by_id=loser_id,
                             confirmed_by_player=True,
-                            validated_by_admin=True
+                            validated_by_admin=True,
                         )
 
                     MatchService.to_completed(match.id)

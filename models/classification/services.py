@@ -212,16 +212,18 @@ class ClassificationService:
             "total_players": len(standings),
             "total_matches_played": total_matches,
             "average_matches_per_player": round(avg_matches_per_player, 1),
-            "leader": {
-                "user_id": standings[0].user_id,
-                "username": standings[0].user.username
-                if standings[0].user
-                else "Unknown",
-                "matches_won": standings[0].total_matches_won,
-                "point_difference": standings[0].total_point_difference,
-            }
-            if standings
-            else None,
+            "leader": (
+                {
+                    "user_id": standings[0].user_id,
+                    "username": (
+                        standings[0].user.username if standings[0].user else "Unknown"
+                    ),
+                    "matches_won": standings[0].total_matches_won,
+                    "point_difference": standings[0].total_point_difference,
+                }
+                if standings
+                else None
+            ),
             "completed": all(c.total_matches_won > 0 for c in standings),
         }
 
@@ -255,9 +257,7 @@ class RoundClassificationService:
 
     @staticmethod
     @cached(ttl_seconds=600, tags=["classification", "user", "gara"])
-    def get_player_progression(
-        gara_id: int, user_id: int
-    ) -> List[RoundClassification]:
+    def get_player_progression(gara_id: int, user_id: int) -> List[RoundClassification]:
         """
         Get a player's position progression across all rounds with caching.
 
@@ -388,9 +388,7 @@ class PlayerEncounterService:
         Returns:
             Dictionary mapping player pairs to encounter status
         """
-        encounters = (
-            db.session.query(PlayerEncounter).filter_by(gara_id=gara_id).all()
-        )
+        encounters = db.session.query(PlayerEncounter).filter_by(gara_id=gara_id).all()
 
         matrix = {}
         for encounter in encounters:
@@ -403,9 +401,7 @@ class PlayerEncounterService:
     @cached(ttl_seconds=1200, tags=["encounter", "gara"])
     def get_encounter_statistics(gara_id: int) -> Dict[str, Any]:
         """Get comprehensive encounter statistics for the gara."""
-        encounters = (
-            db.session.query(PlayerEncounter).filter_by(gara_id=gara_id).all()
-        )
+        encounters = db.session.query(PlayerEncounter).filter_by(gara_id=gara_id).all()
 
         if not encounters:
             return {"total_encounters": 0, "unique_players": 0}

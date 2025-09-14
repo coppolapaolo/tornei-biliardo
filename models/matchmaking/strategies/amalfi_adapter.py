@@ -71,9 +71,7 @@ class AmalfiStrategy(BaseStrategy):
     ) -> Sequence[Pairing]:
         """Generate preview pairings without side effects."""
         gara_typed = cast(Gara, gara)
-        engine = AmalfiEngine(
-            gara_typed
-        )  # rispetta WithdrawPolicy via patch in engine
+        engine = AmalfiEngine(gara_typed)  # rispetta WithdrawPolicy via patch in engine
         raw = (
             engine._preview_first_round()
             if int(round_number) == 1

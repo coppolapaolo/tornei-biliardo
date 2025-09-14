@@ -245,9 +245,9 @@ class DomainOrchestrator:
             result_data = {
                 "user": {"id": user.id, "username": user.username, "role": user.role},
                 "onboarding_steps": onboarding_steps,
-                "category_assignment": category_assignment.id
-                if category_assignment
-                else None,
+                "category_assignment": (
+                    category_assignment.id if category_assignment else None
+                ),
                 "preferences_configured": preferences is not None,
                 "welcome_challenges": len(welcome_challenges),
             }

@@ -81,9 +81,7 @@ class TestDirectEliminationStrategy:
 
         # Verify the result
         assert result.ok is False
-        assert (
-            "Direct Elimination requires 3 rounds, but gara has 2" in result.messages
-        )
+        assert "Direct Elimination requires 3 rounds, but gara has 2" in result.messages
 
     def test_validate_with_exception(self):
         """Test validate method when an exception occurs."""

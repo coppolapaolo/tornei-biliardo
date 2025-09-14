@@ -66,11 +66,15 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if not match.is_bye %}
+                                        {% if not match.is_bye and match_can_modify.get(match.id, True) %}
                                             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
                                                class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
+                                        {% elif not match.is_bye %}
+                                            <span class="text-muted small">
+                                                <i class="fas fa-lock"></i> Bloccato
+                                            </span>
                                         {% endif %}
                                     </td>
                                 </tr>

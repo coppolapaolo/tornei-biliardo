@@ -251,9 +251,11 @@ class QueryAnalyzer:
                 },
                 "slowest_queries": [
                     {
-                        "sql": m.sql_text[:200] + "..."
-                        if len(m.sql_text) > 200
-                        else m.sql_text,
+                        "sql": (
+                            m.sql_text[:200] + "..."
+                            if len(m.sql_text) > 200
+                            else m.sql_text
+                        ),
                         "avg_time_ms": round(m.avg_time_ms, 2),
                         "execution_count": m.execution_count,
                         "total_time_ms": round(m.total_time_ms, 2),
@@ -264,9 +266,11 @@ class QueryAnalyzer:
                 ],
                 "most_frequent_queries": [
                     {
-                        "sql": m.sql_text[:200] + "..."
-                        if len(m.sql_text) > 200
-                        else m.sql_text,
+                        "sql": (
+                            m.sql_text[:200] + "..."
+                            if len(m.sql_text) > 200
+                            else m.sql_text
+                        ),
                         "execution_count": m.execution_count,
                         "avg_time_ms": round(m.avg_time_ms, 2),
                     }
@@ -276,9 +280,11 @@ class QueryAnalyzer:
                 ],
                 "n1_problems": [
                     {
-                        "parent_query": p.parent_query[:200] + "..."
-                        if len(p.parent_query) > 200
-                        else p.parent_query,
+                        "parent_query": (
+                            p.parent_query[:200] + "..."
+                            if len(p.parent_query) > 200
+                            else p.parent_query
+                        ),
                         "child_query_count": p.query_count,
                         "severity": p.severity,
                         "suggested_solution": p.suggested_solution,

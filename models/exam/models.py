@@ -266,9 +266,11 @@ class ExamAttempt(BaseModel, TimestampMixin):
         return {
             "total_challenges": total_challenges,
             "completed_challenges": completed_challenges,
-            "progress_percentage": (completed_challenges / total_challenges * 100)
-            if total_challenges > 0
-            else 0,
+            "progress_percentage": (
+                (completed_challenges / total_challenges * 100)
+                if total_challenges > 0
+                else 0
+            ),
             "is_complete": completed_challenges == total_challenges,
         }
 

@@ -281,11 +281,11 @@ class MatchmakingOrchestrator:
             {
                 "id": match.id,
                 "round_number": match.round_number,
-                "opponent": match.player2.username
-                if match.player1_id == user_id
-                else match.player1.username
-                if match.player2_id
-                else "Bye",
+                "opponent": (
+                    match.player2.username
+                    if match.player1_id == user_id
+                    else match.player1.username if match.player2_id else "Bye"
+                ),
                 "status": match.status,
             }
             for match in incomplete_matches
@@ -311,7 +311,7 @@ class MatchmakingService:
         except KeyError:
             unified_amalfi = AmalfiUnifiedAdapter()
             self._registry.register(unified_amalfi)
-        
+
         # Register the advanced Amalfi strategy
         try:
             self._registry.get("amalfi_advanced")

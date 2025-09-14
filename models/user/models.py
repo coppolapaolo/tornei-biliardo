@@ -115,8 +115,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         if self.is_admin:
             return True
         assignment = VenueManagement.query.filter_by(
-            user_id=self.id,
-            is_active=True
+            user_id=self.id, is_active=True
         ).first()
         return assignment is not None
 
@@ -176,12 +175,10 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             return True
         if not self.is_venue_manager:
             return False
-        
+
         # Check if user is assigned as manager for this venue
         assignment = VenueManagement.query.filter_by(
-            user_id=self.id,
-            venue_id=venue_id,
-            is_active=True
+            user_id=self.id, venue_id=venue_id, is_active=True
         ).first()
         return assignment is not None
 
@@ -190,25 +187,25 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         if self.is_admin:
             # Admin can manage all venues
             from ..location.models import BilliardHall
+
             return BilliardHall.query.filter_by(is_active=True).all()
-        
+
         if not self.is_venue_manager:
             return []
-        
+
         # Get venues assigned to this user
         from ..location.models import BilliardHall
+
         venue_assignments = VenueManagement.query.filter_by(
-            user_id=self.id,
-            is_active=True
+            user_id=self.id, is_active=True
         ).all()
-        
+
         venue_ids = [assignment.venue_id for assignment in venue_assignments]
         if not venue_ids:
             return []
-            
+
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids),
-            BilliardHall.is_active == True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active == True
         ).all()
 
     # ───────────────────
@@ -221,7 +218,11 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
 
             return Campionato.query.all()
         if self.is_director:
-            return [assoc.campionato for assoc in self.director_assignments if assoc.entity_type == 'campionato' and assoc.campionato]
+            return [
+                assoc.campionato
+                for assoc in self.director_assignments
+                if assoc.entity_type == "campionato" and assoc.campionato
+            ]
         return []
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -249,17 +250,17 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == 'completed')  # Solo gare completate
+            .filter(Gara.status == "completed")  # Solo gare completate
             .with_entities(Gara.campionato_id)
             .distinct()
             .count()
         )
-        
+
         # Conta le gare completate dove l'utente ha partecipato
         provas_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
-            .filter(Gara.status == 'completed')  # Solo gare completate
+            .filter(Gara.status == "completed")  # Solo gare completate
             .count()
         )
 
@@ -312,20 +313,22 @@ class DirectorAssignment(BaseModel):
         "User", foreign_keys=[user_id], backref="director_assignments"
     )
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
-    
+
     @property
     def campionato(self):
         """Get campionato if this is a campionato assignment."""
-        if self.entity_type == 'campionato':
+        if self.entity_type == "campionato":
             from models.campionato.models import Campionato
+
             return db.session.get(Campionato, self.entity_id)
         return None
-    
+
     @property
     def gara(self):
         """Get gara if this is a gara assignment."""
-        if self.entity_type == 'gara':
+        if self.entity_type == "gara":
             from models.competition.models import Gara
+
             return db.session.get(Gara, self.entity_id)
         return None
 
@@ -360,6 +363,7 @@ class DirectorRequest(BaseModel):
     # state helpers ---
     def approve(self, admin: "User") -> None:
         from ..status_enum import DirectorRequestStatus
+
         self.status = DirectorRequestStatus.APPROVED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
@@ -372,6 +376,7 @@ class DirectorRequest(BaseModel):
 
     def reject(self, admin: "User", notes: str | None = None) -> None:
         from ..status_enum import DirectorRequestStatus
+
         self.status = DirectorRequestStatus.REJECTED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
@@ -387,7 +392,7 @@ class DirectorRequest(BaseModel):
 # ────────────────────────────────────────────────────────────────────────────────
 class VenueManagerRequest(BaseModel):
     """Request to manage a specific venue."""
-    
+
     __tablename__ = "venue_manager_request"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -401,33 +406,38 @@ class VenueManagerRequest(BaseModel):
     processed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     notes = db.Column(db.Text)  # User notes when requesting
     admin_notes = db.Column(db.Text)  # Admin notes when processing
-    is_contested = db.Column(db.Boolean, default=False)  # True if requesting already managed venue
+    is_contested = db.Column(
+        db.Boolean, default=False
+    )  # True if requesting already managed venue
 
     user = db.relationship("User", foreign_keys=[user_id])
     processed_by = db.relationship("User", foreign_keys=[processed_by_id])
     venue = db.relationship("BilliardHall", foreign_keys=[venue_id])
 
     __table_args__ = (
-        db.UniqueConstraint('user_id', 'venue_id', name='_user_venue_request_uc'),
+        db.UniqueConstraint("user_id", "venue_id", name="_user_venue_request_uc"),
     )
 
     # state helpers ---
     def approve(self, admin: "User", admin_notes: str | None = None) -> None:
         """Approve venue manager request and automatically assign venue."""
         from ..status_enum import VenueManagerRequestStatus
+
         self.status = VenueManagerRequestStatus.APPROVED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
         if admin_notes:
             self.admin_notes = admin_notes
-        
+
         # Automatically create venue management assignment
         from .services import VenueManagementService
+
         VenueManagementService.assign_venue_manager(self.user_id, self.venue_id, admin)
 
     def reject(self, admin: "User", admin_notes: str | None = None) -> None:
         """Reject venue manager request."""
         from ..status_enum import VenueManagerRequestStatus
+
         self.status = VenueManagerRequestStatus.REJECTED
         self.processed_at = datetime.utcnow()
         self.processed_by = admin
@@ -437,6 +447,7 @@ class VenueManagerRequest(BaseModel):
     def cancel(self) -> None:
         """Cancel venue manager request."""
         from ..status_enum import VenueManagerRequestStatus
+
         self.status = VenueManagerRequestStatus.CANCELLED
         self.processed_at = datetime.utcnow()
 
@@ -449,7 +460,7 @@ class VenueManagerRequest(BaseModel):
 # ────────────────────────────────────────────────────────────────────────────────
 class VenueManagement(BaseModel):
     """Assignment of venue managers to specific venues."""
-    
+
     __tablename__ = "venue_management"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -465,10 +476,10 @@ class VenueManagement(BaseModel):
     user = db.relationship("User", foreign_keys=[user_id])
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
     revoked_by = db.relationship("User", foreign_keys=[revoked_by_id])
-    
+
     # Unique constraint: one manager per venue
     __table_args__ = (
-        db.UniqueConstraint('venue_id', 'is_active', name='uq_venue_active_manager'),
+        db.UniqueConstraint("venue_id", "is_active", name="uq_venue_active_manager"),
     )
 
     def revoke(self, admin: "User") -> None:

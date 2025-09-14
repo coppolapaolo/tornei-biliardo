@@ -55,9 +55,9 @@ class PermissionChecker:
                 assignment = (
                     db.session.query(DirectorAssignment)
                     .filter(
-                        DirectorAssignment.entity_type == 'campionato',
+                        DirectorAssignment.entity_type == "campionato",
                         DirectorAssignment.entity_id == campionato_id,
-                        DirectorAssignment.user_id == user.id
+                        DirectorAssignment.user_id == user.id,
                     )
                     .first()
                 )
@@ -107,18 +107,23 @@ class PermissionChecker:
                     # For standalone gare
                     else:
                         # Director principale
-                        if hasattr(competition, 'director_id') and competition.director_id == user.id:
+                        if (
+                            hasattr(competition, "director_id")
+                            and competition.director_id == user.id
+                        ):
                             return True
                         # Co-direttore via DirectorAssignment
                         from .models import DirectorAssignment
+
                         is_co_director = (
                             db.session.query(DirectorAssignment)
                             .filter(
-                                DirectorAssignment.entity_type == 'gara',
+                                DirectorAssignment.entity_type == "gara",
                                 DirectorAssignment.entity_id == competition_id,
-                                DirectorAssignment.user_id == user.id
+                                DirectorAssignment.user_id == user.id,
                             )
-                            .first() is not None
+                            .first()
+                            is not None
                         )
                         return is_co_director
             except Exception:
@@ -447,11 +452,11 @@ class PermissionChecker:
                 from models.base import db
 
                 managed_ids = [
-                    da.entity_id for da in 
-                    db.session.query(DirectorAssignment)
+                    da.entity_id
+                    for da in db.session.query(DirectorAssignment)
                     .filter(
-                        DirectorAssignment.entity_type == 'campionato',
-                        DirectorAssignment.user_id == user.id
+                        DirectorAssignment.entity_type == "campionato",
+                        DirectorAssignment.user_id == user.id,
                     )
                     .all()
                 ]
@@ -582,7 +587,9 @@ class RoleRequirement:
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated or (not current_user.is_director and not current_user.is_admin):
+            if not current_user.is_authenticated or (
+                not current_user.is_director and not current_user.is_admin
+            ):
                 abort(403)
             return f(*args, **kwargs)
 
@@ -830,9 +837,11 @@ def get_user_permissions_summary(user) -> dict:
         "can_assign_directors": PermissionChecker.can_assign_directors(user),
         "can_promote_users": PermissionChecker.can_promote_user(user),
         "can_reset_database": PermissionChecker.can_reset_database(user),
-        "managed_campionatos_count": len(user.get_managed_campionatos())
-        if hasattr(user, "get_managed_campionatos")
-        else 0,
+        "managed_campionatos_count": (
+            len(user.get_managed_campionatos())
+            if hasattr(user, "get_managed_campionatos")
+            else 0
+        ),
     }
 
 

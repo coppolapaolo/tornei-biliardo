@@ -14,6 +14,7 @@ Author: Refactoring Phase 1 - Task 1.4
 Enhanced: Phase 3.3 - Transaction Management
 Created: 2025-08-01
 """
+
 from __future__ import annotations
 
 from typing import List, Optional, Dict, Any, Tuple
@@ -521,17 +522,19 @@ class UserService:
         win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
 
         # Conta solo i campionati con gare completate dove l'utente ha partecipato
-        completed_tournaments = set([
-            insc.gara.campionato_id 
-            for insc in inscriptions 
-            if insc.gara.campionato_id is not None and insc.gara.status == 'completed'
-        ])
-        
+        completed_tournaments = set(
+            [
+                insc.gara.campionato_id
+                for insc in inscriptions
+                if insc.gara.campionato_id is not None
+                and insc.gara.status == "completed"
+            ]
+        )
+
         # Conta solo le gare completate
-        completed_provas = len([
-            insc for insc in inscriptions 
-            if insc.gara.status == 'completed'
-        ])
+        completed_provas = len(
+            [insc for insc in inscriptions if insc.gara.status == "completed"]
+        )
 
         stats = {
             "total_inscriptions": len(inscriptions),
@@ -696,6 +699,7 @@ class UserService:
 
         # Check if user already has a pending request
         from ..status_enum import DirectorRequestStatus
+
         existing_request = DirectorRequest.query.filter_by(
             user_id=user_id, status=DirectorRequestStatus.PENDING
         ).first()
@@ -922,7 +926,9 @@ class VenueManagerRequestService:
     """Service class for handling venue manager requests."""
 
     @staticmethod
-    def create_request(user_id: int, venue_id: int, notes: Optional[str] = None) -> "VenueManagerRequest":
+    def create_request(
+        user_id: int, venue_id: int, notes: Optional[str] = None
+    ) -> "VenueManagerRequest":
         """
         Create venue manager request for a specific venue.
 
@@ -939,7 +945,7 @@ class VenueManagerRequestService:
         """
         from .models import VenueManagerRequest
         from models import BilliardHall
-        
+
         user = db.session.get(User, user_id)
         if not user:
             raise ValueError("User not found")
@@ -957,26 +963,29 @@ class VenueManagerRequestService:
         ).first()
         if existing_request:
             from ..status_enum import VenueManagerRequestStatus
+
             if existing_request.status == VenueManagerRequestStatus.PENDING:
                 raise ValueError(f"You already have a pending request for {venue.name}")
             elif existing_request.status == VenueManagerRequestStatus.APPROVED:
                 raise ValueError(f"You are already approved to manage {venue.name}")
             elif existing_request.status == VenueManagerRequestStatus.REJECTED:
-                raise ValueError(f"Your previous request for {venue.name} was rejected. Contact admin for reconsideration.")
+                raise ValueError(
+                    f"Your previous request for {venue.name} was rejected. Contact admin for reconsideration."
+                )
             else:  # cancelled or other status
-                raise ValueError(f"You already have a {existing_request.status} request for {venue.name}")
+                raise ValueError(
+                    f"You already have a {existing_request.status} request for {venue.name}"
+                )
 
         # Check if venue is already managed (contested request)
         from .services import VenueManagementService
+
         current_manager = VenueManagementService.get_venue_manager(venue_id)
         is_contested = current_manager is not None
 
         # Create new request
         request = VenueManagerRequest(
-            user_id=user_id, 
-            venue_id=venue_id, 
-            notes=notes,
-            is_contested=is_contested
+            user_id=user_id, venue_id=venue_id, notes=notes, is_contested=is_contested
         )
         db.session.add(request)
         db.session.commit()
@@ -985,11 +994,13 @@ class VenueManagerRequestService:
         from ..notification.services import NotificationService
         from ..notification.models import NotificationType, NotificationPriority
         from .role_enum import UserRole
-        
+
         message = f"Nuova richiesta di gestione per la sala '{venue.name}' da {user.username}."
         if is_contested:
-            message += " ATTENZIONE: Questa sala ha già un gestore (richiesta di contenzioso)."
-        
+            message += (
+                " ATTENZIONE: Questa sala ha già un gestore (richiesta di contenzioso)."
+            )
+
         # Notify all admins
         admins = User.query.filter_by(role=UserRole.ADMIN.value).all()
         for admin in admins:
@@ -998,7 +1009,11 @@ class VenueManagerRequestService:
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
                 title=f"Richiesta Gestore Sala: {venue.name}",
                 message=message,
-                priority=NotificationPriority.HIGH if is_contested else NotificationPriority.NORMAL,
+                priority=(
+                    NotificationPriority.HIGH
+                    if is_contested
+                    else NotificationPriority.NORMAL
+                ),
             )
 
         return request
@@ -1024,10 +1039,12 @@ class VenueManagerRequestService:
             PermissionError: If admin_user is not an admin
         """
         from .models import VenueManagerRequest
-        
+
         # Check if user is admin
         if not admin_user.is_admin:
-            raise PermissionError("Only administrators can process venue manager requests")
+            raise PermissionError(
+                "Only administrators can process venue manager requests"
+            )
 
         # Get the request
         request = db.session.get(VenueManagerRequest, request_id)
@@ -1056,7 +1073,10 @@ class VenueManagerRequestService:
             # If it was a contested request, notify the previous manager
             if request.is_contested:
                 from .services import VenueManagementService
-                previous_assignments = VenueManagementService.get_venue_assignments(request.venue_id)
+
+                previous_assignments = VenueManagementService.get_venue_assignments(
+                    request.venue_id
+                )
                 for assignment in previous_assignments:
                     if assignment.user_id != request.user_id and assignment.is_active:
                         assignment.revoke(admin_user)  # Revoke previous manager
@@ -1101,6 +1121,7 @@ class VenueManagerRequestService:
             List of venue manager requests with specified status
         """
         from .models import VenueManagerRequest
+
         return VenueManagerRequest.query.filter_by(status=status).all()
 
     @staticmethod
@@ -1116,6 +1137,7 @@ class VenueManagerRequestService:
         """
         from .models import VenueManagerRequest
         from ..status_enum import VenueManagerRequestStatus
+
         return VenueManagerRequest.query.filter_by(
             user_id=user_id, status=VenueManagerRequestStatus.PENDING
         ).first()
@@ -1132,23 +1154,33 @@ class VenueManagerRequestService:
             List of all venue manager requests by the user
         """
         from .models import VenueManagerRequest
-        return VenueManagerRequest.query.filter_by(user_id=user_id).order_by(VenueManagerRequest.requested_at.desc()).all()
+
+        return (
+            VenueManagerRequest.query.filter_by(user_id=user_id)
+            .order_by(VenueManagerRequest.requested_at.desc())
+            .all()
+        )
 
     @staticmethod
-    def has_pending_request_for_venue(user_id: int, venue_id: Optional[int] = None) -> bool:
+    def has_pending_request_for_venue(
+        user_id: int, venue_id: Optional[int] = None
+    ) -> bool:
         """
         Check if user has pending requests for specific venue or any venue.
-        
+
         Args:
             user_id: ID of user to check
             venue_id: Optional - check for specific venue. If None, checks for any pending request
-            
+
         Returns:
             bool: True if user has pending request(s)
         """
         from .models import VenueManagerRequest
         from ..status_enum import VenueManagerRequestStatus
-        query = VenueManagerRequest.query.filter_by(user_id=user_id, status=VenueManagerRequestStatus.PENDING)
+
+        query = VenueManagerRequest.query.filter_by(
+            user_id=user_id, status=VenueManagerRequestStatus.PENDING
+        )
         if venue_id is not None:
             query = query.filter_by(venue_id=venue_id)
         return query.first() is not None
@@ -1169,21 +1201,22 @@ class VenueManagerRequestService:
             ValueError: If request not found or user doesn't own it
         """
         from .models import VenueManagerRequest
-        
+
         request = db.session.get(VenueManagerRequest, request_id)
         if not request:
             raise ValueError("Request not found")
-        
+
         if request.user_id != user.id and not user.is_admin:
             raise ValueError("You can only cancel your own requests")
-        
+
         from ..status_enum import VenueManagerRequestStatus
+
         if request.status != VenueManagerRequestStatus.PENDING:
             raise ValueError("Only pending requests can be cancelled")
-        
+
         request.cancel()
         db.session.commit()
-        
+
         return request
 
     @staticmethod
@@ -1198,24 +1231,31 @@ class VenueManagerRequestService:
         """
         from .models import VenueManagerRequest, User
         from ..status_enum import VenueManagerRequestStatus
-        
+
         # Get pending requests first (ordered by date, newest first)
-        pending_requests = VenueManagerRequest.query.filter_by(
-            status=VenueManagerRequestStatus.PENDING
-        ).order_by(VenueManagerRequest.requested_at.desc()).all()
-        
+        pending_requests = (
+            VenueManagerRequest.query.filter_by(
+                status=VenueManagerRequestStatus.PENDING
+            )
+            .order_by(VenueManagerRequest.requested_at.desc())
+            .all()
+        )
+
         # Get all other requests (not pending) ordered by username
-        other_requests = VenueManagerRequest.query.join(
-            User, VenueManagerRequest.user_id == User.id
-        ).filter(
-            VenueManagerRequest.status != VenueManagerRequestStatus.PENDING
-        ).order_by(User.username).all()
-        
+        other_requests = (
+            VenueManagerRequest.query.join(User, VenueManagerRequest.user_id == User.id)
+            .filter(VenueManagerRequest.status != VenueManagerRequestStatus.PENDING)
+            .order_by(User.username)
+            .all()
+        )
+
         # Combine: pending first, then others
         return pending_requests + other_requests
 
     @staticmethod
-    def get_requests_by_venue_and_status(venue_id: int, status: str = "pending") -> List["VenueManagerRequest"]:
+    def get_requests_by_venue_and_status(
+        venue_id: int, status: str = "pending"
+    ) -> List["VenueManagerRequest"]:
         """
         Get venue manager requests by venue ID and status.
 
@@ -1228,7 +1268,7 @@ class VenueManagerRequestService:
         """
         from .models import VenueManagerRequest
         from ..status_enum import VenueManagerRequestStatus
-        
+
         # Convert string to enum if needed for consistency
         if status == "pending":
             status_enum = VenueManagerRequestStatus.PENDING
@@ -1241,10 +1281,12 @@ class VenueManagerRequestService:
         else:
             # Fallback to original string for backward compatibility
             status_enum = status
-        
-        return VenueManagerRequest.query.filter_by(
-            venue_id=venue_id, status=status_enum
-        ).order_by(VenueManagerRequest.requested_at.desc()).all()
+
+        return (
+            VenueManagerRequest.query.filter_by(venue_id=venue_id, status=status_enum)
+            .order_by(VenueManagerRequest.requested_at.desc())
+            .all()
+        )
 
 
 class VenueManagementService:
@@ -1271,7 +1313,7 @@ class VenueManagementService:
         """
         from .models import VenueManagement
         from ..location.models import BilliardHall
-        
+
         if not assigned_by.is_admin:
             raise PermissionError("Only administrators can assign venue managers")
 
@@ -1292,9 +1334,7 @@ class VenueManagementService:
 
         # Create assignment
         assignment = VenueManagement(
-            user_id=user_id,
-            venue_id=venue_id,
-            assigned_by_id=assigned_by.id
+            user_id=user_id, venue_id=venue_id, assigned_by_id=assigned_by.id
         )
         db.session.add(assignment)
         db.session.commit()
@@ -1305,9 +1345,7 @@ class VenueManagementService:
         return assignment
 
     @staticmethod
-    def revoke_venue_manager(
-        assignment_id: int, revoked_by: User
-    ) -> "VenueManagement":
+    def revoke_venue_manager(assignment_id: int, revoked_by: User) -> "VenueManagement":
         """
         Revoke venue manager assignment.
 
@@ -1323,9 +1361,11 @@ class VenueManagementService:
             PermissionError: If revoked_by is not admin
         """
         from .models import VenueManagement
-        
+
         if not revoked_by.is_admin:
-            raise PermissionError("Only administrators can revoke venue manager assignments")
+            raise PermissionError(
+                "Only administrators can revoke venue manager assignments"
+            )
 
         assignment = db.session.get(VenueManagement, assignment_id)
         if not assignment:
@@ -1360,6 +1400,7 @@ class VenueManagementService:
             List of VenueManagement assignments for the venue
         """
         from .models import VenueManagement
+
         return VenueManagement.query.filter_by(venue_id=venue_id).all()
 
     @staticmethod
@@ -1374,11 +1415,11 @@ class VenueManagementService:
             User who manages the venue, or None if no manager
         """
         from .models import VenueManagement
-        
+
         assignment = VenueManagement.query.filter_by(
             venue_id=venue_id, is_active=True
         ).first()
-        
+
         return assignment.user if assignment else None
 
     @staticmethod
@@ -1394,16 +1435,15 @@ class VenueManagementService:
         """
         from .models import VenueManagement
         from ..location.models import BilliardHall
-        
+
         assignments = VenueManagement.query.filter_by(
             user_id=user_id, is_active=True
         ).all()
-        
+
         venue_ids = [assignment.venue_id for assignment in assignments]
         if not venue_ids:
             return []
-            
+
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids),
-            BilliardHall.is_active == True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active == True
         ).all()

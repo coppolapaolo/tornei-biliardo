@@ -309,9 +309,7 @@ class TestTournamentService:
                 mock_gara_filtered_query = Mock()
                 mock_gara_filtered_query.order_by().all.return_value = mock_garas
 
-                mock_gara_class.query.filter_by.return_value = (
-                    mock_gara_filtered_query
-                )
+                mock_gara_class.query.filter_by.return_value = mock_gara_filtered_query
 
                 # Mock User query from user.models
                 with patch("models.user.models.User") as mock_user_class:

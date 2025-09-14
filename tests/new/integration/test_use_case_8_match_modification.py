@@ -32,7 +32,7 @@ class TestUseCaseMatchModification:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -46,7 +46,7 @@ class TestUseCaseMatchModification:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -62,20 +62,25 @@ class TestUseCaseMatchModification:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
 
     def test_match_editing_with_classification_recalculation(
-        self, admin_user: User, director_user: User, players_6: List[User], db_session, client
+        self,
+        admin_user: User,
+        director_user: User,
+        players_6: List[User],
+        db_session,
+        client,
     ):
         """Test match result editing and automatic classification recalculation.
-        
+
         Workflow:
         1. Create and complete tournament with initial results
         2. Admin/Director identifies error in match result
@@ -99,7 +104,7 @@ class TestUseCaseMatchModification:
             distance=7,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Players inscribe and tournament starts
@@ -123,23 +128,29 @@ class TestUseCaseMatchModification:
         ]
 
         for match, (winner_racks, loser_racks) in zip(round1_matches, match_results):
-            self._complete_match_with_score(match, winner_racks, loser_racks, db_session)
+            self._complete_match_with_score(
+                match, winner_racks, loser_racks, db_session
+            )
 
         # Calculate initial classification
         RoundClassification.calculate_classification_after_round(gara.id, 1)
-        initial_classification = RoundClassification.query.filter_by(
-            gara_id=gara.id, round_number=1
-        ).order_by(RoundClassification.position.asc()).all()
+        initial_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(RoundClassification.position.asc())
+            .all()
+        )
 
         assert len(initial_classification) == 6
         initial_top_player = initial_classification[0]
 
-        print(f"Initial classification calculated - Top player: {initial_top_player.user_id}")
+        print(
+            f"Initial classification calculated - Top player: {initial_top_player.user_id}"
+        )
 
         # Step 2: Admin identifies error in match result
         # Suppose Match 1 result was wrong - should have been 5-4, not 5-2
         problematic_match = round1_matches[0]
-        
+
         # Step 3: Edit match result
         # Remove incorrect racks and add correct ones
         existing_racks = Rack.query.filter_by(match_id=problematic_match.id).all()
@@ -147,7 +158,9 @@ class TestUseCaseMatchModification:
 
         # Admin removes 2 racks from loser and adds 2 more
         # This changes the result from 5-2 to 5-4
-        loser_racks = [r for r in existing_racks if r.winner_id != problematic_match.winner_id]
+        loser_racks = [
+            r for r in existing_racks if r.winner_id != problematic_match.winner_id
+        ]
         assert len(loser_racks) == 2
 
         # Add 2 more racks for the loser
@@ -159,40 +172,52 @@ class TestUseCaseMatchModification:
                 reported_by_id=admin_user.id,
                 confirmed_by_player=True,
                 validated_by_admin=True,
-                admin_note="Correction: match was actually 5-4, not 5-2"
+                admin_note="Correction: match was actually 5-4, not 5-2",
             )
 
         # Step 4: Recalculate classification after match modification
         ClassificationService.recalculate_classification_after_match_edit(
-            match_id=problematic_match.id,
-            modified_by_id=admin_user.id
+            match_id=problematic_match.id, modified_by_id=admin_user.id
         )
 
         # Step 5: Verify classification changes
-        updated_classification = RoundClassification.query.filter_by(
-            gara_id=gara.id, round_number=1
-        ).order_by(RoundClassification.position.asc()).all()
+        updated_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(RoundClassification.position.asc())
+            .all()
+        )
 
         assert len(updated_classification) == 6
 
         # Check if rack difference changed for affected players
-        affected_player_ids = {problematic_match.player1_id, problematic_match.player2_id}
-        
+        affected_player_ids = {
+            problematic_match.player1_id,
+            problematic_match.player2_id,
+        }
+
         for classification in updated_classification:
             if classification.user_id in affected_player_ids:
                 # Rack difference should be different due to score change
                 initial_class = next(
-                    c for c in initial_classification if c.user_id == classification.user_id
+                    c
+                    for c in initial_classification
+                    if c.user_id == classification.user_id
                 )
-                
+
                 if classification.user_id == problematic_match.winner_id:
                     # Winner: rack difference should be worse (was +3, now +1)
-                    assert classification.rack_difference < initial_class.rack_difference
+                    assert (
+                        classification.rack_difference < initial_class.rack_difference
+                    )
                 else:
                     # Loser: rack difference should be better (was -3, now -1)
-                    assert classification.rack_difference > initial_class.rack_difference
+                    assert (
+                        classification.rack_difference > initial_class.rack_difference
+                    )
 
-        print(f"✅ Match editing with classification recalculation completed successfully")
+        print(
+            f"✅ Match editing with classification recalculation completed successfully"
+        )
         print(f"   - Match result changed from 5-2 to 5-4")
         print(f"   - Classification automatically recalculated")
         print(f"   - Affected players' positions updated correctly")
@@ -201,7 +226,7 @@ class TestUseCaseMatchModification:
         self, director_user: User, players_6: List[User], db_session, client
     ):
         """Test round state transitions and match locking mechanisms.
-        
+
         Workflow:
         1. Create tournament and complete round 1
         2. Start round 2 (round 1 should be locked)
@@ -225,7 +250,7 @@ class TestUseCaseMatchModification:
             distance=6,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Start tournament
@@ -242,7 +267,9 @@ class TestUseCaseMatchModification:
         for i, match in enumerate(round1_matches):
             winner_score = 4
             loser_score = i % 3  # Vary scores: 0, 1, 2
-            self._complete_match_with_score(match, winner_score, loser_score, db_session)
+            self._complete_match_with_score(
+                match, winner_score, loser_score, db_session
+            )
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
@@ -261,14 +288,14 @@ class TestUseCaseMatchModification:
 
         # Step 3: Attempt to modify locked round 1 match (should fail)
         locked_match = round1_matches[0]
-        
+
         try:
             # This should fail due to round locking
             MatchService.add_rack_to_completed_match(
                 match_id=locked_match.id,
                 rack_number=99,
                 winner_id=locked_match.player1_id,
-                modifier_id=director_user.id
+                modifier_id=director_user.id,
             )
             assert False, "Should not be able to modify locked match"
         except Exception as e:
@@ -280,7 +307,7 @@ class TestUseCaseMatchModification:
         unlock_result = MatchService.admin_unlock_match(
             match_id=locked_match.id,
             admin_id=director_user.id,  # Director has sufficient privileges
-            unlock_reason="Score correction needed after official review"
+            unlock_reason="Score correction needed after official review",
         )
 
         if unlock_result and unlock_result.success:
@@ -292,7 +319,7 @@ class TestUseCaseMatchModification:
                 reported_by_id=director_user.id,
                 confirmed_by_player=True,
                 validated_by_admin=True,
-                admin_note="Admin correction: player 2 should get additional point"
+                admin_note="Admin correction: player 2 should get additional point",
             )
 
             # Step 5: Verify cascading effects
@@ -335,10 +362,15 @@ class TestUseCaseMatchModification:
         print(f"   - Progressive round locking working")
 
     def test_tournament_reset_and_cancellation_scenarios(
-        self, admin_user: User, director_user: User, players_6: List[User], db_session, client
+        self,
+        admin_user: User,
+        director_user: User,
+        players_6: List[User],
+        db_session,
+        client,
     ):
         """Test tournament reset and cancellation with proper cleanup.
-        
+
         Workflow:
         1. Create and partially complete tournament
         2. Reset tournament to earlier state
@@ -361,7 +393,7 @@ class TestUseCaseMatchModification:
             distance=5,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Start and partially complete tournament
@@ -379,7 +411,7 @@ class TestUseCaseMatchModification:
             self._complete_match_with_score(match, 3, 1, db_session)
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
-        
+
         GaraService.create_random_round(gara.id, 2)
         gara.current_round = 2
         db_session.add(gara)
@@ -391,16 +423,20 @@ class TestUseCaseMatchModification:
             self._complete_match_with_score(match, 3, 2, db_session)
 
         initial_matches_count = Match.query.filter_by(gara_id=gara.id).count()
-        initial_racks_count = Rack.query.join(Match).filter(Match.gara_id == gara.id).count()
+        initial_racks_count = (
+            Rack.query.join(Match).filter(Match.gara_id == gara.id).count()
+        )
 
-        print(f"Tournament state before reset: {initial_matches_count} matches, {initial_racks_count} racks")
+        print(
+            f"Tournament state before reset: {initial_matches_count} matches, {initial_racks_count} racks"
+        )
 
         # Step 2: Reset tournament to end of round 1
         reset_result = GaraService.reset_tournament_to_round(
             gara_id=gara.id,
             target_round=1,
             admin_id=admin_user.id,
-            reset_reason="Scoring errors discovered in round 2, resetting to replay"
+            reset_reason="Scoring errors discovered in round 2, resetting to replay",
         )
 
         if reset_result and reset_result.success:
@@ -432,14 +468,18 @@ class TestUseCaseMatchModification:
             admin_id=admin_user.id,
             cancellation_reason="Technical difficulties require tournament cancellation",
             refund_entry_fees=True,
-            notify_participants=True
+            notify_participants=True,
         )
 
         if cancellation_result and cancellation_result.success:
             db_session.refresh(gara)
-            
+
             # Tournament should be marked as cancelled
-            cancelled_statuses = [GaraStatus.CANCELLED.value, GaraStatus.COMPLETED.value, "cancelled"]
+            cancelled_statuses = [
+                GaraStatus.CANCELLED.value,
+                GaraStatus.COMPLETED.value,
+                "cancelled",
+            ]
             assert gara.status in cancelled_statuses
 
             # Step 4: Verify cleanup and notifications
@@ -478,7 +518,7 @@ class TestUseCaseMatchModification:
             distance=4,
             best_of=True,
             director_id=director_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         # Quick setup and partial completion
@@ -488,27 +528,29 @@ class TestUseCaseMatchModification:
         GaraService.open_inscriptions(
             gara_partial.id,
             datetime.now() - timedelta(hours=1),
-            datetime.now() - timedelta(minutes=30)
+            datetime.now() - timedelta(minutes=30),
         )
         GaraService.start_first_round(gara_partial.id)
 
         # Test match-level reset (reset specific match)
-        partial_matches = Match.query.filter_by(gara_id=gara_partial.id, round_number=1).all()
+        partial_matches = Match.query.filter_by(
+            gara_id=gara_partial.id, round_number=1
+        ).all()
         target_match = partial_matches[0]
-        
+
         # Complete and then reset specific match
         self._complete_match_with_score(target_match, 2, 1, db_session)
-        
+
         match_reset_result = MatchService.reset_match_to_pending(
             match_id=target_match.id,
             admin_id=admin_user.id,
-            reset_reason="Match needs to be replayed due to dispute resolution"
+            reset_reason="Match needs to be replayed due to dispute resolution",
         )
 
         if match_reset_result and match_reset_result.success:
             db_session.refresh(target_match)
             assert target_match.status == MatchStatus.PENDING.value
-            
+
             # Racks should be cleared
             remaining_racks = Rack.query.filter_by(match_id=target_match.id).all()
             assert len(remaining_racks) == 0
@@ -525,12 +567,17 @@ class TestUseCaseMatchModification:
             return
 
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Set winner
         match.winner_id = winner_id
-        
+
         # Add racks for winner
         for rack_num in range(1, winner_racks + 1):
             RackService.add_rack_result(
@@ -539,7 +586,7 @@ class TestUseCaseMatchModification:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         # Add racks for loser
@@ -550,7 +597,7 @@ class TestUseCaseMatchModification:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         MatchService.to_completed(match.id)
@@ -567,7 +614,7 @@ class TestUseCaseAdvancedMatchManagement:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -583,11 +630,11 @@ class TestUseCaseAdvancedMatchManagement:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -596,7 +643,7 @@ class TestUseCaseAdvancedMatchManagement:
         self, admin_user: User, players_4: List[User], db_session, client
     ):
         """Test bulk match operations and batch corrections.
-        
+
         Tests:
         - Bulk match result updates
         - Batch error corrections
@@ -618,7 +665,7 @@ class TestUseCaseAdvancedMatchManagement:
             distance=3,
             best_of=True,
             director_id=admin_user.id,
-            matchmaking_strategy="amalfi"
+            matchmaking_strategy="amalfi",
         )
 
         for player in players_4:
@@ -627,13 +674,13 @@ class TestUseCaseAdvancedMatchManagement:
         GaraService.open_inscriptions(
             gara.id,
             datetime.now() - timedelta(hours=1),
-            datetime.now() - timedelta(minutes=30)
+            datetime.now() - timedelta(minutes=30),
         )
         GaraService.start_first_round(gara.id)
 
         # Get matches for bulk operations
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
-        
+
         # Test bulk completion
         bulk_results = [
             {"match_id": matches[0].id, "winner_score": 3, "loser_score": 0},
@@ -656,10 +703,10 @@ class TestUseCaseAdvancedMatchManagement:
                     "correction_type": "score_adjustment",
                     "new_winner_score": 3,
                     "new_loser_score": 2,  # Changed from 0 to 2
-                    "reason": "Scoring error correction"
+                    "reason": "Scoring error correction",
                 }
             ],
-            admin_id=admin_user.id
+            admin_id=admin_user.id,
         )
 
         if correction_results:
@@ -676,8 +723,13 @@ class TestUseCaseAdvancedMatchManagement:
             return
 
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         match.winner_id = winner_id
 
@@ -689,7 +741,7 @@ class TestUseCaseAdvancedMatchManagement:
                 winner_id=winner_id,
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         for rack_num in range(winner_racks + 1, winner_racks + loser_racks + 1):
@@ -699,7 +751,7 @@ class TestUseCaseAdvancedMatchManagement:
                 winner_id=loser_id,
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
-                validated_by_admin=True
+                validated_by_admin=True,
             )
 
         MatchService.to_completed(match.id)

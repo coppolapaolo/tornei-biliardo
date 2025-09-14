@@ -144,9 +144,7 @@ class TestDashboardRoutes:
         ) as mock_dashboard_service, patch(
             "routes.dashboard.GaraService"
         ) as mock_gara_service:
-            mock_gara_service.get_gara_by_id.return_value = MagicMock(
-                campionato_id=789
-            )
+            mock_gara_service.get_gara_by_id.return_value = MagicMock(campionato_id=789)
             mock_dashboard_service.for_player.return_value = {"player_data": "test"}
 
             response = client.get("/dashboard?campionato_id=123&gara_id=456")

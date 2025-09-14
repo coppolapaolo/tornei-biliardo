@@ -213,9 +213,11 @@ class Set(BaseModel, TimestampMixin):
             set_id=self.id,
             rack_number=rack_number,
             winner_id=winner_id,
-            discipline_override=rack_discipline
-            if rack_discipline != self.get_discipline_for_rack(rack_number)
-            else None,
+            discipline_override=(
+                rack_discipline
+                if rack_discipline != self.get_discipline_for_rack(rack_number)
+                else None
+            ),
         )
 
         db.session.add(rack)

@@ -16,12 +16,12 @@ director_bp = Blueprint("director", __name__, url_prefix="/director")
 
 def director_required(f):
     """Decorator to require director role."""
+
     @wraps(f)
     @login_required
     def decorated_function(*args, **kwargs):
         if not current_user.is_director and not current_user.is_admin:
             abort(403)
         return f(*args, **kwargs)
+
     return decorated_function
-
-

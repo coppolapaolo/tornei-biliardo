@@ -1,7 +1,7 @@
 """Integration tests for Use Case 1: Admin/Director Amalfi Strategy Tournaments.
 
 Tests comprehensive workflow with all variants:
-- 3 rounds, 6-10 players, 9-ball best-of-9/exactly-5  
+- 3 rounds, 6-10 players, 9-ball best-of-9/exactly-5
 - Random first pairing, odd handling with X, spot shot rally challenges
 - Variants: 8 players, 9 players, 11 players (waitlist), auto-expiry
 - Full workflow: inscription → first round → second round → third round → final classification → tiebreaker challenge
@@ -32,7 +32,7 @@ class TestUseCaseAmalfiBestOfTournaments:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -46,7 +46,7 @@ class TestUseCaseAmalfiBestOfTournaments:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -62,11 +62,11 @@ class TestUseCaseAmalfiBestOfTournaments:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -80,11 +80,11 @@ class TestUseCaseAmalfiBestOfTournaments:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -93,14 +93,14 @@ class TestUseCaseAmalfiBestOfTournaments:
         self, admin_user: User, players_8: List[User], db_session, client
     ):
         """Test admin creates standalone Amalfi tournament with 8 players.
-        
+
         Full workflow:
         1. Admin creates standalone gara with Amalfi strategy
         2. 8 players inscribe
         3. Admin starts first round (4 matches)
         4. Complete matches with varied results
         5. Start second round with updated pairings
-        6. Complete matches with varied results  
+        6. Complete matches with varied results
         7. Start third round with final pairings
         8. Complete matches and verify final classification
         """
@@ -124,7 +124,7 @@ class TestUseCaseAmalfiBestOfTournaments:
             first_round_policy="random",
             odd_number_policy="bye",  # Will handle X if odd
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         assert gara.status == GaraStatus.SETUP.value
@@ -160,12 +160,16 @@ class TestUseCaseAmalfiBestOfTournaments:
         assert len(normal_matches) == 4
 
         # Step 4: Complete first round matches with varied results
-        self._complete_matches_with_results(round1_matches, [
-            (5, 4),  # Close match
-            (5, 2),  # Decisive match
-            (5, 3),  # Medium match
-            (5, 1),  # Dominant match
-        ], db_session)
+        self._complete_matches_with_results(
+            round1_matches,
+            [
+                (5, 4),  # Close match
+                (5, 2),  # Decisive match
+                (5, 3),  # Medium match
+                (5, 1),  # Dominant match
+            ],
+            db_session,
+        )
 
         # Verify round completion
         for match in round1_matches:
@@ -176,7 +180,9 @@ class TestUseCaseAmalfiBestOfTournaments:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Step 5: Start second round
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 2)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 2)
+        )
         gara.current_round = 2
         db_session.add(gara)
         db_session.commit()
@@ -185,26 +191,36 @@ class TestUseCaseAmalfiBestOfTournaments:
         assert len(round2_matches) == 4
 
         # Verify anti-rematch: no pairing should repeat from round 1
-        round1_pairings = {tuple(sorted([m.player1_id, m.player2_id])) 
-                          for m in round1_matches}
-        round2_pairings = {tuple(sorted([m.player1_id, m.player2_id])) 
-                          for m in round2_matches if not m.is_bye}
+        round1_pairings = {
+            tuple(sorted([m.player1_id, m.player2_id])) for m in round1_matches
+        }
+        round2_pairings = {
+            tuple(sorted([m.player1_id, m.player2_id]))
+            for m in round2_matches
+            if not m.is_bye
+        }
 
         rematch_count = len(round1_pairings.intersection(round2_pairings))
         assert rematch_count == 0, f"Found {rematch_count} rematches in round 2"
 
         # Step 6: Complete second round matches
-        self._complete_matches_with_results(round2_matches, [
-            (5, 3),
-            (5, 4), 
-            (5, 2),
-            (5, 1),
-        ], db_session)
+        self._complete_matches_with_results(
+            round2_matches,
+            [
+                (5, 3),
+                (5, 4),
+                (5, 2),
+                (5, 1),
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Step 7: Start third round
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 3)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 3)
+        )
         gara.current_round = 3
         db_session.add(gara)
         db_session.commit()
@@ -213,12 +229,16 @@ class TestUseCaseAmalfiBestOfTournaments:
         assert len(round3_matches) == 4
 
         # Step 8: Complete third round and verify final results
-        self._complete_matches_with_results(round3_matches, [
-            (5, 2),
-            (5, 4),
-            (5, 1), 
-            (5, 3),
-        ], db_session)
+        self._complete_matches_with_results(
+            round3_matches,
+            [
+                (5, 2),
+                (5, 4),
+                (5, 1),
+                (5, 3),
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
@@ -230,7 +250,7 @@ class TestUseCaseAmalfiBestOfTournaments:
         # Verify tournament completion
         db_session.refresh(gara)
         # Should transition to completed status after all rounds
-        
+
         print(f"✅ 8-player Amalfi tournament completed successfully")
         print(f"   - 3 rounds completed with anti-rematch protection")
         print(f"   - All players have final classification")
@@ -239,7 +259,7 @@ class TestUseCaseAmalfiBestOfTournaments:
         self, director_user: User, players_9: List[User], db_session, client
     ):
         """Test director creates campionato-based Amalfi tournament with 9 players (odd handling).
-        
+
         Tests:
         - Odd number handling with bye matches
         - Campionato integration
@@ -254,7 +274,7 @@ class TestUseCaseAmalfiBestOfTournaments:
             number=1,
             name="First Competition - Odd Players",
             date=date.today() + timedelta(days=2),
-            location="Pool Hall B", 
+            location="Pool Hall B",
             description="9-ball tournament with odd number handling",
             rounds_count=3,
             min_participants=8,
@@ -268,10 +288,10 @@ class TestUseCaseAmalfiBestOfTournaments:
             first_round_policy="random",
             odd_number_policy="bye",  # Explicit bye handling
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
-        # Step 3: 9 players inscribe 
+        # Step 3: 9 players inscribe
         for player in players_9:
             InscriptionService.inscribe_user(player.id, gara.id)
 
@@ -283,22 +303,26 @@ class TestUseCaseAmalfiBestOfTournaments:
 
         # Step 5: Verify first round with bye
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
-        
+
         # With 9 players: 4 regular matches + 1 bye
         regular_matches = [m for m in round1_matches if not m.is_bye]
         bye_matches = [m for m in round1_matches if m.is_bye]
-        
+
         assert len(regular_matches) == 4
         assert len(bye_matches) == 1
         assert len(round1_matches) == 5
 
         # Complete regular matches (bye automatically completed)
-        self._complete_matches_with_results(regular_matches, [
-            (4, 2),
-            (4, 3),
-            (4, 1),
-            (4, 0),
-        ], db_session)
+        self._complete_matches_with_results(
+            regular_matches,
+            [
+                (4, 2),
+                (4, 3),
+                (4, 1),
+                (4, 0),
+            ],
+            db_session,
+        )
 
         # Verify bye player gets automatic win
         bye_match = bye_matches[0]
@@ -308,7 +332,9 @@ class TestUseCaseAmalfiBestOfTournaments:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Step 6: Second round with different bye handling
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 2)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 2)
+        )
         gara.current_round = 2
         db_session.add(gara)
         db_session.commit()
@@ -325,17 +351,23 @@ class TestUseCaseAmalfiBestOfTournaments:
         round2_bye_player = bye_matches_r2[0].player1_id
         assert round1_bye_player != round2_bye_player, "Same player got bye twice"
 
-        self._complete_matches_with_results(regular_matches_r2, [
-            (4, 3),
-            (4, 1), 
-            (4, 2),
-            (4, 0),
-        ], db_session)
+        self._complete_matches_with_results(
+            regular_matches_r2,
+            [
+                (4, 3),
+                (4, 1),
+                (4, 2),
+                (4, 0),
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Step 7: Third round
-        total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, 3)
+        total_matches, normal_matches, bye_matches, trio_matches = (
+            GaraService.create_amalfi_round(gara.id, 3)
+        )
         gara.current_round = 3
         db_session.add(gara)
         db_session.commit()
@@ -351,12 +383,16 @@ class TestUseCaseAmalfiBestOfTournaments:
         round3_bye_player = bye_matches_r3[0].player1_id
         assert round3_bye_player not in [round1_bye_player, round2_bye_player]
 
-        self._complete_matches_with_results(regular_matches_r3, [
-            (4, 2),
-            (4, 3),
-            (4, 1), 
-            (4, 0),
-        ], db_session)
+        self._complete_matches_with_results(
+            regular_matches_r3,
+            [
+                (4, 2),
+                (4, 3),
+                (4, 1),
+                (4, 0),
+            ],
+            db_session,
+        )
 
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
@@ -378,7 +414,7 @@ class TestUseCaseAmalfiBestOfTournaments:
         self, matches: List[Match], results: List[tuple], db_session
     ) -> None:
         """Complete matches with specified win-loss results.
-        
+
         Args:
             matches: List of matches to complete
             results: List of (winner_racks, loser_racks) tuples
@@ -386,11 +422,16 @@ class TestUseCaseAmalfiBestOfTournaments:
         for match, (winner_racks, loser_racks) in zip(matches, results):
             if match.is_bye:
                 continue  # Byes auto-complete
-                
+
             # Randomly choose winner (player1 or player2)
             import random
-            winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-            loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+            winner_id = (
+                match.player1_id if random.choice([True, False]) else match.player2_id
+            )
+            loser_id = (
+                match.player2_id if winner_id == match.player1_id else match.player1_id
+            )
 
             # Add racks for winner
             for rack_num in range(1, winner_racks + 1):
@@ -400,7 +441,7 @@ class TestUseCaseAmalfiBestOfTournaments:
                     winner_id=winner_id,
                     reported_by_id=winner_id,
                     confirmed_by_player=True,
-                    validated_by_admin=True
+                    validated_by_admin=True,
                 )
 
             # Add racks for loser
@@ -411,14 +452,14 @@ class TestUseCaseAmalfiBestOfTournaments:
                     winner_id=loser_id,
                     reported_by_id=loser_id,
                     confirmed_by_player=True,
-                    validated_by_admin=True
+                    validated_by_admin=True,
                 )
 
             # Complete match
             MatchService.to_completed(match.id)
 
 
-@pytest.mark.integration 
+@pytest.mark.integration
 class TestUseCaseAmalfiExactlyTournaments:
     """Test Use Case 1B: Amalfi strategy with exactly-N matches."""
 
@@ -429,7 +470,7 @@ class TestUseCaseAmalfiExactlyTournaments:
         admin = User(
             username=f"admin_{unique_id}",
             email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -445,11 +486,11 @@ class TestUseCaseAmalfiExactlyTournaments:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -458,7 +499,7 @@ class TestUseCaseAmalfiExactlyTournaments:
         self, admin_user: User, players_6: List[User], db_session, client
     ):
         """Test Amalfi tournament with exactly-5 racks and tiebreaker challenge.
-        
+
         Tests:
         - Exactly-5 racks (not best-of)
         - Tiebreaker challenge system
@@ -485,7 +526,7 @@ class TestUseCaseAmalfiExactlyTournaments:
             first_round_policy="random",
             odd_number_policy="challenge",  # Use challenge for ties
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         assert gara.best_of is False
@@ -495,7 +536,7 @@ class TestUseCaseAmalfiExactlyTournaments:
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        # Step 3: Start tournament  
+        # Step 3: Start tournament
         inscription_start = datetime.now() - timedelta(hours=1)
         inscription_end = datetime.now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
@@ -504,32 +545,46 @@ class TestUseCaseAmalfiExactlyTournaments:
         # Step 4: Complete all rounds with some ties to trigger tiebreaker challenges
         for round_num in range(1, 4):
             if round_num > 1:
-                RoundClassification.calculate_classification_after_round(gara.id, round_num-1)
-                total_matches, normal_matches, bye_matches, trio_matches = GaraService.create_amalfi_round(gara.id, round_num)
+                RoundClassification.calculate_classification_after_round(
+                    gara.id, round_num - 1
+                )
+                total_matches, normal_matches, bye_matches, trio_matches = (
+                    GaraService.create_amalfi_round(gara.id, round_num)
+                )
                 gara.current_round = round_num
                 db_session.add(gara)
                 db_session.commit()
 
-            matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
-            
+            matches = Match.query.filter_by(
+                gara_id=gara.id, round_number=round_num
+            ).all()
+
             # Create some ties (2-3, 3-2) to test tiebreaker system
             if round_num == 3:  # Final round - create deliberate ties
-                self._complete_matches_exactly_with_ties(matches, [
-                    (3, 2),  # Winner by 1
-                    (2, 3),  # Winner by 1
-                    (3, 2),  # Winner by 1 
-                ], db_session)
+                self._complete_matches_exactly_with_ties(
+                    matches,
+                    [
+                        (3, 2),  # Winner by 1
+                        (2, 3),  # Winner by 1
+                        (3, 2),  # Winner by 1
+                    ],
+                    db_session,
+                )
             else:
-                self._complete_matches_exactly_with_results(matches, [
-                    (4, 1),
-                    (3, 2),
-                    (2, 3),
-                ], db_session)
+                self._complete_matches_exactly_with_results(
+                    matches,
+                    [
+                        (4, 1),
+                        (3, 2),
+                        (2, 3),
+                    ],
+                    db_session,
+                )
 
-        # Step 5: Calculate final classification 
+        # Step 5: Calculate final classification
         RoundClassification.calculate_classification_after_round(gara.id, 3)
         final_classification = get_amalfi_classification(gara.id, 3)
-        
+
         # Step 6: Check final classification (tiebreaker system test simplified)
         # Note: Tiebreaker system would be tested separately as it's complex
 
@@ -537,14 +592,16 @@ class TestUseCaseAmalfiExactlyTournaments:
         db_session.refresh(gara)
         assert final_classification is not None
         assert len(final_classification) == 6
-        
+
         # Verify exactly-5 format was enforced
         all_matches = Match.query.filter_by(gara_id=gara.id).all()
         for match in all_matches:
             if not match.is_bye and match.status == MatchStatus.COMPLETED.value:
                 racks = Rack.query.filter_by(match_id=match.id).all()
                 total_racks = len(racks)
-                assert total_racks == 5, f"Match {match.id} had {total_racks} racks, expected exactly 5"
+                assert (
+                    total_racks == 5
+                ), f"Match {match.id} had {total_racks} racks, expected exactly 5"
 
         print(f"✅ Exactly-5 tournament with tiebreakers completed successfully")
         print(f"   - All matches played exactly 5 racks")
@@ -558,18 +615,25 @@ class TestUseCaseAmalfiExactlyTournaments:
         for match, (winner_racks, loser_racks) in zip(matches, results):
             if match.is_bye:
                 continue
-                
+
             total_racks = winner_racks + loser_racks
-            assert total_racks == match.distance, f"Total racks {total_racks} != distance {match.distance}"
-            
+            assert (
+                total_racks == match.distance
+            ), f"Total racks {total_racks} != distance {match.distance}"
+
             import random
-            winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-            loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+            winner_id = (
+                match.player1_id if random.choice([True, False]) else match.player2_id
+            )
+            loser_id = (
+                match.player2_id if winner_id == match.player1_id else match.player1_id
+            )
 
             # Add exactly the specified number of racks
             winner_racks_added = 0
             loser_racks_added = 0
-            
+
             for rack_num in range(1, total_racks + 1):
                 if winner_racks_added < winner_racks and (
                     loser_racks_added >= loser_racks or random.choice([True, False])
@@ -581,7 +645,7 @@ class TestUseCaseAmalfiExactlyTournaments:
                         winner_id=winner_id,
                         reported_by_id=winner_id,
                         confirmed_by_player=True,
-                        validated_by_admin=True
+                        validated_by_admin=True,
                     )
                     winner_racks_added += 1
                 else:
@@ -592,7 +656,7 @@ class TestUseCaseAmalfiExactlyTournaments:
                         winner_id=loser_id,
                         reported_by_id=loser_id,
                         confirmed_by_player=True,
-                        validated_by_admin=True
+                        validated_by_admin=True,
                     )
                     loser_racks_added += 1
 
@@ -603,7 +667,6 @@ class TestUseCaseAmalfiExactlyTournaments:
     ) -> None:
         """Complete matches creating specific score patterns for ties."""
         self._complete_matches_exactly_with_results(matches, results, db_session)
-
 
 
 @pytest.mark.integration
@@ -617,7 +680,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -633,11 +696,11 @@ class TestUseCaseAmalfiWaitlistExpiry:
             player = User(
                 username=f"player_{i}_{batch_id}",
                 email=f"player_{i}_{batch_id}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
             players.append(player)
-        
+
         db_session.add_all(players)
         db_session.commit()
         return players
@@ -646,7 +709,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
         self, director_user: User, players_11: List[User], db_session, client
     ):
         """Test waitlist functionality and auto-expiry handling.
-        
+
         Tests:
         - 11 players, max 10 → 1 on waitlist
         - Auto-expiry when inscriptions close
@@ -672,7 +735,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
             first_round_policy="classification",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         # Step 2: Open inscriptions with short window for testing expiry
@@ -695,7 +758,9 @@ class TestUseCaseAmalfiWaitlistExpiry:
             assert inscription.is_waitlist is False
 
         # Step 4: 11th player inscribes (should be waitlisted)
-        waitlist_inscription = InscriptionService.inscribe_user(players_11[10].id, gara.id)
+        waitlist_inscription = InscriptionService.inscribe_user(
+            players_11[10].id, gara.id
+        )
         db_session.refresh(waitlist_inscription)
         assert waitlist_inscription.is_waitlist is True  # On waitlist
 
@@ -703,7 +768,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
         all_inscriptions = Inscription.query.filter_by(gara_id=gara.id).all()
         confirmed_count = sum(1 for insc in all_inscriptions if not insc.is_waitlist)
         waitlist_count = sum(1 for insc in all_inscriptions if insc.is_waitlist)
-        
+
         assert confirmed_count == 10
         assert waitlist_count == 1
         assert len(all_inscriptions) == 11
@@ -721,7 +786,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
 
         # Start tournament with current participants (10 players)
         GaraService.start_first_round(gara.id)
-        
+
         db_session.refresh(gara)
         assert gara.status == GaraStatus.PLAYING.value
         assert gara.current_round == 1
@@ -729,7 +794,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
         # Verify first round created correctly with 10 players (5 matches)
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         assert len(round1_matches) == 5  # 10 players = 5 matches
-        
+
         active_players = set()
         for match in round1_matches:
             if not match.is_bye:
@@ -737,7 +802,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
                 active_players.add(match.player2_id)
             else:
                 active_players.add(match.player1_id)
-        
+
         assert len(active_players) == 10  # Confirmed players only
 
         # Verify waitlisted player is NOT in tournament
@@ -773,7 +838,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None
+            rating_type=None,
         )
 
         # Open inscriptions
@@ -799,7 +864,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
 
         # Gara should be deleted by cancel operation
         # Verify no matches were created
-        
+
         # Verify no matches were created
         matches = Match.query.filter_by(gara_id=gara.id).all()
         assert len(matches) == 0

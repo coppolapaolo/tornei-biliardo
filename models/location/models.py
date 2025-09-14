@@ -322,21 +322,23 @@ class UserLocationAvailability(BaseModel, TimestampMixin):
         return {
             "is_available": self.is_available,
             "available_days": [day.name for day in available_days],
-            "preferred_time_start": self.preferred_time_start.strftime("%H:%M")
-            if self.preferred_time_start
-            else None,
-            "preferred_time_end": self.preferred_time_end.strftime("%H:%M")
-            if self.preferred_time_end
-            else None,
+            "preferred_time_start": (
+                self.preferred_time_start.strftime("%H:%M")
+                if self.preferred_time_start
+                else None
+            ),
+            "preferred_time_end": (
+                self.preferred_time_end.strftime("%H:%M")
+                if self.preferred_time_end
+                else None
+            ),
             "advance_notice_hours": self.advance_notice_hours,
             "matches_played_here": self.matches_played_here,
-            "last_played_at": self.last_played_at.isoformat()
-            if self.last_played_at
-            else None,
+            "last_played_at": (
+                self.last_played_at.isoformat() if self.last_played_at else None
+            ),
             "notify_on_proposals": self.notify_on_proposals,
         }
 
     def __repr__(self) -> str:
         return f"<UserLocationAvailability {self.user_id} @ {self.billiard_hall.name}>"
-
-

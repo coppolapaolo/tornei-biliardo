@@ -167,9 +167,7 @@ class TestProvaServiceEnhanced:
 
     @patch("models.competition.services.db")
     @patch("models.competition.services.Gara")
-    def test_create_gara_without_campionato_or_director(
-        self, mock_gara_class, mock_db
-    ):
+    def test_create_gara_without_campionato_or_director(self, mock_gara_class, mock_db):
         """Test create_gara raises error when neither campionato_id nor director_id provided."""
         with pytest.raises(
             ValueError, match="Una Gara deve avere un campionato_id o un director_id"

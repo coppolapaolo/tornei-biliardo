@@ -28,7 +28,13 @@ from .base import (
 )
 
 # PHASE 1 COMPLETE: User domain imported from modular structure
-from .user.models import User, TournamentDirector, DirectorRequest, VenueManagerRequest, VenueManagement
+from .user.models import (
+    User,
+    TournamentDirector,
+    DirectorRequest,
+    VenueManagerRequest,
+    VenueManagement,
+)
 
 # PHASE 2 SPRINT 1 COMPLETE: All domains separated
 from .campionato.models import Campionato
@@ -40,7 +46,11 @@ from .classification.models import Classification, RoundClassification, PlayerEn
 
 # PHASE 3: New domains for specification compliance
 from .challenge.models import Challenge, ChallengeAttempt, ChallengeFavorite
-from .challenge.gara_challenge_models import GaraChallenge, GaraChallengeAttempt, GaraChallengeClassification
+from .challenge.gara_challenge_models import (
+    GaraChallenge,
+    GaraChallengeAttempt,
+    GaraChallengeClassification,
+)
 from .challenge.services import ChallengeService
 from .challenge.gara_challenge_service import GaraChallengeService
 from .exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult

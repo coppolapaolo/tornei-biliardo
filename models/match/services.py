@@ -173,28 +173,34 @@ class RackService:
 
         # Verifica che il match non sia già finito
         if match.gara.is_match_finished(match.player1_score, match.player2_score):
-            raise ValueError("Il match è già finito, non è possibile aggiungere altri punti")
+            raise ValueError(
+                "Il match è già finito, non è possibile aggiungere altri punti"
+            )
 
         # Verifica che non si superi il limite anche con questo nuovo punto
         temp_p1_score = match.player1_score
         temp_p2_score = match.player2_score
-        
+
         if winner_id == match.player1_id:
             temp_p1_score += 1
         else:
             temp_p2_score += 1
-            
+
         # Valida in base al tipo di match
         if match.gara.best_of:  # "al meglio di N"
             # Per "al meglio di N", il limite per singolo giocatore è (N // 2) + 1
             winning_score = match.gara.get_winning_score()
             if temp_p1_score > winning_score or temp_p2_score > winning_score:
-                raise ValueError(f"Match già completato - limite raggiunto per 'al meglio di {match.gara.distance}'")
+                raise ValueError(
+                    f"Match già completato - limite raggiunto per 'al meglio di {match.gara.distance}'"
+                )
         else:  # "esattamente N"
             # Per "esattamente N", il totale non può superare N
             total_racks = temp_p1_score + temp_p2_score
             if total_racks > match.gara.distance:
-                raise ValueError(f"Non è possibile superare il limite di {match.gara.distance} rack totali per questo match")
+                raise ValueError(
+                    f"Non è possibile superare il limite di {match.gara.distance} rack totali per questo match"
+                )
 
         # Trova il prossimo numero rack
         last_rack = (

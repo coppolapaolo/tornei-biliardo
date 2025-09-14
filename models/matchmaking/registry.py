@@ -6,30 +6,30 @@ from .strategies.base import PairingStrategy
 
 class PairingContext:
     """Context for pairing strategies with seed management and state."""
-    
+
     def __init__(self, seed: Optional[int] = None):
         self.seed = seed
         self._rng = random.Random(seed)
         self._state: Dict[str, Any] = {}
-    
+
     def get_rng(self) -> random.Random:
         """Get deterministic RNG instance."""
         return self._rng
-    
+
     def reset_seed(self, seed: Optional[int] = None) -> None:
         """Reset RNG with new seed."""
         self.seed = seed
         self._rng = random.Random(seed)
         self._state.clear()
-    
+
     def get_state(self, key: str, default: Any = None) -> Any:
         """Get context state."""
         return self._state.get(key, default)
-    
+
     def set_state(self, key: str, value: Any) -> None:
         """Set context state."""
         self._state[key] = value
-    
+
     def clear_state(self) -> None:
         """Clear all context state."""
         self._state.clear()
@@ -37,23 +37,25 @@ class PairingContext:
 
 class StrategyFactory:
     """Factory for creating strategy instances with context injection."""
-    
-    def __init__(self, registry: 'EngineRegistry'):
+
+    def __init__(self, registry: "EngineRegistry"):
         self._registry = registry
-    
-    def create(self, strategy_name: str, context: Optional[PairingContext] = None) -> PairingStrategy:
+
+    def create(
+        self, strategy_name: str, context: Optional[PairingContext] = None
+    ) -> PairingStrategy:
         """Create strategy instance with injected context."""
         base_strategy = self._registry.get(strategy_name)
-        
+
         # Clone strategy to avoid sharing state between instances
         strategy = self._clone_strategy(base_strategy)
-        
+
         # Inject context if strategy supports it
-        if context and hasattr(strategy, 'set_context'):
+        if context and hasattr(strategy, "set_context"):
             strategy.set_context(context)  # type: ignore[attr-defined]
-        
+
         return strategy
-    
+
     def _clone_strategy(self, strategy: PairingStrategy) -> PairingStrategy:
         """Clone strategy to create new instance."""
         # For now, return same instance - strategies should be stateless

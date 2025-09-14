@@ -221,7 +221,6 @@ class LocationService:
             "amenities": hall.get_amenities(),
         }
 
-
     @staticmethod
     def suggest_locations_for_match(
         user_id: int,

@@ -361,8 +361,8 @@ class TestExamService:
         mock_query1.__iter__ = Mock(return_value=iter([]))
         # Mock the filter_by method to return the query mock when called
         # with completed=True
-        mock_exam1.attempts.filter_by.side_effect = (
-            lambda **kwargs: mock_query1 if kwargs.get("completed") is True else Mock()
+        mock_exam1.attempts.filter_by.side_effect = lambda **kwargs: (
+            mock_query1 if kwargs.get("completed") is True else Mock()
         )
         mock_query1.count.return_value = 3
 
@@ -386,8 +386,8 @@ class TestExamService:
         mock_query2.__iter__ = Mock(return_value=iter([]))
         # Mock the filter_by method to return the query mock when called
         # with completed=True
-        mock_exam2.attempts.filter_by.side_effect = (
-            lambda **kwargs: mock_query2 if kwargs.get("completed") is True else Mock()
+        mock_exam2.attempts.filter_by.side_effect = lambda **kwargs: (
+            mock_query2 if kwargs.get("completed") is True else Mock()
         )
         mock_query2.count.return_value = 2
 

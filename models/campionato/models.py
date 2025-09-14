@@ -47,16 +47,18 @@ class Campionato(db.Model):
     gare = db.relationship(
         "Gara", backref="campionato", lazy=True, cascade="all, delete-orphan"
     )
+
     @property
     def directors(self):
         """Get directors for this campionato."""
         from models.user.models import DirectorAssignment, User
+
         return (
             db.session.query(User)
             .join(DirectorAssignment, User.id == DirectorAssignment.user_id)
             .filter(
-                DirectorAssignment.entity_type == 'campionato',
-                DirectorAssignment.entity_id == self.id
+                DirectorAssignment.entity_type == "campionato",
+                DirectorAssignment.entity_id == self.id,
             )
             .all()
         )

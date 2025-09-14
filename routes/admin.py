@@ -4,7 +4,7 @@ Admin routes - STEP 1 REFACTORING COMPLETED
 
 This file has been decomposed into domain-specific blueprints:
 - routes/admin/campionato.py - Campionato management
-- routes/admin/competition.py - Gara/competition management  
+- routes/admin/competition.py - Gara/competition management
 - routes/admin/match.py - Match and rack management
 - routes/admin/user.py - User administration
 - routes/admin/dashboard.py - Admin dashboard

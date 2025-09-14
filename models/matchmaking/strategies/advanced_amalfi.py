@@ -318,9 +318,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
                 self._record_challenge_assignment(gara_obj, pairing, round_number)
             elif "Individual match" in (pairing.notes or ""):
                 # Record individual match intention
-                self._record_individual_match_intention(
-                    gara_obj, pairing, round_number
-                )
+                self._record_individual_match_intention(gara_obj, pairing, round_number)
 
     def _record_challenge_assignment(
         self, gara: Gara, pairing: Pairing, round_number: int

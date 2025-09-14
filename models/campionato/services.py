@@ -87,7 +87,7 @@ class TournamentService(DomainService):
         if user.is_director and not user.is_admin:
             assignment = self._execute_with_tracking(
                 lambda: DirectorAssignment(
-                    entity_type='campionato',
+                    entity_type="campionato",
                     entity_id=campionato.id,
                     user_id=creator_user_id,
                     assigned_by_id=creator_user_id,
@@ -165,9 +165,7 @@ class TournamentService(DomainService):
 
         existing = self._execute_with_tracking(
             lambda: DirectorAssignment.query.filter_by(
-                entity_type='campionato',
-                entity_id=campionato_id,
-                user_id=user_id
+                entity_type="campionato", entity_id=campionato_id, user_id=user_id
             ).first()
         )
 
@@ -176,7 +174,7 @@ class TournamentService(DomainService):
 
         assignment = self._execute_with_tracking(
             lambda: DirectorAssignment(
-                entity_type='campionato',
+                entity_type="campionato",
                 entity_id=campionato_id,
                 user_id=user_id,
                 assigned_by_id=assigned_by_id,
@@ -200,9 +198,7 @@ class TournamentService(DomainService):
 
         assignment = self._execute_with_tracking(
             lambda: DirectorAssignment.query.filter_by(
-                entity_type='campionato',
-                entity_id=campionato_id,
-                user_id=user_id
+                entity_type="campionato", entity_id=campionato_id, user_id=user_id
             ).first()
         )
 
@@ -366,12 +362,13 @@ class TournamentService(DomainService):
 
         # ID dei direttori già assegnati a questo campionato
         from models.user.models import DirectorAssignment
+
         assigned_ids = [
-            da.user_id for da in 
-            db.session.query(DirectorAssignment)
+            da.user_id
+            for da in db.session.query(DirectorAssignment)
             .filter(
-                DirectorAssignment.entity_type == 'campionato',
-                DirectorAssignment.entity_id == campionato_id
+                DirectorAssignment.entity_type == "campionato",
+                DirectorAssignment.entity_id == campionato_id,
             )
             .all()
         ]
@@ -417,12 +414,13 @@ class TournamentService(DomainService):
 
         # ID dei direttori già assegnati a questo campionato
         from models.user.models import DirectorAssignment
+
         assigned_ids = [
-            da.user_id for da in 
-            db.session.query(DirectorAssignment)
+            da.user_id
+            for da in db.session.query(DirectorAssignment)
             .filter(
-                DirectorAssignment.entity_type == 'campionato',
-                DirectorAssignment.entity_id == campionato_id
+                DirectorAssignment.entity_type == "campionato",
+                DirectorAssignment.entity_id == campionato_id,
             )
             .all()
         ]
@@ -519,16 +517,15 @@ class TournamentService(DomainService):
             "status_distribution": status_counts,
         }
 
-
     @read_only(domain="campionato")
     def calculate_campionato_statistics(self, campionato_id: int) -> Dict[str, Any]:
         """Calcola statistiche avanzate del campionato."""
         from models.competition.models import Gara, Inscription
         from sqlalchemy import func, distinct
-        
+
         # Trova tutte le gare del campionato
         gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
-        
+
         # Giocatori unici che hanno mai partecipato al campionato
         unique_players_query = (
             db.session.query(distinct(Inscription.user_id))
@@ -536,49 +533,47 @@ class TournamentService(DomainService):
             .filter(Gara.campionato_id == campionato_id)
         )
         total_unique_players = unique_players_query.count()
-        
+
         # Giocatori attualmente iscritti a gare con iscrizioni aperte
         active_inscriptions_query = (
             db.session.query(distinct(Inscription.user_id))
             .join(Gara, Inscription.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Gara.status == 'inscription'  # Solo gare con iscrizioni aperte
+                Gara.status == "inscription",  # Solo gare con iscrizioni aperte
             )
         )
         currently_inscribed_players = active_inscriptions_query.count()
-        
+
         # Match totali completati in tutte le gare
         completed_matches_query = (
             db.session.query(func.count(Match.id))
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == 'completed'  # type: ignore[attr-defined]
+                Match.status == "completed",  # type: ignore[attr-defined]
             )
         )
         total_completed_matches = completed_matches_query.scalar() or 0
-        
+
         # Rack totali giocati (somma dei punteggi di tutti i match completati)
         rack_sum_query = (
-            db.session.query(
-                func.sum(Match.player1_score + Match.player2_score)
-            )
+            db.session.query(func.sum(Match.player1_score + Match.player2_score))
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == 'completed'  # type: ignore[attr-defined]
+                Match.status == "completed",  # type: ignore[attr-defined]
             )
         )
         total_racks_played = rack_sum_query.scalar() or 0
-        
+
         return {
-            'total_unique_players': total_unique_players,
-            'currently_inscribed_players': currently_inscribed_players,
-            'total_completed_matches': total_completed_matches,
-            'total_racks_played': total_racks_played
+            "total_unique_players": total_unique_players,
+            "currently_inscribed_players": currently_inscribed_players,
+            "total_completed_matches": total_completed_matches,
+            "total_racks_played": total_racks_played,
         }
-    
+
     @read_only(domain="campionato")
     def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
         """Calcola la classifica generale del campionato basata su tutte le gare completate."""
@@ -587,35 +582,35 @@ class TournamentService(DomainService):
         from models.campionato.models import Campionato
         from models.user.models import User
         from sqlalchemy import func
-        
+
         # Trova il campionato per verificare il tipo
         campionato = db.session.query(Campionato).filter_by(id=campionato_id).first()
         if not campionato:
             return []
-        
+
         # Trova tutte le gare completate del campionato (incluse quelle "playing" ma finite)
         all_garas = (
             db.session.query(Gara)
             .filter_by(campionato_id=campionato_id)
-            .filter(Gara.status.in_(['completed', 'playing']))
+            .filter(Gara.status.in_(["completed", "playing"]))
             .all()
         )
-        
+
         # Filtra le gare che sono realmente completate
         completed_garas = []
         for gara in all_garas:
-            if gara.status == 'completed':
+            if gara.status == "completed":
                 completed_garas.append(gara)
-            elif gara.status == 'playing' and gara.current_round > gara.rounds_count:
+            elif gara.status == "playing" and gara.current_round > gara.rounds_count:
                 # Gara con tutti i round completati
                 completed_garas.append(gara)
-        
+
         if not completed_garas:
             return []
-        
+
         # Raccoglie tutti i risultati per giocatore
         player_totals = {}
-        
+
         for gara in completed_garas:
             # Ottieni la classifica finale di questa gara (ultimo turno)
             final_round = gara.rounds_count
@@ -625,35 +620,48 @@ class TournamentService(DomainService):
                 .order_by(RoundClassification.position)
                 .all()
             )
-            
+
             for classification in classifications:
                 user_id = classification.user_id
                 if user_id not in player_totals:
                     player_totals[user_id] = {
-                        'username': classification.user.username,
-                        'total_matches_won': 0,
-                        'total_rack_difference': 0,
-                        'participations': 0
+                        "username": classification.user.username,
+                        "total_matches_won": 0,
+                        "total_rack_difference": 0,
+                        "participations": 0,
                     }
-                
+
                 # Per campionati Amalfi: somma match vinti e differenza rack
-                player_totals[user_id]['total_matches_won'] += classification.matches_won or 0
-                player_totals[user_id]['total_rack_difference'] += classification.rack_difference or 0
-                player_totals[user_id]['participations'] += 1
-        
+                player_totals[user_id]["total_matches_won"] += (
+                    classification.matches_won or 0
+                )
+                player_totals[user_id]["total_rack_difference"] += (
+                    classification.rack_difference or 0
+                )
+                player_totals[user_id]["participations"] += 1
+
         # Per campionati Amalfi: ordina per match vinti (decrescente), poi per differenza rack (decrescente)
-        if campionato.campionato_type == 'Amalfi':
+        if campionato.campionato_type == "Amalfi":
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
-                    -x[1]['total_matches_won'],  # Prima i match vinti
-                    -x[1]['total_rack_difference']  # Poi la differenza rack
-                )
+                    -x[1]["total_matches_won"],  # Prima i match vinti
+                    -x[1]["total_rack_difference"],  # Poi la differenza rack
+                ),
             )
         else:
             # Per altri tipi di campionato, usa il sistema a punti
             position_points = {
-                1: 10, 2: 7, 3: 5, 4: 4, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1, 10: 1
+                1: 10,
+                2: 7,
+                3: 5,
+                4: 4,
+                5: 3,
+                6: 2,
+                7: 2,
+                8: 1,
+                9: 1,
+                10: 1,
             }
             # Calcola punti per giocatore (logica precedente)
             for gara in completed_garas:
@@ -664,29 +672,29 @@ class TournamentService(DomainService):
                     .order_by(RoundClassification.position)
                     .all()
                 )
-                
+
                 for classification in classifications:
                     user_id = classification.user_id
-                    if 'total_points' not in player_totals[user_id]:
-                        player_totals[user_id]['total_points'] = 0
-                    
+                    if "total_points" not in player_totals[user_id]:
+                        player_totals[user_id]["total_points"] = 0
+
                     points = position_points.get(classification.position, 0)
-                    player_totals[user_id]['total_points'] += points
-            
+                    player_totals[user_id]["total_points"] += points
+
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
-                    -x[1].get('total_points', 0),
-                    -x[1]['total_rack_difference'],
-                    -x[1]['total_matches_won']
-                )
+                    -x[1].get("total_points", 0),
+                    -x[1]["total_rack_difference"],
+                    -x[1]["total_matches_won"],
+                ),
             )
-        
+
         # Aggiungi posizioni e restituisci nel formato richiesto
         result = []
         for position, (user_id, data) in enumerate(sorted_players, 1):
             result.append((position, data))
-        
+
         return result
 
 

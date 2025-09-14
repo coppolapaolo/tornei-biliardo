@@ -18,6 +18,7 @@ class TestDirectorRequestModel:
         user = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
@@ -42,9 +43,11 @@ class TestDirectorRequestModel:
         player = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         admin = User(
             username="admin", email="admin@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
@@ -69,9 +72,11 @@ class TestDirectorRequestModel:
         player = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         admin = User(
             username="admin", email="admin@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
@@ -91,6 +96,7 @@ class TestDirectorRequestModel:
         user = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
@@ -138,6 +144,7 @@ class TestDirectorRequestService:
         director = User(
             username="director", email="director@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -155,10 +162,11 @@ class TestDirectorRequestService:
 
         for i in range(3):
             user = User(
-                username=f"player{i}",
-                email=f"player{i}@test.com",
+                username=f"player{i}_{unique_id}",
+                email=f"player{i}_{unique_id}@test.com",
                 role=UserRole.PLAYER.value,
             )
+            user.set_password("testpass123")
             db_session.add(user)
             users.append(user)
 
@@ -188,9 +196,11 @@ class TestDirectorRequestService:
         player = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         admin = User(
             username="admin", email="admin@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
@@ -221,9 +231,11 @@ class TestDirectorRequestService:
         player = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         admin = User(
             username="admin", email="admin@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
@@ -254,9 +266,11 @@ class TestDirectorRequestService:
         player = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         admin = User(
             username="admin", email="admin@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
@@ -274,6 +288,7 @@ class TestDirectorRequestService:
         admin = User(
             username="admin", email="admin@test.com", role=UserRole.ADMIN.value
         )
+        admin.set_password("testpass123")
         db_session.add(admin)
         db_session.commit()
 
@@ -289,6 +304,7 @@ class TestDirectorRequestService:
         user = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
@@ -314,6 +330,7 @@ class TestDirectorRequestService:
         user = User(
             username="player", email="player@test.com", role=UserRole.PLAYER.value
         )
+        user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 

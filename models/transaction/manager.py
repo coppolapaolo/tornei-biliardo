@@ -377,9 +377,9 @@ class TransactionManager:
             "committed": committed,
             "rolled_back": rolled_back,
             "failed": failed,
-            "success_rate_percent": round(committed / total * 100, 1)
-            if total > 0
-            else 0,
+            "success_rate_percent": (
+                round(committed / total * 100, 1) if total > 0 else 0
+            ),
             "average_duration_ms": round(avg_duration, 2),
             "slowest_transactions": [
                 {

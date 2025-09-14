@@ -688,9 +688,9 @@ class HandicapService:
 
         return {
             "assigned_category": category.category.value if category else None,
-            "effective_category": effective_category.value
-            if effective_category
-            else None,
+            "effective_category": (
+                effective_category.value if effective_category else None
+            ),
             "ratings": {
                 rating.rating_system.value: {
                     "value": rating.rating_value,

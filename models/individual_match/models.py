@@ -190,8 +190,9 @@ class MatchProposal(BaseModel, TimestampMixin):
         """Get the invitation for a specific user."""
         if self.proposal_type != ProposalType.DIRECT:
             return None
-            
+
         from typing import cast
+
         for invitation in cast(List["ProposalInvitation"], self.invitations):
             if invitation.invited_user_id == user_id:
                 return invitation

@@ -73,7 +73,9 @@ def _reset_database_core() -> Dict[str, object]:
     )
     pino = UserService.create_user("pino", "pino@pippo.it", "pino123", role="player")
 
-    maxdir = UserService.create_user("max", "max@campionati.com", "123456", role="director")
+    maxdir = UserService.create_user(
+        "max", "max@campionati.com", "123456", role="director"
+    )
     paolodir = UserService.create_user(
         "paolo", "paolo@campionati.com", "123456", role="director"
     )

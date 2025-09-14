@@ -153,20 +153,20 @@ class IndividualMatchService:
         # Create invitations and send notifications
         from ..notification.services import NotificationService
         from ..user.models import User
-        
+
         proposer = User.query.get(proposer_id)
-        
+
         for user_id in invited_user_ids:
             if user_id != proposer_id:  # Don't invite yourself
                 invitation = ProposalInvitation(
                     proposal_id=proposal.id, invited_user_id=user_id
                 )
                 db.session.add(invitation)
-                
+
                 # Send notification direttamente (come per le richieste direttore)
                 from ..notification.models import NotificationType, NotificationPriority
                 from flask import url_for
-                
+
                 try:
                     notification_result = NotificationService.create_notification(
                         user_id=user_id,
@@ -177,10 +177,12 @@ class IndividualMatchService:
                             f"per un match presso {location} il {scheduled_at.strftime('%d/%m/%Y alle %H:%M')}."
                         ),
                         priority=NotificationPriority.NORMAL,
-                        action_url=url_for('player.match_proposals', _external=False),
-                        action_text="Vedi Invito"
+                        action_url=url_for("player.match_proposals", _external=False),
+                        action_text="Vedi Invito",
                     )
-                    print(f"DEBUG: Notification created for user {user_id}: {notification_result}")
+                    print(
+                        f"DEBUG: Notification created for user {user_id}: {notification_result}"
+                    )
                 except Exception as e:
                     print(f"DEBUG: Error creating notification for user {user_id}: {e}")
                     # Continue anyway - notification failure shouldn't block proposal creation
@@ -688,14 +690,16 @@ class IndividualMatchService:
             "total_matches": total_matches,
             "won_matches": won_matches,
             "lost_matches": lost_matches,
-            "win_percentage": (won_matches / total_matches * 100)
-            if total_matches > 0
-            else 0,
+            "win_percentage": (
+                (won_matches / total_matches * 100) if total_matches > 0 else 0
+            ),
             "total_racks_won": total_racks_won,
             "total_racks_played": total_racks_played,
-            "rack_win_percentage": (total_racks_won / total_racks_played * 100)
-            if total_racks_played > 0
-            else 0,
+            "rack_win_percentage": (
+                (total_racks_won / total_racks_played * 100)
+                if total_racks_played > 0
+                else 0
+            ),
             "locations_played": locations_played,
         }
 
@@ -703,18 +707,18 @@ class IndividualMatchService:
     def _expire_pending_proposals() -> int:
         """Mark expired pending proposals as expired. Returns count of expired proposals."""
         now = datetime.utcnow()
-        
+
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,
             MatchProposal.expires_at <= now,
         ).all()
-        
+
         count = 0
         for proposal in expired_proposals:
             proposal.expire()
             count += 1
-        
+
         if count > 0:
             db.session.commit()
-        
+
         return count

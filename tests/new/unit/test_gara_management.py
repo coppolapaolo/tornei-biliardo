@@ -1,6 +1,7 @@
 """Unit tests for gara (competition) management."""
 
 import pytest
+import uuid
 from datetime import date, timedelta
 
 from models import User, Gara, Inscription
@@ -160,9 +161,11 @@ class TestGaraModel:
         assert gara.can_be_modified() is True
 
         # Add inscription
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add(player)
         db_session.commit()
 
@@ -194,9 +197,11 @@ class TestGaraModel:
         assert gara.can_be_deleted() is True
 
         # Add inscription
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add(player)
         db_session.commit()
 
@@ -243,9 +248,11 @@ class TestGaraService:
 
     def test_create_standalone_gara(self, db_session):
         """Test creating standalone gara."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -279,9 +286,11 @@ class TestGaraService:
     def test_create_campionato_gara(self, db_session):
         """Test creating gara within campionato."""
         # Create director and campionato
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -319,9 +328,11 @@ class TestGaraService:
 
     def test_update_gara(self, db_session):
         """Test updating gara."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -379,12 +390,16 @@ class TestGaraService:
 
     def test_update_gara_with_inscriptions(self, db_session):
         """Test updating gara that has inscriptions (should fail)."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add_all([director, player])
         db_session.commit()
 
@@ -424,9 +439,11 @@ class TestGaraService:
 
     def test_delete_gara(self, db_session):
         """Test deleting gara."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -460,12 +477,16 @@ class TestGaraService:
 
     def test_delete_gara_with_inscriptions(self, db_session):
         """Test deleting gara that has inscriptions (should fail)."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
+        unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
+        player.set_password("testpass123")
         db_session.add_all([director, player])
         db_session.commit()
 
@@ -500,9 +521,11 @@ class TestGaraService:
 
     def test_get_gara_by_id(self, db_session):
         """Test getting gara by ID."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
@@ -541,14 +564,17 @@ class TestGaraService:
     def test_add_director_to_standalone_gara(self, db_session):
         """Test adding co-director to standalone gara."""
         # Create directors
+        unique_id = str(uuid.uuid4())[:8]
         main_director = User(
-            username="main_director",
-            email="main@test.com",
+            username=f"main_director_{unique_id}",
+            email=f"main_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
+        main_director.set_password("testpass123")
         co_director = User(
-            username="co_director", email="co@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        co_director.set_password("testpass123")
         db_session.add_all([main_director, co_director])
         db_session.commit()
 
@@ -597,16 +623,18 @@ class TestGaraService:
 
     def test_gara_inscription_management(self, db_session):
         """Test gara inscription management."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         players = []
         for i in range(5):
             player = User(
-                username=f"player{i}",
-                email=f"player{i}@test.com",
+                username=f"player{i}_{unique_id}",
+                email=f"player{i}_{unique_id}@test.com",
                 role=UserRole.PLAYER.value,
             )
+            player.set_password("testpass123")
             players.append(player)
 
         db_session.add(director)
@@ -656,9 +684,11 @@ class TestGaraService:
 
     def test_gara_status_management(self, db_session):
         """Test gara status management through service."""
+        unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         db_session.add(director)
         db_session.commit()
 
