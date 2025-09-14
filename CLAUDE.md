@@ -13,6 +13,10 @@ This is a Flask-based **community platform for American Pool enthusiasts** that 
 - Flexible matchmaking strategies (Amalfi, Round-Robin, Elimination, Random)
 - Challenge system for skill development
 - Venue management and location-based features
+- Player availability system for community coordination
+- Advanced round management and match modification
+- Multi-set match system with discipline rotation
+- Guest access system for public tournament viewing
 
 **Community Vision:**
 - Central platform for pool players to connect and organize
@@ -44,11 +48,17 @@ pytest
 
 # Run specific test types
 pytest -m unit
-pytest -m integration
+pytest -m integration  
 pytest -m e2e
 
 # Run with coverage
 pytest --cov
+
+# Run single test with proper path
+PYTHONPATH=. pytest tests/new/unit/test_specific.py
+
+# Run single integration test
+PYTHONPATH=. pytest tests/new/integration/test_use_case_1_amalfi_tournaments.py -v
 
 # Run legacy tests (if needed)
 pytest tests/legacy/
@@ -75,7 +85,7 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 - **Flask Application Factory Pattern**: `create_app()` in `app.py` with environment-based configuration
 - **Domain-Driven Design**: Organized by business domains (competition, matchmaking, rating, etc.)
 - **Service Layer Pattern**: Business logic separated into service modules with transaction support
-- **Strategy Pattern**: Configurable matchmaking algorithms (Amalfi, round-robin, elimination)
+- **Strategy Pattern**: Configurable matchmaking algorithms (Amalfi, round-robin, elimination, random)
 
 ### Directory Documentation
 Each major directory contains detailed documentation in its own CLAUDE.md file:
@@ -90,10 +100,12 @@ Each major directory contains detailed documentation in its own CLAUDE.md file:
 Flexible tournament pairing system with multiple strategies:
 - **Amalfi Strategy**: Dynamic pairing based on remaining rounds with anti-rematch logic
 - **Round-Robin**: All-play-all tournament format
-- **Direct Elimination**: Knockout tournament system
+- **Direct Elimination**: Knockout tournament system  
 - **Random Strategy**: Random pairing with anti-rematch protection
+- **Strategy Registration**: Fixed conflicts between base and unified strategies
 - Configurable first round policies (random, classification-based, rating-based)
 - Flexible odd-player handling (byes, trio matches, challenges)
+- **Idempotent Operations**: Round creation prevents duplicates
 - Real-time classification updates
 - Entry point: Strategy pattern through `MatchmakingService`
 
@@ -116,24 +128,29 @@ Domain-Driven Design architecture with modular organization:
 **Competition Domain** (`competition/`):
 - `Gara`: Competition rounds (standalone or campionato-based) with time, location, description
 - `Inscription`: Player registration for competitions with waitlist support
+- **`RoundManager`**: Advanced round management with locking mechanisms and bulk operations
+- **Enhanced Services**: Idempotent round creation, match modification validation, cancellation workflows
 
 **Match Domain** (`match/`):
 - `Match`: Core match entity with multi-set support, current set tracking
 - `Rack`, `MatchResult`: Detailed scoring system for individual racks
 - `TrioMatch`: Three-player match support for odd numbers
-- `Set`, `SetRack`: Multi-set match models for advanced competitions
+- **`Set`, `SetRack`**: Multi-set match models with multi-discipline support and rotation
 
 **Matchmaking Domain** (`matchmaking/`):
 - Strategy pattern implementation with configurable algorithms
 - `AmalfiBinding`: Integration with Amalfi engine
 - Strategies: `AdvancedAmalfi`, `RoundRobin`, `DirectElimination`, `RandomAntiRematch`
+- **Fixed Registration**: Resolved conflicts between amalfi and amalfi_unified strategies
 - Configuration and policy management
 
 ##### Specialized Domains
 
 **Classification** (`classification/`): Player rankings and encounter tracking
-**Individual Match** (`individual_match/`): Match proposal system with invitations and status management
-**Challenge** (`challenge/`): Skill challenges and attempts with favorites
+**Individual Match** (`individual_match/`): 
+- Match proposal system with invitations and status management
+- **`AvailabilityService`**: Player availability system with location-based matching and notifications
+**Challenge** (`challenge/`): Skill challenges and attempts with favorites, X-replacement integration
 **Exam** (`exam/`): Challenge-based examination system
 **Rating** (`rating/`): Player rating system with handicap rules and categories
 **Notification** (`notification/`): Comprehensive notification system with templates and preferences
@@ -150,11 +167,19 @@ Domain-Driven Design architecture with modular organization:
 #### Routes (`routes/`)
 RESTful endpoints organized by domain:
 - `admin/`: Administrative functions split into sub-modules
+  - **Enhanced Competition Routes**: Advanced round management, match modification, bulk operations
 - `auth.py`: Authentication and authorization
-- `player.py`: Player management and profiles
+- **`player.py`**: Player management, profiles, and availability system routes
 - `challenge.py`: Challenge system
 - `individual_match.py`: Individual match management
 - `rating.py`: Rating system
+- **`main.py`**: Enhanced with guest access routes for public tournament viewing
+
+#### Templates (`templates/`)
+Component-based UI with Bootstrap 5:
+- **`public/`**: Guest-accessible templates for tournament viewing
+- **Enhanced index**: Displays both campionatos and standalone tournaments
+- Component-based architecture for reusability
 
 #### Utils (`utils/`)
 Shared utilities:
@@ -164,7 +189,7 @@ Shared utilities:
 - Data reset utilities
 
 ### Database
-- **Development**: SQLite (`billiard_campionato.db`)
+- **Development**: SQLite (`billiard_campionato.db`) in `instance/` folder
 - **Production**: PostgreSQL support via DATABASE_URL
 - **ORM**: SQLAlchemy with Flask-SQLAlchemy
 - **Migrations**: Manual database management
@@ -178,14 +203,16 @@ Shared utilities:
 
 ### Testing Strategy
 - **Pytest** with custom markers (unit, integration, e2e, legacy)
+- **CRITICAL**: Use `PYTHONPATH=. pytest tests/new/` for proper imports
 - Test discovery in `tests/new/` (legacy tests excluded by default)
+- **8 Comprehensive Use Case Tests**: Complete integration test coverage
 - Coverage reporting with route exclusion
 - Integration tests use actual database connections
 
 ### Code Style & Quality Assurance
 - **Black** formatting (88 character line length)
 - **Flake8** linting with extended ignore rules
-- **Pyright** type checking - MANDATORY for all new code (target: <20 errors total)
+- **Pyright** type checking - MANDATORY for all new code (currently 0 errors)
 - Import organization with autoflake
 - Type hints REQUIRED for all new functions and methods
 - **Testing** REQUIRED for all new features and bug fixes
@@ -199,24 +226,25 @@ Shared utilities:
 - **Open Invitations**: Community-wide match requests
 - **Location Integration**: Find players and venues nearby
 - **Flexible Scheduling**: Accommodate different availability patterns
+- **Availability System**: Location-based player discovery and notification system
 
 #### Tournament System
 
-##### Campionato Flow
-1. **Community Building**: Players join the platform and connect with local pool enthusiasts
-2. **Tournament Organization**: Admin/Directors create tournaments (campionati) and competitions (gare)
-3. **Individual Matches**: Players propose and organize casual matches with community members
-4. **Skill Development**: Challenge system for practicing and improving technique
-5. **Event Management**: Flexible system supporting various pool-related activities
-6. **Social Features**: Player profiles, statistics, and community interaction
-7. **Venue Integration**: Location-based features for finding places to play
-8. **Future Expansion**: Platform designed to accommodate any pool-related community activity
+##### Competition Flow (All 8 Use Cases Implemented)
+1. **Tournament Creation**: Admin/Directors create tournaments with flexible strategies
+2. **Registration Management**: Inscription handling with waitlist support
+3. **Round Execution**: Multiple strategies with anti-rematch logic
+4. **Advanced Modification**: Round management with locking and bulk operations
+5. **Multi-Set Support**: Complex match formats with discipline rotation
+6. **Challenge Integration**: X-replacement system and skill challenges
+7. **Guest Access**: Public viewing for community engagement
+8. **Player Coordination**: Availability-based match proposals
 
 ### User Roles
 - **Admin**: System administrator and community moderator
 - **Director**: Tournament organizers and community leaders (elevated players)
 - **Player**: Community members who can participate in all activities
-- **Guest**: Visitors exploring the community
+- **Guest**: Visitors exploring the community (public tournament access)
 
 ### Community-Centered Design
 Platform built to foster pool community growth and engagement:
@@ -227,14 +255,60 @@ Platform built to foster pool community growth and engagement:
 - **Skill Development**: Challenge system and performance tracking
 - **Venue Integration**: Find and connect players at billiard halls
 - **Social Interaction**: Player profiles, statistics, and community building
+- **Availability Coordination**: Location-based player discovery and matching
 
 **Tournament Flexibility**:
 - **Multiple Strategies**: Amalfi, Round-Robin, Elimination, Random pairing
 - **All Pool Disciplines**: 8-ball, 9-ball, 10-ball, One Pocket, Straight Pool
 - **Flexible Formats**: From casual meetups to formal championships
 - **Scalable Events**: Support for any size community event
+- **Advanced Management**: Round locking, bulk operations, match modifications
 
 ## Recent Development History
+
+### Complete Use Case Implementation (September 2025)
+Major architectural completion implementing all 8 documented use cases:
+
+#### New Systems Implemented
+1. **Player Availability System** (`models/individual_match/availability_service.py`):
+   - Location-based player discovery and matching
+   - Notification system for availability alerts
+   - Venue-specific availability management
+
+2. **Advanced Round Management** (`models/competition/round_manager.py`):
+   - Round locking mechanisms for match modifications
+   - Bulk operations for match management
+   - Enhanced validation and state tracking
+
+3. **Multi-Set Match Integration**:
+   - Verified and enhanced Set/SetRack models
+   - Multi-discipline support with rotation modes
+   - Current set tracking and completion logic
+
+4. **Challenge System Integration**:
+   - X-replacement functionality for bye substitution
+   - Complete challenge workflow with scoring
+   - Integration with competition system
+
+5. **Guest Access System**:
+   - Public routes for tournament viewing
+   - Guest-accessible templates
+   - Enhanced index with standalone tournaments
+
+#### Technical Improvements
+- **Fixed Strategy Registration**: Resolved conflicts between amalfi strategies
+- **Idempotent Operations**: Round creation prevents duplicates
+- **Type Safety**: Achieved 0 pyright errors across codebase
+- **Comprehensive Testing**: 8 integration test files covering all workflows
+- **Enhanced Anti-Rematch**: Improved algorithm for better player selection
+
+#### Files Modified/Added (26 files, +7,588/-282 lines)
+- **New Services**: `availability_service.py`, `round_manager.py`
+- **Enhanced Core**: Competition services, matchmaking engine, Amalfi algorithm
+- **New Routes**: Advanced competition management, availability system
+- **Templates**: Public access templates, enhanced index
+- **Tests**: 8 comprehensive use case integration tests
+- **Documentation**: Complete use case specifications
 
 ### Comprehensive Competition Management Fixes (September 2025)
 Major bug fix session addressing multiple competition workflow issues:
@@ -251,49 +325,6 @@ Major bug fix session addressing multiple competition workflow issues:
 9. **Status Labels**: Changed "Campionato Completato" to "Gara Completata" for completed competitions
 10. **Guest Classification**: Implemented fallback system showing RoundClassification from completed Amalfi provas when general campionato classification unavailable
 
-#### Technical Solutions Implemented
-- Enhanced `GaraService` with cancellation and notification workflows
-- Added preview functionality to matchmaking engine without database modifications
-- Improved database transaction handling in competition endpoints
-- Added comprehensive error handling and validation throughout competition workflow
-- Implemented intelligent classification fallback logic for guest home page
-- Fixed template endpoint references and permission decorators for standalone competitions
-
-#### Files Modified (21 files, +468/-77 lines)
-- Backend services: `models/competition/services.py`, matchmaking engine, `routes/admin/competition.py`
-- UI components: Multiple template files in `templates/components/` and `templates/admin/`
-- Status system: `utils/status_ui.py` for badge text corrections
-- Database models: Enhanced validation in `models/competition/models.py`
-
-### Match Proposals System Overhaul (September 2025)
-Complete redesign and enhancement of the individual match proposals system:
-
-#### Major Features Implemented
-1. **Italian Localization**: Full translation of match proposals interface from English to Italian
-2. **Fixed Notification System**: Proper integration with NotificationService for match proposal alerts
-3. **Enhanced UI/UX**: Reordered sections prioritizing "Inviti Ricevuti" over "Le Mie Proposte"
-4. **Dynamic Status Management**: Real-time status badges (In Attesa/Accettato/Rifiutato/Scaduto/Annullato)
-5. **Smart Button Management**: Action buttons hidden for non-pending invitations per SPECIFICHE.md requirements
-6. **Automatic Expiry System**: Background process to mark and filter expired proposals
-7. **Flexible Field Configuration**: Made discipline, distance, and break rules optional in proposal creation
-8. **Location Integration**: Smart location suggestions from existing competitions and standalone provas
-
-#### Technical Improvements
-- **Fixed Notification Creation**: Replaced template-based notifications with direct NotificationService.create_notification()
-- **Enhanced Data Models**: Added `get_invitation_for_user()` method to MatchProposal model for precise status tracking
-- **Corrected Filter Logic**: Fixed proposal expiry filtering from OR to AND logic for proper SPECIFICHE.md compliance
-- **Automatic Cleanup**: Implemented `_expire_pending_proposals()` for database hygiene
-- **Service Layer Updates**: Removed hardcoded defaults from IndividualMatchService methods
-- **Admin Exclusion**: Prevented admin users from appearing in match proposal invitations
-- **Fee Removal**: Eliminated entry fees from individual matches (always free per requirements)
-
-#### Files Modified (21 files, +753/-237 lines)
-- **Core Services**: `models/individual_match/services.py`, `models/individual_match/models.py`
-- **Notification System**: Integration with existing NotificationService for proper alerts
-- **Route Handlers**: `routes/player.py` for improved user filtering and location suggestions
-- **Templates**: Complete UI overhaul in `templates/player/match_proposals.html`, `templates/player/create_match_proposal.html`
-- **Competition System**: Enhanced standalone competition creation with optional fields and location datalist
-
 ## Development Guidelines
 
 ### Type Safety & Quality Standards
@@ -301,7 +332,7 @@ Complete redesign and enhancement of the individual match proposals system:
 
 1. **Pyright Type Checking**
    - Run `pyright` before every commit
-   - Target: Maintain <20 total errors across codebase
+   - Target: Maintain 0 total errors across codebase
    - Fix all new type errors introduced by changes
    - Use proper type hints for all function parameters and return types
 
@@ -315,7 +346,7 @@ Complete redesign and enhancement of the individual match proposals system:
    # LocalProxy casting in routes
    user = cast(User, current_user)
    
-   # Enum values in SQLAlchemy filters
+   # Enum values in SQLAlchemy filters - ALWAYS use .value
    .filter(Model.status.in_([Enum.VALUE.value, Enum.VALUE2.value]))
    
    # Optional parameters
@@ -332,7 +363,7 @@ Complete redesign and enhancement of the individual match proposals system:
 
 5. **Testing Requirements**
    - All new features MUST have tests in `tests/new/`
-   - Run `PYTHONPATH=. pytest tests/new/` to verify
+   - **CRITICAL**: Run `PYTHONPATH=. pytest tests/new/` to verify
    - Individual tests should pass independently
    - Fix test isolation issues, not test content
 
@@ -357,12 +388,15 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 
 - The codebase uses Italian comments and variable names in many places
 - Git workflow uses feature branches (current: `refactor/step-1-admin-routes-split`)
-- Application runs on `http://localhost:5000` by default
+- **Application is usually running**: No need to restart for most changes
+- **Database location**: `instance/` folder (SQLite)
 - Production deployment on PythonAnywhere platform
-- **Type Safety**: Project maintains 88% type error reduction (148→18 errors)
+- **Type Safety**: Project maintains 0 pyright errors (down from 148)
+- **Architecture principle**: "non cercare mai quick fix, ma scegli sempre le soluzioni più corrette secondo i principi di buona programmazione. non sovraingegnerizzare. Segui sempre soluzioni pulite ed eleganti"
 - Comprehensive testing revealed and fixed multiple edge cases in competition workflow
 - Flexible matchmaking system now fully supports strategy preview, idempotent operations, and fallback classification display
 - All matchmaking strategies (Amalfi, Round-Robin, Elimination, Random) are fully implemented and tested
+- **All 8 use cases are now fully implemented** with comprehensive integration tests
 
 ## Documentation Structure
 
@@ -399,10 +433,12 @@ Each major component has detailed documentation in its subdirectory:
    - Coverage targets and quality metrics
    - Performance and security testing
 
+### Use Case Documentation
+- **`docs/usecases/gare.md`**: Complete specification of all 8 implemented use cases
+- **`docs/usecases/convenzioni.md`**: Testing conventions and variant notation
+
 ### Navigation
 - Start with this root CLAUDE.md for project overview
 - Dive into specific directories for detailed technical information
 - Each subdirectory documentation is self-contained but cross-references related components
-- non cercare mai quick fix, ma scegli sempre le soluzioni piu' corrette secondo i principi di buona programmazione. non sovraingegnerizzare. Segui sempre soluzioni pulite ed eleganti
-- la app è quasi sempre in esecuzione. Non serve avviarla
-- il db e' nella cartella instance
+- **Follow architectural principles**: Clean, elegant solutions without over-engineering
