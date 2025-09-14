@@ -1,10 +1,10 @@
 # routes/player.py - AGGIORNATO dashboard per multi-campionato
 from flask.blueprints import Blueprint
-from flask.templating import render_template        # funzione reale
-from flask.globals import request                   # LocalProxy -> request
+from flask.templating import render_template  # funzione reale
+from flask.globals import request  # LocalProxy -> request
 from flask.helpers import redirect, url_for, flash  # helper ufficiali Flask
-from flask.json import jsonify                      # funzione ufficiale Flask
-from werkzeug.exceptions import abort               # più specifico e stabile
+from flask.json import jsonify  # funzione ufficiale Flask
+from werkzeug.exceptions import abort  # più specifico e stabile
 from flask_login import login_required, current_user, logout_user
 
 from datetime import datetime
@@ -28,7 +28,12 @@ from models.classification.models import Classification
 from models.user.models import DirectorRequest
 from models.notification.services import NotificationService
 from models.notification.models import NotificationType, NotificationPriority
-from models.user.services import UserDeletionService, UserService, VenueManagerRequestService, VenueManagementService
+from models.user.services import (
+    UserDeletionService,
+    UserService,
+    VenueManagerRequestService,
+    VenueManagementService,
+)
 from models.user.models import VenueManagerRequest
 from utils import (
     player_only,
@@ -51,28 +56,25 @@ def _handle_venue_creation_player(location: str) -> str:
     """
     if not location or not location.strip():
         return location
-    
+
     location = location.strip()
-    
+
     # Check if location matches existing verified venue
     existing_venue = BilliardHall.query.filter_by(
-        name=location, 
-        is_active=True, 
-        verified=True
+        name=location, is_active=True, verified=True
     ).first()
-    
+
     if existing_venue:
         return location
-    
+
     # Check if location matches existing non-verified venue
     existing_unverified = BilliardHall.query.filter_by(
-        name=location, 
-        is_active=True
+        name=location, is_active=True
     ).first()
-    
+
     if existing_unverified:
         return location
-    
+
     # Create new non-verified venue
     try:
         new_venue = LocationService.create_billiard_hall(
@@ -81,11 +83,14 @@ def _handle_venue_creation_player(location: str) -> str:
             # Set as non-verified (verified=False is default)
             # Note: number_of_tables is None, so it cannot be verified yet
         )
-        flash(f"Nuovo luogo '{location}' aggiunto. Per la verifica serve anche il numero di tavoli.", "info")
+        flash(
+            f"Nuovo luogo '{location}' aggiunto. Per la verifica serve anche il numero di tavoli.",
+            "info",
+        )
     except Exception as e:
         # If creation fails, continue with original location
         flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
-    
+
     return location
 
 
@@ -116,7 +121,7 @@ def create_match_proposal():
             if not location:
                 flash("Location is required", "error")
                 raise ValueError("Location is required")
-            
+
             # Handle venue auto-creation
             location = _handle_venue_creation_player(location)
             scheduled_str = request.form.get("scheduled_at")
@@ -170,19 +175,25 @@ def create_match_proposal():
 
     # Get available users and locations for the form
     from models.user.role_enum import UserRole
-    
+
     # Escludi admin e current user dai giocatori invitabili
     users = User.query.filter(
-        User.id != current_user.id,
-        User.role != UserRole.ADMIN.value
+        User.id != current_user.id, User.role != UserRole.ADMIN.value
     ).all()
-    
+
     # Get verified venues instead of recent locations
     from models.location.models import BilliardHall
-    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
+
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
 
     return render_template(
-        "player/create_match_proposal.html", users=users, verified_venues=verified_venues
+        "player/create_match_proposal.html",
+        users=users,
+        verified_venues=verified_venues,
     )
 
 
@@ -272,7 +283,7 @@ def gara_detail(gara_id):
     else:
         # Utente non iscritto: nessuna partita personale
         matches = []
-    
+
     # Per gli utenti non iscritti, recupera tutte le partite per mostrare l'andamento della gara
     all_matches = None
     if not inscription:
@@ -285,20 +296,25 @@ def gara_detail(gara_id):
     # Ottieni l'ultima classificazione disponibile (copiato dalla logica admin)
     current_round_classification = None
     latest_round_with_classification = None
-    
+
     if gara.current_round > 0:
         # Cerca la classificazione più recente disponibile
         from models.classification.models import RoundClassification
+
         for round_num in range(gara.current_round, 0, -1):
-            classification = RoundClassification.query.filter_by(
-                gara_id=gara_id, round_number=round_num
-            ).order_by(RoundClassification.position).all()
-            
+            classification = (
+                RoundClassification.query.filter_by(
+                    gara_id=gara_id, round_number=round_num
+                )
+                .order_by(RoundClassification.position)
+                .all()
+            )
+
             if classification:
                 current_round_classification = classification
                 latest_round_with_classification = round_num
                 break
-    
+
     return render_template(
         "player/gara_detail.html",
         gara=gara,
@@ -337,15 +353,16 @@ def inscribe_to_gara(gara_id):
 
     # Usa il service per gestire automaticamente la logica waitlist
     from models.competition.services import InscriptionService
-    
+
     inscription = InscriptionService.inscribe_user(
-        user_id=current_user.id, 
-        gara_id=gara_id
+        user_id=current_user.id, gara_id=gara_id
     )
-    
+
     if inscription:
         if inscription.is_waitlist:
-            flash(f"Aggiunto alla lista d'attesa per Gara {gara.number} (posizione {inscription.waitlist_position})!")
+            flash(
+                f"Aggiunto alla lista d'attesa per Gara {gara.number} (posizione {inscription.waitlist_position})!"
+            )
         else:
             flash(f"Iscrizione alla Gara {gara.number} completata!")
     else:
@@ -364,8 +381,49 @@ def match_detail(match_id):
         abort(404)
 
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
+    
+    # Get available challenges for this match's gara
+    available_challenges = []
+    player_challenge_progress = {}
+    
+    if match.gara_id:
+        from models.challenge.gara_challenge_service import GaraChallengeService
+        from models.challenge.gara_challenge_models import GaraChallenge
+        from sqlalchemy.orm import joinedload
+        
+        # Get available challenges for this gara
+        available_challenges = (
+            db.session.query(GaraChallenge)
+            .filter(
+                GaraChallenge.gara_id == match.gara_id,
+                GaraChallenge.is_active == True,
+            )
+            .options(joinedload(GaraChallenge.challenge))  # type: ignore[arg-type]
+            .all()
+        )
+        
+        # Get player challenge progress for both players
+        if match.player1_id:
+            progress = GaraChallengeService.get_user_gara_challenge_progress(
+                match.gara_id, match.player1_id
+            )
+            if progress:
+                player_challenge_progress[match.player1_id] = progress
+        
+        if match.player2_id:
+            progress = GaraChallengeService.get_user_gara_challenge_progress(
+                match.gara_id, match.player2_id
+            )
+            if progress:
+                player_challenge_progress[match.player2_id] = progress
 
-    return render_template("match_detail.html", match=match, racks=racks)
+    return render_template(
+        "match_detail.html", 
+        match=match, 
+        racks=racks,
+        available_challenges=available_challenges,
+        player_challenge_progress=player_challenge_progress
+    )
 
 
 @player_bp.route("/match/<int:match_id>/report_rack", methods=["POST"])
@@ -457,7 +515,9 @@ def profile():
         .join(Gara)
         .outerjoin(Campionato)  # LEFT JOIN per includere gare standalone
         .order_by(
-            Campionato.created_at.desc().nullslast(), Gara.date.desc(), Match.round_number.desc()
+            Campionato.created_at.desc().nullslast(),
+            Gara.date.desc(),
+            Match.round_number.desc(),
         )
         .all()
     )
@@ -488,48 +548,76 @@ def profile():
     ]
 
     # Conta solo i campionati con gare completate dove l'utente ha partecipato
-    completed_tournaments = set([
-        insc.gara.campionato_id 
-        for insc in inscriptions 
-        if insc.gara.campionato_id is not None and insc.gara.status == 'completed'
-    ])
-    
+    completed_tournaments = set(
+        [
+            insc.gara.campionato_id
+            for insc in inscriptions
+            if insc.gara.campionato_id is not None and insc.gara.status == "completed"
+        ]
+    )
+
     # Conta solo le gare completate
-    completed_provas = len([
-        insc for insc in inscriptions 
-        if insc.gara.status == 'completed'
-    ])
+    completed_provas = len(
+        [insc for insc in inscriptions if insc.gara.status == "completed"]
+    )
 
     # Challenge statistics
     challenge_stats = None
     challenge_history = []
     try:
         from models.challenge import GaraChallengeAttempt, GaraChallenge, Challenge
-        
+
         # Get all challenge attempts by this user
         user_attempts = (
-            GaraChallengeAttempt.query
-            .filter_by(user_id=current_user.id, completed=True)
+            GaraChallengeAttempt.query.filter_by(
+                user_id=current_user.id, completed=True
+            )
             .join(GaraChallenge)
             .join(Challenge)
             .order_by(GaraChallengeAttempt.attempted_at.desc())  # type: ignore[attr-defined]
             .all()
         )
-        
+
         if user_attempts:
             # Calculate overall challenge statistics
             total_attempts = len(user_attempts)
-            unique_challenges = len(set(attempt.gara_challenge.challenge_id for attempt in user_attempts))
-            unique_garas = len(set(attempt.gara_challenge.gara_id for attempt in user_attempts))
-            
+            unique_challenges = len(
+                set(attempt.gara_challenge.challenge_id for attempt in user_attempts)
+            )
+            unique_garas = len(
+                set(attempt.gara_challenge.gara_id for attempt in user_attempts)
+            )
+
             # Calculate average score (only for numeric challenges)
-            numeric_attempts = [attempt for attempt in user_attempts if attempt.score is not None and not attempt.gara_challenge.challenge.pass_fail_only]
-            avg_score = sum(attempt.score for attempt in numeric_attempts) / len(numeric_attempts) if numeric_attempts else 0
-            
+            numeric_attempts = [
+                attempt
+                for attempt in user_attempts
+                if attempt.score is not None
+                and not attempt.gara_challenge.challenge.pass_fail_only
+            ]
+            avg_score = (
+                sum(attempt.score for attempt in numeric_attempts)
+                / len(numeric_attempts)
+                if numeric_attempts
+                else 0
+            )
+
             # Calculate pass rate (for pass/fail challenges)
-            pass_fail_attempts = [attempt for attempt in user_attempts if attempt.gara_challenge.challenge.pass_fail_only]
-            pass_rate = (sum(1 for attempt in pass_fail_attempts if attempt.passed) / len(pass_fail_attempts) * 100) if pass_fail_attempts else 0
-            
+            pass_fail_attempts = [
+                attempt
+                for attempt in user_attempts
+                if attempt.gara_challenge.challenge.pass_fail_only
+            ]
+            pass_rate = (
+                (
+                    sum(1 for attempt in pass_fail_attempts if attempt.passed)
+                    / len(pass_fail_attempts)
+                    * 100
+                )
+                if pass_fail_attempts
+                else 0
+            )
+
             challenge_stats = {
                 "total_attempts": total_attempts,
                 "unique_challenges": unique_challenges,
@@ -537,19 +625,21 @@ def profile():
                 "avg_score": round(avg_score, 1),
                 "pass_rate": round(pass_rate, 1),
             }
-            
+
             # Build challenge history (last 20 attempts)
             for attempt in user_attempts[:20]:
-                challenge_history.append({
-                    "challenge_name": attempt.gara_challenge.challenge.get_display_name(),
-                    "gara_name": attempt.gara_challenge.gara.name,
-                    "score": attempt.score,
-                    "passed": attempt.passed,
-                    "attempted_at": attempt.attempted_at,
-                    "is_pass_fail": attempt.gara_challenge.challenge.pass_fail_only,
-                    "max_score": attempt.gara_challenge.challenge.max_score,
-                })
-    
+                challenge_history.append(
+                    {
+                        "challenge_name": attempt.gara_challenge.challenge.get_display_name(),
+                        "gara_name": attempt.gara_challenge.gara.name,
+                        "score": attempt.score,
+                        "passed": attempt.passed,
+                        "attempted_at": attempt.attempted_at,
+                        "is_pass_fail": attempt.gara_challenge.challenge.pass_fail_only,
+                        "max_score": attempt.gara_challenge.challenge.max_score,
+                    }
+                )
+
     except Exception as e:
         # If challenge module is not available or there's an error, just skip
         pass
@@ -717,32 +807,39 @@ def mark_notification_read(notification_id):
 def request_venue_manager():
     """Richiesta per diventare gestore di una sala specifica"""
     if current_user.is_admin:
-        flash("Gli amministratori non hanno bisogno di richiedere il ruolo di gestore sala.", "info")
+        flash(
+            "Gli amministratori non hanno bisogno di richiedere il ruolo di gestore sala.",
+            "info",
+        )
         return redirect(url_for("admin.venue.venues_list"))
-    
+
     venue_id = request.form.get("venue_id")
     notes = request.form.get("notes", "").strip()
-    
+
     if not venue_id:
         flash("Errore: Sala non specificata.", "error")
         return redirect(url_for("admin.venue.venues_list"))
-    
+
     try:
         from models.user.services import VenueManagerRequestService
-        new_request = VenueManagerRequestService.create_request(current_user.id, int(venue_id), notes)
-        
+
+        new_request = VenueManagerRequestService.create_request(
+            current_user.id, int(venue_id), notes
+        )
+
         # Get venue for flash message
         from models import BilliardHall
+
         venue = db.session.get(BilliardHall, venue_id)
-        
+
         flash_message = f"Richiesta per gestire '{venue.name}' inviata con successo!"
         if new_request.is_contested:
             flash_message += " Nota: questa sala ha già un gestore, l'admin valuterà la tua richiesta."
         flash(flash_message, "success")
-        
+
     except ValueError as e:
         flash(str(e), "error")
-    
+
     return redirect(url_for("admin.venue.venues_list"))
 
 
@@ -752,11 +849,12 @@ def cancel_venue_manager_request(request_id):
     """Annulla una richiesta per diventare gestore di sala"""
     try:
         from models.user.services import VenueManagerRequestService
+
         VenueManagerRequestService.cancel_request(request_id, cast(User, current_user))
         flash("Richiesta annullata con successo.", "success")
     except Exception as e:
         flash(f"Errore nell'annullare la richiesta: {str(e)}", "error")
-    
+
     return redirect(url_for("admin.venue.venues_list"))
 
 
@@ -766,10 +864,11 @@ def my_venue_requests():
     """Visualizza le richieste di gestione venue dell'utente"""
     if current_user.is_admin:
         return redirect(url_for("admin.venue.venue_manager_requests"))
-    
+
     from models.user.services import VenueManagerRequestService
+
     requests = VenueManagerRequestService.get_user_requests(current_user.id)
-    
+
     return render_template("player/my_venue_requests.html", requests=requests)
 
 
@@ -867,13 +966,14 @@ def unsubscribe_from_gara(gara_id):
 
     # Procedi con la disiscrizione usando il servizio
     from models.competition.services import InscriptionService
+
     success = InscriptionService.uninscribe_user(current_user.id, gara_id)
-    
+
     if success:
         flash(f"Disiscrizione dalla Gara {gara.number} completata!")
     else:
         flash("Errore durante la disiscrizione.", "error")
-    
+
     # Redirect mantenendo il campionato selezionato
     return redirect(url_for("player.dashboard", campionato_id=gara.campionato_id))
 
@@ -986,20 +1086,19 @@ def rack_detail(rack_id):
 # AVAILABILITY SYSTEM ROUTES - Use Case 7
 # ====================================================================
 
+
 @player_bp.route("/availability")
 @login_required
 @player_required
 def availability_preferences():
     """Manage player availability preferences"""
     from models.individual_match.availability_service import AvailabilityService
-    
+
     preferences = AvailabilityService.get_user_availability_preferences(current_user.id)
     venues = BilliardHall.query.filter_by(is_active=True).all()
-    
+
     return render_template(
-        "player/availability_preferences.html",
-        preferences=preferences,
-        venues=venues
+        "player/availability_preferences.html", preferences=preferences, venues=venues
     )
 
 
@@ -1009,42 +1108,44 @@ def availability_preferences():
 def set_location_availability():
     """Set availability for a specific location"""
     from models.individual_match.availability_service import AvailabilityService
-    
+
     location = request.form.get("location", "").strip()
     is_available = request.form.get("is_available") == "true"
     preferred_days = request.form.getlist("preferred_days")
     preferred_times = request.form.get("preferred_times", "").strip()
-    
+
     if not location:
         flash("La location è obbligatoria", "danger")
         return redirect(url_for("player.availability_preferences"))
-    
+
     try:
         # Convert day strings to integers
         day_ints = [int(d) for d in preferred_days if d.isdigit()]
-        
+
         AvailabilityService.set_player_availability(
             user_id=current_user.id,
             location=location,
             is_available=is_available,
             preferred_days=day_ints if day_ints else None,
-            preferred_times=preferred_times if preferred_times else None
+            preferred_times=preferred_times if preferred_times else None,
         )
-        
+
         flash(f"Disponibilità aggiornata per {location}", "success")
-        
+
         # If setting availability, optionally notify other players
         if is_available and request.form.get("notify_players") == "true":
             notifications_sent = AvailabilityService.notify_players_of_availability(
-                user_id=current_user.id,
-                location=location
+                user_id=current_user.id, location=location
             )
             if notifications_sent > 0:
-                flash(f"Notificati {notifications_sent} giocatori della tua disponibilità", "info")
-                
+                flash(
+                    f"Notificati {notifications_sent} giocatori della tua disponibilità",
+                    "info",
+                )
+
     except Exception as e:
         flash(f"Errore nell'aggiornare la disponibilità: {str(e)}", "danger")
-    
+
     return redirect(url_for("player.availability_preferences"))
 
 
@@ -1054,35 +1155,35 @@ def set_location_availability():
 def set_venue_availability():
     """Set availability for a specific venue"""
     from models.individual_match.availability_service import AvailabilityService
-    
+
     venue_id = request.form.get("venue_id", type=int)
     is_available = request.form.get("is_available") == "true"
     available_days = request.form.getlist("available_days")
     preferred_times = request.form.get("preferred_times", "").strip()
-    
+
     if not venue_id:
         flash("Devi selezionare una sala", "danger")
         return redirect(url_for("player.availability_preferences"))
-    
+
     try:
         # Convert day strings to integers
         day_ints = [int(d) for d in available_days if d.isdigit()]
-        
+
         AvailabilityService.set_venue_availability(
             user_id=current_user.id,
             billiard_hall_id=venue_id,
             is_available=is_available,
             available_days=day_ints if day_ints else None,
-            preferred_times=preferred_times if preferred_times else None
+            preferred_times=preferred_times if preferred_times else None,
         )
-        
+
         venue = db.session.get(BilliardHall, venue_id)
         venue_name = venue.name if venue else f"Sala #{venue_id}"
         flash(f"Disponibilità aggiornata per {venue_name}", "success")
-        
+
     except Exception as e:
         flash(f"Errore nell'aggiornare la disponibilità: {str(e)}", "danger")
-    
+
     return redirect(url_for("player.availability_preferences"))
 
 
@@ -1092,83 +1193,81 @@ def set_venue_availability():
 def discover_available_players():
     """Discover players available at various locations"""
     from models.individual_match.availability_service import AvailabilityService
-    
+
     # Get location filter from query params
     location_filter = request.args.get("location", "").strip()
     venue_filter = request.args.get("venue_id", type=int)
-    
+
     available_players = {}
-    
+
     if location_filter:
         # Get players available at specific location
         players = AvailabilityService.get_available_players_at_location(
-            location=location_filter,
-            exclude_user_id=current_user.id
+            location=location_filter, exclude_user_id=current_user.id
         )
         available_players[location_filter] = players
-    
+
     elif venue_filter:
         # Get players available at specific venue
         players = AvailabilityService.get_available_players_at_venue(
-            billiard_hall_id=venue_filter,
-            exclude_user_id=current_user.id
+            billiard_hall_id=venue_filter, exclude_user_id=current_user.id
         )
         venue = db.session.get(BilliardHall, venue_filter)
         venue_name = venue.name if venue else f"Sala #{venue_filter}"
         available_players[venue_name] = players
-    
+
     else:
         # Get all locations with available players
         from models.individual_match.models import PlayerAvailability
         from models.location.models import UserLocationAvailability
-        
+
         # Get all locations with available players
         locations = (
             db.session.query(PlayerAvailability.location)
             .filter(
                 PlayerAvailability.is_available == True,
-                PlayerAvailability.user_id != current_user.id
+                PlayerAvailability.user_id != current_user.id,
             )
             .distinct()
             .all()
         )
-        
+
         for (location,) in locations:
             players = AvailabilityService.get_available_players_at_location(
-                location=location,
-                exclude_user_id=current_user.id
+                location=location, exclude_user_id=current_user.id
             )
             if players:
                 available_players[location] = players
-        
+
         # Get all venues with available players
         venues = (
-            db.session.query(UserLocationAvailability.billiard_hall_id, BilliardHall.name)
+            db.session.query(
+                UserLocationAvailability.billiard_hall_id, BilliardHall.name
+            )
             .join(BilliardHall)
             .filter(
                 UserLocationAvailability.is_available == True,
-                UserLocationAvailability.user_id != current_user.id
+                UserLocationAvailability.user_id != current_user.id,
             )
             .distinct()
             .all()
         )
-        
+
         for venue_id, venue_name in venues:
             players = AvailabilityService.get_available_players_at_venue(
-                billiard_hall_id=venue_id,
-                exclude_user_id=current_user.id
+                billiard_hall_id=venue_id, exclude_user_id=current_user.id
             )
             if players:
                 available_players[venue_name] = players
-    
+
     venues = BilliardHall.query.filter_by(is_active=True).all()
-    
+
     return render_template(
         "player/discover_players.html",
         available_players=available_players,
         venues=venues,
         location_filter=location_filter,
-        venue_filter=venue_filter
+        venue_filter=venue_filter,
     )
 
 
@@ -1179,16 +1278,16 @@ def request_availability_match(target_user_id):
     """Request a match with an available player"""
     from models.individual_match.availability_service import AvailabilityService
     from datetime import datetime, timedelta
-    
+
     location = request.form.get("location", "").strip()
     message = request.form.get("message", "").strip()
     proposed_date = request.form.get("proposed_date")
     proposed_time = request.form.get("proposed_time")
-    
+
     if not location:
         flash("La location è obbligatoria per richiedere un match", "danger")
         return redirect(url_for("player.discover_available_players"))
-    
+
     # Parse proposed datetime
     proposed_datetime = None
     if proposed_date and proposed_time:
@@ -1199,22 +1298,161 @@ def request_availability_match(target_user_id):
         except ValueError:
             flash("Formato data/ora non valido", "danger")
             return redirect(url_for("player.discover_available_players"))
-    
+
     try:
         proposal = AvailabilityService.create_availability_based_match_request(
             requesting_user_id=current_user.id,
             target_user_id=target_user_id,
             location=location,
             proposed_datetime=proposed_datetime,
-            message=message
+            message=message,
         )
-        
+
         target_user = db.session.get(User, target_user_id)
-        target_name = target_user.username if target_user else f"Utente #{target_user_id}"
-        
+        target_name = (
+            target_user.username if target_user else f"Utente #{target_user_id}"
+        )
+
         flash(f"Richiesta di match inviata a {target_name}", "success")
-        
+
     except Exception as e:
         flash(f"Errore nell'inviare la richiesta: {str(e)}", "danger")
-    
+
     return redirect(url_for("player.discover_available_players"))
+
+
+# ====================================================================
+# CHALLENGE SYSTEM ROUTES
+# ====================================================================
+
+
+@player_bp.route("/challenge/<int:gara_challenge_id>")
+@login_required
+def challenge_detail(gara_challenge_id):
+    """Show challenge detail page for players"""
+    from models.challenge.gara_challenge_models import GaraChallenge
+    from models.challenge.services import ChallengeService
+
+    gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
+    if not gara_challenge:
+        abort(404, "Challenge non trovata")
+
+    # Verify user has access to this challenge's gara
+    if gara_challenge.gara.campionato:
+        # For campionato gara, user should be registered to access challenges
+        inscription = Inscription.query.filter_by(
+            user_id=current_user.id, gara_id=gara_challenge.gara_id
+        ).first()
+        if not inscription:
+            abort(403, "Non hai accesso a questa challenge")
+
+    # Get user progress for this challenge's gara
+    from models.challenge.gara_challenge_service import GaraChallengeService
+    
+    progress = GaraChallengeService.get_user_gara_challenge_progress(
+        gara_challenge.gara_id, current_user.id
+    )
+    
+    challenge_data = None
+    if progress:
+        # Find the specific challenge data
+        challenge_data = next(
+            (
+                c
+                for c in progress.get("challenges", [])
+                if c.get("gara_challenge", {}).get("id") == gara_challenge_id
+            ),
+            None,
+        )
+
+    return render_template(
+        "player/gara_challenge_detail.html",
+        gara_challenge=gara_challenge,
+        challenge_data=challenge_data,
+        user_progress=progress,
+    )
+
+
+@player_bp.route("/challenge/<int:gara_challenge_id>/attempt", methods=["POST"])
+@login_required
+def record_challenge_attempt(gara_challenge_id):
+    """Record a challenge attempt by the player"""
+    from models.challenge.gara_challenge_models import GaraChallenge
+    from models.challenge.gara_challenge_service import GaraChallengeService
+
+    try:
+        data = request.get_json() if request.is_json else request.form.to_dict()
+
+        # Get gara challenge and verify access
+        gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
+        if not gara_challenge:
+            return jsonify({"success": False, "error": "Challenge non trovata"}), 404
+
+        # Verify user has access to this challenge's gara
+        if gara_challenge.gara.campionato:
+            inscription = Inscription.query.filter_by(
+                user_id=current_user.id, gara_id=gara_challenge.gara_id
+            ).first()
+            if not inscription:
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "error": "Non hai accesso a questa challenge",
+                        }
+                    ),
+                    403,
+                )
+
+        # Validate that we have either score or passed
+        if "score" not in data and "passed" not in data:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Specificare punteggio o risultato pass/fail",
+                    }
+                ),
+                400,
+            )
+
+        # Record the attempt
+        score = data.get("score")
+        passed = data.get("passed")
+        
+        # Convert types
+        if score is not None:
+            score = int(score)
+        if passed is not None:
+            passed = bool(passed) if isinstance(passed, bool) else passed == "true"
+        
+        attempt = GaraChallengeService.record_challenge_attempt(
+            gara_challenge_id=gara_challenge_id,
+            user_id=current_user.id,
+            score=score,
+            passed=passed,
+            notes=data.get("notes"),
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Tentativo registrato con successo",
+                "attempt_id": attempt.id,
+                "score": attempt.score,
+                "passed": attempt.passed,
+            }
+        )
+
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Errore durante la registrazione: {str(e)}",
+                }
+            ),
+            500,
+        )

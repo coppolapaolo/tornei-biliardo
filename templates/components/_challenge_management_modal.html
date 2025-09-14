@@ -44,7 +44,7 @@
                                                 </div>
                                                 <div class="form-text mt-2">
                                                     <small>Clicca su una challenge per selezionarla, oppure 
-                                                    <a href="#" id="createNewChallengeLink" data-bs-toggle="modal" data-bs-target="#createChallengeModal">crea una nuova challenge</a></small>
+                                                    <a href="#" id="createNewChallengeLink" onclick="openCreateChallengeModal()">crea una nuova challenge</a></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -175,7 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Refresh della pagina quando si chiude la modal per aggiornare le challenge attive visibili
     $('#challengeManagementModal').on('hidden.bs.modal', function() {
-        location.reload();
+        // Solo ricarica se non stiamo aprendo la modal di creazione
+        if (!window.openingCreateModal) {
+            location.reload();
+        }
     });
 
 
@@ -190,7 +193,27 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         createNewChallenge();
     });
+
+    // Gestione chiusura modal di creazione
+    $('#createChallengeModal').on('hidden.bs.modal', function() {
+        // Se siamo tornati dalla creazione, riapri la modal principale
+        if (window.returningToMainModal) {
+            window.returningToMainModal = false;
+            window.openingCreateModal = false;
+            $('#challengeManagementModal').modal('show');
+        }
+    });
 });
+
+function openCreateChallengeModal() {
+    window.openingCreateModal = true;
+    $('#challengeManagementModal').modal('hide');
+    
+    // Aspetta che la modal si chiuda completamente prima di aprire quella di creazione
+    setTimeout(() => {
+        $('#createChallengeModal').modal('show');
+    }, 300);
+}
 
 function loadActiveChallenges() {
     const garaId = {{ gara.id }};
@@ -413,26 +436,17 @@ function createNewChallenge() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showChallengeAlert('Challenge creata con successo!', 'success');
+            alert('Challenge creata con successo!');
+            window.returningToMainModal = true;
             $('#createChallengeModal').modal('hide');
-            
-            // Ricarica la lista delle challenge disponibili e riaprire la modal principale
-            loadAvailableChallenges();
-            
-            // Aspetta che la modal si chiuda completamente e poi riapri la principale
-            $('#createChallengeModal').on('hidden.bs.modal.reopenMain', function() {
-                $(this).off('hidden.bs.modal.reopenMain');
-                $('#challengeManagementModal').modal('show');
-            });
-            
             form.reset();
         } else {
-            showChallengeAlert(data.error || 'Errore nella creazione della challenge', 'danger');
+            alert(data.error || 'Errore nella creazione della challenge');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showChallengeAlert('Errore di rete nella creazione della challenge', 'danger');
+        alert('Errore di rete nella creazione della challenge');
     });
 }
 

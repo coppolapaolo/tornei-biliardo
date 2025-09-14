@@ -43,7 +43,9 @@ from models.location.services import LocationService
 competition_bp = Blueprint("competition", __name__)
 
 
-def _handle_venue_creation(location: str, number_of_tables: Optional[int] = None) -> str:
+def _handle_venue_creation(
+    location: str, number_of_tables: Optional[int] = None
+) -> str:
     """
     Handle venue creation/validation for competitions.
     If location doesn't match existing venues, create as disabled and non-verified.
@@ -51,15 +53,15 @@ def _handle_venue_creation(location: str, number_of_tables: Optional[int] = None
     """
     if not location or not location.strip():
         return location
-    
+
     location = location.strip()
-    
+
     # Check if location matches existing venue (both active and inactive)
     existing_venue = BilliardHall.query.filter_by(name=location).first()
-    
+
     if existing_venue:
         return location
-    
+
     # Create new disabled, non-verified venue
     if number_of_tables and number_of_tables > 0:
         try:
@@ -67,21 +69,27 @@ def _handle_venue_creation(location: str, number_of_tables: Optional[int] = None
             new_venue = LocationService.create_billiard_hall(
                 name=location,
                 added_by_id=current_user.id,
-                number_of_tables=number_of_tables
+                number_of_tables=number_of_tables,
             )
-            
+
             # Then modify to set as disabled and non-verified
             new_venue.is_active = False
             new_venue.verified = False
             db.session.commit()
-            
-            flash(f"Nuovo luogo '{location}' aggiunto come disattivato. Sarà verificato dall'admin.", "info")
+
+            flash(
+                f"Nuovo luogo '{location}' aggiunto come disattivato. Sarà verificato dall'admin.",
+                "info",
+            )
         except Exception as e:
             # If creation fails, continue with original location
             flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
     else:
-        flash(f"Impossibile creare '{location}': specificare il numero di tavoli.", "warning")
-    
+        flash(
+            f"Impossibile creare '{location}': specificare il numero di tavoli.",
+            "warning",
+        )
+
     return location
 
 
@@ -103,12 +111,12 @@ def create_gara_standalone():
             datetime_obj = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
             date = datetime_obj.date()
             time = datetime_obj.time()
-            
+
             # Campi opzionali
             location = request.form.get("location", "").strip()
             number_of_tables = request.form.get("number_of_tables")
             number_of_tables = int(number_of_tables) if number_of_tables else None
-            
+
             # Handle venue auto-creation
             location = _handle_venue_creation(location, number_of_tables)
             description = request.form.get("description", "").strip()
@@ -123,7 +131,9 @@ def create_gara_standalone():
             distance = int(request.form["distance"])
             exact_number = "exact_number" in request.form
             best_of = not exact_number
-            withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
+            withdraw_policy = request.form.get(
+                "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+            )
 
             # Strategy configuration
             matchmaking_strategy = request.form.get("matchmaking_strategy", "amalfi")
@@ -131,10 +141,16 @@ def create_gara_standalone():
             odd_number_policy = request.form.get("odd_number_policy", "bye")
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
             rating_type = request.form.get("rating_type", "fargo")
-            
+
             # Validazione della configurazione delle strategie
-            from models.matchmaking.configuration import StrategyConfiguration, MatchmakingStrategy, FirstRoundPolicy, OddNumberPolicy, RatingType
-            
+            from models.matchmaking.configuration import (
+                StrategyConfiguration,
+                MatchmakingStrategy,
+                FirstRoundPolicy,
+                OddNumberPolicy,
+                RatingType,
+            )
+
             try:
                 strategy_config = StrategyConfiguration(
                     strategy=MatchmakingStrategy(matchmaking_strategy),
@@ -142,9 +158,13 @@ def create_gara_standalone():
                     odd_number_policy=OddNumberPolicy(odd_number_policy),
                     anti_rematch_enabled=anti_rematch_enabled,
                     rounds_count=rounds_count,
-                    rating_type=RatingType(rating_type) if first_round_policy == "rating" else None
+                    rating_type=(
+                        RatingType(rating_type)
+                        if first_round_policy == "rating"
+                        else None
+                    ),
                 )
-                
+
                 # Valida la configurazione con la distanza
                 errors = strategy_config.validate(distance=distance)
                 if errors:
@@ -176,7 +196,7 @@ def create_gara_standalone():
                 first_round_policy=first_round_policy,
                 odd_number_policy=odd_number_policy,
                 anti_rematch_enabled=anti_rematch_enabled,
-                rating_type=rating_type
+                rating_type=rating_type,
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
@@ -192,16 +212,21 @@ def create_gara_standalone():
     # GET request - show form
     # Get verified venues for location suggestions
     from models.location.models import BilliardHall
-    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
-    
+
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
+
     # Ottieni le strategie disponibili
     available_strategies = GaraService.get_available_strategies()
-    
+
     return render_template(
         "admin/gara_create_standalone.html",
         WithdrawPolicy=WithdrawPolicy,
         verified_venues=verified_venues,
-        available_strategies=available_strategies
+        available_strategies=available_strategies,
     )
 
 
@@ -210,23 +235,28 @@ def create_gara_standalone():
 @admin_required
 def get_strategy_constraints(strategy):
     """API endpoint per ottenere i vincoli di una strategia."""
-    from models.matchmaking.configuration import STRATEGY_CONSTRAINTS, MatchmakingStrategy
-    
+    from models.matchmaking.configuration import (
+        STRATEGY_CONSTRAINTS,
+        MatchmakingStrategy,
+    )
+
     try:
         strategy_enum = MatchmakingStrategy(strategy)
         constraints = STRATEGY_CONSTRAINTS.get(strategy_enum, {})
-        
-        return jsonify({
-            "success": True,
-            "constraints": constraints,
-            "display_name": strategy.replace("_", " ").title(),
-            "description": constraints.get("description", "")
-        })
+
+        return jsonify(
+            {
+                "success": True,
+                "constraints": constraints,
+                "display_name": strategy.replace("_", " ").title(),
+                "description": constraints.get("description", ""),
+            }
+        )
     except ValueError:
-        return jsonify({
-            "success": False,
-            "error": f"Strategia '{strategy}' non valida"
-        }), 400
+        return (
+            jsonify({"success": False, "error": f"Strategia '{strategy}' non valida"}),
+            400,
+        )
 
 
 @competition_bp.route("/create", methods=["POST"])
@@ -254,19 +284,20 @@ def create_gara():
 
     # Verifica permessi sul campionato
     from models.user.models import DirectorAssignment
+
     is_campionato_director = (
         db.session.query(DirectorAssignment)
         .filter(
-            DirectorAssignment.entity_type == 'campionato',
+            DirectorAssignment.entity_type == "campionato",
             DirectorAssignment.entity_id == campionato_id,
-            DirectorAssignment.user_id == current_user.id
+            DirectorAssignment.user_id == current_user.id,
         )
-        .first() is not None
+        .first()
+        is not None
     )
-    
+
     if not (
-        current_user.is_admin
-        or (current_user.is_director and is_campionato_director)
+        current_user.is_admin or (current_user.is_director and is_campionato_director)
     ):
         flash("Non puoi creare gare in questo campionato.", "error")
         return redirect(url_for("dashboard.dashboard"))
@@ -289,7 +320,7 @@ def create_gara():
     location = request.form.get("location", "").strip()
     number_of_tables = request.form.get("number_of_tables")
     number_of_tables = int(number_of_tables) if number_of_tables else None
-    
+
     # Handle venue auto-creation
     location = _handle_venue_creation(location, number_of_tables)
     description = request.form.get("description", "")
@@ -356,9 +387,9 @@ def edit_gara(gara_id):
             location = request.form.get("location", "").strip()
             number_of_tables = request.form.get("number_of_tables")
             number_of_tables = int(number_of_tables) if number_of_tables else None
-            
+
             location = _handle_venue_creation(location, number_of_tables)
-            
+
             GaraService.update_gara(
                 gara_id=gara_id,
                 name=request.form.get("name", gara.name),
@@ -384,17 +415,22 @@ def edit_gara(gara_id):
 
     # Get available strategies for the form
     available_strategies = GaraService.get_available_strategies()
-    
+
     # Get verified venues for location suggestions
     from models.location.models import BilliardHall
-    verified_venues = BilliardHall.query.filter_by(is_active=True, verified=True).order_by(BilliardHall.name).all()
-    
+
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
+
     return render_template(
-        "admin/gara_edit.html", 
-        gara=gara, 
+        "admin/gara_edit.html",
+        gara=gara,
         WithdrawPolicy=WithdrawPolicy,
         available_strategies=available_strategies,
-        verified_venues=verified_venues
+        verified_venues=verified_venues,
     )
 
 
@@ -406,7 +442,7 @@ def delete_gara(gara_id):
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         abort(404)
-    
+
     # Determina se è standalone prima della cancellazione
     is_standalone = gara.campionato_id is None
     campionato_id = gara.campionato_id
@@ -424,7 +460,9 @@ def delete_gara(gara_id):
     if is_standalone:
         return redirect(url_for("dashboard.dashboard"))
     else:
-        return redirect(url_for("admin.campionato.campionato_detail", campionato_id=campionato_id))
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
 
 
 @competition_bp.route("/<int:gara_id>/cancel", methods=["POST"])
@@ -435,19 +473,21 @@ def cancel_gara(gara_id):
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         abort(404)
-    
+
     campionato_id = gara.campionato_id
     gara_name = f"Gara {gara.number}"
-    
+
     # Verifica che la gara possa essere cancellata
-    if gara.status not in ['setup', 'inscription']:
+    if gara.status not in ["setup", "inscription"]:
         flash("La gara non può essere cancellata in questo stato!", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     try:
         # Usa il service layer per cancellare con notifiche
         GaraService.cancel_gara_with_notifications(gara_id, current_user.id)
-        flash(f"{gara_name} cancellata con successo! I partecipanti sono stati notificati.")
+        flash(
+            f"{gara_name} cancellata con successo! I partecipanti sono stati notificati."
+        )
     except ValueError as ve:
         flash(str(ve), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -467,10 +507,10 @@ def gara_detail(gara_id):
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         abort(404)
-    
+
     # Forza un refresh per assicurarsi di avere i dati più aggiornati
     db.session.refresh(gara)
-    
+
     matches = (
         Match.query.filter_by(gara_id=gara_id)
         .order_by(Match.round_number, Match.id)
@@ -479,7 +519,7 @@ def gara_detail(gara_id):
 
     # Director management context
     from models.user.models import User, DirectorAssignment
-    
+
     # Ottieni iscrizioni ordinate alfabeticamente per username (dopo import User)
     inscriptions = (
         Inscription.query.filter_by(gara_id=gara_id)
@@ -487,88 +527,108 @@ def gara_detail(gara_id):
         .order_by(User.username)
         .all()
     )
-    
+
     # Get already assigned directors for this gara
     assigned_director_ids = (
         db.session.query(DirectorAssignment.user_id)
         .filter(
-            DirectorAssignment.entity_type == 'gara',
-            DirectorAssignment.entity_id == gara.id
+            DirectorAssignment.entity_type == "gara",
+            DirectorAssignment.entity_id == gara.id,
         )
         .all()
     )
     assigned_director_ids = [d[0] for d in assigned_director_ids]
-    
+
     # Also add the principal director if it's a standalone gara
     if gara.is_standalone and gara.director_id:
         assigned_director_ids.append(gara.director_id)
-    
+
     # Get available users for director selection (directors only, exclude admins, already assigned, and current user)
     query = (
         User.query.filter(User.role == "director")
         .filter(User.deleted_at.is_(None))
         .filter(User.id != current_user.id)  # Exclude current user
     )
-    
+
     # Exclude already assigned directors only if there are any
     if assigned_director_ids:
         query = query.filter(~User.id.in_(assigned_director_ids))
-    
+
     users = query.order_by(User.username).all()
-    
+
     # Permission checks for director management
     # Check if user is a director of this specific gara OR the campionato
-    
+
     # Check if user is a director of this gara
     is_gara_director = (
         db.session.query(DirectorAssignment)
         .filter(
-            DirectorAssignment.entity_type == 'gara',
+            DirectorAssignment.entity_type == "gara",
             DirectorAssignment.entity_id == gara.id,
-            DirectorAssignment.user_id == current_user.id
+            DirectorAssignment.user_id == current_user.id,
         )
-        .first() is not None
+        .first()
+        is not None
     )
-    
+
     # Check if user is a director of the campionato (if gara is not standalone)
     is_campionato_director = False
     if not gara.is_standalone and gara.campionato_id:
         is_campionato_director = (
             db.session.query(DirectorAssignment)
             .filter(
-                DirectorAssignment.entity_type == 'campionato',
+                DirectorAssignment.entity_type == "campionato",
                 DirectorAssignment.entity_id == gara.campionato_id,
-                DirectorAssignment.user_id == current_user.id
+                DirectorAssignment.user_id == current_user.id,
             )
-            .first() is not None
+            .first()
+            is not None
         )
-    
+
     # Any director (principal or co-director) can manage other directors
     can_manage_directors = current_user.is_admin or (
-        current_user.is_director and (
-            is_gara_director or is_campionato_director or
-            (gara.is_standalone and gara.director_id == current_user.id)
+        current_user.is_director
+        and (
+            is_gara_director
+            or is_campionato_director
+            or (gara.is_standalone and gara.director_id == current_user.id)
         )
     )
     show_admin_management = current_user.is_admin
     show_director_management = current_user.is_director and can_manage_directors
-    
+
     # Ottieni l'ultima classificazione disponibile (sempre mostrata dal round 1 in poi)
     current_round_classification = None
     latest_round_with_classification = None
-    
+
     if gara.current_round > 0:
         # Cerca la classificazione più recente disponibile (partendo dal round corrente)
         for round_num in range(gara.current_round, 0, -1):
-            classification = RoundClassification.query.filter_by(
-                gara_id=gara_id, round_number=round_num
-            ).order_by(RoundClassification.position).all()
-            
+            classification = (
+                RoundClassification.query.filter_by(
+                    gara_id=gara_id, round_number=round_num
+                )
+                .order_by(RoundClassification.position)
+                .all()
+            )
+
             if classification:
                 current_round_classification = classification
                 latest_round_with_classification = round_num
                 break
-    
+
+    # Get challenge classification data for random strategy garas
+    challenge_classification = None
+    gara_challenges = None
+    if gara.matchmaking_strategy == "random":
+        from models.challenge import GaraChallengeService
+
+        if GaraChallengeService.has_active_challenges(gara_id):
+            challenge_classification = GaraChallengeService.update_gara_classification(
+                gara_id
+            )
+            gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
+
     return render_template(
         "admin/gara_detail.html",
         gara=gara,
@@ -580,6 +640,8 @@ def gara_detail(gara_id):
         show_director_management=show_director_management,
         current_round_classification=current_round_classification,
         latest_round_with_classification=latest_round_with_classification,
+        challenge_classification=challenge_classification,
+        gara_challenges=gara_challenges,
     )
 
 
@@ -638,10 +700,11 @@ def start_first_round(gara_id):
     # Usa il service layer invece del direct database access
     try:
         from models import db, Gara
+
         gara = db.session.get(Gara, gara_id)
-        
+
         GaraService.start_first_round(gara_id)
-        
+
         if gara and gara.matchmaking_strategy == "random":
             flash("Gara avviata! Tutti i turni sono stati creati.", "success")
         else:
@@ -659,7 +722,10 @@ def cancel_first_round(gara_id):
     """Cancella l'avvio del primo turno se non ci sono risultati"""
     try:
         GaraService.cancel_first_round_startup(gara_id)
-        flash("Avvio del primo turno cancellato con successo! La gara è tornata allo stato di iscrizioni.", "success")
+        flash(
+            "Avvio del primo turno cancellato con successo! La gara è tornata allo stato di iscrizioni.",
+            "success",
+        )
     except ValueError as ve:
         flash(str(ve), "error")
 
@@ -676,24 +742,30 @@ def close_inscriptions(gara_id):
         if not gara:
             flash("Gara non trovata.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-        
+
         # Verifica che la gara sia in stato inscription
         if gara.status != GaraStatus.INSCRIPTION.value:
             flash("La gara non è in stato di iscrizione.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-        
+
         # Verifica che non ci siano iscrizioni attive
         if gara.get_active_inscriptions_count() > 0:
-            flash("Non è possibile chiudere le iscrizioni quando ci sono già degli iscritti.", "error")
+            flash(
+                "Non è possibile chiudere le iscrizioni quando ci sono già degli iscritti.",
+                "error",
+            )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-        
+
         # Usa il service layer per tornare allo stato setup
         ProvaStateMachine.reopen_setup(gara)
-        flash("Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.", "success")
-        
+        flash(
+            "Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.",
+            "success",
+        )
+
     except Exception as e:
         flash(f"Errore durante la chiusura delle iscrizioni: {str(e)}", "error")
-    
+
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
@@ -704,7 +776,10 @@ def cancel_current_round(gara_id):
     """Cancella l'avvio del turno corrente se non ci sono risultati"""
     try:
         gara = GaraService.cancel_current_round_startup(gara_id)
-        flash(f"Avvio del turno {gara.current_round + 1} cancellato con successo!", "success")
+        flash(
+            f"Avvio del turno {gara.current_round + 1} cancellato con successo!",
+            "success",
+        )
     except ValueError as ve:
         flash(str(ve), "error")
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -728,9 +803,12 @@ def gara_results_overview(gara_id):
 
     # Debug
     import logging
+
     logging.warning(f"DEBUG results_overview: gara.rounds_count = {gara.rounds_count}")
     for round_num, matches in matches_by_round.items():
-        logging.warning(f"DEBUG results_overview: Round {round_num} has {len(matches)} matches")
+        logging.warning(
+            f"DEBUG results_overview: Round {round_num} has {len(matches)} matches"
+        )
 
     return render_template(
         "admin/gara_result_overview.html",
@@ -778,16 +856,14 @@ def amalfi_classification(gara_id, round_number):
     classification = get_amalfi_classification(gara_id, round_number)
     if not classification:
         # Calcola classifica se non esiste (questo metodo ritorna tuple, non oggetti)
-        RoundClassification.calculate_classification_after_round(
-            gara_id, round_number
-        )
+        RoundClassification.calculate_classification_after_round(gara_id, round_number)
         # Ricarica la classifica dopo il calcolo (ora sono oggetti RoundClassification)
         classification = get_amalfi_classification(gara_id, round_number)
 
     # Statistiche aggiuntive
     total_players = len(classification)
     inscriptions = Inscription.query.filter_by(gara_id=gara_id).all()
-    
+
     # Aggiungi tutti i matches per la navigazione turni
     all_matches = Match.query.filter_by(gara_id=gara_id).all()
 
@@ -808,33 +884,47 @@ def amalfi_classification(gara_id, round_number):
 def amalfi_preview_round(gara_id, round_number):
     """Anteprima di un turno Amalfi senza creare le partite"""
     from amalfi.engine import AmalfiEngine
-    
+
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         return jsonify({"success": False, "error": "Gara non trovata"}), 404
-    
+
     try:
         # Validazioni preliminari
         if round_number < 1 or round_number > gara.rounds_count:
-            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
-            
+            return jsonify(
+                {"success": False, "error": f"Turno {round_number} non valido!"}
+            )
+
         if round_number <= gara.current_round:
-            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
-            
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Il turno {round_number} è già stato avviato!",
+                }
+            )
+
         if round_number != gara.current_round + 1:
-            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
+                }
+            )
 
         # Usa il motore Amalfi per calcolare gli abbinamenti senza crearli
         engine = AmalfiEngine(gara)
         preview_data = engine.preview_round_pairings(round_number)
-        
-        return jsonify({
-            "success": True,
-            "matches": preview_data["matches"],
-            "stats": preview_data["stats"],
-            "salto": preview_data.get("salto", 0)
-        })
-        
+
+        return jsonify(
+            {
+                "success": True,
+                "matches": preview_data["matches"],
+                "stats": preview_data["stats"],
+                "salto": preview_data.get("salto", 0),
+            }
+        )
+
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
@@ -851,17 +941,29 @@ def amalfi_start_round(gara_id, round_number):
     try:
         # Validazioni preliminari
         if round_number < 1 or round_number > gara.rounds_count:
-            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
-            
+            return jsonify(
+                {"success": False, "error": f"Turno {round_number} non valido!"}
+            )
+
         # Controlla se il turno è già stato avviato (idempotenza)
         existing_matches = Match.query.filter_by(
             gara_id=gara_id, round_number=round_number
         ).first()
         if existing_matches:
-            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
-            
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Il turno {round_number} è già stato avviato!",
+                }
+            )
+
         if round_number != gara.current_round + 1:
-            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
+                }
+            )
 
         validation = validate_amalfi_configuration(gara)
         if not validation["is_valid"]:
@@ -876,7 +978,12 @@ def amalfi_start_round(gara_id, round_number):
                 m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
             ]
             if incomplete_prev:
-                return jsonify({"success": False, "error": f"Completa prima tutte le partite del turno {round_number-1}!"})
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"Completa prima tutte le partite del turno {round_number-1}!",
+                    }
+                )
 
         # Crea il turno Amalfi usando il service layer
         total, n_normal, n_bye, n_trio = GaraService.create_amalfi_round(
@@ -886,10 +993,10 @@ def amalfi_start_round(gara_id, round_number):
         # Aggiorna lo stato della gara
         if gara.status != GaraStatus.PLAYING.value:
             gara = GaraService.start_playing(gara.id)
-        
+
         # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
         db.session.refresh(gara)
-        
+
         # Aggiorna il turno corrente DOPO il cambio di stato
         gara.current_round = round_number
         db.session.add(gara)
@@ -905,17 +1012,24 @@ def amalfi_start_round(gara_id, round_number):
         if n_trio:
             details.append(f"Trii: {n_trio}")
 
-        return jsonify({
-            "success": True, 
-            "message": message,
-            "details": details,
-            "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": message,
+                "details": details,
+                "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id),
+            }
+        )
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)})
     except Exception as e:
-        return jsonify({"success": False, "error": f"Errore durante la creazione del turno: {str(e)}"})
+        return jsonify(
+            {
+                "success": False,
+                "error": f"Errore durante la creazione del turno: {str(e)}",
+            }
+        )
 
 
 @competition_bp.route("/<int:gara_id>/preview_round/<int:round_number>")
@@ -926,78 +1040,109 @@ def preview_round_generic(gara_id, round_number):
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         return jsonify({"success": False, "error": "Gara non trovata"}), 404
-    
+
     try:
         # Validazioni preliminari
         if round_number < 1 or round_number > gara.rounds_count:
-            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
-            
+            return jsonify(
+                {"success": False, "error": f"Turno {round_number} non valido!"}
+            )
+
         if round_number <= gara.current_round:
-            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
-            
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Il turno {round_number} è già stato avviato!",
+                }
+            )
+
         if round_number != gara.current_round + 1:
-            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
+                }
+            )
 
         # Usa la strategia appropriata per il preview
         strategy_name = gara.matchmaking_strategy
-        
+
         if strategy_name == "amalfi":
             from amalfi.engine import AmalfiEngine
+
             engine = AmalfiEngine(gara)
             preview_data = engine.preview_round_pairings(round_number)
-            
-            return jsonify({
-                "success": True,
-                "matches": preview_data["matches"],
-                "stats": preview_data["stats"],
-                "salto": preview_data.get("salto", 0),
-                "strategy": "amalfi"
-            })
+
+            return jsonify(
+                {
+                    "success": True,
+                    "matches": preview_data["matches"],
+                    "stats": preview_data["stats"],
+                    "salto": preview_data.get("salto", 0),
+                    "strategy": "amalfi",
+                }
+            )
         else:
             # Per altre strategie, usa il service layer per il preview
-            preview_data = GaraService.preview_round_with_strategy(gara_id, round_number)
-            
-            return jsonify({
-                "success": True,
-                "matches": preview_data.get("matches", []),
-                "stats": preview_data.get("stats", {}),
-                "strategy": strategy_name
-            })
-        
+            preview_data = GaraService.preview_round_with_strategy(
+                gara_id, round_number
+            )
+
+            return jsonify(
+                {
+                    "success": True,
+                    "matches": preview_data.get("matches", []),
+                    "stats": preview_data.get("stats", {}),
+                    "strategy": strategy_name,
+                }
+            )
+
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
 
-@competition_bp.route(
-    "/<int:gara_id>/start_round/<int:round_number>", methods=["POST"]
-)
+@competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
 @login_required
 @gara_manager_required
 def start_round_generic(gara_id, round_number):
     """Avvia un turno specifico con la strategia configurata nella gara"""
     gara = Gara.query.get_or_404(gara_id)
-    
+
     try:
         # Validazioni preliminari
         if round_number < 1 or round_number > gara.rounds_count:
-            return jsonify({"success": False, "error": f"Turno {round_number} non valido!"})
-            
+            return jsonify(
+                {"success": False, "error": f"Turno {round_number} non valido!"}
+            )
+
         # Controlla se il turno è già stato avviato (idempotenza)
         existing_matches = Match.query.filter_by(
             gara_id=gara_id, round_number=round_number
         ).first()
         if existing_matches:
-            return jsonify({"success": False, "error": f"Il turno {round_number} è già stato avviato!"})
-            
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Il turno {round_number} è già stato avviato!",
+                }
+            )
+
         if round_number != gara.current_round + 1:
-            return jsonify({"success": False, "error": f"Devi avviare prima il turno {gara.current_round + 1}!"})
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
+                }
+            )
 
         # Validazione specifica per strategia (solo Amalfi ha validazioni speciali)
         if gara.matchmaking_strategy == "amalfi":
             validation = validate_amalfi_configuration(gara)
             if not validation["is_valid"]:
                 errors = "; ".join(validation["errors"])
-                return jsonify({"success": False, "error": f"Errore configurazione: {errors}"})
+                return jsonify(
+                    {"success": False, "error": f"Errore configurazione: {errors}"}
+                )
 
         # Controlla turni precedenti completati
         if round_number > 1:
@@ -1008,7 +1153,12 @@ def start_round_generic(gara_id, round_number):
                 m for m in prev_matches if m.status != MatchStatus.COMPLETED.value
             ]
             if incomplete_prev:
-                return jsonify({"success": False, "error": f"Completa prima tutte le partite del turno {round_number-1}!"})
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"Completa prima tutte le partite del turno {round_number-1}!",
+                    }
+                )
 
         # Crea il turno usando la strategia configurata
         total, n_normal, n_bye, n_trio = GaraService.create_round_with_strategy(
@@ -1018,10 +1168,10 @@ def start_round_generic(gara_id, round_number):
         # Aggiorna lo stato della gara
         if gara.status != GaraStatus.PLAYING.value:
             gara = GaraService.start_playing(gara.id)
-        
+
         # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
         db.session.refresh(gara)
-        
+
         # Aggiorna il turno corrente DOPO il cambio di stato
         gara.current_round = round_number
         db.session.add(gara)
@@ -1031,7 +1181,7 @@ def start_round_generic(gara_id, round_number):
         strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
         message = f"Turno {round_number} avviato con strategia {strategy_name}!"
         details = [f"Partite totali: {total}"]
-        
+
         if n_normal:
             details.append(f"Partite normali: {n_normal}")
         if n_bye:
@@ -1039,17 +1189,24 @@ def start_round_generic(gara_id, round_number):
         if n_trio:
             details.append(f"Trii: {n_trio}")
 
-        return jsonify({
-            "success": True, 
-            "message": message,
-            "details": details,
-            "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": message,
+                "details": details,
+                "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id),
+            }
+        )
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)})
     except Exception as e:
-        return jsonify({"success": False, "error": f"Errore durante la creazione del turno: {str(e)}"})
+        return jsonify(
+            {
+                "success": False,
+                "error": f"Errore durante la creazione del turno: {str(e)}",
+            }
+        )
 
 
 # ============ GESTIONE TRII ============
@@ -1092,6 +1249,7 @@ def trio_reset(trio_id):
 # ────────────────────────────────────────────────────────────────────────────────
 # DIRECTOR MANAGEMENT
 # ────────────────────────────────────────────────────────────────────────────────
+
 
 @competition_bp.route("/<int:gara_id>/add_director", methods=["POST"])
 @login_required
@@ -1146,36 +1304,41 @@ def admin_uninscribe_user(gara_id, user_id):
     from models.notification.services import NotificationService
     from models.user.models import User
     from models.competition.models import Gara
-    
+
     try:
         # Verifica che l'utente esista
         user = db.session.get(User, user_id)
         if not user:
             flash("Utente non trovato.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-        
+
         # Verifica che la gara esista
         gara = db.session.get(Gara, gara_id)
         if not gara:
             flash("Gara non trovata.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-        
+
         # Verifica che la gara sia ancora in fase di iscrizioni
         if gara.status != GaraStatus.INSCRIPTION.value:
-            flash("Non è possibile disiscrivere utenti quando il primo turno è già iniziato.", "error")
+            flash(
+                "Non è possibile disiscrivere utenti quando il primo turno è già iniziato.",
+                "error",
+            )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-        
+
         # Esegui la disiscrizione
-        success = InscriptionService.admin_uninscribe_user(user_id, gara_id, current_user.id)
-        
+        success = InscriptionService.admin_uninscribe_user(
+            user_id, gara_id, current_user.id
+        )
+
         if success:
             flash(f"Utente {user.username} discritto con successo.", "success")
         else:
             flash("Errore: utente non iscritto a questa gara.", "error")
-            
+
     except Exception as e:
         flash(f"Errore durante la disiscrizione: {str(e)}", "error")
-    
+
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
@@ -1183,41 +1346,49 @@ def admin_uninscribe_user(gara_id, user_id):
 # CHALLENGE MANAGEMENT (Random Tournaments only)
 # ────────────────────────────────────────────────────────────────────────────────
 
+
 @competition_bp.route("/<int:gara_id>/challenges")
 @login_required
 @gara_manager_required
 def get_gara_challenges(gara_id):
     """Get active challenges for a gara (AJAX endpoint)."""
     from models.challenge import GaraChallengeService
-    
+
     gara = db.session.get(Gara, gara_id)
     if not gara:
         return jsonify({"success": False, "error": "Gara non trovata"}), 404
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":
-        return jsonify({"success": False, "error": "Challenge disponibili solo per tornei Random"}), 400
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Challenge disponibili solo per tornei Random",
+                }
+            ),
+            400,
+        )
 
     try:
         gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
         challenges_data = []
-        
-        for gara_challenge in gara_challenges:
-            challenges_data.append({
-                "id": gara_challenge.id,
-                "challenge_id": gara_challenge.challenge_id,
-                "challenge_name": gara_challenge.challenge.get_display_name(),
-                "challenge_description": gara_challenge.challenge.description,
-                "challenge_image_filename": gara_challenge.challenge.image_filename,
-                "round_number": gara_challenge.round_number,
-                "max_attempts": gara_challenge.max_attempts,
-                "is_active": gara_challenge.is_active,
-            })
 
-        return jsonify({
-            "success": True,
-            "challenges": challenges_data
-        })
+        for gara_challenge in gara_challenges:
+            challenges_data.append(
+                {
+                    "id": gara_challenge.id,
+                    "challenge_id": gara_challenge.challenge_id,
+                    "challenge_name": gara_challenge.challenge.get_display_name(),
+                    "challenge_description": gara_challenge.challenge.description,
+                    "challenge_image_filename": gara_challenge.challenge.image_filename,
+                    "round_number": gara_challenge.round_number,
+                    "max_attempts": gara_challenge.max_attempts,
+                    "is_active": gara_challenge.is_active,
+                }
+            )
+
+        return jsonify({"success": True, "challenges": challenges_data})
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -1229,25 +1400,44 @@ def get_gara_challenges(gara_id):
 def add_challenge_to_gara(gara_id):
     """Add a challenge to a gara (AJAX endpoint)."""
     from models.challenge import GaraChallengeService
-    
+
     gara = db.session.get(Gara, gara_id)
     if not gara:
         return jsonify({"success": False, "error": "Gara non trovata"}), 404
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":
-        return jsonify({"success": False, "error": "Challenge disponibili solo per tornei Random"}), 400
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Challenge disponibili solo per tornei Random",
+                }
+            ),
+            400,
+        )
 
     # Solo se la gara non è ancora iniziata (SETUP o INSCRIPTION)
     if gara.status not in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]:
-        return jsonify({"success": False, "error": "Non è possibile aggiungere challenge dopo l'inizio della gara"}), 400
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Non è possibile aggiungere challenge dopo l'inizio della gara",
+                }
+            ),
+            400,
+        )
 
     try:
         # Validazione input
         challenge_id_str = request.form.get("challenge_id", "").strip()
         if not challenge_id_str:
-            return jsonify({"success": False, "error": "Devi selezionare una challenge"}), 400
-        
+            return (
+                jsonify({"success": False, "error": "Devi selezionare una challenge"}),
+                400,
+            )
+
         challenge_id = int(challenge_id_str)
         round_number = int(request.form["round_number"])
         max_attempts = int(request.form["max_attempts"])
@@ -1257,19 +1447,29 @@ def add_challenge_to_gara(gara_id):
             challenge_id=challenge_id,
             round_number=round_number,
             max_attempts=max_attempts,
-            added_by_id=current_user.id
+            added_by_id=current_user.id,
         )
 
-        return jsonify({
-            "success": True,
-            "message": "Challenge aggiunta con successo",
-            "gara_challenge_id": gara_challenge.id
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": "Challenge aggiunta con successo",
+                "gara_challenge_id": gara_challenge.id,
+            }
+        )
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"success": False, "error": f"Errore durante l'aggiunta della challenge: {str(e)}"}), 500
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Errore durante l'aggiunta della challenge: {str(e)}",
+                }
+            ),
+            500,
+        )
 
 
 @competition_bp.route("/<int:gara_id>/remove_challenge", methods=["POST"])
@@ -1278,21 +1478,32 @@ def add_challenge_to_gara(gara_id):
 def remove_challenge_from_gara(gara_id):
     """Remove a challenge from a gara (AJAX endpoint)."""
     from models.challenge import GaraChallengeService, GaraChallenge
-    
+
     gara = db.session.get(Gara, gara_id)
     if not gara:
         return jsonify({"success": False, "error": "Gara non trovata"}), 404
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":
-        return jsonify({"success": False, "error": "Challenge disponibili solo per tornei Random"}), 400
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Challenge disponibili solo per tornei Random",
+                }
+            ),
+            400,
+        )
 
     try:
         data = request.get_json()
         gara_challenge_id = data.get("gara_challenge_id")
-        
+
         if not gara_challenge_id:
-            return jsonify({"success": False, "error": "ID gara challenge mancante"}), 400
+            return (
+                jsonify({"success": False, "error": "ID gara challenge mancante"}),
+                400,
+            )
 
         # Verifica che la gara challenge appartenga alla gara corretta
         gara_challenge = GaraChallenge.query.get(gara_challenge_id)
@@ -1305,15 +1516,22 @@ def remove_challenge_from_gara(gara_id):
         )
 
         if success:
-            return jsonify({
-                "success": True,
-                "message": "Challenge rimossa con successo"
-            })
+            return jsonify(
+                {"success": True, "message": "Challenge rimossa con successo"}
+            )
         else:
             return jsonify({"success": False, "error": "Challenge non trovata"}), 404
 
     except Exception as e:
-        return jsonify({"success": False, "error": f"Errore durante la rimozione della challenge: {str(e)}"}), 500
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Errore durante la rimozione della challenge: {str(e)}",
+                }
+            ),
+            500,
+        )
 
 
 @competition_bp.route("/<int:gara_id>/challenges/available")
@@ -1323,42 +1541,47 @@ def get_available_challenges_for_gara(gara_id):
     """Get available challenges for selection, excluding those already added to the gara (AJAX endpoint)."""
     from models.challenge import Challenge
     from models.challenge.gara_challenge_service import GaraChallengeService
-    
+
     try:
         gara = Gara.query.get_or_404(gara_id)
-        
+
         # Get all active challenges
-        all_challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.description).all()
-        
+        all_challenges = (
+            Challenge.query.filter_by(is_active=True)
+            .order_by(Challenge.description)
+            .all()
+        )
+
         # Get challenge IDs already assigned to this gara
         assigned_challenges = GaraChallengeService.get_gara_challenges(gara_id)
         assigned_challenge_ids = {gc.challenge_id for gc in assigned_challenges}
-        
+
         # Filter out challenges already assigned to this gara
-        available_challenges = [c for c in all_challenges if c.id not in assigned_challenge_ids]
-        
+        available_challenges = [
+            c for c in all_challenges if c.id not in assigned_challenge_ids
+        ]
+
         challenges_data = []
         for challenge in available_challenges:
             # Assicura che il percorso dell'immagine sia corretto
             image_filename = None
             if challenge.image_path:
-                if challenge.image_path.startswith('uploads/'):
-                    image_filename = challenge.image_path.split('/')[-1]
+                if challenge.image_path.startswith("uploads/"):
+                    image_filename = challenge.image_path.split("/")[-1]
                 else:
                     image_filename = challenge.image_path
-                    
-            challenges_data.append({
-                "id": challenge.id,
-                "name": challenge.get_display_name(),
-                "description": challenge.description,
-                "pass_fail_only": challenge.pass_fail_only,
-                "image_filename": image_filename,
-            })
 
-        return jsonify({
-            "success": True,
-            "challenges": challenges_data
-        })
+            challenges_data.append(
+                {
+                    "id": challenge.id,
+                    "name": challenge.get_display_name(),
+                    "description": challenge.description,
+                    "pass_fail_only": challenge.pass_fail_only,
+                    "image_filename": image_filename,
+                }
+            )
+
+        return jsonify({"success": True, "challenges": challenges_data})
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -1370,32 +1593,35 @@ def get_available_challenges_for_gara(gara_id):
 def get_available_challenges():
     """Get all available challenges for selection (AJAX endpoint)."""
     from models.challenge import Challenge
-    
+
     try:
-        challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.description).all()
-        
+        challenges = (
+            Challenge.query.filter_by(is_active=True)
+            .order_by(Challenge.description)
+            .all()
+        )
+
         challenges_data = []
         for challenge in challenges:
             # Assicura che il percorso dell'immagine sia corretto
             image_filename = None
             if challenge.image_path:
-                if challenge.image_path.startswith('uploads/'):
-                    image_filename = challenge.image_path.split('/')[-1]
+                if challenge.image_path.startswith("uploads/"):
+                    image_filename = challenge.image_path.split("/")[-1]
                 else:
                     image_filename = challenge.image_path
-                    
-            challenges_data.append({
-                "id": challenge.id,
-                "name": challenge.get_display_name(),
-                "description": challenge.description,
-                "pass_fail_only": challenge.pass_fail_only,
-                "image_filename": image_filename,
-            })
 
-        return jsonify({
-            "success": True,
-            "challenges": challenges_data
-        })
+            challenges_data.append(
+                {
+                    "id": challenge.id,
+                    "name": challenge.get_display_name(),
+                    "description": challenge.description,
+                    "pass_fail_only": challenge.pass_fail_only,
+                    "image_filename": image_filename,
+                }
+            )
+
+        return jsonify({"success": True, "challenges": challenges_data})
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -1403,80 +1629,120 @@ def get_available_challenges():
 
 @competition_bp.route("/challenges/create", methods=["POST"])
 @login_required
-@admin_required  
+@admin_required
 def create_new_challenge():
     """Create a new challenge (AJAX endpoint)."""
     from models.challenge import ChallengeService
     import os
     from werkzeug.utils import secure_filename
     from flask import current_app
-    
+
     try:
         description = request.form["description"].strip()
         pass_fail_only = request.form.get("pass_fail_only", "false").lower() == "true"
-        
-        if not description:
-            return jsonify({"success": False, "error": "La descrizione è obbligatoria"}), 400
 
+        if not description:
+            return (
+                jsonify({"success": False, "error": "La descrizione è obbligatoria"}),
+                400,
+            )
 
         # Handle image upload (required)
-        image_path = None
-        if 'image' not in request.files or not request.files['image'].filename:
-            return jsonify({"success": False, "error": "L'immagine è obbligatoria"}), 400
-            
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename:
-                # Check file size (max 5MB)
-                file.seek(0, os.SEEK_END)
-                file_size = file.tell()
-                file.seek(0)
-                
-                if file_size > 5 * 1024 * 1024:  # 5MB
-                    return jsonify({"success": False, "error": "Immagine troppo grande (max 5MB)"}), 400
+        if "image" not in request.files or not request.files["image"].filename:
+            return (
+                jsonify({"success": False, "error": "L'immagine è obbligatoria"}),
+                400,
+            )
 
-                import uuid
-                
-                filename = secure_filename(file.filename)
-                if filename:
-                    # Check file extension
-                    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-                    file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else None
-                    
-                    if not file_extension or file_extension not in allowed_extensions:
-                        return jsonify({"success": False, "error": "Formato file non supportato. Usa JPG, PNG, GIF o WebP"}), 400
-                    
-                    # Generate unique filename
-                    unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
-                    
-                    # Ensure uploads directory exists in static folder
-                    uploads_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'challenges')
-                    os.makedirs(uploads_dir, exist_ok=True)
-                    
-                    # Save file
-                    file_path = os.path.join(uploads_dir, unique_filename)
-                    file.save(file_path)
-                    image_path = f"uploads/challenges/{unique_filename}"
+        file = request.files["image"]
+        if not file or not file.filename:
+            return (
+                jsonify({"success": False, "error": "L'immagine è obbligatoria"}),
+                400,
+            )
+
+        # Check file size (max 5MB)
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)
+
+        if file_size > 5 * 1024 * 1024:  # 5MB
+            return (
+                jsonify(
+                    {"success": False, "error": "Immagine troppo grande (max 5MB)"}
+                ),
+                400,
+            )
+
+        import uuid
+
+        filename = secure_filename(file.filename)
+        if not filename:
+            return (
+                jsonify({"success": False, "error": "Nome file non valido"}),
+                400,
+            )
+
+        # Check file extension
+        allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
+        file_extension = (
+            filename.rsplit(".", 1)[1].lower() if "." in filename else None
+        )
+
+        if not file_extension or file_extension not in allowed_extensions:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Formato file non supportato. Usa JPG, PNG, GIF o WebP",
+                    }
+                ),
+                400,
+            )
+
+        # Generate unique filename
+        unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+
+        # Ensure uploads directory exists in static folder
+        uploads_dir = os.path.join(
+            current_app.root_path, "static", "uploads", "challenges"
+        )
+        os.makedirs(uploads_dir, exist_ok=True)
+
+        # Save file
+        file_path = os.path.join(uploads_dir, unique_filename)
+        file.save(file_path)
+        image_path = f"uploads/challenges/{unique_filename}"
 
         # Create the challenge
         challenge = ChallengeService.create_challenge(
             description=description,
             pass_fail_only=pass_fail_only,
             image_path=image_path,
-            created_by_id=current_user.id
+            created_by_id=current_user.id,
         )
 
-        return jsonify({
-            "success": True,
-            "message": "Challenge creata con successo",
-            "challenge_id": challenge.id,
-            "challenge_name": challenge.get_display_name()
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": "Challenge creata con successo",
+                "challenge_id": challenge.id,
+                "challenge_name": challenge.get_display_name(),
+            }
+        )
 
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"success": False, "error": f"Errore durante la creazione della challenge: {str(e)}"}), 500
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Errore durante la creazione della challenge: {str(e)}",
+                }
+            ),
+            500,
+        )
 
 
 @competition_bp.route("/<int:gara_id>/challenge_classification")
@@ -1485,7 +1751,7 @@ def create_new_challenge():
 def get_gara_challenge_classification(gara_id):
     """Get challenge classification for a gara."""
     from models.challenge import GaraChallengeService
-    
+
     gara = db.session.get(Gara, gara_id)
     if not gara:
         abort(404)
@@ -1518,24 +1784,29 @@ def get_gara_challenge_classification(gara_id):
 # ADVANCED ROUND MANAGEMENT ROUTES - Use Case 8
 # ====================================================================
 
+
 @competition_bp.route("/<int:gara_id>/round_management")
 @login_required
 @gara_manager_required
 def round_management_overview(gara_id):
     """Overview of round management with modification capabilities."""
     from models.competition.round_manager import AdvancedRoundManager
-    
+
     gara = db.session.get(Gara, gara_id)
     if not gara:
         abort(404)
 
     # Get round modification summary
     rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
-    
+
     # Get all matches grouped by round
     matches_by_round = {}
-    all_matches = Match.query.filter_by(gara_id=gara_id).order_by(Match.round_number, Match.id).all()
-    
+    all_matches = (
+        Match.query.filter_by(gara_id=gara_id)
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+
     for match in all_matches:
         round_num = match.round_number
         if round_num not in matches_by_round:
@@ -1546,70 +1817,85 @@ def round_management_overview(gara_id):
         "admin/round_management.html",
         gara=gara,
         rounds_summary=rounds_summary,
-        matches_by_round=matches_by_round
+        matches_by_round=matches_by_round,
     )
 
 
-@competition_bp.route("/<int:gara_id>/match/<int:match_id>/reset_advanced", methods=["POST"])
+@competition_bp.route(
+    "/<int:gara_id>/match/<int:match_id>/reset_advanced", methods=["POST"]
+)
 @login_required
 @gara_manager_required
 def reset_match_advanced(gara_id, match_id):
     """Reset a match with advanced validation and classification updates."""
     from models.competition.round_manager import AdvancedRoundManager
-    
+
     admin_override = request.form.get("admin_override") == "true"
-    
+
     success, message = AdvancedRoundManager.reset_match_with_validation(
         match_id, admin_override=admin_override
     )
-    
+
     if success:
         flash(message, "success")
     else:
         flash(message, "danger")
-    
-    return redirect(url_for("admin.competition.round_management_overview", gara_id=gara_id))
+
+    return redirect(
+        url_for("admin.competition.round_management_overview", gara_id=gara_id)
+    )
 
 
-@competition_bp.route("/<int:gara_id>/round/<int:round_number>/cancel", methods=["POST"])
+@competition_bp.route(
+    "/<int:gara_id>/round/<int:round_number>/cancel", methods=["POST"]
+)
 @login_required
 @gara_manager_required
 def cancel_round_advanced(gara_id, round_number):
     """Cancel an entire round with proper validation."""
     from models.competition.round_manager import AdvancedRoundManager
-    
+
     admin_override = request.form.get("admin_override") == "true"
-    
+
     success, message = AdvancedRoundManager.cancel_round(
         gara_id, round_number, admin_override=admin_override
     )
-    
+
     if success:
         flash(message, "success")
     else:
         flash(message, "danger")
-    
-    return redirect(url_for("admin.competition.round_management_overview", gara_id=gara_id))
+
+    return redirect(
+        url_for("admin.competition.round_management_overview", gara_id=gara_id)
+    )
 
 
-@competition_bp.route("/<int:gara_id>/round/<int:round_number>/bulk_reset", methods=["POST"])
+@competition_bp.route(
+    "/<int:gara_id>/round/<int:round_number>/bulk_reset", methods=["POST"]
+)
 @login_required
 @gara_manager_required
 def bulk_reset_round_matches(gara_id, round_number):
     """Reset all matches in a round."""
     from models.competition.round_manager import AdvancedRoundManager
-    
+
     success, message, stats = AdvancedRoundManager.bulk_reset_round_matches(
         gara_id, round_number
     )
-    
+
     if success:
         flash(f"{message}. {stats['reset_count']} match resettati.", "success")
     else:
-        flash(f"{message}. {stats.get('reset_count', 0)} match resettati, "
-              f"{stats.get('error_count', 0)} errori.", "warning")
-    
-    return redirect(url_for("admin.competition.round_management_overview", gara_id=gara_id))
+        flash(
+            f"{message}. {stats.get('reset_count', 0)} match resettati, "
+            f"{stats.get('error_count', 0)} errori.",
+            "warning",
+        )
+
+    return redirect(
+        url_for("admin.competition.round_management_overview", gara_id=gara_id)
+    )
 
 
 @competition_bp.route("/<int:gara_id>/match/<int:match_id>/modification_check")
@@ -1618,32 +1904,36 @@ def bulk_reset_round_matches(gara_id, round_number):
 def check_match_modification(gara_id, match_id):
     """AJAX endpoint to check if a match can be modified."""
     from models.competition.round_manager import AdvancedRoundManager
-    
+
     can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
-    
-    return jsonify({
-        "can_modify": can_modify,
-        "reason": reason if not can_modify else "",
-        "match_id": match_id
-    })
+
+    return jsonify(
+        {
+            "can_modify": can_modify,
+            "reason": reason if not can_modify else "",
+            "match_id": match_id,
+        }
+    )
 
 
 @competition_bp.route("/<int:gara_id>/round_status")
-@login_required 
+@login_required
 @gara_manager_required
 def get_round_status(gara_id):
     """AJAX endpoint to get current round status."""
     from models.competition.round_manager import AdvancedRoundManager
-    
+
     gara = db.session.get(Gara, gara_id)
     if not gara:
         return jsonify({"error": "Gara non trovata"}), 404
-    
+
     rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
-    
-    return jsonify({
-        "current_round": gara.current_round,
-        "total_rounds": gara.rounds_count,
-        "gara_status": gara.status,
-        "rounds_summary": rounds_summary
-    })
+
+    return jsonify(
+        {
+            "current_round": gara.current_round,
+            "total_rounds": gara.rounds_count,
+            "gara_status": gara.status,
+            "rounds_summary": rounds_summary,
+        }
+    )

@@ -33,27 +33,25 @@ class GaraChallengeService:
     ) -> GaraChallenge:
         """
         Add a challenge to a gara.
-        
+
         Args:
             gara_id: ID of the gara
             challenge_id: ID of the challenge to add
             round_number: After which round to execute the challenge
             max_attempts: Maximum attempts per player (default 1)
             added_by_id: ID of user adding the challenge
-            
+
         Returns:
             GaraChallenge: The created gara challenge link
-            
+
         Raises:
             ValueError: If challenge already exists for this gara and round
         """
         # Check if challenge already exists for this gara and round
         existing = GaraChallenge.query.filter_by(
-            gara_id=gara_id,
-            challenge_id=challenge_id,
-            round_number=round_number
+            gara_id=gara_id, challenge_id=challenge_id, round_number=round_number
         ).first()
-        
+
         if existing:
             raise ValueError("Challenge già presente per questo round della gara")
 
@@ -69,7 +67,7 @@ class GaraChallengeService:
             round_number=round_number,
             max_attempts=max_attempts,
             added_by_id=added_by_id,
-            is_active=True
+            is_active=True,
         )
 
         try:
@@ -81,22 +79,22 @@ class GaraChallengeService:
             raise ValueError("Errore durante l'aggiunta della challenge alla gara")
 
     @staticmethod
-    def remove_challenge_from_gara(gara_id: int, challenge_id: int, round_number: int) -> bool:
+    def remove_challenge_from_gara(
+        gara_id: int, challenge_id: int, round_number: int
+    ) -> bool:
         """
         Remove a challenge from a gara.
-        
+
         Args:
             gara_id: ID of the gara
             challenge_id: ID of the challenge to remove
             round_number: Round number for the challenge
-            
+
         Returns:
             bool: True if removed successfully, False if not found
         """
         gara_challenge = GaraChallenge.query.filter_by(
-            gara_id=gara_id,
-            challenge_id=challenge_id,
-            round_number=round_number
+            gara_id=gara_id, challenge_id=challenge_id, round_number=round_number
         ).first()
 
         if not gara_challenge:
@@ -116,41 +114,51 @@ class GaraChallengeService:
         return True
 
     @staticmethod
-    def get_gara_challenges(gara_id: int, round_number: Optional[int] = None) -> List[GaraChallenge]:
+    def get_gara_challenges(
+        gara_id: int, round_number: Optional[int] = None
+    ) -> List[GaraChallenge]:
         """
         Get all active challenges for a gara.
-        
+
         Args:
             gara_id: ID of the gara
             round_number: Optional filter by round number
-            
+
         Returns:
             List[GaraChallenge]: List of gara challenges
         """
         query = GaraChallenge.query.filter_by(gara_id=gara_id, is_active=True)
-        
+
         if round_number is not None:
             query = query.filter_by(round_number=round_number)
-            
-        return query.order_by(GaraChallenge.round_number, GaraChallenge.created_at).all()
+
+        return query.order_by(
+            GaraChallenge.round_number, GaraChallenge.created_at
+        ).all()
 
     @staticmethod
-    def get_available_challenges_for_round(gara_id: int, current_round: int) -> List[GaraChallenge]:
+    def get_available_challenges_for_round(
+        gara_id: int, current_round: int
+    ) -> List[GaraChallenge]:
         """
         Get challenges that should be available for the current round.
-        
+
         Args:
             gara_id: ID of the gara
             current_round: Current round number
-            
+
         Returns:
             List[GaraChallenge]: Challenges available for this round
         """
-        return GaraChallenge.query.filter(
-            GaraChallenge.gara_id == gara_id,
-            GaraChallenge.round_number <= current_round,
-            GaraChallenge.is_active == True
-        ).order_by(GaraChallenge.round_number).all()
+        return (
+            GaraChallenge.query.filter(
+                GaraChallenge.gara_id == gara_id,
+                GaraChallenge.round_number <= current_round,
+                GaraChallenge.is_active == True,
+            )
+            .order_by(GaraChallenge.round_number)
+            .all()
+        )
 
     @staticmethod
     def record_challenge_attempt(
@@ -163,7 +171,7 @@ class GaraChallengeService:
     ) -> GaraChallengeAttempt:
         """
         Record a challenge attempt for a user in a gara.
-        
+
         Args:
             gara_challenge_id: ID of the gara challenge
             user_id: ID of the user making the attempt
@@ -171,10 +179,10 @@ class GaraChallengeService:
             passed: Pass/fail result (for pass/fail challenges)
             notes: Optional notes about the attempt
             round_when_attempted: Round when attempt was made
-            
+
         Returns:
             GaraChallengeAttempt: The recorded attempt
-            
+
         Raises:
             ValueError: If user has reached max attempts or other validation errors
         """
@@ -184,7 +192,9 @@ class GaraChallengeService:
 
         # Check if user can make another attempt
         if not gara_challenge.can_user_attempt(user_id):
-            raise ValueError(f"Utente ha già raggiunto il massimo numero di tentativi ({gara_challenge.max_attempts})")
+            raise ValueError(
+                f"Utente ha già raggiunto il massimo numero di tentativi ({gara_challenge.max_attempts})"
+            )
 
         # Get next attempt number for this user
         attempt_number = gara_challenge.get_user_attempts_count(user_id) + 1
@@ -199,15 +209,17 @@ class GaraChallengeService:
         )
 
         # Complete the attempt with the provided score/result
-        attempt.complete_attempt(score=score, passed=passed)
+        attempt.complete_attempt(
+            score=score, passed=passed, gara_challenge=gara_challenge
+        )
 
         try:
             db.session.add(attempt)
             db.session.commit()
-            
+
             # Update the gara challenge classification
             GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
-            
+
             return attempt
         except IntegrityError:
             db.session.rollback()
@@ -220,16 +232,16 @@ class GaraChallengeService:
     ) -> List[GaraChallengeAttempt]:
         """
         Record multiple challenge attempts at once (useful for match result input).
-        
+
         Args:
             attempts_data: List of attempt data dictionaries
             round_when_attempted: Round when attempts were made
-            
+
         Returns:
             List[GaraChallengeAttempt]: List of recorded attempts
         """
         recorded_attempts = []
-        
+
         try:
             for attempt_data in attempts_data:
                 attempt = GaraChallengeService.record_challenge_attempt(
@@ -241,16 +253,20 @@ class GaraChallengeService:
                     round_when_attempted=round_when_attempted,
                 )
                 recorded_attempts.append(attempt)
-                
+
             # Update classification once after all attempts
             if attempts_data:
                 first_attempt = attempts_data[0]
-                gara_challenge = GaraChallenge.query.get(first_attempt["gara_challenge_id"])
+                gara_challenge = GaraChallenge.query.get(
+                    first_attempt["gara_challenge_id"]
+                )
                 if gara_challenge:
-                    GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
-                    
+                    GaraChallengeService.update_gara_classification(
+                        gara_challenge.gara_id
+                    )
+
             return recorded_attempts
-            
+
         except Exception as e:
             db.session.rollback()
             raise ValueError(f"Errore durante la registrazione dei tentativi: {str(e)}")
@@ -259,29 +275,30 @@ class GaraChallengeService:
     def update_gara_classification(gara_id: int) -> List[GaraChallengeClassification]:
         """
         Update the challenge classification for a gara.
-        
+
         Args:
             gara_id: ID of the gara
-            
+
         Returns:
             List[GaraChallengeClassification]: Updated classification
         """
         return GaraChallengeClassification.calculate_for_gara(gara_id)
 
     @staticmethod
-    def get_gara_challenge_classification(gara_id: int) -> List[GaraChallengeClassification]:
+    def get_gara_challenge_classification(
+        gara_id: int,
+    ) -> List[GaraChallengeClassification]:
         """
         Get the current challenge classification for a gara.
-        
+
         Args:
             gara_id: ID of the gara
-            
+
         Returns:
             List[GaraChallengeClassification]: Current classification ordered by position
         """
         return (
-            GaraChallengeClassification.query
-            .filter_by(gara_id=gara_id)
+            GaraChallengeClassification.query.filter_by(gara_id=gara_id)
             .order_by(GaraChallengeClassification.position)
             .all()
         )
@@ -290,11 +307,11 @@ class GaraChallengeService:
     def get_user_gara_challenge_progress(gara_id: int, user_id: int) -> Dict[str, Any]:
         """
         Get a user's progress across all challenges in a gara.
-        
+
         Args:
             gara_id: ID of the gara
             user_id: ID of the user
-            
+
         Returns:
             Dict containing user's challenge progress
         """
@@ -309,7 +326,7 @@ class GaraChallengeService:
         for gara_challenge in gara_challenges:
             attempts = gara_challenge.get_user_attempts(user_id)
             completed_attempts = [a for a in attempts if a.completed]
-            
+
             challenge_progress = {
                 "gara_challenge": gara_challenge,
                 "challenge": gara_challenge.challenge,
@@ -326,7 +343,7 @@ class GaraChallengeService:
                 scores = [a.score or 0 for a in completed_attempts]
                 challenge_progress["best_score"] = max(scores)
                 challenge_progress["total_score"] = sum(scores)
-                
+
                 progress["total_best_score"] += challenge_progress["best_score"]
                 progress["total_all_attempts"] += challenge_progress["total_score"]
 
@@ -336,7 +353,7 @@ class GaraChallengeService:
         classification = GaraChallengeClassification.query.filter_by(
             gara_id=gara_id, user_id=user_id
         ).first()
-        
+
         if classification:
             progress["position"] = classification.position
             progress["total_players"] = GaraChallengeClassification.query.filter_by(
@@ -349,37 +366,38 @@ class GaraChallengeService:
     def has_active_challenges(gara_id: int) -> bool:
         """
         Check if a gara has any active challenges.
-        
+
         Args:
             gara_id: ID of the gara
-            
+
         Returns:
             bool: True if gara has active challenges
         """
-        return GaraChallenge.query.filter_by(
-            gara_id=gara_id, is_active=True
-        ).first() is not None
+        return (
+            GaraChallenge.query.filter_by(gara_id=gara_id, is_active=True).first()
+            is not None
+        )
 
     @staticmethod
     def get_challenge_statistics(gara_id: int) -> Dict[str, Any]:
         """
         Get overall challenge statistics for a gara.
-        
+
         Args:
             gara_id: ID of the gara
-            
+
         Returns:
             Dict containing challenge statistics
         """
         gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
         total_challenges = len(gara_challenges)
-        
+
         if total_challenges == 0:
             return {
                 "total_challenges": 0,
                 "total_attempts": 0,
                 "participating_players": 0,
-                "challenges": []
+                "challenges": [],
             }
 
         total_attempts = 0
@@ -390,10 +408,10 @@ class GaraChallengeService:
             attempts = gara_challenge.attempts.filter_by(completed=True).all()
             challenge_attempts = len(attempts)
             total_attempts += challenge_attempts
-            
+
             challenge_players = set(a.user_id for a in attempts)
             participating_players.update(challenge_players)
-            
+
             if attempts:
                 scores = [a.score or 0 for a in attempts]
                 avg_score = sum(scores) / len(scores)
@@ -402,15 +420,17 @@ class GaraChallengeService:
             else:
                 avg_score = max_score = min_score = 0
 
-            challenge_stats.append({
-                "gara_challenge": gara_challenge,
-                "challenge": gara_challenge.challenge,
-                "attempts": challenge_attempts,
-                "participating_players": len(challenge_players),
-                "avg_score": round(avg_score, 1),
-                "max_score": max_score,
-                "min_score": min_score,
-            })
+            challenge_stats.append(
+                {
+                    "gara_challenge": gara_challenge,
+                    "challenge": gara_challenge.challenge,
+                    "attempts": challenge_attempts,
+                    "participating_players": len(challenge_players),
+                    "avg_score": round(avg_score, 1),
+                    "max_score": max_score,
+                    "min_score": min_score,
+                }
+            )
 
         return {
             "total_challenges": total_challenges,

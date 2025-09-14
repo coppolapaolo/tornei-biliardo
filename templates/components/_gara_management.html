@@ -124,12 +124,6 @@
                     </div>
                 {% endif %}
                 
-                {% if gara.matchmaking_strategy == 'random' %}
-                    <a href="{{ url_for('admin.competition.get_gara_challenge_classification', gara_id=gara.id) }}" 
-                       class="btn btn-info w-100 mb-2">
-                        <i class="fas fa-chart-line"></i> Classifica Challenge
-                    </a>
-                {% endif %}
                 
                 <!-- Pulsante per cancellare l'avvio del primo turno -->
                 {% if gara.can_cancel_first_round() %}

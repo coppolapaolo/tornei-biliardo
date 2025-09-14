@@ -107,6 +107,13 @@
 </div>
 {% endif %}
 
+{# Sezione Challenge (solo per player con challenge disponibili) #}
+{% if vm.available_challenges %}
+<div class="mb-4">
+  {% include "components/_player_challenges_dashboard.html" %}
+</div>
+{% endif %}
+
 {# Sezione 1: Gare Disponibili #}
 <div class="mb-4">
   <h4><i class="fas fa-bullseye text-primary"></i> Gare</h4>

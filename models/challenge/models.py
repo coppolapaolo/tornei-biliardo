@@ -118,14 +118,18 @@ class Challenge(BaseModel, TimestampMixin):
 
     def get_display_name(self) -> str:
         """Get display name from description (first 50 chars)."""
-        short_desc = self.description[:50] + "..." if len(self.description) > 50 else self.description
+        short_desc = (
+            self.description[:50] + "..."
+            if len(self.description) > 50
+            else self.description
+        )
         return short_desc
 
     @property
     def image_filename(self) -> Optional[str]:
         """Get just the filename from image_path for template usage."""
         if self.image_path:
-            return self.image_path.split('/')[-1]
+            return self.image_path.split("/")[-1]
         return None
 
     def __repr__(self) -> str:
@@ -200,9 +204,7 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
             return int((self.score / 100) * max_rack_diff)
 
     def __repr__(self) -> str:
-        return (
-            f"<ChallengeAttempt {self.user_id} -> Challenge#{self.challenge_id}: {self.score}>"
-        )
+        return f"<ChallengeAttempt {self.user_id} -> Challenge#{self.challenge_id}: {self.score}>"
 
 
 class ChallengeFavorite(BaseModel):

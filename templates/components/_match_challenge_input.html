@@ -1,6 +1,6 @@
 {# templates/components/_match_challenge_input.html #}
 <!-- Challenge Input Component (solo per gare Random con challenge attive) -->
-{% if available_challenges and (current_user.is_admin or current_user.is_director) %}
+{% if available_challenges and (current_user.is_admin or current_user.is_director or (match and (current_user.id == match.player1_id or current_user.id == match.player2_id))) %}
 <div class="card bg-info bg-opacity-10 border-info mb-3">
     <div class="card-header bg-info bg-opacity-25">
         <h6><i class="fas fa-trophy text-warning"></i> Challenge Attive</h6>
@@ -8,7 +8,11 @@
     <div class="card-body">
         <div class="alert alert-info alert-sm mb-3">
             <i class="fas fa-info-circle"></i> 
-            Registra i tentativi delle challenge per entrambi i giocatori.
+            {% if current_user.is_admin or current_user.is_director %}
+                Registra i tentativi delle challenge per entrambi i giocatori.
+            {% else %}
+                Registra i tuoi tentativi challenge.
+            {% endif %}
         </div>
 
         {% for gara_challenge in available_challenges %}
@@ -36,7 +40,7 @@
             <form class="challenge-attempt-form" data-gara-challenge-id="{{ gara_challenge.id }}">
                 <div class="row">
                     <!-- Player 1 Input -->
-                    {% if match.player1 %}
+                    {% if match.player1 and (current_user.is_admin or current_user.is_director or current_user.id == match.player1_id or current_user.id == match.player2_id) %}
                     <div class="col-md-6">
                         <div class="player-challenge-section border rounded p-2">
                             <h6 class="text-primary mb-2">
@@ -63,8 +67,14 @@
                                     <i class="fas fa-exclamation-triangle"></i> 
                                     Tentativi esauriti ({{ p1_challenge_data.attempts_count }}/{{ p1_challenge_data.max_attempts }})
                                 </div>
-                            {% else %}
+                            {% elif current_user.id == match.player1_id or current_user.is_admin or current_user.is_director %}
                                 <div class="attempt-inputs" data-player-id="{{ match.player1.id }}">
+                            {% else %}
+                                <div class="alert alert-info alert-sm">
+                                    <i class="fas fa-eye"></i> 
+                                    Solo {{ match.player1.username }} può inserire i propri tentativi. Tu puoi visualizzare e validare.
+                                </div>
+                                <div class="attempt-display" data-player-id="{{ match.player1.id }}">
                                     {% for attempt_num in range(1, gara_challenge.max_attempts + 1) %}
                                         {% set remaining = gara_challenge.max_attempts %}
                                         {% if p1_challenge_data %}
@@ -119,7 +129,7 @@
                     {% endif %}
 
                     <!-- Player 2 Input -->
-                    {% if match.player2 %}
+                    {% if match.player2 and (current_user.is_admin or current_user.is_director or current_user.id == match.player1_id or current_user.id == match.player2_id) %}
                     <div class="col-md-6">
                         <div class="player-challenge-section border rounded p-2">
                             <h6 class="text-danger mb-2">
@@ -146,8 +156,14 @@
                                     <i class="fas fa-exclamation-triangle"></i> 
                                     Tentativi esauriti ({{ p2_challenge_data.attempts_count }}/{{ p2_challenge_data.max_attempts }})
                                 </div>
-                            {% else %}
+                            {% elif current_user.id == match.player2_id or current_user.is_admin or current_user.is_director %}
                                 <div class="attempt-inputs" data-player-id="{{ match.player2.id }}">
+                            {% else %}
+                                <div class="alert alert-info alert-sm">
+                                    <i class="fas fa-eye"></i> 
+                                    Solo {{ match.player2.username }} può inserire i propri tentativi. Tu puoi visualizzare e validare.
+                                </div>
+                                <div class="attempt-display" data-player-id="{{ match.player2.id }}">
                                     {% for attempt_num in range(1, gara_challenge.max_attempts + 1) %}
                                         {% set remaining = gara_challenge.max_attempts %}
                                         {% if p2_challenge_data %}
@@ -276,7 +292,14 @@ function recordChallengeAttempt(garaChallengeId, playerId, attemptNum) {
         data.passed = passed === 'true';
     }
     
-    fetch('/admin/match/record_challenge_attempt', {
+    // Use appropriate endpoint based on user role
+    {% if current_user.is_admin %}
+        const url = '/admin/match/record_challenge_attempt';
+    {% else %}
+        const url = `/player/challenge/${garaChallengeId}/attempt`;
+    {% endif %}
+    
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -286,7 +309,6 @@ function recordChallengeAttempt(garaChallengeId, playerId, attemptNum) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            alert('Tentativo registrato con successo!');
             location.reload(); // Ricarica per aggiornare i dati
         } else {
             alert('Errore: ' + (result.error || 'Errore sconosciuto'));
