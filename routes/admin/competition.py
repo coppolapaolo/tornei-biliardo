@@ -597,25 +597,45 @@ def gara_detail(gara_id):
     show_admin_management = current_user.is_admin
     show_director_management = current_user.is_director and can_manage_directors
 
-    # Ottieni l'ultima classificazione disponibile (sempre mostrata dal round 1 in poi)
+    # Ottieni l'ultima classificazione disponibile per turni completati
     current_round_classification = None
     latest_round_with_classification = None
 
     if gara.current_round > 0:
-        # Cerca la classificazione più recente disponibile (partendo dal round corrente)
-        for round_num in range(gara.current_round, 0, -1):
-            classification = (
-                RoundClassification.query.filter_by(
-                    gara_id=gara_id, round_number=round_num
-                )
-                .order_by(RoundClassification.position)
-                .all()
+        # Helper function to check if a round is completed
+        def is_round_completed(round_number):
+            round_matches = Match.query.filter_by(
+                gara_id=gara_id, round_number=round_number
+            ).all()
+            if not round_matches:
+                return False
+            return all(
+                match.status == MatchStatus.COMPLETED.value for match in round_matches
             )
 
-            if classification:
-                current_round_classification = classification
-                latest_round_with_classification = round_num
-                break
+        # Cerca la classificazione del turno completato più recente
+        for round_num in range(gara.current_round, 0, -1):
+            if is_round_completed(round_num):
+                # SEMPRE ricalcola la classificazione per garantire dati aggiornati
+                # Questo è necessario perché i risultati dei match potrebbero essere stati modificati
+                # dopo che la classificazione è stata calcolata inizialmente
+                RoundClassification.calculate_classification_after_round(
+                    gara_id, round_num
+                )
+
+                # Carica la classificazione appena ricalcolata
+                classification = (
+                    RoundClassification.query.filter_by(
+                        gara_id=gara_id, round_number=round_num
+                    )
+                    .order_by(RoundClassification.position)
+                    .all()
+                )
+
+                if classification:
+                    current_round_classification = classification
+                    latest_round_with_classification = round_num
+                    break
 
     # Get challenge classification data for random strategy garas
     challenge_classification = None
@@ -628,6 +648,14 @@ def gara_detail(gara_id):
                 gara_id
             )
             gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
+
+    # Add match modification permissions for each match based on round locking rules
+    from models.competition.round_manager import AdvancedRoundManager
+
+    match_can_modify = {}
+    for match in matches:
+        can_modify, _ = AdvancedRoundManager.can_modify_match(match.id)
+        match_can_modify[match.id] = can_modify
 
     return render_template(
         "admin/gara_detail.html",
@@ -642,6 +670,7 @@ def gara_detail(gara_id):
         latest_round_with_classification=latest_round_with_classification,
         challenge_classification=challenge_classification,
         gara_challenges=gara_challenges,
+        match_can_modify=match_can_modify,
     )
 
 
@@ -1685,9 +1714,7 @@ def create_new_challenge():
 
         # Check file extension
         allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
-        file_extension = (
-            filename.rsplit(".", 1)[1].lower() if "." in filename else None
-        )
+        file_extension = filename.rsplit(".", 1)[1].lower() if "." in filename else None
 
         if not file_extension or file_extension not in allowed_extensions:
             return (
