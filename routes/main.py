@@ -32,7 +32,17 @@ def index():
         .all()
     )
 
-    if not active_campionatos:
+    # Mostra anche le gare standalone pubbliche
+    from models.status_enum import GaraStatus
+    standalone_garas = (
+        Gara.query.filter_by(campionato_id=None)
+        .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas
+        .order_by(Gara.date.desc())
+        .limit(5)
+        .all()
+    )
+
+    if not active_campionatos and not standalone_garas:
         return render_template("no_campionato.html")
 
     # Raccogli dati per TUTTI i campionati attivi
@@ -95,6 +105,7 @@ def index():
         "index.html",
         tournaments_data=tournaments_data,
         active_campionatos=active_campionatos,
+        standalone_garas=standalone_garas,
     )
 
 
@@ -164,6 +175,69 @@ def quick_login(username):
     flash(f"Quick login effettuato come {username}!")
 
     return redirect(url_for("dashboard.dashboard"))
+
+
+@main_bp.route("/campionatos")
+def public_campionatos_list():
+    """Lista pubblica dei campionati - visibile ai guest"""
+    active_campionatos = (
+        Campionato.query.filter_by(is_active=True)
+        .order_by(Campionato.created_at.desc())
+        .all()
+    )
+    
+    return render_template(
+        "public/campionatos_list.html",
+        campionatos=active_campionatos
+    )
+
+
+@main_bp.route("/campionato/<int:campionato_id>/public")  
+def campionato_detail_public(campionato_id):
+    """Dettaglio campionato pubblico - visibile ai guest"""
+    campionato = db.session.get(Campionato, campionato_id)
+    if campionato is None:
+        abort(404)
+    
+    # Get all garas for this campionato
+    garas = (
+        Gara.query.filter_by(campionato_id=campionato_id)
+        .order_by(Gara.number)
+        .all()
+    )
+    
+    # Get overall classification
+    classifications = (
+        Classification.query.filter_by(campionato_id=campionato_id)
+        .order_by(Classification.position)
+        .all()
+    )
+    
+    return render_template(
+        "public/campionato_detail.html",
+        campionato=campionato,
+        garas=garas,
+        classifications=classifications
+    )
+
+
+@main_bp.route("/garas")
+def public_garas_list():
+    """Lista pubblica delle gare standalone - visibile ai guest"""
+    from models.status_enum import GaraStatus
+    
+    # Get all standalone garas
+    standalone_garas = (
+        Gara.query.filter_by(campionato_id=None)
+        .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas
+        .order_by(Gara.date.desc())
+        .all()
+    )
+    
+    return render_template(
+        "public/garas_list.html", 
+        garas=standalone_garas
+    )
 
 
 @main_bp.route("/gara/<int:gara_id>")

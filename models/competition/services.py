@@ -609,6 +609,24 @@ class GaraService:
             # Verifica precondizioni
             if round_number < 1 or round_number > gara.rounds_count:
                 raise ValueError(f"Turno {round_number} non valido")
+            
+            # Verifica se esistono già match per questo turno
+            existing_matches = (
+                db.session.query(Match)
+                .filter_by(gara_id=gara_id, round_number=round_number)
+                .count()
+            )
+            if existing_matches > 0:
+                # I match esistono già, ritorna i conteggi attuali
+                matches = (
+                    db.session.query(Match)
+                    .filter_by(gara_id=gara_id, round_number=round_number)
+                    .all()
+                )
+                normal_matches = sum(1 for m in matches if not m.is_bye and not getattr(m, 'is_trio', False))
+                bye_matches = sum(1 for m in matches if m.is_bye)
+                trio_matches = sum(1 for m in matches if getattr(m, 'is_trio', False))
+                return (len(matches), normal_matches, bye_matches, trio_matches)
 
             # Ottieni la strategia configurata
             strategy_name = gara.matchmaking_strategy or "amalfi"

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Gare Standalone Pubbliche{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-trophy"></i> Gare Standalone</h2>
+            <p class="text-muted">Lista pubblica delle gare standalone - nessuna registrazione richiesta per visualizzare</p>
+            
+            {% if garas %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Disciplina</th>
+                                <th>Data</th>
+                                <th>Luogo</th>
+                                <th>Stato</th>
+                                <th>Turno</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gara in garas %}
+                            <tr>
+                                <td>
+                                    <strong>{{ gara.name }}</strong>
+                                    {% if gara.description %}
+                                    <br><small class="text-muted">{{ gara.description[:50] }}...</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ gara.discipline|title }}
+                                    <br><small class="text-muted">
+                                        {% if gara.best_of %}
+                                            Al meglio di {{ gara.distance }}
+                                        {% else %}
+                                            Esattamente {{ gara.distance }} rack
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>{{ gara.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ gara.location or "-" }}</td>
+                                <td>
+                                    {% set badge_info = gara.get_status_badge_info() %}
+                                    <span class="badge {{ badge_info.class }}">{{ badge_info.text }}</span>
+                                </td>
+                                <td>{{ gara.current_round }}/{{ gara.rounds_count }}</td>
+                                <td>
+                                    <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i> Visualizza
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Nessuna gara standalone disponibile al momento.
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Torna alla Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

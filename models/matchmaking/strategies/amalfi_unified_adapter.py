@@ -37,9 +37,9 @@ class AmalfiUnifiedAdapter(BaseStrategy):
     """
 
     # Strategy metadata
-    name = "amalfi"
-    display_name = "Amalfi"
-    description = "Adaptive tournament pairing algorithm with anti-rematch intelligence"
+    name = "amalfi_unified"
+    display_name = "Amalfi Unified"
+    description = "Unified adaptive tournament pairing algorithm with anti-rematch intelligence"
     min_players = 3
     max_players = None
     supports_byes = True

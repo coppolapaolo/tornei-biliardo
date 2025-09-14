@@ -1512,3 +1512,138 @@ def get_gara_challenge_classification(gara_id):
         challenge_stats=challenge_stats,
         gara_challenges=gara_challenges,
     )
+
+
+# ====================================================================
+# ADVANCED ROUND MANAGEMENT ROUTES - Use Case 8
+# ====================================================================
+
+@competition_bp.route("/<int:gara_id>/round_management")
+@login_required
+@gara_manager_required
+def round_management_overview(gara_id):
+    """Overview of round management with modification capabilities."""
+    from models.competition.round_manager import AdvancedRoundManager
+    
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        abort(404)
+
+    # Get round modification summary
+    rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
+    
+    # Get all matches grouped by round
+    matches_by_round = {}
+    all_matches = Match.query.filter_by(gara_id=gara_id).order_by(Match.round_number, Match.id).all()
+    
+    for match in all_matches:
+        round_num = match.round_number
+        if round_num not in matches_by_round:
+            matches_by_round[round_num] = []
+        matches_by_round[round_num].append(match)
+
+    return render_template(
+        "admin/round_management.html",
+        gara=gara,
+        rounds_summary=rounds_summary,
+        matches_by_round=matches_by_round
+    )
+
+
+@competition_bp.route("/<int:gara_id>/match/<int:match_id>/reset_advanced", methods=["POST"])
+@login_required
+@gara_manager_required
+def reset_match_advanced(gara_id, match_id):
+    """Reset a match with advanced validation and classification updates."""
+    from models.competition.round_manager import AdvancedRoundManager
+    
+    admin_override = request.form.get("admin_override") == "true"
+    
+    success, message = AdvancedRoundManager.reset_match_with_validation(
+        match_id, admin_override=admin_override
+    )
+    
+    if success:
+        flash(message, "success")
+    else:
+        flash(message, "danger")
+    
+    return redirect(url_for("admin.competition.round_management_overview", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/round/<int:round_number>/cancel", methods=["POST"])
+@login_required
+@gara_manager_required
+def cancel_round_advanced(gara_id, round_number):
+    """Cancel an entire round with proper validation."""
+    from models.competition.round_manager import AdvancedRoundManager
+    
+    admin_override = request.form.get("admin_override") == "true"
+    
+    success, message = AdvancedRoundManager.cancel_round(
+        gara_id, round_number, admin_override=admin_override
+    )
+    
+    if success:
+        flash(message, "success")
+    else:
+        flash(message, "danger")
+    
+    return redirect(url_for("admin.competition.round_management_overview", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/round/<int:round_number>/bulk_reset", methods=["POST"])
+@login_required
+@gara_manager_required
+def bulk_reset_round_matches(gara_id, round_number):
+    """Reset all matches in a round."""
+    from models.competition.round_manager import AdvancedRoundManager
+    
+    success, message, stats = AdvancedRoundManager.bulk_reset_round_matches(
+        gara_id, round_number
+    )
+    
+    if success:
+        flash(f"{message}. {stats['reset_count']} match resettati.", "success")
+    else:
+        flash(f"{message}. {stats.get('reset_count', 0)} match resettati, "
+              f"{stats.get('error_count', 0)} errori.", "warning")
+    
+    return redirect(url_for("admin.competition.round_management_overview", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/match/<int:match_id>/modification_check")
+@login_required
+@gara_manager_required
+def check_match_modification(gara_id, match_id):
+    """AJAX endpoint to check if a match can be modified."""
+    from models.competition.round_manager import AdvancedRoundManager
+    
+    can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
+    
+    return jsonify({
+        "can_modify": can_modify,
+        "reason": reason if not can_modify else "",
+        "match_id": match_id
+    })
+
+
+@competition_bp.route("/<int:gara_id>/round_status")
+@login_required 
+@gara_manager_required
+def get_round_status(gara_id):
+    """AJAX endpoint to get current round status."""
+    from models.competition.round_manager import AdvancedRoundManager
+    
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        return jsonify({"error": "Gara non trovata"}), 404
+    
+    rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
+    
+    return jsonify({
+        "current_round": gara.current_round,
+        "total_rounds": gara.rounds_count,
+        "gara_status": gara.status,
+        "rounds_summary": rounds_summary
+    })

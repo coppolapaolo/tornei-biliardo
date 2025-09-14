@@ -305,19 +305,25 @@ class MatchmakingService:
 
     def _register_advanced_strategies(self):
         """Register advanced pairing strategies."""
-        # Register the unified Amalfi strategy
-        unified_amalfi = AmalfiUnifiedAdapter()
-        self._registry.register(unified_amalfi)
+        # Register the unified Amalfi strategy only if not already present
+        try:
+            self._registry.get("amalfi_unified")
+        except KeyError:
+            unified_amalfi = AmalfiUnifiedAdapter()
+            self._registry.register(unified_amalfi)
         
         # Register the advanced Amalfi strategy
         try:
-            base_amalfi = self._registry.get("amalfi")
-            if base_amalfi and isinstance(base_amalfi, AmalfiStrategy):
-                advanced_amalfi = AdvancedAmalfiStrategy(base_amalfi)
-                self._registry.register(advanced_amalfi)
+            self._registry.get("amalfi_advanced")
         except KeyError:
-            # If base amalfi strategy is not available, we can't register advanced one
-            pass
+            try:
+                base_amalfi = self._registry.get("amalfi")
+                if base_amalfi and isinstance(base_amalfi, AmalfiStrategy):
+                    advanced_amalfi = AdvancedAmalfiStrategy(base_amalfi)
+                    self._registry.register(advanced_amalfi)
+            except KeyError:
+                # If base amalfi strategy is not available, we can't register advanced one
+                pass
 
     def run(
         self,

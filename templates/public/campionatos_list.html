@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Campionati Pubblici{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-trophy"></i> Campionati Attivi</h2>
+            <p class="text-muted">Lista pubblica dei campionati in corso - nessuna registrazione richiesta per visualizzare</p>
+            
+            {% if campionatos %}
+                <div class="row">
+                    {% for campionato in campionatos %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="card-title">{{ campionato.name }}</h5>
+                                <span class="badge badge-primary">{{ campionato.campionato_type }}</span>
+                            </div>
+                            <div class="card-body">
+                                {% if campionato.description %}
+                                <p class="card-text">{{ campionato.description[:100] }}...</p>
+                                {% endif %}
+                                
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-calendar"></i> Creato: {{ campionato.created_at.strftime('%d/%m/%Y') }}</li>
+                                    <li><i class="fas fa-users"></i> Stato: {{ "Attivo" if campionato.is_active else "Non Attivo" }}</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Visualizza Dettagli
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Nessun campionato attivo al momento.
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Torna alla Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

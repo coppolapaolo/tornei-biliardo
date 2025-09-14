@@ -440,8 +440,15 @@ class AmalfiEngine:
     ) -> Optional[RoundClassification]:
         players_count = len(classification)
         current_position = current_class.position
+        
+        # Se anti-rematch è abilitato, usa un algoritmo più completo
+        if self.gara.anti_rematch_enabled:
+            return self._find_target_anti_rematch(
+                current_class, classification, matched_players, salto
+            )
+        
+        # Algoritmo originale per compatibilità
         target_position = current_position + 1 + salto
-
         attempts = 0
         max_attempts = players_count * 2  # due giri completi max
         fallback_target = None  # Per rematches forzati
@@ -481,8 +488,57 @@ class AmalfiEngine:
             target_position += 1
             attempts += 1
 
-        # Se non troviamo nessun abbinamento senza rematch, usiamo il fallback
         return fallback_target
+
+    def _find_target_anti_rematch(
+        self,
+        current_class: RoundClassification,
+        classification: List[RoundClassification],
+        matched_players: set[int],
+        salto: int,
+    ) -> Optional[RoundClassification]:
+        """Algoritmo anti-rematch più rigoroso che prova tutti i giocatori disponibili."""
+        current_position = current_class.position
+        
+        # Prima: prova il target preferito Amalfi (posizione + 1 + salto)
+        preferred_position = current_position + 1 + salto
+        if preferred_position > len(classification):
+            preferred_position -= len(classification)
+            
+        preferred_target = next(
+            (c for c in classification if c.position == preferred_position), None
+        )
+        
+        if (preferred_target and 
+            preferred_target.user_id not in matched_players and
+            preferred_target.user_id != current_class.user_id and
+            anti_rematch_allowed(self.gara.id, current_class.user_id, preferred_target.user_id)):
+            return preferred_target
+        
+        # Se il target preferito non va bene, prova TUTTI gli altri giocatori disponibili
+        # Ordina per preferenza: più vicini alla posizione target sono meglio
+        available_players = [
+            c for c in classification 
+            if (c.user_id not in matched_players and 
+                c.user_id != current_class.user_id and
+                anti_rematch_allowed(self.gara.id, current_class.user_id, c.user_id))
+        ]
+        
+        if not available_players:
+            # Nessun giocatore disponibile senza rematch
+            return None
+        
+        # Ordina per distanza dalla posizione target preferita
+        def distance_from_preferred(player_class):
+            pos_diff = abs(player_class.position - preferred_position)
+            # Gestisci la circolarità (es: pos 1 è vicina a pos 6 in un torneo a 6)
+            circular_diff = min(pos_diff, len(classification) - pos_diff)
+            return circular_diff
+        
+        available_players.sort(key=distance_from_preferred)
+        
+        # Restituisci il migliore disponibile
+        return available_players[0]
 
     def _is_valid_pairing(
         self, p1_id: int, p2_id: int, matched_players: set[int]
@@ -504,7 +560,7 @@ class AmalfiEngine:
     ) -> None:
         """Gestisce l'ultimo giocatore rimasto (bye oppure trasformazione in trio)."""
         decision = decide_trio_or_bye(
-            campionato_without_x=bool(self.campionato.without_x),
+            campionato_without_x=bool(self.campionato.without_x) if self.campionato else False,
             can_trio=bool(matches),
         )
         if decision is OddResolution.TRIO and matches:
