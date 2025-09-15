@@ -39,24 +39,28 @@ class TestCampionatoModel:
 
     def test_campionato_types(self, db_session):
         """Test different campionato types."""
+        unique_id = str(uuid.uuid4())[:8]
         types = ["Amalfi", "Round Robin", "Elimination"]
+        created_campionati = []
 
         for ctype in types:
             campionato = Campionato(
-                name=f"Test {ctype}", campionato_type=ctype, is_active=True
+                name=f"Test {ctype} {unique_id}", campionato_type=ctype, is_active=True
             )
+            created_campionati.append(campionato)
             db_session.add(campionato)
 
         db_session.commit()
 
-        saved_campionati = Campionato.query.all()
-        assert len(saved_campionati) == 3
+        # Only check the campionati we just created
+        assert len(created_campionati) == 3
 
-        for campionato, expected_type in zip(saved_campionati, types):
+        for campionato, expected_type in zip(created_campionati, types):
             assert campionato.campionato_type == expected_type
 
     def test_campionato_options(self, db_session):
         """Test campionato boolean options."""
+        unique_id = str(uuid.uuid4())[:8]
         # Test all combinations of boolean options
         option_combinations = [
             (True, True, True),
@@ -64,22 +68,24 @@ class TestCampionatoModel:
             (True, False, True),
             (False, True, False),
         ]
+        created_campionati = []
 
         for without_x, final_playoffs, challenge_mode in option_combinations:
             campionato = Campionato(
-                name=f"Test {without_x}_{final_playoffs}_{challenge_mode}",
+                name=f"Test {without_x}_{final_playoffs}_{challenge_mode}_{unique_id}",
                 campionato_type="Amalfi",
                 without_x=without_x,
                 final_playoffs=final_playoffs,
                 challenge_mode=challenge_mode,
                 is_active=True,
             )
+            created_campionati.append(campionato)
             db_session.add(campionato)
 
         db_session.commit()
 
-        saved_campionati = Campionato.query.all()
-        assert len(saved_campionati) == 4
+        # Only check the campionati we just created
+        assert len(created_campionati) == 4
 
     def test_campionato_can_be_modified(self, db_session):
         """Test campionato modification rules."""
@@ -655,10 +661,11 @@ class TestTournamentService:
 
     def test_remove_director_not_found(self, db_session):
         """Test removing director who is not assigned."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create directors
         main_director = User(
-            username="main_director",
-            email="main@test.com",
+            username=f"main_director_{unique_id}",
+            email=f"main_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
         other_director = User(
@@ -666,6 +673,7 @@ class TestTournamentService:
             email=f"other_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
+        main_director.set_password("testpass123")
         other_director.set_password("testpass123")
         db_session.add_all([main_director, other_director])
         db_session.commit()

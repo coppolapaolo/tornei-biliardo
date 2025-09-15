@@ -438,8 +438,26 @@ class GaraService:
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
-                        # Match trio - TODO: implementare se necessario
-                        pass
+                        # Match trio
+                        from models.match.models import TrioMatch
+                        match = Match(
+                            gara_id=gara_id,
+                            round_number=round_num,
+                            player1_id=pairing.players[0],
+                            player2_id=pairing.players[1],
+                            is_bye=False,
+                            is_trio=True,
+                        )
+                        db.session.add(match)
+                        
+                        # Crea il record TrioMatch con tutti e tre i giocatori
+                        trio_match = TrioMatch(
+                            match=match,
+                            player1_id=pairing.players[0],
+                            player2_id=pairing.players[1], 
+                            player3_id=pairing.players[2],
+                        )
+                        db.session.add(trio_match)
 
             # Imposta il turno corrente al primo
             gara.current_round = 1
@@ -753,8 +771,25 @@ class GaraService:
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
-                        # Match trio - TODO: implementare
-                        pass
+                        # Match trio 
+                        match = Match(
+                            gara_id=gara_id,
+                            round_number=round_number,
+                            player1_id=pairing.players[0],
+                            player2_id=pairing.players[1],
+                            is_bye=False,
+                            is_trio=True,
+                        )
+                        db.session.add(match)
+                        
+                        # Crea il record TrioMatch con tutti e tre i giocatori
+                        trio_match = TrioMatch(
+                            match=match,
+                            player1_id=pairing.players[0],
+                            player2_id=pairing.players[1], 
+                            player3_id=pairing.players[2],
+                        )
+                        db.session.add(trio_match)
 
             # Conta i risultati
             matches = (

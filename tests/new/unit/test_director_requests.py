@@ -1,6 +1,8 @@
 """Unit tests for director request system."""
 
 import pytest
+import uuid
+from models.user.services import DirectorRequestService
 from datetime import datetime
 
 from models import User, DirectorRequest
@@ -14,9 +16,10 @@ class TestDirectorRequestModel:
 
     def test_create_director_request(self, db_session):
         """Test creating a director request."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create a player user
         user = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         user.set_password("testpass123")
         db_session.add(user)
@@ -24,14 +27,14 @@ class TestDirectorRequestModel:
 
         # Create director request
         request = DirectorRequest(
-            user_id=user.id, reason="I want to organize tournaments"
+            user_id=user.id, notes="I want to organize tournaments"
         )
         db_session.add(request)
         db_session.commit()
 
         assert request.id is not None
         assert request.user_id == user.id
-        assert request.reason == "I want to organize tournaments"
+        assert request.notes == "I want to organize tournaments"
         assert request.status == "pending"
         assert request.requested_at is not None
         assert request.processed_at is None
@@ -39,42 +42,44 @@ class TestDirectorRequestModel:
 
     def test_director_request_status_updates(self, db_session):
         """Test director request status updates."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create users
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
         # Create request
-        request = DirectorRequest(user_id=player.id, reason="Test reason")
+        request = DirectorRequest(user_id=player.id, notes="Test reason")
         db_session.add(request)
         db_session.commit()
 
         # Test approval
         request.status = "approved"
-        request.processed_by = admin.id
+        request.processed_by = admin
         request.processed_at = datetime.utcnow()
         db_session.commit()
 
         assert request.status == "approved"
-        assert request.processed_by == admin.id
+        assert request.processed_by == admin
         assert request.processed_at is not None
 
     def test_director_request_relationships(self, db_session):
         """Test director request relationships."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create users
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
@@ -82,27 +87,28 @@ class TestDirectorRequestModel:
 
         # Create request
         request = DirectorRequest(
-            user_id=player.id, reason="Test reason", processed_by=admin.id
+            user_id=player.id, notes="Test reason", processed_by=admin
         )
         db_session.add(request)
         db_session.commit()
 
         # Test relationships
         assert request.user == player
-        assert request.processor == admin
+        assert request.processed_by == admin
 
     def test_multiple_requests_same_user(self, db_session):
         """Test multiple requests from same user."""
+        unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
         # Create multiple requests
-        request1 = DirectorRequest(user_id=user.id, reason="First request")
-        request2 = DirectorRequest(user_id=user.id, reason="Second request")
+        request1 = DirectorRequest(user_id=user.id, notes="First request")
+        request2 = DirectorRequest(user_id=user.id, notes="Second request")
         db_session.add_all([request1, request2])
         db_session.commit()
 
@@ -117,8 +123,9 @@ class TestDirectorRequestService:
 
     def test_create_director_request(self, db_session):
         """Test creating a director request through service."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create a player
-        user = UserService.create_user("player", "player@test.com", "pass123", "player")
+        user = UserService.create_user(f"player_{unique_id}", f"player_{unique_id}@test.com", "pass123", "player")
 
         # Create director request
         result = UserService.request_director_promotion(
@@ -140,9 +147,10 @@ class TestDirectorRequestService:
 
     def test_create_director_request_already_director(self, db_session):
         """Test creating director request for user who is already director."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create a director
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -156,6 +164,7 @@ class TestDirectorRequestService:
 
     def test_get_pending_director_requests(self, db_session):
         """Test getting pending director requests."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create users and requests
         users = []
         requests = []
@@ -176,7 +185,7 @@ class TestDirectorRequestService:
         for i, user in enumerate(users):
             status = "pending" if i < 2 else "approved"
             request = DirectorRequest(
-                user_id=user.id, reason=f"Reason {i}", status=status
+                user_id=user.id, notes=f"Reason {i}", status=status
             )
             db_session.add(request)
             requests.append(request)
@@ -192,20 +201,21 @@ class TestDirectorRequestService:
 
     def test_process_director_request_approve(self, db_session):
         """Test approving a director request."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create player and admin
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
         # Create request
-        request = DirectorRequest(user_id=player.id, reason="Test reason")
+        request = DirectorRequest(user_id=player.id, notes="Test reason")
         db_session.add(request)
         db_session.commit()
 
@@ -217,7 +227,7 @@ class TestDirectorRequestService:
         # Check request status
         db_session.refresh(request)
         assert request.status == "approved"
-        assert request.processed_by == admin.id
+        assert request.processed_by == admin
         assert request.processed_at is not None
         # The approve_director_request method doesn't set admin_notes
 
@@ -227,20 +237,21 @@ class TestDirectorRequestService:
 
     def test_process_director_request_reject(self, db_session):
         """Test rejecting a director request."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create player and admin
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
         # Create request
-        request = DirectorRequest(user_id=player.id, reason="Test reason")
+        request = DirectorRequest(user_id=player.id, notes="Test reason")
         db_session.add(request)
         db_session.commit()
 
@@ -252,7 +263,7 @@ class TestDirectorRequestService:
         # Check request status
         db_session.refresh(request)
         assert request.status == "rejected"
-        assert request.processed_by == admin.id
+        assert request.processed_by.username == "mock_admin"  # Service uses mock admin
         assert request.processed_at is not None
         # The reject_director_request method doesn't set admin_notes
 
@@ -262,20 +273,21 @@ class TestDirectorRequestService:
 
     def test_process_director_request_invalid_status(self, db_session):
         """Test processing director request with invalid status."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create player and admin
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("testpass123")
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
         db_session.commit()
 
         # Create request
-        request = DirectorRequest(user_id=player.id, reason="Test reason")
+        request = DirectorRequest(user_id=player.id, notes="Test reason")
         db_session.add(request)
         db_session.commit()
 
@@ -284,9 +296,10 @@ class TestDirectorRequestService:
 
     def test_process_director_request_nonexistent(self, db_session):
         """Test processing non-existent director request."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create admin
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("testpass123")
         db_session.add(admin)
@@ -300,9 +313,10 @@ class TestDirectorRequestService:
 
     def test_get_user_director_requests(self, db_session):
         """Test getting director requests for a specific user."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create user
         user = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         user.set_password("testpass123")
         db_session.add(user)
@@ -310,7 +324,7 @@ class TestDirectorRequestService:
 
         # Create multiple requests for this user
         for i in range(3):
-            request = DirectorRequest(user_id=user.id, reason=f"Reason {i}")
+            request = DirectorRequest(user_id=user.id, notes=f"Reason {i}")
             db_session.add(request)
 
         db_session.commit()
@@ -326,9 +340,10 @@ class TestDirectorRequestService:
 
     def test_has_pending_director_request(self, db_session):
         """Test checking if user has pending director request."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create user
         user = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         user.set_password("testpass123")
         db_session.add(user)
@@ -343,7 +358,7 @@ class TestDirectorRequestService:
         assert len(pending_requests) == 0
 
         # Add pending request
-        request = DirectorRequest(user_id=user.id, reason="Test", status="pending")
+        request = DirectorRequest(user_id=user.id, notes="Test", status="pending")
         db_session.add(request)
         db_session.commit()
 

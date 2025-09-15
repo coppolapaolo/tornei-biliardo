@@ -175,13 +175,17 @@ class DashboardService:
             # Calcola la prossima data per i campionati
             next_date = None
             try:
+                # Query diretta invece di usare la relationship
+                from models.competition.models import Gara
                 gare_list = (
-                    list(campionato.gare.all()) if hasattr(campionato, "gare") else []
+                    db.session.query(Gara)
+                    .filter(Gara.campionato_id == campionato.id)
+                    .all()
                 )
                 future_dates = [
-                    p.date
-                    for p in gare_list
-                    if getattr(p, "date", None) and p.date >= date_cls.today()
+                    g.date
+                    for g in gare_list
+                    if g.date and g.date >= date_cls.today()
                 ]
                 next_date = min(future_dates) if future_dates else None
             except (AttributeError, TypeError):
@@ -211,8 +215,14 @@ class DashboardService:
                     is_co_director  # Director può vedere dettagli solo se può gestire
                 )
             elif user_role == "player":
-                can_view_details = False  # Player non può vedere dettagli di gestione
+                can_view_details = True  # Player può vedere dettagli per iscriversi alle gare
 
+            # Genera sort key basato su data per campionatos
+            if next_date:
+                sort_key = f"{next_date.strftime('%Y-%m-%d')}_campionato_{campionato.id}"
+            else:
+                sort_key = f"9999-99-99_campionato_{campionato.id}"  # Data futura per elementi senza data
+            
             items.append(
                 UnifiedDashboardItem(
                     type="campionato",
@@ -220,7 +230,7 @@ class DashboardService:
                     name=campionato.name,
                     entity=campionato,
                     next_prova_date=next_date,
-                    sort_key=campionato.name.lower(),
+                    sort_key=sort_key,
                     can_manage=can_manage,
                     can_view_details=can_view_details,
                 )
@@ -261,14 +271,21 @@ class DashboardService:
                     True  # Player può vedere gare standalone per iscriversi
                 )
 
+            # Genera sort key basato su data per garas
+            gara_date = getattr(gara, "date", None)
+            if gara_date:
+                sort_key = f"{gara_date.strftime('%Y-%m-%d')}_gara_{gara.id}"
+            else:
+                sort_key = f"9999-99-99_gara_{gara.id}"  # Data futura per elementi senza data
+            
             items.append(
                 UnifiedDashboardItem(
                     type="gara",
                     id=gara.id,
                     name=gara_name,
                     entity=gara,
-                    next_prova_date=getattr(gara, "date", None),
-                    sort_key=gara_name.lower(),
+                    next_prova_date=gara_date,
+                    sort_key=sort_key,
                     can_manage=can_manage,
                     can_view_details=can_view_details,
                 )

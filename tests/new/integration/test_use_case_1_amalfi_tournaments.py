@@ -618,8 +618,8 @@ class TestUseCaseAmalfiExactlyTournaments:
 
             total_racks = winner_racks + loser_racks
             assert (
-                total_racks == match.distance
-            ), f"Total racks {total_racks} != distance {match.distance}"
+                total_racks == match.match_distance
+            ), f"Total racks {total_racks} != distance {match.match_distance}"
 
             import random
 

@@ -118,8 +118,8 @@ class NotificationService:
             query = query.filter(
                 Notification.status.in_(  # type: ignore[attr-defined]
                     [
-                        NotificationStatus.PENDING.value,
-                        NotificationStatus.SENT.value,
+                        NotificationStatus.PENDING,
+                        NotificationStatus.SENT,
                     ]
                 )
             )
@@ -167,8 +167,8 @@ class NotificationService:
             .filter(
                 Notification.status.in_(  # type: ignore[attr-defined]
                     [
-                        NotificationStatus.PENDING.value,
-                        NotificationStatus.SENT.value,
+                        NotificationStatus.PENDING,
+                        NotificationStatus.SENT,
                     ]
                 )
             )
@@ -191,8 +191,8 @@ class NotificationService:
             .filter(
                 Notification.status.in_(  # type: ignore[attr-defined]
                     [
-                        NotificationStatus.PENDING.value,
-                        NotificationStatus.SENT.value,
+                        NotificationStatus.PENDING,
+                        NotificationStatus.SENT,
                     ]
                 )
             )

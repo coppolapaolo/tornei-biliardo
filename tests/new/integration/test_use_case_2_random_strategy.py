@@ -414,7 +414,7 @@ class TestUseCaseRandomStrategyVariants:
 
                 # Create next round
                 total_matches, normal_matches, bye_matches, trio_matches = (
-                    GaraService.create_amalfi_round(gara.id, round_num)
+                    GaraService.create_round_with_strategy(gara.id, round_num)
                 )
                 gara.current_round = round_num
                 db_session.add(gara)
@@ -427,7 +427,7 @@ class TestUseCaseRandomStrategyVariants:
 
             regular_matches = [m for m in matches if not m.is_bye]
             bye_matches = [m for m in matches if m.is_bye]
-
+            
             assert len(regular_matches) == 3  # 6 players in 3 matches
             assert len(bye_matches) == 1  # 1 player gets bye
             assert len(matches) == 4  # Total matches

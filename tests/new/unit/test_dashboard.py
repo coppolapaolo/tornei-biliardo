@@ -1,6 +1,7 @@
 """Unit tests for dashboard functionality."""
 
 import pytest
+import uuid
 from datetime import date, timedelta
 
 from models import User
@@ -17,9 +18,10 @@ class TestDashboardService:
 
     def test_admin_dashboard_data(self, db_session):
         """Test admin dashboard data."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create admin user
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -27,7 +29,7 @@ class TestDashboardService:
 
         # Create test data
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("director123")
         db_session.add(director)
@@ -90,9 +92,10 @@ class TestDashboardService:
 
     def test_director_dashboard_data(self, db_session):
         """Test director dashboard data."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create director user
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("director123")
         db_session.add(director)
@@ -214,9 +217,10 @@ class TestDashboardService:
 
     def test_player_dashboard_data(self, db_session):
         """Test player dashboard data."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create player user
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("player123")
         db_session.add(player)
@@ -224,7 +228,7 @@ class TestDashboardService:
 
         # Create director and competitions
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("director123")
         db_session.add(director)
@@ -274,9 +278,10 @@ class TestDashboardService:
 
     def test_unified_dashboard_sorting(self, db_session):
         """Test unified dashboard sorting by date."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create director
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("director123")
         db_session.add(director)
@@ -355,9 +360,10 @@ class TestDashboardService:
 
     def test_unified_dashboard_item_creation(self, db_session):
         """Test UnifiedDashboardItem creation."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create director and competitions
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("director123")
         db_session.add(director)
@@ -388,16 +394,17 @@ class TestDashboardService:
             best_of=True,
         )
 
-        # Create UnifiedDashboardItem for campionato
-        campionato_item = UnifiedDashboardItem(
-            type="campionato",
-            id=campionato.id,
-            name=campionato.name,
-            entity=campionato,
-            next_prova_date=gara.date,
-            can_manage=True,
-            can_view_details=True,
-        )
+        # Get dashboard data to test item creation
+        dashboard_data = DashboardService.for_director(director.id)
+        
+        # Find the campionato item in the dashboard
+        campionato_item = None
+        for item in dashboard_data.unified_items:
+            if item.type == "campionato" and item.id == campionato.id:
+                campionato_item = item
+                break
+        
+        assert campionato_item is not None, "Campionato item should be found in dashboard"
 
         assert campionato_item.type == "campionato"
         assert campionato_item.id == campionato.id
@@ -415,15 +422,16 @@ class TestDashboardService:
 
     def test_co_director_permissions_in_dashboard(self, db_session):
         """Test co-director permissions in dashboard."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create directors
         main_director = User(
-            username="main_director",
-            email="main@test.com",
+            username=f"main_director_{unique_id}",
+            email=f"main_{unique_id}@test.com",
             role=UserRole.DIRECTOR.value,
         )
         main_director.set_password("main123")
         co_director = User(
-            username="co_director", email="co@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         co_director.set_password("co123")
         db_session.add_all([main_director, co_director])
@@ -485,17 +493,18 @@ class TestDashboardService:
 
     def test_dashboard_with_no_competitions(self, db_session):
         """Test dashboard with no competitions."""
+        unique_id = str(uuid.uuid4())[:8]
         # Create users
         admin = User(
-            username="admin", email="admin@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
         )
         admin.set_password("admin123")
         director = User(
-            username="director", email="director@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
         director.set_password("director123")
         player = User(
-            username="player", email="player@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
         )
         player.set_password("player123")
         db_session.add_all([admin, director, player])

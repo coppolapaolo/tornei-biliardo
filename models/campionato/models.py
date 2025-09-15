@@ -75,7 +75,10 @@ class Campionato(db.Model):
         # Fix: Properly access the relationship collection
         gare = getattr(self, "gare", [])
         for gara in gare:
+            # Cannot modify if gara has advanced status or has inscriptions
             if gara.status in ["inscription", "playing", "completed"]:
+                return False
+            if getattr(gara, "inscriptions", []):  # Se ha iscrizioni
                 return False
         return True
 

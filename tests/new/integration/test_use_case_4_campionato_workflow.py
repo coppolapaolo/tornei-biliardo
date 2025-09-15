@@ -16,6 +16,7 @@ from models import User, Gara, Match, Inscription
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
 from models.competition.services import GaraService, InscriptionService
+from models.campionato.services import TournamentService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
 
@@ -470,7 +471,7 @@ class TestUseCaseCampionatoWorkflow:
         )
 
         # Random score based on distance
-        winner_racks = (match.distance + 1) // 2 + random.randint(
+        winner_racks = (match.match_distance + 1) // 2 + random.randint(
             0, 1
         )  # Just over half
         loser_racks = random.randint(0, winner_racks - 1)

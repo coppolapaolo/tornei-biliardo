@@ -34,7 +34,17 @@ class Pairing:
         """Check if this is a valid pairing."""
         if self.is_bye:
             return len(self.players) == 1
-        return len(self.players) == 2 and self.players[0] != self.players[1]
+        elif len(self.players) == 2:
+            return self.players[0] != self.players[1]  # Regular 2-player match
+        elif len(self.players) == 3:
+            # Trio match - all players must be different
+            return len(set(self.players)) == 3
+        return False  # Invalid number of players
+
+    @property
+    def is_trio(self) -> bool:
+        """Check if this is a trio pairing."""
+        return len(self.players) == 3
 
     def get_opponent_id(self, player_id: int) -> Optional[int]:
         """Get opponent ID for given player."""

@@ -627,6 +627,7 @@ class TestGaraService:
         director = User(
             username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
         )
+        director.set_password("testpass123")
         players = []
         for i in range(5):
             player = User(

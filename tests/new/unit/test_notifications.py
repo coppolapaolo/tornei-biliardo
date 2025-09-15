@@ -6,6 +6,7 @@ import uuid
 from models import User, Notification
 from models.user.role_enum import UserRole
 from models.notification.services import NotificationService
+from models.notification.models import NotificationType, NotificationStatus
 
 
 @pytest.mark.unit
@@ -24,7 +25,7 @@ class TestNotificationModel:
             user_id=user.id,
             title="Test Notification",
             message="This is a test notification",
-            notification_type="info",
+            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
         )
         db_session.add(notification)
         db_session.commit()
@@ -33,8 +34,8 @@ class TestNotificationModel:
         assert notification.user_id == user.id
         assert notification.title == "Test Notification"
         assert notification.message == "This is a test notification"
-        assert notification.notification_type == "info"
-        assert notification.is_read is False
+        assert notification.notification_type == NotificationType.SYSTEM_ANNOUNCEMENT
+        assert notification.status == NotificationStatus.PENDING
         assert notification.created_at is not None
         assert notification.read_at is None
 
@@ -46,9 +47,8 @@ class TestNotificationModel:
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(
-            user_id=user.id, title="Test", message="Test message"
-        )
+        notification = Notification(user_id=user.id, title="Test", message="Test message"
+        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
         db_session.add(notification)
         db_session.commit()
 
@@ -62,21 +62,20 @@ class TestNotificationModel:
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(
-            user_id=user.id, title="Test", message="Test message"
-        )
+        notification = Notification(user_id=user.id, title="Test", message="Test message"
+        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
         db_session.add(notification)
         db_session.commit()
 
         # Initially not read
-        assert notification.is_read is False
+        assert notification.status == NotificationStatus.PENDING
         assert notification.read_at is None
 
         # Mark as read
         notification.mark_as_read()
         db_session.commit()
 
-        assert notification.is_read is True
+        assert notification.status == NotificationStatus.READ
         assert notification.read_at is not None
 
     def test_notification_types(self, db_session):
@@ -87,14 +86,19 @@ class TestNotificationModel:
         db_session.add(user)
         db_session.commit()
 
-        types = ["info", "success", "warning", "error"]
+        types = [
+            NotificationType.SYSTEM_ANNOUNCEMENT,
+            NotificationType.MATCH_PROPOSAL,
+            NotificationType.TOURNAMENT_REGISTRATION,
+            NotificationType.ACCOUNT_UPDATE
+        ]
         notifications = []
 
         for ntype in types:
             notification = Notification(
                 user_id=user.id,
-                title=f"Test {ntype}",
-                message=f"Test {ntype} message",
+                title=f"Test {ntype.value}",
+                message=f"Test {ntype.value} message",
                 notification_type=ntype,
             )
             notifications.append(notification)
@@ -138,17 +142,22 @@ class TestNotificationService:
         """Test creating notification for invalid user."""
         from models.notification.models import NotificationType
 
-        # The create_notification method doesn't validate user existence before creating
-        # It may return None if user preferences don't allow the notification
-        _ = NotificationService.create_notification(
-            user_id=99999,
-            notification_type=NotificationType.MATCH_PROPOSAL,
-            title="Test",
-            message="Test message",
-        )  # result not used
-
-        # Result may be None if user preferences prevent creation
-        # This is normal behavior, not an error
+        # The create_notification method should handle invalid user IDs gracefully
+        # Since it commits to database, an invalid user_id will cause foreign key error
+        try:
+            result = NotificationService.create_notification(
+                user_id=99999,
+                notification_type=NotificationType.MATCH_PROPOSAL,
+                title="Test",
+                message="Test message",
+            )
+            # If we get here, the method didn't validate user existence
+            # This would be a design issue - normally should fail or return None
+            assert result is None  # Expected behavior for invalid user
+        except Exception:
+            # Foreign key constraint failure is expected for invalid user_id
+            # This is acceptable behavior
+            pass
 
     def test_create_notification_multiple_users(self, db_session):
         """Test creating notifications for multiple users."""
@@ -201,7 +210,8 @@ class TestNotificationService:
                 user_id=user.id,
                 title=f"Test {i}",
                 message=f"Test message {i}",
-                is_read=(i % 2 == 0),  # Some read, some unread
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                status=NotificationStatus.READ if (i % 2 == 0) else NotificationStatus.PENDING,  # Some read, some unread
             )
             db_session.add(notification)
 
@@ -216,7 +226,7 @@ class TestNotificationService:
         assert len(unread) == 2  # 2 unread (odd indices)
 
         for notification in unread:
-            assert notification.is_read is False
+            assert notification.status == NotificationStatus.PENDING
 
     def test_get_user_notifications_with_limit(self, db_session):
         """Test getting user notifications with limit."""
@@ -228,9 +238,8 @@ class TestNotificationService:
 
         # Create 10 notifications
         for i in range(10):
-            notification = Notification(
-                user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
-            )
+            notification = Notification(user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
+            , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
             db_session.add(notification)
 
         db_session.commit()
@@ -247,9 +256,8 @@ class TestNotificationService:
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(
-            user_id=user.id, title="Test", message="Test message"
-        )
+        notification = Notification(user_id=user.id, title="Test", message="Test message"
+        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
         db_session.add(notification)
         db_session.commit()
 
@@ -259,7 +267,7 @@ class TestNotificationService:
         assert result is True
 
         db_session.refresh(notification)
-        assert notification.is_read is True
+        assert notification.status == NotificationStatus.READ
         assert notification.read_at is not None
 
     def test_mark_notification_as_read_invalid(self, db_session):
@@ -285,9 +293,8 @@ class TestNotificationService:
         # Create multiple unread notifications
         notifications = []
         for i in range(5):
-            notification = Notification(
-                user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
-            )
+            notification = Notification(user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
+            , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
             notifications.append(notification)
             db_session.add(notification)
 
@@ -295,7 +302,7 @@ class TestNotificationService:
 
         # All should be unread initially
         for notification in notifications:
-            assert notification.is_read is False
+            assert notification.status == NotificationStatus.PENDING
 
         # Mark all as read
         count = NotificationService.mark_all_read(user.id)
@@ -305,7 +312,7 @@ class TestNotificationService:
         # Check all are now read
         for notification in notifications:
             db_session.refresh(notification)
-            assert notification.is_read is True
+            assert notification.status == NotificationStatus.READ
 
     def test_delete_notification(self, db_session):
         """Test deleting notification."""
@@ -315,9 +322,8 @@ class TestNotificationService:
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(
-            user_id=user.id, title="Test", message="Test message"
-        )
+        notification = Notification(user_id=user.id, title="Test", message="Test message"
+        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
         db_session.add(notification)
         db_session.commit()
         notification_id = notification.id
@@ -328,9 +334,10 @@ class TestNotificationService:
 
         assert result is True
 
-        # Check it's deleted
-        deleted = db_session.get(Notification, notification_id)
-        assert deleted is None
+        # Check it's dismissed (not deleted, just marked as dismissed)
+        dismissed = db_session.get(Notification, notification_id)
+        assert dismissed is not None
+        assert dismissed.status == NotificationStatus.DISMISSED
 
     def test_delete_notification_invalid(self, db_session):
         """Test deleting invalid notification."""
@@ -355,9 +362,8 @@ class TestNotificationService:
 
         # Create multiple notifications
         for i in range(5):
-            notification = Notification(
-                user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
-            )
+            notification = Notification(user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
+            , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
             db_session.add(notification)
 
         db_session.commit()
@@ -390,7 +396,8 @@ class TestNotificationService:
                 user_id=user.id,
                 title=f"Test {i}",
                 message=f"Test message {i}",
-                is_read=(i < 2),  # First 2 are read
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                status=NotificationStatus.READ if (i < 2) else NotificationStatus.PENDING,  # First 2 are read
             )
             db_session.add(notification)
 

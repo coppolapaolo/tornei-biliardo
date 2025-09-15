@@ -93,7 +93,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
 
             # Generate valid random pairings
             pairings = self._generate_valid_random_pairings(
-                player_ids, previous_pairings, round_number
+                player_ids, previous_pairings, round_number, gara
             )
 
             return pairings
@@ -129,6 +129,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
         player_ids: List[int],
         previous_pairings: Set[Tuple[int, int]],
         round_number: int,
+        gara: object = None,
     ) -> List[Pairing]:
         """Generate random pairings that don't conflict with previous matches."""
 
@@ -138,7 +139,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
         # Try multiple random arrangements to find the best one
         for attempt in range(self.max_attempts):
             pairings = self._attempt_random_pairing(
-                player_ids.copy(), previous_pairings, round_number
+                player_ids.copy(), previous_pairings, round_number, gara
             )
 
             # Count rematches in this arrangement
@@ -160,6 +161,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
         player_ids: List[int],
         previous_pairings: Set[Tuple[int, int]],
         round_number: int,
+        gara: object = None,
     ) -> List[Pairing]:
         """Attempt one random pairing arrangement."""
 
@@ -170,7 +172,7 @@ class RandomAntiRematchStrategy(PairingStrategy):
         remaining_players = player_ids.copy()
 
         # Handle trio if odd number and trio is allowed
-        if len(remaining_players) % 2 == 1 and self._should_use_trio(remaining_players):
+        if len(remaining_players) % 2 == 1 and self._should_use_trio(remaining_players, gara):
             trio_players = remaining_players[:3]
             remaining_players = remaining_players[3:]
             pairings.append(
@@ -239,8 +241,21 @@ class RandomAntiRematchStrategy(PairingStrategy):
 
         return rematch_count
 
-    def _should_use_trio(self, player_ids: List[int]) -> bool:
+    def _should_use_trio(self, player_ids: List[int], gara: object = None) -> bool:
         """Determine if trio should be used for odd number of players."""
+        # Only consider trio for odd number of players
+        if len(player_ids) % 2 == 0:
+            return False
+            
+        # Check gara configuration first
+        if gara is not None and hasattr(gara, 'odd_number_policy'):
+            odd_policy = getattr(gara, 'odd_number_policy', 'bye')
+            if odd_policy == 'bye' or odd_policy == 'bye_with_challenge':
+                return False  # Use bye when configured
+            elif odd_policy == 'trio':
+                return True   # Use trio when configured for odd numbers
+        
+        # Fallback to original hardcoded logic if no configuration available
         # Use trio if we have 3, 5, or 7 players (as per specifications)
         # For larger odd numbers, use bye instead
         return len(player_ids) in [3, 5, 7]
