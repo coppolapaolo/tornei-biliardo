@@ -2,12 +2,11 @@
 Alignment tests to verify current implementation matches specifications.
 
 Tests core functionality from docs/ specifications using only existing services.
-Focuses on verifying that the documented workflows are implementable.
+Uses proper fixture isolation to fix test reliability.
 """
 
 import pytest
 from datetime import date, datetime, timedelta
-import uuid
 
 from models import User, Gara, Match, Inscription
 from models.user.role_enum import UserRole
@@ -18,8 +17,8 @@ from models.classification.models import RoundClassification
 
 
 @pytest.mark.integration
-class TestSpecificationsAlignment:
-    """Test alignment with specifications in docs/"""
+class TestSpecificationsAlignmentFixed:
+    """Test alignment with specifications in docs/ using isolated fixtures."""
 
     def test_gare_use_case_1_amalfi_basic(
         self, isolated_admin_user: User, isolated_players, db_session, client
@@ -30,11 +29,12 @@ class TestSpecificationsAlignment:
         """
         admin_user = isolated_admin_user
         players_8 = isolated_players[:8]
+
         # Step 1: Admin creates standalone gara with amalfi strategy
         gara = GaraService.create_gara(
             campionato_id=None,  # Standalone
             number=1,
-            name="UC1 Amalfi Test",
+            name="UC1 Amalfi Test Fixed",
             date=date.today() + timedelta(days=1),
             location="Pool Hall Test",
             description="9-ball amalfi best-of-9",
@@ -112,17 +112,20 @@ class TestSpecificationsAlignment:
         print("✅ Use Case 1 basic Amalfi workflow verified")
 
     def test_gare_use_case_2_random_strategy_basic(
-        self, admin_user: User, players_8, db_session, client
+        self, isolated_admin_user: User, isolated_players, db_session, client
     ):
         """
         Test Use Case 2 from docs/usecases/gare.md
         Random strategy with 3 rounds
         """
+        admin_user = isolated_admin_user
+        players_8 = isolated_players[:8]
+
         # Create gara with random strategy
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
-            name="UC2 Random Test",
+            name="UC2 Random Test Fixed",
             date=date.today() + timedelta(days=1),
             location="Random Pool Hall",
             description="8-ball random strategy",
@@ -168,16 +171,19 @@ class TestSpecificationsAlignment:
         print("✅ Use Case 2 random strategy workflow verified")
 
     def test_guest_access_specifications(
-        self, admin_user: User, players_8, db_session, client
+        self, isolated_admin_user: User, isolated_players, db_session, client
     ):
         """
         Test guest access specifications from SPECIFICHE.md and UC01.md
         """
+        admin_user = isolated_admin_user
+        players_8 = isolated_players[:8]
+
         # Create tournament for guest viewing
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
-            name="Guest Access Test Tournament",
+            name="Guest Access Test Tournament Fixed",
             date=date.today(),
             location="Public Pool Hall",
             description="Tournament for guest access testing",
@@ -202,14 +208,14 @@ class TestSpecificationsAlignment:
         
         home_content = response.data.decode("utf-8")
         # Tournament should be visible in public listing
-        assert "Guest Access Test Tournament" in home_content
+        assert "Guest Access Test Tournament Fixed" in home_content
 
         # Test guest tournament details access
         response = client.get(f"/gara/{gara.id}")
         assert response.status_code == 200
         
         gara_content = response.data.decode("utf-8")
-        assert "Guest Access Test Tournament" in gara_content
+        assert "Guest Access Test Tournament Fixed" in gara_content
 
         # Test that admin functions are protected
         response = client.get("/admin/")
@@ -221,11 +227,13 @@ class TestSpecificationsAlignment:
         """
         Test player registration workflow from SPECIFICHE.md
         """
+        import uuid
+        
         # Test user registration as specified
         unique_id = str(uuid.uuid4())[:8]
         registration_data = {
-            "username": f"test_player_spec_{unique_id}",
-            "email": f"test_player_{unique_id}@spec.com",
+            "username": f"test_player_spec_fixed_{unique_id}",
+            "email": f"test_player_fixed_{unique_id}@spec.com",
             "phone": "+39 123 456 789",  # Optional
             "password": "test_password123",
             "confirm_password": "test_password123",
@@ -236,14 +244,14 @@ class TestSpecificationsAlignment:
         assert response.status_code in [200, 302]
 
         # Verify user created with correct properties
-        new_user = User.query.filter_by(username=f"test_player_spec_{unique_id}").first()
+        new_user = User.query.filter_by(username=f"test_player_spec_fixed_{unique_id}").first()
         assert new_user is not None
-        assert new_user.email == f"test_player_{unique_id}@spec.com"
+        assert new_user.email == f"test_player_fixed_{unique_id}@spec.com"
         assert new_user.role == UserRole.PLAYER.value
 
         # Test login workflow
         login_data = {
-            "username": f"test_player_spec_{unique_id}",
+            "username": f"test_player_spec_fixed_{unique_id}",
             "password": "test_password123",
         }
 
@@ -253,12 +261,15 @@ class TestSpecificationsAlignment:
         print("✅ Player registration workflow verified")
 
     def test_director_privileges_specifications(
-        self, director_user: User, players_8, db_session, client
+        self, isolated_director_user: User, isolated_players, db_session, client
     ):
         """
         Test director privileges as specified in SPECIFICHE.md
         Director maintains player functions but gains admin powers for their tournaments
         """
+        director_user = isolated_director_user
+        players_8 = isolated_players[:8]
+
         # Login as director
         with client.session_transaction() as sess:
             sess["_user_id"] = str(director_user.id)
@@ -268,7 +279,7 @@ class TestSpecificationsAlignment:
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
-            name="Director Privileges Test",
+            name="Director Privileges Test Fixed",
             date=date.today() + timedelta(days=1),
             location="Director Hall",
             description="Testing director privileges",
@@ -292,21 +303,24 @@ class TestSpecificationsAlignment:
 
         # Director should have admin powers for their tournament
         tournament_content = response.data.decode("utf-8")
-        assert "Director Privileges Test" in tournament_content
+        assert "Director Privileges Test Fixed" in tournament_content
 
         print("✅ Director privileges specifications verified")
 
     def test_anti_rematch_specifications(
-        self, admin_user: User, players_8, db_session, client
+        self, isolated_admin_user: User, isolated_players, db_session, client
     ):
         """
         Test anti-rematch specifications from docs/SPECIFICHE.md
         Amalfi strategy should avoid rematches across rounds
         """
+        admin_user = isolated_admin_user
+        players_8 = isolated_players[:8]
+
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
-            name="Anti-Rematch Test",
+            name="Anti-Rematch Test Fixed",
             date=date.today() + timedelta(days=1),
             location="Anti-Rematch Hall",
             description="Testing anti-rematch functionality",
@@ -363,17 +377,20 @@ class TestSpecificationsAlignment:
         print("✅ Anti-rematch specifications verified")
 
     def test_waitlist_specifications(
-        self, admin_user: User, players_8, db_session, client
+        self, isolated_admin_user: User, isolated_players, db_session, client
     ):
         """
         Test waitlist specifications from SPECIFICHE.md
         Tournament with max participants should handle waitlist correctly
         """
+        admin_user = isolated_admin_user
+        players_10 = isolated_players[:10]  # Use 10 players for waitlist test
+
         # Create tournament with limited capacity
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
-            name="Waitlist Test Tournament",
+            name="Waitlist Test Tournament Fixed",
             date=date.today() + timedelta(days=3),
             location="Limited Capacity Hall",
             description="Testing waitlist functionality",
@@ -395,13 +412,13 @@ class TestSpecificationsAlignment:
 
         # First 6 players inscribe (should be confirmed)
         for i in range(6):
-            inscription = InscriptionService.inscribe_user(players_8[i].id, gara.id)
+            inscription = InscriptionService.inscribe_user(players_10[i].id, gara.id)
             db_session.refresh(inscription)
             assert inscription.is_waitlist is False
 
         # 7th and 8th players should be waitlisted
         for i in range(6, 8):
-            inscription = InscriptionService.inscribe_user(players_8[i].id, gara.id)
+            inscription = InscriptionService.inscribe_user(players_10[i].id, gara.id)
             db_session.refresh(inscription)
             assert inscription.is_waitlist is True
 

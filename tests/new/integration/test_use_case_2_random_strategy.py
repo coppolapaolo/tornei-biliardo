@@ -154,9 +154,60 @@ class TestUseCaseRandomStrategyWithChallenges:
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
-        # Step 5: Challenge system integration after round 1
-        # Note: Challenge system would be tested separately as it requires complex setup
-        # For this workflow test, we skip the challenge implementation
+        # Step 5: Add 2 challenges after first round (2 attempts each) as per spec
+        from models.challenge.models import Challenge
+        from models.challenge.services import ChallengeService
+
+        # Challenge 1: Spot shot challenge
+        challenge1 = Challenge(
+            description="Post-Round 1 Spot Shot Challenge - Spot shot challenge after first round",
+            image_path="/static/challenges/spot_shot.jpg",
+            pass_fail_only=False,
+            is_active=True,
+        )
+        db_session.add(challenge1)
+
+        # Challenge 2: Break shot challenge
+        challenge2 = Challenge(
+            description="Post-Round 1 Break Challenge - Break shot challenge after first round",
+            image_path="/static/challenges/break_shot.jpg",
+            pass_fail_only=False,
+            is_active=True,
+        )
+        db_session.add(challenge2)
+        db_session.commit()
+
+        # Players complete challenges (2 attempts each)
+        for player in players_8[:4]:  # First 4 players attempt challenges
+            # Challenge 1 attempts (2 attempts each)
+            for attempt_num in range(2):
+                attempt = ChallengeService.start_challenge_attempt(
+                    user_id=player.id,
+                    challenge_id=challenge1.id,
+                    gara_id=gara.id,
+                    round_number=1,
+                )
+                score = 75 + (player.id % 20) + (attempt_num * 5)  # Improving scores
+                ChallengeService.complete_challenge_attempt(
+                    attempt_id=attempt.id,
+                    score=score,
+                    notes=f"Round 1 challenge attempt {attempt_num + 1}",
+                )
+
+            # Challenge 2 attempts (2 attempts each)
+            for attempt_num in range(2):
+                attempt = ChallengeService.start_challenge_attempt(
+                    user_id=player.id,
+                    challenge_id=challenge2.id,
+                    gara_id=gara.id,
+                    round_number=1,
+                )
+                score = 70 + (player.id % 25) + (attempt_num * 10)  # Improving scores
+                ChallengeService.complete_challenge_attempt(
+                    attempt_id=attempt.id,
+                    score=score,
+                    notes=f"Round 1 break challenge attempt {attempt_num + 1}",
+                )
 
         # Step 6: Start second round with Random strategy
         total_matches, normal_matches, bye_matches, trio_matches = (
@@ -197,8 +248,10 @@ class TestUseCaseRandomStrategyWithChallenges:
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Step 7: Third round with discipline change to 9-ball
-        # Update tournament discipline for final round
-        gara.discipline = "palla_9"
+        # Per UC2 spec: "cambia la disciplina del solo terzo turno in palla 9"
+        # Save original discipline and temporarily change for round 3
+        original_discipline = gara.discipline
+        gara.discipline = "palla_9"  # Change to 9-ball for round 3
         db_session.add(gara)
         db_session.commit()
 
@@ -230,12 +283,23 @@ class TestUseCaseRandomStrategyWithChallenges:
 
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
-        # Step 8: Verify final classification exists
+        # Step 8: Verify final classification exists and uses rack-based ordering
         from amalfi.engine import get_amalfi_classification
 
         final_classification = get_amalfi_classification(gara.id, 3)
         assert final_classification is not None
         assert len(final_classification) == 8
+
+        # UC2 spec: "il sistema calcola la classifica secondo l'ordinamento (numero rack vinti)"
+        # Verify that classification is ordered by rack-based metrics (rack_difference)
+        previous_rack_diff = float("inf")
+        for player_classification in final_classification:
+            current_rack_diff = player_classification.rack_difference
+            # Classification should be ordered by rack difference (descending)
+            assert (
+                current_rack_diff <= previous_rack_diff
+            ), f"Classification not ordered by rack performance: {current_rack_diff} > {previous_rack_diff}"
+            previous_rack_diff = current_rack_diff
 
         # Step 10: Verify tournament completion
         db_session.refresh(gara)
@@ -427,7 +491,7 @@ class TestUseCaseRandomStrategyVariants:
 
             regular_matches = [m for m in matches if not m.is_bye]
             bye_matches = [m for m in matches if m.is_bye]
-            
+
             assert len(regular_matches) == 3  # 6 players in 3 matches
             assert len(bye_matches) == 1  # 1 player gets bye
             assert len(matches) == 4  # Total matches
