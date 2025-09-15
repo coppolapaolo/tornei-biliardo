@@ -70,6 +70,28 @@ The test suite follows a modern pytest-based approach with clear separation betw
 - Business workflow testing
 - Data consistency verification
 
+#### Use Case Integration Testing
+**Purpose**: Specific test files for documented use case workflows
+
+**Use Case Documentation Mapping**:
+- **`docs/usecases/gare.md`** → Tournament creation and management workflows (8 use cases)
+  - Use Case 1: `test_gare_usecase_1_amalfi_complete_workflow.py` - Complete Amalfi tournament workflow (admin/director creates 3-round tournament with inscriptions, anti-rematch, tiebreakers)
+  - Use Case 2: `test_use_case_2_random_strategy.py` - Random strategy tournaments with challenges and discipline changes
+  - Use Case 3: `test_use_case_3_round_robin.py` - Round-robin tournaments with multi-set matches
+  - Use Case 4: `test_use_case_4_campionato_workflow.py` - Championship tournaments with multiple competitions
+  - Use Case 5: `test_use_case_5_guest_access.py` - Guest access to ongoing championships and live results
+  - Use Case 6: `test_use_case_6_individual_matches.py` - Individual match proposals and validation
+  - Use Case 7: `test_use_case_7_player_availability.py` - Player availability system and match coordination
+  - Use Case 8: `test_use_case_8_match_modification.py` - Match modification and round management
+
+- **`docs/usecases/UC01.md`** → Guest access and UI interaction workflows (7 use cases)
+  - Use Cases 1-7: `test_UC01_guest_access_and_related_workflows.py` - Guest access, match modification, round ordering, table assignment, challenge integration, standalone challenges, profile export
+
+**Naming Convention**:
+- `test_gare_usecase_X_*.py` for use cases from `gare.md`
+- `test_UC01_*.py` for use cases from `UC01.md`
+- Clear distinction prevents confusion between different "Use Case 1" definitions
+
 ### End-to-End Tests (`new/e2e/`)
 **Purpose**: Test complete user workflows through the web interface
 

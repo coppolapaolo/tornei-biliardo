@@ -1,13 +1,16 @@
-"""Comprehensive integration tests for UC01.md - All 7 Use Cases.
+"""Integration tests for UC01.md - All 7 Use Cases.
 
 Tests all use cases documented in docs/usecases/UC01.md:
-- UC1: Guest access to ongoing standalone tournament, live updates
+- UC1: Guest access to ongoing standalone tournament with live updates
 - UC2: Match modification workflow with round completion effects
 - UC3: Tournament round ordering and management visibility
 - UC4: Table assignment and queue management system
 - UC5: Challenge system integration with tournaments
 - UC6: Standalone challenge completion workflow
 - UC7: Player profile and statistics with CSV export
+
+Note: This tests the guest access and UI workflow use cases from UC01.md,
+NOT the tournament creation/management use case from gare.md.
 """
 
 import pytest

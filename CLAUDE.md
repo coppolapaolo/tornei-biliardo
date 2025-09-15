@@ -58,7 +58,7 @@ pytest --cov
 PYTHONPATH=. pytest tests/new/unit/test_specific.py
 
 # Run single integration test
-PYTHONPATH=. pytest tests/new/integration/test_use_case_1_amalfi_tournaments.py -v
+PYTHONPATH=. pytest tests/new/integration/test_gare_usecase_1_amalfi_complete_workflow.py -v
 
 # Run legacy tests (if needed)
 pytest tests/legacy/

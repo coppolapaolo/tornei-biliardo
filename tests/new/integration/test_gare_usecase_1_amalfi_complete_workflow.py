@@ -1,10 +1,16 @@
-"""Integration tests for Use Case 1: Admin/Director Amalfi Strategy Tournaments.
+"""Integration tests for GARE Use Case 1: Admin/Director Amalfi Strategy Tournaments.
 
-Tests comprehensive workflow with all variants:
-- 3 rounds, 6-10 players, 9-ball best-of-9/exactly-5
+Tests the complete tournament workflow as documented in docs/usecases/gare.md Use Case 1.
+
+Full workflow with all variants:
+- Admin/Director creates standalone tournament (variant: within championship)
+- 3 rounds, Amalfi strategy, 6-10 players, 9-ball best-of-9 (variant: exactly-5)
 - Random first pairing, odd handling with X, spot shot rally challenges
 - Variants: 8 players, 9 players, 11 players (waitlist), auto-expiry
-- Full workflow: inscription → first round → second round → third round → final classification → tiebreaker challenge
+- Complete flow: inscription → 3 rounds → final classification → tiebreaker challenge
+
+Note: This tests the tournament creation and management use case from gare.md,
+NOT the guest access use case from UC01.md.
 """
 
 import pytest
