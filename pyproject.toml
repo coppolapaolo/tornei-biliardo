@@ -3,6 +3,5 @@ line-length = 88
 
 [tool.coverage.run]
 omit = [
-    "routes/*",
     "models/legacy_models.py"
 ]

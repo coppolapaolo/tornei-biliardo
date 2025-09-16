@@ -48,17 +48,23 @@ pytest
 
 # Run specific test types
 pytest -m unit
-pytest -m integration  
+pytest -m integration
 pytest -m e2e
 
 # Run with coverage
 pytest --cov
 
-# Run single test with proper path
+# Run single test with proper path (CRITICAL for imports)
 PYTHONPATH=. pytest tests/new/unit/test_specific.py
 
 # Run single integration test
 PYTHONPATH=. pytest tests/new/integration/test_gare_usecase_1_amalfi_complete_workflow.py -v
+
+# Run verbose with output
+PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -s
+
+# Run tests with short traceback on failures
+PYTHONPATH=. pytest tests/new/unit/ -x --tb=short
 
 # Run legacy tests (if needed)
 pytest tests/legacy/
