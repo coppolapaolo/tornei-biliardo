@@ -146,6 +146,7 @@ def edit_campionato(campionato_id):
                 without_x="without_x" in request.form,
                 final_playoffs="final_playoffs" in request.form,
                 challenge_mode="challenge_mode" in request.form,
+                scoring_policy=request.form.get("scoring_policy", "classic"),
             )
             flash("Campionato aggiornato con successo!")
         except ValueError as ve:

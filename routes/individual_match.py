@@ -1,7 +1,8 @@
 """
 Module: routes/individual_match.py
 Purpose: Individual Match domain HTTP routes for player-to-player match proposals
-Requirements: Individual match proposals between players with scheduling and result tracking
+Requirements: Individual match proposals between players with scheduling and
+    result tracking
 """
 
 from flask import (
@@ -13,7 +14,7 @@ from flask import (
     flash,
     jsonify,
 )
-from flask_login import login_required, current_user
+from flask_login import current_user
 from datetime import datetime, timedelta
 
 from models import (
@@ -26,6 +27,7 @@ from models.individual_match.services import (
     IndividualMatchService,
     MatchProposalService,
 )
+from models.user.permissions import RoleRequirement
 
 
 # Blueprint initialization
@@ -33,7 +35,7 @@ individual_match_bp = Blueprint("individual_match", __name__)
 
 
 @individual_match_bp.route("/")
-@login_required
+@RoleRequirement.player_or_director_required
 def dashboard():
     """Individual match dashboard for current user."""
     try:
@@ -45,7 +47,7 @@ def dashboard():
 
 
 @individual_match_bp.route("/proposals")
-@login_required
+@RoleRequirement.player_or_director_required
 def proposal_list():
     """List match proposals for current user."""
     try:
@@ -57,7 +59,7 @@ def proposal_list():
 
 
 @individual_match_bp.route("/proposals/create", methods=["GET", "POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def create_proposal():
     """Create new match proposal."""
     if request.method == "GET":
@@ -117,7 +119,7 @@ def create_proposal():
 
 
 @individual_match_bp.route("/proposals/<int:proposal_id>/accept", methods=["POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def accept_proposal(proposal_id):
     """Accept a match proposal."""
     try:
@@ -151,7 +153,7 @@ def accept_proposal(proposal_id):
 
 
 @individual_match_bp.route("/proposals/<int:proposal_id>/cancel", methods=["POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def cancel_proposal(proposal_id):
     """Cancel a match proposal (proposer only)."""
     try:
@@ -177,7 +179,7 @@ def cancel_proposal(proposal_id):
 
 
 @individual_match_bp.route("/matches")
-@login_required
+@RoleRequirement.player_or_director_required
 def match_list():
     """List individual matches for current user."""
     try:
@@ -189,7 +191,7 @@ def match_list():
 
 
 @individual_match_bp.route("/matches/<int:match_id>")
-@login_required
+@RoleRequirement.player_or_director_required
 def match_detail(match_id):
     """View individual match details and submit results."""
     try:
@@ -208,7 +210,7 @@ def match_detail(match_id):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/start", methods=["POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def start_match(match_id):
     """Start an individual match."""
     try:
@@ -230,7 +232,7 @@ def start_match(match_id):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/racks", methods=["POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def submit_rack_result(match_id):
     """Submit result for a rack in individual match."""
     try:
@@ -266,7 +268,7 @@ def submit_rack_result(match_id):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/complete", methods=["POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def complete_match(match_id):
     """Complete an individual match."""
     try:
@@ -299,7 +301,7 @@ def complete_match(match_id):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/cancel", methods=["POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def cancel_match(match_id):
     """Cancel an individual match."""
     try:
@@ -321,7 +323,7 @@ def cancel_match(match_id):
 
 
 @individual_match_bp.route("/availability", methods=["GET", "POST"])
-@login_required
+@RoleRequirement.player_or_director_required
 def manage_availability():
     """Manage player availability for match proposals."""
     if request.method == "GET":
@@ -361,7 +363,7 @@ def manage_availability():
 
 
 @individual_match_bp.route("/statistics")
-@login_required
+@RoleRequirement.player_or_director_required
 def user_statistics():
     """View user's individual match statistics."""
     try:

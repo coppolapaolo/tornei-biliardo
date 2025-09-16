@@ -91,7 +91,7 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Director can manage competitions in their campionati OR standalone gare they manage
+        # Director can manage competitions in their campionati OR gare they manage
         if user.is_director:
             try:
                 # Import here to avoid circular imports during transition
@@ -611,6 +611,34 @@ class RoleRequirement:
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated or not (
                 current_user.is_admin or current_user.is_director
+            ):
+                abort(403)
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    @staticmethod
+    def player_or_director_required(f):
+        """
+        Decorator for player/director functions (excludes admin and guest).
+
+        This decorator allows access only to users with player or director roles,
+        excluding admin users and unauthenticated guests. Useful for functions
+        like competition inscription where admin shouldn't participate as a player.
+
+        Args:
+            f: Function to decorate
+
+        Returns:
+            function: Decorated function with player/director check
+        """
+
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if (
+                not current_user.is_authenticated
+                or not (current_user.is_player or current_user.is_director)
+                or current_user.is_admin
             ):
                 abort(403)
             return f(*args, **kwargs)

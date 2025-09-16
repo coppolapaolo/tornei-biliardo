@@ -309,9 +309,6 @@ class GaraService:
                 "Le iscrizioni non possono terminare dopo la data della gara!"
             )
 
-        # Salva le vecchie date per confronto
-        old_start = gara.inscription_start
-        old_end = gara.inscription_end
         current_status = gara.status or GaraStatus.SETUP.value
 
         # Aggiorna le date
@@ -440,6 +437,7 @@ class GaraService:
                     elif len(pairing.players) == 3:
                         # Match trio
                         from models.match.models import TrioMatch
+
                         match = Match(
                             gara_id=gara_id,
                             round_number=round_num,
@@ -449,12 +447,12 @@ class GaraService:
                             is_trio=True,
                         )
                         db.session.add(match)
-                        
+
                         # Crea il record TrioMatch con tutti e tre i giocatori
                         trio_match = TrioMatch(
                             match=match,
                             player1_id=pairing.players[0],
-                            player2_id=pairing.players[1], 
+                            player2_id=pairing.players[1],
                             player3_id=pairing.players[2],
                         )
                         db.session.add(trio_match)
@@ -710,7 +708,6 @@ class GaraService:
             else:
                 # Usa il registry per altre strategie
                 from models.matchmaking.bootstrap import get_registry
-                from models.matchmaking.configuration import StrategyConfiguration
 
                 registry = get_registry()
 
@@ -727,17 +724,6 @@ class GaraService:
                 strategy = registry.get(registry_name)
                 if not strategy:
                     raise ValueError(f"Strategia '{strategy_name}' non trovata")
-
-                # Crea la configurazione dalla gara
-                config = StrategyConfiguration.from_gara(gara)
-
-                # Ottieni i giocatori iscritti (escludi lista d'attesa)
-                from models.competition.models import Inscription
-
-                inscriptions = Inscription.query.filter_by(
-                    gara_id=gara_id, is_waitlist=False
-                ).all()
-                player_ids = [insc.user_id for insc in inscriptions]
 
                 # Genera gli abbinamenti usando l'interfaccia della strategia
                 pairings = strategy.propose(gara, round_number)
@@ -771,7 +757,7 @@ class GaraService:
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
-                        # Match trio 
+                        # Match trio
                         match = Match(
                             gara_id=gara_id,
                             round_number=round_number,
@@ -781,12 +767,12 @@ class GaraService:
                             is_trio=True,
                         )
                         db.session.add(match)
-                        
+
                         # Crea il record TrioMatch con tutti e tre i giocatori
                         trio_match = TrioMatch(
                             match=match,
                             player1_id=pairing.players[0],
-                            player2_id=pairing.players[1], 
+                            player2_id=pairing.players[1],
                             player3_id=pairing.players[2],
                         )
                         db.session.add(trio_match)
@@ -850,7 +836,6 @@ class GaraService:
             else:
                 # Usa il registry per altre strategie
                 from models.matchmaking.bootstrap import get_registry
-                from models.matchmaking.configuration import StrategyConfiguration
 
                 registry = get_registry()
 
@@ -868,17 +853,8 @@ class GaraService:
                 if not strategy:
                     raise ValueError(f"Strategia '{strategy_name}' non trovata")
 
-                # Crea la configurazione dalla gara
-                config = StrategyConfiguration.from_gara(gara)
-
                 # Ottieni i giocatori iscritti (escludi lista d'attesa)
-                from models.competition.models import Inscription
                 from models.user.models import User
-
-                inscriptions = Inscription.query.filter_by(
-                    gara_id=gara_id, is_waitlist=False
-                ).all()
-                player_ids = [insc.user_id for insc in inscriptions]
 
                 # Genera gli abbinamenti di anteprima usando l'interfaccia della strategia
                 pairings = strategy.preview(gara, round_number)
@@ -1617,7 +1593,6 @@ class InscriptionService:
         if inscription:
             gara = db.session.get(Gara, gara_id)
             admin_user = db.session.get(User, admin_user_id)
-            user = db.session.get(User, user_id)
 
             was_active = not inscription.is_waitlist and not inscription.is_withdrawn
             gara_name = gara.name or f"Gara {gara.number}"

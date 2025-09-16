@@ -1,4 +1,39 @@
 {# templates/components/_gara_management.html #}
+
+{# Macro for Challenge Button #}
+{% macro challenge_button(gara) %}
+    {% if gara.matchmaking_strategy == 'random' %}
+        {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
+        <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
+            <i class="fas fa-trophy"></i>
+            {% if has_challenges %}
+                Gestisci Challenge
+            {% else %}
+                Aggiungi Challenge
+            {% endif %}
+        </button>
+    {% endif %}
+{% endmacro %}
+
+{# Macro for Start Round/Game Button #}
+{% macro start_round_button(gara, disabled_condition) %}
+    <button class="btn btn-primary w-100 mb-2" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
+            {% if disabled_condition %}disabled{% endif %}>
+        <i class="fas fa-play"></i>
+        {% if gara.matchmaking_strategy == 'random' %}
+            Avvia Gara
+        {% else %}
+            Avvia Primo Turno
+        {% endif %}
+    </button>
+{% endmacro %}
+
+{# Macro for Modify Dates Button #}
+{% macro modify_dates_button(button_text, icon_class, margin_class='mb-2') %}
+    <button class="btn btn-warning w-100 {{ margin_class }}" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+        <i class="{{ icon_class }}"></i> {{ button_text }}
+    </button>
+{% endmacro %}
 <div>
     <!-- Gestione Stato Gara -->
     <div class="card">
@@ -8,43 +43,19 @@
         </div>
         <div class="card-body">
             {% if gara.status == 'setup' %}
-                {% if gara.matchmaking_strategy == 'random' %}
-                    {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
-                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
-                        <i class="fas fa-trophy"></i> 
-                        {% if has_challenges %}
-                            Gestisci Challenge
-                        {% else %}
-                            Aggiungi Challenge
-                        {% endif %}
-                    </button>
-                {% endif %}
+                {{ challenge_button(gara) }}
                 
                 <button class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
                     <i class="fas fa-door-open"></i> Apri Iscrizioni
                 </button>
                 
             {% elif gara.get_real_status() == 'inscription' %}
-                <button class="btn btn-primary w-100 mb-2" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
-                        {% if gara.get_active_inscriptions_count() < gara.min_participants %}disabled{% endif %}>
-                    <i class="fas fa-play"></i> 
-                    {% if gara.matchmaking_strategy == 'random' %}
-                        Avvia Gara
-                    {% else %}
-                        Avvia Primo Turno
-                    {% endif %}
-                </button>
+                {{ start_round_button(gara, gara.get_active_inscriptions_count() < gara.min_participants) }}
                 
-                {% if gara.matchmaking_strategy == 'random' %}
-                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
-                        <i class="fas fa-trophy"></i> Gestisci Challenge
-                    </button>
-                {% endif %}
+                {{ challenge_button(gara) }}
                 
                 {% if gara.can_modify_inscription_dates() %}
-                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
-                        <i class="fas fa-edit"></i> Modifica Date
-                    </button>
+                    {{ modify_dates_button('Modifica Date', 'fas fa-edit') }}
                 {% endif %}
                 
                 {% if gara.get_active_inscriptions_count() == 0 %}
@@ -75,21 +86,10 @@
                 </div>
                 
                 {% if gara.can_modify_inscription_dates() and gara.get_active_inscriptions_count() >= gara.min_participants %}
-                    <button class="btn btn-primary w-100 mb-1" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')">
-                        <i class="fas fa-play"></i> 
-                        {% if gara.matchmaking_strategy == 'random' %}
-                            Avvia Gara
-                        {% else %}
-                            Avvia Primo Turno
-                        {% endif %}
-                    </button>
-                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
-                        <i class="fas fa-edit"></i> Estendi Iscrizioni
-                    </button>
+                    {{ start_round_button(gara, false) }}
+                    {{ modify_dates_button('Estendi Iscrizioni', 'fas fa-edit') }}
                 {% elif gara.can_modify_inscription_dates() %}
-                    <button class="btn btn-warning w-100 mb-1" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
-                        <i class="fas fa-edit"></i> Estendi Iscrizioni
-                    </button>
+                    {{ modify_dates_button('Estendi Iscrizioni', 'fas fa-edit', 'mb-1') }}
                     <button class="btn btn-danger w-100 mb-2" onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }})">
                         <i class="fas fa-times-circle"></i> Cancella Gara
                     </button>
@@ -108,9 +108,7 @@
                 </div>
                 
                 {% if gara.can_modify_inscription_dates() %}
-                    <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
-                        <i class="fas fa-edit"></i> Modifica Date
-                    </button>
+                    {{ modify_dates_button('Modifica Date', 'fas fa-edit') }}
                 {% endif %}
                 
             {% elif gara.status == 'playing' %}
