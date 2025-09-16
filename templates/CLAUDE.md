@@ -119,7 +119,6 @@ Reusable UI components using Bootstrap 5:
 
 #### Matchmaking System Components
 - `_amalfi_system.html`: Matchmaking strategy interface
-- `_amalfi_preview_modal.html`: Strategy pairing preview modal
 - `_amalfi_algorithm_info.html`: Strategy explanation and selection
 - `_strategy_selector.html`: Dynamic strategy selection component
 - `_pairing_preview.html`: Universal pairing preview for all strategies

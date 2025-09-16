@@ -74,13 +74,8 @@
                         {% set current_round_is_completed = current_round_matches|length > 0 and current_round_completed_matches|length == current_round_matches|length %}
                         
                         {% if not next_round_started and (gara.current_round == 0 or current_round_is_completed) %}
-                            
-                            <button class="btn btn-info btn-sm" 
-                                    onclick="previewRound({{ next_round }})">
-                                <i class="fas fa-eye"></i> Anteprima Turno {{ next_round }}
-                            </button>
-                            
-                            <button class="btn btn-success btn-sm" 
+
+                            <button class="btn btn-success btn-sm"
                                     onclick="startRound({{ next_round }})">
                                 <i class="fas fa-play"></i> Avvia Turno {{ next_round }}
                             </button>

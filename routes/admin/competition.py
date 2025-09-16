@@ -390,6 +390,13 @@ def edit_gara(gara_id):
 
             location = _handle_venue_creation(location, number_of_tables)
 
+            # Estratti i parametri di configurazione matchmaking
+            matchmaking_strategy = request.form.get("matchmaking_strategy", gara.matchmaking_strategy)
+            first_round_policy = request.form.get("first_round_policy", gara.first_round_policy)
+            odd_number_policy = request.form.get("odd_number_policy", gara.odd_number_policy)
+            anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
+            rating_type = request.form.get("rating_type", gara.rating_type)
+
             GaraService.update_gara(
                 gara_id=gara_id,
                 name=request.form.get("name", gara.name),
@@ -406,6 +413,12 @@ def edit_gara(gara_id):
                 withdraw_policy=request.form.get(
                     "withdraw_policy", WithdrawPolicy.EXCLUDE.value
                 ),
+                # Aggiunti i parametri di configurazione matchmaking
+                matchmaking_strategy=matchmaking_strategy,
+                first_round_policy=first_round_policy,
+                odd_number_policy=odd_number_policy,
+                anti_rematch_enabled=anti_rematch_enabled,
+                rating_type=rating_type,
             )
             flash("Gara aggiornata con successo!")
         except ValueError as ve:
@@ -907,55 +920,6 @@ def amalfi_classification(gara_id, round_number):
     )
 
 
-@competition_bp.route("/<int:gara_id>/amalfi/preview_round/<int:round_number>")
-@login_required
-@gara_manager_required
-def amalfi_preview_round(gara_id, round_number):
-    """Anteprima di un turno Amalfi senza creare le partite"""
-    from amalfi.engine import AmalfiEngine
-
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        return jsonify({"success": False, "error": "Gara non trovata"}), 404
-
-    try:
-        # Validazioni preliminari
-        if round_number < 1 or round_number > gara.rounds_count:
-            return jsonify(
-                {"success": False, "error": f"Turno {round_number} non valido!"}
-            )
-
-        if round_number <= gara.current_round:
-            return jsonify(
-                {
-                    "success": False,
-                    "error": f"Il turno {round_number} è già stato avviato!",
-                }
-            )
-
-        if round_number != gara.current_round + 1:
-            return jsonify(
-                {
-                    "success": False,
-                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
-                }
-            )
-
-        # Usa il motore Amalfi per calcolare gli abbinamenti senza crearli
-        engine = AmalfiEngine(gara)
-        preview_data = engine.preview_round_pairings(round_number)
-
-        return jsonify(
-            {
-                "success": True,
-                "matches": preview_data["matches"],
-                "stats": preview_data["stats"],
-                "salto": preview_data.get("salto", 0),
-            }
-        )
-
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
 
 
 @competition_bp.route(
@@ -1061,73 +1025,6 @@ def amalfi_start_round(gara_id, round_number):
         )
 
 
-@competition_bp.route("/<int:gara_id>/preview_round/<int:round_number>")
-@login_required
-@gara_manager_required
-def preview_round_generic(gara_id, round_number):
-    """Anteprima di un turno con la strategia configurata nella gara"""
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        return jsonify({"success": False, "error": "Gara non trovata"}), 404
-
-    try:
-        # Validazioni preliminari
-        if round_number < 1 or round_number > gara.rounds_count:
-            return jsonify(
-                {"success": False, "error": f"Turno {round_number} non valido!"}
-            )
-
-        if round_number <= gara.current_round:
-            return jsonify(
-                {
-                    "success": False,
-                    "error": f"Il turno {round_number} è già stato avviato!",
-                }
-            )
-
-        if round_number != gara.current_round + 1:
-            return jsonify(
-                {
-                    "success": False,
-                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
-                }
-            )
-
-        # Usa la strategia appropriata per il preview
-        strategy_name = gara.matchmaking_strategy
-
-        if strategy_name == "amalfi":
-            from amalfi.engine import AmalfiEngine
-
-            engine = AmalfiEngine(gara)
-            preview_data = engine.preview_round_pairings(round_number)
-
-            return jsonify(
-                {
-                    "success": True,
-                    "matches": preview_data["matches"],
-                    "stats": preview_data["stats"],
-                    "salto": preview_data.get("salto", 0),
-                    "strategy": "amalfi",
-                }
-            )
-        else:
-            # Per altre strategie, usa il service layer per il preview
-            preview_data = GaraService.preview_round_with_strategy(
-                gara_id, round_number
-            )
-
-            return jsonify(
-                {
-                    "success": True,
-                    "matches": preview_data.get("matches", []),
-                    "stats": preview_data.get("stats", {}),
-                    "strategy": strategy_name,
-                }
-            )
-
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
 
 
 @competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
