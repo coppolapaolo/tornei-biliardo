@@ -25,6 +25,7 @@ from models import (
 from models.status_enum import (
     GaraStatus,
     MatchStatus,
+    Discipline,
 )
 from models.competition.models import WithdrawPolicy
 from utils import (
@@ -227,6 +228,7 @@ def create_gara_standalone():
         WithdrawPolicy=WithdrawPolicy,
         verified_venues=verified_venues,
         available_strategies=available_strategies,
+        discipline_choices=Discipline.get_choices(),
     )
 
 
@@ -444,6 +446,7 @@ def edit_gara(gara_id):
         WithdrawPolicy=WithdrawPolicy,
         available_strategies=available_strategies,
         verified_venues=verified_venues,
+        discipline_choices=Discipline.get_choices(),
     )
 
 
@@ -684,6 +687,7 @@ def gara_detail(gara_id):
         challenge_classification=challenge_classification,
         gara_challenges=gara_challenges,
         match_can_modify=match_can_modify,
+        discipline_choices=Discipline.get_choices(),
     )
 
 
@@ -1086,9 +1090,15 @@ def start_round_generic(gara_id, round_number):
                     }
                 )
 
+        # Ottieni disciplina personalizzata se fornita
+        discipline_override = request.form.get('discipline')
+        if discipline_override and discipline_override == gara.discipline:
+            # Se è uguale alla disciplina della gara, non serve override
+            discipline_override = None
+
         # Crea il turno usando la strategia configurata
         total, n_normal, n_bye, n_trio = GaraService.create_round_with_strategy(
-            gara_id, round_number
+            gara_id, round_number, discipline_override
         )
 
         # Aggiorna lo stato della gara
@@ -1107,6 +1117,14 @@ def start_round_generic(gara_id, round_number):
         strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
         message = f"Turno {round_number} avviato con strategia {strategy_name}!"
         details = [f"Partite totali: {total}"]
+
+        # Aggiungi info sulla disciplina se diversa da quella di default
+        if discipline_override:
+            discipline_display = discipline_override.replace("_", " ").title()
+            details.append(f"Disciplina: {discipline_display}")
+        else:
+            default_discipline = gara.discipline.replace("_", " ").title()
+            details.append(f"Disciplina: {default_discipline} (Default)")
 
         if n_normal:
             details.append(f"Partite normali: {n_normal}")

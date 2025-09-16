@@ -193,6 +193,17 @@ function dateToLocalString(date) {
 
 // Gestione Timezone per iscrizioni
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize round discipline selectors with stored values
+    const disciplineSelectors = document.querySelectorAll('[id^="roundDiscipline"]');
+    disciplineSelectors.forEach(selector => {
+        const roundNumber = selector.id.replace('roundDiscipline', '');
+        const storedDiscipline = localStorage.getItem(`roundDiscipline_{{ gara.id }}_${roundNumber}`);
+
+        if (storedDiscipline && storedDiscipline !== '{{ gara.discipline }}') {
+            selector.value = storedDiscipline;
+            selector.parentElement.classList.add('border', 'border-warning', 'rounded', 'p-1');
+        }
+    });
     // Mostra timezone utente in entrambi i modal
     const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');
     timezoneSpans.forEach(span => {
@@ -303,16 +314,39 @@ function startAmalfiRound(roundNumber) {
 }
 
 
+function updateRoundDiscipline(roundNumber) {
+    const selectElement = document.getElementById(`roundDiscipline${roundNumber}`);
+    const selectedValue = selectElement.value;
+
+    // Store the selected discipline for the round
+    localStorage.setItem(`roundDiscipline_{{ gara.id }}_${roundNumber}`, selectedValue);
+
+    // Visual feedback
+    if (selectedValue !== '{{ gara.discipline }}') {
+        selectElement.parentElement.classList.add('border', 'border-warning', 'rounded', 'p-1');
+    } else {
+        selectElement.parentElement.classList.remove('border', 'border-warning', 'rounded', 'p-1');
+    }
+}
+
 function startRound(roundNumber) {
     // Disabilita pulsanti per evitare doppi click
     const buttons = document.querySelectorAll('button[onclick*="startRound"]');
     buttons.forEach(btn => btn.disabled = true);
 
+    // Get the selected discipline for this round
+    const selectedDiscipline = localStorage.getItem(`roundDiscipline_{{ gara.id }}_${roundNumber}`) || '{{ gara.discipline }}';
+
+    // Prepare form data
+    const formData = new URLSearchParams();
+    formData.append('discipline', selectedDiscipline);
+
     fetch(`/admin/gara/{{ gara.id }}/start_round/${roundNumber}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-        }
+        },
+        body: formData
     })
     .then(response => response.json())
     .then(data => {

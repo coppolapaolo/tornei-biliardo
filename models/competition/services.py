@@ -657,7 +657,7 @@ class GaraService:
 
     @staticmethod
     def create_round_with_strategy(
-        gara_id: int, round_number: int
+        gara_id: int, round_number: int, discipline_override: Optional[str] = None
     ) -> tuple[int, int, int, int]:
         """Crea un turno usando la strategia configurata nella gara.
 
@@ -744,6 +744,7 @@ class GaraService:
                             player1_score=bye_score,
                             winner_id=pairing.players[0],
                             status="completed",
+                            discipline=discipline_override,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 2 and not pairing.is_bye:
@@ -754,6 +755,7 @@ class GaraService:
                             player1_id=pairing.players[0],
                             player2_id=pairing.players[1],
                             is_bye=False,
+                            discipline=discipline_override,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
@@ -765,6 +767,7 @@ class GaraService:
                             player2_id=pairing.players[1],
                             is_bye=False,
                             is_trio=True,
+                            discipline=discipline_override,
                         )
                         db.session.add(match)
 

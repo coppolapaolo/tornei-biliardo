@@ -44,6 +44,9 @@ class Match(db.Model):
     )  # Whether this match has multiple sets
     current_set_number = db.Column(db.Integer, default=1)  # Current set being played
 
+    # Disciplina override (se diversa da quella della gara)
+    discipline = db.Column(db.String(50), nullable=True)  # Override della disciplina della gara
+
     # Stato
     status = db.Column(
         db.String(20), default="pending"
@@ -130,6 +133,12 @@ class Match(db.Model):
     def is_completed(self) -> bool:
         """Check if match is completed."""
         return self.status == "completed"
+
+    def get_effective_discipline(self) -> str:
+        """Get the effective discipline for this match (override or gara default)."""
+        if self.discipline:
+            return self.discipline
+        return self.gara.discipline if self.gara else "8_ball"
 
     def start_next_set(self) -> "Set":
         """Start the next set in a multi-set match."""

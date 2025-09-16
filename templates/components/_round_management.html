@@ -1,40 +1,35 @@
 {# templates/components/_round_management.html #}
-{% if gara.status in ['playing', 'completed'] and gara.rounds_count > 1 and gara.matchmaking_strategy != 'random' %}
+{% if gara.status in ['setup'] and gara.rounds_count > 1 and gara.matchmaking_strategy in ['amalfi', 'random'] %}
 <div class="card border-info">
     <div class="card-header bg-info bg-opacity-10">
         <h5>
-            <i class="fas fa-cogs"></i> 
-            Gestione Turni - {{ gara.matchmaking_strategy.replace("_", " ").title() }}
+            <i class="fas fa-cogs"></i>
+            Configurazione Discipline per Turni - {{ gara.matchmaking_strategy.replace("_", " ").title() }}
         </h5>
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-8">
-                <!-- Info Strategia -->
+            <div class="col-md-12">
                 <div class="mb-3">
                     <h6>Informazioni Competizione</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <strong>Turno Attuale:</strong> {{ gara.current_round }}/{{ gara.rounds_count }}<br>
                                 <strong>Strategia:</strong> {{ gara.matchmaking_strategy.replace("_", " ").title() }}<br>
-                                <strong>Anti-reincontro:</strong> 
+                                <strong>Turni Totali:</strong> {{ gara.rounds_count }}<br>
+                                <strong>Disciplina Default:</strong> {{ gara.discipline.replace("_", " ").title() }}<br>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Anti-reincontro:</strong>
                                 {% if gara.anti_rematch_enabled %}
                                     <span class="text-success">Abilitato</span>
                                 {% else %}
                                     <span class="text-secondary">Disabilitato</span>
                                 {% endif %}<br>
-                                <strong>Gestione Dispari:</strong> {{ gara.odd_number_policy.replace("_", " ").title() }}
-                            </small>
-                        </div>
-                        <div class="col-md-6">
-                            <small class="text-muted">
-                                <strong>Primo abbinamento:</strong> {{ gara.first_round_policy.replace("_", " ").title() }}<br>
-                                {% if gara.first_round_policy == "rating" and gara.rating_type %}
-                                    <strong>Tipo Rating:</strong> {{ gara.rating_type.upper() }}<br>
-                                {% endif %}
-                                <strong>Disciplina:</strong> {{ gara.discipline.replace("_", " ").title() }}<br>
-                                <strong>Distanza:</strong> 
+                                <strong>Gestione Dispari:</strong> {{ gara.odd_number_policy.replace("_", " ").title() }}<br>
+                                <strong>Distanza:</strong>
                                 {% if gara.best_of %}
                                     Al meglio di {{ gara.distance }}
                                 {% else %}
@@ -44,66 +39,42 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Classifiche per Turno -->
-                {% if gara.current_round > 0 %}
-                    <div class="mb-3">
-                        <h6>Classifiche per Turno</h6>
-                        <div class="btn-group" role="group">
-                            {% for r in range(1, gara.current_round + 1) %}
-                                <a href="{{ url_for('admin.competition.amalfi_classification', gara_id=gara.id, round_number=r) }}" 
-                                   class="btn btn-sm btn-outline-info">
-                                    Turno {{ r }}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-            
-            <div class="col-md-4">
-                <!-- Azioni Turni -->
-                <div class="d-grid gap-2">
-                    {% if gara.current_round < gara.rounds_count %}
-                        {% set next_round = gara.current_round + 1 %}
-                        
-                        <!-- Verifica se turno corrente è completato e prossimo non ancora avviato -->
-                        {% set next_round_started = matches|selectattr("round_number", "equalto", next_round)|list|length > 0 %}
-                        {% set current_round_matches = matches|selectattr("round_number", "equalto", gara.current_round)|list %}
-                        {% set current_round_completed_matches = current_round_matches|selectattr("status", "equalto", "completed")|list %}
-                        {% set current_round_is_completed = current_round_matches|length > 0 and current_round_completed_matches|length == current_round_matches|length %}
-                        
-                        {% if not next_round_started and (gara.current_round == 0 or current_round_is_completed) %}
 
-                            <button class="btn btn-success btn-sm"
-                                    onclick="startRound({{ next_round }})">
-                                <i class="fas fa-play"></i> Avvia Turno {{ next_round }}
-                            </button>
-                            
-                        {% elif next_round_started %}
-                            <div class="alert alert-info p-2">
-                                <small>
-                                    <i class="fas fa-clock"></i>
-                                    Turno {{ next_round }} in corso
-                                </small>
+                <!-- Configurazione Discipline per Turno -->
+                <div class="mb-3">
+                    <h6>Configurazione Discipline per Turno</h6>
+                    <p class="small text-muted mb-3">
+                        Puoi configurare una disciplina diversa per ciascun turno.
+                        Se non specificata, verrà utilizzata la disciplina di default della gara.
+                    </p>
+
+                    <div class="row">
+                        {% for round_num in range(1, gara.rounds_count + 1) %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card bg-light">
+                                    <div class="card-body p-2">
+                                        <label class="form-label small fw-bold">Turno {{ round_num }}:</label>
+                                        <select class="form-select form-select-sm" id="roundDiscipline{{ round_num }}" onchange="updateRoundDiscipline({{ round_num }})">
+                                            <option value="{{ gara.discipline }}">{{ gara.discipline.replace("_", " ").title() }} (Default)</option>
+                                            {% for value, label in discipline_choices %}
+                                                {% if value != gara.discipline %}
+                                                    <option value="{{ value }}">{{ label }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        {% else %}
-                            <div class="alert alert-warning p-2">
-                                <small>
-                                    <i class="fas fa-hourglass-half"></i>
-                                    Completa il Turno {{ gara.current_round }} per procedere
-                                </small>
-                            </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="alert alert-success p-2">
-                            <small>
-                                <i class="fas fa-flag-checkered"></i>
-                                Tutti i turni completati
-                            </small>
-                        </div>
-                    {% endif %}
-                    
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="alert alert-info p-2">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Le configurazioni delle discipline vengono salvate e applicate automaticamente quando ogni turno viene avviato.
+                        Puoi modificare queste impostazioni fino all'apertura delle iscrizioni.
+                    </small>
                 </div>
             </div>
         </div>

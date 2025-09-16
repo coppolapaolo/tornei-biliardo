@@ -24,6 +24,7 @@ __all__ = [
     "DirectorRequestStatus",
     "VenueManagerRequestStatus",
     "PlayoffConfirmationStatus",
+    "Discipline",
     "choices",
     "parse_enum",
 ]
@@ -127,6 +128,42 @@ class PlayoffConfirmationStatus(_StrEnum):
 # Utility generiche
 # ──────────────────────────────────────────────────────────────────────────────
 E = TypeVar("E", bound=_StrEnum)
+
+
+class Discipline(_StrEnum):
+    """Discipline di biliardo americano supportate."""
+
+    EIGHT_BALL = "8_ball"
+    NINE_BALL = "9_ball"
+    TEN_BALL = "10_ball"
+    ONE_POCKET = "one_pocket"
+    STRAIGHT_POOL = "straight_pool"
+    BANK_POOL = "bank_pool"
+    ROTATION = "rotation"
+
+    @property
+    def display_name(self) -> str:
+        """Nome display della disciplina."""
+        display_map = {
+            self.EIGHT_BALL: "8-Ball",
+            self.NINE_BALL: "9-Ball",
+            self.TEN_BALL: "10-Ball",
+            self.ONE_POCKET: "One Pocket",
+            self.STRAIGHT_POOL: "Straight Pool",
+            self.BANK_POOL: "Bank Pool",
+            self.ROTATION: "Rotation",
+        }
+        return display_map.get(self, self.value.replace("_", " ").title())
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        """Restituisce le scelte per form/template come lista di tuple (value, label)."""
+        return [(discipline.value, discipline.display_name) for discipline in cls]
+
+    @classmethod
+    def get_common_disciplines(cls) -> list["Discipline"]:
+        """Restituisce le discipline più comuni."""
+        return [cls.EIGHT_BALL, cls.NINE_BALL, cls.TEN_BALL, cls.ONE_POCKET, cls.STRAIGHT_POOL]
 
 
 def choices(enum_cls: Type[E]) -> Tuple[str, ...]:

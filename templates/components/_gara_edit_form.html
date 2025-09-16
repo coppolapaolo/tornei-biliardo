@@ -172,9 +172,9 @@
                         <label for="discipline" class="form-label">Disciplina</label>
                         <select class="form-select" name="discipline" required>
                             <option value="">Seleziona disciplina...</option>
-                            <option value="palla_8"{{ ' selected' if gara.discipline == 'palla_8' or gara.discipline == 'palla 8' else '' }}>Palla 8</option>
-                            <option value="palla_9"{{ ' selected' if gara.discipline == 'palla_9' or gara.discipline == 'palla 9' else '' }}>Palla 9</option>
-                            <option value="palla_10"{{ ' selected' if gara.discipline == 'palla_10' or gara.discipline == 'palla 10' else '' }}>Palla 10</option>
+                            {% for value, label in discipline_choices %}
+                                <option value="{{ value }}"{{ ' selected' if gara.discipline == value else '' }}>{{ label }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
