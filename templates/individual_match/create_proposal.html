@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}Crea Proposta di Match - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crea Proposta</li>
+                </ol>
+            </nav>
+
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-plus-circle"></i> Crea Nuova Proposta di Match</h4>
+                            <small class="text-muted">Invita altri giocatori a una partita individuale</small>
+                        </div>
+                        <div class="card-body">
+                            <form id="proposalForm" method="POST">
+                                <div class="row">
+                                    <!-- Basic Information -->
+                                    <div class="col-md-6">
+                                        <h5>Informazioni Base</h5>
+
+                                        <div class="mb-3">
+                                            <label for="proposal_type" class="form-label">Tipo di Proposta</label>
+                                            <select class="form-select" id="proposal_type" name="proposal_type" required>
+                                                <option value="direct">Invito Diretto</option>
+                                                <option value="open">Invito Aperto alla Community</option>
+                                            </select>
+                                            <div class="form-text">
+                                                <strong>Diretto:</strong> Inviti giocatori specifici<br>
+                                                <strong>Aperto:</strong> Visibile a tutta la community
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="location" class="form-label">Luogo *</label>
+                                            <input type="text" class="form-control" id="location" name="location" required
+                                                   placeholder="Es: Bar Sport, Sala Biliardi Centro">
+                                            <div class="form-text">Dove si svolgerà il match</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="scheduled_at" class="form-label">Data e Ora *</label>
+                                            <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required>
+                                            <div class="form-text">Quando vorresti giocare</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="entry_fee" class="form-label">Entry Fee (€)</label>
+                                            <input type="number" class="form-control" id="entry_fee" name="entry_fee"
+                                                   min="0" step="0.01" placeholder="0.00">
+                                            <div class="form-text">Opzionale - costo per partecipare</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Game Settings -->
+                                    <div class="col-md-6">
+                                        <h5>Impostazioni di Gioco</h5>
+
+                                        <div class="mb-3">
+                                            <label for="discipline" class="form-label">Disciplina *</label>
+                                            <select class="form-select" id="discipline" name="discipline" required>
+                                                <option value="palla_8">Palla 8</option>
+                                                <option value="palla_9">Palla 9</option>
+                                                <option value="palla_10">Palla 10</option>
+                                                <option value="one_pocket">One Pocket</option>
+                                                <option value="straight_pool">Straight Pool</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="distance" class="form-label">Distanza *</label>
+                                            <input type="number" class="form-control" id="distance" name="distance"
+                                                   min="1" max="25" value="5" required>
+                                            <div class="form-text">Numero di rack da giocare</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="best_of" class="form-label">Formato *</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="best_of"
+                                                       id="best_of_true" value="true" checked>
+                                                <label class="form-check-label" for="best_of_true">
+                                                    Al meglio di (primo a vincere la maggioranza)
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="best_of"
+                                                       id="best_of_false" value="false">
+                                                <label class="form-check-label" for="best_of_false">
+                                                    Esattamente (tutti i rack specificati)
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="break_rule" class="form-label">Regola Break</label>
+                                            <select class="form-select" id="break_rule" name="break_rule">
+                                                <option value="alternate">A turno</option>
+                                                <option value="winner_breaks">Vincitore rompe</option>
+                                                <option value="loser_breaks">Perdente rompe</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Player Invitations (for direct proposals) -->
+                                <div id="playerInvitations" style="display: none;">
+                                    <hr>
+                                    <h5>Inviti Diretti</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Giocatori da invitare</label>
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <input type="text" class="form-control" id="playerSearch"
+                                                       placeholder="Cerca giocatori per username...">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button type="button" class="btn btn-outline-primary w-100" onclick="searchPlayers()">
+                                                    <i class="fas fa-search"></i> Cerca
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div id="playerSearchResults" class="mt-2"></div>
+                                        <div id="selectedPlayers" class="mt-3"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descrizione (opzionale)</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"
+                                              placeholder="Aggiungi dettagli sul match, livello richiesto, note speciali..."></textarea>
+                                </div>
+
+                                <!-- Expiration -->
+                                <div class="mb-3">
+                                    <label for="expires_hours" class="form-label">Scade tra (ore)</label>
+                                    <select class="form-select" id="expires_hours" name="expires_hours">
+                                        <option value="1">1 ora prima del match</option>
+                                        <option value="2">2 ore prima del match</option>
+                                        <option value="6">6 ore prima del match</option>
+                                        <option value="24" selected>24 ore prima del match</option>
+                                        <option value="48">48 ore prima del match</option>
+                                    </select>
+                                    <div class="form-text">Quando la proposta scade automaticamente</div>
+                                </div>
+
+                                <!-- Submit -->
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-secondary me-2" onclick="history.back()">
+                                        <i class="fas fa-arrow-left"></i> Annulla
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i> Crea Proposta
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Help Card -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-question-circle"></i> Come funziona?</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-user-friends"></i> Invito Diretto</h6>
+                                    <ul class="small text-muted">
+                                        <li>Inviti giocatori specifici per username</li>
+                                        <li>Ricevono una notifica della tua proposta</li>
+                                        <li>Il primo che accetta gioca con te</li>
+                                        <li>Perfetto per sfidare amici o rivali</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-globe"></i> Invito Aperto</h6>
+                                    <ul class="small text-muted">
+                                        <li>Visibile a tutta la community</li>
+                                        <li>Chiunque può accettare la tua proposta</li>
+                                        <li>Ideale per trovare nuovi avversari</li>
+                                        <li>Amplia la tua cerchia di giocatori</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedPlayerIds = [];
+
+// Show/hide player invitations based on proposal type
+document.getElementById('proposal_type').addEventListener('change', function() {
+    const playerInvitations = document.getElementById('playerInvitations');
+    if (this.value === 'direct') {
+        playerInvitations.style.display = 'block';
+    } else {
+        playerInvitations.style.display = 'none';
+        selectedPlayerIds = [];
+        updateSelectedPlayers();
+    }
+});
+
+// Set minimum date to now
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('scheduled_at').min = now.toISOString().slice(0, 16);
+
+    // Set default to 2 hours from now
+    const defaultTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    document.getElementById('scheduled_at').value = defaultTime.toISOString().slice(0, 16);
+});
+
+// Update format explanation based on distance
+document.getElementById('distance').addEventListener('change', updateFormatExplanation);
+document.querySelectorAll('input[name="best_of"]').forEach(radio => {
+    radio.addEventListener('change', updateFormatExplanation);
+});
+
+function updateFormatExplanation() {
+    const distance = parseInt(document.getElementById('distance').value);
+    const bestOf = document.querySelector('input[name="best_of"]:checked').value === 'true';
+
+    const explanation = document.querySelector('label[for="best_of_true"]');
+    if (bestOf) {
+        const toWin = Math.ceil(distance / 2);
+        explanation.textContent = `Al meglio di (primo a ${toWin} vittorie su ${distance})`;
+    } else {
+        explanation.textContent = 'Al meglio di (primo a vincere la maggioranza)';
+    }
+}
+
+// Mock player search functionality
+function searchPlayers() {
+    const query = document.getElementById('playerSearch').value.trim();
+    const resultsDiv = document.getElementById('playerSearchResults');
+
+    if (!query) {
+        resultsDiv.innerHTML = '<small class="text-muted">Inserisci un username per cercare</small>';
+        return;
+    }
+
+    // This would be replaced with actual AJAX call to search players
+    resultsDiv.innerHTML = `
+        <div class="alert alert-info">
+            <small>In un'implementazione reale, qui verrebbero mostrati i risultati della ricerca per "${query}".</small>
+            <br><small>Per il momento, questa è solo un'interfaccia dimostrativa.</small>
+        </div>
+    `;
+}
+
+function updateSelectedPlayers() {
+    const selectedDiv = document.getElementById('selectedPlayers');
+    if (selectedPlayerIds.length === 0) {
+        selectedDiv.innerHTML = '';
+        return;
+    }
+
+    selectedDiv.innerHTML = '<small class="text-muted">Giocatori selezionati:</small>';
+}
+
+// Form submission
+document.getElementById('proposalForm').addEventListener('submit', function(e) {
+    const proposalType = document.getElementById('proposal_type').value;
+
+    if (proposalType === 'direct' && selectedPlayerIds.length === 0) {
+        e.preventDefault();
+        alert('Devi selezionare almeno un giocatore per un invito diretto');
+        return;
+    }
+
+    // Add selected players to form
+    if (proposalType === 'direct') {
+        selectedPlayerIds.forEach((playerId, index) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'invited_user_ids';
+            input.value = playerId;
+            this.appendChild(input);
+        });
+    }
+
+    return confirm('Sei sicuro di voler creare questa proposta di match?');
+});
+
+// Initialize format explanation
+document.addEventListener('DOMContentLoaded', function() {
+    updateFormatExplanation();
+});
+</script>
+{% endblock %}

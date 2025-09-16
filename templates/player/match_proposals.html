@@ -45,19 +45,23 @@
                         <p class="card-text">{{ proposal.description }}</p>
                         {% endif %}
                         
-                        {% if user_invitation and user_invitation.status.value == 'pending' %}
+                        {% if user_invitation and user_invitation.status.value in ['pending', 'accepted', 'rejected'] %}
                         <div class="mt-3">
-                            <form method="POST" action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}" class="d-inline me-2">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-check"></i> Accetta
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ url_for('player.reject_match_proposal', proposal_id=proposal.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        onclick="return confirm('Sei sicuro di voler rifiutare questo invito?')">
-                                    <i class="fas fa-times"></i> Rifiuta
-                                </button>
-                            </form>
+                            {% if user_invitation.status.value in ['pending', 'rejected'] %}
+                                <form method="POST" action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}" class="d-inline me-2">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fas fa-check"></i> Accetta
+                                    </button>
+                                </form>
+                            {% endif %}
+                            {% if user_invitation.status.value in ['pending', 'accepted'] %}
+                                <form method="POST" action="{{ url_for('player.reject_match_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Sei sicuro di voler {{ 'rifiutare' if user_invitation.status.value == 'pending' else 'cambiare la tua decisione e rifiutare' }} questo invito?')">
+                                        <i class="fas fa-times"></i> {% if user_invitation.status.value == 'accepted' %}Cambia Idea{% else %}Rifiuta{% endif %}
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
                         {% endif %}
                     </div>

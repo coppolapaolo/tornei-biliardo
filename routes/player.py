@@ -168,7 +168,7 @@ def create_match_proposal():
                 )
 
             flash(f"Match proposal created successfully! ID: {proposal.id}")
-            return redirect(url_for("player.match_proposals"))
+            return redirect(url_for("individual_match.dashboard"))
 
         except Exception as e:
             flash(f"Error creating proposal: {str(e)}", "error")
@@ -202,15 +202,75 @@ def create_match_proposal():
 @player_only
 def accept_match_proposal(proposal_id):
     """Accept a match proposal"""
-    from models.individual_match.services import IndividualMatchService
+    from models.individual_match.models import (
+        MatchProposal,
+        ProposalInvitation,
+        InvitationStatus,
+        ProposalStatus,
+    )
+    from models import db
+    from datetime import datetime
 
     try:
-        match = IndividualMatchService.accept_proposal(current_user.id, proposal_id)
-        flash(f"Match proposal accepted! Match ID: {match.id}")
+        # Find the invitation for this user
+        invitation = ProposalInvitation.query.filter_by(
+            proposal_id=proposal_id, invited_user_id=current_user.id
+        ).first()
+
+        if not invitation:
+            flash("Invitation not found", "error")
+            return redirect(url_for("individual_match.dashboard"))
+
+        # If already accepted, no action needed
+        if invitation.status == InvitationStatus.ACCEPTED:
+            flash("You have already accepted this invitation", "info")
+        else:
+            # Change status to accepted (works for pending or rejected)
+            invitation.status = InvitationStatus.ACCEPTED
+            invitation.responded_at = datetime.utcnow()
+
+            # Update proposal status
+            proposal = invitation.proposal
+            if proposal.status != ProposalStatus.ACCEPTED:
+                proposal.status = ProposalStatus.ACCEPTED
+                proposal.accepted_by_id = current_user.id
+                proposal.accepted_at = datetime.utcnow()
+
+            # Create IndividualMatch if it doesn't exist
+            from models.individual_match.models import IndividualMatch, MatchStatus
+
+            existing_match = IndividualMatch.query.filter_by(
+                proposal_id=proposal.id
+            ).first()
+
+            if not existing_match:
+                individual_match = IndividualMatch(
+                    proposal_id=proposal.id,
+                    player1_id=proposal.proposer_id,
+                    player2_id=current_user.id,
+                    location=proposal.location,
+                    scheduled_at=proposal.scheduled_at,
+                    discipline=proposal.discipline,
+                    distance=proposal.distance,
+                    best_of=proposal.best_of,
+                    break_rule=proposal.break_rule,
+                    entry_fee=proposal.entry_fee,
+                    status=MatchStatus.SCHEDULED,
+                )
+                db.session.add(individual_match)
+
+            db.session.flush()
+            db.session.commit()
+            flash(
+                "Match proposal accepted successfully! You can now play the match.",
+                "success",
+            )
+
     except Exception as e:
+        db.session.rollback()
         flash(f"Error accepting proposal: {str(e)}", "error")
 
-    return redirect(url_for("player.match_proposals"))
+    return redirect(url_for("individual_match.dashboard"))
 
 
 @player_bp.route("/match-proposals/<int:proposal_id>/reject", methods=["POST"])
@@ -218,15 +278,61 @@ def accept_match_proposal(proposal_id):
 @player_only
 def reject_match_proposal(proposal_id):
     """Reject a match proposal"""
-    from models.individual_match.services import IndividualMatchService
+    from models.individual_match.models import (
+        ProposalInvitation,
+        InvitationStatus,
+        ProposalStatus,
+    )
+    from models import db
+    from datetime import datetime
 
     try:
-        IndividualMatchService.reject_invitation(current_user.id, proposal_id)
-        flash("Match proposal rejected.")
+        # Find the invitation for this user
+        invitation = ProposalInvitation.query.filter_by(
+            proposal_id=proposal_id, invited_user_id=current_user.id
+        ).first()
+
+        if not invitation:
+            flash("Invitation not found", "error")
+            return redirect(url_for("individual_match.dashboard"))
+
+        # If already rejected, no action needed
+        if invitation.status == InvitationStatus.REJECTED:
+            flash("You have already rejected this invitation", "info")
+        else:
+            # Change status to rejected (works for pending or accepted)
+            invitation.status = InvitationStatus.REJECTED
+            invitation.responded_at = datetime.utcnow()
+
+            # If this was an accepted invitation being rejected,
+            # we might need to update the proposal status back to pending
+            proposal = invitation.proposal
+            if (
+                proposal.status == ProposalStatus.ACCEPTED
+                and proposal.accepted_by_id == current_user.id
+            ):
+                proposal.status = ProposalStatus.PENDING
+                proposal.accepted_by_id = None
+                proposal.accepted_at = None
+
+                # Cancel the IndividualMatch if it exists and hasn't started
+                from models.individual_match.models import IndividualMatch, MatchStatus
+
+                existing_match = IndividualMatch.query.filter_by(
+                    proposal_id=proposal.id
+                ).first()
+                if existing_match and existing_match.status == MatchStatus.SCHEDULED:
+                    db.session.delete(existing_match)
+
+            db.session.flush()
+            db.session.commit()
+            flash("Match proposal rejected successfully.", "info")
+
     except Exception as e:
+        db.session.rollback()
         flash(f"Error rejecting proposal: {str(e)}", "error")
 
-    return redirect(url_for("player.match_proposals"))
+    return redirect(url_for("individual_match.dashboard"))
 
 
 @player_bp.route("/match-proposals/<int:proposal_id>/cancel", methods=["POST"])
@@ -242,7 +348,7 @@ def cancel_match_proposal(proposal_id):
     except Exception as e:
         flash(f"Error cancelling proposal: {str(e)}", "error")
 
-    return redirect(url_for("player.match_proposals"))
+    return redirect(url_for("individual_match.dashboard"))
 
 
 @player_bp.route("/")

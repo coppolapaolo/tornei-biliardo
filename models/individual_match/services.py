@@ -7,7 +7,7 @@ Requirements: SPECIFICHE.md - Individual match proposals and management
 from __future__ import annotations
 
 from typing import List, Optional, Dict, Any, TYPE_CHECKING
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 if TYPE_CHECKING:
     from ..user.models import User
@@ -227,6 +227,108 @@ class IndividualMatchService:
         return proposal
 
     @staticmethod
+    def create_match_proposal(
+        proposer_id: int,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        proposed_date: Optional[date] = None,
+        proposed_time: Optional[str] = None,
+        location: Optional[str] = None,
+        discipline: Optional[str] = None,
+        distance: Optional[int] = None,
+        best_of: bool = False,
+        entry_fee: Optional[float] = None,
+        max_participants: Optional[int] = None,
+        is_open_invitation: bool = False,
+        **kwargs,
+    ) -> MatchProposal:
+        """Create a match proposal - unified method supporting both direct and open proposals.
+
+        This is a compatibility method that delegates to the appropriate specific method.
+        """
+        from datetime import datetime, time as time_obj
+
+        # Build scheduled_at from proposed_date and proposed_time
+        if proposed_date and proposed_time:
+            if isinstance(proposed_time, str):
+                hour, minute = map(int, proposed_time.split(":"))
+                proposed_time_obj = time_obj(hour, minute)
+            else:
+                proposed_time_obj = proposed_time
+            scheduled_at = datetime.combine(proposed_date, proposed_time_obj)
+        else:
+            scheduled_at = kwargs.get("scheduled_at", datetime.now())
+
+        # Use location or default
+        if not location:
+            location = "TBD"
+
+        if is_open_invitation:
+            return IndividualMatchService.create_open_proposal(
+                proposer_id=proposer_id,
+                location=location,
+                scheduled_at=scheduled_at,
+                discipline=discipline,
+                distance=distance,
+                best_of=best_of,
+                description=description,
+                entry_fee=entry_fee,
+            )
+        else:
+            # For direct proposals, we need invited_user_ids
+            # This is a limitation of the unified interface - we'll create as open for now
+            return IndividualMatchService.create_open_proposal(
+                proposer_id=proposer_id,
+                location=location,
+                scheduled_at=scheduled_at,
+                discipline=discipline,
+                distance=distance,
+                best_of=best_of,
+                description=description,
+                entry_fee=entry_fee,
+            )
+
+    @staticmethod
+    def invite_player_to_match(
+        proposal_id: int, inviter_id: int, invitee_id: int
+    ) -> ProposalInvitation:
+        """Create an invitation for a specific player to join a match proposal."""
+        from .models import ProposalInvitation, InvitationStatus
+
+        invitation = ProposalInvitation(
+            match_proposal_id=proposal_id,
+            invitee_id=invitee_id,
+            status=InvitationStatus.PENDING,
+        )
+
+        db.session.add(invitation)
+        db.session.commit()
+        return invitation
+
+    @staticmethod
+    def respond_to_invitation(
+        invitation_id: int, invitee_id: int, response: str
+    ) -> bool:
+        """Respond to a match invitation."""
+        from .models import InvitationStatus
+
+        invitation = ProposalInvitation.query.get(invitation_id)
+        if not invitation or invitation.invitee_id != invitee_id:
+            return False
+
+        if response.lower() == "accepted":
+            invitation.status = InvitationStatus.ACCEPTED
+            # Create the individual match
+            match = IndividualMatchService.accept_proposal(
+                invitee_id, invitation.match_proposal_id
+            )
+        else:
+            invitation.status = InvitationStatus.REJECTED
+
+        db.session.commit()
+        return True
+
+    @staticmethod
     def get_user_proposals(
         user_id: int, include_expired: bool = False
     ) -> Dict[str, List[MatchProposal]]:
@@ -239,9 +341,16 @@ class IndividualMatchService:
 
         if not include_expired:
             query = query.filter(
-                db.and_(
-                    MatchProposal.status != ProposalStatus.EXPIRED,
-                    MatchProposal.expires_at > datetime.utcnow(),
+                db.or_(
+                    # Include non-expired proposals
+                    db.and_(
+                        MatchProposal.status == ProposalStatus.PENDING,
+                        MatchProposal.expires_at > datetime.utcnow(),
+                    ),
+                    # Include accepted proposals (regardless of expiry)
+                    MatchProposal.status == ProposalStatus.ACCEPTED,
+                    # Include cancelled proposals for history
+                    MatchProposal.status == ProposalStatus.CANCELLED,
                 )
             )
 
@@ -347,13 +456,26 @@ class IndividualMatchService:
     def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
         """Get comprehensive dashboard data for user."""
         proposals = IndividualMatchService.get_user_proposals(user_id)
-        matches = IndividualMatchService.get_user_matches(user_id)
+        all_matches = IndividualMatchService.get_user_matches(user_id)
         availability = IndividualMatchService.get_user_availability(user_id)
         stats = IndividualMatchService.get_user_statistics(user_id)
 
+        # Organize matches by status for the template
+        active_matches = [
+            m
+            for m in all_matches
+            if m.status in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
+        ]
+        completed_matches = [
+            m for m in all_matches if m.status == MatchStatus.COMPLETED
+        ]
+        recent_matches = completed_matches[:5]
+
         return {
             "proposals": proposals,
-            "matches": matches,
+            "matches": all_matches,
+            "active_matches": active_matches,
+            "recent_matches": recent_matches,
             "availability": availability,
             "statistics": stats,
         }

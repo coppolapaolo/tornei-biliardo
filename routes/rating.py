@@ -27,7 +27,7 @@ def rating_dashboard():
         return render_template("rating/dashboard.html", **user_data)
     except Exception as e:
         flash(f"Error loading rating dashboard: {str(e)}", "danger")
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("dashboard.dashboard"))
 
 
 @rating_bp.route("/category")
@@ -141,7 +141,7 @@ def manage_ratings():
         return render_template("rating/manage.html", **management_data)
     except Exception as e:
         flash(f"Error loading management interface: {str(e)}", "danger")
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("dashboard.dashboard"))
 
 
 @rating_bp.route("/category/assign", methods=["POST"])

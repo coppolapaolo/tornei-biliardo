@@ -1,8 +1,11 @@
 <!-- Recent Individual Matches Component -->
 {% if vm.individual_matches and vm.individual_matches|length %}
 <div class="card mb-4">
-  <div class="card-header">
+  <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0"><i class="fas fa-gamepad"></i> Recent Individual Matches</h5>
+    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-sm btn-primary">
+      <i class="fas fa-plus"></i> New Match
+    </a>
   </div>
   <div class="card-body">
     {% for match in vm.individual_matches[:3] %}
@@ -10,7 +13,9 @@
       <div class="card-body py-2">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <strong>{{ match.discipline.replace('_', ' ').title() }}</strong>
+            <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="text-decoration-none">
+              <strong>{{ match.discipline.replace('_', ' ').title() }}</strong>
+            </a>
             <br><small class="text-muted">
               vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
               – {{ match.scheduled_at.strftime('%d/%m/%Y') if match.scheduled_at else '-' }}
@@ -27,6 +32,9 @@
               {% endif %}
             {% else %}
               <span class="badge bg-warning">{{ match.status.value.title() }}</span>
+              <br><a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-sm btn-primary mt-1">
+                {% if match.status.value == 'scheduled' %}Play{% else %}Continue{% endif %}
+              </a>
             {% endif %}
           </div>
         </div>
@@ -35,7 +43,7 @@
     {% endfor %}
     {% if vm.individual_matches|length > 3 %}
     <div class="text-center">
-      <a href="{{ url_for('player.match_proposals') }}" class="btn btn-sm btn-outline-primary">
+      <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-sm btn-outline-primary">
         <i class="fas fa-list"></i> View All Individual Matches
       </a>
     </div>

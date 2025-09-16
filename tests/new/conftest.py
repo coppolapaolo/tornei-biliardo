@@ -21,6 +21,9 @@ def app():
         ADMIN_USERNAME=flask_app.config.get("ADMIN_USERNAME", "admin"),
         ADMIN_EMAIL=flask_app.config.get("ADMIN_EMAIL", "admin@test.local"),
         ADMIN_PASSWORD=flask_app.config.get("ADMIN_PASSWORD", "admin123"),
+        SERVER_NAME="localhost",
+        APPLICATION_ROOT="/",
+        PREFERRED_URL_SCHEME="http",
     )
 
     ctx = flask_app.app_context()
@@ -47,19 +50,19 @@ def client(app):
 @pytest.fixture(autouse=True)
 def db_session(app):
     from models import db
-    
+
     # Clear all existing data before each test
     db.session.remove()
-    
+
     # Get all tables and truncate them
     with app.app_context():
         # Drop and recreate all tables to ensure complete isolation
         db.drop_all()
         db.create_all()
-        
+
         # Clear any remaining session state
         db.session.remove()
-        
+
         try:
             yield db.session
         finally:
@@ -76,7 +79,7 @@ def isolated_admin_user(db_session):
     """Create isolated admin user for each test."""
     from models import User
     from models.user.role_enum import UserRole
-    
+
     unique_id = str(uuid.uuid4())[:8]
     admin = User(
         username=f"admin_{unique_id}",
@@ -94,7 +97,7 @@ def isolated_director_user(db_session):
     """Create isolated director user for each test."""
     from models import User
     from models.user.role_enum import UserRole
-    
+
     unique_id = str(uuid.uuid4())[:8]
     director = User(
         username=f"director_{unique_id}",
@@ -112,7 +115,7 @@ def isolated_players(db_session):
     """Create isolated players for each test."""
     from models import User
     from models.user.role_enum import UserRole
-    
+
     batch_id = str(uuid.uuid4())[:8]
     players = []
     for i in range(12):  # Create 12 players
@@ -133,12 +136,12 @@ def isolated_players(db_session):
 def clean_session():
     """Clean session fixture that handles transaction state properly."""
     from models import db
-    
+
     def _clean():
         try:
             db.session.rollback()
         except:
             pass
         db.session.expunge_all()
-    
+
     return _clean

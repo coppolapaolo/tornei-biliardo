@@ -76,21 +76,23 @@ The test suite follows a modern pytest-based approach with clear separation betw
 **Use Case Documentation Mapping**:
 - **`docs/usecases/gare.md`** → Tournament creation and management workflows (8 use cases)
   - Use Case 1: `test_gare_usecase_1_amalfi_complete_workflow.py` - Complete Amalfi tournament workflow (admin/director creates 3-round tournament with inscriptions, anti-rematch, tiebreakers)
-  - Use Case 2: `test_use_case_2_random_strategy.py` - Random strategy tournaments with challenges and discipline changes
-  - Use Case 3: `test_use_case_3_round_robin.py` - Round-robin tournaments with multi-set matches
-  - Use Case 4: `test_use_case_4_campionato_workflow.py` - Championship tournaments with multiple competitions
-  - Use Case 5: `test_use_case_5_guest_access.py` - Guest access to ongoing championships and live results
-  - Use Case 6: `test_use_case_6_individual_matches.py` - Individual match proposals and validation
-  - Use Case 7: `test_use_case_7_player_availability.py` - Player availability system and match coordination
-  - Use Case 8: `test_use_case_8_match_modification.py` - Match modification and round management
+  - Use Case 2: `test_gare_usecase_2_random_strategy.py` - Random strategy tournaments with challenges and discipline changes
+  - Use Case 3: `test_gare_usecase_3_round_robin.py` - Round-robin tournaments with multi-set matches
+  - Use Case 4: `test_gare_usecase_4_campionato_workflow.py` - Championship tournaments with multiple competitions
+  - Use Case 5: `test_gare_usecase_5_guest_access.py` - Guest access to ongoing championships and live results
+  - Use Case 6: `test_gare_usecase_6_individual_matches.py` - Individual match proposals and validation
+  - Use Case 7: `test_gare_usecase_7_player_availability.py` - Player availability system and match coordination
+  - Use Case 8: `test_gare_usecase_8_match_modification.py` - Match modification and round management
 
 - **`docs/usecases/UC01.md`** → Guest access and UI interaction workflows (7 use cases)
-  - Use Cases 1-7: `test_UC01_guest_access_and_related_workflows.py` - Guest access, match modification, round ordering, table assignment, challenge integration, standalone challenges, profile export
+  - Use Cases 1-7: `test_UC01_usecase_1_to_7_guest_access_workflows.py` - Guest access, match modification, round ordering, table assignment, challenge integration, standalone challenges, profile export
 
 **Naming Convention**:
+- **Standard Pattern**: `test_nomefile_usecase_X_*.py` where `nomefile` is the source document name
 - `test_gare_usecase_X_*.py` for use cases from `gare.md`
-- `test_UC01_*.py` for use cases from `UC01.md`
+- `test_UC01_usecase_X_*.py` for use cases from `UC01.md`
 - Clear distinction prevents confusion between different "Use Case 1" definitions
+- Consistent naming enables easy identification of source documentation
 
 ### End-to-End Tests (`new/e2e/`)
 **Purpose**: Test complete user workflows through the web interface

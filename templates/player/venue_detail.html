@@ -44,7 +44,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Nome:</strong> {{ venue.name }}</p>
-                        <p><strong>Indirizzo:</strong> {{ venue.address or 'Non specificato' }}</p>
+                        <p><strong>Indirizzo:</strong>
+                            {% if venue.address %}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}" 
+                                target="_blank"> {{ venue.address }}</a>
+                            {% else %}
+                                Non specificato
+                            {% endif %}
+                        </p>
                         <p><strong>Città:</strong> {{ venue.city or 'Non specificata' }}</p>
                         <p><strong>CAP:</strong> {{ venue.postal_code or 'Non specificato' }}</p>
                         <p><strong>Paese:</strong> {{ venue.country }}</p>
@@ -123,33 +130,6 @@
                             <p class="text-muted">Non specificati</p>
                         {% endif %}
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Posizione -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-map-marker-alt"></i> Come Arrivare</h5>
-            </div>
-            <div class="card-body">
-                <p class="mb-3">
-                    <strong><i class="fas fa-home"></i> Indirizzo Completo:</strong><br>
-                    <span class="text-primary">{{ venue.get_full_address() }}</span>
-                </p>
-                
-                <div class="mt-3">
-                    <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}" 
-                       target="_blank" 
-                       class="btn btn-outline-primary me-2">
-                        <i class="fab fa-google"></i> Apri in Google Maps
-                    </a>
-                    
-                    <a href="https://www.openstreetmap.org/search?query={{ venue.get_full_address()|urlencode }}" 
-                       target="_blank" 
-                       class="btn btn-outline-secondary">
-                        <i class="fas fa-map"></i> Apri in OpenStreetMap
-                    </a>
                 </div>
             </div>
         </div>

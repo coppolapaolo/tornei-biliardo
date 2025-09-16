@@ -121,7 +121,7 @@ def challenge_catalog():
         return render_template("challenge/catalog.html", **catalog_data)
     except Exception as e:
         flash(f"Error loading challenges: {str(e)}", "danger")
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("dashboard.dashboard"))
 
 
 @challenge_bp.route("/create", methods=["GET", "POST"])
@@ -437,7 +437,7 @@ def create_x_replacement(gara_id, round_number):
             return jsonify({"success": False, "error": error_msg}), 400
         else:
             flash(error_msg, "danger")
-            return redirect(url_for("dashboard.index"))
+            return redirect(url_for("dashboard.dashboard"))
 
 
 @challenge_bp.route("/x-replacement/<int:attempt_id>/complete", methods=["POST"])

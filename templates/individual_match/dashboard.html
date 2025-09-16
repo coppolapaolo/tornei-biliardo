@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Match Individuali - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1><i class="fas fa-gamepad"></i> Match Individuali</h1>
+            <p class="text-muted">Gestisci le tue proposte di match e gioca contro altri membri della community.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Proposte e Match in Corso -->
+        <div class="col-md-8">
+            <!-- Match Proposals -->
+            {% if proposals and (proposals.received or proposals.created or proposals.available) %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-envelope"></i> Proposte di Match</h5>
+                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nuova Proposta
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% for proposal in (proposals.received + proposals.created + proposals.available)[:5] %}
+                    <div class="card mb-2 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ proposal.discipline.replace('_', ' ').title() }}</strong>
+                                    {% if proposal.proposer_id == current_user.id %}
+                                    <small class="text-muted">(Proposta da te)</small>
+                                    {% else %}
+                                    <small class="text-muted">da {{ proposal.proposer.username }}</small>
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}
+                                        <br><i class="fas fa-map-marker-alt"></i> {{ proposal.location }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                                        {{ proposal.status.value.title() }}
+                                    </span>
+                                    {% if proposal.status.value == 'pending' and proposal.proposer_id != current_user.id %}
+                                    <br>
+                                    <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-success btn-sm mt-1">Accetta</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if proposals|length > 5 %}
+                    <div class="text-center">
+                        <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-list"></i> Vedi Tutte le Proposte
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Active Matches -->
+            {% if active_matches and active_matches|length %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-play"></i> Match in Corso</h5>
+                </div>
+                <div class="card-body">
+                    {% for match in active_matches %}
+                    <div class="card mb-2 border-primary">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ match.discipline.replace('_', ' ').title() }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
+                                        <br><i class="fas fa-map-marker-alt"></i> {{ match.location }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    {% if match.status.value == 'playing' %}
+                                    <span class="badge bg-success">{{ match.player1_score }} - {{ match.player2_score }}</span>
+                                    <br>
+                                    {% endif %}
+                                    <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
+                                        {% if match.status.value == 'scheduled' %}Inizia{% else %}Continua{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Completed Matches -->
+            {% if recent_matches and recent_matches|length %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Match Recenti</h5>
+                </div>
+                <div class="card-body">
+                    {% for match in recent_matches[:3] %}
+                    <div class="card mb-2 {% if match.winner_id == current_user.id %}border-success{% elif match.winner_id %}border-danger{% else %}border-secondary{% endif %}">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ match.discipline.replace('_', ' ').title() }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
+                                        – {{ match.completed_at.strftime('%d/%m/%Y') if match.completed_at }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-info">{{ match.player1_score }} - {{ match.player2_score }}</span>
+                                    <br>
+                                    {% if match.winner_id == current_user.id %}
+                                    <span class="badge bg-success">Vinto</span>
+                                    {% elif match.winner_id %}
+                                    <span class="badge bg-danger">Perso</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-list"></i> Vedi Tutti i Match
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Empty State -->
+            {% if not (proposals.received or proposals.created or proposals.available) and not active_matches and not recent_matches %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-gamepad fa-3x text-muted mb-3"></i>
+                    <h4>Nessun match ancora</h4>
+                    <p class="text-muted">Inizia creando una proposta di match per giocare con altri membri della community!</p>
+                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crea la tua prima proposta
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Azioni Rapide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nuova Proposta di Match
+                        </a>
+                        <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope"></i> Tutte le Proposte
+                        </a>
+                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> Tutti i Match
+                        </a>
+                        <a href="{{ url_for('individual_match.manage_availability') }}" class="btn btn-outline-info">
+                            <i class="fas fa-calendar"></i> Gestisci Disponibilità
+                        </a>
+                        <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-line"></i> Statistiche
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Statistics -->
+            {% if statistics %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Le tue Statistiche</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ statistics.total_matches or 0 }}</h4>
+                            <small class="text-muted">Match Totali</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ statistics.wins or 0 }}</h4>
+                            <small class="text-muted">Vittorie</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-danger">{{ statistics.losses or 0 }}</h4>
+                            <small class="text-muted">Sconfitte</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ "%.1f"|format(statistics.win_percentage or 0) }}%</h4>
+                            <small class="text-muted">% Vittorie</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Activity - Placeholder for future implementation -->
+            <!-- TODO: Implement recent_activity in dashboard service -->
+        </div>
+    </div>
+</div>
+{% endblock %}

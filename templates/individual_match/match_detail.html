@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Match {{ match.discipline.replace('_', ' ').title() }} - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Match Dettagli</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Match Information and Scoring -->
+        <div class="col-md-8">
+            <!-- Match Header -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4><i class="fas fa-gamepad"></i> {{ match.discipline.replace('_', ' ').title() }}</h4>
+                            <small class="text-muted">{{ match.location }} - {{ match.scheduled_at.strftime('%d/%m/%Y %H:%M') if match.scheduled_at }}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' }} fs-6">
+                                {{ match.status.value.title() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-5">
+                            <h3>{{ match.player1.username }}</h3>
+                            <h1 class="display-4 {% if match.winner_id == match.player1_id %}text-success{% elif match.status.value == 'completed' %}text-danger{% else %}text-primary{% endif %}">
+                                {{ match.player1_score or 0 }}
+                            </h1>
+                        </div>
+                        <div class="col-2">
+                            <h3 class="text-muted">VS</h3>
+                            <p class="text-muted">{{ match.distance }} {{ 'al meglio di' if match.best_of else 'esattamente' }}</p>
+                        </div>
+                        <div class="col-5">
+                            <h3>{{ match.player2.username }}</h3>
+                            <h1 class="display-4 {% if match.winner_id == match.player2_id %}text-success{% elif match.status.value == 'completed' %}text-danger{% else %}text-primary{% endif %}">
+                                {{ match.player2_score or 0 }}
+                            </h1>
+                        </div>
+                    </div>
+
+                    {% if match.status.value == 'scheduled' %}
+                    <div class="text-center mt-3">
+                        <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-play"></i> Inizia Match
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if match.status.value == 'completed' and match.winner_id %}
+                    <div class="alert alert-success text-center mt-3">
+                        <i class="fas fa-trophy"></i>
+                        <strong>
+                            {% if match.winner_id == match.player1_id %}{{ match.player1.username }}{% else %}{{ match.player2.username }}{% endif %}
+                        </strong> ha vinto il match!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rack History -->
+            {% if match.individual_racks and match.individual_racks|length %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-list-ol"></i> Storico Rack</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Rack</th>
+                                    <th>Vincitore</th>
+                                    <th>{{ match.player1.username }}</th>
+                                    <th>{{ match.player2.username }}</th>
+                                    <th>Note</th>
+                                    <th>Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rack in match.individual_racks|sort(attribute='rack_number') %}
+                                <tr>
+                                    <td><strong>{{ rack.rack_number }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if rack.winner_id == match.player1_id %}primary{% else %}success{% endif %}">
+                                            {% if rack.winner_id == match.player1_id %}{{ match.player1.username }}{% else %}{{ match.player2.username }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if rack.winner_id == match.player1_id %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if rack.winner_id == match.player2_id %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ rack.notes or '-' }}</small>
+                                    </td>
+                                    <td>
+                                        {% if rack.confirmed_by_player %}
+                                        <span class="badge bg-success">Confermato</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">In attesa conferma</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Rack Scoring (only if match is playing) -->
+            {% if match.status.value == 'playing' %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-plus-circle"></i> Inserisci Risultato Rack</h5>
+                </div>
+                <div class="card-body">
+                    <form id="rackForm" method="POST" action="{{ url_for('individual_match.submit_rack_result', match_id=match.id) }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Vincitore del rack:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="winner_id" id="player1" value="{{ match.player1_id }}" required>
+                                    <label class="btn btn-outline-primary" for="player1">{{ match.player1.username }}</label>
+
+                                    <input type="radio" class="btn-check" name="winner_id" id="player2" value="{{ match.player2_id }}" required>
+                                    <label class="btn btn-outline-success" for="player2">{{ match.player2.username }}</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="rackNotes" class="form-label">Note (opzionale):</label>
+                                <input type="text" class="form-control" id="rackNotes" name="notes" placeholder="Es: bella giocata, fallo, ecc.">
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Aggiungi Rack
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Complete Match (only if match can be completed) -->
+            {% if match.status.value == 'playing' and match.can_be_completed() %}
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-flag-checkered"></i> Completa Match</h5>
+                </div>
+                <div class="card-body">
+                    <p>Il match può essere completato. Conferma il vincitore:</p>
+                    <form method="POST" action="{{ url_for('individual_match.complete_match', match_id=match.id) }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Vincitore finale:</label>
+                                <div class="btn-group w-100" role="group">
+                                    {% if match.player1_score > match.player2_score %}
+                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner1" value="{{ match.player1_id }}" checked required>
+                                    <label class="btn btn-success" for="final_winner1">{{ match.player1.username }} ({{ match.player1_score }})</label>
+                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner2" value="{{ match.player2_id }}" required>
+                                    <label class="btn btn-outline-success" for="final_winner2">{{ match.player2.username }} ({{ match.player2_score }})</label>
+                                    {% else %}
+                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner1" value="{{ match.player1_id }}" required>
+                                    <label class="btn btn-outline-success" for="final_winner1">{{ match.player1.username }} ({{ match.player1_score }})</label>
+                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner2" value="{{ match.player2_id }}" checked required>
+                                    <label class="btn btn-success" for="final_winner2">{{ match.player2.username }} ({{ match.player2_score }})</label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Sei sicuro di voler completare il match?')">
+                                        <i class="fas fa-flag-checkered"></i> Completa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Match Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Informazioni Match</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Disciplina:</dt>
+                        <dd class="col-sm-7">{{ match.discipline.replace('_', ' ').title() }}</dd>
+
+                        <dt class="col-sm-5">Formato:</dt>
+                        <dd class="col-sm-7">{{ match.distance }} {{ 'al meglio di' if match.best_of else 'esattamente' }}</dd>
+
+                        <dt class="col-sm-5">Luogo:</dt>
+                        <dd class="col-sm-7">{{ match.location }}</dd>
+
+                        {% if match.entry_fee %}
+                        <dt class="col-sm-5">Entry Fee:</dt>
+                        <dd class="col-sm-7">€{{ "%.2f"|format(match.entry_fee) }}</dd>
+                        {% endif %}
+
+                        {% if match.scheduled_at %}
+                        <dt class="col-sm-5">Programmato:</dt>
+                        <dd class="col-sm-7">{{ match.scheduled_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+                        {% endif %}
+
+                        {% if match.started_at %}
+                        <dt class="col-sm-5">Iniziato:</dt>
+                        <dd class="col-sm-7">{{ match.started_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+                        {% endif %}
+
+                        {% if match.completed_at %}
+                        <dt class="col-sm-5">Completato:</dt>
+                        <dd class="col-sm-7">{{ match.completed_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> Azioni</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Torna alla Lista
+                        </a>
+
+                        {% if match.status.value == 'scheduled' %}
+                        <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Sei sicuro di voler annullare il match?')">
+                                <i class="fas fa-times"></i> Annulla Match
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        {% if match.status.value == 'completed' %}
+                        <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-line"></i> Vedi Statistiche
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Rules -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-book"></i> Regole</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small text-muted">
+                        <li><i class="fas fa-check text-success"></i> Entrambi i giocatori devono confermare ogni rack</li>
+                        <li><i class="fas fa-check text-success"></i> Solo i partecipanti possono inserire risultati</li>
+                        <li><i class="fas fa-check text-success"></i> Il match si conclude quando viene raggiunta la quota</li>
+                        {% if match.best_of %}
+                        <li><i class="fas fa-info text-info"></i> Formato "al meglio di": primo a {{ (match.distance + 1) // 2 }}</li>
+                        {% else %}
+                        <li><i class="fas fa-info text-info"></i> Formato "esattamente": si giocano tutti i {{ match.distance }} rack</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('rackForm')?.addEventListener('submit', function(e) {
+    const winner = document.querySelector('input[name="winner_id"]:checked');
+    if (!winner) {
+        e.preventDefault();
+        alert('Seleziona il vincitore del rack');
+        return false;
+    }
+
+    return confirm('Confermi il risultato di questo rack?');
+});
+</script>
+{% endblock %}

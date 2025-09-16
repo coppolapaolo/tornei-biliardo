@@ -41,7 +41,7 @@ def dashboard():
         return render_template("individual_match/dashboard.html", **user_data)
     except Exception as e:
         flash(f"Error loading dashboard: {str(e)}", "danger")
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("dashboard.dashboard"))
 
 
 @individual_match_bp.route("/proposals")

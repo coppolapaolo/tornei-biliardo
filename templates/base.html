@@ -123,6 +123,11 @@
                                 <i class="fas fa-trophy"></i> Challenge
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('individual_match.dashboard') }}">
+                                <i class="fas fa-gamepad"></i> Match Individuali
+                            </a>
+                        </li>
                         {% if current_user.is_admin %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin.user.users_list') }}">

@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Proposte di Match - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Proposte</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="fas fa-envelope"></i> Proposte di Match</h1>
+                    <p class="text-muted">Gestisci le tue proposte e rispondi agli inviti degli altri giocatori.</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nuova Proposta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Tabs for different proposal categories -->
+            <ul class="nav nav-tabs" id="proposalTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="received-tab" data-bs-toggle="tab"
+                            data-bs-target="#received" type="button" role="tab">
+                        <i class="fas fa-inbox"></i> Ricevute
+                        {% if received_proposals|length %}
+                        <span class="badge bg-warning ms-1">{{ received_proposals|length }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab"
+                            data-bs-target="#sent" type="button" role="tab">
+                        <i class="fas fa-paper-plane"></i> Inviate
+                        {% if sent_proposals|length %}
+                        <span class="badge bg-info ms-1">{{ sent_proposals|length }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="open-tab" data-bs-toggle="tab"
+                            data-bs-target="#open" type="button" role="tab">
+                        <i class="fas fa-globe"></i> Community
+                        {% if open_proposals|length %}
+                        <span class="badge bg-success ms-1">{{ open_proposals|length }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3" id="proposalTabContent">
+                <!-- Received Proposals -->
+                <div class="tab-pane fade show active" id="received" role="tabpanel">
+                    {% if received_proposals and received_proposals|length %}
+                    {% for proposal in received_proposals %}
+                    <div class="card mb-3 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ proposal.proposer.username }}</strong> ti ha invitato
+                                <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }} ms-2">
+                                    {{ proposal.status.value.title() }}
+                                </span>
+                            </div>
+                            <small class="text-muted">{{ proposal.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
+                                    <p class="mb-2">
+                                        <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}<br>
+                                        <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
+                                        {% if proposal.entry_fee %}
+                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
+                                        {% endif %}
+                                    </p>
+                                    {% if proposal.description %}
+                                    <p class="text-muted"><em>"{{ proposal.description }}"</em></p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    {% if proposal.status.value == 'pending' %}
+                                    <div class="d-grid gap-2">
+                                        <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-success w-100">
+                                                <i class="fas fa-check"></i> Accetta
+                                            </button>
+                                        </form>
+                                        <button class="btn btn-outline-danger w-100" onclick="declineProposal({{ proposal.id }})">
+                                            <i class="fas fa-times"></i> Rifiuta
+                                        </button>
+                                    </div>
+                                    {% elif proposal.status.value == 'accepted' %}
+                                    <div class="alert alert-success mb-0">
+                                        <i class="fas fa-check-circle"></i> Accettato!
+                                        <br><small>Il match è stato creato</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h4>Nessuna proposta ricevuta</h4>
+                        <p class="text-muted">Quando altri giocatori ti inviteranno, le loro proposte appariranno qui.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sent Proposals -->
+                <div class="tab-pane fade" id="sent" role="tabpanel">
+                    {% if sent_proposals and sent_proposals|length %}
+                    {% for proposal in sent_proposals %}
+                    <div class="card mb-3 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                Hai invitato
+                                {% if proposal.proposal_type.value == 'direct' %}
+                                    {% for invitation in proposal.invitations %}
+                                    <strong>{{ invitation.invited_user.username }}</strong>{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <strong>la community</strong>
+                                {% endif %}
+                                <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }} ms-2">
+                                    {{ proposal.status.value.title() }}
+                                </span>
+                            </div>
+                            <small class="text-muted">{{ proposal.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
+                                    <p class="mb-2">
+                                        <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}<br>
+                                        <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
+                                        {% if proposal.entry_fee %}
+                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
+                                        {% endif %}
+                                    </p>
+                                    {% if proposal.description %}
+                                    <p class="text-muted"><em>"{{ proposal.description }}"</em></p>
+                                    {% endif %}
+
+                                    <!-- Show invitation responses for direct proposals -->
+                                    {% if proposal.proposal_type.value == 'direct' and proposal.invitations %}
+                                    <div class="mt-3">
+                                        <small class="text-muted">Risposte agli inviti:</small>
+                                        <div class="mt-1">
+                                            {% for invitation in proposal.invitations %}
+                                            <span class="badge bg-{{ 'success' if invitation.status.value == 'accepted' else 'danger' if invitation.status.value == 'declined' else 'secondary' }} me-1">
+                                                {{ invitation.invited_user.username }}: {{ invitation.status.value.title() }}
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    {% if proposal.status.value == 'pending' %}
+                                    <form method="POST" action="{{ url_for('individual_match.cancel_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger"
+                                                onclick="return confirm('Sei sicuro di voler annullare questa proposta?')">
+                                            <i class="fas fa-times"></i> Annulla
+                                        </button>
+                                    </form>
+                                    {% elif proposal.status.value == 'accepted' %}
+                                    <div class="alert alert-success mb-0">
+                                        <i class="fas fa-check-circle"></i> Accettato!
+                                        {% if proposal.accepted_by %}
+                                        <br><small>da {{ proposal.accepted_by.username }}</small>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                        <h4>Nessuna proposta inviata</h4>
+                        <p class="text-muted">Le tue proposte di match appariranno qui.</p>
+                        <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crea la prima proposta
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Open Community Proposals -->
+                <div class="tab-pane fade" id="open" role="tabpanel">
+                    {% if open_proposals and open_proposals|length %}
+                    {% for proposal in open_proposals %}
+                    {% if proposal.proposer_id != current_user.id %}
+                    <div class="card mb-3 border-primary">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ proposal.proposer.username }}</strong> cerca un avversario
+                                <span class="badge bg-success ms-2">Aperto</span>
+                            </div>
+                            <small class="text-muted">{{ proposal.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
+                                    <p class="mb-2">
+                                        <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}<br>
+                                        <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
+                                        {% if proposal.entry_fee %}
+                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
+                                        {% endif %}
+                                    </p>
+                                    {% if proposal.description %}
+                                    <p class="text-muted"><em>"{{ proposal.description }}"</em></p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    {% if proposal.status.value == 'pending' %}
+                                    <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-handshake"></i> Accetta Sfida
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <div class="alert alert-info mb-0">
+                                        <small>Non più disponibile</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-globe fa-3x text-muted mb-3"></i>
+                        <h4>Nessuna proposta aperta</h4>
+                        <p class="text-muted">Al momento non ci sono proposte aperte dalla community.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Azioni Rapide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nuova Proposta
+                        </a>
+                        <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> I Miei Match
+                        </a>
+                        <a href="{{ url_for('individual_match.dashboard') }}" class="btn btn-outline-info">
+                            <i class="fas fa-dashboard"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            {% if statistics %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Statistiche Proposte</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ statistics.total_sent or 0 }}</h4>
+                            <small class="text-muted">Inviate</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ statistics.accepted_received or 0 }}</h4>
+                            <small class="text-muted">Accettate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function declineProposal(proposalId) {
+    if (confirm('Sei sicuro di voler rifiutare questa proposta?')) {
+        // In a real implementation, this would make an AJAX call to decline
+        alert('Funzionalità di rifiuto da implementare nel backend');
+    }
+}
+
+// Auto-refresh if there are pending proposals
+document.addEventListener('DOMContentLoaded', function() {
+    const pendingProposals = document.querySelectorAll('.badge:contains("Pending")').length;
+    if (pendingProposals > 0) {
+        // Refresh every 30 seconds if there are pending proposals
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+    }
+});
+</script>
+{% endblock %}
