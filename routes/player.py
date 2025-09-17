@@ -421,6 +421,67 @@ def gara_detail(gara_id):
                 latest_round_with_classification = round_num
                 break
 
+    # Ottieni le challenge attive per questa gara
+    from models.challenge.gara_challenge_models import GaraChallenge
+    gara_challenges = GaraChallenge.query.filter_by(
+        gara_id=gara_id, is_active=True
+    ).all()
+
+    # Se l'utente è iscritto, ottieni i suoi tentativi per ogni challenge
+    user_challenge_data = []
+    if inscription and gara_challenges:
+        for gara_challenge in gara_challenges:
+            user_attempts = gara_challenge.get_user_attempts(current_user.id)
+            best_attempt = gara_challenge.get_user_best_attempt(current_user.id)
+            can_attempt = gara_challenge.can_user_attempt(current_user.id)
+
+            user_challenge_data.append({
+                'gara_challenge': gara_challenge,
+                'challenge': gara_challenge.challenge,
+                'user_attempts': user_attempts,
+                'best_attempt': best_attempt,
+                'can_attempt': can_attempt,
+                'attempts_count': len(user_attempts),
+                'max_attempts': gara_challenge.max_attempts
+            })
+
+    # Raggruppa le partite per turno e analizza le discipline
+    matches_by_round = {}
+    all_matches_by_round = {}
+    round_disciplines = {}  # turno -> {discipline: count}
+
+    # Get configured disciplines for rounds (for Random strategy gare)
+    from models.competition.round_configuration import RoundConfiguration
+    configured_round_disciplines = {}
+    if gara.matchmaking_strategy == "random":
+        round_configs = RoundConfiguration.get_all_for_gara(gara_id)
+        for config in round_configs:
+            configured_round_disciplines[config.round_number] = config.discipline
+
+    if matches:
+        for match in matches:
+            round_num = match.round_number
+            if round_num not in matches_by_round:
+                matches_by_round[round_num] = []
+            matches_by_round[round_num].append(match)
+
+    if all_matches:
+        for match in all_matches:
+            round_num = match.round_number
+            if round_num not in all_matches_by_round:
+                all_matches_by_round[round_num] = []
+            all_matches_by_round[round_num].append(match)
+
+            # Analizza le discipline per questo turno
+            if round_num not in round_disciplines:
+                round_disciplines[round_num] = {}
+
+            # Usa la disciplina del match se presente, altrimenti quella della gara
+            discipline = match.discipline if match.discipline else gara.discipline
+            if discipline not in round_disciplines[round_num]:
+                round_disciplines[round_num][discipline] = 0
+            round_disciplines[round_num][discipline] += 1
+
     return render_template(
         "player/gara_detail.html",
         gara=gara,
@@ -429,6 +490,12 @@ def gara_detail(gara_id):
         all_matches=all_matches,
         current_round_classification=current_round_classification,
         latest_round_with_classification=latest_round_with_classification,
+        gara_challenges=gara_challenges,
+        user_challenge_data=user_challenge_data,
+        matches_by_round=matches_by_round,
+        all_matches_by_round=all_matches_by_round,
+        round_disciplines=round_disciplines,
+        configured_round_disciplines=configured_round_disciplines,
     )
 
 

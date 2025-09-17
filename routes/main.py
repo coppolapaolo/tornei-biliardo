@@ -299,6 +299,35 @@ def gara_detail_public(gara_id):
                 latest_round_with_classification = round_num
                 break
 
+    # Ottieni le challenge attive per questa gara
+    from models.challenge.gara_challenge_models import GaraChallenge
+    gara_challenges = GaraChallenge.query.filter_by(
+        gara_id=gara_id, is_active=True
+    ).all()
+
+    # Analizza le discipline per turno
+    round_disciplines = {}  # turno -> {discipline: count}
+
+    # Get configured disciplines for rounds (for Random strategy gare)
+    from models.competition.round_configuration import RoundConfiguration
+    configured_round_disciplines = {}
+    if gara.matchmaking_strategy == "random":
+        round_configs = RoundConfiguration.get_all_for_gara(gara_id)
+        for config in round_configs:
+            configured_round_disciplines[config.round_number] = config.discipline
+
+    if all_matches:
+        for match in all_matches:
+            round_num = match.round_number
+            if round_num not in round_disciplines:
+                round_disciplines[round_num] = {}
+
+            # Usa la disciplina del match se presente, altrimenti quella della gara
+            discipline = match.discipline if match.discipline else gara.discipline
+            if discipline not in round_disciplines[round_num]:
+                round_disciplines[round_num][discipline] = 0
+            round_disciplines[round_num][discipline] += 1
+
     # Usa un template pubblico dedicato
     return render_template(
         "public/gara_detail.html",
@@ -308,6 +337,9 @@ def gara_detail_public(gara_id):
         all_matches=all_matches,
         current_round_classification=current_round_classification,
         latest_round_with_classification=latest_round_with_classification,
+        gara_challenges=gara_challenges,
+        round_disciplines=round_disciplines,
+        configured_round_disciplines=configured_round_disciplines,
     )
 
 

@@ -39,6 +39,7 @@ from .user.models import (
 # PHASE 2 SPRINT 1 COMPLETE: All domains separated
 from .campionato.models import Campionato
 from .competition.models import Gara, Inscription
+from .competition.round_configuration import RoundConfiguration
 from .match.models import Match, Rack, MatchResult, TrioMatch
 from .match.set_models import Set, SetRack
 from .match.multi_discipline_service import MultiDisciplineService
@@ -128,6 +129,7 @@ __all__ = [
     # Competition domain models (Phase 2 Sprint 1)
     "Gara",
     "Inscription",
+    "RoundConfiguration",
     # Match domain models (Phase 2 Sprint 1)
     "Match",
     "Rack",

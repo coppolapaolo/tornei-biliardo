@@ -406,6 +406,11 @@ class GaraService:
             for round_num in range(1, gara.rounds_count + 1):
                 pairings = strategy.propose(gara, round_num)
 
+                # Get discipline configuration for this round
+                from models.competition.round_configuration import RoundConfiguration
+                round_config = RoundConfiguration.get_for_gara_round(gara_id, round_num)
+                round_discipline = round_config.discipline if round_config else None
+
                 # Crea i match nel database
                 for pairing in pairings:
                     if len(pairing.players) == 1 and pairing.is_bye:
@@ -422,6 +427,7 @@ class GaraService:
                             player1_score=bye_score,
                             winner_id=pairing.players[0],
                             status="completed",
+                            discipline=round_discipline,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 2 and not pairing.is_bye:
@@ -432,6 +438,7 @@ class GaraService:
                             player1_id=pairing.players[0],
                             player2_id=pairing.players[1],
                             is_bye=False,
+                            discipline=round_discipline,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
@@ -445,6 +452,7 @@ class GaraService:
                             player2_id=pairing.players[1],
                             is_bye=False,
                             is_trio=True,
+                            discipline=round_discipline,
                         )
                         db.session.add(match)
 

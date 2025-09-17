@@ -94,3 +94,4 @@ export_zip_md.py
 repository_export_*.zip
 export_repo.py
 repository_export_*/
+static/uploads/

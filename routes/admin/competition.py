@@ -422,6 +422,38 @@ def edit_gara(gara_id):
                 anti_rematch_enabled=anti_rematch_enabled,
                 rating_type=rating_type,
             )
+
+            # Handle round discipline configuration (only for random strategy)
+            if matchmaking_strategy == "random":
+                from models.competition.round_configuration import RoundConfiguration
+
+                # Get rounds count from form (in case it changed)
+                rounds_count = int(request.form.get("rounds_count", 3))
+
+                # Clear existing configurations first (if any)
+                RoundConfiguration.delete_for_gara(gara_id)
+                db.session.flush()  # Ensure deletion is processed
+
+                # Process round discipline configurations
+                for round_num in range(1, rounds_count + 1):
+                    round_discipline = request.form.get(f"round_{round_num}_discipline", "").strip()
+
+                    # Only create configuration if discipline is specified (not empty)
+                    if round_discipline:
+                        RoundConfiguration.create_or_update(
+                            gara_id=gara_id,
+                            round_number=round_num,
+                            discipline=round_discipline
+                        )
+
+                # Commit round configurations
+                db.session.commit()
+            else:
+                # For non-random strategies, clear any existing round configurations
+                from models.competition.round_configuration import RoundConfiguration
+                RoundConfiguration.delete_for_gara(gara_id)
+                db.session.commit()
+
             flash("Gara aggiornata con successo!")
         except ValueError as ve:
             flash(str(ve), "error")
@@ -440,6 +472,18 @@ def edit_gara(gara_id):
         .all()
     )
 
+    # Get existing round configurations for the form
+    from models.competition.round_configuration import RoundConfiguration
+    round_configurations = {}
+    existing_configs = RoundConfiguration.get_all_for_gara(gara_id)
+    for config in existing_configs:
+        round_configurations[config.round_number] = {
+            'discipline': config.discipline,
+            'distance': config.distance,
+            'best_of': config.best_of,
+            'notes': config.notes
+        }
+
     return render_template(
         "admin/gara_edit.html",
         gara=gara,
@@ -447,6 +491,7 @@ def edit_gara(gara_id):
         available_strategies=available_strategies,
         verified_venues=verified_venues,
         discipline_choices=Discipline.get_choices(),
+        round_configurations=round_configurations,
     )
 
 

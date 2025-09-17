@@ -38,11 +38,27 @@
                     {% if gara.matchmaking_strategy == 'random' %}
                         <br>
                         {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
-                        <strong>Challenge:</strong> 
+                        <strong>Challenge:</strong>
                         {% if challenge_count > 0 %}
                             <span class="text-success">{{ challenge_count }} attive</span>
                         {% else %}
                             <span class="text-muted">Nessuna</span>
+                        {% endif %}
+                    {% endif %}
+                    <br>
+                    <strong>Organizzatori:</strong>
+                    {% if gara.is_standalone %}
+                        {% if gara.director %}
+                            <span class="badge bg-primary">{{ gara.director.username }}</span>
+                        {% endif %}
+                        {% for director in gara.directors %}
+                            <span class="badge bg-secondary ms-1">{{ director.username }}</span>
+                        {% endfor %}
+                    {% else %}
+                        {% if gara.campionato and gara.campionato.directors %}
+                            {% for director in gara.campionato.directors %}
+                                <span class="badge bg-primary">{{ director.username }}</span>
+                            {% endfor %}
                         {% endif %}
                     {% endif %}
                 </div>

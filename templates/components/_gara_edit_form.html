@@ -217,10 +217,43 @@
             </div>
             
             <hr>
-            
+
+            <!-- Round Discipline Configuration - Only for Random Strategy -->
+            <div id="round_disciplines_section" class="mt-4" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cog"></i> Configurazione Discipline per Turno</h5>
+                        <small class="text-muted">Disponibile solo per strategia Random</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="rounds_discipline_container">
+                            <!-- Le discipline per turno vengono generate dinamicamente via JavaScript -->
+                        </div>
+
+                        <!-- Azioni rapide -->
+                        <div class="mt-3">
+                            <div class="btn-group" role="group" aria-label="Azioni discipline">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="reset_disciplines">
+                                    <i class="fas fa-undo"></i> Usa disciplina principale
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="copy_first_discipline">
+                                    <i class="fas fa-copy"></i> Copia primo turno a tutti
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Info:</strong> Se non specificato, ogni turno userà la disciplina principale della gara.
+                            Le modifiche alle discipline per turno sono possibili solo durante la fase di setup.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>Attenzione:</strong> Una volta che ci saranno iscrizioni a questa gara, 
+                <strong>Attenzione:</strong> Una volta che ci saranno iscrizioni a questa gara,
                 non sarà più possibile modificarla.
             </div>
             
@@ -249,3 +282,89 @@
         </div>
     </div>
 {% endif %}
+
+<!-- JavaScript for Dynamic Round Discipline Configuration -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const strategySelect = document.getElementById('matchmaking_strategy');
+    const roundsCountInput = document.querySelector('input[name="rounds_count"]');
+    const disciplineSelect = document.querySelector('select[name="discipline"]');
+    const roundDisciplinesSection = document.getElementById('round_disciplines_section');
+    const roundsContainer = document.getElementById('rounds_discipline_container');
+
+    // Available disciplines (should match backend choices)
+    const disciplines = {{ discipline_choices | tojson }};
+
+    // Current round configurations (from backend)
+    const currentRoundConfigs = {{ round_configurations | tojson if round_configurations else '{}' }};
+
+    function updateRoundDisciplinesVisibility() {
+        const isRandomStrategy = strategySelect.value === 'random';
+        roundDisciplinesSection.style.display = isRandomStrategy ? 'block' : 'none';
+
+        if (isRandomStrategy) {
+            generateRoundDisciplineInputs();
+        }
+    }
+
+    function generateRoundDisciplineInputs() {
+        const roundsCount = parseInt(roundsCountInput.value) || 1;
+        const currentDiscipline = disciplineSelect.value;
+
+        let html = '';
+        for (let round = 1; round <= roundsCount; round++) {
+            const currentConfig = currentRoundConfigs[round] || {};
+            const selectedDiscipline = currentConfig.discipline || '';
+
+            html += `
+                <div class="col-md-4 mb-3">
+                    <label for="round_${round}_discipline" class="form-label">
+                        <i class="fas fa-circle-notch"></i> Turno ${round}
+                    </label>
+                    <select class="form-select round-discipline-select" name="round_${round}_discipline" id="round_${round}_discipline">
+                        <option value="">Usa disciplina principale</option>`;
+
+            disciplines.forEach(([value, label]) => {
+                const selected = selectedDiscipline === value ? 'selected' : '';
+                html += `<option value="${value}" ${selected}>${label}</option>`;
+            });
+
+            html += `
+                    </select>
+                </div>`;
+        }
+
+        roundsContainer.innerHTML = html;
+    }
+
+    // Event listeners
+    strategySelect.addEventListener('change', updateRoundDisciplinesVisibility);
+    roundsCountInput.addEventListener('change', function() {
+        if (strategySelect.value === 'random') {
+            generateRoundDisciplineInputs();
+        }
+    });
+
+    // Quick actions
+    document.getElementById('reset_disciplines').addEventListener('click', function() {
+        document.querySelectorAll('.round-discipline-select').forEach(select => {
+            select.value = '';
+        });
+    });
+
+    document.getElementById('copy_first_discipline').addEventListener('click', function() {
+        const firstSelect = document.getElementById('round_1_discipline');
+        if (firstSelect) {
+            const firstValue = firstSelect.value;
+            document.querySelectorAll('.round-discipline-select').forEach((select, index) => {
+                if (index > 0) { // Skip first one
+                    select.value = firstValue;
+                }
+            });
+        }
+    });
+
+    // Initialize on page load
+    updateRoundDisciplinesVisibility();
+});
+</script>
