@@ -24,8 +24,8 @@
                                 <tr>
                                     <td class="text-center">
                                         {% if challenge.image_filename %}
-                                            <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
-                                                 class="rounded" 
+                                            <img src="{{ challenge_image_url(challenge) }}"
+                                                 class="rounded"
                                                  style="width: 40px; height: 40px; object-fit: cover;"
                                                  alt="Challenge Image"
                                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">

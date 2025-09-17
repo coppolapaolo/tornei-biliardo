@@ -38,7 +38,7 @@
                     <div class="col-md-4">
                         <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 250px; background-color: #f8f9fa;">
                             {% if challenge.image_filename %}
-                                <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                                <img src="{{ challenge_image_url(challenge) }}" 
                                      class="img-fluid rounded-start h-100"
                                      style="object-fit: cover;"
                                      alt="Challenge Image"

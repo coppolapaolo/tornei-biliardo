@@ -51,11 +51,12 @@ def save_challenge_image(image_file):
     # Generate unique filename (always use .jpg for optimized output)
     filename = f"{uuid.uuid4().hex}.jpg"
 
+    # Use centralized image path management
+    from utils.image_paths import ImagePathManager
+
     # Create upload directory if it doesn't exist
-    if current_app.static_folder is None:
-        raise ValueError("Static folder not configured")
-    upload_dir = os.path.join(current_app.static_folder, "uploads", "challenges")
-    os.makedirs(upload_dir, exist_ok=True)
+    ImagePathManager.ensure_challenge_upload_dir()
+    upload_dir = ImagePathManager.get_challenge_upload_dir()
 
     # Process and save image with optimization
     filepath = os.path.join(upload_dir, filename)
@@ -95,12 +96,11 @@ def delete_challenge_image(image_filename):
     if not image_filename:
         return
 
-    if current_app.static_folder is None:
-        return
+    # Use centralized image path management
+    from utils.image_paths import ImagePathManager
 
-    filepath = os.path.join(
-        current_app.static_folder, "uploads", "challenges", image_filename
-    )
+    upload_dir = ImagePathManager.get_challenge_upload_dir()
+    filepath = os.path.join(upload_dir, image_filename)
 
     try:
         if os.path.exists(filepath):
@@ -147,9 +147,13 @@ def create_challenge():
         if not image_filename:
             raise ValueError("Immagine obbligatoria per creare una challenge")
 
+        # Convert filename to proper database path
+        from utils.image_paths import ImagePathManager
+        image_path = ImagePathManager.get_challenge_db_path(image_filename)
+
         challenge = ChallengeService.create_challenge(
             description=data["description"],
-            image_path=image_filename,
+            image_path=image_path,
             pass_fail_only=data.get("pass_fail_only", "false").lower() == "true",
             created_by_id=current_user.id,
         )

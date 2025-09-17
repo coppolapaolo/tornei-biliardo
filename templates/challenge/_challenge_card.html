@@ -4,7 +4,7 @@
         <!-- Challenge Image (Made Larger) -->
         <div class="card-img-top position-relative" style="height: 280px; overflow: hidden;">
             {% if challenge.image_filename %}
-                <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                <img src="{{ challenge_image_url(challenge) }}" 
                      class="w-100 h-100" 
                      style="object-fit: cover;"
                      alt="Challenge Image"

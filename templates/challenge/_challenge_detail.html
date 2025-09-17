@@ -5,7 +5,7 @@
         <div class="card mb-3">
             <div class="card-body text-center p-2">
                 {% if challenge.image_filename %}
-                    <img src="/static/uploads/challenges/{{ challenge.image_filename }}" 
+                    <img src="{{ challenge_image_url(challenge) }}" 
                          class="img-fluid rounded" 
                          style="max-height: 450px; width: 100%; object-fit: cover;"
                          alt="Challenge Image"

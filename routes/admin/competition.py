@@ -1690,16 +1690,19 @@ def create_new_challenge():
         # Generate unique filename
         unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
 
-        # Ensure uploads directory exists in static folder
-        uploads_dir = os.path.join(
-            current_app.root_path, "static", "uploads", "challenges"
-        )
-        os.makedirs(uploads_dir, exist_ok=True)
+        # Use centralized image path management
+        from utils.image_paths import ImagePathManager
 
-        # Save file
+        # Ensure uploads directory exists
+        ImagePathManager.ensure_challenge_upload_dir()
+
+        # Get upload directory and save file
+        uploads_dir = ImagePathManager.get_challenge_upload_dir()
         file_path = os.path.join(uploads_dir, unique_filename)
         file.save(file_path)
-        image_path = f"uploads/challenges/{unique_filename}"
+
+        # Get database path using centralized utility
+        image_path = ImagePathManager.get_challenge_db_path(unique_filename)
 
         # Create the challenge
         challenge = ChallengeService.create_challenge(

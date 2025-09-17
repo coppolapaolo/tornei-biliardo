@@ -157,7 +157,7 @@ class DashboardService:
     def _build_unified_items(
         campionati: List[Campionato],
         standalone_garas: List[Gara],
-        user_role: str = "player",  # 'admin', 'director', 'player'
+        user_role: str = "player",  # 'admin', 'director', 'player', 'guest'
         user_id: Optional[int] = None,
     ) -> List[UnifiedDashboardItem]:
         """
@@ -167,6 +167,7 @@ class DashboardService:
         - admin: tutti i campionati + tutte le standalone
         - director: campionati gestiti + standalone gestite + standalone disponibili
         - player: tutti i campionati + standalone disponibili
+        - guest: tutti i campionati + standalone pubbliche (con iscrizioni aperte)
         """
         items = []
 
@@ -216,6 +217,8 @@ class DashboardService:
                 )
             elif user_role == "player":
                 can_view_details = True  # Player può vedere dettagli per iscriversi alle gare
+            elif user_role == "guest":
+                can_view_details = True  # Guest può vedere dettagli pubblici dei campionati
 
             # Genera sort key basato su data per campionatos
             if next_date:
@@ -270,6 +273,10 @@ class DashboardService:
                 can_view_details = (
                     True  # Player può vedere gare standalone per iscriversi
                 )
+            elif user_role == "guest":
+                # Guest può vedere dettagli solo se iscrizioni sono aperte
+                from models.status_enum import GaraStatus
+                can_view_details = (gara.status == GaraStatus.INSCRIPTION.value)
 
             # Genera sort key basato su data per garas
             gara_date = getattr(gara, "date", None)
@@ -986,4 +993,62 @@ class DashboardService:
             match_opportunities=individual_sections["match_opportunities"],
             available_challenges=challenge_sections["available_challenges"],
             player_challenge_progress=challenge_sections["player_challenge_progress"],
+        )
+
+    @staticmethod
+    def for_guest() -> DashboardVM:
+        """Dashboard view model for guest (non-authenticated) users.
+
+        Shows public information about campionatos and standalone gare
+        with appropriate permissions for guest viewing.
+        """
+        # Get public campionatos (active ones)
+        campionati = DashboardService._campionatos_q().all()
+
+        # Get public standalone garas (exclude SETUP status)
+        from models.status_enum import GaraStatus
+        standalone_garas = (
+            Gara.query.filter_by(campionato_id=None)
+            .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas from guests
+            .order_by(Gara.date.desc())
+            .all()
+        )
+
+        # Build unified items for guest with guest permissions
+        unified_items = DashboardService._build_unified_items(
+            campionati, standalone_garas, user_role="guest", user_id=None
+        )
+
+        # Create minimal capabilities for guest
+        guest_caps = CapabilityVM(
+            can_create_campionato=False,
+            can_create_standalone=False,
+            can_register_self=False,  # Guest cannot register
+            can_create_match_proposal=False,
+        )
+
+        return DashboardVM(
+            title="Vista Pubblica",
+            campionati=campionati,
+            unified_items=unified_items,
+            selected_campionato=None,
+            selected_gara=None,
+            selector_items=[],  # No selector for guests
+            standalone_garas=standalone_garas,
+            available_garas=[],  # No available garas for guests to register
+            standalone_available=[],
+            my_inscriptions=[],  # No inscriptions for guests
+            my_standalone_inscriptions=[],
+            current_matches=[],  # No personal matches for guests
+            recent_matches=[],
+            can_inscribe=False,  # Guests cannot inscribe
+            user_stats=None,  # No user stats for guests
+            managed_campionatos=None,
+            can_manage_directors=False,
+            caps=guest_caps,
+            match_proposals=None,  # No match proposals for guests
+            individual_matches=None,
+            match_opportunities=None,
+            available_challenges=None,  # Guests cannot see challenges
+            player_challenge_progress=None,
         )

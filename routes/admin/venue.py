@@ -490,9 +490,12 @@ def upload_photo(venue_id):
                 f"venue_{venue_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
             )
 
+            # Use centralized image path management
+            from utils.image_paths import ImagePathManager
+
             # Create upload directory if it doesn't exist
-            upload_dir = os.path.join("static", "uploads", "venues")
-            os.makedirs(upload_dir, exist_ok=True)
+            ImagePathManager.ensure_venue_upload_dir()
+            upload_dir = ImagePathManager.get_venue_upload_dir()
 
             file_path = os.path.join(upload_dir, filename)
 
@@ -507,8 +510,9 @@ def upload_photo(venue_id):
                 a for a in current_amenities if not a.startswith("Foto:")
             ]
 
-            # Add new photo path
-            current_amenities.append(f"Foto: uploads/venues/{filename}")
+            # Add new photo path using centralized utility
+            venue_db_path = ImagePathManager.get_venue_db_path(filename)
+            current_amenities.append(f"Foto: {venue_db_path}")
             venue.set_amenities(current_amenities)
             db.session.commit()
 

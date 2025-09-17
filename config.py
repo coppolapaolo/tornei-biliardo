@@ -26,6 +26,13 @@ class Config:
     APP_NAME = "Campionato Biliardo"
     VERSION = "1.0.0"
 
+    # Upload configurations
+    UPLOAD_BASE_PATH = "static/uploads"
+    CHALLENGE_UPLOAD_FOLDER = "challenges"
+    VENUE_UPLOAD_FOLDER = "venues"
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 
 class DevelopmentConfig(Config):
     """Configurazione per sviluppo"""

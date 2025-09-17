@@ -13,22 +13,24 @@
         </p>
     </div>
     <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
-    {% if gara.campionato_id %}
-        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
-        class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Torna al Campionato
-        </a>
-    {% else %}
-        <a href="{{ url_for('dashboard.dashboard') }}"
-        class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
-        </a>
-    {% endif %}
+    {% if current_user.is_authenticated %}
+        {% if gara.campionato_id %}
+            <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
+            class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna al Campionato
+            </a>
+        {% else %}
+            <a href="{{ url_for('dashboard.dashboard') }}"
+            class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+            </a>
+        {% endif %}
 
-    {% if gara.can_be_modified() %}
-        <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-warning">
-        <i class="fas fa-edit"></i> Modifica Gara
-        </a>
+        {% if gara.can_be_modified() and current_user.can_manage_competition(gara.id) %}
+            <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Modifica Gara
+            </a>
+        {% endif %}
     {% endif %}
     </div>
 </div>
