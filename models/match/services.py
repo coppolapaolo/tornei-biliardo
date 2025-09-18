@@ -36,6 +36,13 @@ class MatchService:
         is_bye: bool = False,
     ) -> Match:
         """Crea un match. Imposta lo stato iniziale a 'pending'."""
+        # Get gara to fetch the distance
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} not found")
+
         match = Match(
             gara_id=gara_id,
             round_number=round_number,
@@ -43,6 +50,7 @@ class MatchService:
             player2_id=player2_id,
             is_bye=is_bye,
             status=MatchStatus.PENDING.value,
+            match_distance=gara.distance,
         )
         db.session.add(match)
         db.session.commit()

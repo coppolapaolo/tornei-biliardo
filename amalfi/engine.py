@@ -323,6 +323,7 @@ class AmalfiEngine:
                 winner_id=bye_player.id,
                 status="completed",
                 amalfi_round=1,
+                match_distance=self.gara.distance,
             )
             matches.append(match)
             players = players[:-1]
@@ -335,6 +336,7 @@ class AmalfiEngine:
                 player1_id=players[i].id,
                 player2_id=players[i + 1].id,
                 amalfi_round=1,
+                match_distance=self.gara.distance,
             )
             matches.append(match)
 
@@ -376,16 +378,17 @@ class AmalfiEngine:
             if getattr(match, "is_bye", False):
                 continue
             if getattr(match, "is_trio", False):
-                trio = match.trio_match
-                PlayerEncounter.record_encounter(
-                    self.gara.id, trio.player1_id, trio.player2_id, round_number
-                )
-                PlayerEncounter.record_encounter(
-                    self.gara.id, trio.player1_id, trio.player3_id, round_number
-                )
-                PlayerEncounter.record_encounter(
-                    self.gara.id, trio.player2_id, trio.player3_id, round_number
-                )
+                trio = match.trio_match[0] if match.trio_match else None
+                if trio:
+                    PlayerEncounter.record_encounter(
+                        self.gara.id, trio.player1_id, trio.player2_id, round_number
+                    )
+                    PlayerEncounter.record_encounter(
+                        self.gara.id, trio.player1_id, trio.player3_id, round_number
+                    )
+                    PlayerEncounter.record_encounter(
+                        self.gara.id, trio.player2_id, trio.player3_id, round_number
+                    )
             else:
                 PlayerEncounter.record_encounter(
                     self.gara.id, match.player1_id, match.player2_id, round_number
@@ -419,6 +422,7 @@ class AmalfiEngine:
                     player2_id=target_class.user_id,
                     amalfi_round=round_number,
                     salto_applied=salto,
+                    match_distance=self.gara.distance,
                 )
                 db.session.add(match)
                 matches.append(match)
@@ -589,11 +593,6 @@ class AmalfiEngine:
             player1_id=base_match.player1_id,
             player2_id=base_match.player2_id,
             player3_id=third_player_id,
-            target_score=(
-                self.gara.get_winning_score()
-                if self.gara.best_of
-                else self.gara.distance
-            ),
         )
         db.session.add(trio)
 
@@ -610,6 +609,7 @@ class AmalfiEngine:
             winner_id=player_id,
             status="completed",
             amalfi_round=round_number,
+            match_distance=self.gara.distance,
         )
         db.session.add(bye)
 

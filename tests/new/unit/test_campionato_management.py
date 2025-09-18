@@ -315,7 +315,9 @@ class TestTournamentService:
 
         assert detail_data["campionato"] == campionato
         assert len(detail_data["gare"]) == 2
-        assert len(detail_data["candidate_directors"]) >= 1  # At least the director
+        # The director who created the campionato is automatically assigned,
+        # so they should NOT be in candidate_directors
+        assert len(detail_data["candidate_directors"]) == 0  # Director already assigned
 
     def test_update_campionato(self, db_session):
         """Test updating campionato."""

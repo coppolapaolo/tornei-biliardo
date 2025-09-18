@@ -1,9 +1,10 @@
 """
 Module: models/competition/services
-Purpose: Service layer per il dominio Competition (Gara, Inscription) +
+Purpose: Service layer per il dominio Competition (Gara) +
          state machine per le transizioni di stato di Gara.
-Data Structures: GaraService, ProvaStateMachine, InscriptionService
+Data Structures: GaraService, ProvaStateMachine, RoundService
 Dependencies: models.base.db, models.competition.models, models.status_enum
+Note: InscriptionService extracted to inscription_service.py (Task 1.2)
 
 Nota sprint 4 (migrazione soft):
 - Le colonne DB restano VARCHAR; gli Enum sono string-based (compatibili).
@@ -19,7 +20,9 @@ from sqlalchemy import select
 from models.base import db
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
-
+from .inscription_service import InscriptionService
+from .round_service import RoundService
+from ..transaction.manager import transactional
 
 from models.exceptions import InvalidTransitionError
 
@@ -43,6 +46,7 @@ class ProvaStateMachine:
             )
 
     @staticmethod
+    @transactional(domain="competition")
     def to_inscription(gara: Gara) -> Gara:
         """setup → inscription"""
         ProvaStateMachine._require(gara, GaraStatus.SETUP)
@@ -54,19 +58,19 @@ class ProvaStateMachine:
         gara.status = GaraStatus.INSCRIPTION.value
         gara.updated_at = getattr(gara, "updated_at", None) or None  # compat
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def reopen_setup(gara: Gara) -> Gara:
         """inscription → setup"""
         ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
         gara.status = GaraStatus.SETUP.value
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def start_playing(gara: Gara) -> Gara:
         """inscription → playing.
         Esegue controlli minimi: se disponibile, verifica numero iscritti >= 2.
@@ -95,10 +99,10 @@ class ProvaStateMachine:
             except Exception:
                 pass
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def complete(gara: Gara) -> Gara:
         """playing → completed"""
         ProvaStateMachine._require(gara, GaraStatus.PLAYING)
@@ -132,7 +136,6 @@ class ProvaStateMachine:
 
         gara.status = GaraStatus.COMPLETED.value
         db.session.add(gara)
-        db.session.commit()
         return gara
 
 
@@ -143,6 +146,7 @@ class GaraService:
     # CREAZIONE / QUERY DI SUPPORTO
     # -----------------------------
     @staticmethod
+    @transactional(domain="competition")
     def create_gara(
         number: int,
         name: str,
@@ -190,7 +194,6 @@ class GaraService:
             raise ValueError(f"Configurazione non valida: {', '.join(errors)}")
 
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
@@ -206,6 +209,7 @@ class GaraService:
         return db.session.get(Gara, gara_id)
 
     @staticmethod
+    @transactional(domain="competition")
     def update_gara(gara_id: int, **kwargs) -> Gara:
         """Aggiorna una gara con i campi forniti."""
         gara = db.session.get(Gara, gara_id)
@@ -228,10 +232,10 @@ class GaraService:
 
             gara.date = datetime.strptime(kwargs["date_str"], "%Y-%m-%d").date()
 
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def delete_gara(gara_id: int) -> None:
         """Cancella una gara se possibile."""
         gara = db.session.get(Gara, gara_id)
@@ -244,9 +248,9 @@ class GaraService:
             )
 
         db.session.delete(gara)
-        db.session.commit()
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_gara_with_notifications(gara_id: int, cancelled_by_id: int) -> None:
         """Cancella una gara inviando notifiche a tutti i partecipanti iscritti."""
         gara = db.session.get(Gara, gara_id)
@@ -265,38 +269,30 @@ class GaraService:
         gara_name = f"Gara {gara.number}"
         campionato_name = gara.campionato.name if gara.campionato else "Standalone"
 
-        try:
-            # Cancella la gara
-            db.session.delete(gara)
+        # Cancella la gara
+        db.session.delete(gara)
 
-            # Invia notifiche a tutti i partecipanti
-            if participant_ids:
-                from models.notification.services import NotificationService
-                from models.notification.models import (
-                    NotificationPriority,
-                    NotificationType,
+        # Invia notifiche a tutti i partecipanti
+        if participant_ids:
+            from models.notification.services import NotificationService
+            from models.notification.models import (
+                NotificationPriority,
+                NotificationType,
+            )
+
+            message = f"La {gara_name}"
+            if gara.campionato:
+                message += f" del campionato '{campionato_name}'"
+            message += f" del {gara.date.strftime('%d/%m/%Y')} è stata cancellata."
+
+            for participant_id in participant_ids:
+                NotificationService.create_notification(
+                    user_id=participant_id,
+                    notification_type=NotificationType.TOURNAMENT_REGISTRATION,
+                    title="Gara Cancellata",
+                    message=message,
+                    priority=NotificationPriority.HIGH,
                 )
-
-                message = f"La {gara_name}"
-                if gara.campionato:
-                    message += f" del campionato '{campionato_name}'"
-                message += f" del {gara.date.strftime('%d/%m/%Y')} è stata cancellata."
-
-                for participant_id in participant_ids:
-                    NotificationService.create_notification(
-                        user_id=participant_id,
-                        notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                        title="Gara Cancellata",
-                        message=message,
-                        priority=NotificationPriority.HIGH,
-                    )
-
-            db.session.commit()
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Errore durante la cancellazione della gara: {str(e)}")
-
 
     @staticmethod
     def start_first_round(gara_id: int) -> Gara:
@@ -437,6 +433,7 @@ class GaraService:
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_first_round_startup(gara_id: int) -> Gara:
         """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
 
@@ -476,56 +473,48 @@ class GaraService:
                 )
 
         # Rimuovi tutte le partite del primo turno
-        try:
-            from models.classification.models import (
-                PlayerEncounter,
-                RoundClassification,
-            )
+        from models.classification.models import (
+            PlayerEncounter,
+            RoundClassification,
+        )
 
-            # Rimuovi eventuali trii collegati
-            for match in first_round_matches:
-                trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
-                if trio:
-                    db.session.delete(trio)
+        # Rimuovi eventuali trii collegati
+        for match in first_round_matches:
+            trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+            if trio:
+                db.session.delete(trio)
 
-            # Rimuovi i PlayerEncounter del primo turno per ripristinare l'anti-rematch
-            encounters_to_remove = (
-                db.session.query(PlayerEncounter)
-                .filter_by(gara_id=gara_id, round_number=1)
-                .all()
-            )
-            for encounter in encounters_to_remove:
-                db.session.delete(encounter)
+        # Rimuovi i PlayerEncounter del primo turno per ripristinare l'anti-rematch
+        encounters_to_remove = (
+            db.session.query(PlayerEncounter)
+            .filter_by(gara_id=gara_id, round_number=1)
+            .all()
+        )
+        for encounter in encounters_to_remove:
+            db.session.delete(encounter)
 
-            # Rimuovi le RoundClassification del primo turno
-            classifications_to_remove = (
-                db.session.query(RoundClassification)
-                .filter_by(gara_id=gara_id, round_number=1)
-                .all()
-            )
-            for classification in classifications_to_remove:
-                db.session.delete(classification)
+        # Rimuovi le RoundClassification del primo turno
+        classifications_to_remove = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=1)
+            .all()
+        )
+        for classification in classifications_to_remove:
+            db.session.delete(classification)
 
-            # Rimuovi tutte le partite
-            for match in first_round_matches:
-                db.session.delete(match)
+        # Rimuovi tutte le partite
+        for match in first_round_matches:
+            db.session.delete(match)
 
-            # Riporta la gara allo stato inscription
-            gara.current_round = 0
-            gara.status = GaraStatus.INSCRIPTION.value
+        # Riporta la gara allo stato inscription
+        gara.current_round = 0
+        gara.status = GaraStatus.INSCRIPTION.value
 
-            db.session.add(gara)
-            db.session.commit()
-
-            return gara
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(
-                f"Errore durante la cancellazione del primo turno: {str(e)}"
-            )
+        db.session.add(gara)
+        return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_current_round_startup(gara_id: int) -> Gara:
         """Cancella l'avvio del turno corrente se non sono stati inseriti risultati.
 
@@ -567,205 +556,59 @@ class GaraService:
                 )
 
         # Rimuovi tutte le partite del turno corrente e dati correlati
-        try:
-            from models.classification.models import (
-                PlayerEncounter,
-                RoundClassification,
-            )
+        from models.classification.models import (
+            PlayerEncounter,
+            RoundClassification,
+        )
 
-            # Rimuovi eventuali trii collegati
-            for match in current_round_matches:
-                trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
-                if trio:
-                    db.session.delete(trio)
+        # Rimuovi eventuali trii collegati
+        for match in current_round_matches:
+            trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+            if trio:
+                db.session.delete(trio)
 
-            # Rimuovi i PlayerEncounter del turno corrente per ripristinare l'anti-rematch
-            encounters_to_remove = (
-                db.session.query(PlayerEncounter)
-                .filter_by(gara_id=gara_id, round_number=current_round)
-                .all()
-            )
-            for encounter in encounters_to_remove:
-                db.session.delete(encounter)
+        # Rimuovi i PlayerEncounter del turno corrente per ripristinare l'anti-rematch
+        encounters_to_remove = (
+            db.session.query(PlayerEncounter)
+            .filter_by(gara_id=gara_id, round_number=current_round)
+            .all()
+        )
+        for encounter in encounters_to_remove:
+            db.session.delete(encounter)
 
-            # Rimuovi le RoundClassification del turno corrente
-            classifications_to_remove = (
-                db.session.query(RoundClassification)
-                .filter_by(gara_id=gara_id, round_number=current_round)
-                .all()
-            )
-            for classification in classifications_to_remove:
-                db.session.delete(classification)
+        # Rimuovi le RoundClassification del turno corrente
+        classifications_to_remove = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=current_round)
+            .all()
+        )
+        for classification in classifications_to_remove:
+            db.session.delete(classification)
 
-            # Rimuovi tutte le partite
-            for match in current_round_matches:
-                db.session.delete(match)
+        # Rimuovi tutte le partite
+        for match in current_round_matches:
+            db.session.delete(match)
 
-            # Decrementa il current_round
-            gara.current_round = current_round - 1
+        # Decrementa il current_round
+        gara.current_round = current_round - 1
 
-            # Se torniamo al turno 0, riporta allo stato inscription
-            if gara.current_round == 0:
-                gara.status = GaraStatus.INSCRIPTION.value
+        # Se torniamo al turno 0, riporta allo stato inscription
+        if gara.current_round == 0:
+            gara.status = GaraStatus.INSCRIPTION.value
 
-            db.session.add(gara)
-            db.session.commit()
-
-            return gara
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(
-                f"Errore durante la cancellazione del turno corrente: {str(e)}"
-            )
+        db.session.add(gara)
+        return gara
 
     @staticmethod
     def create_round_with_strategy(
         gara_id: int, round_number: int, discipline_override: Optional[str] = None
     ) -> tuple[int, int, int, int]:
-        """Crea un turno usando la strategia configurata nella gara.
+        """Facade: delegate to RoundService."""
+        from models.competition.round_service import RoundService
 
-        Returns:
-            Tuple con (total_matches, normal_matches, bye_matches, trio_matches)
-        """
-        from models.match.models import Match, TrioMatch
-
-        try:
-            gara = db.session.get(Gara, gara_id)
-            if not gara:
-                raise ValueError(f"Gara {gara_id} non trovata")
-
-            # Verifica precondizioni
-            if round_number < 1 or round_number > gara.rounds_count:
-                raise ValueError(f"Turno {round_number} non valido")
-
-            # Verifica se esistono già match per questo turno
-            existing_matches = (
-                db.session.query(Match)
-                .filter_by(gara_id=gara_id, round_number=round_number)
-                .count()
-            )
-            if existing_matches > 0:
-                # I match esistono già, ritorna i conteggi attuali
-                matches = (
-                    db.session.query(Match)
-                    .filter_by(gara_id=gara_id, round_number=round_number)
-                    .all()
-                )
-                normal_matches = sum(
-                    1
-                    for m in matches
-                    if not m.is_bye and not getattr(m, "is_trio", False)
-                )
-                bye_matches = sum(1 for m in matches if m.is_bye)
-                trio_matches = sum(1 for m in matches if getattr(m, "is_trio", False))
-                return (len(matches), normal_matches, bye_matches, trio_matches)
-
-            # Ottieni la strategia configurata
-            strategy_name = gara.matchmaking_strategy or "amalfi"
-
-            # Se è Amalfi, usa il binding esistente per compatibilità
-            if strategy_name in ["amalfi", "advanced_amalfi"]:
-                from amalfi import create_amalfi_round_matches
-
-                create_amalfi_round_matches(gara, round_number)
-            else:
-                # Usa il registry per altre strategie
-                from models.matchmaking.bootstrap import get_registry
-
-                registry = get_registry()
-
-                # Mappatura nome strategia: enum -> registry
-                strategy_mapping = {
-                    "random": "random_anti_rematch",
-                    "amalfi": "amalfi",
-                    "round_robin": "round_robin",
-                    "direct_elimination": "direct_elimination",
-                    "double_knockout": "double_knockout",
-                }
-
-                registry_name = strategy_mapping.get(strategy_name, strategy_name)
-                strategy = registry.get(registry_name)
-                if not strategy:
-                    raise ValueError(f"Strategia '{strategy_name}' non trovata")
-
-                # Genera gli abbinamenti usando l'interfaccia della strategia
-                pairings = strategy.propose(gara, round_number)
-
-                # Crea i match nel database
-                for pairing in pairings:
-                    if len(pairing.players) == 1 and pairing.is_bye:
-                        # Match con X - assegnalo come completato con punteggio pieno
-                        bye_score = (
-                            gara.get_winning_score() if gara.best_of else gara.distance
-                        )
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_number,
-                            player1_id=pairing.players[0],
-                            player2_id=None,
-                            is_bye=True,
-                            player1_score=bye_score,
-                            winner_id=pairing.players[0],
-                            status="completed",
-                            discipline=discipline_override,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 2 and not pairing.is_bye:
-                        # Match normale
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_number,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            discipline=discipline_override,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 3:
-                        # Match trio
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_number,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            is_trio=True,
-                            discipline=discipline_override,
-                        )
-                        db.session.add(match)
-
-                        # Crea il record TrioMatch con tutti e tre i giocatori
-                        trio_match = TrioMatch(
-                            match=match,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            player3_id=pairing.players[2],
-                        )
-                        db.session.add(trio_match)
-
-            # Conta i risultati
-            matches = (
-                db.session.query(Match)
-                .filter_by(gara_id=gara_id, round_number=round_number)
-                .all()
-            )
-            normal_matches = sum(1 for m in matches if not m.is_bye and not m.is_trio)
-            bye_matches = sum(1 for m in matches if m.is_bye)
-            trio_matches = (
-                db.session.query(TrioMatch)
-                .join(Match)
-                .filter(Match.gara_id == gara_id, Match.round_number == round_number)
-                .count()
-            )
-            total_matches = len(matches)
-
-            db.session.commit()
-            return (total_matches, normal_matches, bye_matches, trio_matches)
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Errore durante la creazione del turno: {str(e)}")
+        return RoundService.create_round_with_strategy(
+            gara_id, round_number, discipline_override
+        )
 
     @staticmethod
     def create_amalfi_round(
@@ -780,122 +623,13 @@ class GaraService:
 
     @staticmethod
     def preview_round_with_strategy(gara_id: int, round_number: int) -> dict:
-        """Anteprima di un turno usando la strategia configurata nella gara.
+        """Facade: delegate to RoundService."""
+        from models.competition.round_service import RoundService
 
-        Returns:
-            Dict con informazioni sull'anteprima
-        """
-        try:
-            gara = db.session.get(Gara, gara_id)
-            if not gara:
-                raise ValueError(f"Gara {gara_id} non trovata")
-
-            # Verifica precondizioni
-            if round_number < 1 or round_number > gara.rounds_count:
-                raise ValueError(f"Turno {round_number} non valido")
-
-            # Ottieni la strategia configurata
-            strategy_name = gara.matchmaking_strategy or "amalfi"
-
-            if strategy_name in ["amalfi", "advanced_amalfi"]:
-                # Per Amalfi l'anteprima è gestita dal motore specifico
-                raise ValueError("Preview Amalfi deve essere gestito dal controller")
-            else:
-                # Usa il registry per altre strategie
-                from models.matchmaking.bootstrap import get_registry
-
-                registry = get_registry()
-
-                # Mappatura nome strategia: enum -> registry
-                strategy_mapping = {
-                    "random": "random_anti_rematch",
-                    "amalfi": "amalfi",
-                    "round_robin": "round_robin",
-                    "direct_elimination": "direct_elimination",
-                    "double_knockout": "double_knockout",
-                }
-
-                registry_name = strategy_mapping.get(strategy_name, strategy_name)
-                strategy = registry.get(registry_name)
-                if not strategy:
-                    raise ValueError(f"Strategia '{strategy_name}' non trovata")
-
-                # Ottieni i giocatori iscritti (escludi lista d'attesa)
-                from models.user.models import User
-
-                # Genera gli abbinamenti di anteprima usando l'interfaccia della strategia
-                pairings = strategy.preview(gara, round_number)
-
-                # Converti in formato per il template
-                matches = []
-                normal_count = 0
-                bye_count = 0
-                trio_count = 0
-
-                for pairing in pairings:
-                    if len(pairing.players) == 1 and pairing.is_bye:
-                        # Match con X
-                        bye_count += 1
-                        player1 = User.query.get(pairing.players[0])
-                        matches.append(
-                            {
-                                "player1": {
-                                    "id": player1.id,
-                                    "username": player1.username,
-                                },
-                                "player2": None,
-                                "is_bye": True,
-                                "type": "bye",
-                            }
-                        )
-                    elif len(pairing.players) == 2 and not pairing.is_bye:
-                        # Match normale
-                        normal_count += 1
-                        player1 = User.query.get(pairing.players[0])
-                        player2 = User.query.get(pairing.players[1])
-                        matches.append(
-                            {
-                                "player1": {
-                                    "id": player1.id,
-                                    "username": player1.username,
-                                },
-                                "player2": {
-                                    "id": player2.id,
-                                    "username": player2.username,
-                                },
-                                "is_bye": False,
-                                "type": "normal",
-                            }
-                        )
-                    elif len(pairing.players) == 3:
-                        # Match trio
-                        trio_count += 1
-                        players = [User.query.get(pid) for pid in pairing.players]
-                        matches.append(
-                            {
-                                "players": [
-                                    {"id": p.id, "username": p.username}
-                                    for p in players
-                                ],
-                                "is_trio": True,
-                                "type": "trio",
-                            }
-                        )
-
-                return {
-                    "matches": matches,
-                    "stats": {
-                        "total": len(matches),
-                        "normal": normal_count,
-                        "bye": bye_count,
-                        "trio": trio_count,
-                    },
-                }
-
-        except Exception as e:
-            raise ValueError(f"Errore durante l'anteprima del turno: {str(e)}")
+        return RoundService.preview_round_with_strategy(gara_id, round_number)
 
     @staticmethod
+    @transactional(domain="competition")
     def add_trio_rack(trio_id: int, winner_id: int) -> dict:
         """Aggiunge un rack a una partita trio con validazione.
 
@@ -914,39 +648,35 @@ class GaraService:
         if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
             raise ValueError("Vincitore non valido per questo trio")
 
-        try:
-            # Aggiungi rack e gestisci rotazione
-            trio.add_rack_win(winner_id)
-            db.session.commit()
+        # Aggiungi rack e gestisci rotazione
+        trio.add_rack_win(winner_id)
 
-            # Prepara risposta con nuovo stato
-            state = trio.get_current_state()
+        # Prepara risposta con nuovo stato
+        state = trio.get_current_state()
 
-            return {
-                "success": True,
-                "trio_completed": trio.is_completed,
-                "winner_id": trio.winner_id,
-                "current_state": {
-                    "current_players": [
-                        {"id": p.id, "username": p.username}
-                        for p in state["current_players"]
-                    ],
-                    "waiting_player": (
-                        {
-                            "id": state["waiting_player"].id,
-                            "username": state["waiting_player"].username,
-                        }
-                        if state["waiting_player"]
-                        else None
-                    ),
-                    "scores": state["scores"],
-                },
-            }
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Errore durante aggiunta rack: {str(e)}")
+        return {
+            "success": True,
+            "trio_completed": trio.is_completed,
+            "winner_id": trio.winner_id,
+            "current_state": {
+                "current_players": [
+                    {"id": p.id, "username": p.username}
+                    for p in state["current_players"]
+                ],
+                "waiting_player": (
+                    {
+                        "id": state["waiting_player"].id,
+                        "username": state["waiting_player"].username,
+                    }
+                    if state["waiting_player"]
+                    else None
+                ),
+                "scores": state["scores"],
+            },
+        }
 
     @staticmethod
+    @transactional(domain="competition")
     def reset_trio(trio_id: int) -> None:
         """Reset completo di una partita trio."""
         from models.match.models import TrioMatch, Match
@@ -958,30 +688,24 @@ class GaraService:
 
             abort(404)
 
-        try:
-            # Reset scores
-            trio.player1_racks = 0
-            trio.player2_racks = 0
-            trio.player3_racks = 0
+        # Reset scores
+        trio.player1_racks = 0
+        trio.player2_racks = 0
+        trio.player3_racks = 0
 
-            # Reset state
-            trio.current_player1_id = trio.player1_id
-            trio.current_player2_id = trio.player2_id
-            trio.waiting_player_id = trio.player3_id
-            trio.is_completed = False
-            trio.winner_id = None
+        # Reset state
+        trio.current_player1_id = trio.player1_id
+        trio.current_player2_id = trio.player2_id
+        trio.waiting_player_id = trio.player3_id
+        trio.is_completed = False
+        trio.winner_id = None
 
-            # Reset match associato
-            MatchService.reset_to_pending(trio.match.id, clear_validation=True)
-            # Access the match object directly using db.session.get to avoid relationship property issues
-            match_obj = db.session.get(Match, trio.match_id)
-            if match_obj:
-                match_obj.winner_id = None
-
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Errore durante reset trio: {str(e)}")
+        # Reset match associato
+        MatchService.reset_to_pending(trio.match.id, clear_validation=True)
+        # Access the match object directly using db.session.get to avoid relationship property issues
+        match_obj = db.session.get(Match, trio.match_id)
+        if match_obj:
+            match_obj.winner_id = None
 
     @staticmethod
     def get_director_garas(director_id: int):
@@ -1189,6 +913,7 @@ class GaraService:
         return ProvaStateMachine.complete(gara)
 
     @staticmethod
+    @transactional(domain="competition")
     def add_director(gara_id: int, user_id: int, assigned_by_id: int) -> bool:
         """Aggiunge un co-direttore alla gara.
 
@@ -1253,7 +978,6 @@ class GaraService:
                 f"DEBUG: Error creating director notification for user {user_id}: {e}"
             )
 
-        db.session.commit()
         return True
 
     # -----------------------------
@@ -1275,6 +999,7 @@ class GaraService:
                 setattr(gara, key, value)
 
     @staticmethod
+    @transactional(domain="competition")
     def update_strategy_configuration(gara_id: int, config: dict) -> Gara:
         """Aggiorna la configurazione di strategia di una gara esistente."""
         gara = db.session.get(Gara, gara_id)
@@ -1302,7 +1027,6 @@ class GaraService:
             if num_inscribed > 0:
                 gara.rounds_count = gara.calculate_rounds_for_strategy(num_inscribed)
 
-        db.session.commit()
         return gara
 
     @staticmethod
@@ -1347,6 +1071,7 @@ class GaraService:
         return True, ""
 
     @staticmethod
+    @transactional(domain="competition")
     def remove_director(gara_id: int, user_id: int) -> bool:
         """Rimuove un co-direttore dalla gara.
 
@@ -1362,432 +1087,52 @@ class GaraService:
         )
         if director_assoc:
             db.session.delete(director_assoc)
-            db.session.commit()
             return True
         return False
 
     @staticmethod
     def update_round_progression(gara_id: int) -> None:
-        """Aggiorna la progressione dei turni e calcola le classifiche quando necessario"""
-        from models.match.models import Match
-        from models.status_enum import MatchStatus
-        from models.classification.models import RoundClassification
+        """Facade: delegate to RoundService."""
+        from models.competition.round_service import RoundService
 
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            return
-
-        # Controlla ogni turno per vedere se è completato e aggiorna current_round
-        for round_num in range(1, gara.rounds_count + 1):
-            round_matches = Match.query.filter_by(
-                gara_id=gara_id, round_number=round_num
-            ).all()
-
-            if not round_matches:
-                # Nessun match in questo turno, ferma qui
-                break
-
-            # Controlla se tutti i match del turno sono completati
-            all_completed = all(
-                m.status == MatchStatus.COMPLETED.value for m in round_matches
-            )
-
-            if all_completed:
-                # Aggiorna current_round se necessario
-                if gara.current_round < round_num:
-                    gara.current_round = round_num
-
-                # Calcola/aggiorna classificazione per questo turno se non esiste
-                existing_classification = RoundClassification.query.filter_by(
-                    gara_id=gara_id, round_number=round_num
-                ).first()
-
-                if not existing_classification:
-                    print(f"Calculating classification for round {round_num}")
-                    RoundClassification.calculate_classification_after_round(
-                        gara_id, round_num
-                    )
-            else:
-                # Turno incompleto, ferma qui
-                break
-
-        db.session.commit()
-
-
-class InscriptionService:
-    """Operazioni di business su Inscription."""
-
-    @staticmethod
-    def inscribe_user(user_id: int, gara_id: int) -> Optional[Inscription]:
-        """Registra un utente a una gara se non già iscritto.
-
-        Se la gara è piena, l'utente viene messo in lista d'attesa.
-        """
-        from models.competition.models import Gara
-        from models.user.models import User
-        from models.user.role_enum import UserRole
-        from datetime import datetime
-
-        existing = (
-            db.session.query(Inscription)
-            .filter_by(user_id=user_id, gara_id=gara_id)
-            .first()
-        )
-        if existing:
-            return existing
-
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            return None
-
-        user = db.session.get(User, user_id)
-        if not user:
-            return None
-
-        # Validazione: Admin non può partecipare ai tornei
-        if user.role == UserRole.ADMIN.value:
-            raise ValueError("Admin non può partecipare ai tornei")
-
-        # Validazione: Verifica periodo di iscrizione
-        now = datetime.now()
-        if gara.inscription_start and gara.inscription_end:
-            if now < gara.inscription_start:
-                raise ValueError("Iscrizioni non ancora aperte")
-            if now > gara.inscription_end:
-                raise ValueError("Iscrizioni chiuse")
-
-        # Validazione: Verifica numero massimo partecipanti
-        if gara.max_participants and gara.max_participants > 0:
-            current_count = (
-                db.session.query(Inscription).filter_by(gara_id=gara_id).count()
-            )
-            if current_count >= gara.max_participants:
-                raise ValueError("Numero massimo di partecipanti raggiunto")
-
-        # Verifica se la gara è piena (per waitlist future)
-        is_waitlist = gara.is_full() if hasattr(gara, "is_full") else False
-        waitlist_position = None
-
-        if is_waitlist:
-            # Calcola la posizione in lista d'attesa
-            waitlist_position = (
-                gara.get_waitlist_count() + 1
-                if hasattr(gara, "get_waitlist_count")
-                else None
-            )
-
-        ins = Inscription(
-            user_id=user_id,
-            gara_id=gara_id,
-            is_waitlist=is_waitlist,
-            waitlist_position=waitlist_position,
-        )
-        db.session.add(ins)
-        db.session.commit()
-        return ins
-
-    @staticmethod
-    def uninscribe_user(user_id: int, gara_id: int) -> bool:
-        """Cancella l'iscrizione di un utente dalla gara.
-
-        Se l'utente non era in lista d'attesa, promuove il primo della lista d'attesa.
-        Invia notifica al promosso.
-
-        Returns: True se rimossa, False se non trovata.
-        """
-        from models.competition.models import Gara
-        from models.notification.services import NotificationService
-
-        inscription = (
-            db.session.query(Inscription)
-            .filter_by(user_id=user_id, gara_id=gara_id)
-            .first()
-        )
-        if inscription:
-            was_active = not inscription.is_waitlist and not inscription.is_withdrawn
-            gara_id_for_promotion = inscription.gara_id
-
-            db.session.delete(inscription)
-
-            # Se l'utente era attivo (non in lista d'attesa), promuovi il primo della lista d'attesa
-            if was_active:
-                gara = db.session.get(Gara, gara_id_for_promotion)
-                if gara:
-                    first_waitlist = (
-                        db.session.query(Inscription)
-                        .filter_by(
-                            gara_id=gara_id_for_promotion,
-                            is_waitlist=True,
-                            is_withdrawn=False,
-                        )
-                        .order_by(Inscription.waitlist_position.asc())
-                        .first()
-                    )
-
-                    if first_waitlist:
-                        # Promuovi dalla lista d'attesa
-                        first_waitlist.is_waitlist = False
-                        first_waitlist.waitlist_position = None
-
-                        # Ricalcola le posizioni degli altri in lista d'attesa
-                        remaining_waitlist = (
-                            db.session.query(Inscription)
-                            .filter_by(
-                                gara_id=gara_id_for_promotion,
-                                is_waitlist=True,
-                                is_withdrawn=False,
-                            )
-                            .order_by(Inscription.waitlist_position.asc())
-                            .all()
-                        )
-
-                        for i, insc in enumerate(remaining_waitlist, 1):
-                            insc.waitlist_position = i
-
-                        # Invia notifica al promosso
-                        try:
-                            from models.notification.models import (
-                                NotificationType,
-                                NotificationPriority,
-                            )
-
-                            notification_result = NotificationService.create_notification(
-                                user_id=first_waitlist.user_id,
-                                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                                title="Posto disponibile!",
-                                message=f"Sei stato promosso dalla lista d'attesa per la gara '{gara.name or f'Gara {gara.number}'}'",
-                                priority=NotificationPriority.HIGH,
-                            )
-                            print(
-                                f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}"
-                            )
-                        except Exception as e:
-                            print(
-                                f"DEBUG: Error creating promotion notification for user {first_waitlist.user_id}: {e}"
-                            )
-
-            db.session.commit()
-            return True
-        return False
-
-    @staticmethod
-    def admin_uninscribe_user(user_id: int, gara_id: int, admin_user_id: int) -> bool:
-        """Disiscrive un utente dalla gara da parte di admin/direttore.
-
-        Invia notifica all'utente discritto e promuove il primo della lista d'attesa se applicabile.
-
-        Returns: True se rimossa, False se non trovata.
-        """
-        from models.competition.models import Gara
-        from models.notification.services import NotificationService
-        from models.user.models import User
-
-        inscription = (
-            db.session.query(Inscription)
-            .filter_by(user_id=user_id, gara_id=gara_id)
-            .first()
-        )
-
-        if inscription:
-            gara = db.session.get(Gara, gara_id)
-            admin_user = db.session.get(User, admin_user_id)
-
-            was_active = not inscription.is_waitlist and not inscription.is_withdrawn
-            gara_name = gara.name or f"Gara {gara.number}"
-            admin_role = "admin" if admin_user.is_admin else "direttore di gara"
-
-            # Invia notifica all'utente discritto
-            try:
-                from models.notification.models import (
-                    NotificationType,
-                    NotificationPriority,
-                )
-
-                message = (
-                    f"L'{admin_role} ha annullato la tua iscrizione alla {gara_name}"
-                )
-                if inscription.is_waitlist:
-                    message = f"L'{admin_role} ti ha rimosso dalla lista d'attesa per la {gara_name}"
-
-                notification_result = NotificationService.create_notification(
-                    user_id=user_id,
-                    notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                    title="Iscrizione annullata",
-                    message=message,
-                    priority=NotificationPriority.HIGH,
-                )
-                print(
-                    f"DEBUG: Notification created for user {user_id}: {notification_result}"
-                )
-            except Exception as e:
-                print(f"DEBUG: Error creating notification for user {user_id}: {e}")
-
-            # Rimuovi l'iscrizione
-            db.session.delete(inscription)
-
-            # Se l'utente era attivo (non in lista d'attesa), promuovi il primo della lista d'attesa
-            if was_active:
-                first_waitlist = (
-                    db.session.query(Inscription)
-                    .filter_by(gara_id=gara_id, is_waitlist=True, is_withdrawn=False)
-                    .order_by(Inscription.waitlist_position.asc())
-                    .first()
-                )
-
-                if first_waitlist:
-                    # Promuovi dalla lista d'attesa
-                    first_waitlist.is_waitlist = False
-                    first_waitlist.waitlist_position = None
-
-                    # Ricalcola le posizioni degli altri in lista d'attesa
-                    remaining_waitlist = (
-                        db.session.query(Inscription)
-                        .filter_by(
-                            gara_id=gara_id, is_waitlist=True, is_withdrawn=False
-                        )
-                        .order_by(Inscription.waitlist_position.asc())
-                        .all()
-                    )
-
-                    for i, insc in enumerate(remaining_waitlist, 1):
-                        insc.waitlist_position = i
-
-                    # Invia notifica al promosso
-                    try:
-                        notification_result = NotificationService.create_notification(
-                            user_id=first_waitlist.user_id,
-                            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                            title="Posto disponibile!",
-                            message=f"Sei stato promosso dalla lista d'attesa per la {gara_name}",
-                            priority=NotificationPriority.HIGH,
-                        )
-                        print(
-                            f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}"
-                        )
-                    except Exception as e:
-                        print(
-                            f"DEBUG: Error creating promotion notification for user {first_waitlist.user_id}: {e}"
-                        )
-
-            db.session.commit()
-            return True
-        return False
-
-    @staticmethod
-    def open_inscriptions(
-        gara_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> Gara:
-        """Apre le iscrizioni per una gara con validazione delle date."""
-        if inscription_start > inscription_end:
-            raise ValueError(
-                "La data di inizio deve essere precedente alla data di fine!"
-            )
-
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        gara.inscription_start = inscription_start
-        gara.inscription_end = inscription_end
-        gara = ProvaStateMachine.to_inscription(gara)
-
-        return gara
+        return RoundService.update_round_progression(gara_id)
 
     @staticmethod
     def modify_inscription_dates(
         gara_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> Gara:
-        """Modifica le date di iscrizione per una gara.
+    ) -> "Gara":
+        """Facade: delegate to InscriptionService."""
+        from models.competition.inscription_service import InscriptionService
 
-        Permette di:
-        - Estendere il periodo di iscrizione (più tempo per iscriversi)
-        - Accorciare il periodo (chiudere prima)
-        - Modificare le date se non ancora iniziate
-        """
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        if not gara.can_modify_inscription_dates():
-            raise ValueError(
-                "Impossibile modificare le date: il primo turno è già stato avviato!"
-            )
-
-        if inscription_start > inscription_end:
-            raise ValueError(
-                "La data di inizio deve essere precedente alla data di fine!"
-            )
-
-        # Verifica che la fine iscrizioni non sia dopo la data della gara
-        if gara.date and inscription_end.date() > gara.date:
-            raise ValueError(
-                "Le iscrizioni non possono terminare dopo la data della gara!"
-            )
-
-        current_status = gara.status or GaraStatus.SETUP.value
-
-        # Aggiorna le date
-        gara.inscription_start = inscription_start
-        gara.inscription_end = inscription_end
-
-        # Gestione intelligente dello stato
-        now = datetime.utcnow()
-
-        # Se le iscrizioni devono ancora iniziare
-        if inscription_start > now:
-            # Solo se non siamo già in setup, torniamo in setup
-            if current_status == GaraStatus.INSCRIPTION.value:
-                gara = ProvaStateMachine.reopen_setup(gara)
-
-        # Se siamo nel periodo di iscrizione
-        elif inscription_start <= now <= inscription_end:
-            # Solo se non siamo già in inscription, passiamo a inscription
-            if current_status == GaraStatus.SETUP.value:
-                gara = ProvaStateMachine.to_inscription(gara)
-            # Se siamo già in inscription, non fare nulla (solo aggiorna le date)
-
-        # Se le iscrizioni sono terminate
-        elif now > inscription_end:
-            # Se eravamo in inscription e ora sono scadute, manteniamo inscription
-            # (sarà il sistema a gestire la transizione quando si avvia il turno)
-            pass
-
-        db.session.add(gara)
-        db.session.commit()
-        return gara
-
-
-class RoundService:
-    """Service for managing round creation and progression.
-
-    Extracted from GaraService to follow Single Responsibility Principle.
-    """
+        return InscriptionService.modify_inscription_dates(
+            gara_id, inscription_start, inscription_end
+        )
 
     @staticmethod
-    def start_first_round(gara_id: int) -> Gara:
-        """Avvia il primo turno della gara."""
-        return GaraService.start_first_round(gara_id)
+    def open_inscriptions(
+        gara_id: int, inscription_start: datetime, inscription_end: datetime
+    ) -> "Gara":
+        """Facade: delegate to InscriptionService."""
+        from models.competition.inscription_service import InscriptionService
+
+        return InscriptionService.open_inscriptions(
+            gara_id, inscription_start, inscription_end
+        )
 
     @staticmethod
-    def cancel_first_round_startup(gara_id: int) -> Gara:
-        """Cancella l'avvio del primo turno."""
-        return GaraService.cancel_first_round_startup(gara_id)
+    def can_start_with_current_inscriptions(gara_id: int) -> bool:
+        """Facade: delegate to InscriptionService."""
+        from models.competition.inscription_service import InscriptionService
 
-    @staticmethod
-    def create_round_with_strategy(gara_id: int, round_number: int):
-        """Crea un turno usando la strategia configurata."""
-        return GaraService.create_round_with_strategy(gara_id, round_number)
+        return InscriptionService.can_start_with_current_inscriptions(gara_id)
 
-    @staticmethod
-    def preview_round_with_strategy(gara_id: int, round_number: int) -> dict:
-        """Anteprima di un turno senza modificare il database."""
-        return GaraService.preview_round_with_strategy(gara_id, round_number)
+    # Note: InscriptionService and RoundService have been extracted as separate services
+    # GaraService retains existing methods for backward compatibility
+    # New code should use InscriptionService and RoundService directly
 
 
 __all__ = [
     "GaraService",
-    "InscriptionService",
-    "RoundService",
     "ProvaStateMachine",
     "InvalidTransitionError",
 ]

@@ -448,3 +448,26 @@ Each major component has detailed documentation in its subdirectory:
 - Dive into specific directories for detailed technical information
 - Each subdirectory documentation is self-contained but cross-references related components
 - **Follow architectural principles**: Clean, elegant solutions without over-engineering
+
+## Refactoring Documentation
+
+⚠️ **IMPORTANT: ALL TESTS MUST PASS BEFORE ANY REFACTORING**
+
+The project is undergoing systematic refactoring to improve architecture and maintainability. Complete documentation is located in:
+
+### [docs/refactoring/](docs/refactoring/)
+- **[README.md](docs/refactoring/README.md)**: Overview and critical guidelines
+- **[REFACTOR_PROGRESS.md](docs/refactoring/REFACTOR_PROGRESS.md)**: Detailed progress tracking
+
+### Critical Rules for Refactoring
+1. **Test-First Policy**: 100% test pass rate required before starting
+2. **Test-Driven Refactoring**: All tests must remain green after every change
+3. **Systematic Methodology**: Follow TDD approach with quality gates
+4. **Documentation Updates**: Keep refactoring docs current
+
+### Current Status
+- **Task 1.1**: Transaction Management Migration (IN PROGRESS - SUSPENDED)
+- **Task 1.2**: GaraService Decomposition (COMPLETED)
+- **Test Issues**: Multiple integration tests failing - must be resolved first
+
+**Next Developer**: Before continuing refactoring, ensure `PYTHONPATH=. pytest tests/new/` passes 100%

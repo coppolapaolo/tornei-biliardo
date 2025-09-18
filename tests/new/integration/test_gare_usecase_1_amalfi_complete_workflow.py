@@ -337,6 +337,9 @@ class TestUseCaseAmalfiBestOfTournaments:
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
+        # Save round 1 bye matches before they get overwritten
+        round1_bye_matches = bye_matches
+
         # Step 6: Second round with different bye handling
         total_matches, normal_matches, bye_matches, trio_matches = (
             GaraService.create_amalfi_round(gara.id, 2)
@@ -353,7 +356,7 @@ class TestUseCaseAmalfiBestOfTournaments:
         assert len(bye_matches_r2) == 1
 
         # Different player should get bye in round 2
-        round1_bye_player = bye_matches[0].player1_id
+        round1_bye_player = round1_bye_matches[0].player1_id
         round2_bye_player = bye_matches_r2[0].player1_id
         assert round1_bye_player != round2_bye_player, "Same player got bye twice"
 

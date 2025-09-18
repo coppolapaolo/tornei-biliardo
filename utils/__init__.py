@@ -469,6 +469,7 @@ def create_round_matches(gara, players_or_inscriptions, round_number):
             player1_score=bye_score,
             winner_id=bye_player.id,
             status="completed",
+            match_distance=gara.distance,
         )
         matches.append(match)
         players = players[:-1]
@@ -479,6 +480,7 @@ def create_round_matches(gara, players_or_inscriptions, round_number):
             round_number=round_number,
             player1_id=players[i].id,
             player2_id=players[i + 1].id,
+            match_distance=gara.distance,
         )
         matches.append(match)
 
@@ -722,6 +724,7 @@ def create_round_matches_amalfi_compatible(gara, players_or_inscriptions, round_
             winner_id=bye_player.id,
             status="completed",
             amalfi_round=round_number,
+            match_distance=gara.distance,
         )
         matches.append(match)
         players = players[:-1]
@@ -733,6 +736,7 @@ def create_round_matches_amalfi_compatible(gara, players_or_inscriptions, round_
             player1_id=players[i].id,
             player2_id=players[i + 1].id,
             amalfi_round=round_number,
+            match_distance=gara.distance,
         )
         matches.append(match)
 

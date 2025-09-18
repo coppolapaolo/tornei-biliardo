@@ -67,7 +67,9 @@ class ClassificationService:
 
         # Get all provas for this campionato with optimized loading
         gare_query = db.session.query(Gara).filter_by(campionato_id=campionato_id)
-        gare = bulk_load_relationships(gare_query, "matches", "inscriptions").all()
+        gare = bulk_load_relationships(
+            gare_query, Gara.matches, Gara.inscriptions
+        ).all()
 
         # Get all players in the campionato
         player_ids = set()

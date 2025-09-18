@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from ..user.models import User
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import (
     MatchProposal,
     ProposalInvitation,
@@ -89,6 +90,7 @@ class MatchProposalService:
         return IndividualMatchService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
+    @transactional(domain="individual_match")
     def expire_proposals() -> int:
         """Mark expired proposals as expired. Returns count of expired proposals."""
         now = datetime.utcnow()
@@ -103,9 +105,7 @@ class MatchProposalService:
             proposal.expire()
             count += 1
 
-        if count > 0:
-            db.session.commit()
-
+        # Transaction managed by @transactional decorator
         return count
 
 
@@ -113,6 +113,7 @@ class IndividualMatchService:
     """Service for individual match management and business logic."""
 
     @staticmethod
+    @transactional(domain="individual_match")
     def create_direct_proposal(
         proposer_id: int,
         invited_user_ids: List[int],
@@ -187,10 +188,11 @@ class IndividualMatchService:
                     print(f"DEBUG: Error creating notification for user {user_id}: {e}")
                     # Continue anyway - notification failure shouldn't block proposal creation
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return proposal
 
     @staticmethod
+    @transactional(domain="individual_match")
     def create_open_proposal(
         proposer_id: int,
         location: str,
@@ -223,7 +225,7 @@ class IndividualMatchService:
         )
 
         db.session.add(proposal)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return proposal
 
     @staticmethod
@@ -289,6 +291,7 @@ class IndividualMatchService:
             )
 
     @staticmethod
+    @transactional(domain="individual_match")
     def invite_player_to_match(
         proposal_id: int, inviter_id: int, invitee_id: int
     ) -> ProposalInvitation:
@@ -296,16 +299,16 @@ class IndividualMatchService:
         from .models import ProposalInvitation, InvitationStatus
 
         invitation = ProposalInvitation(
-            match_proposal_id=proposal_id,
-            invitee_id=invitee_id,
+            proposal_id=proposal_id,
+            invited_user_id=invitee_id,
             status=InvitationStatus.PENDING,
         )
 
         db.session.add(invitation)
-        db.session.commit()
         return invitation
 
     @staticmethod
+    @transactional(domain="individual_match")
     def respond_to_invitation(
         invitation_id: int, invitee_id: int, response: str
     ) -> bool:
@@ -313,19 +316,18 @@ class IndividualMatchService:
         from .models import InvitationStatus
 
         invitation = ProposalInvitation.query.get(invitation_id)
-        if not invitation or invitation.invitee_id != invitee_id:
+        if not invitation or invitation.invited_user_id != invitee_id:
             return False
 
         if response.lower() == "accepted":
             invitation.status = InvitationStatus.ACCEPTED
             # Create the individual match
             match = IndividualMatchService.accept_proposal(
-                invitee_id, invitation.match_proposal_id
+                user_id=invitee_id, proposal_id=invitation.proposal_id
             )
         else:
             invitation.status = InvitationStatus.REJECTED
 
-        db.session.commit()
         return True
 
     @staticmethod
@@ -406,6 +408,7 @@ class IndividualMatchService:
         }
 
     @staticmethod
+    @transactional(domain="individual_match")
     def accept_proposal(user_id: int, proposal_id: int) -> IndividualMatch:
         """Accept a match proposal."""
         proposal = db.session.get(MatchProposal, proposal_id)
@@ -418,11 +421,11 @@ class IndividualMatchService:
             raise ValueError("User cannot accept this proposal")
 
         individual_match = proposal.accept(user_id)
-        db.session.commit()
 
         return individual_match
 
     @staticmethod
+    @transactional(domain="individual_match")
     def reject_invitation(user_id: int, proposal_id: int) -> None:
         """Reject a direct invitation."""
         invitation = ProposalInvitation.query.filter_by(
@@ -430,9 +433,9 @@ class IndividualMatchService:
         ).first_or_404()
 
         invitation.reject()
-        db.session.commit()
 
     @staticmethod
+    @transactional(domain="individual_match")
     def cancel_proposal(user_id: int, proposal_id: int) -> None:
         """Cancel a match proposal."""
         proposal = db.session.get(MatchProposal, proposal_id)
@@ -450,7 +453,6 @@ class IndividualMatchService:
             raise ValueError("Proposal cannot be cancelled - it's not pending")
 
         proposal.cancel()
-        db.session.commit()
 
     @staticmethod
     def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
@@ -501,6 +503,7 @@ class IndividualMatchService:
         }
 
     @staticmethod
+    @transactional(domain="individual_match")
     def submit_rack_result(
         match_id: int, user_id: int, winner_id: int, rack_number: int
     ) -> IndividualRack:
@@ -548,10 +551,10 @@ class IndividualMatchService:
                 winner_id if match.player1_score != match.player2_score else None
             )
 
-        db.session.commit()
         return rack
 
     @staticmethod
+    @transactional(domain="individual_match")
     def update_user_availability(
         user_id: int, availability_data: List[Dict[str, Any]]
     ) -> None:
@@ -570,8 +573,6 @@ class IndividualMatchService:
                 is_available=data.get("is_available", True),
             )
             db.session.add(availability)
-
-        db.session.commit()
 
     @staticmethod
     def get_admin_overview() -> Dict[str, Any]:
@@ -633,6 +634,7 @@ class IndividualMatchService:
         return query.order_by(IndividualMatch.scheduled_at.desc()).all()
 
     @staticmethod
+    @transactional(domain="individual_match")
     def start_match(match_id: int, user_id: int) -> IndividualMatch:
         """Start an individual match (must be one of the players)."""
         match = db.session.get(IndividualMatch, match_id)
@@ -645,11 +647,11 @@ class IndividualMatchService:
             raise ValueError("Only match players can start the match")
 
         match.start_match()
-        db.session.commit()
 
         return match
 
     @staticmethod
+    @transactional(domain="individual_match")
     def add_rack_result(match_id: int, winner_id: int, user_id: int) -> IndividualRack:
         """Add a rack result (must be one of the players)."""
         match = db.session.get(IndividualMatch, match_id)
@@ -662,11 +664,11 @@ class IndividualMatchService:
             raise ValueError("Only match players can add rack results")
 
         rack = match.add_rack_result(winner_id)
-        db.session.commit()
 
         return rack
 
     @staticmethod
+    @transactional(domain="individual_match")
     def complete_match(match_id: int, winner_id: int, user_id: int) -> IndividualMatch:
         """Complete a match (must be one of the players)."""
         match = db.session.get(IndividualMatch, match_id)
@@ -679,11 +681,11 @@ class IndividualMatchService:
             raise ValueError("Only match players can complete the match")
 
         match.complete_match(winner_id)
-        db.session.commit()
 
         return match
 
     @staticmethod
+    @transactional(domain="individual_match")
     def cancel_match(
         match_id: int, user_id: int, reason: Optional[str] = None
     ) -> IndividualMatch:
@@ -698,11 +700,11 @@ class IndividualMatchService:
             raise ValueError("Only match players can cancel the match")
 
         match.cancel_match(reason)
-        db.session.commit()
 
         return match
 
     @staticmethod
+    @transactional(domain="individual_match")
     def set_player_availability(
         user_id: int,
         location: str,
@@ -730,7 +732,6 @@ class IndividualMatchService:
             )
             db.session.add(availability)
 
-        db.session.commit()
         return availability
 
     @staticmethod
@@ -768,6 +769,7 @@ class IndividualMatchService:
         return all_users.all()
 
     @staticmethod
+    @transactional(domain="individual_match")
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
         expired_proposals = MatchProposal.query.filter(
@@ -780,7 +782,6 @@ class IndividualMatchService:
             proposal.expire()
             count += 1
 
-        db.session.commit()
         return count
 
     @staticmethod
@@ -826,6 +827,7 @@ class IndividualMatchService:
         }
 
     @staticmethod
+    @transactional(domain="individual_match")
     def _expire_pending_proposals() -> int:
         """Mark expired pending proposals as expired. Returns count of expired proposals."""
         now = datetime.utcnow()
@@ -839,8 +841,5 @@ class IndividualMatchService:
         for proposal in expired_proposals:
             proposal.expire()
             count += 1
-
-        if count > 0:
-            db.session.commit()
 
         return count

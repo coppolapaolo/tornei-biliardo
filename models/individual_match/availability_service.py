@@ -18,6 +18,7 @@ from models.individual_match.models import (
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
 from models.notification.services import NotificationService
+from models.notification.models import NotificationType, NotificationPriority
 
 
 class AvailabilityService:
@@ -67,7 +68,7 @@ class AvailabilityService:
     ) -> UserLocationAvailability:
         """Set player availability for a specific venue."""
         from datetime import time
-        
+
         # Parse preferred_times if provided (format: "HH:MM-HH:MM")
         preferred_time_start = None
         preferred_time_end = None
@@ -80,7 +81,7 @@ class AvailabilityService:
                 preferred_time_end = time(end_hour, end_min)
             except (ValueError, AttributeError):
                 pass  # Invalid format, ignore
-        
+
         # Check for existing availability
         existing = UserLocationAvailability.query.filter_by(
             user_id=user_id, billiard_hall_id=billiard_hall_id
@@ -210,7 +211,7 @@ class AvailabilityService:
 
         # Get users who have played individual matches at this location
         played_at_location = (
-            db.session.query(User.id, User.username)
+            db.session.query(User)
             .join(
                 IndividualMatch,
                 db.or_(
@@ -236,23 +237,19 @@ class AvailabilityService:
         )
         notification_message = message or default_message
 
-        for target_user_id, target_username in played_at_location:
+        for user in played_at_location:
             try:
                 NotificationService.create_notification(
-                    user_id=target_user_id,
+                    user_id=user.id,
+                    notification_type=NotificationType.MATCH_PROPOSAL,
                     title="Giocatore Disponibile",
                     message=notification_message,
-                    notification_type="availability",
-                    related_user_id=user_id,
-                    metadata={
-                        "location": location,
-                        "requesting_user": requesting_user.username,
-                    },
+                    priority=NotificationPriority.NORMAL,
                 )
                 notifications_sent += 1
             except Exception as e:
                 # Log error but continue with other notifications
-                print(f"Error sending notification to user {target_user_id}: {e}")
+                print(f"Error sending notification to user {user.id}: {e}")
 
         db.session.commit()
         return notifications_sent

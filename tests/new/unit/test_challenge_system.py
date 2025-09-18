@@ -264,14 +264,37 @@ class TestChallengeService:
         with app.app_context():
             original_active = test_challenge.is_active
 
+            # Create a challenge attempt to force soft delete behavior
+            from models.challenge.models import ChallengeAttempt
+            unique_id = str(uuid.uuid4())[:8]
+            test_user = User(
+                username=f"testuser_attempt_{unique_id}",
+                email=f"test_attempt_{unique_id}@example.com",
+                role="player",
+            )
+            test_user.set_password("testpass123")
+            db.session.add(test_user)
+            db.session.flush()
+
+            attempt = ChallengeAttempt(
+                challenge_id=test_challenge.id,
+                user_id=test_user.id,
+                score=50,
+                notes="Test attempt to force soft delete"
+            )
+            db.session.add(attempt)
+            db.session.commit()
+
             ChallengeService.delete_challenge(test_challenge.id)
 
-            # Should still exist but be inactive
+            # Should still exist but be inactive (soft delete)
             challenge = db.session.get(Challenge, test_challenge.id)
             assert challenge is not None
             assert challenge.is_active is False
 
-            # Reset for cleanup
+            # Cleanup
+            db.session.delete(attempt)
+            db.session.delete(test_user)
             challenge.is_active = original_active
             db.session.commit()
 

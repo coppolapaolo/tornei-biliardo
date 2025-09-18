@@ -676,6 +676,7 @@ class UserService:
         return User.query.filter_by(role=role).all()
 
     @staticmethod
+    @transactional(domain="user")
     def request_director_promotion(user_id: int, notes: str) -> DirectorRequest:
         """
         Request director promotion for a user.
@@ -709,7 +710,7 @@ class UserService:
         # Create new request
         request = DirectorRequest(user_id=user_id, notes=notes)
         db.session.add(request)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         return request
 
@@ -737,6 +738,7 @@ class UserService:
         return DirectorRequest.query.filter_by(status=status).all()
 
     @staticmethod
+    @transactional(domain="user")
     def update_director_request_status(
         request_id: int, status: str, processed_by: Optional[User] = None
     ) -> DirectorRequest:
@@ -763,7 +765,7 @@ class UserService:
         if processed_by:
             request.processed_by = processed_by
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return request
 
     @staticmethod
@@ -824,6 +826,7 @@ class DirectorRequestService:
     """Service class for handling director promotion requests."""
 
     @staticmethod
+    @transactional(domain="user")
     def process_request(
         request_id: int, admin_user: User, approve: bool
     ) -> DirectorRequest:
@@ -879,7 +882,7 @@ class DirectorRequestService:
                 priority=NotificationPriority.NORMAL,
             )
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return request
 
 
@@ -911,6 +914,7 @@ class UserDeletionService:
     """Service class for user deletion operations."""
 
     @staticmethod
+    @transactional(domain="user")
     def delete_user(user: User) -> None:
         """
         Delete a user through soft deletion.
@@ -919,13 +923,14 @@ class UserDeletionService:
             user: User to delete
         """
         user.soft_delete()
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
 
 class VenueManagerRequestService:
     """Service class for handling venue manager requests."""
 
     @staticmethod
+    @transactional(domain="user")
     def create_request(
         user_id: int, venue_id: int, notes: Optional[str] = None
     ) -> "VenueManagerRequest":
@@ -988,7 +993,7 @@ class VenueManagerRequestService:
             user_id=user_id, venue_id=venue_id, notes=notes, is_contested=is_contested
         )
         db.session.add(request)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         # Send notification about new request to all admins
         from ..notification.services import NotificationService
@@ -1019,6 +1024,7 @@ class VenueManagerRequestService:
         return request
 
     @staticmethod
+    @transactional(domain="user")
     def process_request(
         request_id: int, admin_user: User, approve: bool, notes: Optional[str] = None
     ) -> "VenueManagerRequest":
@@ -1106,7 +1112,7 @@ class VenueManagerRequestService:
                 priority=NotificationPriority.NORMAL,
             )
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return request
 
     @staticmethod
@@ -1186,6 +1192,7 @@ class VenueManagerRequestService:
         return query.first() is not None
 
     @staticmethod
+    @transactional(domain="user")
     def cancel_request(request_id: int, user: User) -> "VenueManagerRequest":
         """
         Cancel a pending venue manager request.
@@ -1215,7 +1222,7 @@ class VenueManagerRequestService:
             raise ValueError("Only pending requests can be cancelled")
 
         request.cancel()
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         return request
 
@@ -1293,6 +1300,7 @@ class VenueManagementService:
     """Service class for managing venue assignments."""
 
     @staticmethod
+    @transactional(domain="user")
     def assign_venue_manager(
         user_id: int, venue_id: int, assigned_by: User
     ) -> "VenueManagement":
@@ -1337,7 +1345,7 @@ class VenueManagementService:
             user_id=user_id, venue_id=venue_id, assigned_by_id=assigned_by.id
         )
         db.session.add(assignment)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         # Note: Notification is sent by higher-level service (VenueManagerRequestService.process_request)
         # to avoid duplication when called from venue manager request approval workflow
@@ -1345,6 +1353,7 @@ class VenueManagementService:
         return assignment
 
     @staticmethod
+    @transactional(domain="user")
     def revoke_venue_manager(assignment_id: int, revoked_by: User) -> "VenueManagement":
         """
         Revoke venue manager assignment.
@@ -1372,7 +1381,7 @@ class VenueManagementService:
             raise ValueError("Venue management assignment not found")
 
         assignment.revoke(revoked_by)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         # Send notification to user
         from ..notification.services import NotificationService

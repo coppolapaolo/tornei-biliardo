@@ -116,14 +116,13 @@ class RoundClassification(db.Model):
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        # Get all completed matches up to this round
+        # Get all completed matches up to this round (including bye matches)
         completed_matches = (
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
                 Match.round_number <= round_number,
                 Match.status == "completed",  # type: ignore[operator]
-                Match.is_bye.is_(False),
             )
             .all()
         )
@@ -131,30 +130,45 @@ class RoundClassification(db.Model):
         # Calculate stats per player
         player_stats = {}
         for match in completed_matches:
-            # Initialize players if not seen
-            if match.player1_id not in player_stats:
-                player_stats[match.player1_id] = {
-                    "matches_won": 0,
-                    "rack_won": 0,
-                    "rack_lost": 0,
-                }
-            if match.player2_id not in player_stats:
-                player_stats[match.player2_id] = {
-                    "matches_won": 0,
-                    "rack_won": 0,
-                    "rack_lost": 0,
-                }
-
-            # Update stats based on match result
-            if match.player1_score > match.player2_score:
+            # Handle bye matches separately
+            if match.is_bye:
+                # Initialize bye player if not seen
+                if match.player1_id not in player_stats:
+                    player_stats[match.player1_id] = {
+                        "matches_won": 0,
+                        "rack_won": 0,
+                        "rack_lost": 0,
+                    }
+                # Bye player gets automatic win
                 player_stats[match.player1_id]["matches_won"] += 1
+                player_stats[match.player1_id]["rack_won"] += match.player1_score or 0
+                # No rack_lost for bye matches
             else:
-                player_stats[match.player2_id]["matches_won"] += 1
+                # Handle regular matches
+                # Initialize players if not seen
+                if match.player1_id not in player_stats:
+                    player_stats[match.player1_id] = {
+                        "matches_won": 0,
+                        "rack_won": 0,
+                        "rack_lost": 0,
+                    }
+                if match.player2_id not in player_stats:
+                    player_stats[match.player2_id] = {
+                        "matches_won": 0,
+                        "rack_won": 0,
+                        "rack_lost": 0,
+                    }
 
-            player_stats[match.player1_id]["rack_won"] += match.player1_score
-            player_stats[match.player1_id]["rack_lost"] += match.player2_score
-            player_stats[match.player2_id]["rack_won"] += match.player2_score
-            player_stats[match.player2_id]["rack_lost"] += match.player1_score
+                # Update stats based on match result
+                if match.player1_score > match.player2_score:
+                    player_stats[match.player1_id]["matches_won"] += 1
+                else:
+                    player_stats[match.player2_id]["matches_won"] += 1
+
+                player_stats[match.player1_id]["rack_won"] += match.player1_score
+                player_stats[match.player1_id]["rack_lost"] += match.player2_score
+                player_stats[match.player2_id]["rack_won"] += match.player2_score
+                player_stats[match.player2_id]["rack_lost"] += match.player1_score
 
         # Calculate rack difference
         for player_id, stats in player_stats.items():
@@ -334,10 +348,20 @@ class PlayerEncounter(db.Model):
             round_number: Round when they played
 
         Returns:
-            Created PlayerEncounter instance
+            Created or existing PlayerEncounter instance
         """
         # Ensure consistent ordering
         p1, p2 = min(player1_id, player2_id), max(player1_id, player2_id)
+
+        # Check if encounter already exists
+        existing = (
+            db.session.query(PlayerEncounter)
+            .filter_by(gara_id=gara_id, player1_id=p1, player2_id=p2)
+            .first()
+        )
+
+        if existing:
+            return existing
 
         encounter = PlayerEncounter(
             gara_id=gara_id,
