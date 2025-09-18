@@ -22,7 +22,7 @@ class TestRoundServiceTDD:
         self.director_user = User(
             username="director_test",
             email="director@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         self.director_user.set_password("password123")
         db.session.add(self.director_user)
@@ -49,7 +49,7 @@ class TestRoundServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.INSCRIPTION.value
+            status=GaraStatus.INSCRIPTION.value,
         )
         db.session.add(gara)
         db.session.commit()
@@ -58,7 +58,11 @@ class TestRoundServiceTDD:
         inscription1 = Inscription(user_id=self.director_user.id, gara_id=gara.id)
 
         # Secondo giocatore
-        player2 = User(username="player2_test", email="player2@test.com", role=UserRole.PLAYER.value)
+        player2 = User(
+            username="player2_test",
+            email="player2@test.com",
+            role=UserRole.PLAYER.value,
+        )
         player2.set_password("password123")
         db.session.add(player2)
         db.session.commit()
@@ -81,8 +85,8 @@ class TestRoundServiceTDD:
         from models.competition.services import RoundService
 
         # Test che il metodo esista ed è chiamabile
-        assert hasattr(RoundService, 'cancel_first_round_startup')
-        assert callable(getattr(RoundService, 'cancel_first_round_startup'))
+        assert hasattr(RoundService, "cancel_first_round_startup")
+        assert callable(getattr(RoundService, "cancel_first_round_startup"))
 
     def test_round_service_can_create_round_with_strategy(self):
         """RoundService deve gestire creazione turno con strategia."""
@@ -96,7 +100,7 @@ class TestRoundServiceTDD:
             distance=5,
             director_id=self.director_user.id,
             status=GaraStatus.PLAYING.value,
-            current_round=1
+            current_round=1,
         )
         db.session.add(gara)
         db.session.commit()
@@ -114,8 +118,8 @@ class TestRoundServiceTDD:
         from models.competition.services import RoundService
 
         # Test che il metodo esista ed è chiamabile
-        assert hasattr(RoundService, 'preview_round_with_strategy')
-        assert callable(getattr(RoundService, 'preview_round_with_strategy'))
+        assert hasattr(RoundService, "preview_round_with_strategy")
+        assert callable(getattr(RoundService, "preview_round_with_strategy"))
 
     def test_create_round_with_strategy_creates_matches_for_random_strategy(self):
         """Test TDD: create_round_with_strategy deve creare match per strategia random."""
@@ -131,7 +135,7 @@ class TestRoundServiceTDD:
             status=GaraStatus.PLAYING.value,
             current_round=1,
             matchmaking_strategy="random",
-            rounds_count=3
+            rounds_count=3,
         )
         db.session.add(gara)
         db.session.commit()
@@ -142,7 +146,7 @@ class TestRoundServiceTDD:
             player = User(
                 username=f"player{i}_test",
                 email=f"player{i}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("password123")
             db.session.add(player)
@@ -163,7 +167,9 @@ class TestRoundServiceTDD:
 
         # Verifica che il metodo restituisca il tuple atteso
         assert isinstance(result, tuple)
-        assert len(result) == 4  # (total_matches, normal_matches, bye_matches, trio_matches)
+        assert (
+            len(result) == 4
+        )  # (total_matches, normal_matches, bye_matches, trio_matches)
 
         total_matches, normal_matches, bye_matches, trio_matches = result
         assert total_matches > 0  # Almeno alcuni match devono essere creati
@@ -173,6 +179,7 @@ class TestRoundServiceTDD:
 
         # Verifica che i match siano stati effettivamente creati nel database
         from models.match.models import Match
+
         created_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         assert len(created_matches) == total_matches
 
@@ -190,7 +197,7 @@ class TestRoundServiceTDD:
             status=GaraStatus.PLAYING.value,
             current_round=1,
             matchmaking_strategy="random",
-            rounds_count=3
+            rounds_count=3,
         )
         db.session.add(gara)
         db.session.commit()
@@ -201,7 +208,7 @@ class TestRoundServiceTDD:
             player = User(
                 username=f"player_idem{i}_test",
                 email=f"player_idem{i}@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             player.set_password("password123")
             db.session.add(player)
@@ -227,6 +234,7 @@ class TestRoundServiceTDD:
 
         # Verifica che non siano stati creati match duplicati
         from models.match.models import Match
+
         created_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         assert len(created_matches) == result1[0]  # Total matches
 
@@ -248,7 +256,7 @@ class TestRoundServiceTDD:
             distance=5,
             director_id=self.director_user.id,
             status=GaraStatus.PLAYING.value,
-            rounds_count=3
+            rounds_count=3,
         )
         db.session.add(gara)
         db.session.commit()

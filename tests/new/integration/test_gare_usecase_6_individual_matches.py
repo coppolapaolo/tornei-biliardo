@@ -239,12 +239,11 @@ class TestUseCaseIndividualMatches:
         assert confirm1_result.success is True
 
         # Player2 reports second rack win
-        rack2 = IndividualMatchService.add_rack_result(
+        rack2 = IndividualMatchService.submit_rack_result(
             match_id=individual_match.id,
-            rack_number=2,
+            user_id=player2.id,
             winner_id=player2.id,
-            reported_by_id=player2.id,
-            break_player_id=player2.id,
+            rack_number=2,
             notes="Nice safety battle",
         )
 

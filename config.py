@@ -31,7 +31,7 @@ class Config:
     CHALLENGE_UPLOAD_FOLDER = "challenges"
     VENUE_UPLOAD_FOLDER = "venues"
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 
 class DevelopmentConfig(Config):

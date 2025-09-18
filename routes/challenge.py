@@ -149,6 +149,7 @@ def create_challenge():
 
         # Convert filename to proper database path
         from utils.image_paths import ImagePathManager
+
         image_path = ImagePathManager.get_challenge_db_path(image_filename)
 
         challenge = ChallengeService.create_challenge(

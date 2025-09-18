@@ -60,7 +60,7 @@ class TestUserWorkflowsComplete:
             BilliardHall(
                 name="Pool House Milano",
                 address="Via Milano 456",
-                city="Milano", 
+                city="Milano",
                 number_of_tables=4,
                 is_active=True,
             ),
@@ -69,10 +69,12 @@ class TestUserWorkflowsComplete:
         db_session.commit()
         return venues
 
-    def test_guest_user_complete_workflow(self, admin_user: User, guest_venues, db_session, client):
+    def test_guest_user_complete_workflow(
+        self, admin_user: User, guest_venues, db_session, client
+    ):
         """
         Test complete Guest user workflow from SPECIFICHE.md:
-        
+
         Guest user workflow:
         1. Registration with username, email, phone, password
         2. Login with userid and password
@@ -129,6 +131,7 @@ class TestUserWorkflowsComplete:
 
         # Make tournaments visible (move to inscription status)
         from models.competition.services import ProvaStateMachine
+
         ProvaStateMachine.to_inscription(gara_standalone)
         ProvaStateMachine.to_inscription(gara_campionato)
 
@@ -192,13 +195,15 @@ class TestUserWorkflowsComplete:
 
         print("✅ Guest user complete workflow completed")
 
-    def test_player_complete_workflow(self, admin_user: User, guest_venues, db_session, client):
+    def test_player_complete_workflow(
+        self, admin_user: User, guest_venues, db_session, client
+    ):
         """
         Test complete Player workflow from SPECIFICHE.md:
-        
+
         Player workflow:
         1. Dashboard with ongoing activities
-        2. Profile with venue availability settings  
+        2. Profile with venue availability settings
         3. Individual match proposals (with invite and open)
         4. Tournament inscription and participation
         5. Soft delete with pseudonymization
@@ -212,7 +217,7 @@ class TestUserWorkflowsComplete:
         player1.set_password("player123")
 
         player2 = User(
-            username="player_workflow_2", 
+            username="player_workflow_2",
             email="player2@workflow.com",
             role=UserRole.PLAYER.value,
         )
@@ -242,10 +247,10 @@ class TestUserWorkflowsComplete:
         # Set venue availability
         venue = guest_venues[0]
         from models.individual_match.services import AvailabilityService
-        
-        availability = AvailabilityService.set_venue_preference(
+
+        availability = AvailabilityService.set_venue_availability(
             user_id=player1.id,
-            venue_id=venue.id,
+            billiard_hall_id=venue.id,
             is_available=True,
         )
 
@@ -284,10 +289,10 @@ class TestUserWorkflowsComplete:
             sess["_user_id"] = str(player1.id)
             sess["_fresh"] = True
 
-        open_proposal = IndividualMatchService.create_open_match_proposal(
+        open_proposal = IndividualMatchService.create_open_proposal(
             proposer_id=player1.id,
-            venue_id=venue.id,
-            proposed_date=datetime.now() + timedelta(days=3),
+            location=venue.name,
+            scheduled_at=datetime.now() + timedelta(days=3),
             discipline="palla_9",
             distance=7,
             description="Match aperto a tutti",
@@ -342,16 +347,18 @@ class TestUserWorkflowsComplete:
 
         # Verify matches are preserved for statistics
         # But new inscriptions should be cancelled
-        
+
         print("✅ Player complete workflow completed")
 
-    def test_director_complete_workflow(self, admin_user: User, guest_venues, db_session, client):
+    def test_director_complete_workflow(
+        self, admin_user: User, guest_venues, db_session, client
+    ):
         """
         Test complete Director workflow from SPECIFICHE.md:
-        
+
         Director workflow:
         1. Becomes director through promotion request
-        2. Creates new campionato 
+        2. Creates new campionato
         3. Creates gara within campionato
         4. Manages inscriptions and tournament flow
         5. Uses all admin powers for their tournaments
@@ -368,8 +375,8 @@ class TestUserWorkflowsComplete:
 
         # Step 2: Player requests director promotion
         from models.user.services import DirectorRequestService
-        
-        director_request = DirectorRequestService.create_director_request(
+
+        director_request = DirectorRequestService.create_request(
             user_id=future_director.id,
             motivation="Voglio organizzare tornei per la community",
         )
@@ -465,10 +472,12 @@ class TestUserWorkflowsComplete:
 
         print("✅ Director complete workflow completed")
 
-    def test_admin_system_management_workflow(self, admin_user: User, guest_venues, db_session, client):
+    def test_admin_system_management_workflow(
+        self, admin_user: User, guest_venues, db_session, client
+    ):
         """
         Test complete Admin workflow from SPECIFICHE.md:
-        
+
         Admin workflow:
         1. System administration and user management
         2. Tournament oversight and management
@@ -484,7 +493,7 @@ class TestUserWorkflowsComplete:
         response = client.get("/admin/")
         assert response.status_code == 200
         admin_dashboard = response.data.decode("utf-8")
-        
+
         # Should see admin dashboard
         assert "Admin" in admin_dashboard or "Amministrazione" in admin_dashboard
 
@@ -538,7 +547,7 @@ class TestUserWorkflowsComplete:
 
         # Step 4: Challenge management
         from models.challenge.models import Challenge
-        
+
         # Admin creates challenge
         challenge = Challenge(
             title="Admin Test Challenge",
@@ -578,7 +587,7 @@ class TestUserWorkflowsComplete:
     ):
         """
         Test notification and communication workflows across user types.
-        
+
         Tests:
         1. Tournament inscription notifications
         2. Match proposal notifications
@@ -635,7 +644,7 @@ class TestUserWorkflowsComplete:
         for i in range(4, 8):
             player = User(
                 username=f"notify_player_{i}",
-                email=f"notify_player_{i}@test.com", 
+                email=f"notify_player_{i}@test.com",
                 role=UserRole.PLAYER.value,
             )
             player.set_password("player123")
@@ -649,19 +658,19 @@ class TestUserWorkflowsComplete:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Player 7 goes to waitlist
-        waitlist_inscription = InscriptionService.inscribe_user(extra_players[3].id, gara.id)
+        waitlist_inscription = InscriptionService.inscribe_user(
+            extra_players[3].id, gara.id
+        )
         db_session.refresh(waitlist_inscription)
         assert waitlist_inscription.is_waitlist
 
         # Step 3: Waitlist notification test
         # Player from confirmed list drops out
         confirmed_inscription = Inscription.query.filter_by(
-            gara_id=gara.id,
-            user_id=players[0].id,
-            is_waitlist=False
+            gara_id=gara.id, user_id=players[0].id, is_waitlist=False
         ).first()
-        
-        InscriptionService.withdraw_inscription(confirmed_inscription.id)
+
+        InscriptionService.uninscribe_user(player1.id, gara_id=confirmed_inscription.gara_id)
 
         # Waitlisted player should get notification and auto-promotion
         db_session.refresh(waitlist_inscription)
@@ -684,7 +693,7 @@ class TestUserWorkflowsComplete:
         # Should have match proposal notification
 
         # Step 5: System notification from admin
-        NotificationService.send_system_notification(
+        NotificationService.create_notification(
             user_id=players[0].id,
             title="System Notification Test",
             message="This is a test system notification from admin",
@@ -694,8 +703,7 @@ class TestUserWorkflowsComplete:
 
         # Verify notification created
         system_notification = Notification.query.filter_by(
-            user_id=players[0].id,
-            notification_type="system"
+            user_id=players[0].id, notification_type="system"
         ).first()
         assert system_notification is not None
 
@@ -706,7 +714,7 @@ class TestUserWorkflowsComplete:
     ):
         """
         Test advanced features workflow from SPECIFICHE.md:
-        
+
         Advanced features:
         1. Playoff system with qualification criteria
         2. Exam system with challenge combinations
@@ -724,7 +732,7 @@ class TestUserWorkflowsComplete:
 
         # Configure playoff criteria (top 6 players)
         from models.playoff.services import PlayoffService
-        
+
         playoff_config = PlayoffService.create_playoff_configuration(
             campionato_id=campionato.id,
             name="Elite Playoff",
@@ -791,10 +799,9 @@ class TestUserWorkflowsComplete:
 
         # Step 3: Generate playoff from qualifications
         qualified_players = PlayoffService.get_qualified_players(
-            playoff_config.id,
-            campionato.id
+            playoff_config.id, campionato.id
         )
-        
+
         # Should have 6 qualified players
         assert len(qualified_players) <= 6
 
@@ -824,7 +831,7 @@ class TestUserWorkflowsComplete:
             challenges=[c.id for c in challenges],
             grading_criteria={
                 "excellent": {"min_score": 85, "level": "A"},
-                "good": {"min_score": 70, "level": "B"}, 
+                "good": {"min_score": 70, "level": "B"},
                 "pass": {"min_score": 60, "level": "C"},
             },
             created_by_id=admin_user.id,
@@ -858,8 +865,13 @@ class TestUserWorkflowsComplete:
             return
 
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Add some racks
         for rack_num in range(1, 4):  # Winner gets 3

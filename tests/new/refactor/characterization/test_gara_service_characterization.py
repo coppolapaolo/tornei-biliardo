@@ -19,7 +19,11 @@ from datetime import datetime, date, time, timedelta
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db
-from models.competition.services import GaraService, InscriptionService, ProvaStateMachine
+from models.competition.services import (
+    GaraService,
+    InscriptionService,
+    ProvaStateMachine,
+)
 from models.competition.models import Gara, Inscription
 from models.user.models import User
 from models.user.role_enum import UserRole
@@ -33,13 +37,21 @@ class TestGaraServiceCharacterization:
     def setup_method(self, method):
         """Setup per ogni test."""
         # Crea utenti di test
-        self.admin_user = User(username="admin_test", email="admin@test.com", role=UserRole.ADMIN.value)
+        self.admin_user = User(
+            username="admin_test", email="admin@test.com", role=UserRole.ADMIN.value
+        )
         self.admin_user.set_password("password123")
 
-        self.director_user = User(username="director_test", email="director@test.com", role=UserRole.DIRECTOR.value)
+        self.director_user = User(
+            username="director_test",
+            email="director@test.com",
+            role=UserRole.DIRECTOR.value,
+        )
         self.director_user.set_password("password123")
 
-        self.player_user = User(username="player_test", email="player@test.com", role=UserRole.PLAYER.value)
+        self.player_user = User(
+            username="player_test", email="player@test.com", role=UserRole.PLAYER.value
+        )
         self.player_user.set_password("password123")
 
         db.session.add(self.admin_user)
@@ -59,10 +71,12 @@ class TestGaraServiceCharacterization:
 
             # Rimuovi eventuali DirectorAssignment e Notification
             from models.user.models import DirectorAssignment
+
             db.session.query(DirectorAssignment).delete()
             db.session.commit()
 
             from models.notification.models import Notification
+
             db.session.query(Notification).delete()
             db.session.commit()
 
@@ -83,7 +97,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Caratteristiche esistenti
@@ -109,25 +123,25 @@ class TestGaraServiceCharacterization:
         tomorrow = date.today() + timedelta(days=1)
 
         # Deve avere director_id o campionato_id
-        with pytest.raises(ValueError, match="deve avere un campionato_id o un director_id"):
+        with pytest.raises(
+            ValueError, match="deve avere un campionato_id o un director_id"
+        ):
             GaraService.create_gara(
-                number=1,
-                name="Test",
-                date=tomorrow,
-                discipline="palla 8",
-                distance=5
+                number=1, name="Test", date=tomorrow, discipline="palla 8", distance=5
             )
 
         # Data non può essere nel passato
         yesterday = date.today() - timedelta(days=1)
-        with pytest.raises(ValueError, match="Data della gara non può essere nel passato"):
+        with pytest.raises(
+            ValueError, match="Data della gara non può essere nel passato"
+        ):
             GaraService.create_gara(
                 number=1,
                 name="Test",
                 date=yesterday,
                 discipline="palla 8",
                 distance=5,
-                director_id=self.director_user.id
+                director_id=self.director_user.id,
             )
 
     def test_get_gara_by_id_characterization(self):
@@ -140,7 +154,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Recupero esistente
@@ -163,7 +177,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Aggiornamento riuscito quando no iscrizioni
@@ -187,7 +201,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Cancellazione riuscita quando no iscrizioni
@@ -201,7 +215,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Con iscrizioni non si può cancellare
@@ -222,7 +236,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Stato iniziale
@@ -232,7 +246,16 @@ class TestGaraServiceCharacterization:
         start_time = datetime.now() + timedelta(minutes=10)
         end_time = datetime.now() + timedelta(days=1)
 
-        with pytest.raises(InvalidTransitionError, match="Date di iscrizione non impostate"):
+        # Rimuovi le date di iscrizione per testare la validazione
+        # (create_gara le imposta automaticamente per prevenire errori di stato)
+        gara.inscription_start = None
+        gara.inscription_end = None
+        db.session.add(gara)
+        db.session.commit()
+
+        with pytest.raises(
+            InvalidTransitionError, match="Date di iscrizione non impostate"
+        ):
             ProvaStateMachine.to_inscription(gara)
 
         # Con date funziona
@@ -286,7 +309,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Transizioni non ammesse
@@ -309,14 +332,16 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Date valide
         start_time = datetime.now() + timedelta(minutes=10)
         end_time = datetime.now() + timedelta(days=1)
 
-        updated_gara = InscriptionService.open_inscriptions(gara.id, start_time, end_time)
+        updated_gara = InscriptionService.open_inscriptions(
+            gara.id, start_time, end_time
+        )
 
         assert updated_gara.status == GaraStatus.INSCRIPTION.value
         assert updated_gara.inscription_start == start_time
@@ -336,14 +361,16 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         start_time = datetime.now() + timedelta(minutes=30)
         end_time = datetime.now() + timedelta(days=1)
 
         # Modifica date prima dell'apertura
-        updated_gara = InscriptionService.modify_inscription_dates(gara.id, start_time, end_time)
+        updated_gara = InscriptionService.modify_inscription_dates(
+            gara.id, start_time, end_time
+        )
 
         assert updated_gara.inscription_start == start_time
         assert updated_gara.inscription_end == end_time
@@ -368,7 +395,7 @@ class TestGaraServiceCharacterization:
             "distance": "5",
             "entry_fee": "10.0",
             "min_participants": "2",
-            "max_participants": "8"
+            "max_participants": "8",
         }
 
         errors = GaraService.validate_gara_data(valid_data)
@@ -387,7 +414,7 @@ class TestGaraServiceCharacterization:
         numeric_errors = {
             "distance": "abc",
             "entry_fee": "-10",
-            "max_participants": "1"  # < min_participants (default 2)
+            "max_participants": "1",  # < min_participants (default 2)
         }
         errors = GaraService.validate_gara_data(numeric_errors)
 
@@ -409,7 +436,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Senza iscritti fallisce
@@ -448,7 +475,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Senza avvio fallisce
@@ -484,15 +511,19 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Aggiunta co-direttore
-        success = GaraService.add_director(gara.id, self.player_user.id, self.admin_user.id)
+        success = GaraService.add_director(
+            gara.id, self.player_user.id, self.admin_user.id
+        )
         assert success is True
 
         # Seconda aggiunta stesso utente
-        duplicate = GaraService.add_director(gara.id, self.player_user.id, self.admin_user.id)
+        duplicate = GaraService.add_director(
+            gara.id, self.player_user.id, self.admin_user.id
+        )
         assert duplicate is False
 
         # Admin non può essere direttore
@@ -518,7 +549,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id
+            director_id=self.director_user.id,
         )
 
         # Gara in cui NON è direttore
@@ -528,7 +559,7 @@ class TestGaraServiceCharacterization:
             date=tomorrow,
             discipline="palla 9",
             distance=3,
-            director_id=self.player_user.id
+            director_id=self.player_user.id,
         )
 
         director_garas = GaraService.get_director_garas(self.director_user.id)
@@ -547,13 +578,21 @@ class TestInscriptionServiceCharacterization:
 
     def setup_method(self, method):
         """Setup per ogni test."""
-        self.admin_user = User(username="admin_test", email="admin@test.com", role=UserRole.ADMIN.value)
+        self.admin_user = User(
+            username="admin_test", email="admin@test.com", role=UserRole.ADMIN.value
+        )
         self.admin_user.set_password("password123")
 
-        self.player_user = User(username="player_test", email="player@test.com", role=UserRole.PLAYER.value)
+        self.player_user = User(
+            username="player_test", email="player@test.com", role=UserRole.PLAYER.value
+        )
         self.player_user.set_password("password123")
 
-        self.player2_user = User(username="player2_test", email="player2@test.com", role=UserRole.PLAYER.value)
+        self.player2_user = User(
+            username="player2_test",
+            email="player2@test.com",
+            role=UserRole.PLAYER.value,
+        )
         self.player2_user.set_password("password123")
 
         db.session.add(self.admin_user)
@@ -573,10 +612,12 @@ class TestInscriptionServiceCharacterization:
 
             # Rimuovi eventuali DirectorAssignment e Notification
             from models.user.models import DirectorAssignment
+
             db.session.query(DirectorAssignment).delete()
             db.session.commit()
 
             from models.notification.models import Notification
+
             db.session.query(Notification).delete()
             db.session.commit()
 
@@ -595,7 +636,7 @@ class TestInscriptionServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.player_user.id
+            director_id=self.player_user.id,
         )
 
         # Apri iscrizioni prima
@@ -634,7 +675,7 @@ class TestInscriptionServiceCharacterization:
             distance=5,
             director_id=self.player_user.id,
             inscription_start=start_future,
-            inscription_end=end_future
+            inscription_end=end_future,
         )
 
         # Iscrizione prima dell'apertura
@@ -659,7 +700,7 @@ class TestInscriptionServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.player_user.id
+            director_id=self.player_user.id,
         )
 
         # Apri iscrizioni e iscrivi utenti
@@ -675,9 +716,11 @@ class TestInscriptionServiceCharacterization:
         assert removed is True
 
         # Verifica rimozione
-        remaining = db.session.query(Inscription).filter_by(
-            user_id=self.player_user.id, gara_id=gara.id
-        ).first()
+        remaining = (
+            db.session.query(Inscription)
+            .filter_by(user_id=self.player_user.id, gara_id=gara.id)
+            .first()
+        )
         assert remaining is None
 
         # Discrizione non esistente
@@ -694,7 +737,7 @@ class TestInscriptionServiceCharacterization:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.player_user.id
+            director_id=self.player_user.id,
         )
 
         # Apri iscrizioni e iscrivi utente
@@ -711,9 +754,11 @@ class TestInscriptionServiceCharacterization:
         assert removed is True
 
         # Verifica rimozione
-        remaining = db.session.query(Inscription).filter_by(
-            user_id=self.player2_user.id, gara_id=gara.id
-        ).first()
+        remaining = (
+            db.session.query(Inscription)
+            .filter_by(user_id=self.player2_user.id, gara_id=gara.id)
+            .first()
+        )
         assert remaining is None
 
         # Admin disiscrive utente non iscritto

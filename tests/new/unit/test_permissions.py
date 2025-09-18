@@ -19,7 +19,9 @@ class TestPermissionChecker:
         """Test admin has all permissions."""
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -45,7 +47,9 @@ class TestPermissionChecker:
         """Test director permissions."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -65,7 +69,9 @@ class TestPermissionChecker:
         """Test player permissions."""
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -93,7 +99,9 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director1 = User(
@@ -109,7 +117,9 @@ class TestPermissionChecker:
         )
         director2.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director1, director2, player])
@@ -148,7 +158,9 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director1 = User(
@@ -164,7 +176,9 @@ class TestPermissionChecker:
         )
         director2.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director1, director2, player])
@@ -220,7 +234,9 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director1 = User(
@@ -279,15 +295,21 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director, player])
@@ -327,15 +349,21 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director, player])
@@ -359,15 +387,21 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director, player])
@@ -400,7 +434,9 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director1 = User(
@@ -416,7 +452,9 @@ class TestPermissionChecker:
         )
         director2.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director1, director2, player])
@@ -463,15 +501,21 @@ class TestPermissionChecker:
         # Create users
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([admin, director, player])

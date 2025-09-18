@@ -34,7 +34,7 @@ class RoundRobinStrategy(PairingStrategy):
         try:
             # Get active inscriptions
             inscriptions = getattr(gara, "inscriptions", [])
-            active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
             player_count = len(active_inscriptions)
 
             if player_count < 3:
@@ -87,7 +87,7 @@ class RoundRobinStrategy(PairingStrategy):
         try:
             # Get active players
             inscriptions = getattr(gara, "inscriptions", [])
-            active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
             player_ids = [i.user_id for i in active_inscriptions]
 
             if len(player_ids) < 2:

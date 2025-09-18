@@ -178,15 +178,14 @@ class DashboardService:
             try:
                 # Query diretta invece di usare la relationship
                 from models.competition.models import Gara
+
                 gare_list = (
                     db.session.query(Gara)
                     .filter(Gara.campionato_id == campionato.id)
                     .all()
                 )
                 future_dates = [
-                    g.date
-                    for g in gare_list
-                    if g.date and g.date >= date_cls.today()
+                    g.date for g in gare_list if g.date and g.date >= date_cls.today()
                 ]
                 next_date = min(future_dates) if future_dates else None
             except (AttributeError, TypeError):
@@ -216,16 +215,22 @@ class DashboardService:
                     is_co_director  # Director può vedere dettagli solo se può gestire
                 )
             elif user_role == "player":
-                can_view_details = True  # Player può vedere dettagli per iscriversi alle gare
+                can_view_details = (
+                    True  # Player può vedere dettagli per iscriversi alle gare
+                )
             elif user_role == "guest":
-                can_view_details = True  # Guest può vedere dettagli pubblici dei campionati
+                can_view_details = (
+                    True  # Guest può vedere dettagli pubblici dei campionati
+                )
 
             # Genera sort key basato su data per campionatos
             if next_date:
-                sort_key = f"{next_date.strftime('%Y-%m-%d')}_campionato_{campionato.id}"
+                sort_key = (
+                    f"{next_date.strftime('%Y-%m-%d')}_campionato_{campionato.id}"
+                )
             else:
                 sort_key = f"9999-99-99_campionato_{campionato.id}"  # Data futura per elementi senza data
-            
+
             items.append(
                 UnifiedDashboardItem(
                     type="campionato",
@@ -276,15 +281,18 @@ class DashboardService:
             elif user_role == "guest":
                 # Guest può vedere dettagli solo se iscrizioni sono aperte
                 from models.status_enum import GaraStatus
-                can_view_details = (gara.status == GaraStatus.INSCRIPTION.value)
+
+                can_view_details = gara.status == GaraStatus.INSCRIPTION.value
 
             # Genera sort key basato su data per garas
             gara_date = getattr(gara, "date", None)
             if gara_date:
                 sort_key = f"{gara_date.strftime('%Y-%m-%d')}_gara_{gara.id}"
             else:
-                sort_key = f"9999-99-99_gara_{gara.id}"  # Data futura per elementi senza data
-            
+                sort_key = (
+                    f"9999-99-99_gara_{gara.id}"  # Data futura per elementi senza data
+                )
+
             items.append(
                 UnifiedDashboardItem(
                     type="gara",
@@ -1007,9 +1015,12 @@ class DashboardService:
 
         # Get public standalone garas (exclude SETUP status)
         from models.status_enum import GaraStatus
+
         standalone_garas = (
             Gara.query.filter_by(campionato_id=None)
-            .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas from guests
+            .filter(
+                Gara.status != GaraStatus.SETUP.value
+            )  # Hide setup garas from guests
             .order_by(Gara.date.desc())
             .all()
         )

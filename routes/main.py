@@ -301,6 +301,7 @@ def gara_detail_public(gara_id):
 
     # Ottieni le challenge attive per questa gara
     from models.challenge.gara_challenge_models import GaraChallenge
+
     gara_challenges = GaraChallenge.query.filter_by(
         gara_id=gara_id, is_active=True
     ).all()
@@ -310,6 +311,7 @@ def gara_detail_public(gara_id):
 
     # Get configured disciplines for rounds (for Random strategy gare)
     from models.competition.round_configuration import RoundConfiguration
+
     configured_round_disciplines = {}
     if gara.matchmaking_strategy == "random":
         round_configs = RoundConfiguration.get_all_for_gara(gara_id)

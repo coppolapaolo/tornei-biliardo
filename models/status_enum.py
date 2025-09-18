@@ -163,7 +163,13 @@ class Discipline(_StrEnum):
     @classmethod
     def get_common_disciplines(cls) -> list["Discipline"]:
         """Restituisce le discipline più comuni."""
-        return [cls.EIGHT_BALL, cls.NINE_BALL, cls.TEN_BALL, cls.ONE_POCKET, cls.STRAIGHT_POOL]
+        return [
+            cls.EIGHT_BALL,
+            cls.NINE_BALL,
+            cls.TEN_BALL,
+            cls.ONE_POCKET,
+            cls.STRAIGHT_POOL,
+        ]
 
 
 def choices(enum_cls: Type[E]) -> Tuple[str, ...]:

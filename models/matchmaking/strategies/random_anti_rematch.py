@@ -172,7 +172,9 @@ class RandomAntiRematchStrategy(PairingStrategy):
         remaining_players = player_ids.copy()
 
         # Handle trio if odd number and trio is allowed
-        if len(remaining_players) % 2 == 1 and self._should_use_trio(remaining_players, gara):
+        if len(remaining_players) % 2 == 1 and self._should_use_trio(
+            remaining_players, gara
+        ):
             trio_players = remaining_players[:3]
             remaining_players = remaining_players[3:]
             pairings.append(
@@ -246,15 +248,15 @@ class RandomAntiRematchStrategy(PairingStrategy):
         # Only consider trio for odd number of players
         if len(player_ids) % 2 == 0:
             return False
-            
+
         # Check gara configuration first
-        if gara is not None and hasattr(gara, 'odd_number_policy'):
-            odd_policy = getattr(gara, 'odd_number_policy', 'bye')
-            if odd_policy == 'bye' or odd_policy == 'bye_with_challenge':
+        if gara is not None and hasattr(gara, "odd_number_policy"):
+            odd_policy = getattr(gara, "odd_number_policy", "bye")
+            if odd_policy == "bye" or odd_policy == "bye_with_challenge":
                 return False  # Use bye when configured
-            elif odd_policy == 'trio':
-                return True   # Use trio when configured for odd numbers
-        
+            elif odd_policy == "trio":
+                return True  # Use trio when configured for odd numbers
+
         # Fallback to original hardcoded logic if no configuration available
         # Use trio if we have 3, 5, or 7 players (as per specifications)
         # For larger odd numbers, use bye instead

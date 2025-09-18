@@ -393,9 +393,15 @@ def edit_gara(gara_id):
             location = _handle_venue_creation(location, number_of_tables)
 
             # Estratti i parametri di configurazione matchmaking
-            matchmaking_strategy = request.form.get("matchmaking_strategy", gara.matchmaking_strategy)
-            first_round_policy = request.form.get("first_round_policy", gara.first_round_policy)
-            odd_number_policy = request.form.get("odd_number_policy", gara.odd_number_policy)
+            matchmaking_strategy = request.form.get(
+                "matchmaking_strategy", gara.matchmaking_strategy
+            )
+            first_round_policy = request.form.get(
+                "first_round_policy", gara.first_round_policy
+            )
+            odd_number_policy = request.form.get(
+                "odd_number_policy", gara.odd_number_policy
+            )
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
             rating_type = request.form.get("rating_type", gara.rating_type)
 
@@ -436,14 +442,16 @@ def edit_gara(gara_id):
 
                 # Process round discipline configurations
                 for round_num in range(1, rounds_count + 1):
-                    round_discipline = request.form.get(f"round_{round_num}_discipline", "").strip()
+                    round_discipline = request.form.get(
+                        f"round_{round_num}_discipline", ""
+                    ).strip()
 
                     # Only create configuration if discipline is specified (not empty)
                     if round_discipline:
                         RoundConfiguration.create_or_update(
                             gara_id=gara_id,
                             round_number=round_num,
-                            discipline=round_discipline
+                            discipline=round_discipline,
                         )
 
                 # Commit round configurations
@@ -451,6 +459,7 @@ def edit_gara(gara_id):
             else:
                 # For non-random strategies, clear any existing round configurations
                 from models.competition.round_configuration import RoundConfiguration
+
                 RoundConfiguration.delete_for_gara(gara_id)
                 db.session.commit()
 
@@ -474,14 +483,15 @@ def edit_gara(gara_id):
 
     # Get existing round configurations for the form
     from models.competition.round_configuration import RoundConfiguration
+
     round_configurations = {}
     existing_configs = RoundConfiguration.get_all_for_gara(gara_id)
     for config in existing_configs:
         round_configurations[config.round_number] = {
-            'discipline': config.discipline,
-            'distance': config.distance,
-            'best_of': config.best_of,
-            'notes': config.notes
+            "discipline": config.discipline,
+            "distance": config.distance,
+            "best_of": config.best_of,
+            "notes": config.notes,
         }
 
     return render_template(
@@ -969,8 +979,6 @@ def amalfi_classification(gara_id, round_number):
     )
 
 
-
-
 @competition_bp.route(
     "/<int:gara_id>/amalfi/start_round/<int:round_number>", methods=["POST"]
 )
@@ -1074,8 +1082,6 @@ def amalfi_start_round(gara_id, round_number):
         )
 
 
-
-
 @competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
 @login_required
 @gara_manager_required
@@ -1136,7 +1142,7 @@ def start_round_generic(gara_id, round_number):
                 )
 
         # Ottieni disciplina personalizzata se fornita
-        discipline_override = request.form.get('discipline')
+        discipline_override = request.form.get("discipline")
         if discipline_override and discipline_override == gara.discipline:
             # Se è uguale alla disciplina della gara, non serve override
             discipline_override = None

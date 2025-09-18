@@ -240,10 +240,15 @@ class TournamentService(DomainService):
 
         # Clean up director assignments manually since it's a polymorphic relationship
         from models.user.models import DirectorAssignment
-        assignments = db.session.query(DirectorAssignment).filter(
-            DirectorAssignment.entity_type == "campionato",
-            DirectorAssignment.entity_id == campionato_id
-        ).all()
+
+        assignments = (
+            db.session.query(DirectorAssignment)
+            .filter(
+                DirectorAssignment.entity_type == "campionato",
+                DirectorAssignment.entity_id == campionato_id,
+            )
+            .all()
+        )
         for assignment in assignments:
             db.session.delete(assignment)
 

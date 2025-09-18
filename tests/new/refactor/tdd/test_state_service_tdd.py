@@ -23,7 +23,7 @@ class TestStateServiceTDD:
         self.director_user = User(
             username="director_test",
             email="director@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         self.director_user.set_password("password123")
         db.session.add(self.director_user)
@@ -46,6 +46,7 @@ class TestStateServiceTDD:
         # Questo test fallirà fino a quando non creiamo StateService
         try:
             from models.competition.state_service import StateService
+
             assert StateService is not None
         except ImportError:
             pytest.fail("StateService non è ancora implementato")
@@ -63,7 +64,7 @@ class TestStateServiceTDD:
             director_id=self.director_user.id,
             status=GaraStatus.SETUP.value,
             inscription_start=datetime.now() + timedelta(minutes=10),
-            inscription_end=datetime.now() + timedelta(days=1)
+            inscription_end=datetime.now() + timedelta(days=1),
         )
         db.session.add(gara)
         db.session.commit()
@@ -86,7 +87,7 @@ class TestStateServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.PLAYING.value  # Stato non valido per inscription
+            status=GaraStatus.PLAYING.value,  # Stato non valido per inscription
         )
         db.session.add(gara)
         db.session.commit()
@@ -108,7 +109,7 @@ class TestStateServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.INSCRIPTION.value
+            status=GaraStatus.INSCRIPTION.value,
         )
         db.session.add(gara)
         db.session.commit()
@@ -119,7 +120,12 @@ class TestStateServiceTDD:
         # Crea secondo giocatore
         from models.user.models import User
         from models.user.role_enum import UserRole
-        player2 = User(username="player2_test", email="player2@test.com", role=UserRole.PLAYER.value)
+
+        player2 = User(
+            username="player2_test",
+            email="player2@test.com",
+            role=UserRole.PLAYER.value,
+        )
         player2.set_password("password123")
         db.session.add(player2)
         db.session.commit()
@@ -149,7 +155,7 @@ class TestStateServiceTDD:
             distance=5,
             director_id=self.director_user.id,
             status=GaraStatus.PLAYING.value,
-            current_round=3
+            current_round=3,
         )
         db.session.add(gara)
         db.session.commit()
@@ -171,7 +177,7 @@ class TestStateServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.INSCRIPTION.value
+            status=GaraStatus.INSCRIPTION.value,
         )
         db.session.add(gara)
         db.session.commit()
@@ -194,7 +200,7 @@ class TestStateServiceTDD:
             distance=5,
             director_id=self.director_user.id,
             status=GaraStatus.INSCRIPTION.value,
-            min_participants=2
+            min_participants=2,
         )
         db.session.add(gara)
         db.session.commit()

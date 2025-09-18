@@ -27,11 +27,15 @@ class RoundConfiguration(BaseModel, TimestampMixin):
     round_number = db.Column(db.Integer, nullable=False)
 
     # Discipline configuration for this round
-    discipline = db.Column(db.String(50), nullable=True)  # Override discipline for this round
+    discipline = db.Column(
+        db.String(50), nullable=True
+    )  # Override discipline for this round
 
     # Additional round-specific settings (extensible for future features)
     distance = db.Column(db.Integer, nullable=True)  # Override distance for this round
-    best_of = db.Column(db.Boolean, nullable=True)  # Override best_of mode for this round
+    best_of = db.Column(
+        db.Boolean, nullable=True
+    )  # Override best_of mode for this round
 
     # Metadata
     notes = db.Column(db.Text, nullable=True)  # Optional notes for this round
@@ -47,11 +51,11 @@ class RoundConfiguration(BaseModel, TimestampMixin):
     )
 
     @classmethod
-    def get_for_gara_round(cls, gara_id: int, round_number: int) -> Optional["RoundConfiguration"]:
+    def get_for_gara_round(
+        cls, gara_id: int, round_number: int
+    ) -> Optional["RoundConfiguration"]:
         """Get configuration for a specific gara and round."""
-        return cls.query.filter_by(
-            gara_id=gara_id, round_number=round_number
-        ).first()
+        return cls.query.filter_by(gara_id=gara_id, round_number=round_number).first()
 
     @classmethod
     def get_all_for_gara(cls, gara_id: int) -> List["RoundConfiguration"]:
@@ -66,7 +70,7 @@ class RoundConfiguration(BaseModel, TimestampMixin):
         discipline: Optional[str] = None,
         distance: Optional[int] = None,
         best_of: Optional[bool] = None,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
     ) -> "RoundConfiguration":
         """Create or update round configuration."""
         config = cls.get_for_gara_round(gara_id, round_number)
@@ -106,11 +110,13 @@ class RoundConfiguration(BaseModel, TimestampMixin):
 
     def has_overrides(self) -> bool:
         """Check if this configuration has any overrides from gara defaults."""
-        return any([
-            self.discipline is not None,
-            self.distance is not None,
-            self.best_of is not None
-        ])
+        return any(
+            [
+                self.discipline is not None,
+                self.distance is not None,
+                self.best_of is not None,
+            ]
+        )
 
     def __repr__(self) -> str:
         return f"<RoundConfiguration gara_id={self.gara_id} round={self.round_number} discipline={self.discipline}>"

@@ -45,7 +45,7 @@ class TestInscriptionServiceTransactionMigration:
                 min_participants=4,
                 inscription_start=datetime.now() - timedelta(hours=1),
                 inscription_end=datetime.now() + timedelta(hours=24),
-                status=GaraStatus.INSCRIPTION.value
+                status=GaraStatus.INSCRIPTION.value,
             )
             db.session.add(gara)
             db.session.commit()
@@ -60,7 +60,7 @@ class TestInscriptionServiceTransactionMigration:
             user = User(
                 username="test_player",
                 email="player@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("testpass")
             db.session.add(user)
@@ -74,9 +74,7 @@ class TestInscriptionServiceTransactionMigration:
         """Create test admin for admin operations."""
         with app.app_context():
             user = User(
-                username="test_admin",
-                email="admin@test.com",
-                role=UserRole.ADMIN.value
+                username="test_admin", email="admin@test.com", role=UserRole.ADMIN.value
             )
             user.set_password("testpass")
             db.session.add(user)
@@ -97,8 +95,7 @@ class TestInscriptionServiceTransactionMigration:
         with app.app_context():
             # Act: inscribe user to gara
             inscription = InscriptionService.inscribe_user(
-                user_id=test_player.id,
-                gara_id=test_gara.id
+                user_id=test_player.id, gara_id=test_gara.id
             )
 
             # Assert: inscription was created and committed
@@ -128,17 +125,14 @@ class TestInscriptionServiceTransactionMigration:
         with app.app_context():
             # Arrange: create inscription first
             inscription = Inscription(
-                user_id=test_player.id,
-                gara_id=test_gara.id,
-                is_waitlist=False
+                user_id=test_player.id, gara_id=test_gara.id, is_waitlist=False
             )
             db.session.add(inscription)
             db.session.commit()
 
             # Act: uninscribe user
             result = InscriptionService.uninscribe_user(
-                user_id=test_player.id,
-                gara_id=test_gara.id
+                user_id=test_player.id, gara_id=test_gara.id
             )
 
             # Assert: inscription was removed
@@ -152,7 +146,9 @@ class TestInscriptionServiceTransactionMigration:
             )
             assert db_inscription is None
 
-    def test_admin_uninscribe_user_transaction_behavior(self, app, test_gara, test_player, test_admin):
+    def test_admin_uninscribe_user_transaction_behavior(
+        self, app, test_gara, test_player, test_admin
+    ):
         """
         RED: Test current admin_uninscribe_user behavior with direct commit.
 
@@ -164,19 +160,19 @@ class TestInscriptionServiceTransactionMigration:
         with app.app_context():
             # Arrange: create inscription first
             inscription = Inscription(
-                user_id=test_player.id,
-                gara_id=test_gara.id,
-                is_waitlist=False
+                user_id=test_player.id, gara_id=test_gara.id, is_waitlist=False
             )
             db.session.add(inscription)
             db.session.commit()
 
             # Act: admin uninscribe user (mock notifications to avoid dependencies)
-            with patch('models.notification.services.NotificationService.create_notification'):
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ):
                 result = InscriptionService.admin_uninscribe_user(
                     user_id=test_player.id,
                     gara_id=test_gara.id,
-                    admin_user_id=test_admin.id
+                    admin_user_id=test_admin.id,
                 )
 
             # Assert: inscription was removed
@@ -208,18 +204,26 @@ class TestInscriptionServiceTransactionMigration:
             updated_gara = InscriptionService.modify_inscription_dates(
                 gara_id=test_gara.id,
                 inscription_start=new_start,
-                inscription_end=new_end
+                inscription_end=new_end,
             )
 
             # Assert: dates were updated
             assert updated_gara is not None
-            assert updated_gara.inscription_start.replace(microsecond=0) == new_start.replace(microsecond=0)
-            assert updated_gara.inscription_end.replace(microsecond=0) == new_end.replace(microsecond=0)
+            assert updated_gara.inscription_start.replace(
+                microsecond=0
+            ) == new_start.replace(microsecond=0)
+            assert updated_gara.inscription_end.replace(
+                microsecond=0
+            ) == new_end.replace(microsecond=0)
 
             # Verify changes were committed to database
             db_gara = db.session.get(Gara, test_gara.id)
-            assert db_gara.inscription_start.replace(microsecond=0) == new_start.replace(microsecond=0)
-            assert db_gara.inscription_end.replace(microsecond=0) == new_end.replace(microsecond=0)
+            assert db_gara.inscription_start.replace(
+                microsecond=0
+            ) == new_start.replace(microsecond=0)
+            assert db_gara.inscription_end.replace(microsecond=0) == new_end.replace(
+                microsecond=0
+            )
 
     def test_inscribe_user_rollback_on_error(self, app, test_gara, test_player):
         """
@@ -232,14 +236,12 @@ class TestInscriptionServiceTransactionMigration:
             # Test duplicate inscription error
             # Create first inscription
             first_inscription = InscriptionService.inscribe_user(
-                user_id=test_player.id,
-                gara_id=test_gara.id
+                user_id=test_player.id, gara_id=test_gara.id
             )
 
             # Try to create duplicate - should return existing
             second_inscription = InscriptionService.inscribe_user(
-                user_id=test_player.id,
-                gara_id=test_gara.id
+                user_id=test_player.id, gara_id=test_gara.id
             )
 
             # Should return same inscription (no duplicate created)
@@ -261,8 +263,7 @@ class TestInscriptionServiceTransactionMigration:
             # This should be preserved after migration
 
             inscription = InscriptionService.inscribe_user(
-                user_id=test_player.id,
-                gara_id=test_gara.id
+                user_id=test_player.id, gara_id=test_gara.id
             )
 
             # Verify immediately visible (transaction committed)
@@ -271,8 +272,7 @@ class TestInscriptionServiceTransactionMigration:
 
             # Remove inscription
             result = InscriptionService.uninscribe_user(
-                user_id=test_player.id,
-                gara_id=test_gara.id
+                user_id=test_player.id, gara_id=test_gara.id
             )
             assert result is True
 

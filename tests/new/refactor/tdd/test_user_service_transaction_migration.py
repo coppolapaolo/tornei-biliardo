@@ -19,7 +19,13 @@ from datetime import datetime, timedelta
 
 from models import db
 from models.user.models import User, DirectorRequest
-from models.user.services import UserService, DirectorRequestService, UserDeletionService, VenueManagerRequestService, VenueManagementService
+from models.user.services import (
+    UserService,
+    DirectorRequestService,
+    UserDeletionService,
+    VenueManagerRequestService,
+    VenueManagementService,
+)
 from models.user.role_enum import UserRole
 from models.status_enum import DirectorRequestStatus
 from models.location.models import BilliardHall
@@ -35,7 +41,7 @@ class TestUserServiceTransactionMigration:
             user = User(
                 username="test_player_director",
                 email="player@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("testpass")
             db.session.add(user)
@@ -53,7 +59,7 @@ class TestUserServiceTransactionMigration:
             admin = User(
                 username="test_admin_director",
                 email="admin@test.com",
-                role=UserRole.ADMIN.value
+                role=UserRole.ADMIN.value,
             )
             admin.set_password("testpass")
             db.session.add(admin)
@@ -77,8 +83,7 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Act: request director promotion
             director_request = UserService.request_director_promotion(
-                user_id=test_user.id,
-                notes="I want to become a tournament director"
+                user_id=test_user.id, notes="I want to become a tournament director"
             )
 
             # Assert: request was created and committed
@@ -106,21 +111,23 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Arrange: create first request
             first_request = UserService.request_director_promotion(
-                user_id=test_user.id,
-                notes="First request"
+                user_id=test_user.id, notes="First request"
             )
 
             # Act & Assert: attempt duplicate should raise ValueError
-            with pytest.raises(ValueError, match="User already has a pending director request"):
+            with pytest.raises(
+                ValueError, match="User already has a pending director request"
+            ):
                 UserService.request_director_promotion(
-                    user_id=test_user.id,
-                    notes="Duplicate request"
+                    user_id=test_user.id, notes="Duplicate request"
                 )
 
             # Verify only one request exists
             requests = (
                 db.session.query(DirectorRequest)
-                .filter_by(user_id=test_user.id, status=DirectorRequestStatus.PENDING.value)
+                .filter_by(
+                    user_id=test_user.id, status=DirectorRequestStatus.PENDING.value
+                )
                 .all()
             )
             assert len(requests) == 1
@@ -130,7 +137,9 @@ class TestUserServiceTransactionMigration:
             db.session.delete(first_request)
             db.session.commit()
 
-    def test_update_director_request_status_transaction_behavior(self, app, test_user, test_admin):
+    def test_update_director_request_status_transaction_behavior(
+        self, app, test_user, test_admin
+    ):
         """
         RED: Test current update_director_request_status behavior with direct commit.
 
@@ -142,8 +151,7 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Arrange: create pending request
             pending_request = DirectorRequest(
-                user_id=test_user.id,
-                notes="Test promotion request"
+                user_id=test_user.id, notes="Test promotion request"
             )
             db.session.add(pending_request)
             db.session.commit()
@@ -152,7 +160,7 @@ class TestUserServiceTransactionMigration:
             updated_request = UserService.update_director_request_status(
                 request_id=pending_request.id,
                 status=DirectorRequestStatus.APPROVED.value,
-                processed_by=None  # Simplified for test - focus on transaction behavior
+                processed_by=None,  # Simplified for test - focus on transaction behavior
             )
 
             # Assert: request was updated and committed
@@ -182,7 +190,7 @@ class TestUserServiceTransactionMigration:
             with pytest.raises(ValueError, match="Director request not found"):
                 UserService.update_director_request_status(
                     request_id=99999,  # Non-existent request
-                    status=DirectorRequestStatus.APPROVED.value
+                    status=DirectorRequestStatus.APPROVED.value,
                 )
 
     def test_transaction_isolation_current_behavior(self, app, test_user, test_admin):
@@ -195,8 +203,7 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Create request
             request = UserService.request_director_promotion(
-                user_id=test_user.id,
-                notes="Isolation test request"
+                user_id=test_user.id, notes="Isolation test request"
             )
 
             # Verify immediately visible (transaction committed)
@@ -208,7 +215,7 @@ class TestUserServiceTransactionMigration:
             updated_request = UserService.update_director_request_status(
                 request_id=request.id,
                 status=DirectorRequestStatus.APPROVED.value,
-                processed_by=None  # Simplified for test - focus on transaction behavior
+                processed_by=None,  # Simplified for test - focus on transaction behavior
             )
 
             # Verify update immediately visible (transaction committed)
@@ -231,15 +238,12 @@ class TestUserServiceTransactionMigration:
             with pytest.raises(Exception):
                 # This should fail and rollback properly
                 UserService.request_director_promotion(
-                    user_id=99999,  # Non-existent user
-                    notes="Should fail"
+                    user_id=99999, notes="Should fail"  # Non-existent user
                 )
 
             # Verify no partial data was committed (proper rollback)
             requests = (
-                db.session.query(DirectorRequest)
-                .filter_by(notes="Should fail")
-                .all()
+                db.session.query(DirectorRequest).filter_by(notes="Should fail").all()
             )
             assert len(requests) == 0  # No partial data should remain
 
@@ -254,17 +258,14 @@ class TestUserServiceTransactionMigrationPhase2:
             user = User(
                 username="test_user_phase2",
                 email="phase2@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("testpass")
             db.session.add(user)
             db.session.flush()
 
             # Create pending director request
-            request = DirectorRequest(
-                user_id=user.id,
-                notes="Test request for phase 2"
-            )
+            request = DirectorRequest(user_id=user.id, notes="Test request for phase 2")
             db.session.add(request)
             db.session.commit()
 
@@ -282,7 +283,7 @@ class TestUserServiceTransactionMigrationPhase2:
             admin = User(
                 username="test_admin_phase2",
                 email="admin_phase2@test.com",
-                role=UserRole.ADMIN.value
+                role=UserRole.ADMIN.value,
             )
             admin.set_password("testpass")
             db.session.add(admin)
@@ -293,7 +294,9 @@ class TestUserServiceTransactionMigrationPhase2:
             db.session.delete(admin)
             db.session.commit()
 
-    def test_director_request_service_process_request_behavior(self, app, test_user_with_request, test_admin_phase2):
+    def test_director_request_service_process_request_behavior(
+        self, app, test_user_with_request, test_admin_phase2
+    ):
         """
         RED: Test current DirectorRequestService.process_request behavior with direct commit.
 
@@ -310,14 +313,14 @@ class TestUserServiceTransactionMigrationPhase2:
             admin_in_session = db.session.get(User, test_admin_phase2.id)
 
             # Mock notifications to avoid dependencies
-            with patch('models.notification.services.NotificationService.create_notification') as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: process request (approve)
                 processed_request = DirectorRequestService.process_request(
-                    request_id=request.id,
-                    admin_user=admin_in_session,
-                    approve=True
+                    request_id=request.id, admin_user=admin_in_session, approve=True
                 )
 
             # Assert: request was processed and committed
@@ -334,7 +337,9 @@ class TestUserServiceTransactionMigrationPhase2:
             db_user = db.session.get(User, user.id)
             assert db_user.role == UserRole.DIRECTOR.value
 
-    def test_director_request_service_reject_behavior(self, app, test_user_with_request, test_admin_phase2):
+    def test_director_request_service_reject_behavior(
+        self, app, test_user_with_request, test_admin_phase2
+    ):
         """
         RED: Test DirectorRequestService reject behavior.
 
@@ -349,14 +354,14 @@ class TestUserServiceTransactionMigrationPhase2:
             admin_in_session = db.session.get(User, test_admin_phase2.id)
 
             # Mock notifications
-            with patch('models.notification.services.NotificationService.create_notification') as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: process request (reject)
                 processed_request = DirectorRequestService.process_request(
-                    request_id=request.id,
-                    admin_user=admin_in_session,
-                    approve=False
+                    request_id=request.id, admin_user=admin_in_session, approve=False
                 )
 
             # Assert: request was rejected
@@ -379,7 +384,7 @@ class TestUserServiceTransactionMigrationPhase2:
             user = User(
                 username="test_user_delete",
                 email="delete@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("testpass")
             db.session.add(user)
@@ -419,7 +424,7 @@ class TestUserServiceTransactionMigrationPhase2:
                 DirectorRequestService.process_request(
                     request_id=99999,  # Non-existent request
                     admin_user=admin_in_session,
-                    approve=True
+                    approve=True,
                 )
 
 
@@ -434,7 +439,7 @@ class TestUserServiceTransactionMigrationPhase3:
                 name="Test Billiard Hall Phase 3",
                 address="123 Test Street",
                 city="Test City",
-                postal_code="12345"
+                postal_code="12345",
             )
             db.session.add(venue)
             db.session.commit()
@@ -451,7 +456,7 @@ class TestUserServiceTransactionMigrationPhase3:
             user = User(
                 username="test_user_phase3",
                 email="phase3@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             user.set_password("testpass")
             db.session.add(user)
@@ -469,7 +474,7 @@ class TestUserServiceTransactionMigrationPhase3:
             admin = User(
                 username="test_admin_phase3",
                 email="admin_phase3@test.com",
-                role=UserRole.ADMIN.value
+                role=UserRole.ADMIN.value,
             )
             admin.set_password("testpass")
             db.session.add(admin)
@@ -480,7 +485,9 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.delete(admin)
             db.session.commit()
 
-    def test_venue_manager_request_create_request_behavior(self, app, test_user_phase3, test_venue_phase3):
+    def test_venue_manager_request_create_request_behavior(
+        self, app, test_user_phase3, test_venue_phase3
+    ):
         """
         RED: Test current VenueManagerRequestService.create_request behavior with direct commit.
 
@@ -494,7 +501,7 @@ class TestUserServiceTransactionMigrationPhase3:
             request = VenueManagerRequestService.create_request(
                 user_id=test_user_phase3.id,
                 venue_id=test_venue_phase3.id,
-                notes="I want to manage this venue"
+                notes="I want to manage this venue",
             )
 
             # Assert: request was created and committed
@@ -505,6 +512,7 @@ class TestUserServiceTransactionMigrationPhase3:
 
             # Verify it exists in database (transaction was committed)
             from models.user.models import VenueManagerRequest
+
             db_request = db.session.get(VenueManagerRequest, request.id)
             assert db_request is not None
             assert db_request.user_id == test_user_phase3.id
@@ -513,7 +521,9 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.delete(request)
             db.session.commit()
 
-    def test_venue_manager_request_process_request_behavior(self, app, test_user_phase3, test_admin_phase3, test_venue_phase3):
+    def test_venue_manager_request_process_request_behavior(
+        self, app, test_user_phase3, test_admin_phase3, test_venue_phase3
+    ):
         """
         RED: Test current VenueManagerRequestService.process_request behavior with direct commit.
 
@@ -526,10 +536,11 @@ class TestUserServiceTransactionMigrationPhase3:
         with app.app_context():
             # Arrange: create pending request
             from models.user.models import VenueManagerRequest
+
             request = VenueManagerRequest(
                 user_id=test_user_phase3.id,
                 venue_id=test_venue_phase3.id,
-                notes="Test venue management request"
+                notes="Test venue management request",
             )
             db.session.add(request)
             db.session.commit()
@@ -538,14 +549,14 @@ class TestUserServiceTransactionMigrationPhase3:
             admin_in_session = db.session.get(User, test_admin_phase3.id)
 
             # Mock notifications to avoid dependencies
-            with patch('models.notification.services.NotificationService.create_notification') as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: process request (approve)
                 processed_request = VenueManagerRequestService.process_request(
-                    request_id=request.id,
-                    admin_user=admin_in_session,
-                    approve=True
+                    request_id=request.id, admin_user=admin_in_session, approve=True
                 )
 
             # Assert: request was processed and committed
@@ -556,7 +567,9 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.delete(processed_request)
             db.session.commit()
 
-    def test_venue_manager_request_cancel_request_behavior(self, app, test_user_phase3, test_venue_phase3):
+    def test_venue_manager_request_cancel_request_behavior(
+        self, app, test_user_phase3, test_venue_phase3
+    ):
         """
         RED: Test current VenueManagerRequestService.cancel_request behavior with direct commit.
 
@@ -569,10 +582,11 @@ class TestUserServiceTransactionMigrationPhase3:
         with app.app_context():
             # Arrange: create pending request
             from models.user.models import VenueManagerRequest
+
             request = VenueManagerRequest(
                 user_id=test_user_phase3.id,
                 venue_id=test_venue_phase3.id,
-                notes="Test request to cancel"
+                notes="Test request to cancel",
             )
             db.session.add(request)
             db.session.commit()
@@ -582,8 +596,7 @@ class TestUserServiceTransactionMigrationPhase3:
 
             # Act: cancel request
             cancelled_request = VenueManagerRequestService.cancel_request(
-                request_id=request.id,
-                user=user_in_session
+                request_id=request.id, user=user_in_session
             )
 
             # Assert: request was cancelled and committed
@@ -594,7 +607,9 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.delete(cancelled_request)
             db.session.commit()
 
-    def test_venue_management_assign_venue_manager_behavior(self, app, test_user_phase3, test_admin_phase3, test_venue_phase3):
+    def test_venue_management_assign_venue_manager_behavior(
+        self, app, test_user_phase3, test_admin_phase3, test_venue_phase3
+    ):
         """
         RED: Test current VenueManagementService.assign_venue_manager behavior with direct commit.
 
@@ -611,7 +626,7 @@ class TestUserServiceTransactionMigrationPhase3:
             assignment = VenueManagementService.assign_venue_manager(
                 user_id=test_user_phase3.id,
                 venue_id=test_venue_phase3.id,
-                assigned_by=admin_in_session
+                assigned_by=admin_in_session,
             )
 
             # Assert: assignment was created and committed
@@ -621,6 +636,7 @@ class TestUserServiceTransactionMigrationPhase3:
 
             # Verify it exists in database (transaction was committed)
             from models.user.models import VenueManagement
+
             db_assignment = db.session.get(VenueManagement, assignment.id)
             assert db_assignment is not None
             assert db_assignment.user_id == test_user_phase3.id
@@ -629,7 +645,9 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.delete(assignment)
             db.session.commit()
 
-    def test_venue_management_revoke_venue_manager_behavior(self, app, test_user_phase3, test_admin_phase3, test_venue_phase3):
+    def test_venue_management_revoke_venue_manager_behavior(
+        self, app, test_user_phase3, test_admin_phase3, test_venue_phase3
+    ):
         """
         RED: Test current VenueManagementService.revoke_venue_manager behavior with direct commit.
 
@@ -642,10 +660,11 @@ class TestUserServiceTransactionMigrationPhase3:
         with app.app_context():
             # Arrange: create venue management assignment
             from models.user.models import VenueManagement
+
             assignment = VenueManagement(
                 user_id=test_user_phase3.id,
                 venue_id=test_venue_phase3.id,
-                assigned_by_id=test_admin_phase3.id
+                assigned_by_id=test_admin_phase3.id,
             )
             db.session.add(assignment)
             db.session.commit()
@@ -655,8 +674,7 @@ class TestUserServiceTransactionMigrationPhase3:
 
             # Act: revoke venue manager
             revoked_assignment = VenueManagementService.revoke_venue_manager(
-                assignment_id=assignment.id,
-                revoked_by=admin_in_session
+                assignment_id=assignment.id, revoked_by=admin_in_session
             )
 
             # Assert: assignment was revoked and committed

@@ -42,6 +42,7 @@ class TestChallengeImagePathsFix:
 
         # Use centralized path management for correct format
         from utils.image_paths import ImagePathManager
+
         image_path = ImagePathManager.get_challenge_db_path(filename)
 
         challenge = Challenge(
@@ -97,7 +98,9 @@ class TestChallengeImagePathsFix:
 
         return gara
 
-    def test_challenge_has_correct_path_format(self, db_session, challenge_with_correct_path):
+    def test_challenge_has_correct_path_format(
+        self, db_session, challenge_with_correct_path
+    ):
         """Test that challenge uses the correct path format."""
         challenge = challenge_with_correct_path
 
@@ -110,17 +113,23 @@ class TestChallengeImagePathsFix:
         expected_filename = challenge.image_path.split("/")[-1]
         assert challenge.image_filename == expected_filename
 
-    def test_template_generates_correct_src_attribute(self, db_session, gara_with_real_challenge):
+    def test_template_generates_correct_src_attribute(
+        self, db_session, gara_with_real_challenge
+    ):
         """Test that template generates correct src for serving images."""
         # Get challenge from gara
-        gara_challenges = GaraChallenge.query.filter_by(gara_id=gara_with_real_challenge.id).all()
+        gara_challenges = GaraChallenge.query.filter_by(
+            gara_id=gara_with_real_challenge.id
+        ).all()
         assert len(gara_challenges) == 1
 
         gara_challenge = gara_challenges[0]
         challenge = gara_challenge.challenge
 
         # Use centralized URL generation like templates do
-        src_attribute = ImagePathManager.get_challenge_url_path_from_db_path(challenge.image_path)
+        src_attribute = ImagePathManager.get_challenge_url_path_from_db_path(
+            challenge.image_path
+        )
 
         # Should generate proper URL using centralized constants
         expected_pattern = "/static/uploads/challenges/"
@@ -139,11 +148,20 @@ class TestChallengeImagePathsFix:
             static_folder = current_app.static_folder
             challenges_dir = ImagePathManager.get_challenge_upload_dir()
 
-            assert os.path.exists(static_folder), f"Static folder should exist: {static_folder}"
-            assert os.path.exists(challenges_dir), f"Challenges folder should exist: {challenges_dir}"
+            assert static_folder is not None, "Static folder should be configured"
+            assert challenges_dir is not None, "Challenges dir should be configured"
+
+            assert os.path.exists(
+                static_folder
+            ), f"Static folder should exist: {static_folder}"
+            assert os.path.exists(
+                challenges_dir
+            ), f"Challenges folder should exist: {challenges_dir}"
 
             # Verify the challenges dir is within static folder
-            assert challenges_dir.startswith(static_folder), "Challenges dir should be within static folder"
+            assert challenges_dir.startswith(
+                static_folder
+            ), "Challenges dir should be within static folder"
 
     def test_identify_path_mismatch_in_our_previous_tests(self, db_session):
         """Test to identify and document the path mismatch issue."""
@@ -192,10 +210,14 @@ class TestChallengeImagePathsFix:
 
             # The correct path uses centralized constants
             assert correct_src.startswith("/static/uploads/challenges/")
-            assert wrong_src.startswith("/static/challenges/")  # This is the old wrong pattern
+            assert wrong_src.startswith(
+                "/static/challenges/"
+            )  # This is the old wrong pattern
             assert correct != wrong  # Verify they are actually different
 
-    def test_actual_image_serving_simulation(self, app, db_session, challenge_with_correct_path):
+    def test_actual_image_serving_simulation(
+        self, app, db_session, challenge_with_correct_path
+    ):
         """Test that demonstrates how Flask would serve the image."""
         with app.app_context():
             challenge = challenge_with_correct_path
@@ -204,12 +226,15 @@ class TestChallengeImagePathsFix:
             db_path = challenge.image_path
 
             # Template generates this src using centralized utility
-            src_attribute = ImagePathManager.get_challenge_url_path_from_db_path(db_path)
+            src_attribute = ImagePathManager.get_challenge_url_path_from_db_path(
+                db_path
+            )
 
             # Flask static file serving would look for file at:
             static_folder = current_app.static_folder
+            assert static_folder is not None, "Static folder should be configured"
             # Remove the leading slash and "static/" from src to get relative path within static folder
-            relative_path = src_attribute.lstrip('/').replace('static/', '', 1)
+            relative_path = src_attribute.lstrip("/").replace("static/", "", 1)
             file_system_path = os.path.join(static_folder, relative_path)
 
             print(f"Database path: {db_path}")

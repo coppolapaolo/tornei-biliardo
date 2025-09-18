@@ -423,6 +423,7 @@ def gara_detail(gara_id):
 
     # Ottieni le challenge attive per questa gara
     from models.challenge.gara_challenge_models import GaraChallenge
+
     gara_challenges = GaraChallenge.query.filter_by(
         gara_id=gara_id, is_active=True
     ).all()
@@ -435,15 +436,17 @@ def gara_detail(gara_id):
             best_attempt = gara_challenge.get_user_best_attempt(current_user.id)
             can_attempt = gara_challenge.can_user_attempt(current_user.id)
 
-            user_challenge_data.append({
-                'gara_challenge': gara_challenge,
-                'challenge': gara_challenge.challenge,
-                'user_attempts': user_attempts,
-                'best_attempt': best_attempt,
-                'can_attempt': can_attempt,
-                'attempts_count': len(user_attempts),
-                'max_attempts': gara_challenge.max_attempts
-            })
+            user_challenge_data.append(
+                {
+                    "gara_challenge": gara_challenge,
+                    "challenge": gara_challenge.challenge,
+                    "user_attempts": user_attempts,
+                    "best_attempt": best_attempt,
+                    "can_attempt": can_attempt,
+                    "attempts_count": len(user_attempts),
+                    "max_attempts": gara_challenge.max_attempts,
+                }
+            )
 
     # Raggruppa le partite per turno e analizza le discipline
     matches_by_round = {}
@@ -452,6 +455,7 @@ def gara_detail(gara_id):
 
     # Get configured disciplines for rounds (for Random strategy gare)
     from models.competition.round_configuration import RoundConfiguration
+
     configured_round_disciplines = {}
     if gara.matchmaking_strategy == "random":
         round_configs = RoundConfiguration.get_all_for_gara(gara_id)

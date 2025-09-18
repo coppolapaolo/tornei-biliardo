@@ -81,7 +81,11 @@ class TestRandomStrategyChallengeImages:
 
     @pytest.fixture
     def random_gara_with_challenges(
-        self, db_session, admin_user, challenge_with_image, challenge_with_different_image
+        self,
+        db_session,
+        admin_user,
+        challenge_with_image,
+        challenge_with_different_image,
     ) -> Gara:
         """Create a random strategy gara with challenges."""
         tomorrow = date.today() + timedelta(days=1)
@@ -136,24 +140,34 @@ class TestRandomStrategyChallengeImages:
 
         return gara
 
-    def test_challenge_model_image_properties(self, db_session, challenge_with_image, challenge_with_different_image):
+    def test_challenge_model_image_properties(
+        self, db_session, challenge_with_image, challenge_with_different_image
+    ):
         """Test that Challenge model correctly handles image paths and filename extraction."""
         # First challenge with JPG image - use centralized path for comparison
-        expected_jpg_path = ImagePathManager.get_challenge_db_path("spot_shot_9ball.jpg")
+        expected_jpg_path = ImagePathManager.get_challenge_db_path(
+            "spot_shot_9ball.jpg"
+        )
         assert challenge_with_image.image_path == expected_jpg_path
         assert challenge_with_image.image_filename == "spot_shot_9ball.jpg"
         assert expected_jpg_path == "static/uploads/challenges/spot_shot_9ball.jpg"
 
         # Second challenge with PNG image - use centralized path for comparison
-        expected_png_path = ImagePathManager.get_challenge_db_path("bank_shot_8ball.png")
+        expected_png_path = ImagePathManager.get_challenge_db_path(
+            "bank_shot_8ball.png"
+        )
         assert challenge_with_different_image.image_path == expected_png_path
         assert challenge_with_different_image.image_filename == "bank_shot_8ball.png"
         assert expected_png_path == "static/uploads/challenges/bank_shot_8ball.png"
 
-    def test_gara_challenge_relationships(self, db_session, random_gara_with_challenges):
+    def test_gara_challenge_relationships(
+        self, db_session, random_gara_with_challenges
+    ):
         """Test that gara challenge relationships are correctly set up."""
         # Get gara challenges
-        gara_challenges = GaraChallenge.query.filter_by(gara_id=random_gara_with_challenges.id).all()
+        gara_challenges = GaraChallenge.query.filter_by(
+            gara_id=random_gara_with_challenges.id
+        ).all()
 
         assert len(gara_challenges) == 2, "Should have 2 challenges linked to gara"
 
@@ -166,11 +180,13 @@ class TestRandomStrategyChallengeImages:
 
         # Check image paths through relationships - both challenges have images
         jpg_challenges = [
-            gc for gc in gara_challenges
+            gc
+            for gc in gara_challenges
             if gc.challenge.image_path and "jpg" in gc.challenge.image_path
         ]
         png_challenges = [
-            gc for gc in gara_challenges
+            gc
+            for gc in gara_challenges
             if gc.challenge.image_path and "png" in gc.challenge.image_path
         ]
 
@@ -194,7 +210,9 @@ class TestRandomStrategyChallengeImages:
         gara = random_gara_with_challenges
 
         # Get gara challenges (what template would receive)
-        gara_challenges = GaraChallenge.query.filter_by(gara_id=gara.id, is_active=True).all()
+        gara_challenges = GaraChallenge.query.filter_by(
+            gara_id=gara.id, is_active=True
+        ).all()
 
         # Simulate template data preparation for player view
         challenge_data = []
@@ -218,23 +236,35 @@ class TestRandomStrategyChallengeImages:
         assert len(challenge_data) == 2, "Should have data for 2 challenges"
 
         # Both challenges should have images (since image_path is required)
-        assert all(cd["has_image"] for cd in challenge_data), "All challenges should have images"
+        assert all(
+            cd["has_image"] for cd in challenge_data
+        ), "All challenges should have images"
 
         # Check JPG challenge - use centralized path for comparison
-        jpg_challenge_data = [cd for cd in challenge_data if "jpg" in cd["image_path"]][0]
-        expected_jpg_path = ImagePathManager.get_challenge_db_path("spot_shot_9ball.jpg")
+        jpg_challenge_data = [cd for cd in challenge_data if "jpg" in cd["image_path"]][
+            0
+        ]
+        expected_jpg_path = ImagePathManager.get_challenge_db_path(
+            "spot_shot_9ball.jpg"
+        )
         assert jpg_challenge_data["image_path"] == expected_jpg_path
         assert jpg_challenge_data["image_filename"] == "spot_shot_9ball.jpg"
         assert "Spot Shot Challenge" in jpg_challenge_data["description"]
 
         # Check PNG challenge - use centralized path for comparison
-        png_challenge_data = [cd for cd in challenge_data if "png" in cd["image_path"]][0]
-        expected_png_path = ImagePathManager.get_challenge_db_path("bank_shot_8ball.png")
+        png_challenge_data = [cd for cd in challenge_data if "png" in cd["image_path"]][
+            0
+        ]
+        expected_png_path = ImagePathManager.get_challenge_db_path(
+            "bank_shot_8ball.png"
+        )
         assert png_challenge_data["image_path"] == expected_png_path
         assert png_challenge_data["image_filename"] == "bank_shot_8ball.png"
         assert "Bank Shot Challenge" in png_challenge_data["description"]
 
-    def test_template_image_display_logic(self, db_session, random_gara_with_challenges):
+    def test_template_image_display_logic(
+        self, db_session, random_gara_with_challenges
+    ):
         """Test template logic for displaying challenge images vs placeholders."""
         # Get challenges as they would appear in template
         gara_challenges = GaraChallenge.query.filter_by(
@@ -249,14 +279,16 @@ class TestRandomStrategyChallengeImages:
             # This simulates the template logic from player/gara_detail.html lines 320-340
             # Since all challenges have image_path (required field), they all render as img
             # Use centralized URL generation like templates do
-            template_url = ImagePathManager.get_challenge_url_path_from_db_path(challenge.image_path)
+            template_url = ImagePathManager.get_challenge_url_path_from_db_path(
+                challenge.image_path
+            )
             image_element = {
                 "type": "img",
                 "src": template_url,
                 "alt": challenge.get_display_name(),
                 "class": "challenge-image img-fluid rounded",
                 "has_fallback": True,  # Template has onerror fallback for broken images
-                "file_extension": challenge.image_path.split('.')[-1],
+                "file_extension": challenge.image_path.split(".")[-1],
             }
 
             rendered_challenge = {
@@ -272,12 +304,19 @@ class TestRandomStrategyChallengeImages:
         assert len(rendered_challenges) == 2
 
         # Both challenges should render as images (not placeholders)
-        img_challenges = [rc for rc in rendered_challenges if rc["image_element"]["type"] == "img"]
+        img_challenges = [
+            rc for rc in rendered_challenges if rc["image_element"]["type"] == "img"
+        ]
         assert len(img_challenges) == 2, "Both challenges should render as images"
 
         # Find JPG challenge - use centralized URL generation
         jpg_challenge = next(
-            (rc for rc in rendered_challenges if rc["image_element"]["file_extension"] == "jpg"), None
+            (
+                rc
+                for rc in rendered_challenges
+                if rc["image_element"]["file_extension"] == "jpg"
+            ),
+            None,
         )
         assert jpg_challenge is not None, "Should have JPG challenge"
         expected_jpg_url = ImagePathManager.get_challenge_url_path_from_db_path(
@@ -288,7 +327,12 @@ class TestRandomStrategyChallengeImages:
 
         # Find PNG challenge - use centralized URL generation
         png_challenge = next(
-            (rc for rc in rendered_challenges if rc["image_element"]["file_extension"] == "png"), None
+            (
+                rc
+                for rc in rendered_challenges
+                if rc["image_element"]["file_extension"] == "png"
+            ),
+            None,
         )
         assert png_challenge is not None, "Should have PNG challenge"
         expected_png_url = ImagePathManager.get_challenge_url_path_from_db_path(
@@ -306,7 +350,9 @@ class TestRandomStrategyChallengeImages:
         assert gara.status == GaraStatus.INSCRIPTION.value
 
         # Get challenges that would be visible in template
-        gara_challenges = GaraChallenge.query.filter_by(gara_id=gara.id, is_active=True).all()
+        gara_challenges = GaraChallenge.query.filter_by(
+            gara_id=gara.id, is_active=True
+        ).all()
 
         # Both guest and player should see the same challenge information
         # The difference is in what actions they can take, not what they can see
@@ -317,7 +363,9 @@ class TestRandomStrategyChallengeImages:
 
             # This data would be the same for guest and player in the template
             # Use centralized URL generation like templates do
-            template_url = ImagePathManager.get_challenge_url_path_from_db_path(challenge.image_path)
+            template_url = ImagePathManager.get_challenge_url_path_from_db_path(
+                challenge.image_path
+            )
             display_info = {
                 "challenge_name": challenge.get_display_name(),
                 "has_image": challenge.image_path is not None,
@@ -346,9 +394,13 @@ class TestRandomStrategyChallengeImages:
         assert expected_png_url in image_urls
 
         # All challenges should have images (no placeholders needed)
-        assert all(cd["has_image"] for cd in challenge_display_data), "All challenges should have images"
+        assert all(
+            cd["has_image"] for cd in challenge_display_data
+        ), "All challenges should have images"
 
-    def test_challenge_images_in_random_strategy_context(self, db_session, random_gara_with_challenges):
+    def test_challenge_images_in_random_strategy_context(
+        self, db_session, random_gara_with_challenges
+    ):
         """Test that challenge images work correctly in the context of random strategy."""
         gara = random_gara_with_challenges
 
@@ -364,8 +416,12 @@ class TestRandomStrategyChallengeImages:
         round_1_challenges = [gc for gc in gara_challenges if gc.round_number == 1]
         round_2_challenges = [gc for gc in gara_challenges if gc.round_number == 2]
 
-        assert len(round_1_challenges) == 1, "Should have 1 challenge available after round 1"
-        assert len(round_2_challenges) == 1, "Should have 1 challenge available after round 2"
+        assert (
+            len(round_1_challenges) == 1
+        ), "Should have 1 challenge available after round 1"
+        assert (
+            len(round_2_challenges) == 1
+        ), "Should have 1 challenge available after round 2"
 
         # Verify the round 1 challenge has the JPG image (spot shot)
         round_1_challenge = round_1_challenges[0]

@@ -19,7 +19,9 @@ class TestDirectorRequestModel:
         unique_id = str(uuid.uuid4())[:8]
         # Create a player user
         user = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("testpass123")
         db_session.add(user)
@@ -45,11 +47,15 @@ class TestDirectorRequestModel:
         unique_id = str(uuid.uuid4())[:8]
         # Create users
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
@@ -75,11 +81,15 @@ class TestDirectorRequestModel:
         unique_id = str(uuid.uuid4())[:8]
         # Create users
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
@@ -100,7 +110,9 @@ class TestDirectorRequestModel:
         """Test multiple requests from same user."""
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("testpass123")
         db_session.add(user)
@@ -125,7 +137,9 @@ class TestDirectorRequestService:
         """Test creating a director request through service."""
         unique_id = str(uuid.uuid4())[:8]
         # Create a player
-        user = UserService.create_user(f"player_{unique_id}", f"player_{unique_id}@test.com", "pass123", "player")
+        user = UserService.create_user(
+            f"player_{unique_id}", f"player_{unique_id}@test.com", "pass123", "player"
+        )
 
         # Create director request
         result = UserService.request_director_promotion(
@@ -150,7 +164,9 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create a director
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -204,11 +220,15 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create player and admin
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
@@ -240,11 +260,15 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create player and admin
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
@@ -276,11 +300,15 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create player and admin
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([player, admin])
@@ -299,7 +327,9 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create admin
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add(admin)
@@ -316,7 +346,9 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create user
         user = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("testpass123")
         db_session.add(user)
@@ -343,7 +375,9 @@ class TestDirectorRequestService:
         unique_id = str(uuid.uuid4())[:8]
         # Create user
         user = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("testpass123")
         db_session.add(user)

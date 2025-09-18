@@ -141,6 +141,16 @@ class TestUseCaseOneComprehensive:
         """
         with app.test_client() as client:
             # Setup: Register players and start first round
+
+            # First set inscription dates and transition to inscription state
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            GaraService.open_inscriptions(
+                standalone_gara.id,
+                inscription_start=now - timedelta(hours=1),
+                inscription_end=now + timedelta(hours=1)
+            )
+
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
@@ -150,9 +160,10 @@ class TestUseCaseOneComprehensive:
             )
 
             # Create matchmaking and start first round
-            matchmaking_service = MatchmakingService()
-            result = matchmaking_service.create_round(standalone_gara.id, 1)
-            assert result.success, f"Failed to create round 1: {result.message}"
+            try:
+                GaraService.create_round_with_strategy(standalone_gara.id, 1)
+            except Exception as e:
+                assert False, f"Failed to create round 1: {str(e)}"
 
             first_round_matches = Match.query.filter_by(
                 gara_id=standalone_gara.id, round_number=1
@@ -180,8 +191,7 @@ class TestUseCaseOneComprehensive:
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(admin_user.id)
 
-            result = matchmaking_service.create_round(standalone_gara.id, 2)
-            assert result.success, f"Failed to create round 2: {result.message}"
+            GaraService.create_amalfi_round(standalone_gara.id, 2)
 
             # 3. Guest sees new matches for round 2
             response = client.get(f"/public/gara/{standalone_gara.id}")
@@ -197,10 +207,10 @@ class TestUseCaseOneComprehensive:
             # 4. Player enters partial result
             first_match = second_round_matches[0]
             RackService.add_rack_result(
-                first_match.id, first_match.player1_id, True, None
+                first_match.id, 1, first_match.player1_id, first_match.player1_id
             )
             RackService.add_rack_result(
-                first_match.id, first_match.player2_id, True, None
+                first_match.id, 2, first_match.player2_id, first_match.player2_id
             )
 
             # 5. Guest sees partial result
@@ -233,11 +243,8 @@ class TestUseCaseOneComprehensive:
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
-            matchmaking_service = MatchmakingService()
-
             # Complete round 1
-            result = matchmaking_service.create_round(standalone_gara.id, 1)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 1)
 
             round1_matches = Match.query.filter_by(
                 gara_id=standalone_gara.id, round_number=1
@@ -245,15 +252,23 @@ class TestUseCaseOneComprehensive:
 
             for match in round1_matches:
                 # Complete with 5-2 score
+                rack_num = 1
+                # Player 1 wins 5 racks
                 for _ in range(5):
-                    RackService.add_rack_result(match.id, match.player1_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, rack_num, match.player1_id, match.player1_id
+                    )
+                    rack_num += 1
+                # Player 2 wins 2 racks
                 for _ in range(2):
-                    RackService.add_rack_result(match.id, match.player2_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, rack_num, match.player2_id, match.player2_id
+                    )
+                    rack_num += 1
                 MatchService.to_completed(match.id)
 
             # Complete round 2
-            result = matchmaking_service.create_round(standalone_gara.id, 2)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 2)
 
             round2_matches = Match.query.filter_by(
                 gara_id=standalone_gara.id, round_number=2
@@ -262,9 +277,13 @@ class TestUseCaseOneComprehensive:
             for match in round2_matches:
                 # Complete with 5-1 score
                 for _ in range(5):
-                    RackService.add_rack_result(match.id, match.player1_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, 1, match.player1_id, match.player1_id
+                    )
                 for _ in range(1):
-                    RackService.add_rack_result(match.id, match.player2_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, 2, match.player2_id, match.player2_id
+                    )
                 MatchService.to_completed(match.id)
 
             # Login as director
@@ -308,7 +327,7 @@ class TestUseCaseOneComprehensive:
 
             # 4. Verify round 2 is now "in progress" and classification shows round 1
             db.session.refresh(target_match)
-            assert target_match.status == MatchStatus.IN_PROGRESS.value
+            assert target_match.status == MatchStatus.PLAYING.value
 
             # Check that classification now shows round 1 results (last completed round)
             response = client.get(f"/gara/{standalone_gara.id}")
@@ -344,15 +363,12 @@ class TestUseCaseOneComprehensive:
             standalone_gara.matchmaking_strategy = "random"
             db.session.commit()
 
-            matchmaking_service = MatchmakingService()
-
             # Login as admin
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(admin_user.id)
 
             # Create first round
-            result = matchmaking_service.create_round(standalone_gara.id, 1)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 1)
 
             # 1. Initially shows rounds in order with only round 1 editable
             response = client.get(f"/gara/{standalone_gara.id}")
@@ -370,9 +386,13 @@ class TestUseCaseOneComprehensive:
 
             for match in round1_matches:
                 for _ in range(5):
-                    RackService.add_rack_result(match.id, match.player1_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, 1, match.player1_id, match.player1_id
+                    )
                 for _ in range(2):
-                    RackService.add_rack_result(match.id, match.player2_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, 2, match.player2_id, match.player2_id
+                    )
                 MatchService.to_completed(match.id)
 
             # Should now show button to start next round
@@ -384,8 +404,7 @@ class TestUseCaseOneComprehensive:
             )
 
             # 3. Start round 2
-            result = matchmaking_service.create_round(standalone_gara.id, 2)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 2)
 
             # Check round ordering: round 2 (active) should be first, then 3, then 1 (completed)
             response = client.get(f"/gara/{standalone_gara.id}")
@@ -404,9 +423,13 @@ class TestUseCaseOneComprehensive:
 
             for match in round2_matches:
                 for _ in range(5):
-                    RackService.add_rack_result(match.id, match.player1_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, 1, match.player1_id, match.player1_id
+                    )
                 for _ in range(1):
-                    RackService.add_rack_result(match.id, match.player2_id, True, None)
+                    RackService.add_rack_result(
+                        match.id, 2, match.player2_id, match.player2_id
+                    )
                 MatchService.to_completed(match.id)
 
             # Should show next round button again
@@ -446,9 +469,7 @@ class TestUseCaseOneComprehensive:
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(admin_user.id)
 
-            matchmaking_service = MatchmakingService()
-            result = matchmaking_service.create_round(standalone_gara.id, 1)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 1)
 
             matches = (
                 Match.query.filter_by(gara_id=standalone_gara.id, round_number=1)
@@ -481,15 +502,26 @@ class TestUseCaseOneComprehensive:
             first_match = matches[0]
 
             # Complete first match
+            rack_num = 1
+            # Player 1 wins 5 racks
             for _ in range(5):
-                RackService.create_rack(
-                    first_match.id, first_match.player1_id, "player1_win"
+                RackService.add_rack_result(
+                    first_match.id,
+                    rack_num,
+                    first_match.player1_id,
+                    first_match.player1_id,
                 )
+                rack_num += 1
+            # Player 2 wins 2 racks
             for _ in range(2):
-                RackService.create_rack(
-                    first_match.id, first_match.player2_id, "player2_win"
+                RackService.add_rack_result(
+                    first_match.id,
+                    rack_num,
+                    first_match.player2_id,
+                    first_match.player2_id,
                 )
-            MatchService.finalize_match(first_match.id)
+                rack_num += 1
+            MatchService.to_completed(first_match.id)
 
             # Simulate table reassignment logic (would be handled by system)
             waiting_match = matches[3]
@@ -549,9 +581,7 @@ class TestUseCaseOneComprehensive:
                 sess["_user_id"] = str(director_user.id)
 
             # 1. Director starts first round
-            matchmaking_service = MatchmakingService()
-            result = matchmaking_service.create_round(standalone_gara.id, 1)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 1)
 
             first_round_matches = Match.query.filter_by(
                 gara_id=standalone_gara.id, round_number=1
@@ -567,13 +597,15 @@ class TestUseCaseOneComprehensive:
 
             # Player adds racks to complete match
             for _ in range(5):
-                RackService.create_rack(test_match.id, player.id, "player_win")
+                RackService.add_rack_with_score_update(
+                    test_match.id, winner_id=player.id, reported_by_id=1, validated_by_admin=True
+                )
             for _ in range(2):
-                RackService.create_rack(
-                    test_match.id, test_match.player2_id, "opponent_win"
+                RackService.add_rack_with_score_update(
+                    test_match.id, winner_id=test_match.player2_id, reported_by_id=1, validated_by_admin=True
                 )
 
-            MatchService.finalize_match(test_match.id)
+            MatchService.to_completed(test_match.id)
 
             # 3. Player should see challenge requirement (simulated)
             response = client.get("/dashboard")
@@ -718,9 +750,7 @@ class TestUseCaseOneComprehensive:
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
-            matchmaking_service = MatchmakingService()
-            result = matchmaking_service.create_round(standalone_gara.id, 1)
-            assert result.success
+            GaraService.create_amalfi_round(standalone_gara.id, 1)
 
             # Complete some matches for history
             matches = Match.query.filter(
@@ -742,9 +772,13 @@ class TestUseCaseOneComprehensive:
                 loser_score = 2
 
                 for _ in range(winner_score):
-                    RackService.create_rack(match.id, winner, "winner_rack")
+                    RackService.add_rack_with_score_update(
+                        match.id, winner_id=winner, reported_by_id=1, validated_by_admin=True
+                    )
                 for _ in range(loser_score):
-                    RackService.create_rack(match.id, loser, "loser_rack")
+                    RackService.add_rack_with_score_update(
+                        match.id, winner_id=loser, reported_by_id=1, validated_by_admin=True
+                    )
 
                 MatchService.to_completed(match.id)
 

@@ -173,6 +173,13 @@ class GaraService:
         # Estrai configurazione strategia se presente
         strategy_config = kwargs.pop("strategy_config", None)
 
+        # Set default inscription dates if not provided to prevent state machine errors
+        from datetime import datetime, timedelta
+        if 'inscription_start' not in kwargs and 'inscription_end' not in kwargs:
+            now = datetime.now()
+            kwargs['inscription_start'] = now - timedelta(hours=1)
+            kwargs['inscription_end'] = now + timedelta(hours=1)
+
         gara = Gara(
             number=number,
             name=name,

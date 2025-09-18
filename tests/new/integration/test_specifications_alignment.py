@@ -200,12 +200,13 @@ class TestSpecificationsAlignmentFixed:
 
         # Make tournament visible
         from models.competition.services import ProvaStateMachine
+
         ProvaStateMachine.to_inscription(gara)
 
         # Test guest home access (no authentication)
         response = client.get("/")
         assert response.status_code == 200
-        
+
         home_content = response.data.decode("utf-8")
         # Tournament should be visible in public listing
         assert "Guest Access Test Tournament Fixed" in home_content
@@ -213,7 +214,7 @@ class TestSpecificationsAlignmentFixed:
         # Test guest tournament details access
         response = client.get(f"/gara/{gara.id}")
         assert response.status_code == 200
-        
+
         gara_content = response.data.decode("utf-8")
         assert "Guest Access Test Tournament Fixed" in gara_content
 
@@ -228,7 +229,7 @@ class TestSpecificationsAlignmentFixed:
         Test player registration workflow from SPECIFICHE.md
         """
         import uuid
-        
+
         # Test user registration as specified
         unique_id = str(uuid.uuid4())[:8]
         registration_data = {
@@ -244,7 +245,9 @@ class TestSpecificationsAlignmentFixed:
         assert response.status_code in [200, 302]
 
         # Verify user created with correct properties
-        new_user = User.query.filter_by(username=f"test_player_spec_fixed_{unique_id}").first()
+        new_user = User.query.filter_by(
+            username=f"test_player_spec_fixed_{unique_id}"
+        ).first()
         assert new_user is not None
         assert new_user.email == f"test_player_fixed_{unique_id}@spec.com"
         assert new_user.role == UserRole.PLAYER.value
@@ -351,26 +354,32 @@ class TestSpecificationsAlignmentFixed:
         # Complete all 3 rounds and verify no rematches
         for round_num in range(1, 4):
             if round_num > 1:
-                RoundClassification.calculate_classification_after_round(gara.id, round_num - 1)
+                RoundClassification.calculate_classification_after_round(
+                    gara.id, round_num - 1
+                )
                 GaraService.create_amalfi_round(gara.id, round_num)
                 gara.current_round = round_num
                 db_session.add(gara)
                 db_session.commit()
 
-            matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
+            matches = Match.query.filter_by(
+                gara_id=gara.id, round_number=round_num
+            ).all()
             round_pairings = set()
 
             for match in matches:
                 if not match.is_bye:
                     pairing = tuple(sorted([match.player1_id, match.player2_id]))
                     round_pairings.add(pairing)
-                    
+
                     # Complete match
                     self._complete_match_simple(match, 3, 1, db_session)
 
             # Check no rematches
             rematches = all_pairings.intersection(round_pairings)
-            assert len(rematches) == 0, f"Found rematches in round {round_num}: {rematches}"
+            assert (
+                len(rematches) == 0
+            ), f"Found rematches in round {round_num}: {rematches}"
 
             all_pairings.update(round_pairings)
 
@@ -441,8 +450,13 @@ class TestSpecificationsAlignmentFixed:
             return
 
         import random
-        winner_id = match.player1_id if random.choice([True, False]) else match.player2_id
-        loser_id = match.player2_id if winner_id == match.player1_id else match.player1_id
+
+        winner_id = (
+            match.player1_id if random.choice([True, False]) else match.player2_id
+        )
+        loser_id = (
+            match.player2_id if winner_id == match.player1_id else match.player1_id
+        )
 
         # Add racks for winner
         for rack_num in range(1, winner_racks + 1):

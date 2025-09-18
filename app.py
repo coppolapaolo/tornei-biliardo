@@ -109,8 +109,9 @@ def create_app(config_name=None):
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename
-    app.jinja_env.globals['challenge_image_url'] = challenge_image_url
-    app.jinja_env.globals['challenge_image_filename'] = challenge_image_filename
+
+    app.jinja_env.globals["challenge_image_url"] = challenge_image_url
+    app.jinja_env.globals["challenge_image_filename"] = challenge_image_filename
 
     # Registra blueprints
     from routes import register_blueprints

@@ -541,10 +541,8 @@ class TestUseCaseMatchModification:
         # Complete and then reset specific match
         self._complete_match_with_score(target_match, 2, 1, db_session)
 
-        match_reset_result = MatchService.reset_match_to_pending(
+        match_reset_result = MatchService.reset_to_pending(
             match_id=target_match.id,
-            admin_id=admin_user.id,
-            reset_reason="Match needs to be replayed due to dispute resolution",
         )
 
         if match_reset_result and match_reset_result.success:

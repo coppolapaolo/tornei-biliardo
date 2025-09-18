@@ -16,7 +16,9 @@ class TestUserModel:
         """Test user creation."""
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"testuser_{unique_id}", email=f"test_{unique_id}@example.com", role=UserRole.PLAYER.value
+            username=f"testuser_{unique_id}",
+            email=f"test_{unique_id}@example.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("password123")
 
@@ -49,7 +51,9 @@ class TestUserModel:
         # Test admin user
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         assert admin.is_admin is True
@@ -58,7 +62,9 @@ class TestUserModel:
 
         # Test director user
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         assert director.is_admin is False
@@ -67,7 +73,9 @@ class TestUserModel:
 
         # Test player user
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         assert player.is_admin is False
@@ -78,7 +86,9 @@ class TestUserModel:
         """Test soft delete functionality."""
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"deleteme_{unique_id}", email=f"delete_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"deleteme_{unique_id}",
+            email=f"delete_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("dummypass")
         db_session.add(user)
@@ -99,7 +109,9 @@ class TestUserModel:
         """Test username and email uniqueness."""
         unique_id = str(uuid.uuid4())[:8]
         user1 = User(
-            username=f"unique_{unique_id}", email=f"unique_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"unique_{unique_id}",
+            email=f"unique_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user1.set_password("dummypass")
         db_session.add(user1)
@@ -107,7 +119,9 @@ class TestUserModel:
 
         # Same username should fail
         user2 = User(
-            username=f"unique_{unique_id}", email=f"different_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"unique_{unique_id}",
+            email=f"different_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user2.set_password("dummypass")
         db_session.add(user2)
@@ -120,7 +134,9 @@ class TestUserModel:
         # level
         # So this test actually passes (no exception raised)
         user3 = User(
-            username=f"different_{unique_id}", email=f"unique_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"different_{unique_id}",
+            email=f"unique_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user3.set_password("dummypass")
         db_session.add(user3)
@@ -128,9 +144,13 @@ class TestUserModel:
         db_session.commit()
 
         # Verify both users exist
-        assert db_session.query(User).filter_by(username=f"unique_{unique_id}").first() is not None
         assert (
-            db_session.query(User).filter_by(username=f"different_{unique_id}").first() is not None
+            db_session.query(User).filter_by(username=f"unique_{unique_id}").first()
+            is not None
+        )
+        assert (
+            db_session.query(User).filter_by(username=f"different_{unique_id}").first()
+            is not None
         )
 
 
@@ -143,7 +163,9 @@ class TestUserService:
         # Create user directly with model
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"newuser_{unique_id}", email=f"newuser_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"newuser_{unique_id}",
+            email=f"newuser_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("password123")  # This sets the password_hash
         db_session.add(user)
@@ -211,10 +233,14 @@ class TestUserService:
 
         # Verify both users exist
         assert (
-            db_session.query(User).filter_by(username=f"first_user_{unique_id}").first() is not None
+            db_session.query(User).filter_by(username=f"first_user_{unique_id}").first()
+            is not None
         )
         assert (
-            db_session.query(User).filter_by(username=f"second_user_{unique_id}").first() is not None
+            db_session.query(User)
+            .filter_by(username=f"second_user_{unique_id}")
+            .first()
+            is not None
         )
 
     def test_register_user_invalid_input(self, db_session):
@@ -222,7 +248,9 @@ class TestUserService:
         # Empty username - SQLite allows empty strings in NOT NULL
         # columns
         unique_id = str(uuid.uuid4())[:8]
-        user1 = User(username="", email=f"test1_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user1 = User(
+            username="", email=f"test1_{unique_id}@test.com", role=UserRole.PLAYER.value
+        )
         user1.set_password("pass123")
         db_session.add(user1)
         # This actually succeeds in SQLite
@@ -233,19 +261,25 @@ class TestUserService:
         assert found_user is not None
 
         # Empty email - allowed since email is nullable
-        user2 = User(username=f"test_user_{unique_id}", email="", role=UserRole.PLAYER.value)
+        user2 = User(
+            username=f"test_user_{unique_id}", email="", role=UserRole.PLAYER.value
+        )
         user2.set_password("pass123")
         db_session.add(user2)
         # This succeeds
         db_session.flush()
 
         # Verify user was created with empty email
-        found_user = db_session.query(User).filter_by(username=f"test_user_{unique_id}").first()
+        found_user = (
+            db_session.query(User).filter_by(username=f"test_user_{unique_id}").first()
+        )
         assert found_user is not None
 
         # Password validation is handled by set_password method
         user3 = User(
-            username=f"test_user_3_{unique_id}", email=f"test3_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"test_user_3_{unique_id}",
+            email=f"test3_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         try:
             user3.set_password("")  # Empty password
@@ -260,7 +294,9 @@ class TestUserService:
         # Create a user first
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"authtest_{unique_id}", email=f"auth_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"authtest_{unique_id}",
+            email=f"auth_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("password123")
         db_session.add(user)
@@ -268,7 +304,9 @@ class TestUserService:
 
         # Test authentication directly via User model methods
         # Find by username
-        found_user = db_session.query(User).filter_by(username=f"authtest_{unique_id}").first()
+        found_user = (
+            db_session.query(User).filter_by(username=f"authtest_{unique_id}").first()
+        )
         assert found_user is not None
         assert found_user.check_password("password123") is True
 
@@ -281,21 +319,29 @@ class TestUserService:
         # Create a user
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"authtest2_{unique_id}", email=f"auth2_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"authtest2_{unique_id}",
+            email=f"auth2_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("password123")
         db_session.add(user)
         db_session.flush()
 
         # Test wrong password
-        found_user = db_session.query(User).filter_by(username=f"authtest2_{unique_id}").first()
+        found_user = (
+            db_session.query(User).filter_by(username=f"authtest2_{unique_id}").first()
+        )
         assert found_user is not None
         assert found_user.check_password("wrongpassword") is False
 
     def test_authenticate_user_nonexistent(self, db_session):
         """Test authentication with non-existent user."""
         unique_id = str(uuid.uuid4())[:8]
-        found_user = db_session.query(User).filter_by(username=f"nonexistent_{unique_id}").first()
+        found_user = (
+            db_session.query(User)
+            .filter_by(username=f"nonexistent_{unique_id}")
+            .first()
+        )
         assert found_user is None
 
     def test_authenticate_deleted_user(self, db_session):
@@ -303,7 +349,9 @@ class TestUserService:
         # Create and then delete user
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"deleteduser_{unique_id}", email=f"deleted_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"deleteduser_{unique_id}",
+            email=f"deleted_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("pass123")
         db_session.add(user)
@@ -330,7 +378,9 @@ class TestUserService:
         # Create user directly
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"promoteme_{unique_id}", email=f"promote_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"promoteme_{unique_id}",
+            email=f"promote_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("pass123")
         db_session.add(user)
@@ -358,18 +408,24 @@ class TestUserService:
         # Create user directly
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"findme_{unique_id}", email=f"findme_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"findme_{unique_id}",
+            email=f"findme_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("pass123")
         db_session.add(user)
         db_session.flush()
 
-        found_user = db_session.query(User).filter_by(username=f"findme_{unique_id}").first()
+        found_user = (
+            db_session.query(User).filter_by(username=f"findme_{unique_id}").first()
+        )
         assert found_user is not None
         assert found_user.username == f"findme_{unique_id}"
 
         # Non-existent user
-        not_found = db_session.query(User).filter_by(username=f"notfound_{unique_id}").first()
+        not_found = (
+            db_session.query(User).filter_by(username=f"notfound_{unique_id}").first()
+        )
         assert not_found is None
 
     def test_get_user_by_email(self, db_session):
@@ -377,13 +433,17 @@ class TestUserService:
         # Create user directly
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"findme2_{unique_id}", email=f"findme2_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"findme2_{unique_id}",
+            email=f"findme2_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("pass123")
         db_session.add(user)
         db_session.flush()
 
-        found_user = db_session.query(User).filter_by(username=f"findme2_{unique_id}").first()
+        found_user = (
+            db_session.query(User).filter_by(username=f"findme2_{unique_id}").first()
+        )
         assert found_user is not None
         assert found_user.email == f"findme2_{unique_id}@test.com"
 
@@ -392,7 +452,11 @@ class TestUserService:
 
         # Non-existent email
         unique_id2 = str(uuid.uuid4())[:8]
-        not_found = db_session.query(User).filter_by(email=f"notfound_{unique_id2}@test.com").first()
+        not_found = (
+            db_session.query(User)
+            .filter_by(email=f"notfound_{unique_id2}@test.com")
+            .first()
+        )
         assert not_found is None
 
     def test_change_password(self, db_session):
@@ -400,7 +464,9 @@ class TestUserService:
         # Create user directly
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"changepass_{unique_id}", email=f"change_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"changepass_{unique_id}",
+            email=f"change_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("oldpass")
         db_session.add(user)
@@ -424,7 +490,9 @@ class TestUserService:
         # Create user directly
         unique_id = str(uuid.uuid4())[:8]
         user = User(
-            username=f"changepass2_{unique_id}", email=f"change2_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"changepass2_{unique_id}",
+            email=f"change2_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         user.set_password("oldpass")
         db_session.add(user)

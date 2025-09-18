@@ -120,8 +120,12 @@ class TestGuestCardToDetailsWorkflow:
                 break
 
         # Assert gara is found and can_view_details is True
-        assert gara_item is not None, "Gara with open inscriptions should be visible to guest"
-        assert gara_item.can_view_details is True, "Guest should be able to view details when inscriptions are open"
+        assert (
+            gara_item is not None
+        ), "Gara with open inscriptions should be visible to guest"
+        assert (
+            gara_item.can_view_details is True
+        ), "Guest should be able to view details when inscriptions are open"
 
         # Verify this is the random strategy gara we expect
         assert gara_item.entity.name == "Random Strategy Gara with Challenges"
@@ -137,7 +141,10 @@ class TestGuestCardToDetailsWorkflow:
         # Find the gara in unified items
         gara_item = None
         for item in vm.unified_items:
-            if item.type == "gara" and item.entity.id == gara_with_closed_inscriptions.id:
+            if (
+                item.type == "gara"
+                and item.entity.id == gara_with_closed_inscriptions.id
+            ):
                 gara_item = item
                 break
 
@@ -151,7 +158,11 @@ class TestGuestCardToDetailsWorkflow:
         # If gara_item is None, that's also acceptable (gara not shown to guests)
 
     def test_player_sees_details_button_for_all_garas(
-        self, db_session, player_user, gara_with_random_strategy_and_challenges, gara_with_closed_inscriptions
+        self,
+        db_session,
+        player_user,
+        gara_with_random_strategy_and_challenges,
+        gara_with_closed_inscriptions,
     ):
         """Test that player can see 'Details' button for all garas regardless of inscription status."""
         # Get player dashboard data
@@ -169,11 +180,19 @@ class TestGuestCardToDetailsWorkflow:
                     closed_gara_item = item
 
         # Player should see both garas and be able to view details
-        assert open_gara_item is not None, "Player should see gara with open inscriptions"
-        assert open_gara_item.can_view_details is True, "Player should see details for open inscriptions"
+        assert (
+            open_gara_item is not None
+        ), "Player should see gara with open inscriptions"
+        assert (
+            open_gara_item.can_view_details is True
+        ), "Player should see details for open inscriptions"
 
-        assert closed_gara_item is not None, "Player should see gara with closed inscriptions"
-        assert closed_gara_item.can_view_details is True, "Player should see details for closed inscriptions"
+        assert (
+            closed_gara_item is not None
+        ), "Player should see gara with closed inscriptions"
+        assert (
+            closed_gara_item.can_view_details is True
+        ), "Player should see details for closed inscriptions"
 
     def test_template_logic_for_guest_button_display(
         self, db_session, gara_with_random_strategy_and_challenges
@@ -188,12 +207,14 @@ class TestGuestCardToDetailsWorkflow:
             if item.type == "gara":
                 # This simulates the template logic: {% if item.can_view_details %}
                 if item.can_view_details:
-                    details_buttons.append({
-                        "gara_id": item.entity.id,
-                        "gara_name": item.entity.name,
-                        "can_show_button": True,
-                        "url_pattern": f"/gara/{item.entity.id}",  # Public route
-                    })
+                    details_buttons.append(
+                        {
+                            "gara_id": item.entity.id,
+                            "gara_name": item.entity.name,
+                            "can_show_button": True,
+                            "url_pattern": f"/gara/{item.entity.id}",  # Public route
+                        }
+                    )
 
         # Find our test gara
         test_button = None
@@ -203,10 +224,15 @@ class TestGuestCardToDetailsWorkflow:
                 break
 
         # Assert that guest sees the Details button for gara with open inscriptions
-        assert test_button is not None, "Guest should see Details button for gara with open inscriptions"
+        assert (
+            test_button is not None
+        ), "Guest should see Details button for gara with open inscriptions"
         assert test_button["can_show_button"] is True
         assert test_button["gara_name"] == "Random Strategy Gara with Challenges"
-        assert test_button["url_pattern"] == f"/gara/{gara_with_random_strategy_and_challenges.id}"
+        assert (
+            test_button["url_pattern"]
+            == f"/gara/{gara_with_random_strategy_and_challenges.id}"
+        )
 
     def test_url_generation_for_guest_vs_player(
         self, db_session, player_user, gara_with_random_strategy_and_challenges
@@ -252,22 +278,34 @@ class TestGuestCardToDetailsWorkflow:
         # But for unified cards, they might both go to public route for simplicity
 
         guest_url = f"/gara/{guest_item.entity.id}"  # Public route
-        player_url = f"/player/gara/{player_item.entity.id}"  # Player route (if different)
+        player_url = (
+            f"/player/gara/{player_item.entity.id}"  # Player route (if different)
+        )
 
         assert guest_url == f"/gara/{gara_with_random_strategy_and_challenges.id}"
-        assert player_url == f"/player/gara/{gara_with_random_strategy_and_challenges.id}"
+        assert (
+            player_url == f"/player/gara/{gara_with_random_strategy_and_challenges.id}"
+        )
 
-    def test_dashboard_vm_structure_for_guests(self, db_session, gara_with_random_strategy_and_challenges):
+    def test_dashboard_vm_structure_for_guests(
+        self, db_session, gara_with_random_strategy_and_challenges
+    ):
         """Test that DashboardVM for guests has the correct structure and capabilities."""
         vm = DashboardService.for_guest()
 
         # Check basic structure
         assert vm.title == "Vista Pubblica"
         assert vm.can_inscribe is False, "Guests cannot inscribe"
-        assert vm.caps.can_create_campionato is False, "Guests cannot create campionatos"
-        assert vm.caps.can_create_standalone is False, "Guests cannot create standalone garas"
+        assert (
+            vm.caps.can_create_campionato is False
+        ), "Guests cannot create campionatos"
+        assert (
+            vm.caps.can_create_standalone is False
+        ), "Guests cannot create standalone garas"
         assert vm.caps.can_register_self is False, "Guests cannot register"
-        assert vm.caps.can_create_match_proposal is False, "Guests cannot create match proposals"
+        assert (
+            vm.caps.can_create_match_proposal is False
+        ), "Guests cannot create match proposals"
 
         # Check guest-specific data is None/empty
         assert vm.my_inscriptions == [], "Guests have no inscriptions"

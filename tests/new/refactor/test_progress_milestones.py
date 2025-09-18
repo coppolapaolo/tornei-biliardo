@@ -17,12 +17,14 @@ scripts_path = Path(__file__).parent.parent.parent.parent / "scripts"
 sys.path.insert(0, str(scripts_path))
 
 try:
-    from refactor_progress import RefactorProgressDetector
+    from refactor_progress import RefactorProgressDetector  # type: ignore[import-untyped]
 except ImportError:
     RefactorProgressDetector = None
 
 
-@pytest.mark.skipif(RefactorProgressDetector is None, reason="RefactorProgressDetector not available")
+@pytest.mark.skipif(
+    RefactorProgressDetector is None, reason="RefactorProgressDetector not available"
+)
 class TestRefactorMilestones:
     """Test che fungono da milestone per il refactoring."""
 
@@ -34,7 +36,7 @@ class TestRefactorMilestones:
         detector = RefactorProgressDetector()
         data = detector.detect_transaction_migration()
 
-        if data['total_commits'] <= 10:
+        if data["total_commits"] <= 10:
             pytest.fail(
                 f"🎉 MILESTONE RAGGIUNTO! "
                 f"Transaction migration completa: {data['total_commits']} commits rimanenti "
@@ -43,8 +45,10 @@ class TestRefactorMilestones:
             )
         else:
             # This is expected during refactoring - test should pass
-            print(f"Transaction migration progress: {data['progress_percent']:.1f}% "
-                  f"({data['total_commits']}/{data['baseline']} remaining)")
+            print(
+                f"Transaction migration progress: {data['progress_percent']:.1f}% "
+                f"({data['total_commits']}/{data['baseline']} remaining)"
+            )
 
     def test_gara_service_decomposition_milestone(self):
         """MILESTONE: Fallisce quando GaraService è sotto 500 righe.
@@ -52,9 +56,9 @@ class TestRefactorMilestones:
         Target: Ridurre GaraService da 1766 righe a <500.
         """
         detector = RefactorProgressDetector()
-        data = detector.detect_service_size('models/competition/services.py', 1695)
+        data = detector.detect_service_size("models/competition/services.py", 1695)
 
-        if data and data['current_lines'] < 500:
+        if data and data["current_lines"] < 500:
             pytest.fail(
                 f"🎉 MILESTONE RAGGIUNTO! "
                 f"GaraService decomposition completa: {data['current_lines']} righe "
@@ -62,8 +66,10 @@ class TestRefactorMilestones:
                 f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
             )
         elif data:
-            print(f"GaraService decomposition progress: {data['reduction_percent']:.1f}% "
-                  f"({data['current_lines']}/{data['target_lines']} lines)")
+            print(
+                f"GaraService decomposition progress: {data['reduction_percent']:.1f}% "
+                f"({data['current_lines']}/{data['target_lines']} lines)"
+            )
 
     def test_user_service_decomposition_milestone(self):
         """MILESTONE: Fallisce quando UserService è sotto 500 righe.
@@ -71,9 +77,9 @@ class TestRefactorMilestones:
         Target: Ridurre UserService da 1449 righe a <500.
         """
         detector = RefactorProgressDetector()
-        data = detector.detect_service_size('models/user/services.py', 1449)
+        data = detector.detect_service_size("models/user/services.py", 1449)
 
-        if data and data['current_lines'] < 500:
+        if data and data["current_lines"] < 500:
             pytest.fail(
                 f"🎉 MILESTONE RAGGIUNTO! "
                 f"UserService decomposition completa: {data['current_lines']} righe "
@@ -81,8 +87,10 @@ class TestRefactorMilestones:
                 f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
             )
         elif data:
-            print(f"UserService decomposition progress: {data['reduction_percent']:.1f}% "
-                  f"({data['current_lines']}/{data['target_lines']} lines)")
+            print(
+                f"UserService decomposition progress: {data['reduction_percent']:.1f}% "
+                f"({data['current_lines']}/{data['target_lines']} lines)"
+            )
 
     def test_amalfi_migration_milestone(self):
         """MILESTONE: Fallisce quando migration amalfi è completa.
@@ -92,7 +100,7 @@ class TestRefactorMilestones:
         detector = RefactorProgressDetector()
         data = detector.detect_amalfi_imports()
 
-        if data['files_with_direct_imports'] == 0:
+        if data["files_with_direct_imports"] == 0:
             pytest.fail(
                 f"🎉 MILESTONE RAGGIUNTO! "
                 f"Amalfi directory migration completa: 0 import diretti rimanenti "
@@ -100,8 +108,10 @@ class TestRefactorMilestones:
                 f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
             )
         else:
-            print(f"Amalfi migration progress: {data['progress_percent']:.1f}% "
-                  f"({data['files_with_direct_imports']}/{data['baseline']} files remaining)")
+            print(
+                f"Amalfi migration progress: {data['progress_percent']:.1f}% "
+                f"({data['files_with_direct_imports']}/{data['baseline']} files remaining)"
+            )
 
     def test_notification_factory_milestone(self):
         """MILESTONE: Fallisce quando consolidamento notifiche è completo.
@@ -111,7 +121,7 @@ class TestRefactorMilestones:
         detector = RefactorProgressDetector()
         data = detector.detect_duplicate_notifications()
 
-        if data['total_calls'] < 5:
+        if data["total_calls"] < 5:
             pytest.fail(
                 f"🎉 MILESTONE RAGGIUNTO! "
                 f"Notification factory completo: {data['total_calls']} pattern duplicati rimanenti "
@@ -119,8 +129,10 @@ class TestRefactorMilestones:
                 f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
             )
         else:
-            print(f"Notification factory progress: {data['progress_percent']:.1f}% "
-                  f"({data['total_calls']}/{data['baseline']} duplicates remaining)")
+            print(
+                f"Notification factory progress: {data['progress_percent']:.1f}% "
+                f"({data['total_calls']}/{data['baseline']} duplicates remaining)"
+            )
 
     def test_phase_1_completion_milestone(self):
         """MILESTONE: Fallisce quando Phase 1 (Stabilizzazione Core) è completa.
@@ -133,12 +145,12 @@ class TestRefactorMilestones:
         detector = RefactorProgressDetector()
 
         tx_data = detector.detect_transaction_migration()
-        gara_data = detector.detect_service_size('models/competition/services.py', 1695)
-        user_data = detector.detect_service_size('models/user/services.py', 1449)
+        gara_data = detector.detect_service_size("models/competition/services.py", 1695)
+        user_data = detector.detect_service_size("models/user/services.py", 1449)
 
-        tx_complete = tx_data['total_commits'] <= 10
-        gara_complete = gara_data and gara_data['current_lines'] < 500
-        user_complete = user_data and user_data['current_lines'] < 500
+        tx_complete = tx_data["total_commits"] <= 10
+        gara_complete = gara_data and gara_data["current_lines"] < 500
+        user_complete = user_data and user_data["current_lines"] < 500
 
         if tx_complete and gara_complete and user_complete:
             pytest.fail(
@@ -162,9 +174,9 @@ class TestRefactorMilestones:
         test_counts = detector.count_refactor_tests()
 
         adequate_coverage = (
-            test_counts['characterization'] >= 5 and
-            test_counts['tdd'] >= 3 and
-            test_counts['integration'] >= 2
+            test_counts["characterization"] >= 5
+            and test_counts["tdd"] >= 3
+            and test_counts["integration"] >= 2
         )
 
         if adequate_coverage:
@@ -177,7 +189,7 @@ class TestRefactorMilestones:
                 f"Consider adding more specific tests as needed."
             )
         else:
-            total_tests = sum(test_counts.values()) - test_counts['milestones']
+            total_tests = sum(test_counts.values()) - test_counts["milestones"]
             print(f"Test coverage progress: {total_tests} total refactor tests")
 
 
@@ -193,17 +205,21 @@ class TestRefactorProgressBaseline:
 
         # Transaction migration baseline should be substantial
         tx_data = detector.detect_transaction_migration()
-        assert tx_data['total_commits'] >= 50, "Transaction baseline seems too low"
-        assert tx_data['total_commits'] <= 500, "Transaction baseline seems too high"
+        assert tx_data["total_commits"] >= 50, "Transaction baseline seems too low"
+        assert tx_data["total_commits"] <= 500, "Transaction baseline seems too high"
 
         # Service sizes should be substantial
-        gara_data = detector.detect_service_size('models/competition/services.py', 1695)
+        gara_data = detector.detect_service_size("models/competition/services.py", 1695)
         if gara_data:
-            assert gara_data['current_lines'] >= 1000, "GaraService baseline seems too low"
+            assert (
+                gara_data["current_lines"] >= 1000
+            ), "GaraService baseline seems too low"
 
-        user_data = detector.detect_service_size('models/user/services.py', 1449)
+        user_data = detector.detect_service_size("models/user/services.py", 1449)
         if user_data:
-            assert user_data['current_lines'] >= 800, "UserService baseline seems too low"
+            assert (
+                user_data["current_lines"] >= 800
+            ), "UserService baseline seems too low"
 
     def test_progress_detection_is_working(self):
         """Verifica che il sistema di detection progress sia funzionante."""
@@ -214,14 +230,14 @@ class TestRefactorProgressBaseline:
 
         # Should be able to detect various metrics
         tx_data = detector.detect_transaction_migration()
-        assert 'total_commits' in tx_data
-        assert 'progress_percent' in tx_data
-        assert isinstance(tx_data['progress_percent'], (int, float))
+        assert "total_commits" in tx_data
+        assert "progress_percent" in tx_data
+        assert isinstance(tx_data["progress_percent"], (int, float))
 
         amalfi_data = detector.detect_amalfi_imports()
-        assert 'files_with_direct_imports' in amalfi_data
-        assert isinstance(amalfi_data['files_with_direct_imports'], int)
+        assert "files_with_direct_imports" in amalfi_data
+        assert isinstance(amalfi_data["files_with_direct_imports"], int)
 
         test_counts = detector.count_refactor_tests()
         assert isinstance(test_counts, dict)
-        assert 'characterization' in test_counts
+        assert "characterization" in test_counts

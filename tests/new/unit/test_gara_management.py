@@ -127,7 +127,7 @@ class TestGaraModel:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -161,7 +161,7 @@ class TestGaraModel:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -187,7 +187,9 @@ class TestGaraModel:
         # Add inscription
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -209,7 +211,7 @@ class TestGaraModel:
         director = User(
             username=f"director_{unique_id}",
             email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -235,7 +237,9 @@ class TestGaraModel:
         # Add inscription
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -286,7 +290,9 @@ class TestGaraService:
         """Test creating standalone gara."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -324,7 +330,9 @@ class TestGaraService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -366,7 +374,9 @@ class TestGaraService:
         """Test updating gara."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -428,12 +438,16 @@ class TestGaraService:
         """Test updating gara that has inscriptions (should fail)."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([director, player])
@@ -477,7 +491,9 @@ class TestGaraService:
         """Test deleting gara."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -515,12 +531,16 @@ class TestGaraService:
         """Test deleting gara that has inscriptions (should fail)."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add_all([director, player])
@@ -559,7 +579,9 @@ class TestGaraService:
         """Test getting gara by ID."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -608,7 +630,9 @@ class TestGaraService:
         )
         main_director.set_password("testpass123")
         co_director = User(
-            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}",
+            email=f"co_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         co_director.set_password("testpass123")
         db_session.add_all([main_director, co_director])
@@ -661,7 +685,9 @@ class TestGaraService:
         """Test gara inscription management."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         players = []
@@ -723,7 +749,9 @@ class TestGaraService:
         """Test gara status management through service."""
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)

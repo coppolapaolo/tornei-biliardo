@@ -266,6 +266,7 @@ class TestChallengeService:
 
             # Create a challenge attempt to force soft delete behavior
             from models.challenge.models import ChallengeAttempt
+
             unique_id = str(uuid.uuid4())[:8]
             test_user = User(
                 username=f"testuser_attempt_{unique_id}",
@@ -280,7 +281,7 @@ class TestChallengeService:
                 challenge_id=test_challenge.id,
                 user_id=test_user.id,
                 score=50,
-                notes="Test attempt to force soft delete"
+                notes="Test attempt to force soft delete",
             )
             db.session.add(attempt)
             db.session.commit()

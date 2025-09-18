@@ -102,7 +102,9 @@ class TestCampionatoModel:
         # Add a gara with inscriptions
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -130,7 +132,9 @@ class TestCampionatoModel:
         # Add inscription
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -180,7 +184,9 @@ class TestCampionatoModel:
         # Add inscription
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -205,7 +211,9 @@ class TestTournamentService:
         # Create director
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -260,7 +268,9 @@ class TestTournamentService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -324,7 +334,9 @@ class TestTournamentService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -361,7 +373,9 @@ class TestTournamentService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -393,7 +407,9 @@ class TestTournamentService:
 
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -418,7 +434,9 @@ class TestTournamentService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -455,7 +473,9 @@ class TestTournamentService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -487,7 +507,9 @@ class TestTournamentService:
 
         unique_id = str(uuid.uuid4())[:8]
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("testpass123")
         db_session.add(player)
@@ -508,7 +530,9 @@ class TestTournamentService:
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         db_session.add(director)
@@ -543,11 +567,15 @@ class TestTournamentService:
         )
         main_director.set_password("testpass123")
         co_director = User(
-            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}",
+            email=f"co_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         co_director.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([main_director, co_director, admin])
@@ -585,11 +613,15 @@ class TestTournamentService:
         # Create director
         unique_id = str(uuid.uuid4())[:8]
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([director, admin])
@@ -620,11 +652,15 @@ class TestTournamentService:
         )
         main_director.set_password("testpass123")
         co_director = User(
-            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}",
+            email=f"co_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         co_director.set_password("testpass123")
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("testpass123")
         db_session.add_all([main_director, co_director, admin])

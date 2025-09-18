@@ -45,7 +45,9 @@ class Match(db.Model):
     current_set_number = db.Column(db.Integer, default=1)  # Current set being played
 
     # Disciplina override (se diversa da quella della gara)
-    discipline = db.Column(db.String(50), nullable=True)  # Override della disciplina della gara
+    discipline = db.Column(
+        db.String(50), nullable=True
+    )  # Override della disciplina della gara
 
     # Stato
     status = db.Column(

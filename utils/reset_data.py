@@ -96,13 +96,22 @@ def _reset_database_core() -> Dict[str, object]:
     # Assegnazioni direttori (includere assigned_by_id per vincolo NOT NULL)
     links = [
         TournamentDirector(
-            user_id=maxdir.id, entity_type="campionato", entity_id=garetta.id, assigned_by_id=admin.id
+            user_id=maxdir.id,
+            entity_type="campionato",
+            entity_id=garetta.id,
+            assigned_by_id=admin.id,
         ),
         TournamentDirector(
-            user_id=paolodir.id, entity_type="campionato", entity_id=garetta.id, assigned_by_id=admin.id
+            user_id=paolodir.id,
+            entity_type="campionato",
+            entity_id=garetta.id,
+            assigned_by_id=admin.id,
         ),
         TournamentDirector(
-            user_id=paolodir.id, entity_type="campionato", entity_id=mercoledi.id, assigned_by_id=admin.id
+            user_id=paolodir.id,
+            entity_type="campionato",
+            entity_id=mercoledi.id,
+            assigned_by_id=admin.id,
         ),
     ]
     db.session.add_all(links)

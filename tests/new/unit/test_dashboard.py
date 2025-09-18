@@ -21,7 +21,9 @@ class TestDashboardService:
         unique_id = str(uuid.uuid4())[:8]
         # Create admin user
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         db_session.add(admin)
@@ -29,7 +31,9 @@ class TestDashboardService:
 
         # Create test data
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -77,6 +81,7 @@ class TestDashboardService:
 
         # Verify unified items include both campionato and gara
         unified_items = dashboard_data.unified_items
+        assert unified_items is not None
         assert len(unified_items) == 2
 
         # Check items are properly typed
@@ -95,7 +100,9 @@ class TestDashboardService:
         unique_id = str(uuid.uuid4())[:8]
         # Create director user
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -111,7 +118,9 @@ class TestDashboardService:
 
         # Create campionato NOT managed by director
         other_director = User(
-            username=f"other_{unique_id}", email=f"other_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"other_{unique_id}",
+            email=f"other_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         other_director.set_password("other123")
         db_session.add(other_director)
@@ -171,6 +180,7 @@ class TestDashboardService:
 
         # Verify unified items include managed items and viewable others
         unified_items = dashboard_data.unified_items
+        assert unified_items is not None
         assert len(unified_items) == 4  # All items visible for view
 
         # Check managed items have manage permissions
@@ -220,7 +230,9 @@ class TestDashboardService:
         unique_id = str(uuid.uuid4())[:8]
         # Create player user
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("player123")
         db_session.add(player)
@@ -228,7 +240,9 @@ class TestDashboardService:
 
         # Create director and competitions
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -270,6 +284,7 @@ class TestDashboardService:
 
         # Verify unified items are view-only
         unified_items = dashboard_data.unified_items
+        assert unified_items is not None
         assert len(unified_items) == 2
 
         for item in unified_items:
@@ -281,7 +296,9 @@ class TestDashboardService:
         unique_id = str(uuid.uuid4())[:8]
         # Create director
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -353,6 +370,7 @@ class TestDashboardService:
         unified_items = dashboard_data.unified_items
 
         # Should be sorted by next prova date
+        assert unified_items is not None
         assert len(unified_items) == 3
         assert unified_items[0].name == "Early Competition"  # 3 days
         assert unified_items[1].name == "Tournament"  # 5 days (campionato)
@@ -363,7 +381,9 @@ class TestDashboardService:
         unique_id = str(uuid.uuid4())[:8]
         # Create director and competitions
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         db_session.add(director)
@@ -396,15 +416,17 @@ class TestDashboardService:
 
         # Get dashboard data to test item creation
         dashboard_data = DashboardService.for_director(director.id)
-        
+
         # Find the campionato item in the dashboard
         campionato_item = None
         for item in dashboard_data.unified_items:
             if item.type == "campionato" and item.id == campionato.id:
                 campionato_item = item
                 break
-        
-        assert campionato_item is not None, "Campionato item should be found in dashboard"
+
+        assert (
+            campionato_item is not None
+        ), "Campionato item should be found in dashboard"
 
         assert campionato_item.type == "campionato"
         assert campionato_item.id == campionato.id
@@ -431,7 +453,9 @@ class TestDashboardService:
         )
         main_director.set_password("main123")
         co_director = User(
-            username=f"co_director_{unique_id}", email=f"co_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"co_director_{unique_id}",
+            email=f"co_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         co_director.set_password("co123")
         db_session.add_all([main_director, co_director])
@@ -496,15 +520,21 @@ class TestDashboardService:
         unique_id = str(uuid.uuid4())[:8]
         # Create users
         admin = User(
-            username=f"admin_{unique_id}", email=f"admin_{unique_id}@test.com", role=UserRole.ADMIN.value
+            username=f"admin_{unique_id}",
+            email=f"admin_{unique_id}@test.com",
+            role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
         director = User(
-            username=f"director_{unique_id}", email=f"director_{unique_id}@test.com", role=UserRole.DIRECTOR.value
+            username=f"director_{unique_id}",
+            email=f"director_{unique_id}@test.com",
+            role=UserRole.DIRECTOR.value,
         )
         director.set_password("director123")
         player = User(
-            username=f"player_{unique_id}", email=f"player_{unique_id}@test.com", role=UserRole.PLAYER.value
+            username=f"player_{unique_id}",
+            email=f"player_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
         )
         player.set_password("player123")
         db_session.add_all([admin, director, player])
@@ -516,8 +546,11 @@ class TestDashboardService:
         player_data = DashboardService.for_player(player.id)
 
         # All should have empty unified_items but proper capabilities
+        assert admin_data.unified_items is not None
         assert len(admin_data.unified_items) == 0
+        assert director_data.unified_items is not None
         assert len(director_data.unified_items) == 0
+        assert player_data.unified_items is not None
         assert len(player_data.unified_items) == 0
 
         assert admin_data.caps.can_create_campionato is True

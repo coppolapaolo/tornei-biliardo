@@ -14,8 +14,13 @@ import uuid
 from models import User
 from models.user.role_enum import UserRole
 from models.individual_match.models import (
-    PlayerAvailability, MatchProposal, ProposalType, ProposalStatus, 
-    IndividualMatch, ProposalInvitation, InvitationStatus
+    PlayerAvailability,
+    MatchProposal,
+    ProposalType,
+    ProposalStatus,
+    IndividualMatch,
+    ProposalInvitation,
+    InvitationStatus,
 )
 from models.location.models import BilliardHall, UserLocationAvailability, DayOfWeek
 from models.notification.models import Notification
@@ -119,12 +124,11 @@ class TestUseCasePlayerAvailability:
         # Step 2: Player2 sees availability at venue and creates match proposal
         # First check who's available at the venue
         available_players = AvailabilityService.get_available_players_at_venue(
-            billiard_hall_id=downtown_hall.id,
-            exclude_user_id=player2.id
+            billiard_hall_id=downtown_hall.id, exclude_user_id=player2.id
         )
 
         assert len(available_players) >= 1
-        assert any(player['user_id'] == player1.id for player in available_players)
+        assert any(player["user_id"] == player1.id for player in available_players)
 
         # Player2 creates a match proposal for next Monday
         # Calculate next Monday (or if today is Monday, get Monday next week)
@@ -137,7 +141,9 @@ class TestUseCasePlayerAvailability:
             proposal_type=ProposalType.DIRECT,
             location=downtown_hall.name,
             scheduled_at=datetime.combine(next_monday, time(20, 0)),
-            expires_at=datetime.combine(next_monday, time(23, 59)),  # Expires end of day
+            expires_at=datetime.combine(
+                next_monday, time(23, 59)
+            ),  # Expires end of day
             discipline="palla_9",
             distance=7,
             best_of=True,
@@ -159,15 +165,15 @@ class TestUseCasePlayerAvailability:
         notifications_sent = AvailabilityService.notify_players_of_availability(
             user_id=player2.id,
             location=downtown_hall.name,
-            message=f"Match request for {next_monday} at 20:00"
+            message=f"Match request for {next_monday} at 20:00",
         )
 
         # Refresh the proposal to ensure it sees the new invitation
         db_session.refresh(proposal)
-        
+
         # For now, bypass the can_be_accepted_by check and directly accept
         # (This is a known issue with the session handling in the method)
-        
+
         # Player1 accepts the invitation directly by calling proposal.accept()
         # We'll simulate the acceptance manually
         proposal.status = ProposalStatus.ACCEPTED
@@ -188,11 +194,11 @@ class TestUseCasePlayerAvailability:
             entry_fee=proposal.entry_fee,
         )
         db_session.add(individual_match)
-        
+
         # Update invitation status
         invitation.status = InvitationStatus.ACCEPTED
         invitation.responded_at = datetime.utcnow()
-        
+
         db_session.commit()
 
         assert individual_match is not None
@@ -263,34 +269,31 @@ class TestUseCasePlayerAvailability:
 
         # Find available players at Downtown
         downtown_players = AvailabilityService.get_available_players_at_venue(
-            billiard_hall_id=downtown_hall.id,
-            exclude_user_id=player4.id
+            billiard_hall_id=downtown_hall.id, exclude_user_id=player4.id
         )
         assert len(downtown_players) >= 1
-        assert any(p['user_id'] == player1.id for p in downtown_players)
+        assert any(p["user_id"] == player1.id for p in downtown_players)
 
         # Find available players at Northside
         northside_players = AvailabilityService.get_available_players_at_venue(
-            billiard_hall_id=northside_hall.id,
-            exclude_user_id=player4.id
+            billiard_hall_id=northside_hall.id, exclude_user_id=player4.id
         )
         assert len(northside_players) >= 1
-        assert any(p['user_id'] == player2.id for p in northside_players)
+        assert any(p["user_id"] == player2.id for p in northside_players)
 
         # Find available players at Eastside
         eastside_players = AvailabilityService.get_available_players_at_venue(
-            billiard_hall_id=eastside_hall.id,
-            exclude_user_id=player4.id
+            billiard_hall_id=eastside_hall.id, exclude_user_id=player4.id
         )
         assert len(eastside_players) >= 1
-        assert any(p['user_id'] == player3.id for p in eastside_players)
+        assert any(p["user_id"] == player3.id for p in eastside_players)
 
         # Step 3: Test notification system
         # Simulate Player4 posting availability and notifying others
         notifications_sent = AvailabilityService.notify_players_of_availability(
             user_id=player4.id,
             location=downtown_hall.name,
-            message="Looking for a game at Downtown this week!"
+            message="Looking for a game at Downtown this week!",
         )
 
         # Should send notifications (though may be 0 if no previous matches played)
@@ -340,10 +343,10 @@ class TestUseCasePlayerAvailability:
         # Step 2: Get user's comprehensive availability preferences
         preferences = AvailabilityService.get_user_availability_preferences(player1.id)
 
-        assert 'venues' in preferences
-        assert len(preferences['venues']) == 2
+        assert "venues" in preferences
+        assert len(preferences["venues"]) == 2
 
-        venue_ids = [v['venue_id'] for v in preferences['venues']]
+        venue_ids = [v["venue_id"] for v in preferences["venues"]]
         assert downtown_hall.id in venue_ids
         assert northside_hall.id in venue_ids
 
@@ -352,7 +355,7 @@ class TestUseCasePlayerAvailability:
             requesting_user_id=player2.id,
             target_user_id=player1.id,
             location=downtown_hall.name,
-            message="Saw you're available at Downtown. Want to play?"
+            message="Saw you're available at Downtown. Want to play?",
         )
 
         assert match_proposal is not None
@@ -383,11 +386,11 @@ class TestUseCasePlayerAvailability:
             entry_fee=match_proposal.entry_fee,
         )
         db_session.add(individual_match)
-        
+
         # Update invitation status
         invitation.status = InvitationStatus.ACCEPTED
         invitation.responded_at = datetime.utcnow()
-        
+
         db_session.commit()
 
         assert individual_match is not None

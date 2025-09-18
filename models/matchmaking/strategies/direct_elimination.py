@@ -35,7 +35,7 @@ class DirectEliminationStrategy(PairingStrategy):
         try:
             # Get active inscriptions
             inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-            active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
             player_count = len(active_inscriptions)
 
             if player_count < 4:

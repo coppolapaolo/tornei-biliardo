@@ -16,7 +16,10 @@ from datetime import datetime, timedelta
 
 from models import db
 from models.individual_match.models import MatchProposal, ProposalInvitation
-from models.individual_match.services import IndividualMatchService, MatchProposalService
+from models.individual_match.services import (
+    IndividualMatchService,
+    MatchProposalService,
+)
 from models.user.models import User
 from models.user.role_enum import UserRole
 
@@ -31,14 +34,14 @@ class TestIndividualMatchServiceTransactionMigration:
             proposer = User(
                 username="test_proposer",
                 email="proposer@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             proposer.set_password("testpass")
 
             invitee = User(
                 username="test_invitee",
                 email="invitee@test.com",
-                role=UserRole.PLAYER.value
+                role=UserRole.PLAYER.value,
             )
             invitee.set_password("testpass")
 
@@ -66,7 +69,9 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Mock notifications to avoid dependencies
-            with patch('models.notification.services.NotificationService.create_notification') as mock_notification:
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ) as mock_notification:
                 mock_notification.return_value = {"success": True}
 
                 # Act: create direct proposal
@@ -81,7 +86,7 @@ class TestIndividualMatchServiceTransactionMigration:
                     expires_at=expires_time,
                     discipline="8ball",
                     distance=3,
-                    description="Test match"
+                    description="Test match",
                 )
 
             # Assert: proposal was created and committed
@@ -132,7 +137,7 @@ class TestIndividualMatchServiceTransactionMigration:
                 expires_at=expires_time,
                 discipline="9ball",
                 distance=5,
-                description="Open match for all"
+                description="Open match for all",
             )
 
             # Assert: proposal was created and committed
@@ -169,7 +174,7 @@ class TestIndividualMatchServiceTransactionMigration:
                 location="Expired Hall",
                 discipline="8ball",
                 distance=3,
-                expires_at=past_time
+                expires_at=past_time,
             )
             db.session.add(expired_proposal)
             db.session.commit()
@@ -212,7 +217,7 @@ class TestIndividualMatchServiceTransactionMigration:
                     expires_at=expires_time,
                     discipline="8ball",
                     distance=3,
-                    description="Should fail"
+                    description="Should fail",
                 )
 
             # Verify no partial data was committed (proper rollback)
@@ -234,7 +239,9 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Mock notifications to avoid dependencies
-            with patch('models.notification.services.NotificationService.create_notification'):
+            with patch(
+                "models.notification.services.NotificationService.create_notification"
+            ):
                 # Create proposal
                 scheduled_time = datetime.now() + timedelta(hours=4)
                 expires_time = datetime.now() + timedelta(hours=1)
@@ -247,7 +254,7 @@ class TestIndividualMatchServiceTransactionMigration:
                     expires_at=expires_time,
                     discipline="8ball",
                     distance=3,
-                    description="Isolation test"
+                    description="Isolation test",
                 )
 
             # Verify immediately visible (transaction committed)

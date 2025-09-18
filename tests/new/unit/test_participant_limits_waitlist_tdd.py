@@ -33,11 +33,13 @@ from models.exceptions import InvalidTransitionError
 class TestParticipantLimitsWaitlistTDD:
     """TDD tests for participant limits and waitlist functionality."""
 
-    def test_inscription_should_fail_when_max_participants_reached(self, db_session):
-        """Test that inscription fails when max participants limit is reached.
+    def test_inscription_should_create_waitlist_when_max_participants_reached(
+        self, db_session
+    ):
+        """Test that inscription creates waitlist entry when max participants limit is reached.
 
-        RED PHASE: Test should fail initially because waitlist logic
-        might not be properly implemented for max participants.
+        GREEN PHASE: Test should pass now that waitlist logic is implemented
+        for max participants. Additional participants should be added to waitlist.
         """
         unique_id = str(uuid.uuid4())[:8]
         director = User(
@@ -102,11 +104,14 @@ class TestParticipantLimitsWaitlistTDD:
         db_session.add(player_5)
         db_session.commit()
 
-        # Should raise error when max participants reached
-        with pytest.raises(
-            ValueError, match="Numero massimo di partecipanti raggiunto"
-        ):
-            InscriptionService.inscribe_user(player_5.id, gara.id)
+        # Should create waitlist entry when max participants reached
+        waitlist_inscription = InscriptionService.inscribe_user(player_5.id, gara.id)
+
+        # Verify waitlist inscription was created
+        assert waitlist_inscription is not None
+        assert waitlist_inscription.is_waitlist is True
+        assert waitlist_inscription.user_id == player_5.id
+        assert waitlist_inscription.gara_id == gara.id
 
     def test_waitlist_entry_should_be_promoted_when_participant_withdraws(
         self, db_session

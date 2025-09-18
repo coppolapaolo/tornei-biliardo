@@ -70,7 +70,9 @@ class TestGuestGaraAccess:
         db_session.commit()
         return gara
 
-    def test_player_can_view_details_in_dashboard(self, db_session, player_user, gara_with_open_inscriptions):
+    def test_player_can_view_details_in_dashboard(
+        self, db_session, player_user, gara_with_open_inscriptions
+    ):
         """Test that player can view details in dashboard unified items."""
         # Get dashboard data for player using correct method
         vm = DashboardService.for_player(user_id=player_user.id)
@@ -84,9 +86,13 @@ class TestGuestGaraAccess:
 
         # Assert gara is found and can_view_details is True
         assert gara_item is not None, "Gara should be found in unified items"
-        assert gara_item.can_view_details is True, "Player should be able to view gara details"
+        assert (
+            gara_item.can_view_details is True
+        ), "Player should be able to view gara details"
 
-    def test_guest_cannot_view_details_in_current_logic(self, db_session, gara_with_open_inscriptions):
+    def test_guest_cannot_view_details_in_current_logic(
+        self, db_session, gara_with_open_inscriptions
+    ):
         """Test current behavior: guest sees gara in public list but button logic needs to be checked."""
         # Simulate what happens in main.py for guest (index route)
 
@@ -112,7 +118,9 @@ class TestGuestGaraAccess:
         # But now we need to test if guest can access details
         # This will depend on route/template logic we'll implement
 
-    def test_guest_should_view_details_when_inscriptions_open(self, db_session, gara_with_open_inscriptions):
+    def test_guest_should_view_details_when_inscriptions_open(
+        self, db_session, gara_with_open_inscriptions
+    ):
         """Test desired behavior: guest should view details when inscriptions are open (THIS SHOULD PASS after we implement)."""
         # This test represents the desired behavior
         # We'll implement a for_guest method in DashboardService
@@ -128,10 +136,16 @@ class TestGuestGaraAccess:
                 break
 
         # DESIRED behavior: guest can view details when inscriptions are open
-        assert gara_item is not None, "Gara should be visible to guests when inscriptions are open"
-        assert gara_item.can_view_details is True, "Guest should be able to view details when inscriptions are open"
+        assert (
+            gara_item is not None
+        ), "Gara should be visible to guests when inscriptions are open"
+        assert (
+            gara_item.can_view_details is True
+        ), "Guest should be able to view details when inscriptions are open"
 
-    def test_guest_cannot_view_details_when_inscriptions_closed(self, db_session, admin_user):
+    def test_guest_cannot_view_details_when_inscriptions_closed(
+        self, db_session, admin_user
+    ):
         """Test that guest cannot view details when inscriptions are closed."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -173,16 +187,20 @@ class TestGuestGaraAccess:
                 break
 
         # Guest should NOT see gara with SETUP status (inscriptions closed)
-        assert found_gara is None, "Guest should not see gara with closed inscriptions (SETUP status)"
+        assert (
+            found_gara is None
+        ), "Guest should not see gara with closed inscriptions (SETUP status)"
 
-    def test_gara_status_inscription_detection(self, db_session, gara_with_open_inscriptions):
+    def test_gara_status_inscription_detection(
+        self, db_session, gara_with_open_inscriptions
+    ):
         """Test that we can properly detect when inscriptions are open."""
         # This is a helper test to ensure our status detection works
         assert gara_with_open_inscriptions.status == GaraStatus.INSCRIPTION.value
 
         # Check if gara has method to check if inscriptions are open
         # This might need to be implemented if not exists
-        if hasattr(gara_with_open_inscriptions, 'is_inscription_open'):
+        if hasattr(gara_with_open_inscriptions, "is_inscription_open"):
             assert gara_with_open_inscriptions.is_inscription_open() is True
         else:
             # Alternative: check status directly

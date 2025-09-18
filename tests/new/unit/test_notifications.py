@@ -16,7 +16,11 @@ class TestNotificationModel:
     def test_create_notification(self, db_session):
         """Test creating a notification."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -42,13 +46,21 @@ class TestNotificationModel:
     def test_notification_relationships(self, db_session):
         """Test notification relationships."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(user_id=user.id, title="Test", message="Test message"
-        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+        notification = Notification(
+            user_id=user.id,
+            title="Test",
+            message="Test message",
+            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+        )
         db_session.add(notification)
         db_session.commit()
 
@@ -57,13 +69,21 @@ class TestNotificationModel:
     def test_mark_as_read(self, db_session):
         """Test marking notification as read."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(user_id=user.id, title="Test", message="Test message"
-        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+        notification = Notification(
+            user_id=user.id,
+            title="Test",
+            message="Test message",
+            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+        )
         db_session.add(notification)
         db_session.commit()
 
@@ -81,7 +101,11 @@ class TestNotificationModel:
     def test_notification_types(self, db_session):
         """Test different notification types."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -90,7 +114,7 @@ class TestNotificationModel:
             NotificationType.SYSTEM_ANNOUNCEMENT,
             NotificationType.MATCH_PROPOSAL,
             NotificationType.TOURNAMENT_REGISTRATION,
-            NotificationType.ACCOUNT_UPDATE
+            NotificationType.ACCOUNT_UPDATE,
         ]
         notifications = []
 
@@ -117,7 +141,11 @@ class TestNotificationService:
     def test_create_notification(self, db_session):
         """Test creating a notification through service."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -199,7 +227,11 @@ class TestNotificationService:
     def test_get_user_notifications(self, db_session):
         """Test getting user notifications."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -211,7 +243,11 @@ class TestNotificationService:
                 title=f"Test {i}",
                 message=f"Test message {i}",
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                status=NotificationStatus.READ if (i % 2 == 0) else NotificationStatus.PENDING,  # Some read, some unread
+                status=(
+                    NotificationStatus.READ
+                    if (i % 2 == 0)
+                    else NotificationStatus.PENDING
+                ),  # Some read, some unread
             )
             db_session.add(notification)
 
@@ -231,15 +267,23 @@ class TestNotificationService:
     def test_get_user_notifications_with_limit(self, db_session):
         """Test getting user notifications with limit."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
         # Create 10 notifications
         for i in range(10):
-            notification = Notification(user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
-            , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+            notification = Notification(
+                user_id=user.id,
+                title=f"Test {i}",
+                message=f"Test message {i}",
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+            )
             db_session.add(notification)
 
         db_session.commit()
@@ -251,13 +295,21 @@ class TestNotificationService:
     def test_mark_notification_as_read(self, db_session):
         """Test marking notification as read through service."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(user_id=user.id, title="Test", message="Test message"
-        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+        notification = Notification(
+            user_id=user.id,
+            title="Test",
+            message="Test message",
+            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+        )
         db_session.add(notification)
         db_session.commit()
 
@@ -273,7 +325,11 @@ class TestNotificationService:
     def test_mark_notification_as_read_invalid(self, db_session):
         """Test marking invalid notification as read."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"test_{unique_id}", email=f"test_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"test_{unique_id}",
+            email=f"test_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -285,7 +341,11 @@ class TestNotificationService:
     def test_mark_all_notifications_as_read(self, db_session):
         """Test marking all user notifications as read."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -293,8 +353,12 @@ class TestNotificationService:
         # Create multiple unread notifications
         notifications = []
         for i in range(5):
-            notification = Notification(user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
-            , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+            notification = Notification(
+                user_id=user.id,
+                title=f"Test {i}",
+                message=f"Test message {i}",
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+            )
             notifications.append(notification)
             db_session.add(notification)
 
@@ -317,13 +381,21 @@ class TestNotificationService:
     def test_delete_notification(self, db_session):
         """Test deleting notification."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
-        notification = Notification(user_id=user.id, title="Test", message="Test message"
-        , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+        notification = Notification(
+            user_id=user.id,
+            title="Test",
+            message="Test message",
+            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+        )
         db_session.add(notification)
         db_session.commit()
         notification_id = notification.id
@@ -343,7 +415,11 @@ class TestNotificationService:
         """Test deleting invalid notification."""
         # Need a user context for dismiss_notification
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"test_{unique_id}", email=f"test_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"test_{unique_id}",
+            email=f"test_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -355,15 +431,23 @@ class TestNotificationService:
     def test_delete_all_user_notifications(self, db_session):
         """Test deleting all notifications for a user."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
 
         # Create multiple notifications
         for i in range(5):
-            notification = Notification(user_id=user.id, title=f"Test {i}", message=f"Test message {i}"
-            , notification_type=NotificationType.SYSTEM_ANNOUNCEMENT)
+            notification = Notification(
+                user_id=user.id,
+                title=f"Test {i}",
+                message=f"Test message {i}",
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+            )
             db_session.add(notification)
 
         db_session.commit()
@@ -381,7 +465,11 @@ class TestNotificationService:
     def test_get_unread_count(self, db_session):
         """Test getting unread notification count."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -397,7 +485,9 @@ class TestNotificationService:
                 title=f"Test {i}",
                 message=f"Test message {i}",
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                status=NotificationStatus.READ if (i < 2) else NotificationStatus.PENDING,  # First 2 are read
+                status=(
+                    NotificationStatus.READ if (i < 2) else NotificationStatus.PENDING
+                ),  # First 2 are read
             )
             db_session.add(notification)
 
@@ -410,7 +500,11 @@ class TestNotificationService:
     def test_notification_for_director_promotion(self, db_session):
         """Test creating notification for director promotion."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()
@@ -434,7 +528,11 @@ class TestNotificationService:
     def test_notification_for_competition_update(self, db_session):
         """Test creating notification for competition update."""
         unique_id = str(uuid.uuid4())[:8]
-        user = User(username=f"user_{unique_id}", email=f"user_{unique_id}@test.com", role=UserRole.PLAYER.value)
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
         user.set_password("testpass123")
         db_session.add(user)
         db_session.commit()

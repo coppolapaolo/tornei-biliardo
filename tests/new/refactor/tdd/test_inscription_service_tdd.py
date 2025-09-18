@@ -22,7 +22,7 @@ class TestInscriptionServiceTDD:
         self.director_user = User(
             username="director_test",
             email="director@test.com",
-            role=UserRole.DIRECTOR.value
+            role=UserRole.DIRECTOR.value,
         )
         self.director_user.set_password("password123")
         db.session.add(self.director_user)
@@ -49,7 +49,7 @@ class TestInscriptionServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.SETUP.value
+            status=GaraStatus.SETUP.value,
         )
         db.session.add(gara)
         db.session.commit()
@@ -79,7 +79,7 @@ class TestInscriptionServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.SETUP.value
+            status=GaraStatus.SETUP.value,
         )
         db.session.add(gara)
         db.session.commit()
@@ -108,7 +108,7 @@ class TestInscriptionServiceTDD:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
-            status=GaraStatus.SETUP.value
+            status=GaraStatus.SETUP.value,
         )
         db.session.add(gara)
         db.session.commit()

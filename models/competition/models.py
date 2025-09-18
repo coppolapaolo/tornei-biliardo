@@ -248,7 +248,9 @@ class Gara(db.Model):
                 )
             # Validazione per trio con exact number - trio richiede best_of per punteggio corretto
             if not self.best_of:
-                errors.append("Match a tre richiedono modalità 'al meglio di' per il punteggio corretto")
+                errors.append(
+                    "Match a tre richiedono modalità 'al meglio di' per il punteggio corretto"
+                )
 
         return errors
 
