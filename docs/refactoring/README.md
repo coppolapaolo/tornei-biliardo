@@ -39,6 +39,12 @@ Documentazione completa dello stato del refactoring:
 - Statistiche dei commit calls migrati
 - Strategia e pianificazione delle fasi successive
 
+### [REFACTOR_PLAN_ROUND_EXTRACTION.md](./REFACTOR_PLAN_ROUND_EXTRACTION.md)
+Piano specifico per l'estrazione del RoundService:
+- Estrazione logica dei round da GaraService
+- Separazione delle responsabilità tra servizi
+- Refactoring delle dipendenze e dei test
+
 ## Comando per Test
 
 ```bash
