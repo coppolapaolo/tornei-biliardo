@@ -46,6 +46,11 @@ class ProvaStateMachine:
     def to_inscription(gara: Gara) -> Gara:
         """setup → inscription"""
         ProvaStateMachine._require(gara, GaraStatus.SETUP)
+
+        # Validazione: le date di iscrizione devono essere impostate
+        if not gara.inscription_start or not gara.inscription_end:
+            raise InvalidTransitionError("Date di iscrizione non impostate")
+
         gara.status = GaraStatus.INSCRIPTION.value
         gara.updated_at = getattr(gara, "updated_at", None) or None  # compat
         db.session.add(gara)
@@ -68,15 +73,15 @@ class ProvaStateMachine:
         """
         ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
 
-        # Controllo soft sul numero di iscritti (se relazione disponibile)
-        min_required = 2
+        # Controllo sul numero di iscritti vs minimo richiesto
+        min_required = gara.min_participants or 2
         try:
             count = len(gara.inscriptions)  # type: ignore[attr-defined]
         except Exception:
             count = None
         if count is not None and count < min_required:
             raise InvalidTransitionError(
-                "Numero iscritti insufficiente per iniziare (min 2)."
+                f"Giocatori insufficienti per iniziare (minimo: {min_required}, iscritti: {count})."
             )
 
         gara.status = GaraStatus.PLAYING.value
@@ -97,6 +102,34 @@ class ProvaStateMachine:
     def complete(gara: Gara) -> Gara:
         """playing → completed"""
         ProvaStateMachine._require(gara, GaraStatus.PLAYING)
+
+        # Controllo che non ci siano match ancora in corso
+        try:
+            from models import Match  # Import locale per evitare circular imports
+            from models.status_enum import MatchStatus
+
+            pending_matches = (
+                db.session.query(Match)
+                .filter(
+                    Match.gara_id == gara.id,
+                    Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
+                )
+                .count()
+            )
+
+            if pending_matches > 0:
+                raise InvalidTransitionError(
+                    f"Match ancora in corso ({pending_matches} match pending/playing). "
+                    "Completare tutti i match prima di chiudere il torneo."
+                )
+        except InvalidTransitionError:
+            # Re-raise validation errors - these should not be ignored
+            raise
+        except Exception as e:
+            # Se c'è un errore nell'accesso ai match, procedi comunque
+            # per evitare di bloccare il sistema
+            pass
+
         gara.status = GaraStatus.COMPLETED.value
         db.session.add(gara)
         db.session.commit()
@@ -126,6 +159,12 @@ class GaraService:
             raise ValueError(
                 "Una Gara deve avere un campionato_id o un director_id (standalone)."
             )
+
+        # Validazione data - non può essere nel passato
+        from datetime import date as date_type
+
+        if isinstance(date, date_type) and date < date_type.today():
+            raise ValueError("Data della gara non può essere nel passato")
 
         # Estrai configurazione strategia se presente
         strategy_config = kwargs.pop("strategy_config", None)
@@ -258,90 +297,6 @@ class GaraService:
             db.session.rollback()
             raise ValueError(f"Errore durante la cancellazione della gara: {str(e)}")
 
-    @staticmethod
-    def open_inscriptions(
-        gara_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> Gara:
-        """Apre le iscrizioni per una gara con validazione delle date."""
-        if inscription_start > inscription_end:
-            raise ValueError(
-                "La data di inizio deve essere precedente alla data di fine!"
-            )
-
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        gara.inscription_start = inscription_start
-        gara.inscription_end = inscription_end
-        gara = ProvaStateMachine.to_inscription(gara)
-
-        return gara
-
-    @staticmethod
-    def modify_inscription_dates(
-        gara_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> Gara:
-        """Modifica le date di iscrizione per una gara.
-
-        Permette di:
-        - Estendere il periodo di iscrizione (più tempo per iscriversi)
-        - Accorciare il periodo (chiudere prima)
-        - Modificare le date se non ancora iniziate
-        """
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        if not gara.can_modify_inscription_dates():
-            raise ValueError(
-                "Impossibile modificare le date: il primo turno è già stato avviato!"
-            )
-
-        if inscription_start > inscription_end:
-            raise ValueError(
-                "La data di inizio deve essere precedente alla data di fine!"
-            )
-
-        # Verifica che la fine iscrizioni non sia dopo la data della gara
-        if gara.date and inscription_end.date() > gara.date:
-            raise ValueError(
-                "Le iscrizioni non possono terminare dopo la data della gara!"
-            )
-
-        current_status = gara.status or GaraStatus.SETUP.value
-
-        # Aggiorna le date
-        gara.inscription_start = inscription_start
-        gara.inscription_end = inscription_end
-
-        # Gestione intelligente dello stato
-        now = datetime.utcnow()
-
-        # Se le iscrizioni devono ancora iniziare
-        if inscription_start > now:
-            # Solo se non siamo già in setup, torniamo in setup
-            if current_status == GaraStatus.INSCRIPTION.value:
-                gara = ProvaStateMachine.reopen_setup(gara)
-
-        # Se siamo nel periodo di iscrizione
-        elif inscription_start <= now <= inscription_end:
-            # Solo se non siamo già in inscription, passiamo a inscription
-            if current_status == GaraStatus.SETUP.value:
-                gara = ProvaStateMachine.to_inscription(gara)
-            # Se siamo già in inscription, non fare nulla (solo aggiorna le date)
-
-        # Se le iscrizioni sono terminate
-        elif now > inscription_end:
-            # Se eravamo in inscription e ora sono scadute, manteniamo inscription
-            # (sarà il sistema a gestire la transizione quando si avvia il turno)
-            pass
-
-        # Commit delle modifiche
-        db.session.add(gara)
-        db.session.commit()
-
-        return gara
 
     @staticmethod
     def start_first_round(gara_id: int) -> Gara:
@@ -408,6 +363,7 @@ class GaraService:
 
                 # Get discipline configuration for this round
                 from models.competition.round_configuration import RoundConfiguration
+
                 round_config = RoundConfiguration.get_for_gara_round(gara_id, round_num)
                 round_discipline = round_config.discipline if round_config else None
 
@@ -1468,6 +1424,9 @@ class InscriptionService:
         Se la gara è piena, l'utente viene messo in lista d'attesa.
         """
         from models.competition.models import Gara
+        from models.user.models import User
+        from models.user.role_enum import UserRole
+        from datetime import datetime
 
         existing = (
             db.session.query(Inscription)
@@ -1481,13 +1440,41 @@ class InscriptionService:
         if not gara:
             return None
 
-        # Verifica se la gara è piena
-        is_waitlist = gara.is_full()
+        user = db.session.get(User, user_id)
+        if not user:
+            return None
+
+        # Validazione: Admin non può partecipare ai tornei
+        if user.role == UserRole.ADMIN.value:
+            raise ValueError("Admin non può partecipare ai tornei")
+
+        # Validazione: Verifica periodo di iscrizione
+        now = datetime.now()
+        if gara.inscription_start and gara.inscription_end:
+            if now < gara.inscription_start:
+                raise ValueError("Iscrizioni non ancora aperte")
+            if now > gara.inscription_end:
+                raise ValueError("Iscrizioni chiuse")
+
+        # Validazione: Verifica numero massimo partecipanti
+        if gara.max_participants and gara.max_participants > 0:
+            current_count = (
+                db.session.query(Inscription).filter_by(gara_id=gara_id).count()
+            )
+            if current_count >= gara.max_participants:
+                raise ValueError("Numero massimo di partecipanti raggiunto")
+
+        # Verifica se la gara è piena (per waitlist future)
+        is_waitlist = gara.is_full() if hasattr(gara, "is_full") else False
         waitlist_position = None
 
         if is_waitlist:
             # Calcola la posizione in lista d'attesa
-            waitlist_position = gara.get_waitlist_count() + 1
+            waitlist_position = (
+                gara.get_waitlist_count() + 1
+                if hasattr(gara, "get_waitlist_count")
+                else None
+            )
 
         ins = Inscription(
             user_id=user_id,
@@ -1686,10 +1673,121 @@ class InscriptionService:
             return True
         return False
 
+    @staticmethod
+    def open_inscriptions(
+        gara_id: int, inscription_start: datetime, inscription_end: datetime
+    ) -> Gara:
+        """Apre le iscrizioni per una gara con validazione delle date."""
+        if inscription_start > inscription_end:
+            raise ValueError(
+                "La data di inizio deve essere precedente alla data di fine!"
+            )
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+
+        gara.inscription_start = inscription_start
+        gara.inscription_end = inscription_end
+        gara = ProvaStateMachine.to_inscription(gara)
+
+        return gara
+
+    @staticmethod
+    def modify_inscription_dates(
+        gara_id: int, inscription_start: datetime, inscription_end: datetime
+    ) -> Gara:
+        """Modifica le date di iscrizione per una gara.
+
+        Permette di:
+        - Estendere il periodo di iscrizione (più tempo per iscriversi)
+        - Accorciare il periodo (chiudere prima)
+        - Modificare le date se non ancora iniziate
+        """
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+
+        if not gara.can_modify_inscription_dates():
+            raise ValueError(
+                "Impossibile modificare le date: il primo turno è già stato avviato!"
+            )
+
+        if inscription_start > inscription_end:
+            raise ValueError(
+                "La data di inizio deve essere precedente alla data di fine!"
+            )
+
+        # Verifica che la fine iscrizioni non sia dopo la data della gara
+        if gara.date and inscription_end.date() > gara.date:
+            raise ValueError(
+                "Le iscrizioni non possono terminare dopo la data della gara!"
+            )
+
+        current_status = gara.status or GaraStatus.SETUP.value
+
+        # Aggiorna le date
+        gara.inscription_start = inscription_start
+        gara.inscription_end = inscription_end
+
+        # Gestione intelligente dello stato
+        now = datetime.utcnow()
+
+        # Se le iscrizioni devono ancora iniziare
+        if inscription_start > now:
+            # Solo se non siamo già in setup, torniamo in setup
+            if current_status == GaraStatus.INSCRIPTION.value:
+                gara = ProvaStateMachine.reopen_setup(gara)
+
+        # Se siamo nel periodo di iscrizione
+        elif inscription_start <= now <= inscription_end:
+            # Solo se non siamo già in inscription, passiamo a inscription
+            if current_status == GaraStatus.SETUP.value:
+                gara = ProvaStateMachine.to_inscription(gara)
+            # Se siamo già in inscription, non fare nulla (solo aggiorna le date)
+
+        # Se le iscrizioni sono terminate
+        elif now > inscription_end:
+            # Se eravamo in inscription e ora sono scadute, manteniamo inscription
+            # (sarà il sistema a gestire la transizione quando si avvia il turno)
+            pass
+
+        db.session.add(gara)
+        db.session.commit()
+        return gara
+
+
+class RoundService:
+    """Service for managing round creation and progression.
+
+    Extracted from GaraService to follow Single Responsibility Principle.
+    """
+
+    @staticmethod
+    def start_first_round(gara_id: int) -> Gara:
+        """Avvia il primo turno della gara."""
+        return GaraService.start_first_round(gara_id)
+
+    @staticmethod
+    def cancel_first_round_startup(gara_id: int) -> Gara:
+        """Cancella l'avvio del primo turno."""
+        return GaraService.cancel_first_round_startup(gara_id)
+
+    @staticmethod
+    def create_round_with_strategy(gara_id: int, round_number: int):
+        """Crea un turno usando la strategia configurata."""
+        return GaraService.create_round_with_strategy(gara_id, round_number)
+
+    @staticmethod
+    def preview_round_with_strategy(gara_id: int, round_number: int) -> dict:
+        """Anteprima di un turno senza modificare il database."""
+        return GaraService.preview_round_with_strategy(gara_id, round_number)
+
 
 __all__ = [
     "GaraService",
     "InscriptionService",
+    "RoundService",
     "ProvaStateMachine",
     "InvalidTransitionError",
 ]

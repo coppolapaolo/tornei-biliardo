@@ -246,6 +246,9 @@ class Gara(db.Model):
                 errors.append(
                     f"Match a tre non supportati con strategia {self.matchmaking_strategy}"
                 )
+            # Validazione per trio con exact number - trio richiede best_of per punteggio corretto
+            if not self.best_of:
+                errors.append("Match a tre richiedono modalità 'al meglio di' per il punteggio corretto")
 
         return errors
 
@@ -313,7 +316,8 @@ class Gara(db.Model):
 
     def can_be_modified(self):
         """Verifica se la gara può essere modificata"""
-        return self.status == GaraStatus.SETUP.value
+        inscriptions_list = getattr(self, "inscriptions", []) or []
+        return not inscriptions_list and self.status == GaraStatus.SETUP.value
 
     def can_be_deleted(self):
         """Verifica se la gara può essere cancellata"""
