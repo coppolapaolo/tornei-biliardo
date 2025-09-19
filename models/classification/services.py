@@ -75,6 +75,8 @@ class ClassificationService:
         player_ids = set()
         match_results = []
 
+        print(f"DEBUG ClassificationService: Processing {len(gare)} gare for campionato {campionato_id}")
+
         for gara in gare:
             # Get completed matches - already loaded via selectinload
             matches = [
@@ -82,6 +84,7 @@ class ClassificationService:
                 for match in gara.matches
                 if match.status == "completed" and not match.is_bye
             ]
+            print(f"DEBUG ClassificationService: Gara {gara.id} has {len(matches)} completed non-bye matches")
 
             # Collect player IDs and match results
             for match in matches:
@@ -96,11 +99,15 @@ class ClassificationService:
                     }
                 )
 
+        print(f"DEBUG ClassificationService: Collected {len(player_ids)} unique players and {len(match_results)} match results")
+
         # Get player objects
         players = db.session.query(User).filter(User.id.in_(player_ids)).all()
+        print(f"DEBUG ClassificationService: Found {len(players)} players for IDs {player_ids}")
 
         # Calculate standings using scoring policy
         standings = scoring_policy.calculate_standings(players, match_results)
+        print(f"DEBUG ClassificationService: Scoring policy returned {len(standings)} standings")
 
         # Batch load existing classifications to avoid N+1
         existing_classifications = {
@@ -109,9 +116,11 @@ class ClassificationService:
             .filter_by(campionato_id=campionato_id)
             .all()
         }
+        print(f"DEBUG ClassificationService: Found {len(existing_classifications)} existing classifications")
 
         # Update or create Classification records
         classifications = []
+        print(f"DEBUG ClassificationService: About to process {len(standings)} standings")
         for position, (player, score_data) in enumerate(standings, 1):
             player_id = player.id
             classification = existing_classifications.get(player_id)
@@ -138,8 +147,11 @@ class ClassificationService:
 
             db.session.add(classification)
             classifications.append(classification)
+            print(f"DEBUG ClassificationService: Created classification for user {player_id} at position {position}")
 
+        print(f"DEBUG ClassificationService: About to commit {len(classifications)} classifications")
         db.session.commit()
+        print(f"DEBUG ClassificationService: Commit completed, returning {len(classifications)} classifications")
         return classifications
 
     @staticmethod

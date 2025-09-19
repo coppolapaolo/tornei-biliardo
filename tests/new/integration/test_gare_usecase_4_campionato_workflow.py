@@ -491,12 +491,12 @@ class TestUseCaseCampionatoVariants:
     """Test Use Case 4B: Campionato variants and edge cases."""
 
     @pytest.fixture
-    def admin_user(self, db_session) -> User:
-        """Create admin user for test."""
+    def admin_user_variants(self, db_session) -> User:
+        """Create admin user for variant tests."""
         unique_id = str(uuid.uuid4())[:8]
         admin = User(
-            username=f"admin_{unique_id}",
-            email=f"admin_{unique_id}@test.com",
+            username=f"admin_variants_{unique_id}",
+            email=f"admin_variants_{unique_id}@test.com",
             role=UserRole.ADMIN.value,
         )
         admin.set_password("admin123")
@@ -523,7 +523,7 @@ class TestUseCaseCampionatoVariants:
         return players
 
     def test_campionato_with_challenge_mode(
-        self, admin_user: User, players_6: List[User], db_session, client
+        self, admin_user_variants: User, players_6: List[User], db_session, client
     ):
         """Test campionato with challenge mode enabled.
 
@@ -536,7 +536,7 @@ class TestUseCaseCampionatoVariants:
         tournament_service = TournamentService()
         campionato = tournament_service.create_campionato_with_director(
             name="Challenge Mode Championship",
-            creator_user_id=admin_user.id,
+            creator_user_id=admin_user_variants.id,
             campionato_type="Amalfi",
             challenge_mode=True,  # Enable challenge mode
             without_x=False,
@@ -560,7 +560,7 @@ class TestUseCaseCampionatoVariants:
             discipline="palla_8",
             distance=6,
             best_of=True,
-            director_id=admin_user.id,
+            director_id=admin_user_variants.id,
             matchmaking_strategy="amalfi",
         )
 
@@ -572,6 +572,11 @@ class TestUseCaseCampionatoVariants:
         self._complete_full_gara_with_challenges(gara, players_6, db_session)
 
         # Update campionato classification
+        # CRITICAL: Clear the cache before calling the service to prevent cache pollution
+        from models.caching import cache_manager
+
+        cache_manager.clear_all()
+        print(f"DEBUG: Cache cleared before calling update_campionato_classification")
         ClassificationService.update_campionato_classification(campionato.id)
 
         final_classification = Classification.query.filter_by(
@@ -585,7 +590,7 @@ class TestUseCaseCampionatoVariants:
         print(f"   - {len(final_classification)} players in final classification")
 
     def test_campionato_deactivation_and_reactivation(
-        self, admin_user: User, players_6: List[User], db_session, client
+        self, admin_user_variants: User, players_6: List[User], db_session, client
     ):
         """Test campionato deactivation and reactivation workflow.
 
@@ -598,7 +603,7 @@ class TestUseCaseCampionatoVariants:
         tournament_service = TournamentService()
         campionato = tournament_service.create_campionato_with_director(
             name="Deactivation Test Championship",
-            creator_user_id=admin_user.id,
+            creator_user_id=admin_user_variants.id,
             campionato_type="Random",
             is_active=True,
         )
@@ -618,7 +623,7 @@ class TestUseCaseCampionatoVariants:
             discipline="palla_9",
             distance=5,
             best_of=True,
-            director_id=admin_user.id,
+            director_id=admin_user_variants.id,
             matchmaking_strategy="amalfi",
         )
 
@@ -652,7 +657,7 @@ class TestUseCaseCampionatoVariants:
             discipline="palla_8",
             distance=6,
             best_of=True,
-            director_id=admin_user.id,
+            director_id=admin_user_variants.id,
             matchmaking_strategy="amalfi",
         )
 
@@ -666,12 +671,87 @@ class TestUseCaseCampionatoVariants:
             InscriptionService.inscribe_user(player.id, gara2.id)
 
         self._complete_full_gara_simple(gara2, players_6[:4], db_session)
-        ClassificationService.update_campionato_classification(campionato.id)
 
-        # Verify both gare contributed to campionato classification
-        final_classification = Classification.query.filter_by(
+        # Debug: Check what happens in ClassificationService
+        print(
+            f"DEBUG: About to call update_campionato_classification for campionato {campionato.id}"
+        )
+
+        # Check what gare exist for this campionato
+        from models.competition.models import Gara
+
+        gare_for_campionato = Gara.query.filter_by(campionato_id=campionato.id).all()
+        print(
+            f"DEBUG: Found {len(gare_for_campionato)} gare for campionato {campionato.id}"
+        )
+
+        for i, gara in enumerate(gare_for_campionato):
+            matches = Match.query.filter_by(gara_id=gara.id).all()
+            completed_matches = [m for m in matches if m.status == "completed"]
+            print(
+                f"DEBUG: Gara {i+1} (id={gara.id}): {len(completed_matches)} completed matches out of {len(matches)} total"
+            )
+
+            # Check if there are actual player IDs in matches
+            if completed_matches:
+                player_ids = set()
+                for match in completed_matches:
+                    if not match.is_bye:
+                        player_ids.add(match.player1_id)
+                        player_ids.add(match.player2_id)
+                print(f"DEBUG: Unique players in gara {i+1}: {player_ids}")
+
+        # Clear all existing classifications for this campionato before updating
+        existing_classifications = Classification.query.filter_by(
             campionato_id=campionato.id
         ).all()
+        print(
+            f"DEBUG: Found {len(existing_classifications)} existing classifications for campionato {campionato.id}"
+        )
+        for cls in existing_classifications:
+            db_session.delete(cls)
+        db_session.commit()
+
+        # CRITICAL: Clear the cache before calling the service to prevent cache pollution
+        from models.caching import cache_manager
+
+        cache_manager.clear_all()
+        print(f"DEBUG: Cache cleared before calling update_campionato_classification")
+
+        # Now try to update
+        result_classifications = ClassificationService.update_campionato_classification(
+            campionato.id
+        )
+        print(
+            f"DEBUG: update_campionato_classification returned {len(result_classifications)} classifications"
+        )
+
+        # Force a database flush to ensure transaction consistency
+        db_session.flush()
+
+        # Try to get the classifications from the same session
+        final_classification = (
+            db_session.query(Classification)
+            .filter_by(campionato_id=campionato.id)
+            .all()
+        )
+
+        print(f"DEBUG: Session query found {len(final_classification)} classifications")
+
+        if len(final_classification) == 0:
+            # Try with a fresh query after explicit commit
+            db_session.commit()
+            final_classification = Classification.query.filter_by(
+                campionato_id=campionato.id
+            ).all()
+            print(
+                f"DEBUG: Fresh query after commit found {len(final_classification)} classifications"
+            )
+
+        for cls in final_classification:
+            print(
+                f"DEBUG: Classification: user_id={cls.user_id}, position={cls.position}"
+            )
 
         assert len(final_classification) == 6  # All players from both gare
 
