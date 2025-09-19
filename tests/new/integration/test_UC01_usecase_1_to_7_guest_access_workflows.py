@@ -100,7 +100,9 @@ class TestUseCaseOneComprehensive:
 
         # Create test data
         billiard_hall = self._create_billiard_hall(db_session)
-        standalone_gara = self._create_standalone_gara(db_session, admin_user, billiard_hall)
+        standalone_gara = self._create_standalone_gara(
+            db_session, admin_user, billiard_hall
+        )
 
         with app.test_client() as client:
             # Setup: Register players and start first round
@@ -147,7 +149,9 @@ class TestUseCaseOneComprehensive:
             assert "Turno 1" in html_content
 
             # Verify guest can see match results (3-2 scores from best-of-5 matches)
-            assert "3 - 2" in html_content or "2 - 3" in html_content, "Guest should see completed match results"
+            assert (
+                "3 - 2" in html_content or "2 - 3" in html_content
+            ), "Guest should see completed match results"
 
             # Check classification is visible
             assert "Classifica" in html_content
@@ -187,7 +191,12 @@ class TestUseCaseOneComprehensive:
             assert "1-1" in html_content or "In corso" in html_content
 
     def test_use_case_2_match_modification_round_effects(
-        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
+        self,
+        app,
+        isolated_admin_user,
+        isolated_director_user,
+        isolated_players,
+        db_session,
     ):
         """
         UC2: Match modification workflow with round completion effects.
@@ -351,7 +360,12 @@ class TestUseCaseOneComprehensive:
             assert "Classifica" in html_content
 
     def test_use_case_3_tournament_round_ordering(
-        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
+        self,
+        app,
+        isolated_admin_user,
+        isolated_director_user,
+        isolated_players,
+        db_session,
     ):
         """
         UC3: Tournament round ordering and management visibility.
@@ -499,7 +513,12 @@ class TestUseCaseOneComprehensive:
             )
 
     def test_use_case_4_table_assignment_queue(
-        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
+        self,
+        app,
+        isolated_admin_user,
+        isolated_director_user,
+        isolated_players,
+        db_session,
     ):
         """
         UC4: Table assignment and queue management system.
@@ -648,7 +667,12 @@ class TestUseCaseOneComprehensive:
             # Would verify table assignment appears in player's match info
 
     def test_use_case_5_challenge_tournament_integration(
-        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
+        self,
+        app,
+        isolated_admin_user,
+        isolated_director_user,
+        isolated_players,
+        db_session,
     ):
         """
         UC5: Challenge system integration with tournaments.
@@ -796,7 +820,9 @@ class TestUseCaseOneComprehensive:
             assert player_attempts == 1
             assert opponent_attempts == 1
 
-    def test_use_case_6_standalone_challenge_completion(self, app, isolated_players, db_session):
+    def test_use_case_6_standalone_challenge_completion(
+        self, app, isolated_players, db_session
+    ):
         """
         UC6: Standalone challenge completion workflow.
 
@@ -933,7 +959,9 @@ class TestUseCaseOneComprehensive:
 
             # Setup: Create some match history - inscribe main player and several opponents
             InscriptionService.inscribe_user(player.id, standalone_gara.id)
-            for opponent in players[1:6]:  # Add 5 opponents (6 total) to meet minimum requirement
+            for opponent in players[
+                1:6
+            ]:  # Add 5 opponents (6 total) to meet minimum requirement
                 InscriptionService.inscribe_user(opponent.id, standalone_gara.id)
 
             ProvaStateMachine.start_playing(
@@ -1129,8 +1157,12 @@ class TestUseCaseOneComprehensive:
             # This method handles existing racks and match completion correctly
             RackService.set_match_result_direct(
                 match_id=match.id,
-                player1_score=winner_racks if winner_id == match.player1_id else loser_racks,
-                player2_score=loser_racks if winner_id == match.player1_id else winner_racks,
+                player1_score=(
+                    winner_racks if winner_id == match.player1_id else loser_racks
+                ),
+                player2_score=(
+                    loser_racks if winner_id == match.player1_id else winner_racks
+                ),
             )
 
             # Complete the match only if not already completed

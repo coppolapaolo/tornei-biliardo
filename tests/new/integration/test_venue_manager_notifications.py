@@ -42,63 +42,69 @@ class TestVenueManagerNotifications:
             )
 
             # Get test users
-            self.admin = User.query.filter_by(role="admin").first()
-            self.player = User.query.filter_by(role="player").first()
-            self.director = User.query.filter_by(role="director").first()
+            admin = User.query.filter_by(role="admin").first()
+            player = User.query.filter_by(role="player").first()
+            director = User.query.filter_by(role="director").first()
 
             # Ensure we have required users
-            if not self.admin:
-                self.admin = User(
+            if not admin:
+                admin = User(
                     username="test_admin", email="admin@test.com", role="admin"
                 )
-                self.admin.set_password("password")
-                db.session.add(self.admin)
+                admin.set_password("password")
+                db.session.add(admin)
 
-            if not self.player:
-                self.player = User(
+            if not player:
+                player = User(
                     username="test_player", email="player@test.com", role="player"
                 )
-                self.player.set_password("password")
-                db.session.add(self.player)
+                player.set_password("password")
+                db.session.add(player)
 
-            if not self.director:
-                self.director = User(
+            if not director:
+                director = User(
                     username="test_director", email="director@test.com", role="director"
                 )
-                self.director.set_password("password")
-                db.session.add(self.director)
+                director.set_password("password")
+                db.session.add(director)
 
             db.session.commit()
+
+            # Store IDs to avoid detached instance errors
+            self.admin_id = admin.id
+            self.player_id = player.id
+            self.director_id = director.id
+            self.venue_id = self.test_venue.id
 
     def test_player_venue_manager_request_creates_admin_notification(self, app, client):
         """Test that a player's venue manager request creates notification for admin."""
         with app.app_context():
-            # Refresh objects to ensure they're bound to current session
-            admin_id = self.admin.id
-            player_id = self.player.id
-            venue_id = self.test_venue.id
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            player = User.query.get(self.player_id)
+            venue = BilliardHall.query.get(self.venue_id)
 
             # Count initial notifications
             initial_admin_notifications = Notification.query.filter_by(
-                user_id=admin_id
+                user_id=admin.id
             ).count()
 
             # Player makes venue manager request
             request = VenueManagerRequestService.create_request(
-                user_id=player_id,
-                venue_id=venue_id,
+                user_id=player.id,
+                venue_id=venue.id,
                 notes="I would like to manage this venue",
             )
 
             # Verify request was created
             assert request is not None
-            assert request.user_id == player_id
-            assert request.venue_id == venue_id
+            assert request.user_id == player.id
+            assert request.venue_id == venue.id
             assert request.status == "pending"
 
             # Check that admin received notification
             admin_notifications = Notification.query.filter_by(
-                user_id=admin_id, notification_type=NotificationType.SYSTEM_ANNOUNCEMENT
+                user_id=admin.id, notification_type=NotificationType.SYSTEM_ANNOUNCEMENT
             ).all()
 
             # Should have one new notification
@@ -115,8 +121,7 @@ class TestVenueManagerNotifications:
             assert new_notification.status == NotificationStatus.PENDING
             assert "Test Venue Notifications" in new_notification.title
             assert "Richiesta Gestore Sala" in new_notification.title
-            # Get fresh player object for username check
-            player = db.session.get(User, player_id)
+            # Check player username in notification message
             assert player.username in new_notification.message
             assert (
                 new_notification.priority == NotificationPriority.NORMAL
@@ -127,27 +132,32 @@ class TestVenueManagerNotifications:
     ):
         """Test that a director's venue manager request creates notification for admin."""
         with app.app_context():
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            director = User.query.get(self.director_id)
+            venue = BilliardHall.query.get(self.venue_id)
+
             # Count initial notifications
             initial_admin_notifications = Notification.query.filter_by(
-                user_id=self.admin.id
+                user_id=admin.id
             ).count()
 
             # Director makes venue manager request
             request = VenueManagerRequestService.create_request(
-                user_id=self.director.id,
-                venue_id=self.test_venue.id,
+                user_id=director.id,
+                venue_id=venue.id,
                 notes="As a director, I can help manage this venue",
             )
 
             # Verify request was created
             assert request is not None
-            assert request.user_id == self.director.id
-            assert request.venue_id == self.test_venue.id
+            assert request.user_id == director.id
+            assert request.venue_id == venue.id
             assert request.status == "pending"
 
             # Check that admin received notification
             admin_notifications = Notification.query.filter_by(
-                user_id=self.admin.id,
+                user_id=admin.id,
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
             ).all()
 
@@ -165,7 +175,7 @@ class TestVenueManagerNotifications:
             assert new_notification.status == NotificationStatus.PENDING
             assert "Test Venue Notifications" in new_notification.title
             assert "Richiesta Gestore Sala" in new_notification.title
-            assert self.director.username in new_notification.message
+            assert director.username in new_notification.message
             assert (
                 new_notification.priority == NotificationPriority.NORMAL
             )  # Non-contested
@@ -173,13 +183,17 @@ class TestVenueManagerNotifications:
     def test_contested_venue_request_has_high_priority(self, app, client):
         """Test that contested venue requests (venue already has manager) get HIGH priority."""
         with app.app_context():
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            player = User.query.get(self.player_id)
+            director = User.query.get(self.director_id)
+            venue = BilliardHall.query.get(self.venue_id)
+
             # First, assign a manager to the venue
             from models.user.services import VenueManagementService
 
             # Create initial manager assignment
-            VenueManagementService.assign_venue_manager(
-                self.director.id, self.test_venue.id, self.admin
-            )
+            VenueManagementService.assign_venue_manager(director.id, venue.id, admin)
 
             # Clear existing notifications after setup
             Notification.query.delete()
@@ -187,8 +201,8 @@ class TestVenueManagerNotifications:
 
             # Now player requests to manage same venue (contested)
             request = VenueManagerRequestService.create_request(
-                user_id=self.player.id,
-                venue_id=self.test_venue.id,
+                user_id=player.id,
+                venue_id=venue.id,
                 notes="I want to replace the current manager",
             )
 
@@ -197,7 +211,7 @@ class TestVenueManagerNotifications:
 
             # Check that admin received HIGH priority notification
             admin_notification = Notification.query.filter_by(
-                user_id=self.admin.id,
+                user_id=admin.id,
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
             ).first()
 
@@ -209,6 +223,11 @@ class TestVenueManagerNotifications:
     def test_multiple_admins_receive_notifications(self, app, client):
         """Test that all admins receive notifications for venue manager requests."""
         with app.app_context():
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            player = User.query.get(self.player_id)
+            venue = BilliardHall.query.get(self.venue_id)
+
             # Create second admin
             second_admin = User(
                 username="second_admin", email="admin2@test.com", role="admin"
@@ -223,14 +242,14 @@ class TestVenueManagerNotifications:
 
             # Player makes venue manager request
             request = VenueManagerRequestService.create_request(
-                user_id=self.player.id,
-                venue_id=self.test_venue.id,
+                user_id=player.id,
+                venue_id=venue.id,
                 notes="Please consider my request",
             )
 
             # Check that both admins received notifications
             admin1_notifications = Notification.query.filter_by(
-                user_id=self.admin.id,
+                user_id=admin.id,
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
             ).count()
 
@@ -245,10 +264,15 @@ class TestVenueManagerNotifications:
     def test_admin_rejection_notifies_requester(self, app, client):
         """Test that when admin rejects a request, the requester gets notified."""
         with app.app_context():
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            player = User.query.get(self.player_id)
+            venue = BilliardHall.query.get(self.venue_id)
+
             # Player makes venue manager request
             request = VenueManagerRequestService.create_request(
-                user_id=self.player.id,
-                venue_id=self.test_venue.id,
+                user_id=player.id,
+                venue_id=venue.id,
                 notes="Please approve my request",
             )
 
@@ -259,14 +283,14 @@ class TestVenueManagerNotifications:
             # Admin rejects the request
             VenueManagerRequestService.process_request(
                 request_id=request.id,
-                admin_user=self.admin,
+                admin_user=admin,
                 approve=False,
                 notes="Not qualified at this time",
             )
 
             # Check that player received rejection notification
             player_notifications = Notification.query.filter_by(
-                user_id=self.player.id,
+                user_id=player.id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
             ).all()
 
@@ -281,10 +305,15 @@ class TestVenueManagerNotifications:
     def test_admin_approval_notifies_requester(self, app, client):
         """Test that when admin approves a request, the requester gets notified."""
         with app.app_context():
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            player = User.query.get(self.player_id)
+            venue = BilliardHall.query.get(self.venue_id)
+
             # Player makes venue manager request
             request = VenueManagerRequestService.create_request(
-                user_id=self.player.id,
-                venue_id=self.test_venue.id,
+                user_id=player.id,
+                venue_id=venue.id,
                 notes="Please approve my request",
             )
 
@@ -295,14 +324,14 @@ class TestVenueManagerNotifications:
             # Admin approves the request
             VenueManagerRequestService.process_request(
                 request_id=request.id,
-                admin_user=self.admin,
+                admin_user=admin,
                 approve=True,
                 notes="Welcome to venue management!",
             )
 
             # Check that player received approval notification
             player_notifications = Notification.query.filter_by(
-                user_id=self.player.id,
+                user_id=player.id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
             ).all()
 
@@ -317,22 +346,27 @@ class TestVenueManagerNotifications:
     def test_notification_integration_via_web_request(self, app, client):
         """Test notification creation through actual web request (integration test)."""
         with app.app_context():
+            # Get fresh objects from session
+            admin = User.query.get(self.admin_id)
+            player = User.query.get(self.player_id)
+            venue = BilliardHall.query.get(self.venue_id)
+
             # Clear existing notifications
             Notification.query.delete()
             db.session.commit()
 
             # Login as player
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(self.player.id)
+                sess["_user_id"] = str(player.id)
                 sess["_fresh"] = True
 
             # Count admin notifications before request
-            initial_count = Notification.query.filter_by(user_id=self.admin.id).count()
+            initial_count = Notification.query.filter_by(user_id=admin.id).count()
 
             # Make venue manager request via web form
             response = client.post(
                 "/player/request_venue_manager",
-                data={"venue_id": self.test_venue.id, "notes": "Web request test"},
+                data={"venue_id": venue.id, "notes": "Web request test"},
                 follow_redirects=True,
             )
 
@@ -340,14 +374,14 @@ class TestVenueManagerNotifications:
             assert response.status_code == 200
 
             # Check that admin received notification
-            final_count = Notification.query.filter_by(user_id=self.admin.id).count()
+            final_count = Notification.query.filter_by(user_id=admin.id).count()
 
             assert final_count == initial_count + 1
 
             # Verify the notification
             new_notification = (
                 Notification.query.filter_by(
-                    user_id=self.admin.id,
+                    user_id=admin.id,
                     notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
                 )
                 .order_by(Notification.created_at.desc())
@@ -356,7 +390,7 @@ class TestVenueManagerNotifications:
 
             assert new_notification is not None
             assert "Test Venue Notifications" in new_notification.title
-            assert self.player.username in new_notification.message
+            assert player.username in new_notification.message
 
     def teardown_method(self):
         """Clean up after each test."""

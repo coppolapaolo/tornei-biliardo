@@ -196,6 +196,12 @@ class TestSpecificationsAlignmentFixed:
             best_of=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
+            inscription_start=datetime.combine(
+                date.today() - timedelta(days=7), datetime.min.time()
+            ),
+            inscription_end=datetime.combine(
+                date.today() + timedelta(days=1), datetime.min.time()
+            ),
         )
 
         # Make tournament visible

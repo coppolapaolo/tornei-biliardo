@@ -555,12 +555,19 @@ class TestUseCaseGareComplete:
 
         # Check if invitation exists
         from models.individual_match.models import ProposalInvitation
-        invitation = db_session.query(ProposalInvitation).filter_by(
-            proposal_id=match_proposal.id, invited_user_id=player2.id
-        ).first()
+
+        invitation = (
+            db_session.query(ProposalInvitation)
+            .filter_by(proposal_id=match_proposal.id, invited_user_id=player2.id)
+            .first()
+        )
 
         # Accept manually to avoid transaction issues
-        from models.individual_match.models import IndividualMatch, ProposalStatus, InvitationStatus
+        from models.individual_match.models import (
+            IndividualMatch,
+            ProposalStatus,
+            InvitationStatus,
+        )
         from datetime import datetime as dt
 
         # Update invitation status
@@ -574,6 +581,7 @@ class TestUseCaseGareComplete:
 
         # Create individual match directly
         from models.individual_match.models import MatchStatus
+
         individual_match = IndividualMatch(
             proposal_id=match_proposal.id,
             player1_id=match_proposal.proposer_id,
@@ -673,6 +681,7 @@ class TestUseCaseGareComplete:
 
         # Verify match is created
         from models.individual_match.models import ProposalStatus
+
         assert match_request.status == ProposalStatus.ACCEPTED
 
         print("✅ Use Case 7 completed: Player availability and requests")

@@ -149,7 +149,7 @@ class TestUseCaseIndividualMatches:
 
         # Step 2: Verify invitations were created automatically
         # (create_direct_proposal already creates invitations for invited_user_ids)
-        invitations = proposal.invitations
+        invitations = proposal.invitations.all()
         assert len(invitations) == 2
 
         invitation1 = next(
@@ -439,7 +439,7 @@ class TestUseCaseIndividualMatches:
         # No special exhibition or director flags
 
         # Step 2: Verify invitation was created and player accepts
-        invitations = proposal.invitations
+        invitations = proposal.invitations.all()
         assert len(invitations) == 1
 
         invitation = invitations[0]
@@ -599,7 +599,7 @@ class TestUseCaseIndividualMatches:
         )
 
         # Player2 accepts the proposal (manual acceptance like working test)
-        invitation = proposal.invitations[0]
+        invitation = proposal.invitations.all()[0]
         assert invitation.invited_user_id == player2.id
 
         # Manual acceptance process
@@ -800,7 +800,7 @@ class TestUseCaseFrontendIntegration:
 
         # Accept the proposal using backend service (simulating successful UI acceptance)
         # Note: Frontend proposal acceptance may need additional route implementation
-        invitation = proposal.invitations[0]
+        invitation = proposal.invitations.all()[0]
         proposal.status = ProposalStatus.ACCEPTED
         proposal.accepted_by_id = player2.id
         proposal.accepted_at = datetime.now()
