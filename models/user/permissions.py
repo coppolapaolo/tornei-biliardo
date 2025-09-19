@@ -10,8 +10,8 @@ Created: 2025-01-31
 """
 
 from functools import wraps
-from flask import abort
-from flask_login import current_user
+from flask import abort, flash, redirect, url_for
+from flask_login import current_user, login_required
 
 
 class PermissionChecker:
@@ -586,11 +586,11 @@ class RoleRequirement:
         """
 
         @wraps(f)
+        @login_required
         def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated or (
-                not current_user.is_director and not current_user.is_admin
-            ):
-                abort(403)
+            if not current_user.is_director and not current_user.is_admin:
+                flash("Accesso negato. Questa funzione è riservata ai direttori di torneo.", "warning")
+                return redirect(url_for("dashboard.dashboard"))
             return f(*args, **kwargs)
 
         return decorated_function
