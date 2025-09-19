@@ -412,7 +412,7 @@ class TestUseCaseMatchModification:
 
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
-        GaraService.create_random_round(gara.id, 2)
+        GaraService.create_round_with_strategy(gara.id, 2)
         gara.current_round = 2
         db_session.add(gara)
         db_session.commit()

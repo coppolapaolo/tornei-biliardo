@@ -126,7 +126,7 @@
     {% elif item.type == 'campionato' %}
       {# Aggiungi le gare del campionato interessanti #}
       {% for gara in item.entity.gare %}
-        {% if gara.get_real_status() in [GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
+        {% if gara.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
           {% set _ = available_garas.append({
             'type': 'gara',
             'id': gara.id,

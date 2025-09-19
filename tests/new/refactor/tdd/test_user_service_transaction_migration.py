@@ -291,6 +291,15 @@ class TestUserServiceTransactionMigrationPhase2:
 
             yield admin
 
+            # Cleanup: Delete any records that reference this admin before deleting the admin
+            from models.user.models import DirectorRequest
+
+            # Clear processed_by_id references to avoid foreign key constraint
+            DirectorRequest.query.filter_by(processed_by_id=admin.id).update(
+                {"processed_by_id": None}
+            )
+            db.session.commit()
+
             db.session.delete(admin)
             db.session.commit()
 
@@ -446,6 +455,15 @@ class TestUserServiceTransactionMigrationPhase3:
 
             yield venue
 
+            # Cleanup: Delete any records that reference this venue before deleting the venue
+            from models.user.models import VenueManagerRequest, VenueManagement
+
+            # Delete VenueManagerRequest records that reference this venue
+            VenueManagerRequest.query.filter_by(venue_id=venue.id).delete()
+            # Delete VenueManagement records that reference this venue
+            VenueManagement.query.filter_by(venue_id=venue.id).delete()
+            db.session.commit()
+
             db.session.delete(venue)
             db.session.commit()
 
@@ -464,6 +482,15 @@ class TestUserServiceTransactionMigrationPhase3:
 
             yield user
 
+            # Cleanup: Delete any records that reference this user before deleting the user
+            from models.user.models import VenueManagerRequest, VenueManagement
+
+            # Delete VenueManagerRequest records that reference this user
+            VenueManagerRequest.query.filter_by(user_id=user.id).delete()
+            # Delete VenueManagement records that reference this user
+            VenueManagement.query.filter_by(user_id=user.id).delete()
+            db.session.commit()
+
             db.session.delete(user)
             db.session.commit()
 
@@ -481,6 +508,23 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.commit()
 
             yield admin
+
+            # Cleanup: Delete any records that reference this admin before deleting the admin
+            from models.user.models import VenueManagerRequest, VenueManagement
+
+            # Clear processed_by_id references in VenueManagerRequest
+            VenueManagerRequest.query.filter_by(processed_by_id=admin.id).update(
+                {"processed_by_id": None}
+            )
+            # Clear assigned_by_id references in VenueManagement
+            VenueManagement.query.filter_by(assigned_by_id=admin.id).update(
+                {"assigned_by_id": None}
+            )
+            # Clear revoked_by_id references in VenueManagement
+            VenueManagement.query.filter_by(revoked_by_id=admin.id).update(
+                {"revoked_by_id": None}
+            )
+            db.session.commit()
 
             db.session.delete(admin)
             db.session.commit()

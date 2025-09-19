@@ -144,11 +144,12 @@ class TestUseCaseOneComprehensive:
 
             # First set inscription dates and transition to inscription state
             from datetime import datetime, timedelta
+
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
-                inscription_end=now + timedelta(hours=1)
+                inscription_end=now + timedelta(hours=1),
             )
 
             for player in players:
@@ -598,11 +599,17 @@ class TestUseCaseOneComprehensive:
             # Player adds racks to complete match
             for _ in range(5):
                 RackService.add_rack_with_score_update(
-                    test_match.id, winner_id=player.id, reported_by_id=1, validated_by_admin=True
+                    test_match.id,
+                    winner_id=player.id,
+                    reported_by_id=1,
+                    validated_by_admin=True,
                 )
             for _ in range(2):
                 RackService.add_rack_with_score_update(
-                    test_match.id, winner_id=test_match.player2_id, reported_by_id=1, validated_by_admin=True
+                    test_match.id,
+                    winner_id=test_match.player2_id,
+                    reported_by_id=1,
+                    validated_by_admin=True,
                 )
 
             MatchService.to_completed(test_match.id)
@@ -773,11 +780,17 @@ class TestUseCaseOneComprehensive:
 
                 for _ in range(winner_score):
                     RackService.add_rack_with_score_update(
-                        match.id, winner_id=winner, reported_by_id=1, validated_by_admin=True
+                        match.id,
+                        winner_id=winner,
+                        reported_by_id=1,
+                        validated_by_admin=True,
                     )
                 for _ in range(loser_score):
                     RackService.add_rack_with_score_update(
-                        match.id, winner_id=loser, reported_by_id=1, validated_by_admin=True
+                        match.id,
+                        winner_id=loser,
+                        reported_by_id=1,
+                        validated_by_admin=True,
                     )
 
                 MatchService.to_completed(match.id)

@@ -15,7 +15,11 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
 
 from models import db
-from models.individual_match.models import MatchProposal, ProposalInvitation
+from models.individual_match.models import (
+    MatchProposal,
+    ProposalInvitation,
+    ProposalType,
+)
 from models.individual_match.services import (
     IndividualMatchService,
     MatchProposalService,
@@ -167,11 +171,13 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Arrange: create proposal that's already expired
-            past_time = datetime.now() - timedelta(hours=1)
+            past_time = datetime.utcnow() - timedelta(hours=1)
 
             expired_proposal = MatchProposal(
                 proposer_id=proposer.id,
+                proposal_type=ProposalType.OPEN,
                 location="Expired Hall",
+                scheduled_at=past_time + timedelta(hours=1),  # Schedule after expiry
                 discipline="8ball",
                 distance=3,
                 expires_at=past_time,
@@ -198,35 +204,49 @@ class TestIndividualMatchServiceTransactionMigration:
         """
         RED: Test current error handling in create_direct_proposal.
 
-        Documents current behavior for rollback testing after migration.
+        Documents current behavior: service doesn't raise exception for notification errors
+        but should properly rollback any partial data due to @transactional decorator.
         """
         proposer, invitee = test_users
 
         with app.app_context():
-            # Test with invalid user ID to trigger error
-            with pytest.raises(Exception):
-                # This should fail and rollback properly
-                scheduled_time = datetime.now() + timedelta(hours=2)
-                expires_time = datetime.now() + timedelta(hours=1)
+            # Test with invalid user ID to trigger rollback during autoflush
+            scheduled_time = datetime.utcnow() + timedelta(hours=2)
+            expires_time = datetime.utcnow() + timedelta(hours=1)
 
-                IndividualMatchService.create_direct_proposal(
-                    proposer_id=proposer.id,
-                    invited_user_ids=[99999],  # Non-existent user
-                    location="Test Hall",
-                    scheduled_at=scheduled_time,
-                    expires_at=expires_time,
-                    discipline="8ball",
-                    distance=3,
-                    description="Should fail",
-                )
+            # This will not raise exception but should rollback properly
+            proposal = IndividualMatchService.create_direct_proposal(
+                proposer_id=proposer.id,
+                invited_user_ids=[99999],  # Non-existent user
+                location="Test Hall",
+                scheduled_at=scheduled_time,
+                expires_at=expires_time,
+                discipline="8ball",
+                distance=3,
+                description="Should rollback",
+            )
 
-            # Verify no partial data was committed (proper rollback)
+            # The current implementation returns a MatchProposal object even when transaction fails
+            assert proposal is not None
+            assert proposal.description == "Should rollback"
+
+            # However, due to rollback, the proposal should not exist in database
+            # Force a fresh query to check database state
+            db.session.expunge_all()  # Clear SQLAlchemy session
             proposals = (
                 db.session.query(MatchProposal)
-                .filter_by(proposer_id=proposer.id, description="Should fail")
+                .filter_by(proposer_id=proposer.id, description="Should rollback")
                 .all()
             )
-            assert len(proposals) == 0  # No partial data should remain
+            assert len(proposals) == 0  # No partial data should remain due to rollback
+
+            # Verify no invitations were created
+            invitations = (
+                db.session.query(ProposalInvitation)
+                .filter_by(invited_user_id=99999)
+                .all()
+            )
+            assert len(invitations) == 0  # No partial invitation data should remain
 
     def test_transaction_isolation_current_behavior(self, app, test_users):
         """

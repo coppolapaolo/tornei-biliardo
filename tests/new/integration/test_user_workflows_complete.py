@@ -670,7 +670,9 @@ class TestUserWorkflowsComplete:
             gara_id=gara.id, user_id=players[0].id, is_waitlist=False
         ).first()
 
-        InscriptionService.uninscribe_user(player1.id, gara_id=confirmed_inscription.gara_id)
+        InscriptionService.uninscribe_user(
+            player1.id, gara_id=confirmed_inscription.gara_id
+        )
 
         # Waitlisted player should get notification and auto-promotion
         db_session.refresh(waitlist_inscription)
