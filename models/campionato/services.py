@@ -37,11 +37,40 @@ class TournamentService(DomainService):
         # Track domain access
         self._track_domain_access()
 
+        # Filter valid kwargs for Campionato model
+        valid_campionato_fields = {
+            "campionato_type",
+            "without_x",
+            "final_playoffs",
+            "challenge_mode",
+            "scoring_policy",
+            "is_active",
+        }
+        filtered_kwargs = {
+            k: v for k, v in kwargs.items() if k in valid_campionato_fields
+        }
+
+        # Extract director_id if present for separate handling
+        director_id = kwargs.get("director_id")
+
         campionato = self._execute_with_tracking(
-            lambda: Campionato(name=name, **kwargs)
+            lambda: Campionato(name=name, **filtered_kwargs)
         )
         db.session.add(campionato)
         db.session.flush()  # Flush to ensure ID is assigned
+
+        # Handle director assignment if director_id provided
+        if director_id:
+            from ..user.models import DirectorAssignment
+
+            director_assignment = DirectorAssignment(
+                user_id=director_id,
+                entity_type="campionato",
+                entity_id=campionato.id,
+                assigned_by_id=director_id,  # Self-assignment for now
+            )
+            db.session.add(director_assignment)
+
         return campionato
 
     @transactional(domain="campionato")

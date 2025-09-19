@@ -38,6 +38,7 @@ from models.classification.models import RoundClassification
 from models.challenge.models import Challenge, ChallengeAttempt
 from models.challenge.services import ChallengeService
 from models.location.models import BilliardHall
+from models.location.services import LocationService
 from models.base import db
 
 
@@ -45,53 +46,7 @@ from models.base import db
 class TestUseCaseOneComprehensive:
     """Test all 7 use cases from UC01.md with full workflow coverage."""
 
-    @pytest.fixture
-    def admin_user(self, db_session) -> User:
-        """Create admin user for testing."""
-        unique_id = str(uuid.uuid4())[:8]
-        admin = User(
-            username=f"admin_{unique_id}",
-            email=f"admin_{unique_id}@test.com",
-            role=UserRole.ADMIN.value,
-        )
-        admin.set_password("admin123")
-        db_session.add(admin)
-        db_session.commit()
-        return admin
-
-    @pytest.fixture
-    def director_user(self, db_session) -> User:
-        """Create director user for testing."""
-        unique_id = str(uuid.uuid4())[:8]
-        director = User(
-            username=f"director_{unique_id}",
-            email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value,
-        )
-        director.set_password("director123")
-        db_session.add(director)
-        db_session.commit()
-        return director
-
-    @pytest.fixture
-    def players(self, db_session) -> List[User]:
-        """Create 8 players for tournament testing."""
-        players = []
-        unique_id = str(uuid.uuid4())[:8]
-        for i in range(8):
-            player = User(
-                username=f"player_{unique_id}_{i+1:02d}",
-                email=f"player_{unique_id}_{i+1:02d}@test.com",
-                role=UserRole.PLAYER.value,
-            )
-            player.set_password("player123")
-            db_session.add(player)
-            players.append(player)
-        db_session.commit()
-        return players
-
-    @pytest.fixture
-    def billiard_hall(self, db_session) -> BilliardHall:
+    def _create_billiard_hall(self, db_session) -> BilliardHall:
         """Create billiard hall with 3 tables."""
         import json
 
@@ -110,8 +65,7 @@ class TestUseCaseOneComprehensive:
         db_session.commit()
         return hall
 
-    @pytest.fixture
-    def standalone_gara(self, db_session, admin_user, billiard_hall) -> Gara:
+    def _create_standalone_gara(self, db_session, admin_user, billiard_hall) -> Gara:
         """Create standalone tournament ready for testing."""
         today = date.today()
         gara = GaraService.create_gara(
@@ -120,13 +74,14 @@ class TestUseCaseOneComprehensive:
             date=today + timedelta(days=1),
             discipline="9-ball",
             distance=5,
+            best_of=True,  # Use "best of 5" instead of "exactly 5"
             campionato_id=None,  # standalone
             director_id=admin_user.id,
         )
         return gara
 
     def test_use_case_1_guest_access_live_updates(
-        self, app, standalone_gara, players, admin_user
+        self, app, isolated_admin_user, isolated_players, db_session
     ):
         """
         UC1: Guest access to ongoing tournament with live updates.
@@ -139,12 +94,18 @@ class TestUseCaseOneComprehensive:
         5. Player enters result
         6. Guest sees partial result
         """
+        # Use isolated fixtures
+        admin_user = isolated_admin_user
+        players = isolated_players[:8]  # UC01 tests expect 8 players
+
+        # Create test data
+        billiard_hall = self._create_billiard_hall(db_session)
+        standalone_gara = self._create_standalone_gara(db_session, admin_user, billiard_hall)
+
         with app.test_client() as client:
             # Setup: Register players and start first round
 
             # First set inscription dates and transition to inscription state
-            from datetime import datetime, timedelta
-
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
@@ -171,7 +132,8 @@ class TestUseCaseOneComprehensive:
             ).all()
             assert len(first_round_matches) == 4  # 8 players = 4 matches
 
-            # Complete first round matches using the pattern from existing tests (3-2 = 5 total racks)
+            # Complete first round matches using proper best-of-5 scores (winner needs 3, loser gets 2)
+            # For best-of-5, winner gets 3, loser gets 2 = realistic 5-rack match
             self._complete_matches_with_results(
                 first_round_matches, [(3, 2)] * len(first_round_matches)
             )
@@ -183,9 +145,9 @@ class TestUseCaseOneComprehensive:
             # Verify guest can see first round results
             html_content = response.data.decode("utf-8")
             assert "Turno 1" in html_content
-            assert (
-                "3 - 2" in html_content
-            )  # Match results visible (note the spacing in template)
+
+            # Verify guest can see match results (3-2 scores from best-of-5 matches)
+            assert "3 - 2" in html_content or "2 - 3" in html_content, "Guest should see completed match results"
 
             # Check classification is visible
             assert "Classifica" in html_content
@@ -225,7 +187,7 @@ class TestUseCaseOneComprehensive:
             assert "1-1" in html_content or "In corso" in html_content
 
     def test_use_case_2_match_modification_round_effects(
-        self, app, standalone_gara, players, director_user
+        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
     ):
         """
         UC2: Match modification workflow with round completion effects.
@@ -237,12 +199,45 @@ class TestUseCaseOneComprehensive:
         4. Director modifies round 2 match (removes rack)
         5. Round 2 becomes "in progress", classification shows round 1 results
         """
+        # Setup isolated fixtures
+        admin_user = isolated_admin_user
+        director_user = isolated_director_user
+        players = isolated_players[:8]  # UC01 tests use 8 players
+
+        # Create billiard hall and standalone gara
+        billiard_hall = LocationService.create_billiard_hall(
+            name="Test Hall",
+            address="123 Test St",
+            city="Test City",
+            added_by_id=admin_user.id,
+        )
+
+        standalone_gara = GaraService.create_gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="UC2 - Test Tournament",
+            date=date.today() + timedelta(days=1),
+            location="Test Hall",
+            distance=5,
+            description="UC2 match modification test",
+            rounds_count=3,
+            min_participants=6,
+            max_participants=8,
+            entry_fee=15.0,
+            matchmaking_strategy="amalfi",
+            discipline="8_ball",
+            best_of=False,  # Use exactly format for this test
+            director_id=director_user.id,
+            first_round_policy="random",
+            odd_number_policy="bye",
+            anti_rematch_enabled=True,
+            rating_type=None,
+        )
+
         with app.test_client() as client:
             # Setup: Complete tournament up to round 2
 
             # First set inscription dates and transition to inscription state
-            from datetime import datetime, timedelta
-
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
@@ -356,7 +351,7 @@ class TestUseCaseOneComprehensive:
             assert "Classifica" in html_content
 
     def test_use_case_3_tournament_round_ordering(
-        self, app, standalone_gara, players, admin_user
+        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
     ):
         """
         UC3: Tournament round ordering and management visibility.
@@ -367,12 +362,45 @@ class TestUseCaseOneComprehensive:
         3. Complete round 1, shows round 2 first (active), then 3, then 1 (completed)
         4. Complete round 2, shows proper ordering again
         """
+        # Setup isolated fixtures
+        admin_user = isolated_admin_user
+        director_user = isolated_director_user
+        players = isolated_players[:8]  # UC01 tests use 8 players
+
+        # Create billiard hall and standalone gara
+        billiard_hall = LocationService.create_billiard_hall(
+            name="Test Hall",
+            address="123 Test St",
+            city="Test City",
+            added_by_id=admin_user.id,
+        )
+
+        standalone_gara = GaraService.create_gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="UC3 - Test Tournament",
+            date=date.today() + timedelta(days=1),
+            location="Test Hall",
+            distance=5,
+            description="UC3 round ordering test",
+            rounds_count=3,
+            min_participants=6,
+            max_participants=8,
+            entry_fee=15.0,
+            matchmaking_strategy="random",
+            discipline="8_ball",
+            best_of=True,
+            director_id=director_user.id,
+            first_round_policy="random",
+            odd_number_policy="bye",
+            anti_rematch_enabled=True,
+            rating_type=None,
+        )
+
         with app.test_client() as client:
             # Setup tournament with random strategy and 3 rounds
 
             # First set inscription dates and transition to inscription state
-            from datetime import datetime, timedelta
-
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
@@ -471,7 +499,7 @@ class TestUseCaseOneComprehensive:
             )
 
     def test_use_case_4_table_assignment_queue(
-        self, app, standalone_gara, players, admin_user, billiard_hall
+        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
     ):
         """
         UC4: Table assignment and queue management system.
@@ -483,12 +511,45 @@ class TestUseCaseOneComprehensive:
         4. Players see table assignment in dashboard and match entry
         5. Admin can reorder table assignments
         """
+        # Setup isolated fixtures
+        admin_user = isolated_admin_user
+        director_user = isolated_director_user
+        players = isolated_players[:8]  # UC01 tests use 8 players
+
+        # Create billiard hall and standalone gara
+        billiard_hall = LocationService.create_billiard_hall(
+            name="Test Hall",
+            address="123 Test St",
+            city="Test City",
+            added_by_id=admin_user.id,
+        )
+
+        standalone_gara = GaraService.create_gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="UC4 - Test Tournament",
+            date=date.today() + timedelta(days=1),
+            location="Test Hall",
+            distance=5,
+            description="UC4 table assignment test",
+            rounds_count=3,
+            min_participants=6,
+            max_participants=8,
+            entry_fee=15.0,
+            matchmaking_strategy="amalfi",
+            discipline="8_ball",
+            best_of=True,
+            director_id=director_user.id,
+            first_round_policy="random",
+            odd_number_policy="bye",
+            anti_rematch_enabled=True,
+            rating_type=None,
+        )
+
         with app.test_client() as client:
             # Setup with Amalfi strategy (as mentioned in UC4)
 
             # First set inscription dates and transition to inscription state
-            from datetime import datetime, timedelta
-
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
@@ -587,7 +648,7 @@ class TestUseCaseOneComprehensive:
             # Would verify table assignment appears in player's match info
 
     def test_use_case_5_challenge_tournament_integration(
-        self, app, standalone_gara, players, director_user
+        self, app, isolated_admin_user, isolated_director_user, isolated_players, db_session
     ):
         """
         UC5: Challenge system integration with tournaments.
@@ -600,12 +661,45 @@ class TestUseCaseOneComprehensive:
         5. Director enters match result and challenge attempts for both players
         6. Challenge appears in player dashboard but locked until match complete
         """
+        # Setup isolated fixtures
+        admin_user = isolated_admin_user
+        director_user = isolated_director_user
+        players = isolated_players[:8]  # UC01 tests use 8 players
+
+        # Create billiard hall and standalone gara
+        billiard_hall = LocationService.create_billiard_hall(
+            name="Test Hall",
+            address="123 Test St",
+            city="Test City",
+            added_by_id=admin_user.id,
+        )
+
+        standalone_gara = GaraService.create_gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="UC5 - Test Tournament",
+            date=date.today() + timedelta(days=1),
+            location="Test Hall",
+            distance=5,
+            description="UC5 challenge integration test",
+            rounds_count=3,
+            min_participants=6,
+            max_participants=8,
+            entry_fee=15.0,
+            matchmaking_strategy="random",
+            discipline="8_ball",
+            best_of=True,
+            director_id=director_user.id,
+            first_round_policy="random",
+            odd_number_policy="bye",
+            anti_rematch_enabled=True,
+            rating_type=None,
+        )
+
         with app.test_client() as client:
             # Setup random tournament
 
             # First set inscription dates and transition to inscription state
-            from datetime import datetime, timedelta
-
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
@@ -651,25 +745,12 @@ class TestUseCaseOneComprehensive:
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(player.id)
 
-            # Player adds racks to complete match (3-2 final score, 5 total racks)
-            # Add 2 racks for player2 first
-            for _ in range(2):
-                RackService.add_rack_with_score_update(
-                    test_match.id,
-                    winner_id=test_match.player2_id,
-                    reported_by_id=1,
-                    validated_by_admin=True,
-                )
-            # Then add 3 racks for player1 to win 3-2
-            for _ in range(3):
-                RackService.add_rack_with_score_update(
-                    test_match.id,
-                    winner_id=player.id,
-                    reported_by_id=1,
-                    validated_by_admin=True,
-                )
-
-            MatchService.to_completed(test_match.id)
+            # Player completes match with 3-2 final score (player wins, opponent gets 2)
+            RackService.set_match_result_direct(
+                match_id=test_match.id,
+                player1_score=3 if test_match.player1_id == player.id else 2,
+                player2_score=2 if test_match.player1_id == player.id else 3,
+            )
 
             # 3. Player should see challenge requirement (simulated)
             response = client.get("/dashboard")
@@ -715,7 +796,7 @@ class TestUseCaseOneComprehensive:
             assert player_attempts == 1
             assert opponent_attempts == 1
 
-    def test_use_case_6_standalone_challenge_completion(self, app, players):
+    def test_use_case_6_standalone_challenge_completion(self, app, isolated_players, db_session):
         """
         UC6: Standalone challenge completion workflow.
 
@@ -726,6 +807,9 @@ class TestUseCaseOneComprehensive:
         4. Challenge log appears in player profile with attempts and results
         5. Player statistics updated with challenge results
         """
+        # Setup isolated fixtures
+        players = isolated_players[:8]  # UC01 tests use 8 players
+
         with app.test_client() as client:
             # Create a standalone challenge
             challenge = Challenge(
@@ -791,7 +875,7 @@ class TestUseCaseOneComprehensive:
             assert len(successful_attempts) == 2  # 2 successful out of 3
 
     def test_use_case_7_player_profile_statistics_export(
-        self, app, players, standalone_gara, admin_user
+        self, app, isolated_admin_user, isolated_players, db_session
     ):
         """
         UC7: Player profile and statistics with CSV export.
@@ -802,12 +886,44 @@ class TestUseCaseOneComprehensive:
         3. Statistics show results from tournaments, championships, individual matches
         4. Player can download complete history as CSV
         """
+        # Setup isolated fixtures
+        admin_user = isolated_admin_user
+        players = isolated_players[:8]  # UC01 tests use 8 players
+
+        # Create billiard hall and standalone gara
+        billiard_hall = LocationService.create_billiard_hall(
+            name="Test Hall",
+            address="123 Test St",
+            city="Test City",
+            added_by_id=admin_user.id,
+        )
+
+        standalone_gara = GaraService.create_gara(
+            campionato_id=None,  # Standalone
+            number=1,
+            name="UC7 - Test Tournament",
+            date=date.today() + timedelta(days=1),
+            location="Test Hall",
+            distance=5,
+            description="UC7 profile export test",
+            rounds_count=3,
+            min_participants=6,
+            max_participants=8,
+            entry_fee=15.0,
+            matchmaking_strategy="amalfi",
+            discipline="8_ball",
+            best_of=True,
+            director_id=admin_user.id,  # Use admin as director for this test
+            first_round_policy="random",
+            odd_number_policy="bye",
+            anti_rematch_enabled=True,
+            rating_type=None,
+        )
+
         with app.test_client() as client:
             player = players[0]
 
             # First set inscription dates and transition to inscription state
-            from datetime import datetime, timedelta
-
             now = datetime.now()
             GaraService.open_inscriptions(
                 standalone_gara.id,
@@ -817,7 +933,7 @@ class TestUseCaseOneComprehensive:
 
             # Setup: Create some match history - inscribe main player and several opponents
             InscriptionService.inscribe_user(player.id, standalone_gara.id)
-            for opponent in players[1:4]:  # Add 3 opponents to ensure multiple matches
+            for opponent in players[1:6]:  # Add 5 opponents (6 total) to meet minimum requirement
                 InscriptionService.inscribe_user(opponent.id, standalone_gara.id)
 
             ProvaStateMachine.start_playing(
@@ -837,22 +953,12 @@ class TestUseCaseOneComprehensive:
                     match.player2_id if winner == match.player1_id else match.player1_id
                 )
 
-                # Add some racks for realistic match
-                for _ in range(2):
-                    RackService.add_rack_with_score_update(
-                        match.id,
-                        winner_id=loser,
-                        reported_by_id=1,
-                        validated_by_admin=True,
-                    )
-                for _ in range(3):
-                    RackService.add_rack_with_score_update(
-                        match.id,
-                        winner_id=winner,
-                        reported_by_id=1,
-                        validated_by_admin=True,
-                    )
-                MatchService.to_completed(match.id)
+                # Complete match with 3-2 score for realistic results
+                RackService.set_match_result_direct(
+                    match_id=match.id,
+                    player1_score=3 if winner == match.player1_id else 2,
+                    player2_score=2 if winner == match.player1_id else 3,
+                )
 
             # Create round 2 to ensure player gets another match
             GaraService.create_amalfi_round(standalone_gara.id, 2)
@@ -874,27 +980,12 @@ class TestUseCaseOneComprehensive:
                     match.player2_id if winner == match.player1_id else match.player1_id
                 )
 
-                # Winner gets 3, loser gets 2 (3-2 final score, 5 total racks)
-                winner_score = 3
-                loser_score = 2
-
-                # Add loser racks first, then winner racks to finish 3-2
-                for _ in range(loser_score):
-                    RackService.add_rack_with_score_update(
-                        match.id,
-                        winner_id=loser,
-                        reported_by_id=1,
-                        validated_by_admin=True,
-                    )
-                for _ in range(winner_score):
-                    RackService.add_rack_with_score_update(
-                        match.id,
-                        winner_id=winner,
-                        reported_by_id=1,
-                        validated_by_admin=True,
-                    )
-
-                MatchService.to_completed(match.id)
+                # Complete match with 3-2 score
+                RackService.set_match_result_direct(
+                    match_id=match.id,
+                    player1_score=3 if winner == match.player1_id else 2,
+                    player2_score=2 if winner == match.player1_id else 3,
+                )
 
             # Add some challenge history
             challenge = Challenge(
@@ -1034,26 +1125,18 @@ class TestUseCaseOneComprehensive:
                 match.player2_id if winner_id == match.player1_id else match.player1_id
             )
 
-            # Add racks for loser first to avoid "match finished" error
-            for _ in range(loser_racks):
-                RackService.add_rack_with_score_update(
-                    match_id=match.id,
-                    winner_id=loser_id,
-                    reported_by_id=1,
-                    validated_by_admin=True,
-                )
+            # Use RackService.set_match_result_direct for both best_of and exactly formats
+            # This method handles existing racks and match completion correctly
+            RackService.set_match_result_direct(
+                match_id=match.id,
+                player1_score=winner_racks if winner_id == match.player1_id else loser_racks,
+                player2_score=loser_racks if winner_id == match.player1_id else winner_racks,
+            )
 
-            # Add racks for winner to complete the match
-            for _ in range(winner_racks):
-                RackService.add_rack_with_score_update(
-                    match_id=match.id,
-                    winner_id=winner_id,
-                    reported_by_id=1,
-                    validated_by_admin=True,
-                )
-
-            # Complete the match
-            MatchService.to_completed(match.id)
+            # Complete the match only if not already completed
+            current_match = db.session.get(Match, match.id)
+            if current_match.status != MatchStatus.COMPLETED:
+                MatchService.to_completed(match.id)
 
 
 # Helper functions for test data creation

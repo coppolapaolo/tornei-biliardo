@@ -114,7 +114,9 @@ class MatchService:
         return match
 
     @staticmethod
-    def reset_to_pending(match_id: int, clear_validation: bool = True) -> "OperationResult":
+    def reset_to_pending(
+        match_id: int, clear_validation: bool = True
+    ) -> "OperationResult":
         """Qualsiasi → pending. Opzione per azzerare flag di validazione admin.
         Non rimuove i rack (responsabilità di RackService).
         """
@@ -128,7 +130,7 @@ class MatchService:
                     operation_type=OperationType.RESULT_PROCESSING,
                     errors=[f"Match {match_id} non trovato"],
                     execution_time_ms=0,
-                    affected_domains=["match"]
+                    affected_domains=["match"],
                 )
 
             old_status = match.status
@@ -158,10 +160,10 @@ class MatchService:
                     "match_id": match_id,
                     "old_status": old_status,
                     "new_status": match.status,
-                    "validation_cleared": clear_validation
+                    "validation_cleared": clear_validation,
                 },
                 execution_time_ms=0,
-                affected_domains=["match"]
+                affected_domains=["match"],
             )
 
         except Exception as e:
@@ -170,7 +172,7 @@ class MatchService:
                 operation_type=OperationType.RESULT_PROCESSING,
                 errors=[f"Errore nel reset match: {str(e)}"],
                 execution_time_ms=0,
-                affected_domains=["match"]
+                affected_domains=["match"],
             )
 
     @staticmethod

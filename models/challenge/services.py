@@ -350,3 +350,36 @@ class ChallengeService:
             challenge.is_active = False
 
         db.session.commit()
+
+    @staticmethod
+    def record_attempt(
+        user_id: int,
+        challenge_id: int,
+        score: int,
+        max_score: int = 100,
+        gara_id: Optional[int] = None,
+        round_number: Optional[int] = None,
+        notes: Optional[str] = None,
+    ) -> ChallengeAttempt:
+        """
+        Convenience method to record a complete challenge attempt in one call.
+        This combines start_challenge_attempt and complete_challenge_attempt.
+        """
+        # Start the attempt
+        attempt = ChallengeService.start_challenge_attempt(
+            user_id=user_id,
+            challenge_id=challenge_id,
+            gara_id=gara_id,
+            round_number=round_number,
+        )
+
+        # Complete the attempt with score
+        passed = score >= (max_score * 0.7)  # Assume 70% is passing
+        completed_attempt = ChallengeService.complete_challenge_attempt(
+            attempt_id=attempt.id,
+            score=score,
+            passed=passed,
+            notes=notes,
+        )
+
+        return completed_attempt

@@ -144,9 +144,9 @@ class TestUseCaseMatchModification:
         initial_classification = {}
         for cls in initial_classification_query:
             initial_classification[cls.user_id] = {
-                'rack_difference': cls.rack_difference,
-                'matches_won': cls.matches_won,
-                'position': cls.position
+                "rack_difference": cls.rack_difference,
+                "matches_won": cls.matches_won,
+                "position": cls.position,
             }
 
         assert len(initial_classification_query) == 6
@@ -160,12 +160,16 @@ class TestUseCaseMatchModification:
         # Suppose Match 1 result was wrong - should have been 5-4, not 5-2
         problematic_match = round1_matches[0]
 
-        print(f"Match scores BEFORE modification: player1_score={problematic_match.player1_score}, player2_score={problematic_match.player2_score}")
+        print(
+            f"Match scores BEFORE modification: player1_score={problematic_match.player1_score}, player2_score={problematic_match.player2_score}"
+        )
 
         # Debug: Check all matches to understand total rack difference
         all_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         for i, match in enumerate(all_matches):
-            print(f"Match {i+1}: player1_id={match.player1_id}({match.player1_score}), player2_id={match.player2_id}({match.player2_score}), winner={match.winner_id}")
+            print(
+                f"Match {i+1}: player1_id={match.player1_id}({match.player1_score}), player2_id={match.player2_id}({match.player2_score}), winner={match.winner_id}"
+            )
             if match.id == problematic_match.id:
                 print(f"  ^ This is the problematic match we will modify")
 
@@ -180,7 +184,9 @@ class TestUseCaseMatchModification:
             elif match.player2_id == winner_id:
                 total_racks_won += match.player2_score
                 total_racks_lost += match.player1_score
-        print(f"Winner {winner_id} total: won={total_racks_won}, lost={total_racks_lost}, difference={total_racks_won - total_racks_lost}")
+        print(
+            f"Winner {winner_id} total: won={total_racks_won}, lost={total_racks_lost}, difference={total_racks_won - total_racks_lost}"
+        )
 
         # Step 3: Edit match result
         # Remove incorrect racks and add correct ones
@@ -229,15 +235,25 @@ class TestUseCaseMatchModification:
         # Refresh match object to get current scores
         db_session.refresh(problematic_match)
 
-        print(f"Problematic match: player1_id={problematic_match.player1_id}, player2_id={problematic_match.player2_id}")
+        print(
+            f"Problematic match: player1_id={problematic_match.player1_id}, player2_id={problematic_match.player2_id}"
+        )
         print(f"Winner_id: {problematic_match.winner_id}")
-        print(f"Match scores AFTER modification: player1_score={problematic_match.player1_score}, player2_score={problematic_match.player2_score}")
+        print(
+            f"Match scores AFTER modification: player1_score={problematic_match.player1_score}, player2_score={problematic_match.player2_score}"
+        )
 
         # Let's also count the actual racks
         all_racks = Rack.query.filter_by(match_id=problematic_match.id).all()
-        player1_racks = len([r for r in all_racks if r.winner_id == problematic_match.player1_id])
-        player2_racks = len([r for r in all_racks if r.winner_id == problematic_match.player2_id])
-        print(f"Actual rack counts: player1={player1_racks}, player2={player2_racks}, total={len(all_racks)}")
+        player1_racks = len(
+            [r for r in all_racks if r.winner_id == problematic_match.player1_id]
+        )
+        player2_racks = len(
+            [r for r in all_racks if r.winner_id == problematic_match.player2_id]
+        )
+        print(
+            f"Actual rack counts: player1={player1_racks}, player2={player2_racks}, total={len(all_racks)}"
+        )
 
         for classification in updated_classification:
             if classification.user_id in affected_player_ids:
@@ -245,20 +261,26 @@ class TestUseCaseMatchModification:
                 initial_values = initial_classification[classification.user_id]
 
                 print(f"Player {classification.user_id}:")
-                print(f"  Initial: rack_difference={initial_values['rack_difference']}, matches_won={initial_values['matches_won']}, position={initial_values['position']}")
-                print(f"  Updated: rack_difference={classification.rack_difference}, matches_won={classification.matches_won}, position={classification.position}")
+                print(
+                    f"  Initial: rack_difference={initial_values['rack_difference']}, matches_won={initial_values['matches_won']}, position={initial_values['position']}"
+                )
+                print(
+                    f"  Updated: rack_difference={classification.rack_difference}, matches_won={classification.matches_won}, position={classification.position}"
+                )
 
                 if classification.user_id == problematic_match.winner_id:
                     print(f"  This is the WINNER - should go from +3 to +1")
                     # Winner: rack difference should be worse (was +3, now +1)
                     assert (
-                        classification.rack_difference < initial_values['rack_difference']
+                        classification.rack_difference
+                        < initial_values["rack_difference"]
                     )
                 else:
                     print(f"  This is the LOSER - should go from -3 to -1")
                     # Loser: rack difference should be better (was -3, now -1)
                     assert (
-                        classification.rack_difference > initial_values['rack_difference']
+                        classification.rack_difference
+                        > initial_values["rack_difference"]
                     )
 
         print(
