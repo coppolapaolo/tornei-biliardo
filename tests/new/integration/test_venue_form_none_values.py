@@ -243,10 +243,10 @@ class TestVenueCreationFromCombo:
 
     @pytest.fixture
     def admin_user(self):
-        """Ottiene l'utente admin esistente per i test."""
+        """Ottiene l'utente admin esistente o ne crea uno se non esiste."""
         from models.user.models import User, UserRole
 
-        # Usa l'admin esistente creato dal conftest
+        # Cerca l'admin esistente creato dal conftest
         admin = User.query.filter_by(role=UserRole.ADMIN.value).first()
         if admin:
             # Aggiorna la password per i test
@@ -256,8 +256,15 @@ class TestVenueCreationFromCombo:
             db.session.commit()
             return admin
         else:
-            # Fallback: non dovrebbe succedere
-            raise RuntimeError("No admin user found in test database")
+            # Fallback: crea un admin se non esiste (consistente con la prima classe)
+            from models.user.services import UserService
+
+            return UserService.create_user(
+                username="admin",
+                email="admin@test.com",
+                password="adminpassword123",
+                role="admin",
+            )
 
     def test_new_venue_created_as_inactive_from_gara_form(self, client, admin_user):
         """Test che le nuove venue create dal form gara siano disattivate."""

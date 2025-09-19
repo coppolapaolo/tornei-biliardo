@@ -875,19 +875,19 @@ class GaraService:
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
 
-        gara = ProvaStateMachine.to_inscription(gara)
-
         # Validazione finestra (se entrambe presenti)
         if start is not None and end is not None and start > end:
             raise ValueError(
                 "La data di inizio deve essere precedente alla data di fine!"
             )
 
-        # Imposta campi data se forniti (parte della stessa transazione)
+        # Imposta campi data se forniti PRIMA della transizione di stato
         if start is not None:
             gara.inscription_start = start
         if end is not None:
             gara.inscription_end = end
+
+        gara = ProvaStateMachine.to_inscription(gara)
 
         return gara
 
