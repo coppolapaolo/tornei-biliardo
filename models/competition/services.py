@@ -13,7 +13,10 @@ Nota sprint 4 (migrazione soft):
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Dict, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.orchestration.service import OperationResult
 from datetime import date, datetime
 from sqlalchemy import select
 
@@ -1125,6 +1128,151 @@ class GaraService:
         from models.competition.inscription_service import InscriptionService
 
         return InscriptionService.can_start_with_current_inscriptions(gara_id)
+
+    @staticmethod
+    def reset_tournament_to_round(
+        gara_id: int, target_round: int, admin_id: int, reset_reason: str
+    ) -> "OperationResult":
+        """
+        Reset tournament to a specific round, removing all subsequent rounds and data.
+
+        Args:
+            gara_id: ID of the tournament
+            target_round: Round number to reset to
+            admin_id: ID of the admin performing the reset
+            reset_reason: Reason for the reset
+
+        Returns:
+            OperationResult with success status and details
+        """
+        from models.match.models import Match
+        from models.classification.models import RoundClassification
+        from models.orchestration.service import OperationResult, OperationType
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.TOURNAMENT_RESET,
+                data={},
+                errors=["Tournament not found"],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["competition"],
+            )
+
+        if target_round < 1 or target_round > gara.current_round:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.TOURNAMENT_RESET,
+                data={},
+                errors=[
+                    f"Invalid target round {target_round}. Must be between 1 and {gara.current_round}"
+                ],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["competition"],
+            )
+
+        # Delete matches from rounds after target_round
+        matches_to_delete = Match.query.filter(
+            Match.gara_id == gara_id, Match.round_number > target_round
+        ).all()
+
+        deleted_matches = len(matches_to_delete)
+        for match in matches_to_delete:
+            db.session.delete(match)
+
+        # Delete round classifications from rounds after target_round
+        classifications_to_delete = RoundClassification.query.filter(
+            RoundClassification.gara_id == gara_id,
+            RoundClassification.round_number > target_round,
+        ).all()
+
+        deleted_classifications = len(classifications_to_delete)
+        for classification in classifications_to_delete:
+            db.session.delete(classification)
+
+        # Reset current round
+        gara.current_round = target_round
+
+        # Unlock previous rounds for modification
+        previous_matches = Match.query.filter(
+            Match.gara_id == gara_id, Match.round_number <= target_round
+        ).all()
+        for match in previous_matches:
+            match.is_locked = False
+            match.round_locked = False
+
+        db.session.add(gara)
+        db.session.commit()
+
+        return OperationResult.success_result(
+            operation_type=OperationType.TOURNAMENT_RESET,
+            data={
+                "deleted_matches": deleted_matches,
+                "deleted_classifications": deleted_classifications,
+                "current_round": target_round,
+                "admin_id": admin_id,
+                "reason": reset_reason,
+            },
+            execution_time_ms=0.0,
+            affected_domains=["competition", "classification"],
+        )
+
+    @staticmethod
+    def cancel_tournament(
+        gara_id: int,
+        admin_id: int,
+        cancellation_reason: str,
+        refund_entry_fees: bool = False,
+        notify_participants: bool = True,
+    ) -> "OperationResult":
+        """
+        Cancel a tournament completely.
+
+        Args:
+            gara_id: ID of the tournament
+            admin_id: ID of the admin performing the cancellation
+            cancellation_reason: Reason for the cancellation
+            refund_entry_fees: Whether to refund entry fees
+            notify_participants: Whether to notify participants
+
+        Returns:
+            OperationResult with success status and details
+        """
+        from models.orchestration.service import OperationResult, OperationType
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.TOURNAMENT_CANCELLATION,
+                data={},
+                errors=["Tournament not found"],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["competition"],
+            )
+
+        # Change status to cancelled
+        gara.status = GaraStatus.CANCELLED.value
+        db.session.add(gara)
+        db.session.commit()
+
+        return OperationResult.success_result(
+            operation_type=OperationType.TOURNAMENT_CANCELLATION,
+            data={
+                "gara_id": gara_id,
+                "admin_id": admin_id,
+                "cancellation_reason": cancellation_reason,
+                "refund_entry_fees": refund_entry_fees,
+                "notify_participants": notify_participants,
+                "status": gara.status,
+            },
+            execution_time_ms=0.0,
+            affected_domains=["competition", "notification"],
+        )
 
     # Note: InscriptionService and RoundService have been extracted as separate services
     # GaraService retains existing methods for backward compatibility

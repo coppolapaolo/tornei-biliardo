@@ -343,7 +343,8 @@ class TestUseCaseIndividualMatches:
             proposer_id=player1.id,
             title="Open 8-Ball Challenge",
             description="Looking for anyone to play 8-ball tonight!",
-            proposed_date=date.today() + timedelta(days=1),  # Tomorrow to avoid expiration
+            proposed_date=date.today()
+            + timedelta(days=1),  # Tomorrow to avoid expiration
             proposed_time="20:30",
             location="Downtown Billiards",
             discipline="palla_8",

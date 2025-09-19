@@ -31,6 +31,8 @@ class OperationType(Enum):
     RESULT_PROCESSING = "result_processing"
     USER_ONBOARDING = "user_onboarding"
     RATING_UPDATE = "rating_update"
+    TOURNAMENT_RESET = "tournament_reset"
+    TOURNAMENT_CANCELLATION = "tournament_cancellation"
 
 
 @dataclass

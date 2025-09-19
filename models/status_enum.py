@@ -49,6 +49,7 @@ class GaraStatus(_StrEnum):
     INSCRIPTION = "inscription"
     PLAYING = "playing"
     COMPLETED = "completed"
+    CANCELLED = "cancelled"
 
 
 class ProvaDerivedStatus(_StrEnum):

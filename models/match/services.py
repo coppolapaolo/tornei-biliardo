@@ -11,7 +11,10 @@ per compatibilità con i test di separazione.
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.orchestration.service import OperationResult
 
 from models.base import db
 from models.status_enum import MatchStatus
@@ -111,22 +114,308 @@ class MatchService:
         return match
 
     @staticmethod
-    def reset_to_pending(match_id: int, clear_validation: bool = True) -> Match:
+    def reset_to_pending(match_id: int, clear_validation: bool = True) -> "OperationResult":
         """Qualsiasi → pending. Opzione per azzerare flag di validazione admin.
         Non rimuove i rack (responsabilità di RackService).
         """
+        from ..orchestration.service import OperationResult, OperationType
+        from .models import Rack
+
+        try:
+            match = db.session.get(Match, match_id)
+            if not match:
+                return OperationResult.failure_result(
+                    operation_type=OperationType.RESULT_PROCESSING,
+                    errors=[f"Match {match_id} non trovato"],
+                    execution_time_ms=0,
+                    affected_domains=["match"]
+                )
+
+            old_status = match.status
+
+            # Clear all racks
+            existing_racks = Rack.query.filter_by(match_id=match_id).all()
+            for rack in existing_racks:
+                db.session.delete(rack)
+
+            # Reset match scores
+            match.player1_score = 0
+            match.player2_score = 0
+            match.winner_id = None
+            match.status = MatchStatus.PENDING.value
+
+            if clear_validation and hasattr(match, "validated_by_admin"):
+                try:
+                    match.validated_by_admin = False
+                except Exception:
+                    pass
+            db.session.add(match)
+            db.session.commit()
+
+            return OperationResult.success_result(
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={
+                    "match_id": match_id,
+                    "old_status": old_status,
+                    "new_status": match.status,
+                    "validation_cleared": clear_validation
+                },
+                execution_time_ms=0,
+                affected_domains=["match"]
+            )
+
+        except Exception as e:
+            db.session.rollback()
+            return OperationResult.failure_result(
+                operation_type=OperationType.RESULT_PROCESSING,
+                errors=[f"Errore nel reset match: {str(e)}"],
+                execution_time_ms=0,
+                affected_domains=["match"]
+            )
+
+    @staticmethod
+    def add_rack_to_completed_match(
+        match_id: int,
+        rack_number: int,
+        winner_id: int,
+        modifier_id: int,
+    ) -> "OperationResult":
+        """
+        Add a rack to a completed match (admin function).
+
+        Args:
+            match_id: ID of the match
+            rack_number: Rack number to add
+            winner_id: ID of the winner of this rack
+            modifier_id: ID of the admin making the modification
+
+        Returns:
+            OperationResult indicating success or failure
+        """
+        from models.orchestration.service import OperationResult, OperationType
+
         match = db.session.get(Match, match_id)
         if not match:
-            raise ValueError(f"Match {match_id} non trovato")
-        match.status = MatchStatus.PENDING.value
-        if clear_validation and hasattr(match, "validated_by_admin"):
-            try:
-                match.validated_by_admin = False
-            except Exception:
-                pass
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={},
+                errors=["Match not found"],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["match"],
+            )
+
+        # Check if match is locked
+        if match.is_locked or match.round_locked:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={},
+                errors=["Match is locked and cannot be modified"],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["match"],
+            )
+
+        # Add the rack
+        try:
+            RackService.add_rack_result(
+                match_id=match_id,
+                rack_number=rack_number,
+                winner_id=winner_id,
+                reported_by_id=modifier_id,
+                validated_by_admin=True,
+                admin_note=f"Added by admin {modifier_id}",
+            )
+
+            return OperationResult.success_result(
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={
+                    "match_id": match_id,
+                    "rack_number": rack_number,
+                    "winner_id": winner_id,
+                    "modifier_id": modifier_id,
+                },
+                execution_time_ms=0.0,
+                affected_domains=["match"],
+            )
+
+        except Exception as e:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={},
+                errors=[str(e)],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["match"],
+            )
+
+    @staticmethod
+    def admin_unlock_match(
+        match_id: int,
+        admin_id: int,
+        unlock_reason: str,
+    ) -> "OperationResult":
+        """
+        Admin override to unlock a match for modifications.
+
+        Args:
+            match_id: ID of the match to unlock
+            admin_id: ID of the admin performing the unlock
+            unlock_reason: Reason for unlocking
+
+        Returns:
+            OperationResult indicating success or failure
+        """
+        from models.orchestration.service import OperationResult, OperationType
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={},
+                errors=["Match not found"],
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["match"],
+            )
+
+        # Unlock the match
+        match.is_locked = False
+        match.round_locked = False
         db.session.add(match)
         db.session.commit()
-        return match
+
+        return OperationResult.success_result(
+            operation_type=OperationType.RESULT_PROCESSING,
+            data={
+                "match_id": match_id,
+                "admin_id": admin_id,
+                "unlock_reason": unlock_reason,
+                "was_locked": True,
+            },
+            execution_time_ms=0.0,
+            affected_domains=["match"],
+        )
+
+    @staticmethod
+    def apply_batch_corrections(
+        gara_id: int,
+        corrections: List[Dict[str, Any]],
+        admin_id: int,
+    ) -> "OperationResult":
+        """
+        Apply batch corrections to multiple matches.
+
+        Args:
+            gara_id: ID of the tournament
+            corrections: List of correction dictionaries
+            admin_id: ID of the admin performing corrections
+
+        Returns:
+            OperationResult with batch correction results
+        """
+        from models.orchestration.service import OperationResult, OperationType
+
+        results = []
+        errors = []
+
+        for correction in corrections:
+            try:
+                match_id = correction["match_id"]
+                correction_type = correction["correction_type"]
+                new_winner_score = correction["new_winner_score"]
+                new_loser_score = correction["new_loser_score"]
+                reason = correction.get("reason", "Batch correction")
+
+                match = db.session.get(Match, match_id)
+                if not match:
+                    error_msg = f"Match {match_id} not found"
+                    errors.append(error_msg)
+                    results.append(
+                        {
+                            "match_id": match_id,
+                            "success": False,
+                            "error": error_msg,
+                        }
+                    )
+                    continue
+
+                if match.gara_id != gara_id:
+                    error_msg = (
+                        f"Match {match_id} does not belong to specified tournament"
+                    )
+                    errors.append(error_msg)
+                    results.append(
+                        {
+                            "match_id": match_id,
+                            "success": False,
+                            "error": error_msg,
+                        }
+                    )
+                    continue
+
+                # Apply score correction
+                if correction_type == "score_adjustment":
+                    # Use existing method to set the result
+                    RackService.set_match_result_direct(
+                        match_id=match_id,
+                        player1_score=new_winner_score,
+                        player2_score=new_loser_score,
+                    )
+
+                    results.append(
+                        {
+                            "match_id": match_id,
+                            "success": True,
+                            "correction_type": correction_type,
+                            "new_scores": {
+                                "winner": new_winner_score,
+                                "loser": new_loser_score,
+                            },
+                            "reason": reason,
+                            "admin_id": admin_id,
+                        }
+                    )
+
+            except Exception as e:
+                error_msg = str(e)
+                errors.append(error_msg)
+                results.append(
+                    {
+                        "match_id": correction.get("match_id", "unknown"),
+                        "success": False,
+                        "error": error_msg,
+                    }
+                )
+
+        # Determine overall success
+        overall_success = len(errors) == 0
+
+        if overall_success:
+            return OperationResult.success_result(
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={
+                    "corrections_applied": len(results),
+                    "results": results,
+                    "admin_id": admin_id,
+                },
+                execution_time_ms=0.0,
+                affected_domains=["match", "competition"],
+            )
+        else:
+            return OperationResult(
+                success=False,
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={"results": results},
+                errors=errors,
+                warnings=[],
+                execution_time_ms=0.0,
+                affected_domains=["match", "competition"],
+            )
 
 
 class RackService:
@@ -141,6 +430,7 @@ class RackService:
         *,
         confirmed_by_player: bool = False,
         validated_by_admin: bool = False,
+        admin_note: Optional[str] = None,
     ) -> Rack:
         rack = Rack(
             match_id=match_id,
@@ -149,18 +439,26 @@ class RackService:
             reported_by_id=reported_by_id,
             confirmed_by_player=confirmed_by_player,
             validated_by_admin=validated_by_admin,
+            admin_note=admin_note,
         )
         db.session.add(rack)
-        db.session.commit()
-        # Transizione soft: se il match è pending, portalo a playing
+
+        # Update match scores when rack is added
         match = db.session.get(Match, match_id)
-        if (
-            match
-            and (match.status or MatchStatus.PENDING.value) == MatchStatus.PENDING.value
-        ):
-            match.status = MatchStatus.PLAYING.value
+        if match:
+            # Update match scores based on winner
+            if winner_id == match.player1_id:
+                match.player1_score = (match.player1_score or 0) + 1
+            elif winner_id == match.player2_id:
+                match.player2_score = (match.player2_score or 0) + 1
+
+            # Transizione soft: se il match è pending, portalo a playing
+            if (match.status or MatchStatus.PENDING.value) == MatchStatus.PENDING.value:
+                match.status = MatchStatus.PLAYING.value
+
             db.session.add(match)
-            db.session.commit()
+
+        db.session.commit()
         return rack
 
     @staticmethod
@@ -326,8 +624,11 @@ class RackService:
 
         # Import locale per evitare cicli
         from models.match.services import MatchService
+        from models.status_enum import MatchStatus
 
-        MatchService.to_completed(match.id)
+        # Solo transizione a completed se non è già completed
+        if match.status != MatchStatus.COMPLETED.value:
+            MatchService.to_completed(match.id)
 
     @staticmethod
     def reset_match_complete(match_id: int) -> None:

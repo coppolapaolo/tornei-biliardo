@@ -375,6 +375,17 @@ class RoundService:
             )
             total_matches = len(matches)
 
+            # Lock previous round matches when creating a new round
+            if round_number > 1:
+                previous_round_matches = (
+                    db.session.query(Match)
+                    .filter_by(gara_id=gara_id, round_number=round_number - 1)
+                    .all()
+                )
+                for match in previous_round_matches:
+                    match.round_locked = True
+                    db.session.add(match)
+
             db.session.commit()
             return (total_matches, normal_matches, bye_matches, trio_matches)
 

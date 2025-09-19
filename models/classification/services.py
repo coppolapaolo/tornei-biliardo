@@ -261,6 +261,42 @@ class ClassificationService:
             "completed": all(c.total_matches_won > 0 for c in standings),
         }
 
+    @staticmethod
+    @cache_invalidate(tags=["classification", "gara"])
+    def recalculate_classification_after_match_edit(
+        match_id: int, modified_by_id: int
+    ) -> None:
+        """
+        Recalculate classification after a match has been edited by an admin.
+
+        Args:
+            match_id: ID of the modified match
+            modified_by_id: ID of the admin who made the modification
+        """
+        from models.match.models import Match
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} not found")
+
+        gara_id = match.gara_id
+        round_number = match.round_number
+
+        # Recalculate classification for the round containing the modified match
+        RoundClassificationService.calculate_and_save_round_classification(
+            gara_id, round_number
+        )
+
+        # If this is part of a campionato, update campionato classification too
+        if match.gara.campionato_id:
+            ClassificationService.update_campionato_classification(
+                match.gara.campionato_id
+            )
+
+        # Invalidate related caches
+        ClassificationService.invalidate_campionato_cache(match.gara.campionato_id or 0)
+        cache_manager.invalidate_by_tags([f"gara:{gara_id}"])
+
 
 class RoundClassificationService:
     """Service for managing round-by-round classifications with caching."""

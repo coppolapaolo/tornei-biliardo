@@ -53,6 +53,10 @@ class Match(db.Model):
     status = db.Column(
         db.String(20), default="pending"
     )  # pending, playing, completed, validated
+    is_locked = db.Column(
+        db.Boolean, default=False
+    )  # Match specifico bloccato per modifiche
+    round_locked = db.Column(db.Boolean, default=False)  # Round bloccato per modifiche
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
     amalfi_round = db.Column(db.Integer)  # Turno secondo algoritmo Amalfi
@@ -427,6 +431,9 @@ class Rack(db.Model):
         db.Boolean, default=False
     )  # confermato dall'altro giocatore
     validated_by_admin = db.Column(db.Boolean, default=False)
+    admin_note = db.Column(
+        db.Text, nullable=True
+    )  # Note admin per modifiche/correzioni
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
