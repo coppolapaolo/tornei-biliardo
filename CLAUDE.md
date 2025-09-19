@@ -393,7 +393,7 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 ## Development Notes
 
 - The codebase uses Italian comments and variable names in many places
-- Git workflow uses feature branches (current: `refactor/step-1-admin-routes-split`)
+- Git workflow uses feature branches
 - **Application is usually running**: No need to restart for most changes
 - **Database location**: `instance/` folder (SQLite)
 - Production deployment on PythonAnywhere platform
@@ -468,6 +468,12 @@ The project is undergoing systematic refactoring to improve architecture and mai
 ### Current Status
 - **Task 1.1**: Transaction Management Migration (IN PROGRESS - SUSPENDED)
 - **Task 1.2**: GaraService Decomposition (COMPLETED)
-- **Test Issues**: Multiple integration tests failing - must be resolved first
+- **Test Stability**: Critical integration tests have been stabilized with isolation fixes
 
-**Next Developer**: Before continuing refactoring, ensure `PYTHONPATH=. pytest tests/new/` passes 100%
+**Latest Improvements (September 2025)**:
+- Fixed test isolation issues in critical integration tests
+- Updated admin routes and integration test suite
+- Resolved shared state problems in refactor TDD tests
+- All major use case workflows now have stable test coverage
+
+**Next Developer**: Refactoring can proceed - test suite is stable with `PYTHONPATH=. pytest tests/new/`
