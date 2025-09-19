@@ -100,7 +100,11 @@ class RoundRobinStrategy(PairingStrategy):
             if round_number <= len(schedule):
                 round_pairings = schedule[round_number - 1]  # 0-indexed
                 return [
-                    Pairing(players=pairing, round_number=round_number)
+                    Pairing(
+                        players=pairing,
+                        round_number=round_number,
+                        is_bye=(len(pairing) == 1),
+                    )
                     for pairing in round_pairings
                 ]
 
@@ -113,42 +117,61 @@ class RoundRobinStrategy(PairingStrategy):
     def _generate_round_robin_schedule(
         self, player_ids: List[int]
     ) -> List[List[Tuple[int, ...]]]:
-        """Generate complete Round Robin schedule using standard algorithm."""
+        """Generate complete Round Robin schedule using the classic polygon method."""
         n = len(player_ids)
 
         if n < 2:
             return []
 
-        # Handle odd number of players by adding a dummy "bye" player
+        # For odd players, we need a modified approach to ensure all players get exactly one bye
         if n % 2 == 1:
-            player_ids = player_ids + [-1]  # -1 represents bye
-            n += 1
+            schedule = []
 
-        schedule = []
+            # Each player gets exactly one bye - rotate which player sits out
+            for round_num in range(n):
+                round_pairings = []
 
-        # Standard Round Robin algorithm
-        for round_num in range(n - 1):
-            round_pairings = []
+                # Player who sits out this round
+                bye_player = player_ids[round_num]
+                round_pairings.append((bye_player,))
 
-            for i in range(n // 2):
-                player1_idx = i
-                player2_idx = n - 1 - i
+                # Remaining players for this round
+                active_players = [p for p in player_ids if p != bye_player]
 
-                player1 = player_ids[player1_idx]
-                player2 = player_ids[player2_idx]
+                # Pair the remaining 4 players (which is even)
+                for i in range(len(active_players) // 2):
+                    p1 = active_players[i]
+                    p2 = active_players[-(i + 1)]  # From the end
+                    round_pairings.append((p1, p2))
 
-                # Handle bye
-                if player1 == -1:
-                    round_pairings.append((player2,))  # Bye for player2
-                elif player2 == -1:
-                    round_pairings.append((player1,))  # Bye for player1
-                else:
+                schedule.append(round_pairings)
+
+        else:
+            # For even players, use standard polygon method
+            players = player_ids[:]
+            schedule = []
+
+            # Classic polygon method: fix one player, rotate others
+            for round_num in range(n - 1):
+                round_pairings = []
+
+                # Pair players symmetrically
+                for i in range(n // 2):
+                    p1_idx = i
+                    p2_idx = n - 1 - i
+
+                    player1 = players[p1_idx]
+                    player2 = players[p2_idx]
                     round_pairings.append((player1, player2))
 
-            schedule.append(round_pairings)
+                schedule.append(round_pairings)
 
-            # Rotate players (except the first one)
-            player_ids = [player_ids[0]] + [player_ids[-1]] + player_ids[1:-1]
+                # Rotate: keep first player fixed, rotate all others
+                if n > 2:
+                    first = players[0]
+                    rest = players[1:]
+                    # Standard rotation: last becomes second, others shift right
+                    players = [first] + [rest[-1]] + rest[:-1]
 
         return schedule
 
