@@ -20,7 +20,7 @@ def login():
             login_user(user)
             return redirect(url_for("dashboard.dashboard"))
         else:
-            flash("Username o password errati.")
+            flash("Username o password errati. Error.", "error")
 
     return render_template("login.html")
 
@@ -54,7 +54,7 @@ def register():
     return render_template("register.html")
 
 
-@auth_bp.route("/logout")
+@auth_bp.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
     """Logout utente"""

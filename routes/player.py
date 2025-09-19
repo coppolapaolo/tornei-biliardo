@@ -1017,8 +1017,11 @@ def request_director():
         flash("Hai già una richiesta in sospeso o è stata valutata.")
         return redirect(url_for("player.profile"))
 
+    reason = request.form.get("reason", "").strip()
     req = DirectorRequest(
-        user_id=current_user.id, status=DirectorRequestStatus.PENDING.value
+        user_id=current_user.id,
+        status=DirectorRequestStatus.PENDING.value,
+        notes=reason,
     )
     db.session.add(req)
     db.session.commit()

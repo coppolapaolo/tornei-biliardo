@@ -1,11 +1,12 @@
 # routes/admin/user.py
 """User management blueprint for admin interface."""
 
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 
 from models import (
     User,
     DirectorRequest,
+    db,
 )
 from utils import admin_required
 from models.status_enum import DirectorRequestStatus
@@ -108,6 +109,36 @@ def reject_director_request(req_id):
         admin_user = db.session.get(User, current_user.id)
         DirectorRequestService.process_request(req_id, admin_user, approve=False)
         flash("Richiesta rifiutata.")
+    except (PermissionError, ValueError) as e:
+        flash(str(e), "error")
+
+    return redirect(url_for("admin.user.director_requests"))
+
+
+@user_bp.route("/director_requests/<int:req_id>/process", methods=["POST"])
+@admin_required
+def process_director_request(req_id):
+    """Process director request (approve or reject based on status parameter)"""
+    from models.user.services import DirectorRequestService
+    from flask_login import current_user
+
+    try:
+        status = request.form.get("status")
+        admin_notes = request.form.get("admin_notes", "")
+
+        approve = status == "approved"
+
+        admin_user = db.session.get(User, current_user.id)
+        processed_request = DirectorRequestService.process_request(
+            req_id, admin_user, approve=approve
+        )
+
+        # Update admin notes if provided
+        if admin_notes:
+            processed_request.notes = admin_notes
+            db.session.commit()
+
+        flash("Richiesta processata con successo.")
     except (PermissionError, ValueError) as e:
         flash(str(e), "error")
 

@@ -80,13 +80,13 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
-        response = client.get("/challenge/")
+        response = client.get("/challenges/")
         assert response.status_code == 200
         assert b"Challenge" in response.data
 
     def test_challenge_catalog_requires_login(self, client):
         """Test that challenge catalog requires login."""
-        response = client.get("/challenge/")
+        response = client.get("/challenges/")
         assert response.status_code == 302  # Redirect to login
 
     def test_create_challenge_get(self, client, director_user):
@@ -94,7 +94,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(director_user.id)
 
-        response = client.get("/challenge/create")
+        response = client.get("/challenges/create")
         assert response.status_code == 200
         assert b"Crea Nuova Challenge" in response.data
 
@@ -104,7 +104,7 @@ class TestChallengeRoutes:
             sess["_user_id"] = str(director_user.id)
 
         response = client.post(
-            "/challenge/create",
+            "/challenges/create",
             data={
                 "description": "Test challenge created via POST",
                 "pass_fail_only": "false",
@@ -130,7 +130,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.get("/challenge/create")
+        response = client.get("/challenges/create")
         assert response.status_code == 302  # Redirect (user not authorized)
 
     def test_challenge_detail(self, client, admin_user, test_challenge):
@@ -138,7 +138,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
-        response = client.get(f"/challenge/{test_challenge.id}")
+        response = client.get(f"/challenges/{test_challenge.id}")
         assert response.status_code == 200
         assert test_challenge.description.encode() in response.data
 
@@ -148,7 +148,7 @@ class TestChallengeRoutes:
             sess["_user_id"] = str(admin_user.id)
 
         response = client.get(
-            f"/challenge/{test_challenge.id}",
+            f"/challenges/{test_challenge.id}",
             headers={"X-Requested-With": "XMLHttpRequest"},
         )
         assert response.status_code == 200
@@ -160,7 +160,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.get(f"/challenge/{test_challenge.id}/attempt")
+        response = client.get(f"/challenges/{test_challenge.id}/attempt")
         assert response.status_code == 200
         assert b"Inizia Challenge" in response.data
 
@@ -169,11 +169,11 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.post(f"/challenge/{test_challenge.id}/attempt")
+        response = client.post(f"/challenges/{test_challenge.id}/attempt")
 
         # Should redirect to attempt detail
         assert response.status_code == 302
-        assert "/challenge/attempt/" in response.location
+        assert "/challenges/attempt/" in response.location
 
     def test_toggle_favorite(self, client, player_user, test_challenge):
         """Test favorite toggle functionality."""
@@ -182,7 +182,7 @@ class TestChallengeRoutes:
 
         # Toggle favorite on
         response = client.post(
-            f"/challenge/{test_challenge.id}/favorite",
+            f"/challenges/{test_challenge.id}/favorite",
             headers={"Content-Type": "application/json"},
         )
 
@@ -199,7 +199,7 @@ class TestChallengeRoutes:
 
         # Toggle favorite off
         response = client.post(
-            f"/challenge/{test_challenge.id}/favorite",
+            f"/challenges/{test_challenge.id}/favorite",
             headers={"Content-Type": "application/json"},
         )
 
@@ -212,7 +212,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(director_user.id)
 
-        response = client.get(f"/challenge/{test_challenge.id}/edit")
+        response = client.get(f"/challenges/{test_challenge.id}/edit")
         assert response.status_code == 200
         assert b"Challenge" in response.data  # Using create template for edit
         # Note: Using create template for edit mode
@@ -223,7 +223,7 @@ class TestChallengeRoutes:
             sess["_user_id"] = str(director_user.id)
 
         response = client.post(
-            f"/challenge/{test_challenge.id}/edit",
+            f"/challenges/{test_challenge.id}/edit",
             data={
                 "description": "Updated description",
                 "is_active": "true",
@@ -244,7 +244,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.get(f"/challenge/{test_challenge.id}/edit")
+        response = client.get(f"/challenges/{test_challenge.id}/edit")
         assert response.status_code == 302  # Redirect (user not authorized)
 
     def test_delete_challenge(self, client, director_user, test_challenge):
@@ -253,7 +253,7 @@ class TestChallengeRoutes:
             sess["_user_id"] = str(director_user.id)
 
         response = client.post(
-            f"/challenge/{test_challenge.id}/delete",
+            f"/challenges/{test_challenge.id}/delete",
             headers={"Content-Type": "application/json"},
         )
 
@@ -281,7 +281,7 @@ class TestChallengeRoutes:
             sess["_user_id"] = str(director_user.id)
 
         response = client.post(
-            f"/challenge/{test_challenge.id}/delete",
+            f"/challenges/{test_challenge.id}/delete",
             headers={"Content-Type": "application/json"},
         )
 
@@ -301,7 +301,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.post(f"/challenge/{test_challenge.id}/delete")
+        response = client.post(f"/challenges/{test_challenge.id}/delete")
         assert response.status_code == 302  # Redirect (user not authorized)
 
     def test_challenge_not_found(self, client, admin_user):
@@ -309,7 +309,7 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(admin_user.id)
 
-        response = client.get("/challenge/99999")
+        response = client.get("/challenges/99999")
         assert (
             response.status_code == 302
         )  # Redirect (challenge not found or access denied)
@@ -323,11 +323,11 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.get(f"/challenge/{test_challenge.id}/attempt")
+        response = client.get(f"/challenges/{test_challenge.id}/attempt")
 
         # Should redirect with warning
         assert response.status_code == 302
-        assert "/challenge/" in response.location
+        assert "/challenges/" in response.location
 
         # Restore for cleanup
         test_challenge.is_active = True
@@ -386,7 +386,7 @@ class TestChallengeAttemptRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = str(player_user.id)
 
-        response = client.get(f"/challenge/attempt/{test_attempt.id}")
+        response = client.get(f"/challenges/attempt/{test_attempt.id}")
         assert response.status_code == 200
         assert b"Tentativo" in response.data
 
@@ -396,7 +396,7 @@ class TestChallengeAttemptRoutes:
             sess["_user_id"] = str(player_user.id)
 
         response = client.post(
-            f"/challenge/attempt/{test_attempt.id}/complete",
+            f"/challenges/attempt/{test_attempt.id}/complete",
             data={"score": "85", "notes": "Good attempt"},
         )
 
@@ -433,7 +433,7 @@ class TestChallengeAttemptRoutes:
                 sess["_user_id"] = str(player_user.id)
 
             response = client.post(
-                f"/challenge/attempt/{attempt.id}/complete",
+                f"/challenges/attempt/{attempt.id}/complete",
                 data={"passed": "true", "notes": "Passed successfully"},
             )
 
@@ -468,7 +468,7 @@ class TestChallengeAttemptRoutes:
                 sess["_user_id"] = str(other_user.id)
 
             response = client.post(
-                f"/challenge/attempt/{test_attempt.id}/complete", data={"score": "50"}
+                f"/challenges/attempt/{test_attempt.id}/complete", data={"score": "50"}
             )
 
             # Should be forbidden

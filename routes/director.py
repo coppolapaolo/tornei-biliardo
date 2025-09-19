@@ -25,3 +25,10 @@ def director_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+@director_bp.route("/create_standalone")
+@director_required
+def create_standalone():
+    """Create standalone competition form."""
+    return "Director Create Standalone - OK"

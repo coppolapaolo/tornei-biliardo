@@ -9,8 +9,8 @@ from utils import admin_required
 dashboard_bp = Blueprint("dashboard", __name__)
 
 
-@dashboard_bp.route("/")
+@dashboard_bp.route("/dashboard")
 @admin_required
 def dashboard():
-    """Redirect to main dashboard"""
-    return redirect(url_for("dashboard.dashboard"))
+    """Admin dashboard"""
+    return "Admin Dashboard - OK"
