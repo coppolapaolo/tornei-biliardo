@@ -27,6 +27,7 @@ from models.individual_match.services import (
     IndividualMatchService,
     MatchProposalService,
 )
+from models.individual_match.models import MatchProposal
 from models.user.permissions import RoleRequirement
 
 
@@ -56,6 +57,33 @@ def proposal_list():
     except Exception as e:
         flash(f"Error loading proposals: {str(e)}", "danger")
         return redirect(url_for("individual_match.dashboard"))
+
+
+@individual_match_bp.route("/proposals/<int:proposal_id>")
+@RoleRequirement.player_or_director_required
+def proposal_detail(proposal_id):
+    """View individual match proposal details."""
+    try:
+        proposal = MatchProposal.query.get_or_404(proposal_id)
+
+        # Check if user has access to this proposal
+        user_id = current_user.id
+        has_access = (
+            proposal.proposer_id == user_id
+            or any(inv.invited_user_id == user_id for inv in proposal.invitations)
+            or proposal.proposal_type.value == "open"
+        )
+
+        if not has_access:
+            flash("Access denied to this proposal.", "danger")
+            return redirect(url_for("individual_match.proposal_list"))
+
+        return render_template(
+            "individual_match/proposal_detail.html", proposal=proposal
+        )
+    except Exception as e:
+        flash(f"Error loading proposal: {str(e)}", "danger")
+        return redirect(url_for("individual_match.proposal_list"))
 
 
 @individual_match_bp.route("/proposals/create", methods=["GET", "POST"])
@@ -243,6 +271,7 @@ def submit_rack_result(match_id):
             user_id=current_user.id,
             winner_id=int(data["winner_id"]),
             rack_number=int(data.get("rack_number", 1)),
+            notes=data.get("notes"),
         )
 
         if request.is_json:

@@ -75,7 +75,7 @@
             </div>
 
             <!-- Rack History -->
-            {% if match.individual_racks and match.individual_racks|length %}
+            {% if match.racks and match.racks|length %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5><i class="fas fa-list-ol"></i> Storico Rack</h5>
@@ -94,7 +94,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for rack in match.individual_racks|sort(attribute='rack_number') %}
+                                {% for rack in match.racks|sort(attribute='rack_number') %}
                                 <tr>
                                     <td><strong>{{ rack.rack_number }}</strong></td>
                                     <td>

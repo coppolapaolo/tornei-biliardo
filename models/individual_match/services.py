@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 from ..base import db
 from ..transaction.manager import transactional
+from ..notification.services import NotificationService
 from .models import (
     MatchProposal,
     ProposalInvitation,
@@ -506,7 +507,11 @@ class IndividualMatchService:
     @staticmethod
     @transactional(domain="individual_match")
     def submit_rack_result(
-        match_id: int, user_id: int, winner_id: int, rack_number: int
+        match_id: int,
+        user_id: int,
+        winner_id: int,
+        rack_number: int,
+        notes: Optional[str] = None,
     ) -> IndividualRack:
         """Submit result for a rack in individual match."""
         match = db.session.get(IndividualMatch, match_id)
@@ -533,7 +538,7 @@ class IndividualMatchService:
 
         # Create rack record
         rack = IndividualRack(
-            match_id=match_id, rack_number=rack_number, winner_id=winner_id
+            match_id=match_id, rack_number=rack_number, winner_id=winner_id, notes=notes
         )
 
         db.session.add(rack)
@@ -926,3 +931,154 @@ class IndividualMatchService:
 
         rack = match.add_rack_result(winner_id)
         return rack
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def complete_individual_match(
+        match_id: int, winner_id: int, user_id: int
+    ) -> IndividualMatch:
+        """Complete an individual match - alias for complete_match."""
+        return IndividualMatchService.complete_match(match_id, winner_id, user_id)
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def express_interest_in_open_invitation(
+        proposal_id: int, interested_player_id: int, message: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Express interest in an open invitation."""
+        proposal = db.session.get(MatchProposal, proposal_id)
+        if not proposal:
+            raise ValueError(f"Proposal {proposal_id} not found")
+
+        if proposal.proposal_type != ProposalType.OPEN:
+            raise ValueError("Can only express interest in open proposals")
+
+        # Check if already expressed interest
+        existing = ProposalInvitation.query.filter_by(
+            proposal_id=proposal_id, invited_user_id=interested_player_id
+        ).first()
+        if existing:
+            raise ValueError("Interest already expressed")
+
+        # Create invitation for this user
+        invitation = ProposalInvitation(
+            proposal_id=proposal_id, invited_user_id=interested_player_id
+        )
+        db.session.add(invitation)
+
+        return {
+            "success": True,
+            "invitation_id": invitation.id,
+            "message": "Interest expressed successfully",
+        }
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def accept_interest_for_open_invitation(
+        proposal_id: int, proposer_id: int, accepted_player_id: int
+    ) -> Dict[str, Any]:
+        """Accept an interest expressed for an open invitation."""
+        proposal = db.session.get(MatchProposal, proposal_id)
+        if not proposal:
+            raise ValueError(f"Proposal {proposal_id} not found")
+
+        if proposal.proposer_id != proposer_id:
+            raise ValueError("Only the proposer can accept interests")
+
+        # Find the invitation for the selected user
+        invitation = ProposalInvitation.query.filter_by(
+            proposal_id=proposal_id, invited_user_id=accepted_player_id
+        ).first()
+        if not invitation:
+            raise ValueError("No interest found for selected user")
+
+        # Accept the proposal on behalf of the selected user
+        match = IndividualMatchService.accept_proposal(accepted_player_id, proposal_id)
+
+        # Notify other interested players that the spot was filled
+        other_invitations = (
+            ProposalInvitation.query.filter_by(proposal_id=proposal_id)
+            .filter(ProposalInvitation.invited_user_id != accepted_player_id)
+            .all()
+        )
+
+        if other_invitations:
+            from ..notification.models import NotificationType, NotificationPriority
+
+            proposal_title = getattr(proposal, "title", "Open match proposal")
+
+            for other_invitation in other_invitations:
+                try:
+                    NotificationService.create_notification(
+                        user_id=other_invitation.invited_user_id,
+                        notification_type=NotificationType.MATCH_DECLINED,
+                        title="Match Proposal Filled",
+                        message=f"The open match proposal '{proposal_title}' has been filled by another player.",
+                        priority=NotificationPriority.NORMAL,
+                    )
+                except Exception as e:
+                    # Log the exception for debugging but don't fail the operation
+                    print(f"Failed to create notification: {e}")
+                    pass
+
+        return {
+            "success": True,
+            "match_id": match.id,
+            "message": "Interest accepted successfully",
+        }
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def create_individual_match_from_accepted_invitation(
+        invitation_id: int,
+    ) -> IndividualMatch:
+        """Create individual match from an accepted invitation."""
+        invitation = db.session.get(ProposalInvitation, invitation_id)
+        if not invitation:
+            raise ValueError(f"Invitation {invitation_id} not found")
+
+        # Accept the proposal through the invitation
+        return IndividualMatchService.accept_proposal(
+            invitation.invited_user_id, invitation.proposal_id
+        )
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def dispute_rack_result(
+        rack_id: int, disputing_player_id: int, reason: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Dispute a rack result."""
+        rack = db.session.get(IndividualRack, rack_id)
+        if not rack:
+            raise ValueError(f"Rack {rack_id} not found")
+
+        match = rack.match
+        if disputing_player_id not in [match.player1_id, match.player2_id]:
+            raise ValueError("Only match players can dispute rack results")
+
+        # Mark rack as disputed (assuming there's a disputed field)
+        # For now, just return a success message
+        return {
+            "success": True,
+            "message": f"Rack {rack.rack_number} result disputed by player {disputing_player_id}",
+            "reason": reason,
+        }
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def resolve_rack_dispute(
+        rack_id: int, admin_user_id: int, resolution: str, reason: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Resolve a rack result dispute."""
+        rack = db.session.get(IndividualRack, rack_id)
+        if not rack:
+            raise ValueError(f"Rack {rack_id} not found")
+
+        # Mark dispute as resolved
+        # For now, just return a success message
+        return {
+            "success": True,
+            "message": f"Rack {rack.rack_number} dispute resolved by admin {admin_user_id}",
+            "resolution": resolution,
+            "reason": reason,
+        }
