@@ -388,16 +388,10 @@ class RackService:
             if match.gara.best_of:
                 winning_score = match.gara.get_winning_score()
                 if max(match.player1_score, match.player2_score) < winning_score:
-                    # Import locale per evitare cicli
-                    from models.match.services import MatchService
-
                     MatchService.to_playing(match.id)
                     match.winner_id = None
             else:  # esatto numero
                 if (match.player1_score + match.player2_score) < match.gara.distance:
-                    # Import locale per evitare cicli
-                    from models.match.services import MatchService
-
                     MatchService.to_playing(match.id)
                     match.winner_id = None
 

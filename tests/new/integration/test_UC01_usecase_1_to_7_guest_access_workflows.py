@@ -171,9 +171,9 @@ class TestUseCaseOneComprehensive:
             ).all()
             assert len(first_round_matches) == 4  # 8 players = 4 matches
 
-            # Complete first round matches using the pattern from existing tests
+            # Complete first round matches using the pattern from existing tests (3-2 = 5 total racks)
             self._complete_matches_with_results(
-                first_round_matches, [(5, 3)] * len(first_round_matches)
+                first_round_matches, [(3, 2)] * len(first_round_matches)
             )
 
             # 1. Guest views tournament details (no authentication)
@@ -183,7 +183,9 @@ class TestUseCaseOneComprehensive:
             # Verify guest can see first round results
             html_content = response.data.decode("utf-8")
             assert "Turno 1" in html_content
-            assert "5-3" in html_content  # Match results visible
+            assert (
+                "3 - 2" in html_content
+            )  # Match results visible (note the spacing in template)
 
             # Check classification is visible
             assert "Classifica" in html_content
@@ -237,6 +239,17 @@ class TestUseCaseOneComprehensive:
         """
         with app.test_client() as client:
             # Setup: Complete tournament up to round 2
+
+            # First set inscription dates and transition to inscription state
+            from datetime import datetime, timedelta
+
+            now = datetime.now()
+            GaraService.open_inscriptions(
+                standalone_gara.id,
+                inscription_start=now - timedelta(hours=1),
+                inscription_end=now + timedelta(hours=1),
+            )
+
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
@@ -275,21 +288,18 @@ class TestUseCaseOneComprehensive:
                 gara_id=standalone_gara.id, round_number=2
             ).all()
 
-            for match in round2_matches:
-                # Complete with 5-1 score
-                for _ in range(5):
-                    RackService.add_rack_result(
-                        match.id, 1, match.player1_id, match.player1_id
-                    )
-                for _ in range(1):
-                    RackService.add_rack_result(
-                        match.id, 2, match.player2_id, match.player2_id
-                    )
-                MatchService.to_completed(match.id)
+            # Complete round 2 matches with 3-2 score (5 total racks)
+            self._complete_matches_with_results(
+                round2_matches, [(3, 2)] * len(round2_matches)
+            )
 
             # Login as director
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(director_user.id)
+
+            # Assign director_user as the director of the gara for permissions
+            standalone_gara.director_id = director_user.id
+            db.session.commit()
 
             # 1. Check tournament details page shows round 2 classification
             response = client.get(f"/gara/{standalone_gara.id}")
@@ -313,7 +323,7 @@ class TestUseCaseOneComprehensive:
             # 3. Director modifies a round 2 match (remove a rack)
             target_match = round2_matches[0]
             original_racks = Rack.query.filter_by(match_id=target_match.id).count()
-            assert original_racks == 6  # 5+1 racks
+            assert original_racks == 5  # 3+2 racks
 
             # Remove one rack
             last_rack = (
@@ -323,11 +333,17 @@ class TestUseCaseOneComprehensive:
             )
             rack_id = last_rack.id
 
-            response = client.post(f"/match/{target_match.id}/remove_rack/{rack_id}")
+            response = client.post(f"/admin/match/rack/{rack_id}/remove")
             assert response.status_code in [200, 302]  # Success or redirect
 
             # 4. Verify round 2 is now "in progress" and classification shows round 1
             db.session.refresh(target_match)
+
+            # Debug: check match state
+            remaining_racks = Rack.query.filter_by(match_id=target_match.id).count()
+            assert remaining_racks == 4  # Should have 4 racks after removing 1 from 5
+
+            # With "exactly 5" format and 4 racks remaining, match should be playing
             assert target_match.status == MatchStatus.PLAYING.value
 
             # Check that classification now shows round 1 results (last completed round)
@@ -353,6 +369,17 @@ class TestUseCaseOneComprehensive:
         """
         with app.test_client() as client:
             # Setup tournament with random strategy and 3 rounds
+
+            # First set inscription dates and transition to inscription state
+            from datetime import datetime, timedelta
+
+            now = datetime.now()
+            GaraService.open_inscriptions(
+                standalone_gara.id,
+                inscription_start=now - timedelta(hours=1),
+                inscription_end=now + timedelta(hours=1),
+            )
+
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
@@ -412,10 +439,12 @@ class TestUseCaseOneComprehensive:
             assert response.status_code == 200
             html_content = response.data.decode("utf-8")
 
-            # Round 2 should have modify buttons (active round)
-            turno2_pos = html_content.find("Turno 2")
-            turno1_pos = html_content.find("Turno 1")
-            assert turno2_pos < turno1_pos  # Round 2 appears before round 1
+            # Round 2 should appear before Round 1 in matches section (look for round headers)
+            turno2_header_pos = html_content.find('<h6 class="mt-3 mb-2">Turno 2</h6>')
+            turno1_header_pos = html_content.find('<h6 class="mt-3 mb-2">Turno 1</h6>')
+            assert (
+                turno2_header_pos < turno1_header_pos
+            )  # Round 2 header appears before round 1 header
 
             # 4. Complete round 2
             round2_matches = Match.query.filter_by(
@@ -456,6 +485,17 @@ class TestUseCaseOneComprehensive:
         """
         with app.test_client() as client:
             # Setup with Amalfi strategy (as mentioned in UC4)
+
+            # First set inscription dates and transition to inscription state
+            from datetime import datetime, timedelta
+
+            now = datetime.now()
+            GaraService.open_inscriptions(
+                standalone_gara.id,
+                inscription_start=now - timedelta(hours=1),
+                inscription_end=now + timedelta(hours=1),
+            )
+
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
@@ -469,6 +509,10 @@ class TestUseCaseOneComprehensive:
             # Login as admin
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(admin_user.id)
+
+            # Assign admin_user as the director of the gara for permissions
+            standalone_gara.director_id = admin_user.id
+            db.session.commit()
 
             GaraService.create_amalfi_round(standalone_gara.id, 1)
 
@@ -558,6 +602,17 @@ class TestUseCaseOneComprehensive:
         """
         with app.test_client() as client:
             # Setup random tournament
+
+            # First set inscription dates and transition to inscription state
+            from datetime import datetime, timedelta
+
+            now = datetime.now()
+            GaraService.open_inscriptions(
+                standalone_gara.id,
+                inscription_start=now - timedelta(hours=1),
+                inscription_end=now + timedelta(hours=1),
+            )
+
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
@@ -596,18 +651,20 @@ class TestUseCaseOneComprehensive:
             with client.session_transaction() as sess:
                 sess["_user_id"] = str(player.id)
 
-            # Player adds racks to complete match
-            for _ in range(5):
-                RackService.add_rack_with_score_update(
-                    test_match.id,
-                    winner_id=player.id,
-                    reported_by_id=1,
-                    validated_by_admin=True,
-                )
+            # Player adds racks to complete match (3-2 final score, 5 total racks)
+            # Add 2 racks for player2 first
             for _ in range(2):
                 RackService.add_rack_with_score_update(
                     test_match.id,
                     winner_id=test_match.player2_id,
+                    reported_by_id=1,
+                    validated_by_admin=True,
+                )
+            # Then add 3 racks for player1 to win 3-2
+            for _ in range(3):
+                RackService.add_rack_with_score_update(
+                    test_match.id,
+                    winner_id=player.id,
                     reported_by_id=1,
                     validated_by_admin=True,
                 )
@@ -623,9 +680,9 @@ class TestUseCaseOneComprehensive:
             attempt = ChallengeAttempt(
                 challenge_id=challenge.id,
                 user_id=player.id,
-                attempt_number=1,
                 score=15,  # Example score
-                is_successful=True,
+                passed=True,
+                completed=True,
             )
             db.session.add(attempt)
             db.session.commit()
@@ -640,9 +697,9 @@ class TestUseCaseOneComprehensive:
             opponent_attempt = ChallengeAttempt(
                 challenge_id=challenge.id,
                 user_id=test_match.player2_id,
-                attempt_number=1,
                 score=12,
-                is_successful=False,
+                passed=False,
+                completed=True,
             )
             db.session.add(opponent_attempt)
             db.session.commit()
@@ -672,7 +729,7 @@ class TestUseCaseOneComprehensive:
         with app.test_client() as client:
             # Create a standalone challenge
             challenge = Challenge(
-                description="Practice challenge for skill development",
+                description="UC6 Standalone Challenge",
                 image_path="/static/challenges/uc6_standalone_challenge.jpg",
                 is_active=True,
             )
@@ -685,7 +742,7 @@ class TestUseCaseOneComprehensive:
                 sess["_user_id"] = str(player.id)
 
             # 1. Player accesses challenge list
-            response = client.get("/challenges")
+            response = client.get("/challenges/")
             assert response.status_code == 200
             html_content = response.data.decode("utf-8")
             assert "UC6 Standalone Challenge" in html_content
@@ -701,9 +758,9 @@ class TestUseCaseOneComprehensive:
                 attempt = ChallengeAttempt(
                     challenge_id=challenge.id,
                     user_id=player.id,
-                    attempt_number=i,
                     score=attempt_data["score"],
-                    is_successful=attempt_data["successful"],
+                    passed=attempt_data["successful"],
+                    completed=True,
                 )
                 db.session.add(attempt)
 
@@ -730,7 +787,7 @@ class TestUseCaseOneComprehensive:
             ).all()
             assert len(attempts) == 3
 
-            successful_attempts = [a for a in attempts if a.is_successful]
+            successful_attempts = [a for a in attempts if a.passed]
             assert len(successful_attempts) == 2  # 2 successful out of 3
 
     def test_use_case_7_player_profile_statistics_export(
@@ -748,23 +805,66 @@ class TestUseCaseOneComprehensive:
         with app.test_client() as client:
             player = players[0]
 
-            # Setup: Create some match history
-            for i, opponent in enumerate(players[1:4]):  # 3 matches
-                InscriptionService.inscribe_user(player.id, standalone_gara.id)
+            # First set inscription dates and transition to inscription state
+            from datetime import datetime, timedelta
+
+            now = datetime.now()
+            GaraService.open_inscriptions(
+                standalone_gara.id,
+                inscription_start=now - timedelta(hours=1),
+                inscription_end=now + timedelta(hours=1),
+            )
+
+            # Setup: Create some match history - inscribe main player and several opponents
+            InscriptionService.inscribe_user(player.id, standalone_gara.id)
+            for opponent in players[1:4]:  # Add 3 opponents to ensure multiple matches
                 InscriptionService.inscribe_user(opponent.id, standalone_gara.id)
 
             ProvaStateMachine.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
+            # Create multiple rounds to ensure player has at least 2 matches
             GaraService.create_amalfi_round(standalone_gara.id, 1)
 
-            # Complete some matches for history
+            # Complete all round 1 matches
+            round1_matches = Match.query.filter_by(
+                gara_id=standalone_gara.id, round_number=1
+            ).all()
+            for match in round1_matches:
+                winner = match.player1_id if match.player1_id else match.player2_id
+                loser = (
+                    match.player2_id if winner == match.player1_id else match.player1_id
+                )
+
+                # Add some racks for realistic match
+                for _ in range(2):
+                    RackService.add_rack_with_score_update(
+                        match.id,
+                        winner_id=loser,
+                        reported_by_id=1,
+                        validated_by_admin=True,
+                    )
+                for _ in range(3):
+                    RackService.add_rack_with_score_update(
+                        match.id,
+                        winner_id=winner,
+                        reported_by_id=1,
+                        validated_by_admin=True,
+                    )
+                MatchService.to_completed(match.id)
+
+            # Create round 2 to ensure player gets another match
+            GaraService.create_amalfi_round(standalone_gara.id, 2)
+
+            # Complete round 2 matches for additional match history
             matches = Match.query.filter(
                 (Match.player1_id == player.id) | (Match.player2_id == player.id)
             ).all()
 
-            for match in matches[:2]:  # Complete 2 matches
+            # Complete only round 2 matches (round 1 is already completed)
+            round2_matches = [m for m in matches if m.round_number == 2]
+            for match in round2_matches:
                 winner = (
                     match.player1_id
                     if match.player1_id == player.id
@@ -774,21 +874,22 @@ class TestUseCaseOneComprehensive:
                     match.player2_id if winner == match.player1_id else match.player1_id
                 )
 
-                # Winner gets 5, loser gets random between 1-3
-                winner_score = 5
+                # Winner gets 3, loser gets 2 (3-2 final score, 5 total racks)
+                winner_score = 3
                 loser_score = 2
 
-                for _ in range(winner_score):
-                    RackService.add_rack_with_score_update(
-                        match.id,
-                        winner_id=winner,
-                        reported_by_id=1,
-                        validated_by_admin=True,
-                    )
+                # Add loser racks first, then winner racks to finish 3-2
                 for _ in range(loser_score):
                     RackService.add_rack_with_score_update(
                         match.id,
                         winner_id=loser,
+                        reported_by_id=1,
+                        validated_by_admin=True,
+                    )
+                for _ in range(winner_score):
+                    RackService.add_rack_with_score_update(
+                        match.id,
+                        winner_id=winner,
                         reported_by_id=1,
                         validated_by_admin=True,
                     )
@@ -809,9 +910,9 @@ class TestUseCaseOneComprehensive:
                 attempt = ChallengeAttempt(
                     challenge_id=challenge.id,
                     user_id=player.id,
-                    attempt_number=i + 1,
                     score=15 + i * 3,
-                    is_successful=i == 1,  # Second attempt successful
+                    passed=i == 1,  # Second attempt successful
+                    completed=True,
                 )
                 db.session.add(attempt)
 
@@ -836,7 +937,7 @@ class TestUseCaseOneComprehensive:
             assert completed_matches >= 2
 
             # Should see challenge history
-            assert "Profile Challenge" in html_content
+            assert "Challenge for profile testing" in html_content
 
             # 3. Statistics should show results across different contexts
             # Would verify tournament stats, championship stats, individual match stats
@@ -871,7 +972,14 @@ class TestUseCaseOneComprehensive:
 
     def test_database_snapshots_integration(self, app, db_session):
         """Test that all use cases can be properly snapshotted and restored."""
+        import pytest
         from utils.reset_manager import ResetManager
+
+        # Skip test if using in-memory database (snapshots not supported)
+        with app.app_context():
+            db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+            if ":memory:" in db_uri:
+                pytest.skip("Database snapshots not supported with in-memory databases")
 
         reset_manager = ResetManager()
 
@@ -926,24 +1034,22 @@ class TestUseCaseOneComprehensive:
                 match.player2_id if winner_id == match.player1_id else match.player1_id
             )
 
-            # Add racks for winner
-            for rack_num in range(1, winner_racks + 1):
-                RackService.add_rack_result(
+            # Add racks for loser first to avoid "match finished" error
+            for _ in range(loser_racks):
+                RackService.add_rack_with_score_update(
                     match_id=match.id,
-                    rack_number=rack_num,
-                    winner_id=winner_id,
-                    reported_by_id=winner_id,  # Self-reported
-                    confirmed_by_player=True,
+                    winner_id=loser_id,
+                    reported_by_id=1,
+                    validated_by_admin=True,
                 )
 
-            # Add racks for loser
-            for rack_num in range(winner_racks + 1, winner_racks + loser_racks + 1):
-                RackService.add_rack_result(
+            # Add racks for winner to complete the match
+            for _ in range(winner_racks):
+                RackService.add_rack_with_score_update(
                     match_id=match.id,
-                    rack_number=rack_num,
-                    winner_id=loser_id,
-                    reported_by_id=loser_id,  # Self-reported
-                    confirmed_by_player=True,
+                    winner_id=winner_id,
+                    reported_by_id=1,
+                    validated_by_admin=True,
                 )
 
             # Complete the match

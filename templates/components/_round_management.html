@@ -81,3 +81,42 @@
     </div>
 </div>
 {% endif %}
+
+{# Round progression management for playing gare #}
+{% if gara.status == 'playing' and gara.current_round < gara.rounds_count %}
+    {# Check if current round is completed #}
+    {% set current_round_matches = all_matches | selectattr('round_number', 'equalto', gara.current_round) | list %}
+    {% set completed_matches = current_round_matches | selectattr('status', 'equalto', 'completed') | list %}
+
+    {% if current_round_matches | length > 0 and completed_matches | length == current_round_matches | length %}
+        <div class="card border-success">
+            <div class="card-header bg-success bg-opacity-10">
+                <h5>
+                    <i class="fas fa-play-circle"></i>
+                    Gestione Turni
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Turno {{ gara.current_round }} completato!</strong>
+                    Tutti i match del turno corrente sono stati completati.
+                </div>
+
+                <div class="d-grid">
+                    <form method="POST" action="{{ url_for('admin.competition.start_round_generic', gara_id=gara.id, round_number=gara.current_round + 1) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-forward"></i>
+                            Avvia turno successivo
+                        </button>
+                    </form>
+                </div>
+
+                <small class="text-muted mt-2 d-block">
+                    <i class="fas fa-info-circle"></i>
+                    Questo avvierà il turno {{ gara.current_round + 1 }} di {{ gara.rounds_count }}.
+                </small>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

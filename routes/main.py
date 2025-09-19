@@ -241,6 +241,7 @@ def public_garas_list():
 
 
 @main_bp.route("/gara/<int:gara_id>")
+@main_bp.route("/public/gara/<int:gara_id>")
 def gara_detail_public(gara_id):
     """Dettaglio gara pubblico - visibile anche ai guest non loggati"""
     gara = db.session.get(Gara, gara_id)
@@ -330,19 +331,85 @@ def gara_detail_public(gara_id):
                 round_disciplines[round_num][discipline] = 0
             round_disciplines[round_num][discipline] += 1
 
-    # Usa un template pubblico dedicato
-    return render_template(
-        "public/gara_detail.html",
-        gara=gara,
-        inscription=inscription,
-        matches=matches,
-        all_matches=all_matches,
-        current_round_classification=current_round_classification,
-        latest_round_with_classification=latest_round_with_classification,
-        gara_challenges=gara_challenges,
-        round_disciplines=round_disciplines,
-        configured_round_disciplines=configured_round_disciplines,
+    # Check if user can manage this gara (for directors/admins)
+    show_management = False
+    if current_user.is_authenticated:
+        show_management = getattr(current_user, "is_admin", False) or (
+            getattr(current_user, "is_director", False)
+            and (gara.director_id == current_user.id or gara.campionato_id is None)
+        )
+
+    # Decide which template to use based on management permissions
+    template = (
+        "admin/gara_detail.html" if show_management else "public/gara_detail.html"
     )
+
+    # Common template variables
+    template_vars = {
+        "gara": gara,
+        "inscription": inscription,
+        "matches": matches,
+        "all_matches": all_matches,
+        "current_round_classification": current_round_classification,
+        "latest_round_with_classification": latest_round_with_classification,
+        "gara_challenges": gara_challenges,
+        "round_disciplines": round_disciplines,
+        "configured_round_disciplines": configured_round_disciplines,
+    }
+
+    # Add management variables if needed
+    if show_management:
+        # For admin template, matches should contain all matches (not just user's matches)
+        template_vars["matches"] = all_matches
+
+        # Get inscriptions and users data for admin template
+        inscriptions = (
+            Inscription.query.filter_by(gara_id=gara_id)
+            .order_by(Inscription.created_at)
+            .all()
+        )
+        from models.user.models import User
+
+        users = User.query.all()
+
+        # Management permissions
+        can_manage_directors = getattr(current_user, "is_admin", False)
+        show_admin_management = getattr(current_user, "is_admin", False)
+        show_director_management = getattr(
+            current_user, "is_director", False
+        ) or getattr(current_user, "is_admin", False)
+
+        # Challenge classification for Random tournaments
+        challenge_classification = None
+        if gara.matchmaking_strategy == "random":
+            from models.challenge import GaraChallengeService
+
+            if GaraChallengeService.has_active_challenges(gara_id):
+                challenge_classification = (
+                    GaraChallengeService.update_gara_classification(gara_id)
+                )
+
+        # Add match modification permissions for each match based on round locking rules
+        from models.competition.round_manager import AdvancedRoundManager
+
+        match_can_modify = {}
+        for match in all_matches:
+            can_modify, _ = AdvancedRoundManager.can_modify_match(match.id)
+            match_can_modify[match.id] = can_modify
+
+        template_vars.update(
+            {
+                "inscriptions": inscriptions,
+                "users": users,
+                "can_manage_directors": can_manage_directors,
+                "show_admin_management": show_admin_management,
+                "show_director_management": show_director_management,
+                "challenge_classification": challenge_classification,
+                "match_can_modify": match_can_modify,
+            }
+        )
+
+    return render_template(template, **template_vars)
 
 
 @main_bp.route("/reset/save", methods=["POST"])

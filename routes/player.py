@@ -843,6 +843,124 @@ def profile():
     )
 
 
+@player_bp.route("/profile/<int:user_id>")
+def view_profile(user_id):
+    """View another player's public profile"""
+    from models.user.models import User
+    from models.competition.models import Gara, Inscription
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+    from models.classification.models import Classification
+    from models.campionato.models import Campionato
+    from models.challenge.models import Challenge, ChallengeAttempt
+
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(404)
+
+    # Public profile data (limited compared to personal profile)
+    # Inscriptions
+    inscriptions = (
+        Inscription.query.filter_by(user_id=user.id)
+        .join(Gara)
+        .outerjoin(Campionato)
+        .order_by(Campionato.created_at.desc().nullslast(), Gara.date.desc())
+        .all()
+    )
+
+    # Matches played
+    matches = (
+        Match.query.filter(
+            db.or_(Match.player1_id == user.id, Match.player2_id == user.id)
+        )
+        .join(Gara)
+        .outerjoin(Campionato)
+        .order_by(
+            Campionato.created_at.desc().nullslast(),
+            Gara.date.desc(),
+            Match.round_number.desc(),
+        )
+        .all()
+    )
+
+    # Public statistics
+    total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
+    won_matches = len(
+        [
+            m
+            for m in matches
+            if m.status == MatchStatus.COMPLETED.value and m.winner_id == user.id
+        ]
+    )
+    win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
+
+    # Recent matches (last 10)
+    recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
+        :10
+    ]
+
+    # Completed tournaments count
+    completed_tournaments = set(
+        [
+            insc.gara.campionato_id
+            for insc in inscriptions
+            if insc.gara.campionato_id is not None and insc.gara.status == "completed"
+        ]
+    )
+
+    completed_provas = len(
+        [insc for insc in inscriptions if insc.gara.status == "completed"]
+    )
+
+    stats = {
+        "total_inscriptions": len(inscriptions),
+        "total_matches": total_matches,
+        "won_matches": won_matches,
+        "lost_matches": total_matches - won_matches,
+        "win_percentage": round(win_percentage, 1),
+        "tournaments_played": len(completed_tournaments),
+        "provas_played": completed_provas,
+    }
+
+    # Challenge data
+    challenge_attempts = (
+        ChallengeAttempt.query.filter_by(user_id=user.id, completed=True)
+        .join(Challenge)
+        .order_by(ChallengeAttempt.created_at.desc())
+        .all()
+    )
+
+    challenge_stats = None
+    if challenge_attempts:
+        total_attempts = len(challenge_attempts)
+        unique_challenges = len(
+            set(attempt.challenge_id for attempt in challenge_attempts)
+        )
+        avg_score = (
+            sum(attempt.score for attempt in challenge_attempts) / total_attempts
+        )
+        pass_count = sum(1 for attempt in challenge_attempts if attempt.passed)
+        pass_rate = (pass_count / total_attempts * 100) if total_attempts > 0 else 0
+
+        challenge_stats = {
+            "total_attempts": total_attempts,
+            "unique_challenges": unique_challenges,
+            "avg_score": round(avg_score, 1),
+            "pass_rate": round(pass_rate, 1),
+        }
+
+    return render_template(
+        "player/profile.html",
+        user=user,
+        inscriptions=inscriptions,
+        matches=recent_matches,
+        stats=stats,
+        challenge_stats=challenge_stats,
+        challenge_history=challenge_attempts,
+        classifications=[],
+    )
+
+
 @player_bp.route("/profile/edit", methods=["GET", "POST"])
 @login_required
 @player_only
@@ -1633,3 +1751,119 @@ def record_challenge_attempt(gara_challenge_id):
             ),
             500,
         )
+
+
+@player_bp.route("/profile/<int:user_id>/export/csv")
+@login_required
+def export_profile_csv(user_id):
+    """Export player profile and match history to CSV"""
+    import csv
+    import io
+    from flask import Response
+
+    # Check permissions - can only export own profile
+    user = cast(User, current_user)
+    if user.id != user_id:
+        abort(403)
+
+    target_user = db.session.get(User, user_id)
+    if not target_user:
+        abort(404)
+
+    # Get all completed matches for the user
+    matches = Match.query.filter(
+        (Match.player1_id == user_id) | (Match.player2_id == user_id),
+        Match.status == MatchStatus.COMPLETED.value,
+    ).all()
+
+    # Get challenge attempts
+    from models.challenge.models import ChallengeAttempt
+
+    challenges = ChallengeAttempt.query.filter_by(user_id=user_id, completed=True).all()
+
+    # Create CSV content
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write headers
+    writer.writerow(
+        [
+            "tipo",
+            "data",
+            "competizione",
+            "avversario",
+            "risultato",
+            "punteggio",
+            "turno",
+            "challenge",
+            "valore",
+            "superato",
+        ]
+    )
+
+    # Write match data
+    for match in matches:
+        opponent = ""
+        result = ""
+        if match.player1_id == user_id:
+            opponent = match.player2.username if match.player2 else "Bye"
+            result = "Win" if match.winner_id == user_id else "Loss"
+        else:
+            opponent = match.player1.username
+            result = "Win" if match.winner_id == user_id else "Loss"
+
+        competition_name = ""
+        if match.gara.campionato:
+            competition_name = (
+                f"{match.gara.campionato.name} - Gara {match.gara.number}"
+            )
+        else:
+            competition_name = match.gara.name
+
+        writer.writerow(
+            [
+                "Tournament Match",
+                match.gara.date.strftime("%Y-%m-%d") if match.gara.date else "",
+                competition_name,
+                opponent,
+                result,
+                f"{match.player1_score}-{match.player2_score}",
+                match.round_number,
+                "",
+                "",
+                "",
+            ]
+        )
+
+    # Write challenge data
+    for attempt in challenges:
+        challenge_name = ""
+        if hasattr(attempt, "challenge") and attempt.challenge:
+            challenge_name = attempt.challenge.description
+        elif hasattr(attempt, "gara_challenge") and attempt.gara_challenge:
+            challenge_name = attempt.gara_challenge.challenge.description
+
+        writer.writerow(
+            [
+                "Challenge",
+                attempt.created_at.strftime("%Y-%m-%d") if attempt.created_at else "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                challenge_name,
+                attempt.score,
+                "Yes" if attempt.passed else "No",
+            ]
+        )
+
+    output.seek(0)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=player_{target_user.username}_history.csv"
+        },
+    )

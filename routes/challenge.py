@@ -506,7 +506,9 @@ def edit_challenge(challenge_id):
         abort(403)
 
     if request.method == "GET":
-        return render_template("challenge/create.html", challenge=challenge, edit_mode=True)
+        return render_template(
+            "challenge/create.html", challenge=challenge, edit_mode=True
+        )
 
     try:
         if request.is_json:
@@ -554,7 +556,9 @@ def edit_challenge(challenge_id):
             return jsonify({"success": False, "error": error_msg}), 400
         else:
             flash(error_msg, "danger")
-            return render_template("challenge/create.html", challenge=challenge, edit_mode=True)
+            return render_template(
+                "challenge/create.html", challenge=challenge, edit_mode=True
+            )
 
 
 # Error handlers

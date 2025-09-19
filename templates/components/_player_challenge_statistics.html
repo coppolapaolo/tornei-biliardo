@@ -39,7 +39,7 @@
 
         {% if challenge_history %}
         <hr>
-        <h6 class="mb-3"><i class="fas fa-history"></i> Cronologia Challenge</h6>
+        <h6 class="mb-3"><i class="fas fa-history"></i> Cronologia Challenge Completata</h6>
         <div class="table-responsive">
             <table class="table table-sm">
                 <thead>
@@ -55,22 +55,32 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center">
-                                {% if attempt.gara_challenge.challenge.image_filename %}
-                                    <img src="{{ challenge_image_url(attempt.gara_challenge.challenge) }}" 
-                                         class="rounded me-2" 
+                                {% if attempt.gara_challenge %}
+                                    {% set challenge = attempt.gara_challenge.challenge %}
+                                {% else %}
+                                    {% set challenge = attempt.challenge %}
+                                {% endif %}
+
+                                {% if challenge.image_filename %}
+                                    <img src="{{ challenge_image_url(challenge) }}"
+                                         class="rounded me-2"
                                          style="width: 24px; height: 24px; object-fit: cover;"
-                                         alt="{{ attempt.gara_challenge.challenge.name }}">
+                                         alt="{{ challenge.get_display_name() }}">
                                 {% else %}
                                     <i class="fas fa-bullseye text-warning me-2"></i>
                                 {% endif %}
-                                <span>{{ attempt.gara_challenge.challenge.name }}</span>
+                                <span>{{ challenge.get_display_name() }}</span>
                             </div>
                         </td>
                         <td>
-                            <small class="text-muted">{{ attempt.gara_challenge.gara.name }}</small>
+                            {% if attempt.gara_challenge %}
+                                <small class="text-muted">{{ attempt.gara_challenge.gara.name }}</small>
+                            {% else %}
+                                <small class="text-muted">Standalone</small>
+                            {% endif %}
                         </td>
                         <td>
-                            {% if attempt.gara_challenge.challenge.pass_fail_only %}
+                            {% if challenge.pass_fail_only %}
                                 {% if attempt.passed %}
                                     <span class="badge bg-success">✓ Superata</span>
                                 {% else %}

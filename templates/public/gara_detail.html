@@ -126,6 +126,17 @@
                                         <i class="fas fa-clock"></i> In attesa
                                     </small>
                                 {% endif %}
+
+                                <!-- Table Assignment -->
+                                {% if match.table_assignment %}
+                                    <br><small class="text-info">
+                                        <i class="fas fa-table"></i> Tavolo {{ match.table_assignment }}
+                                    </small>
+                                {% elif not match.is_bye and match.status in ['pending', 'playing'] %}
+                                    <br><small class="text-muted">
+                                        <i class="fas fa-hourglass-half"></i> In attesa tavolo
+                                    </small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

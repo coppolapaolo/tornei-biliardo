@@ -265,7 +265,9 @@ class TestChallengeRoutes:
         deleted_challenge = db.session.get(Challenge, test_challenge.id)
         assert deleted_challenge is None
 
-    def test_delete_challenge_with_attempts_soft_delete(self, client, director_user, test_challenge):
+    def test_delete_challenge_with_attempts_soft_delete(
+        self, client, director_user, test_challenge
+    ):
         """Test challenge deletion (soft delete for used challenge)."""
         # Add an attempt to force soft delete instead of hard delete
         from models.challenge.services import ChallengeService
@@ -308,7 +310,9 @@ class TestChallengeRoutes:
             sess["_user_id"] = str(admin_user.id)
 
         response = client.get("/challenge/99999")
-        assert response.status_code == 302  # Redirect (challenge not found or access denied)
+        assert (
+            response.status_code == 302
+        )  # Redirect (challenge not found or access denied)
 
     def test_inactive_challenge_attempt(self, client, player_user, test_challenge):
         """Test that inactive challenges cannot be attempted."""

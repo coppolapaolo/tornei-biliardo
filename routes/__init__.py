@@ -24,6 +24,6 @@ def register_blueprints(app):
     app.register_blueprint(director_bp)
 
     # Registrazione blueprints extended domains
-    app.register_blueprint(challenge_bp, url_prefix="/challenge")
+    app.register_blueprint(challenge_bp, url_prefix="/challenges")
     app.register_blueprint(individual_match_bp, url_prefix="/match")
     app.register_blueprint(rating_bp, url_prefix="/rating")

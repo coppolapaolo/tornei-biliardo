@@ -58,6 +58,11 @@ class Match(db.Model):
     amalfi_round = db.Column(db.Integer)  # Turno secondo algoritmo Amalfi
     salto_applied = db.Column(db.Integer)  # Salto utilizzato per questo abbinamento
 
+    # Table assignment for venue management
+    table_assignment = db.Column(
+        db.String(10), nullable=True
+    )  # e.g., "A", "B", "sala rossa"
+
     # Handicap system
     has_handicap = db.Column(db.Boolean, default=False)
     player1_handicap = db.Column(

@@ -20,7 +20,7 @@ class StateService:
     @staticmethod
     def _require(gara: Gara, expected: GaraStatus) -> None:
         """Validate required state for transition."""
-        if (gara.status or GaraStatus.SETUP) != expected.value:
+        if (gara.status or GaraStatus.SETUP.value) != expected.value:
             raise InvalidTransitionError(
                 f"Transizione non ammessa: {gara.status!r} → "
                 f"{expected.name.lower()} richiesta come stato corrente."
