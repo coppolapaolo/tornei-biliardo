@@ -9,7 +9,8 @@
     "exclude": [
         "**/__pycache__",
         "**/node_modules",
-        "**/.git"
+        "**/.git",
+        "tests/legacy"
     ],
     "venvPath": ".",
     "venv": "venv",

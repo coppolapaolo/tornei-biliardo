@@ -4,7 +4,7 @@ e non per i turni in corso.
 """
 
 import pytest
-from datetime import date
+from datetime import date, datetime, timedelta
 from models import db, User, Match
 from models.user.role_enum import UserRole
 from models.status_enum import MatchStatus
@@ -58,6 +58,11 @@ class TestClassificationDisplay:
                 director_id=admin_user.id,
                 rounds_count=3,
             )
+
+            # Set inscription dates before moving to inscription status
+            gara.inscription_start = datetime.now()
+            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            db.session.commit()
 
             # Move to inscription status
             ProvaStateMachine.to_inscription(gara)
@@ -294,6 +299,11 @@ class TestClassificationDisplay:
                 rounds_count=2,
             )
 
+            # Set inscription dates before starting tournament
+            gara.inscription_start = datetime.now()
+            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            db.session.commit()
+
             # Start tournament but don't complete any matches
             ProvaStateMachine.to_inscription(gara)
 
@@ -353,6 +363,11 @@ class TestClassificationDisplay:
                 director_id=admin_user.id,
                 rounds_count=2,
             )
+
+            # Set inscription dates before moving to inscription status
+            gara.inscription_start = datetime.now()
+            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            db.session.commit()
 
             # Move to inscription status
             ProvaStateMachine.to_inscription(gara)
@@ -456,6 +471,11 @@ class TestClassificationDisplay:
                 director_id=admin_user.id,
                 rounds_count=2,
             )
+
+            # Set inscription dates before moving to inscription status
+            gara.inscription_start = datetime.now()
+            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            db.session.commit()
 
             # Move to inscription status
             ProvaStateMachine.to_inscription(gara)

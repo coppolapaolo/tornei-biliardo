@@ -242,7 +242,9 @@ class TestAuthenticationRoutes:
         """Test unauthenticated user gets 403 for protected routes."""
         # Test access to protected route without login
         response = client.get("/admin/dashboard")
-        assert response.status_code == 403  # Forbidden - correct behavior for admin_required decorator
+        assert (
+            response.status_code == 403
+        )  # Forbidden - correct behavior for admin_required decorator
 
 
 @pytest.mark.integration
