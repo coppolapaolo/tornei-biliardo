@@ -17,7 +17,9 @@ from models.user.role_enum import UserRole
 class TestRoundServiceTDD:
     """TDD tests per guidare l'estrazione dei metodi di gestione turni."""
 
-    def test_round_service_can_start_first_round(self, isolated_director_user, db_session):
+    def test_round_service_can_start_first_round(
+        self, isolated_director_user, db_session
+    ):
         """RoundService deve poter avviare il primo turno."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -59,7 +61,9 @@ class TestRoundServiceTDD:
         assert result_gara.status == GaraStatus.PLAYING.value
         assert result_gara.current_round == 1
 
-    def test_round_service_can_cancel_first_round_startup(self, isolated_director_user, db_session):
+    def test_round_service_can_cancel_first_round_startup(
+        self, isolated_director_user, db_session
+    ):
         """RoundService deve avere il metodo cancel_first_round_startup."""
         from models.competition.services import RoundService
 
@@ -67,7 +71,9 @@ class TestRoundServiceTDD:
         assert hasattr(RoundService, "cancel_first_round_startup")
         assert callable(getattr(RoundService, "cancel_first_round_startup"))
 
-    def test_round_service_can_create_round_with_strategy(self, isolated_director_user, db_session):
+    def test_round_service_can_create_round_with_strategy(
+        self, isolated_director_user, db_session
+    ):
         """RoundService deve gestire creazione turno con strategia."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -100,7 +106,9 @@ class TestRoundServiceTDD:
         assert hasattr(RoundService, "preview_round_with_strategy")
         assert callable(getattr(RoundService, "preview_round_with_strategy"))
 
-    def test_create_round_with_strategy_creates_matches_for_random_strategy(self, isolated_director_user, db_session):
+    def test_create_round_with_strategy_creates_matches_for_random_strategy(
+        self, isolated_director_user, db_session
+    ):
         """Test TDD: create_round_with_strategy deve creare match per strategia random."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -162,7 +170,9 @@ class TestRoundServiceTDD:
         created_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         assert len(created_matches) == total_matches
 
-    def test_create_round_with_strategy_is_idempotent(self, isolated_director_user, db_session):
+    def test_create_round_with_strategy_is_idempotent(
+        self, isolated_director_user, db_session
+    ):
         """Test TDD: create_round_with_strategy deve essere idempotente."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -217,7 +227,9 @@ class TestRoundServiceTDD:
         created_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         assert len(created_matches) == result1[0]  # Total matches
 
-    def test_create_round_with_strategy_validates_input(self, isolated_director_user, db_session):
+    def test_create_round_with_strategy_validates_input(
+        self, isolated_director_user, db_session
+    ):
         """Test TDD: create_round_with_strategy deve validare input."""
         from models.competition.round_service import RoundService
 

@@ -233,7 +233,7 @@ class TestCompleteUserJourney:
             "/auth/login",
             data={
                 "username": "co_director",
-                "password": "password123",  # Default password for test
+                "password": "codirector123",  # Must match password set above
             },
         )
 

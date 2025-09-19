@@ -17,7 +17,9 @@ from models.user.role_enum import UserRole
 class TestInscriptionServiceTDD:
     """TDD tests per guidare l'estrazione dei metodi di gestione date."""
 
-    def test_inscription_service_can_open_inscriptions(self, isolated_director_user, db_session):
+    def test_inscription_service_can_open_inscriptions(
+        self, isolated_director_user, db_session
+    ):
         """InscriptionService deve poter aprire le iscrizioni."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -47,7 +49,9 @@ class TestInscriptionServiceTDD:
         assert result_gara.inscription_start == start_time
         assert result_gara.inscription_end == end_time
 
-    def test_inscription_service_can_modify_inscription_dates(self, isolated_director_user, db_session):
+    def test_inscription_service_can_modify_inscription_dates(
+        self, isolated_director_user, db_session
+    ):
         """InscriptionService deve poter modificare le date iscrizioni."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -76,7 +80,9 @@ class TestInscriptionServiceTDD:
         assert result_gara.inscription_start == new_start
         assert result_gara.inscription_end == new_end
 
-    def test_inscription_service_validates_date_order(self, isolated_director_user, db_session):
+    def test_inscription_service_validates_date_order(
+        self, isolated_director_user, db_session
+    ):
         """InscriptionService deve validare ordine delle date."""
         tomorrow = date.today() + timedelta(days=1)
 

@@ -30,7 +30,9 @@ class TestStateServiceTDD:
         except ImportError:
             pytest.fail("StateService non è ancora implementato")
 
-    def test_state_service_can_transition_to_inscription(self, isolated_director_user, db_session):
+    def test_state_service_can_transition_to_inscription(
+        self, isolated_director_user, db_session
+    ):
         """StateService deve gestire transizione setup -> inscription."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -55,7 +57,9 @@ class TestStateServiceTDD:
 
         assert result_gara.status == GaraStatus.INSCRIPTION.value
 
-    def test_state_service_validates_transition_preconditions(self, isolated_director_user, db_session):
+    def test_state_service_validates_transition_preconditions(
+        self, isolated_director_user, db_session
+    ):
         """StateService deve validare le precondizioni delle transizioni."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -167,7 +171,9 @@ class TestStateServiceTDD:
 
         assert result_gara.status == GaraStatus.SETUP.value
 
-    def test_state_service_validates_inscription_requirements(self, isolated_director_user, db_session):
+    def test_state_service_validates_inscription_requirements(
+        self, isolated_director_user, db_session
+    ):
         """StateService deve validare i requisiti per iniziare il gioco."""
         tomorrow = date.today() + timedelta(days=1)
 

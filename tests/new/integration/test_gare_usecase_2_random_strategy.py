@@ -359,20 +359,6 @@ class TestUseCaseRandomStrategyVariants:
     """Test Use Case 2B: Random strategy variants with different player counts."""
 
     @pytest.fixture
-    def director_user(self, db_session) -> User:
-        """Create director user for test."""
-        unique_id = str(uuid.uuid4())[:8]
-        director = User(
-            username=f"director_{unique_id}",
-            email=f"director_{unique_id}@test.com",
-            role=UserRole.DIRECTOR.value,
-        )
-        director.set_password("director123")
-        db_session.add(director)
-        db_session.commit()
-        return director
-
-    @pytest.fixture
     def players_7(self, db_session) -> List[User]:
         """Create 7 players for odd number testing."""
         batch_id = str(uuid.uuid4())[:8]
@@ -409,7 +395,7 @@ class TestUseCaseRandomStrategyVariants:
         return players
 
     def test_random_strategy_with_odd_players_bye_handling(
-        self, director_user: User, players_7: List[User], db_session, client
+        self, isolated_director_user: User, players_7: List[User], db_session, client
     ):
         """Test Random strategy with 7 players and bye handling.
 
@@ -433,7 +419,7 @@ class TestUseCaseRandomStrategyVariants:
             discipline="palla_10",
             distance=6,
             best_of=True,
-            director_id=director_user.id,
+            director_id=isolated_director_user.id,
             matchmaking_strategy=MatchmakingStrategy.RANDOM.value,
             first_round_policy="random",
             odd_number_policy="bye",  # Bye handling
@@ -513,7 +499,7 @@ class TestUseCaseRandomStrategyVariants:
         print(f"   - Bye distribution across rounds: {bye_players_by_round}")
 
     def test_random_strategy_with_trio_handling(
-        self, director_user: User, players_9: List[User], db_session, client
+        self, isolated_director_user: User, players_9: List[User], db_session, client
     ):
         """Test Random strategy with trio handling for odd numbers.
 
@@ -537,7 +523,7 @@ class TestUseCaseRandomStrategyVariants:
             discipline="one_pocket",
             distance=5,
             best_of=True,
-            director_id=director_user.id,
+            director_id=isolated_director_user.id,
             matchmaking_strategy=MatchmakingStrategy.RANDOM.value,
             first_round_policy="random",
             odd_number_policy="trio",  # Trio handling instead of bye
@@ -675,17 +661,38 @@ class TestUseCaseRandomStrategyVariants:
         if not trio_match.is_trio:
             return
 
-        # Get trio match details - implementation may vary
-        # For now, just mark as completed with winner
-        # (Real implementation would handle 3-player scoring)
+        # Simulate trio completion with proper rack scoring for all 3 players
+        # In a trio match, we need to ensure all players have some racks recorded
 
         import random
 
-        # Simulate trio completion - player1 wins
-        trio_match.winner_id = trio_match.player1_id
-        trio_match.status = MatchStatus.COMPLETED.value
-        db_session.add(trio_match)
-        db_session.commit()
+        # Simulate trio completion - player1 wins (3 racks), others get some racks
+        winner_id = trio_match.player1_id
+
+        # Add racks for winner (3 wins)
+        for rack_num in range(1, 4):
+            RackService.add_rack_result(
+                match_id=trio_match.id,
+                rack_number=rack_num,
+                winner_id=winner_id,
+                reported_by_id=winner_id,
+                confirmed_by_player=True,
+                validated_by_admin=True,
+            )
+
+        # Add racks for other players (1 rack each)
+        if trio_match.player2_id:
+            RackService.add_rack_result(
+                match_id=trio_match.id,
+                rack_number=4,
+                winner_id=trio_match.player2_id,
+                reported_by_id=trio_match.player2_id,
+                confirmed_by_player=True,
+                validated_by_admin=True,
+            )
+
+        # Complete the match properly using MatchService
+        MatchService.to_completed(trio_match.id)
 
         print(
             f"   - Completed trio match {trio_match.id} with winner {trio_match.winner_id}"

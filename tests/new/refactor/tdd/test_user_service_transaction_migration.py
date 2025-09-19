@@ -34,7 +34,9 @@ from models.location.models import BilliardHall
 class TestUserServiceTransactionMigration:
     """TDD tests for @transactional migration - Phase 1 (UserService core methods)."""
 
-    def test_request_director_promotion_transaction_behavior(self, app, isolated_players, db_session):
+    def test_request_director_promotion_transaction_behavior(
+        self, app, isolated_players, db_session
+    ):
         """
         RED: Test current request_director_promotion behavior with direct commit.
 
@@ -47,7 +49,8 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Act: request director promotion
             director_request = UserService.request_director_promotion(
-                user_id=isolated_players[0].id, notes="I want to become a tournament director"
+                user_id=isolated_players[0].id,
+                notes="I want to become a tournament director",
             )
 
             # Assert: request was created and committed
@@ -66,7 +69,9 @@ class TestUserServiceTransactionMigration:
             db.session.delete(director_request)
             db.session.commit()
 
-    def test_request_director_promotion_duplicate_validation(self, app, isolated_players, db_session):
+    def test_request_director_promotion_duplicate_validation(
+        self, app, isolated_players, db_session
+    ):
         """
         RED: Test duplicate request validation behavior.
 
@@ -90,7 +95,8 @@ class TestUserServiceTransactionMigration:
             requests = (
                 db.session.query(DirectorRequest)
                 .filter_by(
-                    user_id=isolated_players[0].id, status=DirectorRequestStatus.PENDING.value
+                    user_id=isolated_players[0].id,
+                    status=DirectorRequestStatus.PENDING.value,
                 )
                 .all()
             )
@@ -157,7 +163,9 @@ class TestUserServiceTransactionMigration:
                     status=DirectorRequestStatus.APPROVED.value,
                 )
 
-    def test_transaction_isolation_current_behavior(self, app, isolated_players, isolated_admin_user, db_session):
+    def test_transaction_isolation_current_behavior(
+        self, app, isolated_players, isolated_admin_user, db_session
+    ):
         """
         RED: Test current transaction isolation behavior.
 
