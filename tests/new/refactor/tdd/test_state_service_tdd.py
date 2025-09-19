@@ -18,27 +18,6 @@ from models.user.role_enum import UserRole
 class TestStateServiceTDD:
     """TDD tests per guidare lo sviluppo di StateService."""
 
-    def setup_method(self, method):
-        """Setup per ogni test."""
-        self.director_user = User(
-            username="director_test",
-            email="director@test.com",
-            role=UserRole.DIRECTOR.value,
-        )
-        self.director_user.set_password("password123")
-        db.session.add(self.director_user)
-        db.session.commit()
-
-    def teardown_method(self, method):
-        """Cleanup dopo ogni test."""
-        try:
-            db.session.query(Gara).delete()
-            db.session.commit()
-            db.session.query(User).delete()
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-
     # ===== RED PHASE: Test che falliscono =====
 
     def test_state_service_exists_and_importable(self):
@@ -51,7 +30,7 @@ class TestStateServiceTDD:
         except ImportError:
             pytest.fail("StateService non è ancora implementato")
 
-    def test_state_service_can_transition_to_inscription(self):
+    def test_state_service_can_transition_to_inscription(self, isolated_director_user, db_session):
         """StateService deve gestire transizione setup -> inscription."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -61,13 +40,13 @@ class TestStateServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.SETUP.value,
             inscription_start=datetime.now() + timedelta(minutes=10),
             inscription_end=datetime.now() + timedelta(days=1),
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.state_service import StateService
 
@@ -76,7 +55,7 @@ class TestStateServiceTDD:
 
         assert result_gara.status == GaraStatus.INSCRIPTION.value
 
-    def test_state_service_validates_transition_preconditions(self):
+    def test_state_service_validates_transition_preconditions(self, isolated_director_user, db_session):
         """StateService deve validare le precondizioni delle transizioni."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -86,11 +65,11 @@ class TestStateServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,  # Stato non valido per inscription
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.state_service import StateService
 
@@ -98,7 +77,7 @@ class TestStateServiceTDD:
         with pytest.raises(InvalidTransitionError):
             StateService.to_inscription(gara)
 
-    def test_state_service_can_start_playing(self):
+    def test_state_service_can_start_playing(self, isolated_director_user, db_session):
         """StateService deve gestire transizione inscription -> playing."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -108,11 +87,11 @@ class TestStateServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.INSCRIPTION.value,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         # Aggiungi iscrizioni (minimo 2)
         from models.competition.models import Inscription
@@ -130,7 +109,7 @@ class TestStateServiceTDD:
         db.session.add(player2)
         db.session.commit()
 
-        inscription1 = Inscription(user_id=self.director_user.id, gara_id=gara.id)
+        inscription1 = Inscription(user_id=isolated_director_user.id, gara_id=gara.id)
         inscription2 = Inscription(user_id=player2.id, gara_id=gara.id)
         db.session.add(inscription1)
         db.session.add(inscription2)
@@ -143,7 +122,7 @@ class TestStateServiceTDD:
         assert result_gara.status == GaraStatus.PLAYING.value
         assert result_gara.current_round == 1
 
-    def test_state_service_can_complete(self):
+    def test_state_service_can_complete(self, isolated_director_user, db_session):
         """StateService deve gestire transizione playing -> completed."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -153,12 +132,12 @@ class TestStateServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,
             current_round=3,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.state_service import StateService
 
@@ -166,7 +145,7 @@ class TestStateServiceTDD:
 
         assert result_gara.status == GaraStatus.COMPLETED.value
 
-    def test_state_service_can_reopen_setup(self):
+    def test_state_service_can_reopen_setup(self, isolated_director_user, db_session):
         """StateService deve gestire transizione inscription -> setup."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -176,11 +155,11 @@ class TestStateServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.INSCRIPTION.value,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.state_service import StateService
 
@@ -188,7 +167,7 @@ class TestStateServiceTDD:
 
         assert result_gara.status == GaraStatus.SETUP.value
 
-    def test_state_service_validates_inscription_requirements(self):
+    def test_state_service_validates_inscription_requirements(self, isolated_director_user, db_session):
         """StateService deve validare i requisiti per iniziare il gioco."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -198,12 +177,12 @@ class TestStateServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.INSCRIPTION.value,
             min_participants=2,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.state_service import StateService
 

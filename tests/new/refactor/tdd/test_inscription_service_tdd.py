@@ -17,28 +17,7 @@ from models.user.role_enum import UserRole
 class TestInscriptionServiceTDD:
     """TDD tests per guidare l'estrazione dei metodi di gestione date."""
 
-    def setup_method(self, method):
-        """Setup per ogni test."""
-        self.director_user = User(
-            username="director_test",
-            email="director@test.com",
-            role=UserRole.DIRECTOR.value,
-        )
-        self.director_user.set_password("password123")
-        db.session.add(self.director_user)
-        db.session.commit()
-
-    def teardown_method(self, method):
-        """Cleanup dopo ogni test."""
-        try:
-            db.session.query(Gara).delete()
-            db.session.commit()
-            db.session.query(User).delete()
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-
-    def test_inscription_service_can_open_inscriptions(self):
+    def test_inscription_service_can_open_inscriptions(self, isolated_director_user, db_session):
         """InscriptionService deve poter aprire le iscrizioni."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -48,11 +27,11 @@ class TestInscriptionServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.SETUP.value,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.services import InscriptionService
 
@@ -68,7 +47,7 @@ class TestInscriptionServiceTDD:
         assert result_gara.inscription_start == start_time
         assert result_gara.inscription_end == end_time
 
-    def test_inscription_service_can_modify_inscription_dates(self):
+    def test_inscription_service_can_modify_inscription_dates(self, isolated_director_user, db_session):
         """InscriptionService deve poter modificare le date iscrizioni."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -78,11 +57,11 @@ class TestInscriptionServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.SETUP.value,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.services import InscriptionService
 
@@ -97,7 +76,7 @@ class TestInscriptionServiceTDD:
         assert result_gara.inscription_start == new_start
         assert result_gara.inscription_end == new_end
 
-    def test_inscription_service_validates_date_order(self):
+    def test_inscription_service_validates_date_order(self, isolated_director_user, db_session):
         """InscriptionService deve validare ordine delle date."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -107,11 +86,11 @@ class TestInscriptionServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.SETUP.value,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.services import InscriptionService
 

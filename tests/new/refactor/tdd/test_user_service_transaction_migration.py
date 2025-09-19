@@ -34,43 +34,7 @@ from models.location.models import BilliardHall
 class TestUserServiceTransactionMigration:
     """TDD tests for @transactional migration - Phase 1 (UserService core methods)."""
 
-    @pytest.fixture
-    def test_user(self, app):
-        """Create test user for director promotion requests."""
-        with app.app_context():
-            user = User(
-                username="test_player_director",
-                email="player@test.com",
-                role=UserRole.PLAYER.value,
-            )
-            user.set_password("testpass")
-            db.session.add(user)
-            db.session.commit()
-
-            yield user
-
-            db.session.delete(user)
-            db.session.commit()
-
-    @pytest.fixture
-    def test_admin(self, app):
-        """Create test admin for processing requests."""
-        with app.app_context():
-            admin = User(
-                username="test_admin_director",
-                email="admin@test.com",
-                role=UserRole.ADMIN.value,
-            )
-            admin.set_password("testpass")
-            db.session.add(admin)
-            db.session.commit()
-
-            yield admin
-
-            db.session.delete(admin)
-            db.session.commit()
-
-    def test_request_director_promotion_transaction_behavior(self, app, test_user):
+    def test_request_director_promotion_transaction_behavior(self, app, isolated_players, db_session):
         """
         RED: Test current request_director_promotion behavior with direct commit.
 
@@ -83,26 +47,26 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Act: request director promotion
             director_request = UserService.request_director_promotion(
-                user_id=test_user.id, notes="I want to become a tournament director"
+                user_id=isolated_players[0].id, notes="I want to become a tournament director"
             )
 
             # Assert: request was created and committed
             assert director_request is not None
-            assert director_request.user_id == test_user.id
+            assert director_request.user_id == isolated_players[0].id
             assert director_request.notes == "I want to become a tournament director"
             assert director_request.status == DirectorRequestStatus.PENDING.value
 
             # Verify it exists in database (transaction was committed)
             db_request = db.session.get(DirectorRequest, director_request.id)
             assert db_request is not None
-            assert db_request.user_id == test_user.id
+            assert db_request.user_id == isolated_players[0].id
             assert db_request.status == DirectorRequestStatus.PENDING.value
 
             # Cleanup
             db.session.delete(director_request)
             db.session.commit()
 
-    def test_request_director_promotion_duplicate_validation(self, app, test_user):
+    def test_request_director_promotion_duplicate_validation(self, app, isolated_players, db_session):
         """
         RED: Test duplicate request validation behavior.
 
@@ -111,7 +75,7 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Arrange: create first request
             first_request = UserService.request_director_promotion(
-                user_id=test_user.id, notes="First request"
+                user_id=isolated_players[0].id, notes="First request"
             )
 
             # Act & Assert: attempt duplicate should raise ValueError
@@ -119,14 +83,14 @@ class TestUserServiceTransactionMigration:
                 ValueError, match="User already has a pending director request"
             ):
                 UserService.request_director_promotion(
-                    user_id=test_user.id, notes="Duplicate request"
+                    user_id=isolated_players[0].id, notes="Duplicate request"
                 )
 
             # Verify only one request exists
             requests = (
                 db.session.query(DirectorRequest)
                 .filter_by(
-                    user_id=test_user.id, status=DirectorRequestStatus.PENDING.value
+                    user_id=isolated_players[0].id, status=DirectorRequestStatus.PENDING.value
                 )
                 .all()
             )
@@ -138,7 +102,7 @@ class TestUserServiceTransactionMigration:
             db.session.commit()
 
     def test_update_director_request_status_transaction_behavior(
-        self, app, test_user, test_admin
+        self, app, isolated_players, isolated_admin_user, db_session
     ):
         """
         RED: Test current update_director_request_status behavior with direct commit.
@@ -151,7 +115,7 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Arrange: create pending request
             pending_request = DirectorRequest(
-                user_id=test_user.id, notes="Test promotion request"
+                user_id=isolated_players[0].id, notes="Test promotion request"
             )
             db.session.add(pending_request)
             db.session.commit()
@@ -193,7 +157,7 @@ class TestUserServiceTransactionMigration:
                     status=DirectorRequestStatus.APPROVED.value,
                 )
 
-    def test_transaction_isolation_current_behavior(self, app, test_user, test_admin):
+    def test_transaction_isolation_current_behavior(self, app, isolated_players, isolated_admin_user, db_session):
         """
         RED: Test current transaction isolation behavior.
 
@@ -203,7 +167,7 @@ class TestUserServiceTransactionMigration:
         with app.app_context():
             # Create request
             request = UserService.request_director_promotion(
-                user_id=test_user.id, notes="Isolation test request"
+                user_id=isolated_players[0].id, notes="Isolation test request"
             )
 
             # Verify immediately visible (transaction committed)
@@ -277,11 +241,11 @@ class TestUserServiceTransactionMigrationPhase2:
             db.session.commit()
 
     @pytest.fixture
-    def test_admin_phase2(self, app):
+    def isolated_admin_user_phase2(self, app):
         """Create test admin for processing requests."""
         with app.app_context():
             admin = User(
-                username="test_admin_phase2",
+                username="isolated_admin_user_phase2",
                 email="admin_phase2@test.com",
                 role=UserRole.ADMIN.value,
             )
@@ -304,7 +268,7 @@ class TestUserServiceTransactionMigrationPhase2:
             db.session.commit()
 
     def test_director_request_service_process_request_behavior(
-        self, app, test_user_with_request, test_admin_phase2
+        self, app, test_user_with_request, isolated_admin_user_phase2
     ):
         """
         RED: Test current DirectorRequestService.process_request behavior with direct commit.
@@ -319,7 +283,7 @@ class TestUserServiceTransactionMigrationPhase2:
 
         with app.app_context():
             # Reload admin in current session to avoid SQLAlchemy session attachment errors
-            admin_in_session = db.session.get(User, test_admin_phase2.id)
+            admin_in_session = db.session.get(User, isolated_admin_user_phase2.id)
 
             # Mock notifications to avoid dependencies
             with patch(
@@ -347,7 +311,7 @@ class TestUserServiceTransactionMigrationPhase2:
             assert db_user.role == UserRole.DIRECTOR.value
 
     def test_director_request_service_reject_behavior(
-        self, app, test_user_with_request, test_admin_phase2
+        self, app, test_user_with_request, isolated_admin_user_phase2
     ):
         """
         RED: Test DirectorRequestService reject behavior.
@@ -360,7 +324,7 @@ class TestUserServiceTransactionMigrationPhase2:
 
         with app.app_context():
             # Reload admin in current session to avoid SQLAlchemy session attachment errors
-            admin_in_session = db.session.get(User, test_admin_phase2.id)
+            admin_in_session = db.session.get(User, isolated_admin_user_phase2.id)
 
             # Mock notifications
             with patch(
@@ -391,7 +355,7 @@ class TestUserServiceTransactionMigrationPhase2:
         with app.app_context():
             # Arrange: create user for deletion
             user = User(
-                username="test_user_delete",
+                username="isolated_players[0]_delete",
                 email="delete@test.com",
                 role=UserRole.PLAYER.value,
             )
@@ -420,13 +384,13 @@ class TestUserServiceTransactionMigrationPhase2:
             db.session.delete(user_in_session)
             db.session.commit()
 
-    def test_process_request_not_found_error(self, app, test_admin_phase2):
+    def test_process_request_not_found_error(self, app, isolated_admin_user_phase2):
         """
         RED: Test error handling for non-existent request.
         """
         with app.app_context():
             # Reload admin in current session to avoid SQLAlchemy session attachment errors
-            admin_in_session = db.session.get(User, test_admin_phase2.id)
+            admin_in_session = db.session.get(User, isolated_admin_user_phase2.id)
 
             # Act & Assert: process non-existent request should raise error
             with pytest.raises(Exception):
@@ -495,11 +459,11 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.commit()
 
     @pytest.fixture
-    def test_admin_phase3(self, app):
+    def isolated_admin_user_phase3(self, app):
         """Create test admin for venue management processing."""
         with app.app_context():
             admin = User(
-                username="test_admin_phase3",
+                username="isolated_admin_user_phase3",
                 email="admin_phase3@test.com",
                 role=UserRole.ADMIN.value,
             )
@@ -566,7 +530,7 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.commit()
 
     def test_venue_manager_request_process_request_behavior(
-        self, app, test_user_phase3, test_admin_phase3, test_venue_phase3
+        self, app, test_user_phase3, isolated_admin_user_phase3, test_venue_phase3
     ):
         """
         RED: Test current VenueManagerRequestService.process_request behavior with direct commit.
@@ -590,7 +554,7 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.commit()
 
             # Reload admin in current session
-            admin_in_session = db.session.get(User, test_admin_phase3.id)
+            admin_in_session = db.session.get(User, isolated_admin_user_phase3.id)
 
             # Mock notifications to avoid dependencies
             with patch(
@@ -652,7 +616,7 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.commit()
 
     def test_venue_management_assign_venue_manager_behavior(
-        self, app, test_user_phase3, test_admin_phase3, test_venue_phase3
+        self, app, test_user_phase3, isolated_admin_user_phase3, test_venue_phase3
     ):
         """
         RED: Test current VenueManagementService.assign_venue_manager behavior with direct commit.
@@ -664,7 +628,7 @@ class TestUserServiceTransactionMigrationPhase3:
         """
         with app.app_context():
             # Reload admin in current session
-            admin_in_session = db.session.get(User, test_admin_phase3.id)
+            admin_in_session = db.session.get(User, isolated_admin_user_phase3.id)
 
             # Act: assign venue manager
             assignment = VenueManagementService.assign_venue_manager(
@@ -690,7 +654,7 @@ class TestUserServiceTransactionMigrationPhase3:
             db.session.commit()
 
     def test_venue_management_revoke_venue_manager_behavior(
-        self, app, test_user_phase3, test_admin_phase3, test_venue_phase3
+        self, app, test_user_phase3, isolated_admin_user_phase3, test_venue_phase3
     ):
         """
         RED: Test current VenueManagementService.revoke_venue_manager behavior with direct commit.
@@ -708,13 +672,13 @@ class TestUserServiceTransactionMigrationPhase3:
             assignment = VenueManagement(
                 user_id=test_user_phase3.id,
                 venue_id=test_venue_phase3.id,
-                assigned_by_id=test_admin_phase3.id,
+                assigned_by_id=isolated_admin_user_phase3.id,
             )
             db.session.add(assignment)
             db.session.commit()
 
             # Reload admin in current session
-            admin_in_session = db.session.get(User, test_admin_phase3.id)
+            admin_in_session = db.session.get(User, isolated_admin_user_phase3.id)
 
             # Act: revoke venue manager
             revoked_assignment = VenueManagementService.revoke_venue_manager(

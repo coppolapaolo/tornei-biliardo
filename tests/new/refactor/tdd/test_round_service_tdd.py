@@ -17,28 +17,7 @@ from models.user.role_enum import UserRole
 class TestRoundServiceTDD:
     """TDD tests per guidare l'estrazione dei metodi di gestione turni."""
 
-    def setup_method(self, method):
-        """Setup per ogni test."""
-        self.director_user = User(
-            username="director_test",
-            email="director@test.com",
-            role=UserRole.DIRECTOR.value,
-        )
-        self.director_user.set_password("password123")
-        db.session.add(self.director_user)
-        db.session.commit()
-
-    def teardown_method(self, method):
-        """Cleanup dopo ogni test."""
-        try:
-            db.session.query(Gara).delete()
-            db.session.commit()
-            db.session.query(User).delete()
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-
-    def test_round_service_can_start_first_round(self):
+    def test_round_service_can_start_first_round(self, isolated_director_user, db_session):
         """RoundService deve poter avviare il primo turno."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -48,14 +27,14 @@ class TestRoundServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.INSCRIPTION.value,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         # Aggiungi iscrizioni sufficienti
-        inscription1 = Inscription(user_id=self.director_user.id, gara_id=gara.id)
+        inscription1 = Inscription(user_id=isolated_director_user.id, gara_id=gara.id)
 
         # Secondo giocatore
         player2 = User(
@@ -80,7 +59,7 @@ class TestRoundServiceTDD:
         assert result_gara.status == GaraStatus.PLAYING.value
         assert result_gara.current_round == 1
 
-    def test_round_service_can_cancel_first_round_startup(self):
+    def test_round_service_can_cancel_first_round_startup(self, isolated_director_user, db_session):
         """RoundService deve avere il metodo cancel_first_round_startup."""
         from models.competition.services import RoundService
 
@@ -88,7 +67,7 @@ class TestRoundServiceTDD:
         assert hasattr(RoundService, "cancel_first_round_startup")
         assert callable(getattr(RoundService, "cancel_first_round_startup"))
 
-    def test_round_service_can_create_round_with_strategy(self):
+    def test_round_service_can_create_round_with_strategy(self, isolated_director_user, db_session):
         """RoundService deve gestire creazione turno con strategia."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -98,12 +77,12 @@ class TestRoundServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,
             current_round=1,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         from models.competition.services import RoundService
 
@@ -113,7 +92,7 @@ class TestRoundServiceTDD:
         # Il risultato dipende dalla strategia ma dovrebbe restituire informazioni sui match
         assert result is not None
 
-    def test_round_service_can_preview_round(self):
+    def test_round_service_can_preview_round(self, isolated_director_user, db_session):
         """RoundService deve avere il metodo preview_round_with_strategy."""
         from models.competition.services import RoundService
 
@@ -121,7 +100,7 @@ class TestRoundServiceTDD:
         assert hasattr(RoundService, "preview_round_with_strategy")
         assert callable(getattr(RoundService, "preview_round_with_strategy"))
 
-    def test_create_round_with_strategy_creates_matches_for_random_strategy(self):
+    def test_create_round_with_strategy_creates_matches_for_random_strategy(self, isolated_director_user, db_session):
         """Test TDD: create_round_with_strategy deve creare match per strategia random."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -131,14 +110,14 @@ class TestRoundServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,
             current_round=1,
             matchmaking_strategy="random",
             rounds_count=3,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         # Aggiungi 4 giocatori per testare abbinamenti
         players = []
@@ -183,7 +162,7 @@ class TestRoundServiceTDD:
         created_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         assert len(created_matches) == total_matches
 
-    def test_create_round_with_strategy_is_idempotent(self):
+    def test_create_round_with_strategy_is_idempotent(self, isolated_director_user, db_session):
         """Test TDD: create_round_with_strategy deve essere idempotente."""
         tomorrow = date.today() + timedelta(days=1)
 
@@ -193,14 +172,14 @@ class TestRoundServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,
             current_round=1,
             matchmaking_strategy="random",
             rounds_count=3,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         # Aggiungi giocatori
         players = []
@@ -238,7 +217,7 @@ class TestRoundServiceTDD:
         created_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
         assert len(created_matches) == result1[0]  # Total matches
 
-    def test_create_round_with_strategy_validates_input(self):
+    def test_create_round_with_strategy_validates_input(self, isolated_director_user, db_session):
         """Test TDD: create_round_with_strategy deve validare input."""
         from models.competition.round_service import RoundService
 
@@ -254,12 +233,12 @@ class TestRoundServiceTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            director_id=self.director_user.id,
+            director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,
             rounds_count=3,
         )
-        db.session.add(gara)
-        db.session.commit()
+        db_session.add(gara)
+        db_session.commit()
 
         # Round number troppo alto
         with pytest.raises(ValueError, match="Turno .* non valido"):
