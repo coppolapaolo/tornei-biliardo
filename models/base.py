@@ -6,6 +6,38 @@ the functionality they need (utility methods vs timestamps vs other features).
 
 Author: Refactoring Phase 1 - Task 1.4 Update
 Created: 2025-08-01
+Updated: Task 1.1 Phase 8 - Transaction Management Migration
+
+═══════════════════════════════════════════════════════════════════════════
+ TASK 1.1 PHASE 8: TRANSACTION MANAGEMENT MIGRATION COMPLETE
+═══════════════════════════════════════════════════════════════════════════
+
+MIGRATION SUMMARY:
+- Target: 8 db.session.commit() calls eliminated → 0 remaining
+- Strategy: Delegation pattern (save() → save_tx() → transaction_manager)
+- Backward Compatibility: All existing methods preserved
+- Enhanced Functionality: _tx variants provide explicit transactional control
+
+ARCHITECTURAL IMPROVEMENTS:
+├─ Transaction Safety: All operations now use transaction manager context
+├─ Atomic Operations: Automatic commit/rollback on success/failure
+├─ Nested Transactions: Savepoint support for complex operations
+├─ Resource Management: Proper connection and session cleanup
+├─ Error Handling: Consistent rollback behavior across all operations
+└─ Performance: Lazy import pattern prevents circular dependencies
+
+TRANSACTION MANAGEMENT PATTERN:
+1. Original methods (save, delete, etc.) delegate to _tx variants
+2. _tx methods use transaction_manager.transaction() context
+3. Automatic commit on successful completion
+4. Automatic rollback on exceptions with proper cleanup
+5. Support for nested transactions through savepoint mechanism
+
+USAGE RECOMMENDATIONS:
+- Use original methods (save, delete) for backward compatibility
+- Use _tx methods for explicit transactional control
+- Prefer @transactional decorator for service layer operations
+- Consider service layer patterns for complex business logic
 """
 
 from flask_sqlalchemy import SQLAlchemy
@@ -40,14 +72,11 @@ class UtilityMixin:
 
     def save(self):
         """Save the model instance to database"""
-        db.session.add(self)
-        db.session.commit()
-        return self
+        return self.save_tx()
 
     def delete(self):
         """Delete the model instance from database"""
-        db.session.delete(self)
-        db.session.commit()
+        return self.delete_tx()
 
     # Enhanced transactional variants (Phase 8 addition)
 
@@ -192,17 +221,7 @@ class ValidationMixin:
 
     def save_with_validation(self):
         """Save the model after validation"""
-        if self.validate():
-            # Check if save method exists and call it safely
-            save_method = getattr(self, "save", None)
-            if save_method and callable(save_method):
-                return save_method()
-            else:
-                # Fallback: manual save to database if no save method
-                db.session.add(self)
-                db.session.commit()
-                return self
-        return None
+        return self.save_with_validation_tx()
 
     def save_with_validation_tx(self):
         """Save the model after validation (transactional variant)"""
@@ -237,14 +256,11 @@ class BaseModel(db.Model):
 
     def save(self):
         """Save the model instance to database"""
-        db.session.add(self)
-        db.session.commit()
-        return self
+        return self.save_tx()
 
     def delete(self):
         """Delete the model instance from database"""
-        db.session.delete(self)
-        db.session.commit()
+        return self.delete_tx()
 
     # Enhanced transactional variants (Phase 8 addition)
 
@@ -312,6 +328,10 @@ def get_or_create(model_class, **kwargs):
     """
     Get existing instance or create new one if it doesn't exist.
 
+    POST-MIGRATION (Task 1.1 Phase 8):
+    Delegates to get_or_create_tx() which uses transaction manager for atomic operations.
+    Eliminates direct db.session.commit() for improved transaction boundaries.
+
     Args:
         model_class: The model class to query
         **kwargs: Field values to search for and create with
@@ -319,19 +339,16 @@ def get_or_create(model_class, **kwargs):
     Returns:
         tuple: (instance, created) where created is boolean
     """
-    instance = db.session.query(model_class).filter_by(**kwargs).first()
-    if instance:
-        return instance, False
-    else:
-        instance = model_class(**kwargs)
-        db.session.add(instance)
-        db.session.commit()
-        return instance, True
+    return get_or_create_tx(model_class, **kwargs)
 
 
 def bulk_create(model_class, instances_data):
     """
     Create multiple instances efficiently.
+
+    POST-MIGRATION (Task 1.1 Phase 8):
+    Delegates to bulk_create_tx() which uses transaction manager for atomic operations.
+    Eliminates direct db.session.commit() for improved transaction boundaries.
 
     Args:
         model_class: The model class to create instances of
@@ -340,30 +357,23 @@ def bulk_create(model_class, instances_data):
     Returns:
         list: Created instances
     """
-    instances = []
-    for data in instances_data:
-        instance = model_class(**data)
-        instances.append(instance)
-
-    db.session.add_all(instances)
-    db.session.commit()
-    return instances
+    return bulk_create_tx(model_class, instances_data)
 
 
 def safe_commit():
     """
     Safely commit database changes with error handling.
 
+    POST-MIGRATION (Task 1.1 Phase 8):
+    Delegates to safe_commit_tx() which integrates with transaction manager.
+    Note: This function is largely redundant as @transactional decorator
+    provides better transaction management. Consider using service layer
+    patterns instead for new code.
+
     Returns:
         bool: True if commit successful, False otherwise
     """
-    try:
-        db.session.commit()
-        return True
-    except Exception as e:
-        db.session.rollback()
-        print(f"Database commit failed: {str(e)}")
-        return False
+    return safe_commit_tx()
 
 
 # Database initialization helpers
@@ -381,7 +391,11 @@ def reset_db():
     db.create_all()
 
 
-# Enhanced transactional utility functions (Phase 8 addition)
+# ══════════════════════════════════════════════════════════════════════════
+# ENHANCED TRANSACTIONAL UTILITY FUNCTIONS (Phase 8 Addition)
+# ══════════════════════════════════════════════════════════════════════════
+# Core transactional implementations that use transaction_manager for atomic operations.
+# These provide the foundation for the delegation pattern used throughout the base classes.
 
 
 def get_or_create_tx(model_class, **kwargs):

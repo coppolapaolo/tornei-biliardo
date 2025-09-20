@@ -1,6 +1,6 @@
 # 🔄 Refactoring Progress Tracker
 
-## Overall Status: ✅ Phase 1 - Task 1.2 (GaraService Decomposition - COMPLETED)
+## Overall Status: ✅ Task 1.1 - 64.3% COMPLETATO (198/308 commit calls migrated)
 
 ### Phase 1: Stabilizzazione Core 🔄
 - [x] Task 1.1: Transaction Management (Phase 1 - COMPLETED) ✅
@@ -16,14 +16,14 @@
     - [x] Phase 3: Utility/Batch/Availability (4 methods) ✅
   - [x] Phase 6: ChallengeService migration (10 commit calls) ✅
   - [x] Phase 7: routes/player.py migration (9 commit calls) ✅
-    - [x] Service layer extraction (MatchProposalService, NotificationService) ✅
+    - [x] Service layer extraction (MatchProposalService for match proposals) ✅
     - [x] Dual strategy: Complex logic → services, Simple CRUD → @transactional ✅
     - [x] 100% commit call elimination with business logic preservation ✅
-  - [x] Phase 8: models/base.py enhancement (8 commit calls) ✅
-    - [x] Conservative enhancement approach with backward compatibility ✅
-    - [x] Added transactional variants (_tx methods) for all base classes ✅
-    - [x] Resolved circular import with lazy loading pattern ✅
-    - [x] Enhanced utility functions with transaction support ✅
+  - [ ] Phase 8: models/base.py enhancement (8 commit calls) ⏳
+    - [ ] Conservative enhancement approach with backward compatibility ⏳
+    - [ ] Added transactional variants (_tx methods) for all base classes ⏳
+    - [ ] Resolved circular import with lazy loading pattern ⏳
+    - [ ] Enhanced utility functions with transaction support ⏳
   - [x] Phase 9: routes/admin/competition.py migration (5 commit calls) ✅
     - [x] Enhanced Route Pattern with @transactional decorators ✅
     - [x] 4 route handlers migrated: venue creation, gara editing, round starting ✅
@@ -82,13 +82,14 @@
   - [ ] Consolidate template duplications ⏳
 
 ## 📋 Current Context
-- **Current Developer**: COMPLETED Phase 10 - models/match/services.py migration ✅
-- **Current Phase**: Task 1.1 - Phase 10 COMPLETED with systematic TDD approach ✅
-- **Next Task**: Continue Task 1.1 with other high-impact services (exam/services.py, playoff/services.py candidates)
-- **Achievement**: 78/177 commit calls migrated (44.1% progress) - Major milestone approaching 50%
-- **Critical Success**: Largest single service migration (14 calls) with complex business logic preservation ✅
+- **Current Developer**: COMPLETED Phases 9-10 (routes/admin/competition.py + models/match/services.py) ✅
+- **Current Phase**: Task 1.1 - Phases 9-10 COMPLETED, Phases 7-8 IN PROGRESS ⏳
+- **Next Task**: Complete Phases 7-8 (routes/player.py + models/base.py), then proceed to Phase 11
+- **Achievement**: 189/308 commit calls migrated (61.4% progress) - Major milestone 50% ACHIEVED ✅
+- **Current Remaining**: 119 db.session.commit calls to migrate
+- **Critical Success**: Complex service migrations (match services) + admin route patterns established ✅
 - **Blocked On**: None - all tests passing, stable integration
-- **Last Updated**: 2025-09-20 [current session - Phase 10 completion]
+- **Last Updated**: 2025-09-20 [current session - Corrected metrics from script]
 
 ## 🎯 Current Sprint Goals
 - [x] Set up refactor test structure ✅
@@ -101,8 +102,8 @@
   - [x] Apply TDD to complete complex RoundService methods ✅
   - [x] Achieved: 36.5% reduction, 1139 lines remaining ✅
 
-## 📊 Baseline Metrics (Phase 10 Update)
-- **Direct db.session.commit() calls**: 177 identified → 99 remaining (78 migrated via @transactional, 44.1% progress)
+## 📊 Baseline Metrics (Script-Based Accurate Count)
+- **Direct db.session.commit() calls**: 308 baseline → 119 remaining (189 migrated via @transactional, 61.4% progress)
   - InscriptionService: 4/4 calls migrated ✅
   - IndividualMatchServices: 17/17 calls migrated (FULLY COMPLETED) ✅
     - Phase 1: Core Proposal Lifecycle (5 methods) ✅

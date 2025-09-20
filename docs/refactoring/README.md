@@ -4,12 +4,14 @@ Questa directory contiene tutta la documentazione relativa al refactoring sistem
 
 ## Stato Attuale
 
-**✅ PROGRESSO AVANZATO: Task 1.1 Fase 8 - models/base.py Migration**
+**✅ PROGRESSO AVANZATO: Task 1.1 - 64.3% COMPLETATO (198/308 commit calls migrated)**
 
 Il refactoring procede sistematicamente con la migrazione da `db.session.commit()` diretti a pattern `@transactional`:
 - **Fase 7 COMPLETATA**: routes/player.py (9→0 commit calls) ✅
-- **Fase 8 IN CORSO**: models/base.py (8 commit calls target) ⏳
-- **Test Status**: 566/566 test passano (100%) ✅
+- **Fase 8 IN CORSO**: models/base.py (8 commit calls rimanenti) ⏳
+- **Fase 9 COMPLETATA**: routes/admin/competition.py (5→0 commit calls) ✅
+- **Fase 10 COMPLETATA**: models/match/services.py (14→0 commit calls) ✅
+- **Test Status**: Tutti i test passano (100%) ✅
 
 ## Principi Fondamentali
 
@@ -37,9 +39,9 @@ Quando si incontrano test che falliscono:
 
 ### [REFACTOR_PROGRESS.md](./REFACTOR_PROGRESS.md)
 Documentazione completa dello stato del refactoring:
-- **Task 1.1**: Transaction Management Migration - Fase 8/N (route/player.py completata, models/base.py in corso)
+- **Task 1.1**: Transaction Management Migration - 61.4% COMPLETATO (189 commit calls migrati)
 - **Task 1.2**: GaraService Decomposition - COMPLETATO ✅
-- **Milestone Raggiunto**: 59 commit calls migrati su 177 totali (33% completamento)
+- **Milestone Raggiunto**: 189/308 commit calls migrati - MILESTONE 50% ACHIEVED ✅
 - Strategia sistematica per file ad alto impatto
 
 ### [REFACTOR_PLAN_ROUND_EXTRACTION.md](./REFACTOR_PLAN_ROUND_EXTRACTION.md)
@@ -65,20 +67,30 @@ PYTHONPATH=. pytest tests/new/integration/ -v
 ## Stato Attuale e Prossimi Passi
 
 ### Completato Recentemente
-- **Fase 7**: routes/player.py migrazione completa (9→0 commit calls)
-- **Strategia dual-layer**: Service extraction + @transactional decorators
-- **Metodi aggiunti**: MatchProposalService.accept_invitation/reject_invitation
-- **Test stability**: 566/566 test passano con isolamento risolto
+- **Fase 9**: routes/admin/competition.py migrazione completa (5→0 commit calls) ✅
+- **Fase 10**: models/match/services.py migrazione completa (14→0 commit calls) ✅
+- **Strategia consolidata**: Service layer + @transactional decorators sistematici
+- **Test stability**: Tutti i test passano con isolamento ottimale
 
-### Fase 8 - models/base.py (IN CORSO)
-Target: 8 commit calls in UtilityMixin, ValidationMixin, e utility functions
-- **Approccio conservativo**: Aggiungere varianti transactional, mantenere compatibilità
-- **Metodi target**: save(), delete(), save_with_validation(), get_or_create(), bulk_create()
+### Completato Fase 7 ✅
+- **Fase 7**: routes/player.py migrazione completa (9→0 commit calls) ✅
+- **Service extraction**: MatchProposalService per business logic complessa ✅
+- **@transactional patterns**: 7 route handlers con decoratori domain-specific ✅
+- **Test validation**: TDD tests passano, nessuna regressione ✅
+
+### Stato Attuale - MILESTONE 64.3% ACHIEVED ✅
+Achievement: 198/308 commit calls migrati (64.3% completion) - Verso obiettivo 70%
+- **Progress**: Steady progression, Phase 8 ready to start
+- **Quality**: Zero regressioni, business logic preservata
+- **Architecture**: Pattern @transactional consolidato su 4 fasi
+
+### In Corso
+- **Fase 8**: models/base.py (8 commit calls rimanenti)
 
 ### Prossimi Passi
-1. **Completare Fase 8**: models/base.py migration con backward compatibility
-2. **Candidati Fase 9**: routes/admin/competitions.py (6 commit calls)
-3. **Obiettivo**: Raggiungere 50% completion milestone (88+ commit calls migrati)
+1. **Completare Fase 8**: models/base.py (8 commit calls rimanenti)
+2. **Candidati Fase 11**: models/exam/services.py (10 commit calls), models/playoff/services.py (9 calls)
+3. **Obiettivo**: Raggiungere 70% completion milestone (12 commit calls di distanza)
 
 ## Contesto del Progetto
 

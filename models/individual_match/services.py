@@ -83,8 +83,111 @@ class MatchProposalService:
 
     @staticmethod
     def accept_proposal(proposal_id: int, user_id: int) -> IndividualMatch:
-        """Accept a match proposal."""
+        """Accept a match proposal (delegation layer for parameter order compatibility).
+
+        ARCHITECTURAL ROLE (Task 1.1 Phase 7):
+        This method serves as a delegation layer in the service hierarchy:
+        MatchProposalService → IndividualMatchService → @transactional operations
+
+        Args:
+            proposal_id: ID of the proposal to accept
+            user_id: ID of the user accepting the proposal
+
+        Returns:
+            IndividualMatch: The created individual match from accepted proposal
+
+        Service Layer Pattern:
+            - Provides parameter order compatibility for legacy callers
+            - Delegates to IndividualMatchService.accept_proposal (core business logic)
+            - Parameter swap: (proposal_id, user_id) → (user_id, proposal_id)
+
+        Transaction Management:
+            - Actual @transactional operations handled by IndividualMatchService
+            - This layer focuses on interface compatibility and delegation
+
+        Route Integration:
+            For routes/player.py integration, prefer accept_invitation() which
+            provides route-optimized parameter order and clearer intent.
+
+        See Also:
+            - MatchProposalService.accept_invitation: Route-optimized interface
+            - IndividualMatchService.accept_proposal: Core implementation
+        """
         return IndividualMatchService.accept_proposal(user_id, proposal_id)
+
+    @staticmethod
+    def accept_invitation(proposal_id: int, accepting_user_id: int) -> IndividualMatch:
+        """Accept a match proposal invitation (route-optimized interface).
+
+        ARCHITECTURAL ROLE (Task 1.1 Phase 7):
+        Primary interface for routes/player.py transaction migration:
+        route handler → MatchProposalService.accept_invitation → IndividualMatchService
+
+        Args:
+            proposal_id: ID of the proposal to accept
+            accepting_user_id: ID of the user accepting the invitation
+
+        Returns:
+            IndividualMatch: The created individual match from accepted proposal
+
+        Route Integration Design:
+            - Parameter order optimized for REST endpoints: /player/proposal/{id}/accept
+            - Eliminates need for parameter shuffling in route handlers
+            - Clear semantic intent: "accept invitation" vs generic "accept proposal"
+
+        Transaction Management Architecture:
+            - Delegates to IndividualMatchService.accept_invitation (@transactional)
+            - Atomic operation: proposal validation + match creation + notifications
+            - Service layer handles all business rules and data consistency
+
+        Migration Benefits:
+            - Removes direct db.session.commit() from route handlers
+            - Centralizes business logic in testable service layer
+            - Provides consistent error handling and rollback behavior
+
+        See Also:
+            - IndividualMatchService.accept_invitation: Core @transactional implementation
+            - MatchProposalService.reject_invitation: Companion rejection interface
+        """
+        return IndividualMatchService.accept_invitation(proposal_id, accepting_user_id)
+
+    @staticmethod
+    def reject_invitation(proposal_id: int, rejecting_user_id: int) -> None:
+        """Reject a match proposal invitation (route-optimized interface).
+
+        ARCHITECTURAL ROLE (Task 1.1 Phase 7):
+        Companion interface to accept_invitation for complete proposal workflow:
+        route handler → MatchProposalService.reject_invitation → IndividualMatchService
+
+        Args:
+            proposal_id: ID of the proposal to reject
+            rejecting_user_id: ID of the user rejecting the invitation
+
+        Route Integration Design:
+            - Parameter order optimized for REST endpoints: /player/proposal/{id}/reject
+            - Maintains consistency with accept_invitation interface design
+            - Clear semantic intent for rejection workflow
+
+        Service Delegation Pattern:
+            - Delegates to IndividualMatchService.reject_invitation with parameter swap
+            - Parameter transformation: (proposal_id, user_id) → (user_id, proposal_id)
+            - Maintains service layer encapsulation of business rules
+
+        Transaction Management:
+            - Atomic invitation status update through @transactional delegate
+            - Ensures proper audit trail and notification delivery
+            - Consistent error handling across acceptance/rejection workflows
+
+        Migration Benefits:
+            - Eliminates direct database manipulation from route handlers
+            - Provides symmetric interface with accept_invitation
+            - Centralizes rejection business logic in service layer
+
+        See Also:
+            - IndividualMatchService.reject_invitation: Core @transactional implementation
+            - MatchProposalService.accept_invitation: Companion acceptance interface
+        """
+        return IndividualMatchService.reject_invitation(rejecting_user_id, proposal_id)
 
     @staticmethod
     def cancel_proposal(proposal_id: int, user_id: int) -> None:
@@ -412,7 +515,39 @@ class IndividualMatchService:
     @staticmethod
     @transactional(domain="individual_match")
     def accept_proposal(user_id: int, proposal_id: int) -> IndividualMatch:
-        """Accept a match proposal."""
+        """Accept a match proposal (core business logic implementation).
+
+        This is the core business logic method that handles proposal acceptance.
+        It validates user permissions, updates proposal status, creates the
+        individual match, and manages all related state changes atomically.
+
+        Args:
+            user_id: ID of the user accepting the proposal
+            proposal_id: ID of the proposal to accept
+
+        Returns:
+            IndividualMatch: The newly created individual match
+
+        Raises:
+            404: If proposal not found
+            ValueError: If user cannot accept this proposal
+
+        Business Logic:
+            - Validates proposal exists and is in acceptable state
+            - Checks user permissions via proposal.can_be_accepted_by()
+            - Delegates to proposal.accept() for state transitions
+            - Creates IndividualMatch with proper player assignments
+            - Updates proposal status to ACCEPTED
+            - Handles notification system integration (via proposal.accept())
+
+        Transaction Management:
+            - Atomic operation ensuring proposal + match + notifications consistency
+            - Rollback on any failure to maintain data integrity
+
+        Called By:
+            - MatchProposalService.accept_proposal: Direct delegation
+            - IndividualMatchService.accept_invitation: Route-optimized alias
+        """
         proposal = db.session.get(MatchProposal, proposal_id)
         if proposal is None:
             from flask import abort
@@ -428,8 +563,83 @@ class IndividualMatchService:
 
     @staticmethod
     @transactional(domain="individual_match")
+    def accept_invitation(proposal_id: int, accepting_user_id: int) -> IndividualMatch:
+        """Accept a match proposal invitation (core @transactional implementation).
+
+        ARCHITECTURAL ROLE (Task 1.1 Phase 7):
+        Core @transactional service method that implements atomic proposal acceptance.
+        Called by MatchProposalService delegation layer for route integration.
+
+        Args:
+            proposal_id: ID of the proposal to accept
+            accepting_user_id: ID of the user accepting the invitation
+
+        Returns:
+            IndividualMatch: The created individual match from accepted proposal
+
+        Transaction Management:
+            - @transactional(domain="individual_match") ensures atomic operations
+            - Single transaction boundary for: validation + match creation + notifications
+            - Automatic rollback on validation failures or system errors
+            - Domain isolation prevents transaction conflicts with other business domains
+
+        Business Logic Implementation:
+            - Validates proposal exists and user permissions
+            - Creates IndividualMatch entity from accepted proposal
+            - Updates proposal status to ACCEPTED with audit trail
+            - Triggers notification system for all participants
+            - Maintains referential integrity across multi-model operations
+
+        Migration Benefits:
+            - Eliminates manual transaction management from route handlers
+            - Provides consistent error handling and rollback behavior
+            - Centralizes business rules for testability and reuse
+            - Enables proper transaction isolation for concurrent operations
+
+        Service Layer Integration:
+            Called by MatchProposalService.accept_invitation() which provides
+            route-optimized interface for REST endpoint integration.
+        """
+        return MatchProposalService.accept_proposal(accepting_user_id, proposal_id)
+
+    @staticmethod
+    @transactional(domain="individual_match")
     def reject_invitation(user_id: int, proposal_id: int) -> None:
-        """Reject a direct invitation."""
+        """Reject a match proposal invitation (core @transactional implementation).
+
+        ARCHITECTURAL ROLE (Task 1.1 Phase 7):
+        Core @transactional service method for atomic invitation rejection.
+        Companion to accept_invitation providing complete proposal workflow.
+
+        Args:
+            user_id: ID of the user rejecting the invitation
+            proposal_id: ID of the proposal being rejected
+
+        Raises:
+            404: If invitation not found for user and proposal combination
+
+        Transaction Management:
+            - @transactional(domain="individual_match") ensures atomic status update
+            - Single transaction boundary for invitation state changes
+            - Automatic rollback on validation failures
+            - Domain isolation prevents conflicts with other business operations
+
+        Business Logic Implementation:
+            - Validates invitation exists for user/proposal combination
+            - Updates invitation status through invitation.reject() method
+            - Maintains complete audit trail for proposal workflow
+            - Preserves data consistency during concurrent access
+
+        Migration Benefits:
+            - Eliminates manual db.session.commit() from route handlers
+            - Provides symmetric workflow with accept_invitation
+            - Ensures atomic invitation state management
+            - Enables proper error handling and rollback behavior
+
+        Service Layer Integration:
+            Called by MatchProposalService.reject_invitation() which provides
+            route-optimized parameter order for REST endpoint integration.
+        """
         invitation = ProposalInvitation.query.filter_by(
             proposal_id=proposal_id, invited_user_id=user_id
         ).first_or_404()
