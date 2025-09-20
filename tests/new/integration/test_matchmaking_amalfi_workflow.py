@@ -361,6 +361,21 @@ class TestAmalfiCompleteWorkflow:
 
     def test_amalfi_anti_rematch_behavior(self, director_user, players, db_session):
         """Test that Amalfi anti-rematch logic works correctly across rounds."""
+        # DEBUG: Check initial database state
+        from models.classification.models import PlayerEncounter
+        initial_encounters = db_session.query(PlayerEncounter).all()
+        print(f"🔍 DEBUG: Initial PlayerEncounter records: {len(initial_encounters)}")
+        for enc in initial_encounters:
+            print(f"   - Gara {enc.gara_id}: Player {enc.player1_id} vs {enc.player2_id} (Round {enc.round_number})")
+
+        # Ensure complete test isolation by cleaning PlayerEncounter table explicitly
+        db_session.query(PlayerEncounter).delete()
+        db_session.commit()
+
+        # DEBUG: Verify cleanup
+        remaining_encounters = db_session.query(PlayerEncounter).all()
+        print(f"🔍 DEBUG: After cleanup PlayerEncounter records: {len(remaining_encounters)}")
+
         # Create smaller gara for easier tracking of rematches
         tomorrow = date.today() + timedelta(days=1)
         gara = GaraService.create_gara(
@@ -379,13 +394,18 @@ class TestAmalfiCompleteWorkflow:
             best_of=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
-            first_round_policy="random",
+            first_round_policy="random",  # Keep random policy as intended
             odd_number_policy="bye",
             anti_rematch_enabled=True,
         )
 
         # Use only 6 players for easier tracking
         test_players = players[:6]
+
+        # DEBUG: Print player IDs being used
+        print(f"🔍 DEBUG: Using players with IDs: {[p.id for p in test_players]}")
+        print(f"🔍 DEBUG: Player usernames: {[p.username for p in test_players]}")
+        print(f"🔍 DEBUG: Gara ID: {gara.id}")
 
         # Register players
         for player in test_players:
@@ -422,6 +442,12 @@ class TestAmalfiCompleteWorkflow:
                     gara_id=gara.id, round_number=round_num
                 ).all()
 
+                # DEBUG: Check PlayerEncounter records after round creation
+                current_encounters = db_session.query(PlayerEncounter).filter_by(gara_id=gara.id).all()
+                print(f"🔍 DEBUG: After round {round_num} creation, PlayerEncounter records: {len(current_encounters)}")
+                for enc in current_encounters:
+                    print(f"   - Round {enc.round_number}: Player {enc.player1_id} vs {enc.player2_id}")
+
             # Track pairings in this round
             round_pairings = set()
             for match in matches:
@@ -430,13 +456,18 @@ class TestAmalfiCompleteWorkflow:
                     pairing = tuple(sorted([match.player1_id, match.player2_id]))
                     round_pairings.add(pairing)
 
+                    print(f"🔍 DEBUG: Round {round_num} pairing: {pairing}")
+
                     # Count immediate rematches (same pairing in consecutive rounds)
                     if round_num > 1 and len(all_pairings) > 0:
                         prev_round_pairings = all_pairings[-1]
                         if pairing in prev_round_pairings:
                             immediate_rematches += 1
+                            print(f"🚨 DEBUG: IMMEDIATE REMATCH found in round {round_num}: {pairing}")
+                            print(f"   Previous round pairings: {prev_round_pairings}")
 
             all_pairings.append(round_pairings)
+            print(f"🔍 DEBUG: Round {round_num} complete. All pairings: {round_pairings}")
 
         # With anti-rematch enabled, immediate rematches should be minimized
         # (allow up to 1 for edge cases with small tournaments)

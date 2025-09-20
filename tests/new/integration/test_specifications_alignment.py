@@ -323,8 +323,19 @@ class TestSpecificationsAlignmentFixed:
         Test anti-rematch specifications from docs/SPECIFICHE.md
         Amalfi strategy should avoid rematches across rounds
         """
+        # DEBUG: Check initial database state
+        from models.classification.models import PlayerEncounter
+        initial_encounters = db_session.query(PlayerEncounter).all()
+        print(f"🔍 DEBUG SPEC: Initial PlayerEncounter records: {len(initial_encounters)}")
+        for enc in initial_encounters:
+            print(f"   - Gara {enc.gara_id}: Player {enc.player1_id} vs {enc.player2_id} (Round {enc.round_number})")
+
         admin_user = isolated_admin_user
         players_8 = isolated_players[:8]
+
+        # DEBUG: Print player IDs being used
+        print(f"🔍 DEBUG SPEC: Using players with IDs: {[p.id for p in players_8]}")
+        print(f"🔍 DEBUG SPEC: Admin user ID: {admin_user.id}")
 
         gara = GaraService.create_gara(
             campionato_id=None,
@@ -377,12 +388,24 @@ class TestSpecificationsAlignmentFixed:
                 if not match.is_bye:
                     pairing = tuple(sorted([match.player1_id, match.player2_id]))
                     round_pairings.add(pairing)
+                    print(f"🔍 DEBUG SPEC: Round {round_num} pairing: {pairing}")
 
                     # Complete match
                     self._complete_match_simple(match, 3, 1, db_session)
 
+            print(f"🔍 DEBUG SPEC: Round {round_num} complete. Pairings: {round_pairings}")
+            print(f"🔍 DEBUG SPEC: All previous pairings: {all_pairings}")
+
             # Check no rematches
             rematches = all_pairings.intersection(round_pairings)
+            if len(rematches) > 0:
+                print(f"🚨 DEBUG SPEC: REMATCHES FOUND in round {round_num}: {rematches}")
+                # DEBUG: Check PlayerEncounter records for this gara
+                current_encounters = db_session.query(PlayerEncounter).filter_by(gara_id=gara.id).all()
+                print(f"🔍 DEBUG SPEC: PlayerEncounter records for gara {gara.id}: {len(current_encounters)}")
+                for enc in current_encounters:
+                    print(f"   - Round {enc.round_number}: Player {enc.player1_id} vs {enc.player2_id}")
+
             assert (
                 len(rematches) == 0
             ), f"Found rematches in round {round_num}: {rematches}"
