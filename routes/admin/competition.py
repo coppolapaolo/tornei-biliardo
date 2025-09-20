@@ -39,11 +39,13 @@ from amalfi.engine import get_amalfi_classification, validate_amalfi_configurati
 from models.classification.models import RoundClassification
 from models.location.models import BilliardHall
 from models.location.services import LocationService
+from models.transaction.manager import transactional
 
 # Competition management blueprint
 competition_bp = Blueprint("competition", __name__)
 
 
+@transactional(domain="competition")
 def _handle_venue_creation(
     location: str, number_of_tables: Optional[int] = None
 ) -> str:
@@ -76,7 +78,6 @@ def _handle_venue_creation(
             # Then modify to set as disabled and non-verified
             new_venue.is_active = False
             new_venue.verified = False
-            db.session.commit()
 
             flash(
                 f"Nuovo luogo '{location}' aggiunto come disattivato. Sarà verificato dall'admin.",
@@ -366,6 +367,7 @@ def create_gara():
 @competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])
 @login_required
 @gara_manager_required
+@transactional(domain="competition")
 def edit_gara(gara_id):
     """Modifica gara"""
     gara = db.session.get(Gara, gara_id)
@@ -454,14 +456,12 @@ def edit_gara(gara_id):
                             discipline=round_discipline,
                         )
 
-                # Commit round configurations
-                db.session.commit()
+                # Round configurations will be committed by transaction
             else:
                 # For non-random strategies, clear any existing round configurations
                 from models.competition.round_configuration import RoundConfiguration
 
                 RoundConfiguration.delete_for_gara(gara_id)
-                db.session.commit()
 
             flash("Gara aggiornata con successo!")
         except ValueError as ve:
@@ -984,6 +984,7 @@ def amalfi_classification(gara_id, round_number):
 )
 @login_required
 @gara_manager_required
+@transactional(domain="competition")
 def amalfi_start_round(gara_id, round_number):
     """Avvia un turno specifico con algoritmo Amalfi"""
     gara = Gara.query.get_or_404(gara_id)
@@ -1050,7 +1051,6 @@ def amalfi_start_round(gara_id, round_number):
         # Aggiorna il turno corrente DOPO il cambio di stato
         gara.current_round = round_number
         db.session.add(gara)
-        db.session.commit()
 
         # Costruisci il messaggio di successo
         message = f"Turno {round_number} avviato con successo! Creati {total} abbinamenti Amalfi."
@@ -1085,6 +1085,7 @@ def amalfi_start_round(gara_id, round_number):
 @competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
 @login_required
 @gara_manager_required
+@transactional(domain="competition")
 def start_round_generic(gara_id, round_number):
     """Avvia un turno specifico con la strategia configurata nella gara"""
     gara = Gara.query.get_or_404(gara_id)
@@ -1162,7 +1163,6 @@ def start_round_generic(gara_id, round_number):
         # Aggiorna il turno corrente DOPO il cambio di stato
         gara.current_round = round_number
         db.session.add(gara)
-        db.session.commit()
 
         # Messaggio di successo
         strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
