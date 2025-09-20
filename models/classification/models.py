@@ -143,6 +143,78 @@ class RoundClassification(db.Model):
                 player_stats[match.player1_id]["matches_won"] += 1
                 player_stats[match.player1_id]["rack_won"] += match.player1_score or 0
                 # No rack_lost for bye matches
+            elif match.is_trio:
+                # Handle trio matches - need to include the third player from TrioMatch
+                from ..match.models import TrioMatch
+
+                trio_match = (
+                    db.session.query(TrioMatch)
+                    .filter_by(match_id=match.id)
+                    .first()
+                )
+
+                if trio_match:
+                    # All three players from the trio match
+                    trio_players = [
+                        trio_match.player1_id,
+                        trio_match.player2_id,
+                        trio_match.player3_id
+                    ]
+
+                    # Initialize all trio players if not seen
+                    for player_id in trio_players:
+                        if player_id not in player_stats:
+                            player_stats[player_id] = {
+                                "matches_won": 0,
+                                "rack_won": 0,
+                                "rack_lost": 0,
+                            }
+
+                    # For trio matches, use the trio_match rack counts
+                    player_stats[trio_match.player1_id]["rack_won"] += trio_match.player1_racks or 0
+                    player_stats[trio_match.player2_id]["rack_won"] += trio_match.player2_racks or 0
+                    player_stats[trio_match.player3_id]["rack_won"] += trio_match.player3_racks or 0
+
+                    # Calculate rack_lost for each player (total racks won by others)
+                    total_racks = (trio_match.player1_racks or 0) + (trio_match.player2_racks or 0) + (trio_match.player3_racks or 0)
+                    player_stats[trio_match.player1_id]["rack_lost"] += total_racks - (trio_match.player1_racks or 0)
+                    player_stats[trio_match.player2_id]["rack_lost"] += total_racks - (trio_match.player2_racks or 0)
+                    player_stats[trio_match.player3_id]["rack_lost"] += total_racks - (trio_match.player3_racks or 0)
+
+                    # Determine winner (player with most racks in trio)
+                    max_racks = max(trio_match.player1_racks or 0, trio_match.player2_racks or 0, trio_match.player3_racks or 0)
+                    if (trio_match.player1_racks or 0) == max_racks:
+                        player_stats[trio_match.player1_id]["matches_won"] += 1
+                    elif (trio_match.player2_racks or 0) == max_racks:
+                        player_stats[trio_match.player2_id]["matches_won"] += 1
+                    elif (trio_match.player3_racks or 0) == max_racks:
+                        player_stats[trio_match.player3_id]["matches_won"] += 1
+                else:
+                    # Fallback: if no TrioMatch found, treat as regular match
+                    # This should not happen, but we handle it for robustness
+                    if match.player1_id not in player_stats:
+                        player_stats[match.player1_id] = {
+                            "matches_won": 0,
+                            "rack_won": 0,
+                            "rack_lost": 0,
+                        }
+                    if match.player2_id not in player_stats:
+                        player_stats[match.player2_id] = {
+                            "matches_won": 0,
+                            "rack_won": 0,
+                            "rack_lost": 0,
+                        }
+
+                    # Use match scores as fallback
+                    if match.player1_score > match.player2_score:
+                        player_stats[match.player1_id]["matches_won"] += 1
+                    else:
+                        player_stats[match.player2_id]["matches_won"] += 1
+
+                    player_stats[match.player1_id]["rack_won"] += match.player1_score
+                    player_stats[match.player1_id]["rack_lost"] += match.player2_score
+                    player_stats[match.player2_id]["rack_won"] += match.player2_score
+                    player_stats[match.player2_id]["rack_lost"] += match.player1_score
             else:
                 # Handle regular matches
                 # Initialize players if not seen

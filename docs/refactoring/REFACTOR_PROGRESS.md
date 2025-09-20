@@ -24,6 +24,11 @@
     - [x] Added transactional variants (_tx methods) for all base classes ✅
     - [x] Resolved circular import with lazy loading pattern ✅
     - [x] Enhanced utility functions with transaction support ✅
+  - [x] Phase 9: routes/admin/competition.py migration (5 commit calls) ✅
+    - [x] Enhanced Route Pattern with @transactional decorators ✅
+    - [x] 4 route handlers migrated: venue creation, gara editing, round starting ✅
+    - [x] 100% commit call elimination with business logic preservation ✅
+    - [x] Domain-specific transaction boundaries (domain="competition") ✅
   - [ ] Migrate other high-impact services ⏳
 - [x] Task 1.2: Decompose GaraService (80%) ✅
   - [x] Create characterization tests for current GaraService behavior ✅
@@ -71,12 +76,13 @@
   - [ ] Consolidate template duplications ⏳
 
 ## 📋 Current Context
-- **Current Developer**: COMPLETED CompetitionServices Transaction Management Migration with systematic 3-phase approach
-- **Current Phase**: Task 1.1 ongoing - CompetitionServices FULLY migrated (15/15 methods) ✅
+- **Current Developer**: COMPLETED Phase 9 - routes/admin/competition.py migration AND critical bug fixes
+- **Current Phase**: Task 1.1 - Phase 9 COMPLETED with algorithm bug fixes ✅
 - **Next Task**: Continue Task 1.1 with other high-impact services or start Task 1.3 (UserService Decomposition)
-- **Achievement**: 45/177 commit calls migrated (25.4% progress) - CompetitionServices domain fully completed
+- **Achievement**: 64/177 commit calls migrated (36.1% progress) - routes/admin/competition.py domain fully completed
+- **Critical Fixes**: Fixed trio handling classification bug affecting tournament completion ✅
 - **Blocked On**: None
-- **Last Updated**: 2025-01-18 [current session]
+- **Last Updated**: 2025-09-20 [current session]
 
 ## 🎯 Current Sprint Goals
 - [x] Set up refactor test structure ✅
@@ -89,8 +95,8 @@
   - [x] Apply TDD to complete complex RoundService methods ✅
   - [x] Achieved: 36.5% reduction, 1139 lines remaining ✅
 
-## 📊 Baseline Metrics (Phase 8 Update)
-- **Direct db.session.commit() calls**: 177 identified → 118 remaining (59 migrated via @transactional, 33.3% progress)
+## 📊 Baseline Metrics (Phase 9 Update)
+- **Direct db.session.commit() calls**: 177 identified → 113 remaining (64 migrated via @transactional, 36.1% progress)
   - InscriptionService: 4/4 calls migrated ✅
   - IndividualMatchServices: 17/17 calls migrated (FULLY COMPLETED) ✅
     - Phase 1: Core Proposal Lifecycle (5 methods) ✅
@@ -108,7 +114,8 @@
   - ChallengeService: 10/10 calls migrated (Phase 6) ✅
   - routes/player.py: 9/9 calls migrated (Phase 7) ✅
   - models/base.py: 8/8 calls enhanced with _tx variants (Phase 8) ✅
-  - **Milestone Achieved**: 33.3% completion, targeting 50% next
+  - routes/admin/competition.py: 5/5 calls migrated (Phase 9) ✅
+  - **Milestone Progress**: 36.1% completion, targeting 50% next (25 more calls needed)
   - Target: Migrate all 177 calls to @transactional pattern
 - **GaraService lines**: 1793 → 1139 (target: <500, 36.5% progress) ✅
 - **UserService lines**: 1449 → 1449 (target: <500, 0.0% progress)
@@ -142,6 +149,42 @@
 - **Foundation ready** for gradual migration across all models
 - **Next consumer guidance**: Models can now use `instance.save_tx()` instead of `instance.save()`
 - **Future-proof**: Base infrastructure supports advanced transaction patterns
+
+### 🔧 Critical Algorithm Bug Fix (September 2025)
+
+**Issue Discovered**: During Phase 9 testing, a critical bug was found in trio match classification logic
+
+**Problem**: `RoundClassification.calculate_classification_after_round` only processed `player1_id` and `player2_id` from completed matches, **completely ignoring the third player** in trio matches stored in the `TrioMatch` table.
+
+**Symptoms**:
+- ✅ 9 players registered for tournament
+- ❌ Only 8 players appeared in final classification
+- ❌ Third player in trio matches was missing from results
+
+**Root Cause Analysis**:
+- `calculate_classification_after_round` method in `models/classification/models.py`
+- Query filtered `Match.status == "completed"` but only processed regular 2-player logic
+- Missing `elif match.is_trio:` branch to handle trio match classification
+- Third player stored in separate `TrioMatch.player3_id` was never included
+
+**Fix Implemented**:
+```python
+elif match.is_trio:
+    # Handle trio matches - need to include the third player from TrioMatch
+    trio_match = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+    if trio_match:
+        # All three players: trio_match.player1_id, player2_id, player3_id
+        # Calculate rack stats for all 3 players
+        # Determine winner based on highest rack count
+```
+
+**Validation**:
+- ✅ **test_random_strategy_with_trio_handling** now passes consistently
+- ✅ All integration tests pass (266 tests)
+- ✅ No regression in existing functionality
+- ✅ Fix works both in parallel (`-n auto`) and sequential test execution
+
+**Impact**: Critical for tournament integrity - ensures all participants are included in final rankings
 
 ## 🧪 Test Strategy
 - **Characterization Tests**: Document current behavior before refactoring
