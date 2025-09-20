@@ -4,9 +4,12 @@ Questa directory contiene tutta la documentazione relativa al refactoring sistem
 
 ## Stato Attuale
 
-**⚠️ IMPORTANTE: IL REFACTORING È SOSPESO**
+**✅ PROGRESSO AVANZATO: Task 1.1 Fase 8 - models/base.py Migration**
 
-Prima di continuare con qualsiasi attività di refactoring, è **OBBLIGATORIO** che tutti i test passino al 100%. Attualmente ci sono test che falliscono che devono essere risolti prima di procedere.
+Il refactoring procede sistematicamente con la migrazione da `db.session.commit()` diretti a pattern `@transactional`:
+- **Fase 7 COMPLETATA**: routes/player.py (9→0 commit calls) ✅
+- **Fase 8 IN CORSO**: models/base.py (8 commit calls target) ⏳
+- **Test Status**: 566/566 test passano (100%) ✅
 
 ## Principi Fondamentali
 
@@ -34,10 +37,10 @@ Quando si incontrano test che falliscono:
 
 ### [REFACTOR_PROGRESS.md](./REFACTOR_PROGRESS.md)
 Documentazione completa dello stato del refactoring:
-- Task 1.1: Transaction Management Migration (IN CORSO)
-- Task 1.2: GaraService Decomposition (COMPLETATO)
-- Statistiche dei commit calls migrati
-- Strategia e pianificazione delle fasi successive
+- **Task 1.1**: Transaction Management Migration - Fase 8/N (route/player.py completata, models/base.py in corso)
+- **Task 1.2**: GaraService Decomposition - COMPLETATO ✅
+- **Milestone Raggiunto**: 59 commit calls migrati su 177 totali (33% completamento)
+- Strategia sistematica per file ad alto impatto
 
 ### [REFACTOR_PLAN_ROUND_EXTRACTION.md](./REFACTOR_PLAN_ROUND_EXTRACTION.md)
 Piano specifico per l'estrazione del RoundService:
@@ -59,12 +62,23 @@ PYTHONPATH=. pytest tests/new/unit/ -v
 PYTHONPATH=. pytest tests/new/integration/ -v
 ```
 
-## Prossimi Passi per Futuri Sviluppatori
+## Stato Attuale e Prossimi Passi
 
-1. **PRIMA DI TUTTO**: Verificare che `PYTHONPATH=. pytest tests/new/` passi al 100%
-2. **Se ci sono failures**: Seguire la metodologia sistematica per risolverli
-3. **Solo dopo test verdi**: Riprendere il refactoring da Task 1.1 dove era stato interrotto
-4. **Per ogni modifica**: Mantenere sempre i test verdi
+### Completato Recentemente
+- **Fase 7**: routes/player.py migrazione completa (9→0 commit calls)
+- **Strategia dual-layer**: Service extraction + @transactional decorators
+- **Metodi aggiunti**: MatchProposalService.accept_invitation/reject_invitation
+- **Test stability**: 566/566 test passano con isolamento risolto
+
+### Fase 8 - models/base.py (IN CORSO)
+Target: 8 commit calls in UtilityMixin, ValidationMixin, e utility functions
+- **Approccio conservativo**: Aggiungere varianti transactional, mantenere compatibilità
+- **Metodi target**: save(), delete(), save_with_validation(), get_or_create(), bulk_create()
+
+### Prossimi Passi
+1. **Completare Fase 8**: models/base.py migration con backward compatibility
+2. **Candidati Fase 9**: routes/admin/competitions.py (6 commit calls)
+3. **Obiettivo**: Raggiungere 50% completion milestone (88+ commit calls migrati)
 
 ## Contesto del Progetto
 

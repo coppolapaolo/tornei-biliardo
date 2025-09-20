@@ -15,6 +15,8 @@ from sqlalchemy.engine import Engine
 import sqlite3
 from datetime import datetime
 
+# Import transaction management will be done lazily to avoid circular imports
+
 # Initialize SQLAlchemy instance
 db = SQLAlchemy()
 
@@ -46,6 +48,23 @@ class UtilityMixin:
         """Delete the model instance from database"""
         db.session.delete(self)
         db.session.commit()
+
+    # Enhanced transactional variants (Phase 8 addition)
+
+    def save_tx(self):
+        """Save the model instance to database (transactional variant)"""
+        from .transaction.manager import transaction_manager
+
+        with transaction_manager.transaction() as tx:
+            db.session.add(self)
+            return self
+
+    def delete_tx(self):
+        """Delete the model instance from database (transactional variant)"""
+        from .transaction.manager import transaction_manager
+
+        with transaction_manager.transaction() as tx:
+            db.session.delete(self)
 
     def to_dict(self):
         """Convert model instance to dictionary"""
@@ -185,6 +204,17 @@ class ValidationMixin:
                 return self
         return None
 
+    def save_with_validation_tx(self):
+        """Save the model after validation (transactional variant)"""
+        from .transaction.manager import transaction_manager
+
+        if self.validate():
+            with transaction_manager.transaction() as tx:
+                # Simple approach: always add to session, let transaction handle commit
+                db.session.add(self)
+                return self
+        return None
+
 
 # Base model classes for different use cases
 
@@ -215,6 +245,23 @@ class BaseModel(db.Model):
         """Delete the model instance from database"""
         db.session.delete(self)
         db.session.commit()
+
+    # Enhanced transactional variants (Phase 8 addition)
+
+    def save_tx(self):
+        """Save the model instance to database (transactional variant)"""
+        from .transaction.manager import transaction_manager
+
+        with transaction_manager.transaction() as tx:
+            db.session.add(self)
+            return self
+
+    def delete_tx(self):
+        """Delete the model instance from database (transactional variant)"""
+        from .transaction.manager import transaction_manager
+
+        with transaction_manager.transaction() as tx:
+            db.session.delete(self)
 
     def to_dict(self):
         """Convert model instance to dictionary"""
@@ -332,3 +379,74 @@ def reset_db():
     """Reset database - WARNING: Deletes all data!"""
     db.drop_all()
     db.create_all()
+
+
+# Enhanced transactional utility functions (Phase 8 addition)
+
+
+def get_or_create_tx(model_class, **kwargs):
+    """
+    Get existing instance or create new one if it doesn't exist (transactional variant).
+
+    Args:
+        model_class: The model class to query
+        **kwargs: Field values to search for and create with
+
+    Returns:
+        tuple: (instance, created) where created is boolean
+    """
+    from .transaction.manager import transaction_manager
+
+    with transaction_manager.transaction() as tx:
+        instance = db.session.query(model_class).filter_by(**kwargs).first()
+        if instance:
+            return instance, False
+        else:
+            instance = model_class(**kwargs)
+            db.session.add(instance)
+            return instance, True
+
+
+def bulk_create_tx(model_class, instances_data):
+    """
+    Create multiple instances efficiently (transactional variant).
+
+    Args:
+        model_class: The model class to create instances of
+        instances_data: List of dictionaries with instance data
+
+    Returns:
+        list: Created instances
+    """
+    from .transaction.manager import transaction_manager
+
+    with transaction_manager.transaction() as tx:
+        instances = []
+        for data in instances_data:
+            instance = model_class(**data)
+            instances.append(instance)
+
+        db.session.add_all(instances)
+        return instances
+
+
+def safe_commit_tx():
+    """
+    Enhanced safe commit using transaction manager.
+
+    Note: This function is now largely redundant as the @transactional
+    decorator provides better transaction management. Use transaction
+    manager context directly instead.
+
+    Returns:
+        bool: True if within transaction context, False otherwise
+    """
+    from .transaction.manager import transaction_manager
+
+    # Check if we're in a transaction context
+    if transaction_manager.current_transaction:
+        # Transaction will be committed automatically by decorator
+        return True
+    else:
+        # Fallback to old behavior if called outside transaction context
+        return safe_commit()
