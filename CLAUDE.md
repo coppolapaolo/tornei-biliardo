@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**User Configuration Integration:** This repository integrates with user-specific global instructions from `/Users/paolo/.claude/CLAUDE.md`, which includes the requirement to use `-n auto` for pytest commands to accelerate test execution.
+
 ## Project Overview
 
 This is a Flask-based **community platform for American Pool enthusiasts** that aspires to become the central hub for pool players. While currently focused on tournament organization and match management, the platform is designed to support any pool-related activity and foster a vibrant community of players.
@@ -43,19 +45,19 @@ python app.py
 
 ### Testing
 ```bash
-# Run tests (excludes legacy tests by default)
-pytest
+# Run tests (excludes legacy tests by default, parallel execution)
+pytest -n auto
 
-# Run specific test types
-pytest -m unit
-pytest -m integration
-pytest -m e2e
+# Run specific test types (parallel)
+pytest -m unit -n auto
+pytest -m integration -n auto
+pytest -m e2e -n auto
 
-# Run with coverage
-pytest --cov
+# Run with coverage (parallel)
+pytest --cov -n auto
 
 # Run single test with proper path (CRITICAL for imports)
-PYTHONPATH=. pytest tests/new/unit/test_specific.py
+PYTHONPATH=. pytest tests/new/unit/test_specific.py -v
 
 # Run single integration test
 PYTHONPATH=. pytest tests/new/integration/test_gare_usecase_1_amalfi_complete_workflow.py -v
@@ -63,8 +65,11 @@ PYTHONPATH=. pytest tests/new/integration/test_gare_usecase_1_amalfi_complete_wo
 # Run verbose with output
 PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -s
 
-# Run tests with short traceback on failures
-PYTHONPATH=. pytest tests/new/unit/ -x --tb=short
+# Run tests with short traceback on failures (parallel)
+PYTHONPATH=. pytest tests/new/unit/ -x --tb=short -n auto
+
+# Run all new tests efficiently (parallel with quick feedback)
+PYTHONPATH=. pytest tests/new/ -q -n auto --dist=loadfile --disable-warnings --maxfail=1
 
 # Run legacy tests (if needed)
 pytest tests/legacy/
@@ -383,8 +388,8 @@ flake8
 # 2. Type check (MANDATORY)
 pyright
 
-# 3. Test new functionality
-PYTHONPATH=. pytest tests/new/
+# 3. Test new functionality (parallel execution)
+PYTHONPATH=. pytest tests/new/ -n auto
 
 # 4. Clean imports
 autoflake --remove-all-unused-imports --recursive --in-place .

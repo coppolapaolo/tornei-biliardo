@@ -29,6 +29,12 @@
     - [x] 4 route handlers migrated: venue creation, gara editing, round starting ✅
     - [x] 100% commit call elimination with business logic preservation ✅
     - [x] Domain-specific transaction boundaries (domain="competition") ✅
+  - [x] Phase 10: models/match/services.py migration (14 commit calls) ✅
+    - [x] Three-phase systematic approach: MatchService, RackService, MatchResultService ✅
+    - [x] All 14 commit calls migrated to @transactional pattern ✅
+    - [x] Complex business logic preserved (state machines, score updates, rack management) ✅
+    - [x] Comprehensive TDD test coverage for all migration phases ✅
+    - [x] Domain-specific transaction boundaries (domain="match") ✅
   - [ ] Migrate other high-impact services ⏳
 - [x] Task 1.2: Decompose GaraService (80%) ✅
   - [x] Create characterization tests for current GaraService behavior ✅
@@ -76,13 +82,13 @@
   - [ ] Consolidate template duplications ⏳
 
 ## 📋 Current Context
-- **Current Developer**: COMPLETED Phase 9 - routes/admin/competition.py migration AND critical bug fixes
-- **Current Phase**: Task 1.1 - Phase 9 COMPLETED with algorithm bug fixes ✅
-- **Next Task**: Continue Task 1.1 with other high-impact services or start Task 1.3 (UserService Decomposition)
-- **Achievement**: 64/177 commit calls migrated (36.1% progress) - routes/admin/competition.py domain fully completed
-- **Critical Fixes**: Fixed trio handling classification bug affecting tournament completion ✅
-- **Blocked On**: None
-- **Last Updated**: 2025-09-20 [current session]
+- **Current Developer**: COMPLETED Phase 10 - models/match/services.py migration ✅
+- **Current Phase**: Task 1.1 - Phase 10 COMPLETED with systematic TDD approach ✅
+- **Next Task**: Continue Task 1.1 with other high-impact services (exam/services.py, playoff/services.py candidates)
+- **Achievement**: 78/177 commit calls migrated (44.1% progress) - Major milestone approaching 50%
+- **Critical Success**: Largest single service migration (14 calls) with complex business logic preservation ✅
+- **Blocked On**: None - all tests passing, stable integration
+- **Last Updated**: 2025-09-20 [current session - Phase 10 completion]
 
 ## 🎯 Current Sprint Goals
 - [x] Set up refactor test structure ✅
@@ -95,8 +101,8 @@
   - [x] Apply TDD to complete complex RoundService methods ✅
   - [x] Achieved: 36.5% reduction, 1139 lines remaining ✅
 
-## 📊 Baseline Metrics (Phase 9 Update)
-- **Direct db.session.commit() calls**: 177 identified → 113 remaining (64 migrated via @transactional, 36.1% progress)
+## 📊 Baseline Metrics (Phase 10 Update)
+- **Direct db.session.commit() calls**: 177 identified → 99 remaining (78 migrated via @transactional, 44.1% progress)
   - InscriptionService: 4/4 calls migrated ✅
   - IndividualMatchServices: 17/17 calls migrated (FULLY COMPLETED) ✅
     - Phase 1: Core Proposal Lifecycle (5 methods) ✅
@@ -115,7 +121,11 @@
   - routes/player.py: 9/9 calls migrated (Phase 7) ✅
   - models/base.py: 8/8 calls enhanced with _tx variants (Phase 8) ✅
   - routes/admin/competition.py: 5/5 calls migrated (Phase 9) ✅
-  - **Milestone Progress**: 36.1% completion, targeting 50% next (25 more calls needed)
+  - **models/match/services.py: 14/14 calls migrated (Phase 10) ✅**
+    - **Phase 1**: MatchService (6 methods) - state machine transitions ✅
+    - **Phase 2**: RackService (6 methods) - score management, rack operations ✅
+    - **Phase 3**: MatchResultService (2 methods) - result validation ✅
+  - **Milestone Progress**: 44.1% completion, approaching 50% milestone (10 more calls needed)
   - Target: Migrate all 177 calls to @transactional pattern
 - **GaraService lines**: 1793 → 1139 (target: <500, 36.5% progress) ✅
 - **UserService lines**: 1449 → 1449 (target: <500, 0.0% progress)
@@ -185,6 +195,61 @@ elif match.is_trio:
 - ✅ Fix works both in parallel (`-n auto`) and sequential test execution
 
 **Impact**: Critical for tournament integrity - ensures all participants are included in final rankings
+
+### 🎯 Phase 10 Results - models/match/services.py Migration (COMPLETED)
+
+**Objective**: Migrate the largest remaining service file with 14 commit calls using systematic TDD approach
+
+**Strategy Applied**: Three-Phase Comprehensive Approach
+- ✅ **Phase 1: MatchService** - State machine methods (6 commit calls)
+- ✅ **Phase 2: RackService** - Score and rack management (6 commit calls)
+- ✅ **Phase 3: MatchResultService** - Result validation (2 commit calls)
+
+**Migration Details**:
+
+**Phase 1 - MatchService (6 methods)**:
+- `create_match()` - Match entity creation with proper status initialization
+- `create_trio_match()` - Three-player match creation with TrioMatch linkage
+- `to_playing()` - State machine transition from pending/completed to playing
+- `to_completed()` - State machine transition to completed with validation
+- `reset_to_pending()` - Complex reset with rack cleanup and OperationResult handling
+- `admin_unlock_match()` - Administrative unlock with OperationResult tracking
+
+**Phase 2 - RackService (6 methods)**:
+- `add_rack_result()` - Core rack creation with match score updates
+- `add_rack_with_score_update()` - Advanced rack addition with completion detection
+- `reset_match_complete()` - Complete match reset with rack elimination
+- `remove_rack_admin()` - Administrative rack removal with score recalculation
+- `validate_rack_admin()` - Administrative validation with automatic confirmation
+- `remove_last_rack()` - Last rack removal utility
+
+**Phase 3 - MatchResultService (2 methods)**:
+- `validate_by_admin()` - Administrative match validation
+- `submit_result()` - Result submission with state machine integration
+
+**Technical Implementation**:
+- **Decorator Pattern**: All methods use `@transactional(domain="match")` for consistent transaction boundaries
+- **Business Logic Preservation**: Complex scoring, state transitions, and validation logic maintained exactly
+- **Return Type Consistency**: All methods maintain original return types (Match, Rack, OperationResult, dict, etc.)
+- **Error Handling**: Preserved all exception handling while leveraging transaction rollback capabilities
+- **State Machine Integration**: Maintained proper integration between service methods
+
+**Quality Assurance**:
+- **TDD Test Coverage**: 17 comprehensive tests across all three phases
+- **Regression Testing**: All existing unit and integration tests continue to pass
+- **Complex Business Logic**: Successfully preserved intricate match lifecycle management
+- **Cross-Service Integration**: Maintained proper interaction between MatchService, RackService, and MatchResultService
+
+**Impact**:
+- **Progress Milestone**: 44.1% completion (78/177 commit calls) - Major milestone approaching 50%
+- **Largest Migration**: Most complex service file with diverse business logic successfully migrated
+- **Zero Regressions**: All existing functionality preserved with enhanced transaction safety
+- **Foundation for Others**: Demonstrates pattern for complex service migrations
+
+**Next Candidate Services**:
+- `models/exam/services.py` (10 commit calls) - Challenge examination system
+- `models/playoff/services.py` (9 commit calls) - Elimination tournament management
+- `models/tiebreaker/services.py` (8 commit calls) - Tie resolution system
 
 ### 🐛 Test Contamination Resolution (September 2025)
 
