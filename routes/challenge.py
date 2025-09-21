@@ -473,7 +473,6 @@ def complete_x_replacement(attempt_id):
                 {
                     "success": True,
                     "final_score": completed_attempt.score,
-                    "rack_difference_equivalent": completed_attempt.get_rack_difference_equivalent(),
                     "message": "X replacement completed successfully",
                 }
             )

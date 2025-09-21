@@ -681,15 +681,40 @@ class TestUseCaseRandomStrategyVariants:
             )
 
         # Add racks for other players (1 rack each)
-        if trio_match.player2_id:
-            RackService.add_rack_result(
-                match_id=trio_match.id,
-                rack_number=4,
-                winner_id=trio_match.player2_id,
-                reported_by_id=trio_match.player2_id,
-                confirmed_by_player=True,
-                validated_by_admin=True,
-            )
+        # Get the trio data to access all 3 players
+        trio_data_list = trio_match.trio_match
+        if trio_data_list and len(trio_data_list) > 0:
+            trio_data = trio_data_list[0]  # Get the first (and should be only) trio record
+            if trio_data.player2_id:
+                RackService.add_rack_result(
+                    match_id=trio_match.id,
+                    rack_number=4,
+                    winner_id=trio_data.player2_id,
+                    reported_by_id=trio_data.player2_id,
+                    confirmed_by_player=True,
+                    validated_by_admin=True,
+                )
+            # Add rack for third player
+            if trio_data.player3_id:
+                RackService.add_rack_result(
+                    match_id=trio_match.id,
+                    rack_number=5,
+                    winner_id=trio_data.player3_id,
+                    reported_by_id=trio_data.player3_id,
+                    confirmed_by_player=True,
+                    validated_by_admin=True,
+                )
+        else:
+            # Fallback to regular match if no trio data
+            if trio_match.player2_id:
+                RackService.add_rack_result(
+                    match_id=trio_match.id,
+                    rack_number=4,
+                    winner_id=trio_match.player2_id,
+                    reported_by_id=trio_match.player2_id,
+                    confirmed_by_player=True,
+                    validated_by_admin=True,
+                )
 
         # Complete the match properly using MatchService
         MatchService.to_completed(trio_match.id)

@@ -14,7 +14,15 @@ from .models import Challenge, ChallengeAttempt, ChallengeFavorite
 
 
 class ChallengeService:
-    """Service for challenge management and business logic."""
+    """Service per la gestione delle sfide (challenges) e business logic.
+
+    Gestisce il sistema di sfide individuali per l'allenamento e valutazione
+    delle competenze dei giocatori, incluso:
+    - CRUD operations per sfide
+    - Sistema dei preferiti per i giocatori
+    - Integrazione X-replacement per sostituzioni in campionato
+    - Statistiche e cronologia tentativi
+    """
 
     @staticmethod
     def create_challenge(
@@ -23,7 +31,17 @@ class ChallengeService:
         pass_fail_only: bool = False,
         created_by_id: Optional[int] = None,
     ) -> Challenge:
-        """Create a new challenge."""
+        """Crea una nuova sfida nel sistema.
+
+        Args:
+            description: Descrizione della sfida e istruzioni per il giocatore
+            image_path: Percorso all'immagine che illustra la sfida
+            pass_fail_only: True se pass/fail, False se punteggio numerico
+            created_by_id: ID del direttore/admin che ha creato la sfida (opzionale)
+
+        Returns:
+            Challenge: L'oggetto sfida creato e persistito nel database
+        """
         challenge = Challenge(
             description=description,
             pass_fail_only=pass_fail_only,
@@ -36,22 +54,73 @@ class ChallengeService:
         return challenge
 
     @staticmethod
+    def update_challenge(
+        challenge_id: int,
+        description: Optional[str] = None,
+        image_path: Optional[str] = None,
+        pass_fail_only: Optional[bool] = None,
+        is_active: Optional[bool] = None,
+    ) -> Challenge:
+        """Aggiorna una sfida esistente con validazione.
+
+        Args:
+            challenge_id: ID della sfida da modificare
+            description: Nuova descrizione (mantiene esistente se None)
+            image_path: Nuovo percorso immagine (mantiene esistente se None)
+            pass_fail_only: Nuovo tipo di scoring (mantiene esistente se None)
+            is_active: Nuovo stato attivo/inattivo (mantiene esistente se None)
+
+        Returns:
+            Challenge: L'oggetto sfida aggiornato
+
+        Raises:
+            404: Se la sfida non esiste
+        """
+        challenge = db.session.get(Challenge, challenge_id)
+        if not challenge:
+            from flask import abort
+            abort(404)
+
+        # Aggiorna solo i campi specificati (pattern partial update)
+        if description is not None:
+            challenge.description = description
+        if image_path is not None:
+            challenge.image_path = image_path
+        if pass_fail_only is not None:
+            challenge.pass_fail_only = pass_fail_only
+        if is_active is not None:
+            challenge.is_active = is_active
+
+        db.session.commit()
+        return challenge
+
+    @staticmethod
     def get_all_challenges() -> List[Challenge]:
-        """Get all challenges."""
+        """Recupera tutte le sfide (incluse quelle inattive) - solo per admin."""
         return db.session.query(Challenge).all()
 
     @staticmethod
     def get_active_challenges() -> List[Challenge]:
-        """Get all active challenges."""
+        """Recupera solo le sfide attive visibili ai giocatori."""
         return db.session.query(Challenge).filter_by(is_active=True).all()
 
     @staticmethod
     def get_user_challenges(user_id: int) -> Dict[str, List[Challenge]]:
-        """Get challenges organized by user relationship."""
-        # All active challenges
+        """Organizza sfide attive per relazione con l'utente specificato.
+
+        Args:
+            user_id: ID del giocatore per cui organizzare le sfide
+
+        Returns:
+            Dict con chiavi:
+            - 'favorites': Sfide contrassegnate come preferite dall'utente
+            - 'attempted': Sfide già tentate dall'utente (con cronologia)
+            - 'general': Sfide mai tentate dall'utente (catalogo generale)
+        """
+        # Recupera solo sfide attive per evitare confusione
         all_challenges = ChallengeService.get_active_challenges()
 
-        # User's favorites
+        # Identifica preferiti dell'utente tramite relazione ChallengeFavorite
         favorite_ids = {
             fav.challenge_id
             for fav in db.session.query(ChallengeFavorite)
@@ -60,7 +129,7 @@ class ChallengeService:
         }
         favorites = [c for c in all_challenges if c.id in favorite_ids]
 
-        # Challenges user has attempted
+        # Identifica sfide già tentate dall'utente (cronologia)
         attempted_ids = {
             att.challenge_id
             for att in db.session.query(ChallengeAttempt)
@@ -69,14 +138,14 @@ class ChallengeService:
         }
         attempted = [c for c in all_challenges if c.id in attempted_ids]
 
-        # General catalog (not attempted)
+        # Catalogo generale: sfide non ancora tentate dall'utente
         general = [c for c in all_challenges if c.id not in attempted_ids]
 
         return {"favorites": favorites, "attempted": attempted, "general": general}
 
     @staticmethod
     def get_catalog_data(user_id: Optional[int] = None) -> Dict[str, Any]:
-        """Get complete data structure for challenge catalog (only active challenges)."""
+        """Get complete data structure for challenge catalog (active only)."""
         # Everyone sees only active challenges
         all_challenges = ChallengeService.get_active_challenges()
 
@@ -152,7 +221,7 @@ class ChallengeService:
 
     @staticmethod
     def toggle_favorite(user_id: int, challenge_id: int) -> bool:
-        """Toggle challenge as favorite for user. Returns True if added, False if removed."""
+        """Toggle challenge as favorite. Returns True if added, False if removed."""
         favorite = (
             db.session.query(ChallengeFavorite)
             .filter_by(user_id=user_id, challenge_id=challenge_id)
@@ -171,8 +240,24 @@ class ChallengeService:
 
     @staticmethod
     def get_challenge_for_x_replacement(gara_id: int) -> Optional[Challenge]:
-        """Get a suitable challenge for X replacement in campionato."""
-        # Find challenges that can be used for X replacement
+        """Seleziona una sfida appropriata per sostituzione X in campionato.
+
+        L'algoritmo di selezione implementa una strategia di equità:
+        1. Filtra sfide attive con punteggio numerico (no pass/fail only)
+        2. Conta utilizzi precedenti nella stessa gara
+        3. Preferisce sfide meno utilizzate per bilanciamento
+
+        Args:
+            gara_id: ID della gara per cui trovare la sfida sostitutiva
+
+        Returns:
+            Challenge: Sfida selezionata, None se nessuna disponibile
+
+        Note:
+            X-replacement: quando un giocatore ha 'bye' può fare una sfida
+            invece di riposare, per mantenere attivo l'allenamento.
+        """
+        # Criteri per X-replacement: attive e con scoring numerico (no pass/fail)
         suitable_challenges = (
             db.session.query(Challenge)
             .filter_by(is_active=True, pass_fail_only=False)
@@ -182,7 +267,7 @@ class ChallengeService:
         if not suitable_challenges:
             return None
 
-        # Prefer challenges that haven't been used much in this gara
+        # Algoritmo equità: conta utilizzi per gara per bilanciare le sfide
         challenge_usage = {}
         for challenge in suitable_challenges:
             usage_count = (
@@ -192,13 +277,13 @@ class ChallengeService:
             )
             challenge_usage[challenge.id] = usage_count
 
-        # Return the least used challenge
+        # Selezione: sfida con minor numero di utilizzi nella gara corrente
         min_usage = min(challenge_usage.values())
         for challenge in suitable_challenges:
             if challenge_usage[challenge.id] == min_usage:
                 return challenge
 
-        return suitable_challenges[0]  # Fallback
+        return suitable_challenges[0]  # Fallback se tutte hanno stesso utilizzo
 
     @staticmethod
     def create_x_replacement_attempt(
@@ -281,8 +366,8 @@ class ChallengeService:
             db.session.add(match)
 
         # Set match scores based on challenge performance
-        rack_difference = attempt.get_rack_difference_equivalent()
-        match.player1_score = max(1, rack_difference)  # At least 1 for the win
+        # Use raw score as rack equivalent (simplified, no invented scaling)
+        match.player1_score = max(1, attempt.score or 0)  # At least 1 for the win
         match.player2_score = 0  # X gets 0
 
         db.session.commit()
@@ -307,10 +392,21 @@ class ChallengeService:
 
     @staticmethod
     def delete_challenge(challenge_id: int) -> None:
-        """
-        Delete a challenge with smart logic:
-        - Hard delete if never used (no attempts, no gara selections)
-        - Soft delete if used, but hide from all catalogs
+        """Elimina una sfida con logica intelligente per preservare integrità dati.
+
+        Strategia di eliminazione:
+        - Hard delete: se mai utilizzata (no tentativi, no selezioni gara)
+        - Soft delete: se utilizzata, marca is_active=False per nascondere
+
+        Args:
+            challenge_id: ID della sfida da eliminare
+
+        Raises:
+            404: Se la sfida non esiste
+
+        Note:
+            La soft delete preserva l'integrità referenziale per cronologie
+            e statistiche esistenti, mentre nasconde la sfida dai cataloghi.
         """
         challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
@@ -318,7 +414,7 @@ class ChallengeService:
 
             abort(404)
 
-        # Check if challenge has ever been used
+        # Verifica se la sfida ha tentativi registrati (cronologia)
         has_attempts = (
             db.session.query(ChallengeAttempt)
             .filter_by(challenge_id=challenge_id)
@@ -326,8 +422,8 @@ class ChallengeService:
             is not None
         )
 
-        # Check if challenge has been selected in any gara
-        # This would require checking gara_challenge_models if it exists
+        # Verifica se la sfida è stata selezionata in qualche gara
+        # Controlla relazioni gara-challenge se il modello esiste
         has_gara_usage = False
         try:
             from .gara_challenge_models import GaraChallenge
@@ -339,14 +435,14 @@ class ChallengeService:
                 is not None
             )
         except ImportError:
-            # If no gara challenge relationship exists, skip this check
+            # Se non esiste relazione gara-challenge, salta questo controllo
             pass
 
         if not has_attempts and not has_gara_usage:
-            # Hard delete - completely remove from database
+            # Hard delete: rimozione completa dal database (mai utilizzata)
             db.session.delete(challenge)
         else:
-            # Soft delete - mark as inactive but keep for historical data
+            # Soft delete: marca inattiva ma preserva per dati storici
             challenge.is_active = False
 
         db.session.commit()
@@ -361,9 +457,23 @@ class ChallengeService:
         round_number: Optional[int] = None,
         notes: Optional[str] = None,
     ) -> ChallengeAttempt:
-        """
-        Convenience method to record a complete challenge attempt in one call.
-        This combines start_challenge_attempt and complete_challenge_attempt.
+        """Registra un tentativo di sfida completo in una singola chiamata.
+
+        Metodo di convenienza che combina start_challenge_attempt e
+        complete_challenge_attempt. Registra solo il punteggio senza
+        determinare automaticamente pass/fail.
+
+        Args:
+            user_id: ID del giocatore che tenta la sfida
+            challenge_id: ID della sfida da tentare
+            score: Punteggio ottenuto dal giocatore
+            max_score: Punteggio massimo teorico (per riferimento, non usato per logica)
+            gara_id: ID gara se il tentativo è durante una competizione
+            round_number: Numero round se durante una competizione
+            notes: Note aggiuntive sul tentativo
+
+        Returns:
+            ChallengeAttempt: Il tentativo completato e persistito
         """
         # Start the attempt
         attempt = ChallengeService.start_challenge_attempt(
@@ -373,12 +483,11 @@ class ChallengeService:
             round_number=round_number,
         )
 
-        # Complete the attempt with score
-        passed = score >= (max_score * 0.7)  # Assume 70% is passing
+        # Complete the attempt with score (no pass/fail logic)
         completed_attempt = ChallengeService.complete_challenge_attempt(
             attempt_id=attempt.id,
             score=score,
-            passed=passed,
+            passed=None,  # No automatic pass/fail determination
             notes=notes,
         )
 

@@ -125,8 +125,13 @@
                         <div class="card bg-light">
                             <div class="card-body">
                                 <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                                <h4 class="mb-0">{{ stats.pass_rate|round(1) }}%</h4>
-                                <small class="text-muted">Tasso di Successo</small>
+                                {% if stats.pass_rate is not none %}
+                                    <h4 class="mb-0">{{ stats.pass_rate|round(1) }}%</h4>
+                                    <small class="text-muted">Tasso di Successo</small>
+                                {% else %}
+                                    <h4 class="mb-0">N/A</h4>
+                                    <small class="text-muted">Sfida Numerica</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

@@ -183,27 +183,17 @@ class TestParticipantLimitsWaitlistTDD:
         db_session.add(waitlist_player)
         db_session.commit()
 
-        # This should create waitlist entry (assuming waitlist logic exists)
-        try:
-            waitlist_inscription = Inscription(
-                user_id=waitlist_player.id, gara_id=gara.id, is_waitlisted=True
-            )
-            db_session.add(waitlist_inscription)
-            db_session.commit()
-        except Exception:
-            # If waitlist field doesn't exist, skip this part of test
-            pytest.skip("Waitlist functionality not implemented yet")
-
-        # Remove one regular player
-        first_inscription = (
-            db_session.query(Inscription)
-            .filter_by(gara_id=gara.id, user_id=regular_players[0].id)
-            .first()
+        # This should create waitlist entry (waitlist functionality is implemented)
+        waitlist_inscription = Inscription(
+            user_id=waitlist_player.id, gara_id=gara.id, is_waitlist=True, waitlist_position=1
         )
+        db_session.add(waitlist_inscription)
+        db_session.commit()
 
-        if first_inscription:
-            db_session.delete(first_inscription)
-            db_session.commit()
+        # Remove one regular player using the service (which should trigger waitlist promotion)
+        from models.competition.inscription_service import InscriptionService
+
+        InscriptionService.uninscribe_user(regular_players[0].id, gara.id)
 
         # Waitlist player should be automatically promoted
         # This requires waitlist promotion logic to be implemented
@@ -215,7 +205,7 @@ class TestParticipantLimitsWaitlistTDD:
 
         assert waitlist_inscription_updated is not None
         # Should be promoted from waitlist
-        assert not getattr(waitlist_inscription_updated, "is_waitlisted", False)
+        assert not getattr(waitlist_inscription_updated, "is_waitlist", False)
 
     def test_inscription_should_fail_when_inscriptions_closed(self, db_session):
         """Test that inscription fails when inscription period has ended.

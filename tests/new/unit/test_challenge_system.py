@@ -252,12 +252,33 @@ class TestChallengeService:
             )
             assert favorite is None
 
-    @pytest.mark.skip(
-        reason="ChallengeService.update_challenge method not implemented yet"
-    )
     def test_update_challenge(self, app, test_challenge):
         """Test challenge update functionality."""
-        pass
+        with app.app_context():
+            original_description = test_challenge.description
+            original_pass_fail = test_challenge.pass_fail_only
+
+            # Update challenge
+            updated_challenge = ChallengeService.update_challenge(
+                challenge_id=test_challenge.id,
+                description="Updated description",
+                pass_fail_only=not original_pass_fail,
+                is_active=False
+            )
+
+            # Verify updates
+            assert updated_challenge.id == test_challenge.id
+            assert updated_challenge.description == "Updated description"
+            assert updated_challenge.pass_fail_only != original_pass_fail
+            assert updated_challenge.is_active is False
+
+            # Verify partial update (only description)
+            partial_update = ChallengeService.update_challenge(
+                challenge_id=test_challenge.id,
+                description="Partially updated"
+            )
+            assert partial_update.description == "Partially updated"
+            assert partial_update.is_active is False  # Should remain unchanged
 
     def test_delete_challenge_soft_delete(self, app, test_challenge):
         """Test challenge soft delete."""
@@ -372,7 +393,7 @@ class TestChallengeModel:
             assert stats["total_attempts"] == 2
             assert stats["unique_players"] == 1
             assert stats["average_score"] == 70  # (80 + 60) / 2
-            assert stats["pass_rate"] > 0  # Should calculate pass rate
+            assert stats["pass_rate"] is None  # Numeric challenges don't have pass_rate
 
     def test_image_filename_property(self, app):
         """Test image filename property."""

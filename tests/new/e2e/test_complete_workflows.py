@@ -575,8 +575,8 @@ class TestErrorHandlingWorkflows:
         # Step 2: Player tries to access admin routes
         client.post("/auth/login", data={"username": "player", "password": "player123"})
 
-        # Should be denied access to admin dashboard
-        response = client.get("/admin/")
+        # Should be denied access to admin routes (using /admin/users as test route)
+        response = client.get("/admin/users")
         assert response.status_code in [403, 302]  # Forbidden or redirect to login
 
         # Should be denied access to campionato management
