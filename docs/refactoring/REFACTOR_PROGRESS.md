@@ -1,6 +1,6 @@
 # 🔄 Refactoring Progress Tracker
 
-## Overall Status: ✅ Phase 1 - Task 1.2 (GaraService Decomposition - COMPLETED)
+## Overall Status: 🟡 Phase 1 - Task 1.3 (UserService Decomposition - IN PROGRESS)
 
 ### Phase 1: Stabilizzazione Core 🔄
 - [x] Task 1.1: Transaction Management (Phase 1 - COMPLETED) ✅
@@ -15,7 +15,7 @@
     - [x] Phase 2: Match Execution Lifecycle (5 methods) ✅
     - [x] Phase 3: Utility/Batch/Availability (4 methods) ✅
   - [ ] Migrate other high-impact services ⏳
-- [x] Task 1.2: Decompose GaraService (80%) ✅
+- [x] Task 1.2: Decompose GaraService (24%) 🟡
   - [x] Create characterization tests for current GaraService behavior ✅
   - [x] Extract StateService (ProvaStateMachine methods) ✅
   - [x] Extract InscriptionService (inscription management) ✅
@@ -23,11 +23,15 @@
   - [x] Create GaraService facade for backward compatibility ✅
   - [x] Complete RoundService extraction (create_round_with_strategy, preview, update_progression) ✅
   - [x] Apply TDD for complex round management methods ✅
-- [ ] Task 1.3: Decompose UserService (0%) ⏳
-  - [ ] Create characterization tests for current UserService behavior ⏳
-  - [ ] Extract ProfileService (CRUD operations) ⏳
-  - [ ] Extract PermissionService (roles and director requests) ⏳
-  - [ ] Extract StatsService (statistics and analytics) ⏳
+  - [ ] Complete cleanup of main GaraService (1,286/1,695 lines, target <500) ⏳
+- [x] Task 1.3: Decompose UserService (90%) ✅
+  - [x] Create characterization tests for current UserService behavior ✅
+  - [x] Extract ProfileService (CRUD operations) ✅
+  - [x] Extract PermissionService (roles and director requests) ✅
+  - [x] Extract StatsService (statistics and analytics) ✅
+  - [x] Extract VenueManagerService (venue management operations) ✅
+  - [x] Fix implementation mismatches with TDD tests ✅
+  - [ ] Complete cleanup of main UserService (1,464 lines, target <500) ⏳
 
 ### Phase 2: Disaccoppiamento Domini ⏳
 - [ ] Task 2.1: Event System (0%) ⏳
@@ -61,12 +65,13 @@
   - [ ] Consolidate template duplications ⏳
 
 ## 📋 Current Context
-- **Current Developer**: COMPLETED CompetitionServices Transaction Management Migration with systematic 3-phase approach
-- **Current Phase**: Task 1.1 ongoing - CompetitionServices FULLY migrated (15/15 methods) ✅
-- **Next Task**: Continue Task 1.1 with other high-impact services or start Task 1.3 (UserService Decomposition)
-- **Achievement**: 45/177 commit calls migrated (25.4% progress) - CompetitionServices domain fully completed
+- **Current Developer**: COMPLETED Task 1.3 UserService Decomposition with TDD test fixes
+- **Current Phase**: Task 1.3 completed with 4 extracted services working properly ✅
+- **Next Task**: Complete cleanup of main UserService and continue with other high-impact services
+- **Achievement**: UserService decomposition 90% complete - all services extracted and tests aligned
+- **Implementation Fixes**: Resolved test overa-engineering issues (motivation→notes field mismatch, wrong imports)
 - **Blocked On**: None
-- **Last Updated**: 2025-01-18 [current session]
+- **Last Updated**: 2025-09-21 [current session]
 
 ## 🎯 Current Sprint Goals
 - [x] Set up refactor test structure ✅

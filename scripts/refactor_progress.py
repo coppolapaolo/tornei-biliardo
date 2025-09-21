@@ -47,7 +47,7 @@ class RefactorProgressDetector:
         # Sort by number of commits (highest first)
         files_with_commits.sort(key=lambda x: x[1], reverse=True)
 
-        baseline = 308  # From initial analysis
+        baseline = 177  # Corrected from documentation analysis
         progress = max(0, (baseline - total_commits) / baseline * 100)
 
         return {
@@ -185,7 +185,7 @@ class RefactorProgressDetector:
         gara_data = self.detect_service_size("models/competition/services.py", 1695)
         gara_complete = gara_data and gara_data["current_lines"] < 500
 
-        user_data = self.detect_service_size("models/user/services.py", 1449)
+        user_data = self.detect_service_size("models/user/services.py", 1464)
         user_complete = user_data and user_data["current_lines"] < 500
 
         # Check amalfi migration
@@ -233,7 +233,7 @@ class RefactorProgressDetector:
             print()
 
         # UserService size
-        user_data = self.detect_service_size("models/user/services.py", 1449)
+        user_data = self.detect_service_size("models/user/services.py", 1464)
         if user_data:
             print(
                 f"📊 UserService Decomposition: {user_data['reduction_percent']:.1f}%"

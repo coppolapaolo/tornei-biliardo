@@ -38,6 +38,12 @@ from models.user.role_enum import UserRole
 from models.classification.models import Classification
 from models.campionato.models import Campionato
 
+# Import decomposed services from Task 1.3
+from .profile_service import UserProfileService
+from .permission_service import UserPermissionService
+from .stats_service import UserStatsService
+from .venue_manager_service import VenueManagerService
+
 
 class UserServiceCore(DomainService):
     """
