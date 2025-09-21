@@ -369,9 +369,10 @@ Major bug fix session addressing multiple competition workflow issues:
 
 5. **Testing Requirements**
    - All new features MUST have tests in `tests/new/`
-   - **CRITICAL**: Run `PYTHONPATH=. pytest tests/new/` to verify
+   - **CRITICAL**: Run `PYTHONPATH=. pytest tests/new/ -n auto` to verify
    - Individual tests should pass independently
    - Fix test isolation issues, not test content
+   - Use TDD approach for refactoring (see `tests/new/refactor/tdd/`)
 
 ### Code Quality Checklist
 Before every commit:
@@ -384,7 +385,7 @@ flake8
 pyright
 
 # 3. Test new functionality
-PYTHONPATH=. pytest tests/new/
+PYTHONPATH=. pytest tests/new/ -n auto
 
 # 4. Clean imports
 autoflake --remove-all-unused-imports --recursive --in-place .
