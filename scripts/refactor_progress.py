@@ -1,11 +1,32 @@
 #!/usr/bin/env python3
-"""Auto-detect refactoring progress from codebase state.
+"""Advanced refactoring progress detector for tornei-biliardo project.
 
-This script analyzes the codebase to automatically detect progress
-in the refactoring efforts by counting various metrics and patterns.
+This script provides comprehensive analysis of refactoring progress across multiple
+dimensions: transaction migration, service decomposition, architectural cleanup,
+and test coverage. Features enhanced detection logic with precision filtering
+and strategic categorization for systematic phase planning.
+
+Key Features:
+- Enhanced db.session.commit() detection with false positive filtering
+- Architectural categorization (routes, models, utils, amalfi, other)
+- Service decomposition tracking with size metrics
+- Legacy amalfi/ migration progress monitoring
+- Notification factory consolidation tracking
+- Comprehensive test coverage analysis
+- Strategic recommendations for next refactoring phases
+
+Enhanced Detection Logic:
+- Excludes comments, docstrings, and string literals for accuracy
+- Categorizes files by architectural layer for targeted refactoring
+- Provides detailed breakdown for phase planning and prioritization
 
 Usage:
-    python scripts/refactor_progress.py
+    python scripts/refactor_progress.py        # Generate full progress report
+    python scripts/refactor_progress.py --help # Show usage information
+
+The script supports the systematic refactoring methodology documented in
+docs/refactoring/ and aligns with the Domain-Driven Design architecture
+of this Flask-based pool tournament community platform.
 """
 
 import ast
@@ -16,52 +37,136 @@ from typing import List, Tuple, Dict, Any, Optional
 
 
 class RefactorProgressDetector:
-    """Detector for refactoring progress across the codebase."""
+    """Advanced detector for refactoring progress across the tornei-biliardo codebase.
+
+    Provides comprehensive analysis of multiple refactoring dimensions with enhanced
+    detection logic and strategic categorization. Supports the systematic refactoring
+    methodology for this Flask-based pool tournament community platform.
+    """
 
     def __init__(self):
+        """Initialize detector with project root path resolution."""
         self.project_root = Path(__file__).parent.parent
 
     def detect_transaction_migration(self) -> Dict[str, Any]:
-        """Rileva quante chiamate dirette a db.session.commit() rimangono."""
+        """Detect remaining direct db.session.commit() calls across the codebase.
+
+        Enhanced detection logic with precision filtering to exclude false positives
+        from comments, docstrings, and string literals. Results are categorized
+        by file type for systematic phase planning.
+
+        Returns:
+            Dict containing progress metrics, file breakdown, and categorized results
+            for strategic refactoring planning.
+        """
         files_with_commits = []
         total_commits = 0
 
-        # Exclude directories from analysis
-        exclude_dirs = ["tests/", "venv/", "scripts/", "__pycache__/", ".git/"]
+        # Exclude non-production code from transaction migration analysis
+        exclude_dirs = ["tests/", "venv/", "__pycache__/", ".git/", "scripts/"]
 
         for py_file in self.project_root.rglob("*.py"):
-            # Skip excluded directories
+            # Skip excluded directories to focus on production code
             if any(exclude in str(py_file) for exclude in exclude_dirs):
                 continue
 
             try:
                 content = py_file.read_text(encoding="utf-8")
-                commits = content.count("db.session.commit()")
-                if commits > 0:
+                # Enhanced detection: count only actual commit calls, not references
+                lines = content.split("\n")
+                active_commits = 0
+                for line in lines:
+                    stripped_line = line.strip()
+                    if "db.session.commit()" in line:
+                        # FILTERING LOGIC: Exclude false positives to improve accuracy
+
+                        # Skip single-line comments
+                        if stripped_line.startswith("#"):
+                            continue
+
+                        # Skip multi-line string/docstring markers (simplified detection)
+                        if stripped_line.startswith('"""') or stripped_line.startswith(
+                            "'''"
+                        ):
+                            continue
+
+                        # Skip string literals containing commit calls (documentation/examples)
+                        if (
+                            '"db.session.commit()"' in line
+                            or "'db.session.commit()'" in line
+                            or '"""db.session.commit()"""' in line
+                            or "'''db.session.commit()'''" in line
+                        ):
+                            continue
+
+                        # Count as active commit call requiring migration
+                        active_commits += 1
+
+                if active_commits > 0:
                     relative_path = py_file.relative_to(self.project_root)
-                    files_with_commits.append((str(relative_path), commits))
-                    total_commits += commits
+                    files_with_commits.append((str(relative_path), active_commits))
+                    total_commits += active_commits
             except (UnicodeDecodeError, PermissionError, OSError):
                 continue
 
-        # Sort by number of commits (highest first)
+        # Sort by commit frequency for strategic prioritization (highest impact first)
         files_with_commits.sort(key=lambda x: x[1], reverse=True)
 
-        baseline = 308  # From initial analysis
+        baseline = 308  # From initial refactoring analysis baseline
         progress = max(0, (baseline - total_commits) / baseline * 100)
 
+        # CATEGORIZATION SYSTEM: Group files by architectural layer for systematic phase planning
+        # This categorization enables strategic refactoring by addressing similar patterns together
+        categories = {
+            "routes": [],  # Web layer - API endpoints and request handling
+            "models": [],  # Domain layer - business logic and data services
+            "utils": [],  # Infrastructure - shared utilities and helpers
+            "amalfi": [],  # Legacy matchmaking engine requiring special migration
+            "other": [],  # Miscellaneous files not fitting standard patterns
+        }
+
+        # Classify each file to enable phase-based refactoring strategy
+        for file_path, count in files_with_commits:
+            if file_path.startswith("routes/"):
+                categories["routes"].append((file_path, count))
+            elif file_path.startswith("models/"):
+                categories["models"].append((file_path, count))
+            elif file_path.startswith("utils/"):
+                categories["utils"].append((file_path, count))
+            elif file_path.startswith("amalfi/"):
+                categories["amalfi"].append((file_path, count))
+            else:
+                categories["other"].append((file_path, count))
+
         return {
-            "total_commits": total_commits,
-            "baseline": baseline,
-            "progress_percent": progress,
-            "files_remaining": len(files_with_commits),
-            "files_detail": files_with_commits[:10],  # Top 10
+            "total_commits": total_commits,  # Current active commit calls requiring migration
+            "baseline": baseline,  # Original count (308) from refactoring start
+            "progress_percent": progress,  # Migration completion percentage
+            "files_remaining": len(
+                files_with_commits
+            ),  # Number of files still needing migration
+            "files_detail": files_with_commits[
+                :10
+            ],  # Top 10 highest-impact files for prioritization
+            "all_files": files_with_commits,  # Complete list for comprehensive analysis
+            "categories": categories,  # Architectural categorization for phase planning
         }
 
     def detect_service_size(
         self, service_path: str, baseline_lines: int
     ) -> Optional[Dict[str, Any]]:
-        """Rileva dimensione attuale di un service."""
+        """Detect current service file size and calculate decomposition progress.
+
+        Measures file size reduction from baseline to track service decomposition
+        efforts. Part of Task 1.2 GaraService decomposition strategy.
+
+        Args:
+            service_path: Relative path to service file from project root
+            baseline_lines: Original line count before decomposition
+
+        Returns:
+            Dictionary with size metrics and decomposition status, or None if file not found
+        """
         path = self.project_root / service_path
         if not path.exists():
             return None
@@ -85,7 +190,14 @@ class RefactorProgressDetector:
             return None
 
     def detect_amalfi_imports(self) -> Dict[str, Any]:
-        """Rileva quanti file importano ancora da amalfi/ direttamente."""
+        """Detect remaining direct imports from legacy amalfi/ directory.
+
+        Tracks migration progress from legacy amalfi engine to unified matchmaking
+        service. Part of architectural cleanup to eliminate legacy dependencies.
+
+        Returns:
+            Dictionary with import count, baseline, and progress metrics
+        """
         files_with_amalfi_imports = []
 
         exclude_dirs = ["venv/", "__pycache__/", ".git/"]
@@ -113,7 +225,14 @@ class RefactorProgressDetector:
         }
 
     def detect_duplicate_notifications(self) -> Dict[str, Any]:
-        """Rileva pattern duplicati per NotificationService.create_notification."""
+        """Detect duplicate notification creation patterns for factory consolidation.
+
+        Identifies opportunities to replace scattered NotificationService.create_notification
+        calls with centralized factory methods for better maintainability.
+
+        Returns:
+            Dictionary with call count, file distribution, and progress metrics
+        """
         files_with_notifications = []
         total_calls = 0
 
@@ -145,7 +264,14 @@ class RefactorProgressDetector:
         }
 
     def count_refactor_tests(self) -> Dict[str, int]:
-        """Conta i test di refactoring per categoria."""
+        """Count refactoring tests by category for quality assurance tracking.
+
+        Provides metrics on test coverage for refactoring efforts, ensuring
+        proper validation at each phase of the systematic refactoring process.
+
+        Returns:
+            Dictionary with counts for each test category (characterization, TDD, etc.)
+        """
         refactor_test_dir = self.project_root / "tests" / "new" / "refactor"
 
         counts = {"characterization": 0, "tdd": 0, "integration": 0, "milestones": 0}
@@ -176,12 +302,21 @@ class RefactorProgressDetector:
         return counts
 
     def generate_summary_status(self) -> str:
-        """Genera status summary basato sui progressi."""
+        """Generate overall refactoring phase status based on progress metrics.
+
+        Combines multiple refactoring dimensions (transaction migration, service
+        decomposition, amalfi migration) to determine current phase and readiness
+        for next steps in the systematic refactoring plan.
+
+        Returns:
+            Formatted status string with phase indicator and completion status
+        """
         # Check transaction migration
         tx_data = self.detect_transaction_migration()
         tx_complete = tx_data["total_commits"] <= 10
 
-        # Check service decomposition
+        # Check service decomposition (Task 1.2)
+        # Note: "Gara" is Italian for "competition" - core domain service for tournament management
         gara_data = self.detect_service_size("models/competition/services.py", 1695)
         gara_complete = gara_data and gara_data["current_lines"] < 500
 
@@ -204,7 +339,12 @@ class RefactorProgressDetector:
             return "🔴 Phase 1 - Stabilization Starting"
 
     def generate_report(self) -> None:
-        """Genera report completo di progresso."""
+        """Generate comprehensive refactoring progress report.
+
+        Produces detailed analysis including transaction migration progress,
+        service decomposition metrics, architectural categorization, and
+        strategic recommendations for next phases.
+        """
         print("🔄 REFACTOR PROGRESS REPORT")
         print("=" * 50)
         print(f"📊 Overall Status: {self.generate_summary_status()}")
@@ -215,13 +355,28 @@ class RefactorProgressDetector:
         print(f"📊 Transaction Migration: {tx_data['progress_percent']:.1f}%")
         print(f"   Direct commits: {tx_data['total_commits']}/{tx_data['baseline']}")
         print(f"   Files remaining: {tx_data['files_remaining']}")
+
+        # ENHANCED REPORTING: Show categorized breakdown for strategic phase planning
+        if "categories" in tx_data:
+            categories = tx_data["categories"]
+            print("   Breakdown by architectural layer:")
+            for category, files in categories.items():
+                if files:
+                    total_commits_in_category = sum(count for _, count in files)
+                    print(
+                        f"     {category}: {len(files)} files, {total_commits_in_category} commits"
+                    )
+                    # Show top 3 files per category for targeted refactoring
+                    for file_path, count in files[:3]:
+                        print(f"       - {file_path}: {count}")
+
         if tx_data["files_detail"]:
-            print("   Top files:")
+            print("   Top files overall:")
             for file, count in tx_data["files_detail"][:5]:
                 print(f"     - {file}: {count} commits")
         print()
 
-        # GaraService size
+        # GaraService size (Competition Service decomposition tracking)
         gara_data = self.detect_service_size("models/competition/services.py", 1695)
         if gara_data:
             print(

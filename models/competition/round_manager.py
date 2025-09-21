@@ -13,6 +13,7 @@ from models.competition.models import Gara
 from models.match.models import Match
 from models.status_enum import GaraStatus, MatchStatus
 from models.classification.models import RoundClassification
+from models.transaction.manager import transactional
 
 
 class RoundLockStatus(Enum):
@@ -28,12 +29,17 @@ class AdvancedRoundManager:
 
     @staticmethod
     def get_round_lock_status(gara_id: int, round_number: int) -> RoundLockStatus:
-        """Determine the lock status of a specific round."""
+        """Determine the lock status of a specific round.
+
+        Lock status prevents modifications when subsequent rounds have started,
+        ensuring tournament integrity and consistent progression.
+        """
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        # Check if any subsequent round has matches (regardless of current_round)
+        # Tournament integrity: if subsequent rounds exist, current round is locked
+        # This prevents modification of completed rounds that affect later pairings
         subsequent_matches = Match.query.filter(
             Match.gara_id == gara_id, Match.round_number > round_number
         ).first()
@@ -53,7 +59,8 @@ class AdvancedRoundManager:
             m for m in round_matches if m.status == MatchStatus.COMPLETED.value
         ]
 
-        # If some matches are completed but not all, it's partially locked
+        # Partial lock: allows modification of pending matches while protecting completed ones
+        # This enables flexible round management during active competition
         if completed_matches and len(completed_matches) < len(round_matches):
             return RoundLockStatus.PARTIALLY_LOCKED
 
@@ -84,6 +91,7 @@ class AdvancedRoundManager:
         return True, ""
 
     @staticmethod
+    @transactional(domain="competition")
     def reset_match_with_validation(
         match_id: int, admin_override: bool = False
     ) -> Tuple[bool, str]:
@@ -120,7 +128,6 @@ class AdvancedRoundManager:
                 match.gara_id, match.round_number
             )
 
-            db.session.commit()
             return True, "Match resettato con successo"
 
         except Exception as e:
@@ -133,6 +140,7 @@ class AdvancedRoundManager:
             return False, f"Errore nel reset del match: {str(e)}"
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_round(
         gara_id: int, round_number: int, admin_override: bool = False
     ) -> Tuple[bool, str]:
@@ -189,7 +197,6 @@ class AdvancedRoundManager:
                 if gara.current_round == 0:
                     gara.status = GaraStatus.INSCRIPTION.value
 
-            db.session.commit()
             return True, f"Turno {round_number} cancellato con successo"
 
         except Exception as e:
@@ -197,6 +204,7 @@ class AdvancedRoundManager:
             return False, f"Errore nella cancellazione del turno: {str(e)}"
 
     @staticmethod
+    @transactional(domain="competition")
     def bulk_reset_round_matches(
         gara_id: int, round_number: int
     ) -> Tuple[bool, str, Dict[str, int]]:
@@ -240,8 +248,6 @@ class AdvancedRoundManager:
                 AdvancedRoundManager._update_round_progression_after_reset(
                     gara_id, round_number
                 )
-
-            db.session.commit()
 
             stats = {
                 "reset_count": reset_count,

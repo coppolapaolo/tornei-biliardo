@@ -1,7 +1,21 @@
 """
 Module: models/location/services.py
-Purpose: Location domain services for billiard hall management
-Requirements: SPECIFICHE.md - Location-based match organization
+Purpose: Location domain services for billiard hall and venue management
+         + player availability tracking for community-driven match organization
+Requirements: SPECIFICHE.md Use Cases 5, 7 - Location-based match coordination
+Domain: Location management with transactional integrity
+
+Business Context:
+- Billiard hall registry for community venues
+- Player availability tracking for location-based matchmaking
+- Community-driven match suggestion algorithms
+- Venue statistics and player activity coordination
+- Cross-domain integration with individual match proposals (Use Case 7)
+
+Architecture:
+- Uses @transactional decorators from Task 1.1 Phase 17 migration
+- Domain-specific transaction boundaries (domain="location")
+- Community-focused algorithms for player discovery and venue management
 """
 
 from __future__ import annotations
@@ -10,13 +24,35 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import BilliardHall, UserLocationAvailability, DayOfWeek
 
 
 class LocationService:
-    """Service for location and availability management."""
+    """
+    Service for location domain business logic and community venue management.
+
+    Core Responsibilities:
+    - Billiard hall creation and management (community venue registry)
+    - Player availability tracking at specific venues (Use Case 7)
+    - Location-based player discovery algorithms for match suggestions
+    - Venue statistics and activity tracking for community coordination
+    - Cross-domain integration with individual match proposals
+
+    Business Rules:
+    - All venues default to Italy unless specified (community focus)
+    - Player availability includes time preferences and advance notice requirements
+    - Match experience at venues influences suggestion algorithms
+    - Location matching uses fuzzy search for flexible venue identification
+
+    Transaction Management:
+    - Uses @transactional(domain="location") for data consistency
+    - Leverages transaction rollback for error handling
+    - Coordinates with individual match domain for activity tracking
+    """
 
     @staticmethod
+    @transactional(domain="location")
     def create_billiard_hall(
         name: str,
         address: Optional[str] = None,
@@ -32,8 +68,33 @@ class LocationService:
         hourly_rate: Optional[float] = None,
         added_by_id: Optional[int] = None,
     ) -> BilliardHall:
-        """Create a new billiard hall."""
+        """
+        Create a new billiard hall in the community venue registry.
 
+        Business Logic:
+        - Creates venue entry for community match coordination
+        - Supports flexible venue information (address/contact optional)
+        - Enables table types and amenities specification for player preferences
+        - Tracks who added the venue for community management
+        - Defaults to Italy for Italian pool community focus
+
+        Args:
+            name: Venue name (required for community identification)
+            address/city/postal_code: Location details for player discovery
+            country: Defaults to "Italy" for community focus
+            contact info: phone/email/website for player coordination
+            table_types: Pool table specifications (9ft, 8ft, etc.)
+            amenities: Venue features (parking, bar, etc.)
+            hourly_rate: Cost information for player planning
+            added_by_id: User who registered the venue (audit trail)
+
+        Returns:
+            BilliardHall: Created venue entity with all specified attributes
+
+        Transaction: @transactional(domain="location") ensures atomicity
+        """
+
+        # Create core venue entity with provided information
         hall = BilliardHall(
             name=name,
             address=address,
@@ -48,14 +109,16 @@ class LocationService:
             added_by_id=added_by_id,
         )
 
+        # Configure table specifications if provided (used for player matching)
         if table_types:
             hall.set_table_types(table_types)
 
+        # Configure venue amenities if provided (affects player preferences)
         if amenities:
             hall.set_amenities(amenities)
 
+        # Persist to database within transaction boundary
         db.session.add(hall)
-        db.session.commit()
 
         return hall
 
@@ -63,7 +126,31 @@ class LocationService:
     def get_nearby_halls(
         city: Optional[str] = None, country: str = "Italy", verified_only: bool = False
     ) -> List[BilliardHall]:
-        """Get billiard halls in a specific area."""
+        """
+        Discover billiard halls in a geographic area for community match coordination.
+
+        Business Logic:
+        - Filters active venues only (excludes closed/inactive halls)
+        - Uses case-insensitive city matching for flexible search
+        - Supports verification filter for trusted venues
+        - Orders by name for consistent presentation
+        - Defaults to Italy for community geographic focus
+
+        Use Cases:
+        - Use Case 7: Player availability - find nearby venues
+        - Match proposal location suggestions
+        - Community venue discovery for new players
+
+        Args:
+            city: Geographic filter (partial match supported)
+            country: Country filter (defaults to Italy)
+            verified_only: Include only admin-verified venues
+
+        Returns:
+            List[BilliardHall]: Active venues matching criteria, sorted by name
+
+        Note: Read-only operation, no transaction needed
+        """
 
         query = BilliardHall.query.filter_by(is_active=True)
 
@@ -79,6 +166,7 @@ class LocationService:
         return query.order_by(BilliardHall.name).all()
 
     @staticmethod
+    @transactional(domain="location")
     def set_user_availability(
         user_id: int,
         billiard_hall_id: int,
@@ -130,7 +218,6 @@ class LocationService:
             except ValueError:
                 pass
 
-        db.session.commit()
         return availability
 
     @staticmethod
@@ -298,6 +385,7 @@ class LocationService:
         return suggestions
 
     @staticmethod
+    @transactional(domain="location")
     def record_match_at_location(user_id: int, location_name: str) -> None:
         """Record that a user played a match at a location."""
 
@@ -327,9 +415,8 @@ class LocationService:
             )
             db.session.add(availability)
 
-        db.session.commit()
-
     @staticmethod
+    @transactional(domain="location")
     def update_billiard_hall(hall_id: int, **kwargs) -> BilliardHall:
         """Update billiard hall information."""
 
@@ -369,7 +456,6 @@ class LocationService:
         if "business_hours" in kwargs:
             hall.set_business_hours(kwargs["business_hours"])
 
-        db.session.commit()
         return hall
 
     @staticmethod
@@ -379,8 +465,40 @@ class LocationService:
         country: str = "Italy",
         verified_only: bool = False,
     ) -> List[BilliardHall]:
-        """Search billiard halls by name or location."""
+        """
+        Flexible venue search for community venue discovery.
 
+        Search Algorithm:
+        - Searches across venue name, address, and city fields
+        - Uses case-insensitive partial matching for user-friendly search
+        - Filters by geographic and quality criteria
+        - Returns active venues only (excludes closed/inactive)
+
+        Business Logic:
+        - Supports player venue discovery workflows
+        - Enables match proposal location search
+        - Facilitates community venue exploration
+        - Defaults to Italy for community geographic focus
+
+        Use Cases:
+        - Player: "Find venues named 'Centro Biliardo' near me"
+        - Match proposal: "Search for venues in Milano"
+        - Community: "Find verified venues in my area"
+
+        Args:
+            query: Search term for name/address/city matching
+            city: Geographic filter (optional additional filter)
+            country: Country filter (defaults to Italy)
+            verified_only: Include only admin-verified venues
+
+        Returns:
+            List[BilliardHall]: Matching venues sorted by name
+
+        Note: Read-only operation with complex filtering
+        """
+
+        # Build search query with multi-field text matching
+        # Searches venue name, address, and city for comprehensive results
         search_query = BilliardHall.query.filter(
             BilliardHall.is_active.is_(True),
             db.or_(
@@ -390,13 +508,17 @@ class LocationService:
             ),
         )
 
+        # Apply additional city filter if specified (refines geographic search)
         if city:
             search_query = search_query.filter(BilliardHall.city.ilike(f"%{city}%"))
 
+        # Apply country filter (defaults to Italy for community focus)
         if country:
             search_query = search_query.filter_by(country=country)
 
+        # Filter to verified venues only if quality assurance requested
         if verified_only:
             search_query = search_query.filter_by(verified=True)
 
+        # Return results sorted by name for consistent presentation
         return search_query.order_by(BilliardHall.name).all()

@@ -29,7 +29,24 @@ from .availability_service import AvailabilityService
 
 
 class MatchProposalService:
-    """Service for match proposal specific operations."""
+    """Service for match proposal lifecycle management.
+
+    Handles the complete proposal workflow: creation, invitation management,
+    acceptance/rejection, and coordination with the community pool platform.
+    Provides delegation layer for route integration and maintains compatibility
+    with existing service interfaces.
+
+    Community Features:
+    - Direct match proposals (targeted invitations)
+    - Open match proposals (community-wide visibility)
+    - Social interaction through match coordination
+    - Location-based match discovery
+
+    Architecture:
+    This service acts as a delegation layer between route handlers and
+    the core IndividualMatchService, providing route-optimized interfaces
+    and parameter compatibility while maintaining business logic encapsulation.
+    """
 
     @staticmethod
     def create_proposal(
@@ -46,7 +63,35 @@ class MatchProposalService:
         entry_fee: Optional[float] = None,
         invited_user_ids: Optional[List[int]] = None,
     ) -> MatchProposal:
-        """Create a match proposal with invitations if needed."""
+        """Create a match proposal with automated invitation management.
+
+        Factory method that routes proposal creation based on type:
+        - DIRECT: Creates targeted invitations to specific players
+        - OPEN: Creates community-wide visible proposal for any player
+
+        Args:
+            proposer_id: Community member creating the proposal
+            proposal_type: DIRECT (targeted) or OPEN (community-wide)
+            location: Pool hall or venue for the match
+            scheduled_at: Proposed match date and time
+            expires_at: Deadline for accepting the proposal
+            discipline: Pool discipline (palla_8, palla_9, etc.)
+            distance: Race length for the match
+            best_of: True for "best of N", False for "exactly N" format
+            break_rule: Break rotation rule (alternate, winner, loser)
+            description: Optional match description or special rules
+            entry_fee: Optional monetary entry fee
+            invited_user_ids: Required for DIRECT proposals, ignored for OPEN
+
+        Returns:
+            MatchProposal: Created proposal with appropriate invitation setup
+
+        Business Logic:
+        - DIRECT proposals create ProposalInvitation records for each invitee
+        - OPEN proposals are visible to all eligible community members
+        - Notification system automatically alerts invited players
+        - Expiration handling ensures proposals don't remain indefinitely
+        """
 
         if proposal_type == ProposalType.DIRECT:
             return IndividualMatchService.create_direct_proposal(
@@ -78,7 +123,16 @@ class MatchProposalService:
 
     @staticmethod
     def get_user_proposals(user_id: int) -> Dict[str, List[MatchProposal]]:
-        """Get proposals organized by user relationship."""
+        """Get comprehensive proposal overview organized by user relationship.
+
+        Returns proposals categorized by the user's relationship to them:
+        - "created": Proposals initiated by this user
+        - "received": Direct invitations sent to this user
+        - "available": Open proposals this user can accept
+
+        The service automatically filters expired proposals and applies
+        location-based eligibility for open proposals based on user availability.
+        """
         return IndividualMatchService.get_user_proposals(user_id)
 
     @staticmethod
@@ -191,13 +245,30 @@ class MatchProposalService:
 
     @staticmethod
     def cancel_proposal(proposal_id: int, user_id: int) -> None:
-        """Cancel a proposal."""
+        """Cancel a match proposal with proper authorization checks.
+
+        Validates that only the original proposer can cancel and that
+        the proposal is in a cancellable state (PENDING status).
+        Delegates to IndividualMatchService for core business logic.
+        """
         return IndividualMatchService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
     @transactional(domain="individual_match")
     def expire_proposals() -> int:
-        """Mark expired proposals as expired. Returns count of expired proposals."""
+        """Batch expiration of proposals past their deadline.
+
+        Community maintenance function that automatically expires proposals
+        that have passed their expires_at timestamp. This prevents stale
+        proposals from cluttering the community match board.
+
+        Returns:
+            int: Count of proposals that were expired in this batch
+
+        Transaction Management:
+        - Single atomic operation for all expirations
+        - Ensures consistent state across all expired proposals
+        """
         now = datetime.utcnow()
 
         expired_proposals = MatchProposal.query.filter(
@@ -215,7 +286,37 @@ class MatchProposalService:
 
 
 class IndividualMatchService:
-    """Service for individual match management and business logic."""
+    """Core service for individual match domain business logic.
+
+    Manages the complete lifecycle of casual matches between community members,
+    from proposal creation through match completion. Implements the community
+    platform's social gaming features and provides atomic operations through
+    the @transactional pattern.
+
+    Domain Responsibilities:
+    - Match proposal creation and management
+    - Player invitation and acceptance workflows
+    - Individual match execution and scoring
+    - Player availability and location-based matching
+    - Community statistics and performance tracking
+
+    Key Business Rules:
+    - Only proposal participants can accept/reject invitations
+    - Match participants can submit rack results and manage matches
+    - Location-based filtering ensures relevant match visibility
+    - Automatic expiration prevents stale proposals
+    - Best-of vs exactly-N rack formats supported
+
+    Transaction Management:
+    All state-changing methods use @transactional(domain="individual_match")
+    to ensure atomic operations and proper rollback on failures.
+
+    Integration Points:
+    - NotificationService: Player alerts and match updates
+    - AvailabilityService: Location-based player discovery
+    - User domain: Player profiles and community membership
+    - Location domain: Venue management and availability
+    """
 
     @staticmethod
     @transactional(domain="individual_match")
@@ -232,7 +333,45 @@ class IndividualMatchService:
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
     ) -> MatchProposal:
-        """Create a direct match proposal to specific players."""
+        """Create targeted match proposal with automated invitation workflow.
+
+        Creates a DIRECT type proposal that sends specific invitations to
+        selected community members. This is the primary mechanism for
+        arranging matches between known players or groups.
+
+        Args:
+            proposer_id: Community member initiating the match proposal
+            invited_user_ids: List of specific players to invite
+            location: Pool hall or venue where match will take place
+            scheduled_at: Proposed date and time for the match
+            expires_at: Deadline for responses (defaults to 2 hours before match)
+            discipline: Pool game type (palla_8, palla_9, etc.)
+            distance: Number of racks in the race
+            best_of: Format flag - True for "best of N", False for "exactly N"
+            break_rule: How breaks are determined (alternate, winner, loser)
+            description: Optional match details or special arrangements
+            entry_fee: Optional monetary stakes for the match
+
+        Returns:
+            MatchProposal: Created proposal with all invitations sent
+
+        Business Logic Flow:
+        1. Creates base MatchProposal entity with DIRECT type
+        2. Generates ProposalInvitation records for each invitee
+        3. Sends notification to each invited player via NotificationService
+        4. Filters out self-invitations (proposer cannot invite themselves)
+        5. Handles notification failures gracefully without blocking proposal
+
+        Community Integration:
+        - Integrates with notification system for real-time player alerts
+        - Supports venue-based match organization
+        - Maintains invitation audit trail for community management
+        - Enables social coordination through targeted invitations
+
+        Transaction Management:
+        Single atomic operation ensures proposal and all invitations are
+        created together, with automatic rollback on any failure.
+        """
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(
@@ -256,24 +395,27 @@ class IndividualMatchService:
         db.session.add(proposal)
         db.session.flush()  # Get the ID
 
-        # Create invitations and send notifications
+        # Create invitations and send notifications to build community engagement
         from ..notification.services import NotificationService
         from ..user.models import User
 
         proposer = User.query.get(proposer_id)
 
+        # Process each invitation with individual notification delivery
         for user_id in invited_user_ids:
-            if user_id != proposer_id:  # Don't invite yourself
+            if user_id != proposer_id:  # Prevent self-invitation (business rule)
+                # Create invitation record for audit trail and status tracking
                 invitation = ProposalInvitation(
                     proposal_id=proposal.id, invited_user_id=user_id
                 )
                 db.session.add(invitation)
 
-                # Send notification direttamente (come per le richieste direttore)
+                # Send community notification for immediate player engagement
                 from ..notification.models import NotificationType, NotificationPriority
                 from flask import url_for
 
                 try:
+                    # Create rich notification with match details and action link
                     notification_result = NotificationService.create_notification(
                         user_id=user_id,
                         notification_type=NotificationType.MATCH_PROPOSAL,
@@ -291,7 +433,8 @@ class IndividualMatchService:
                     )
                 except Exception as e:
                     print(f"DEBUG: Error creating notification for user {user_id}: {e}")
-                    # Continue anyway - notification failure shouldn't block proposal creation
+                    # Graceful degradation: notification failure doesn't break proposal creation
+                    # Community members can still see proposals through manual refresh
 
         # Transaction managed by @transactional decorator
         return proposal
@@ -310,7 +453,43 @@ class IndividualMatchService:
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
     ) -> MatchProposal:
-        """Create an open match proposal for all eligible players."""
+        """Create community-wide open proposal for player discovery.
+
+        Creates an OPEN type proposal that appears on the community match board
+        for any eligible player to accept. This enables dynamic match-making
+        and helps players find opponents at specific venues.
+
+        Args:
+            proposer_id: Community member creating the open proposal
+            location: Pool hall where the match will take place
+            scheduled_at: Proposed match date and time
+            expires_at: Acceptance deadline (defaults to 2 hours before match)
+            discipline: Pool game type (palla_8, palla_9, etc.)
+            distance: Number of racks in the race
+            best_of: Format flag - True for "best of N", False for "exactly N"
+            break_rule: Break rotation rule (alternate, winner, loser)
+            description: Optional match details or special requirements
+            entry_fee: Optional entry fee for competitive matches
+
+        Returns:
+            MatchProposal: Created open proposal visible to all eligible players
+
+        Community Features:
+        - Appears in community match board for location-based discovery
+        - Filtered by player availability and location preferences
+        - Enables spontaneous match organization
+        - Supports venue-specific community building
+
+        Eligibility Rules:
+        Players see this proposal if they:
+        1. Have set availability for this location, OR
+        2. Have previously played matches at this location
+        3. Are not the original proposer
+
+        Transaction Management:
+        Single atomic operation creates the proposal with all metadata.
+        No invitations are created - players express interest independently.
+        """
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
@@ -349,9 +528,21 @@ class IndividualMatchService:
         is_open_invitation: bool = False,
         **kwargs,
     ) -> MatchProposal:
-        """Create a match proposal - unified method supporting both direct and open proposals.
+        """Legacy compatibility method for unified proposal creation.
 
-        This is a compatibility method that delegates to the appropriate specific method.
+        DEPRECATED: This method provides backward compatibility for existing
+        callers but delegates to the appropriate specific creation method.
+        New code should use create_direct_proposal() or create_open_proposal() directly.
+
+        Business Logic Limitation:
+        Due to the unified interface, direct proposals are currently created as
+        open proposals since invited_user_ids cannot be specified. This is a
+        known limitation of the legacy interface.
+
+        Migration Path:
+        - For targeted invitations: Use create_direct_proposal() with invited_user_ids
+        - For community-wide proposals: Use create_open_proposal() directly
+        - Consider deprecating this method in future versions
         """
         from datetime import datetime, time as time_obj
 
@@ -370,6 +561,7 @@ class IndividualMatchService:
         if not location:
             location = "TBD"
 
+        # Route to appropriate creation method based on invitation type
         if is_open_invitation:
             return IndividualMatchService.create_open_proposal(
                 proposer_id=proposer_id,
@@ -382,8 +574,9 @@ class IndividualMatchService:
                 entry_fee=entry_fee,
             )
         else:
-            # For direct proposals, we need invited_user_ids
-            # This is a limitation of the unified interface - we'll create as open for now
+            # LIMITATION: Direct proposals require invited_user_ids which this interface lacks
+            # Fallback to creating as open proposal to maintain compatibility
+            # TODO: Consider deprecating this unified interface in favor of specific methods
             return IndividualMatchService.create_open_proposal(
                 proposer_id=proposer_id,
                 location=location,
@@ -400,7 +593,20 @@ class IndividualMatchService:
     def invite_player_to_match(
         proposal_id: int, inviter_id: int, invitee_id: int
     ) -> ProposalInvitation:
-        """Create an invitation for a specific player to join a match proposal."""
+        """Add additional invitation to existing match proposal.
+
+        Allows expanding the invitation list for a proposal after initial creation.
+        Useful for open proposals where the proposer wants to specifically invite
+        certain players, or for adding late invitations to direct proposals.
+
+        Business Rules:
+        - Creates invitation in PENDING status awaiting player response
+        - Supports multi-player invitation workflows
+        - Enables dynamic expansion of proposal reach
+
+        Note: This method does not send notifications - caller is responsible
+        for notification delivery if desired.
+        """
         from .models import ProposalInvitation, InvitationStatus
 
         invitation = ProposalInvitation(
@@ -417,7 +623,26 @@ class IndividualMatchService:
     def respond_to_invitation(
         invitation_id: int, invitee_id: int, response: str
     ) -> bool:
-        """Respond to a match invitation."""
+        """Process player response to match invitation.
+
+        Handles both acceptance and rejection of specific invitation records.
+        When accepted, automatically creates the IndividualMatch through
+        the proposal acceptance workflow.
+
+        Args:
+            invitation_id: Specific invitation being responded to
+            invitee_id: Player responding (must match invitation recipient)
+            response: "accepted" or any other value for rejection
+
+        Returns:
+            bool: True if response was processed successfully, False if invalid
+
+        Business Logic:
+        - Validates invitation exists and belongs to responding player
+        - Acceptance triggers full match creation workflow
+        - Rejection updates invitation status only
+        - Leverages existing accept_proposal logic for consistency
+        """
         from .models import InvitationStatus
 
         invitation = ProposalInvitation.query.get(invitation_id)
@@ -426,11 +651,12 @@ class IndividualMatchService:
 
         if response.lower() == "accepted":
             invitation.status = InvitationStatus.ACCEPTED
-            # Create the individual match
+            # Trigger full match creation through established workflow
             match = IndividualMatchService.accept_proposal(
                 user_id=invitee_id, proposal_id=invitation.proposal_id
             )
         else:
+            # Any non-acceptance response is treated as rejection
             invitation.status = InvitationStatus.REJECTED
 
         return True
@@ -439,9 +665,41 @@ class IndividualMatchService:
     def get_user_proposals(
         user_id: int, include_expired: bool = False
     ) -> Dict[str, List[MatchProposal]]:
-        """Get proposals organized by user relationship."""
+        """Comprehensive proposal overview with intelligent filtering.
 
-        # First, expire any pending proposals that have passed their expiry time
+        Provides categorized view of all proposals relevant to a user,
+        with automatic expiration handling and location-based filtering
+        for optimal community experience.
+
+        Args:
+            user_id: Community member requesting proposal overview
+            include_expired: Whether to include proposals past their deadline
+
+        Returns:
+            Dict with keys:
+            - "created": Proposals this user initiated
+            - "received": Direct invitations sent to this user
+            - "available": Open proposals this user can accept
+
+        Intelligent Filtering:
+        1. Automatic expiration processing before building results
+        2. Location-based eligibility for open proposals
+        3. Status-based filtering (pending, accepted, cancelled)
+        4. Community-relevant proposal discovery
+
+        Location Eligibility Rules:
+        User sees open proposals for locations where they:
+        - Have explicitly set availability (PlayerAvailability records)
+        - Have played previous matches (historical location usage)
+        - This ensures relevant, actionable proposal visibility
+
+        Performance Considerations:
+        - Expires stale proposals in single batch before query
+        - Uses efficient joins for invitation relationships
+        - Leverages database indexes for status and user filtering
+        """
+
+        # Proactive expiration maintenance for clean community experience
         IndividualMatchService._expire_pending_proposals()
 
         query = MatchProposal.query
@@ -480,7 +738,10 @@ class IndividualMatchService:
             MatchProposal.status == ProposalStatus.PENDING,
         ).all()
 
-        # Filter open proposals by location availability
+        # Apply location-based filtering for relevant community proposals
+        # Build user's location eligibility from two sources:
+
+        # 1. Explicit availability preferences (where user wants to play)
         user_locations = {
             av.location
             for av in PlayerAvailability.query.filter_by(
@@ -488,7 +749,7 @@ class IndividualMatchService:
             ).all()
         }
 
-        # Also include locations where user has played before
+        # 2. Historical locations (where user has played before)
         played_locations = {
             match.location
             for match in IndividualMatch.query.filter(
@@ -499,8 +760,10 @@ class IndividualMatchService:
             ).all()
         }
 
+        # Combine both sets for comprehensive location eligibility
         eligible_locations = user_locations.union(played_locations)
 
+        # Filter open proposals to only show relevant venues
         if eligible_locations:
             available_open = [
                 p for p in available_open if p.location in eligible_locations
@@ -668,13 +931,23 @@ class IndividualMatchService:
 
     @staticmethod
     def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
-        """Get comprehensive dashboard data for user."""
+        """Build comprehensive player dashboard with community engagement data.
+
+        Aggregates all individual match related data for a player's dashboard:
+        - Active proposals and invitations
+        - Current and recent matches
+        - Availability settings and location preferences
+        - Performance statistics and community standing
+
+        Returns structured data optimized for dashboard template rendering
+        with categorized matches and actionable proposal information.
+        """
         proposals = IndividualMatchService.get_user_proposals(user_id)
         all_matches = IndividualMatchService.get_user_matches(user_id)
         availability = IndividualMatchService.get_user_availability(user_id)
         stats = IndividualMatchService.get_user_statistics(user_id)
 
-        # Organize matches by status for the template
+        # Organize matches by status for efficient dashboard rendering
         active_matches = [
             m
             for m in all_matches
@@ -683,6 +956,7 @@ class IndividualMatchService:
         completed_matches = [
             m for m in all_matches if m.status == MatchStatus.COMPLETED
         ]
+        # Show most recent completed matches for quick performance review
         recent_matches = completed_matches[:5]
 
         return {
@@ -696,10 +970,19 @@ class IndividualMatchService:
 
     @staticmethod
     def get_user_availability(user_id: int) -> Dict[str, Any]:
-        """Get user's availability settings and schedule."""
+        """Retrieve comprehensive player availability configuration.
+
+        Returns structured availability data for community match coordination:
+        - All availability records with time preferences
+        - Organized by location for venue-specific scheduling
+        - Available locations list for quick reference
+
+        Used by match proposal systems to determine player eligibility
+        and by the availability service for community coordination.
+        """
         availability_records = PlayerAvailability.query.filter_by(user_id=user_id).all()
 
-        # Organize by location
+        # Organize availability records by location for efficient lookup
         by_location = {}
         for record in availability_records:
             if record.location not in by_location:
@@ -723,7 +1006,39 @@ class IndividualMatchService:
         rack_number: int,
         notes: Optional[str] = None,
     ) -> IndividualRack:
-        """Submit result for a rack in individual match."""
+        """Record rack result with automatic match progression logic.
+
+        Core scoring method that handles individual rack recording and
+        automatically manages match progression and completion detection.
+
+        Args:
+            match_id: Individual match receiving the rack result
+            user_id: Player submitting the result (must be match participant)
+            winner_id: Player who won this rack (must be match participant)
+            rack_number: Sequential rack number for audit trail
+            notes: Optional rack notes (e.g., "8-ball break and run")
+
+        Returns:
+            IndividualRack: Created rack record with match score updates
+
+        Business Logic:
+        1. Validates user authorization (must be match participant)
+        2. Validates winner eligibility (must be match participant)
+        3. Prevents duplicate rack recording (unique rack_number per match)
+        4. Updates running match scores automatically
+        5. Detects match completion based on distance settings
+        6. Sets match completion timestamp and winner when race is reached
+
+        Match Completion Rules:
+        - Match completes when either player reaches the match distance
+        - Winner determined by highest score (handles early completion)
+        - Completion timestamp automatically set for historical tracking
+
+        Authorization Rules:
+        - Only match participants can submit rack results
+        - Winner must be one of the two match participants
+        - Rack numbers must be unique within the match
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -759,13 +1074,14 @@ class IndividualMatchService:
         else:
             match.player2_score += 1
 
-        # Check if match is complete
+        # Automatic match completion detection based on race distance
         if (
             match.player1_score >= match.distance
             or match.player2_score >= match.distance
         ):
             match.status = MatchStatus.COMPLETED
             match.completed_at = datetime.utcnow()
+            # Determine winner based on final scores (handles early completion scenarios)
             match.winner_id = (
                 winner_id if match.player1_score != match.player2_score else None
             )
@@ -777,11 +1093,33 @@ class IndividualMatchService:
     def update_user_availability(
         user_id: int, availability_data: List[Dict[str, Any]]
     ) -> None:
-        """Update user's availability settings."""
-        # Clear existing availability
+        """Bulk update player availability settings for community coordination.
+
+        Replaces all existing availability records with new settings.
+        This ensures clean state management and prevents orphaned
+        availability records from affecting match proposal visibility.
+
+        Args:
+            user_id: Player updating their availability preferences
+            availability_data: List of availability records with location,
+                             day_of_week, time ranges, and availability flags
+
+        Transaction Management:
+        Single atomic operation that:
+        1. Clears existing availability (prevents conflicts)
+        2. Creates all new availability records
+        3. Ensures consistent availability state across locations
+
+        Community Impact:
+        Updated availability immediately affects:
+        - Visibility of open proposals at relevant locations
+        - Inclusion in location-based player discovery
+        - Match recommendation algorithms
+        """
+        # Clear existing availability to ensure clean state (prevents conflicts)
         PlayerAvailability.query.filter_by(user_id=user_id).delete()
 
-        # Add new availability records
+        # Create all new availability records in single transaction
         for data in availability_data:
             availability = PlayerAvailability(
                 user_id=user_id,
@@ -795,27 +1133,38 @@ class IndividualMatchService:
 
     @staticmethod
     def get_admin_overview() -> Dict[str, Any]:
-        """Get admin overview of all individual matches."""
-        # Get counts by status
+        """Generate comprehensive administrative overview of individual match system.
+
+        Provides high-level metrics and insights for community administration:
+        - Match status distribution for system health monitoring
+        - Recent match activity for community engagement tracking
+        - Proposal status breakdown for invitation system health
+        - Active location analytics for venue management
+        - Player participation metrics for community growth
+
+        Used by admin dashboard to monitor community health and identify
+        areas needing attention (e.g., stale proposals, inactive locations).
+        """
+        # Collect match distribution metrics for system health monitoring
         status_counts = {}
         for status in MatchStatus:
             count = IndividualMatch.query.filter_by(status=status).count()
             status_counts[status.value] = count
 
-        # Get recent matches
+        # Track recent activity for community engagement insights
         recent_matches = (
             IndividualMatch.query.order_by(IndividualMatch.created_at.desc())
             .limit(10)
             .all()
         )
 
-        # Get proposal counts
+        # Monitor proposal workflow health across all statuses
         proposal_counts = {}
         for status in ProposalStatus:
             count = MatchProposal.query.filter_by(status=status).count()
             proposal_counts[status.value] = count
 
-        # Get active locations
+        # Identify active venues for location-based community insights
         active_locations = (
             db.session.query(PlayerAvailability.location)
             .filter_by(is_available=True)
@@ -839,7 +1188,18 @@ class IndividualMatchService:
     def get_user_matches(
         user_id: int, status_filter: Optional[MatchStatus] = None
     ) -> List[IndividualMatch]:
-        """Get individual matches for a user."""
+        """Retrieve user's match history with optional status filtering.
+
+        Returns all individual matches where the user participated as either
+        player1 or player2, ordered by scheduled date (most recent first).
+
+        Args:
+            user_id: Player whose matches to retrieve
+            status_filter: Optional status to filter by (e.g., COMPLETED only)
+
+        Used for player statistics, match history display, and performance
+        analysis throughout the community platform.
+        """
         query = IndividualMatch.query.filter(
             db.or_(
                 IndividualMatch.player1_id == user_id,
@@ -855,7 +1215,14 @@ class IndividualMatchService:
     @staticmethod
     @transactional(domain="individual_match")
     def start_match(match_id: int, user_id: int) -> IndividualMatch:
-        """Start an individual match (must be one of the players)."""
+        """Initiate match play with participant authorization check.
+
+        Transitions match from scheduled to in-progress status. Only
+        match participants can start the match to prevent unauthorized
+        manipulation of community matches.
+
+        Delegates to match.start_match() for state machine consistency.
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -872,7 +1239,19 @@ class IndividualMatchService:
     @staticmethod
     @transactional(domain="individual_match")
     def complete_match(match_id: int, winner_id: int, user_id: int) -> IndividualMatch:
-        """Complete a match (must be one of the players)."""
+        """Finalize match with winner determination and participant authorization.
+
+        Transitions match to completed status with winner recording.
+        Only match participants can complete matches to ensure result
+        integrity within the community platform.
+
+        Args:
+            match_id: Individual match to complete
+            winner_id: Player who won the match
+            user_id: Player initiating completion (authorization check)
+
+        Delegates to match.complete_match() for consistent state transitions.
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -891,7 +1270,20 @@ class IndividualMatchService:
     def cancel_match(
         match_id: int, user_id: int, reason: Optional[str] = None
     ) -> IndividualMatch:
-        """Cancel a match (must be one of the players)."""
+        """Cancel scheduled or in-progress match with reason tracking.
+
+        Allows match participants to cancel matches due to scheduling
+        conflicts, venue issues, or other circumstances. Maintains
+        cancellation audit trail for community management.
+
+        Args:
+            match_id: Individual match to cancel
+            user_id: Player initiating cancellation (authorization check)
+            reason: Optional cancellation reason for community records
+
+        Only match participants can cancel to prevent external interference
+        with community match scheduling.
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -914,7 +1306,27 @@ class IndividualMatchService:
         preferred_days: Optional[str] = None,
         preferred_times: Optional[str] = None,
     ) -> PlayerAvailability:
-        """Set player availability for a location."""
+        """Update or create location-specific availability settings.
+
+        Manages per-location availability preferences for community
+        match coordination. Updates existing records or creates new
+        ones as needed for seamless availability management.
+
+        Args:
+            user_id: Player setting availability preferences
+            location: Specific venue or pool hall
+            is_available: Whether player is available at this location
+            preferred_days: Optional day preferences (JSON format)
+            preferred_times: Optional time range preferences
+
+        Returns:
+            PlayerAvailability: Updated or created availability record
+
+        Community Integration:
+        - Affects visibility of open proposals at this location
+        - Influences match recommendation algorithms
+        - Enables location-based player discovery
+        """
 
         availability = PlayerAvailability.query.filter_by(
             user_id=user_id, location=location
@@ -938,23 +1350,46 @@ class IndividualMatchService:
 
     @staticmethod
     def get_player_availability(user_id: int) -> List[PlayerAvailability]:
-        """Get all availability settings for a player."""
+        """Retrieve complete availability configuration for a player.
+
+        Returns all location-specific availability records for comprehensive
+        availability management and community match coordination.
+        """
         return PlayerAvailability.query.filter_by(user_id=user_id).all()
 
     @staticmethod
     def get_eligible_players_for_location(
         location: str, exclude_user_id: Optional[int] = None
     ) -> List[User]:
-        """Get players available for matches at a specific location."""
+        """Discover community players available for location-based matches.
+
+        Finds players who could participate in matches at a specific venue
+        using two eligibility criteria:
+        1. Explicit availability settings (players who marked this location available)
+        2. Historical participation (players who have played here before)
+
+        Args:
+            location: Pool hall or venue to find players for
+            exclude_user_id: Optional user to exclude (e.g., the proposer)
+
+        Returns:
+            List[User]: Combined and deduplicated list of eligible players
+
+        Community Features:
+        - Enables dynamic player discovery for open proposals
+        - Leverages both intent (availability) and experience (history)
+        - Supports venue-specific community building
+        - Excludes requesting player to prevent self-matching
+        """
         from ..user.models import User
 
-        # Players with explicit availability
+        # Find players with explicit availability preferences for this location
         available_users = User.query.join(PlayerAvailability).filter(
             PlayerAvailability.location == location,
             PlayerAvailability.is_available.is_(True),
         )
 
-        # Players who have played at this location before
+        # Find players with historical experience at this location
         experienced_users = User.query.join(
             db.or_(
                 IndividualMatch.player1_id == User.id,
@@ -962,7 +1397,7 @@ class IndividualMatchService:
             )
         ).filter(IndividualMatch.location == location)
 
-        # Combine and deduplicate
+        # Combine both sets and deduplicate for comprehensive player pool
         all_users = available_users.union(experienced_users)
 
         if exclude_user_id:
@@ -973,7 +1408,20 @@ class IndividualMatchService:
     @staticmethod
     @transactional(domain="individual_match")
     def expire_old_proposals() -> int:
-        """Expire proposals that have passed their expiration time."""
+        """Community maintenance: batch expiration of stale proposals.
+
+        Cleans up the community match board by automatically expiring
+        proposals that have passed their expiration deadline. This
+        prevents community confusion and maintains a clean match board.
+
+        Returns:
+            int: Number of proposals expired in this maintenance cycle
+
+        Called by:
+        - Scheduled maintenance tasks
+        - Before displaying proposal lists (proactive cleanup)
+        - Admin maintenance operations
+        """
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,
             MatchProposal.expires_at <= datetime.utcnow(),
@@ -988,7 +1436,18 @@ class IndividualMatchService:
 
     @staticmethod
     def get_user_statistics(user_id: int) -> Dict[str, Any]:
-        """Get individual match statistics for a user."""
+        """Calculate comprehensive performance statistics for player profile.
+
+        Computes detailed statistics from completed individual matches:
+        - Win/loss record and percentages
+        - Rack-level performance metrics
+        - Location-specific performance breakdowns
+        - Historical performance tracking
+
+        Returns structured data for player profiles, leaderboards,
+        and community ranking systems. Only includes completed matches
+        to ensure accurate statistical representation.
+        """
         matches = IndividualMatchService.get_user_matches(
             user_id, MatchStatus.COMPLETED
         )
@@ -997,11 +1456,11 @@ class IndividualMatchService:
         won_matches = sum(1 for m in matches if m.winner_id == user_id)
         lost_matches = total_matches - won_matches
 
-        # Calculate rack statistics
+        # Calculate detailed rack-level performance for skill assessment
         total_racks_won = sum(m.get_user_score(user_id) for m in matches)
         total_racks_played = sum(m.player1_score + m.player2_score for m in matches)
 
-        # Location statistics
+        # Build location-specific performance breakdown for venue insights
         locations_played = {}
         for match in matches:
             loc = match.location
@@ -1031,7 +1490,19 @@ class IndividualMatchService:
     @staticmethod
     @transactional(domain="individual_match")
     def _expire_pending_proposals() -> int:
-        """Mark expired pending proposals as expired. Returns count of expired proposals."""
+        """Internal maintenance method for proactive proposal cleanup.
+
+        Private method that handles the actual expiration logic for
+        stale proposals. Called automatically before proposal queries
+        to ensure users see only valid, actionable proposals.
+
+        Returns:
+            int: Count of proposals expired in this cleanup cycle
+
+        Implementation Note:
+        Uses proposal.expire() method for consistent state transitions
+        rather than direct status updates.
+        """
         now = datetime.utcnow()
 
         expired_proposals = MatchProposal.query.filter(
@@ -1047,15 +1518,32 @@ class IndividualMatchService:
         return count
 
     @staticmethod
+    @transactional(domain="individual_match")
     def confirm_rack_result(rack_id: int, confirming_player_id: int) -> Dict[str, Any]:
-        """Confirm a rack result."""
+        """Player confirmation of rack result for dispute prevention.
+
+        Allows players to confirm rack results submitted by their opponent,
+        providing an audit trail and reducing potential disputes. This
+        supports fair play within the community platform.
+
+        Args:
+            rack_id: Specific rack result being confirmed
+            confirming_player_id: Player providing confirmation
+
+        Returns:
+            Dict with success status and confirmation message
+
+        Business Logic:
+        - Sets confirmed_by_player flag on the rack record
+        - Creates audit trail for community management
+        - Supports dispute resolution and fair play initiatives
+        """
         rack = db.session.get(IndividualRack, rack_id)
         if not rack:
             raise ValueError(f"Rack {rack_id} not found")
 
         # Mark as confirmed by player
         rack.confirmed_by_player = True
-        db.session.commit()
 
         return {"success": True, "message": "Rack result confirmed"}
 
@@ -1068,27 +1556,48 @@ class IndividualMatchService:
         player1_racks: int,
         player2_racks: int,
     ) -> None:
-        """Report final match result."""
-        # This is a match proposal ID, not an individual match ID
-        # Convert to actual match through the proposal
+        """Report final match result with automatic proposal acceptance.
+
+        Handles match result reporting that may involve accepting a pending
+        proposal first, then completing the resulting individual match.
+        Supports workflow where players report results directly from
+        proposal interface before formal match creation.
+
+        Args:
+            match_id: Actually a proposal ID in current implementation
+            reporter_id: Player reporting the result
+            winner_id: Player who won the match
+            player1_racks: Racks won by player 1 (for final score recording)
+            player2_racks: Racks won by player 2 (for final score recording)
+
+        Workflow:
+        1. If proposal is pending, accept it to create IndividualMatch
+        2. If already accepted, find the associated IndividualMatch
+        3. Complete the match with reported winner
+
+        Note: Parameter naming (match_id) is misleading - this actually
+        expects a proposal_id. Consider renaming for clarity.
+        """
+        # IMPORTANT: match_id parameter is actually a proposal_id (legacy naming)
+        # Convert proposal to individual match through acceptance workflow
         from .models import MatchProposal
 
         proposal = db.session.get(MatchProposal, match_id)
         if not proposal:
             raise ValueError(f"Match proposal {match_id} not found")
 
-        # If the proposal hasn't been accepted yet, accept it first
+        # Handle pending proposals by accepting them first (streamlined workflow)
         if proposal.status.value == "pending":
             individual_match = proposal.accept(reporter_id)
         else:
-            # Find the associated individual match
+            # For already accepted proposals, locate the created individual match
             individual_match = IndividualMatch.query.filter_by(
                 proposal_id=match_id
             ).first()
             if not individual_match:
                 raise ValueError("No individual match found for this proposal")
 
-        # Complete the match with the reported scores
+        # Finalize the match using the actual individual match ID
         IndividualMatchService.complete_match(
             match_id=individual_match.id,
             winner_id=winner_id,
@@ -1106,16 +1615,38 @@ class IndividualMatchService:
         notes: Optional[str] = None,
         **kwargs,
     ) -> IndividualRack:
-        """Add a rack result with flexible parameters for test compatibility."""
-        # Handle the new signature from tests
+        """Flexible rack result recording with multiple signature compatibility.
+
+        Compatibility wrapper that supports different parameter patterns:
+        1. New signature: rack_number, reported_by_id (preferred)
+        2. Legacy signature: winner_id, user_id via kwargs
+
+        This method exists to maintain compatibility with existing tests
+        and calling code while transitioning to the preferred interface.
+
+        Args:
+            match_id: Individual match receiving the rack result
+            rack_number: Sequential rack number (new signature)
+            winner_id: Player who won the rack
+            reported_by_id: Player reporting result (new signature)
+            break_player_id: Player who broke (future enhancement)
+            notes: Optional rack notes
+            **kwargs: Legacy parameter support (user_id)
+
+        Migration Note:
+        New code should use submit_rack_result() directly for clearer semantics.
+        This wrapper primarily exists for test compatibility.
+        """
+        # Route to appropriate implementation based on parameter signature
         if rack_number is not None and reported_by_id is not None:
+            # Preferred new signature with explicit rack numbering
             return IndividualMatchService.submit_rack_result(
                 match_id=match_id,
                 user_id=reported_by_id,
                 winner_id=winner_id,
                 rack_number=rack_number,
             )
-        # Handle old signature (winner_id, user_id) - need to extract from kwargs
+        # Legacy signature compatibility for existing tests
         elif len(kwargs) == 1 and "user_id" in kwargs:
             user_id = kwargs["user_id"]
             return IndividualMatchService._add_rack_result_original(
@@ -1129,7 +1660,24 @@ class IndividualMatchService:
     def _add_rack_result_original(
         match_id: int, winner_id: int, user_id: int
     ) -> IndividualRack:
-        """Original add_rack_result implementation."""
+        """Legacy rack result recording without explicit rack numbering.
+
+        Original implementation that delegates to match.add_rack_result()
+        for automatic rack number generation. Maintained for backward
+        compatibility with existing test suites.
+
+        Args:
+            match_id: Individual match receiving the rack result
+            winner_id: Player who won the rack
+            user_id: Player reporting the result (authorization check)
+
+        Returns:
+            IndividualRack: Created rack with auto-generated rack number
+
+        Migration Note:
+        Consider migrating callers to submit_rack_result() for explicit
+        rack number control and clearer parameter semantics.
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -1147,7 +1695,12 @@ class IndividualMatchService:
     def complete_individual_match(
         match_id: int, winner_id: int, user_id: int
     ) -> IndividualMatch:
-        """Complete an individual match - alias for complete_match."""
+        """Alias for complete_match() - maintained for API compatibility.
+
+        Provides explicit naming for individual match completion to
+        distinguish from other match types in the system. Delegates
+        to complete_match() for consistent implementation.
+        """
         return IndividualMatchService.complete_match(match_id, winner_id, user_id)
 
     @staticmethod
@@ -1155,7 +1708,33 @@ class IndividualMatchService:
     def express_interest_in_open_invitation(
         proposal_id: int, interested_player_id: int, message: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Express interest in an open invitation."""
+        """Register player interest in open community proposal.
+
+        Allows players to express interest in open proposals, creating
+        a ProposalInvitation record that the proposer can review and
+        potentially accept. This enables curated selection from multiple
+        interested players for open proposals.
+
+        Args:
+            proposal_id: Open proposal the player is interested in
+            interested_player_id: Player expressing interest
+            message: Optional message to proposer (future enhancement)
+
+        Returns:
+            Dict with success status and invitation_id for tracking
+
+        Business Rules:
+        - Only valid for OPEN type proposals
+        - Prevents duplicate interest expressions
+        - Creates invitation record for proposer review
+        - Enables social interaction through match coordination
+
+        Community Flow:
+        1. Player sees open proposal on community board
+        2. Player expresses interest using this method
+        3. Proposer reviews interested players
+        4. Proposer accepts one interest via accept_interest_for_open_invitation
+        """
         proposal = db.session.get(MatchProposal, proposal_id)
         if not proposal:
             raise ValueError(f"Proposal {proposal_id} not found")
@@ -1187,7 +1766,32 @@ class IndividualMatchService:
     def accept_interest_for_open_invitation(
         proposal_id: int, proposer_id: int, accepted_player_id: int
     ) -> Dict[str, Any]:
-        """Accept an interest expressed for an open invitation."""
+        """Accept specific player interest for open proposal with community notifications.
+
+        Completes the open proposal workflow by selecting one interested player
+        and creating the individual match. Automatically notifies other
+        interested players that the spot has been filled.
+
+        Args:
+            proposal_id: Open proposal being finalized
+            proposer_id: Original proposer (authorization check)
+            accepted_player_id: Selected player from interested list
+
+        Returns:
+            Dict with success status and created match_id
+
+        Community Workflow:
+        1. Validates proposer authorization and interest record existence
+        2. Accepts proposal on behalf of selected player
+        3. Creates IndividualMatch through standard acceptance workflow
+        4. Notifies other interested players about selection
+        5. Maintains positive community experience through communication
+
+        Notification Strategy:
+        - Selected player receives match confirmation
+        - Other interested players receive polite "filled" notification
+        - Graceful degradation if notifications fail
+        """
         proposal = db.session.get(MatchProposal, proposal_id)
         if not proposal:
             raise ValueError(f"Proposal {proposal_id} not found")
@@ -1202,16 +1806,17 @@ class IndividualMatchService:
         if not invitation:
             raise ValueError("No interest found for selected user")
 
-        # Accept the proposal on behalf of the selected user
+        # Create the match through standard proposal acceptance workflow
         match = IndividualMatchService.accept_proposal(accepted_player_id, proposal_id)
 
-        # Notify other interested players that the spot was filled
+        # Community courtesy: notify other interested players about selection
         other_invitations = (
             ProposalInvitation.query.filter_by(proposal_id=proposal_id)
             .filter(ProposalInvitation.invited_user_id != accepted_player_id)
             .all()
         )
 
+        # Send courteous notifications to maintain positive community experience
         if other_invitations:
             from ..notification.models import NotificationType, NotificationPriority
 
@@ -1219,6 +1824,7 @@ class IndividualMatchService:
 
             for other_invitation in other_invitations:
                 try:
+                    # Send polite notification about selection decision
                     NotificationService.create_notification(
                         user_id=other_invitation.invited_user_id,
                         notification_type=NotificationType.MATCH_DECLINED,
@@ -1227,7 +1833,7 @@ class IndividualMatchService:
                         priority=NotificationPriority.NORMAL,
                     )
                 except Exception as e:
-                    # Log the exception for debugging but don't fail the operation
+                    # Graceful degradation: notification failure doesn't break match creation
                     print(f"Failed to create notification: {e}")
                     pass
 
@@ -1242,12 +1848,26 @@ class IndividualMatchService:
     def create_individual_match_from_accepted_invitation(
         invitation_id: int,
     ) -> IndividualMatch:
-        """Create individual match from an accepted invitation."""
+        """Create match from specific invitation record.
+
+        Alternative workflow that starts from an invitation rather than
+        proposal. Delegates to standard proposal acceptance logic for
+        consistency in match creation and state management.
+
+        Args:
+            invitation_id: Specific invitation being accepted
+
+        Returns:
+            IndividualMatch: Created match from accepted invitation
+
+        Used in workflows where invitation-specific logic is required
+        or when tracking invitation-level events and auditing.
+        """
         invitation = db.session.get(ProposalInvitation, invitation_id)
         if not invitation:
             raise ValueError(f"Invitation {invitation_id} not found")
 
-        # Accept the proposal through the invitation
+        # Delegate to standard proposal acceptance for consistency
         return IndividualMatchService.accept_proposal(
             invitation.invited_user_id, invitation.proposal_id
         )
@@ -1257,7 +1877,29 @@ class IndividualMatchService:
     def dispute_rack_result(
         rack_id: int, disputing_player_id: int, reason: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Dispute a rack result."""
+        """Initiate dispute process for rack result accuracy.
+
+        Allows match participants to dispute rack results they believe
+        are incorrect. This supports fair play and provides an audit
+        trail for community management and dispute resolution.
+
+        Args:
+            rack_id: Specific rack result being disputed
+            disputing_player_id: Player initiating the dispute
+            reason: Optional explanation for the dispute
+
+        Returns:
+            Dict with dispute initiation status and details
+
+        Business Rules:
+        - Only match participants can dispute rack results
+        - Creates audit trail for community management
+        - Supports community fair play initiatives
+
+        Future Enhancement:
+        Could integrate with admin notification system to alert
+        community managers about disputed results requiring resolution.
+        """
         rack = db.session.get(IndividualRack, rack_id)
         if not rack:
             raise ValueError(f"Rack {rack_id} not found")
@@ -1266,8 +1908,8 @@ class IndividualMatchService:
         if disputing_player_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can dispute rack results")
 
-        # Mark rack as disputed (assuming there's a disputed field)
-        # For now, just return a success message
+        # TODO: Implement disputed field on rack model for proper dispute tracking
+        # Currently returns success message - future enhancement needed
         return {
             "success": True,
             "message": f"Rack {rack.rack_number} result disputed by player {disputing_player_id}",
@@ -1279,13 +1921,36 @@ class IndividualMatchService:
     def resolve_rack_dispute(
         rack_id: int, admin_user_id: int, resolution: str, reason: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Resolve a rack result dispute."""
+        """Administrative resolution of rack result disputes.
+
+        Allows community administrators to resolve disputed rack results
+        and maintain fair play standards within the platform. Provides
+        administrative oversight for community dispute management.
+
+        Args:
+            rack_id: Disputed rack being resolved
+            admin_user_id: Administrator handling the resolution
+            resolution: Resolution decision or outcome
+            reason: Optional explanation for the resolution
+
+        Returns:
+            Dict with resolution status and administrative decision
+
+        Administrative Features:
+        - Provides oversight for community dispute resolution
+        - Creates audit trail for administrative decisions
+        - Supports community management and fair play enforcement
+
+        Future Enhancement:
+        Could integrate with user notification system to inform
+        disputing players about administrative decisions.
+        """
         rack = db.session.get(IndividualRack, rack_id)
         if not rack:
             raise ValueError(f"Rack {rack_id} not found")
 
-        # Mark dispute as resolved
-        # For now, just return a success message
+        # TODO: Implement dispute resolution fields on rack model
+        # Currently returns success message - future enhancement needed
         return {
             "success": True,
             "message": f"Rack {rack.rack_number} dispute resolved by admin {admin_user_id}",

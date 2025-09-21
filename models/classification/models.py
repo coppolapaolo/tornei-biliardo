@@ -9,6 +9,7 @@ Dependencies: models.base.db, datetime
 from datetime import datetime
 from models.base import db
 from sqlalchemy.orm import backref
+from models.transaction.manager import transactional
 
 
 class Classification(db.Model):
@@ -91,6 +92,7 @@ class RoundClassification(db.Model):
     )
 
     @staticmethod
+    @transactional(domain="classification")
     def calculate_classification_after_round(gara_id, round_number):
         """
         Calculate classification after a specific round.
@@ -148,9 +150,7 @@ class RoundClassification(db.Model):
                 from ..match.models import TrioMatch
 
                 trio_match = (
-                    db.session.query(TrioMatch)
-                    .filter_by(match_id=match.id)
-                    .first()
+                    db.session.query(TrioMatch).filter_by(match_id=match.id).first()
                 )
 
                 if trio_match:
@@ -158,7 +158,7 @@ class RoundClassification(db.Model):
                     trio_players = [
                         trio_match.player1_id,
                         trio_match.player2_id,
-                        trio_match.player3_id
+                        trio_match.player3_id,
                     ]
 
                     # Initialize all trio players if not seen
@@ -171,18 +171,38 @@ class RoundClassification(db.Model):
                             }
 
                     # For trio matches, use the trio_match rack counts
-                    player_stats[trio_match.player1_id]["rack_won"] += trio_match.player1_racks or 0
-                    player_stats[trio_match.player2_id]["rack_won"] += trio_match.player2_racks or 0
-                    player_stats[trio_match.player3_id]["rack_won"] += trio_match.player3_racks or 0
+                    player_stats[trio_match.player1_id]["rack_won"] += (
+                        trio_match.player1_racks or 0
+                    )
+                    player_stats[trio_match.player2_id]["rack_won"] += (
+                        trio_match.player2_racks or 0
+                    )
+                    player_stats[trio_match.player3_id]["rack_won"] += (
+                        trio_match.player3_racks or 0
+                    )
 
                     # Calculate rack_lost for each player (total racks won by others)
-                    total_racks = (trio_match.player1_racks or 0) + (trio_match.player2_racks or 0) + (trio_match.player3_racks or 0)
-                    player_stats[trio_match.player1_id]["rack_lost"] += total_racks - (trio_match.player1_racks or 0)
-                    player_stats[trio_match.player2_id]["rack_lost"] += total_racks - (trio_match.player2_racks or 0)
-                    player_stats[trio_match.player3_id]["rack_lost"] += total_racks - (trio_match.player3_racks or 0)
+                    total_racks = (
+                        (trio_match.player1_racks or 0)
+                        + (trio_match.player2_racks or 0)
+                        + (trio_match.player3_racks or 0)
+                    )
+                    player_stats[trio_match.player1_id]["rack_lost"] += total_racks - (
+                        trio_match.player1_racks or 0
+                    )
+                    player_stats[trio_match.player2_id]["rack_lost"] += total_racks - (
+                        trio_match.player2_racks or 0
+                    )
+                    player_stats[trio_match.player3_id]["rack_lost"] += total_racks - (
+                        trio_match.player3_racks or 0
+                    )
 
                     # Determine winner (player with most racks in trio)
-                    max_racks = max(trio_match.player1_racks or 0, trio_match.player2_racks or 0, trio_match.player3_racks or 0)
+                    max_racks = max(
+                        trio_match.player1_racks or 0,
+                        trio_match.player2_racks or 0,
+                        trio_match.player3_racks or 0,
+                    )
                     if (trio_match.player1_racks or 0) == max_racks:
                         player_stats[trio_match.player1_id]["matches_won"] += 1
                     elif (trio_match.player2_racks or 0) == max_racks:
@@ -242,13 +262,16 @@ class RoundClassification(db.Model):
                 player_stats[match.player2_id]["rack_won"] += match.player2_score
                 player_stats[match.player2_id]["rack_lost"] += match.player1_score
 
-        # Calculate rack difference
+        # Calculate rack difference for each player
+        # This metric serves as the primary tiebreaker for equal match wins
         for player_id, stats in player_stats.items():
             stats["rack_difference"] = stats["rack_won"] - stats["rack_lost"]
 
-        # Sort players by classification criteria based on strategy
+        # Strategy-specific classification logic ensures appropriate ranking systems
+        # Random strategy emphasizes rack accumulation over match victories
         if gara.matchmaking_strategy == "random":
-            # For Random strategy: order by total racks won (descending), then rack difference, then player ID
+            # Random strategy classification: prioritizes skill demonstration through rack count
+            # This rewards consistent performance across all matches regardless of opponents
             sorted_players = sorted(
                 player_stats.items(),
                 key=lambda x: (
@@ -258,7 +281,8 @@ class RoundClassification(db.Model):
                 ),
             )
         else:
-            # For other strategies (Amalfi, etc): order by matches won, then rack difference
+            # Tournament strategies (Amalfi, Round-Robin): traditional match-win ranking
+            # This follows standard competitive pool tournament ranking conventions
             sorted_players = sorted(
                 player_stats.items(),
                 key=lambda x: (
@@ -329,7 +353,6 @@ class RoundClassification(db.Model):
                 )
                 db.session.add(classification)
 
-        db.session.commit()
         return sorted_players
 
     def __repr__(self):
@@ -409,6 +432,7 @@ class PlayerEncounter(db.Model):
         return encounter is not None
 
     @staticmethod
+    @transactional(domain="classification")
     def record_encounter(gara_id, player1_id, player2_id, round_number):
         """
         Record that two players have played against each other.
@@ -442,7 +466,6 @@ class PlayerEncounter(db.Model):
             round_number=round_number,
         )
         db.session.add(encounter)
-        db.session.commit()
         return encounter
 
     def __repr__(self):

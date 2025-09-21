@@ -18,12 +18,25 @@ from .gara_challenge_models import (
     GaraChallengeAttempt,
     GaraChallengeClassification,
 )
+from models.transaction.manager import transactional
 
 
 class GaraChallengeService:
-    """Service for managing challenges within competitions."""
+    """Service for managing challenges within competitions.
+
+    Community Features:
+    - Integration of skill challenges into tournament competitions
+    - Player attempt tracking and leaderboard management
+    - Support for Random tournament type with challenge components
+    - Community skill development through organized challenges
+
+    Transaction Management:
+    All write operations use @transactional(domain="challenge") ensuring
+    atomic challenge operations with rollback on scoring or validation errors.
+    """
 
     @staticmethod
+    @transactional(domain="challenge")
     def add_challenge_to_gara(
         gara_id: int,
         challenge_id: int,
@@ -72,13 +85,12 @@ class GaraChallengeService:
 
         try:
             db.session.add(gara_challenge)
-            db.session.commit()
             return gara_challenge
         except IntegrityError:
-            db.session.rollback()
             raise ValueError("Errore durante l'aggiunta della challenge alla gara")
 
     @staticmethod
+    @transactional(domain="challenge")
     def remove_challenge_from_gara(
         gara_id: int, challenge_id: int, round_number: int
     ) -> bool:
@@ -110,7 +122,6 @@ class GaraChallengeService:
         else:
             db.session.delete(gara_challenge)
 
-        db.session.commit()
         return True
 
     @staticmethod
@@ -161,6 +172,7 @@ class GaraChallengeService:
         )
 
     @staticmethod
+    @transactional(domain="challenge")
     def record_challenge_attempt(
         gara_challenge_id: int,
         user_id: int,
@@ -215,14 +227,12 @@ class GaraChallengeService:
 
         try:
             db.session.add(attempt)
-            db.session.commit()
 
             # Update the gara challenge classification
             GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
 
             return attempt
         except IntegrityError:
-            db.session.rollback()
             raise ValueError("Errore durante la registrazione del tentativo")
 
     @staticmethod

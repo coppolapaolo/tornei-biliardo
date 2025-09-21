@@ -19,12 +19,25 @@ from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
 from models.notification.services import NotificationService
 from models.notification.models import NotificationType, NotificationPriority
+from models.transaction.manager import transactional
 
 
 class AvailabilityService:
-    """Service for managing player availability and match requests."""
+    """Service for managing player availability and match requests.
+
+    Community Features:
+    - Location-based player discovery for building local pool communities
+    - Venue-specific availability tracking for billiard halls
+    - Notification system for connecting available players
+    - Match request coordination based on shared availability
+
+    Transaction Management:
+    All write operations use @transactional(domain="individual_match") for
+    automatic rollback on errors and consistent database state.
+    """
 
     @staticmethod
+    @transactional(domain="individual_match")
     def set_player_availability(
         user_id: int,
         location: str,
@@ -55,10 +68,10 @@ class AvailabilityService:
             )
             db.session.add(existing)
 
-        db.session.commit()
         return existing
 
     @staticmethod
+    @transactional(domain="individual_match")
     def set_venue_availability(
         user_id: int,
         billiard_hall_id: int,
@@ -106,7 +119,6 @@ class AvailabilityService:
             )
             db.session.add(existing)
 
-        db.session.commit()
         return existing
 
     @staticmethod
@@ -202,6 +214,7 @@ class AvailabilityService:
         return players
 
     @staticmethod
+    @transactional(domain="individual_match")
     def notify_players_of_availability(
         user_id: int, location: str, message: Optional[str] = None
     ) -> int:
@@ -251,7 +264,6 @@ class AvailabilityService:
                 # Log error but continue with other notifications
                 print(f"Error sending notification to user {user.id}: {e}")
 
-        db.session.commit()
         return notifications_sent
 
     @staticmethod
@@ -320,6 +332,7 @@ class AvailabilityService:
         return {"locations": locations, "venues": venues}
 
     @staticmethod
+    @transactional(domain="individual_match")
     def create_availability_based_match_request(
         requesting_user_id: int,
         target_user_id: int,
@@ -348,5 +361,4 @@ class AvailabilityService:
             entry_fee=0.0,
         )
 
-        db.session.commit()
         return proposal

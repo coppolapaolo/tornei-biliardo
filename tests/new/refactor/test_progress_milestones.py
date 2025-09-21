@@ -203,10 +203,13 @@ class TestRefactorProgressBaseline:
 
         detector = RefactorProgressDetector()
 
-        # Transaction migration baseline should be substantial
+        # Transaction migration baseline should reflect Task 1.1 completion
+        # After 100% business domain migration, only utils scripts remain
         tx_data = detector.detect_transaction_migration()
-        assert tx_data["total_commits"] >= 50, "Transaction baseline seems too low"
-        assert tx_data["total_commits"] <= 500, "Transaction baseline seems too high"
+        assert tx_data["total_commits"] >= 10, "Transaction baseline seems too low"
+        assert (
+            tx_data["total_commits"] <= 100
+        ), "Transaction baseline seems too high (post-migration)"
 
         # Service sizes should be substantial
         gara_data = detector.detect_service_size("models/competition/services.py", 1695)

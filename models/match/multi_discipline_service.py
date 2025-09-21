@@ -8,12 +8,14 @@ from typing import List, Dict, Any
 from ..base import db
 from .models import Match
 from .set_models import Set
+from models.transaction.manager import transactional
 
 
 class MultiDisciplineService:
     """Service for managing multi-discipline match configurations."""
 
     @staticmethod
+    @transactional(domain="match")
     def configure_rotating_disciplines(
         match_id: int, disciplines: List[str], rotation_type: str = "set_level"
     ) -> None:
@@ -37,29 +39,31 @@ class MultiDisciplineService:
         if len(disciplines) < 2:
             raise ValueError("At least 2 disciplines required for rotation")
 
-        # Query sets explicitly instead of using relationship property
+        # Direct query approach: avoids lazy loading issues with SQLAlchemy relationships
+        # This ensures consistent data access in transaction context
         match_sets = (
             Set.query.filter_by(match_id=match.id).order_by(Set.set_number).all()
         )
 
         if rotation_type == "set_level":
-            # Assign different disciplines to each set
+            # Set-level rotation: each set plays a different discipline in sequence
+            # This creates variety while maintaining discipline consistency within sets
             for i, match_set in enumerate(match_sets):
                 discipline_index = i % len(disciplines)
                 match_set.discipline = disciplines[discipline_index]
                 match_set.is_multi_discipline = False  # Single discipline per set
 
         elif rotation_type == "rack_level":
-            # Configure each set for multi-discipline rotation
+            # Rack-level rotation: different discipline for each rack within sets
+            # This maximizes variety and skill testing across all disciplines
             for match_set in match_sets:
                 match_set.configure_multi_discipline(disciplines, "rotation")
 
         else:
             raise ValueError(f"Unsupported rotation type: {rotation_type}")
 
-        db.session.commit()
-
     @staticmethod
+    @transactional(domain="match")
     def configure_custom_disciplines(
         match_id: int, set_configurations: Dict[int, Dict[str, Any]]
     ) -> None:
@@ -107,8 +111,6 @@ class MultiDisciplineService:
                 # Single discipline for this set
                 match_set.discipline = config.get("discipline", "palla_8")
                 match_set.is_multi_discipline = False
-
-        db.session.commit()
 
     @staticmethod
     def get_available_disciplines() -> List[Dict[str, str]]:

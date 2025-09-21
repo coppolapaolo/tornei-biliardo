@@ -11,12 +11,14 @@ from sqlalchemy import text
 
 from ..base import db
 from .models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from ..transaction.manager import transactional
 
 
 class ExamService:
     """Service for exam management and business logic."""
 
     @staticmethod
+    @transactional(domain="exam")
     def create_exam(
         name: str,
         director_id: int,
@@ -24,7 +26,17 @@ class ExamService:
         grading_criteria: Optional[Dict[str, Any]] = None,
         time_limit_minutes: Optional[int] = None,
     ) -> Exam:
-        """Create a new exam."""
+        """Create a new exam with automatic transaction management.
+
+        Creates an exam with default grading criteria if none provided.
+        Transaction handled by @transactional decorator.
+        """
+        # Set default grading criteria if not provided (A=90%, B=80%, C=70%, D=60%, F=0%)
+        if grading_criteria is None:
+            grading_criteria = {
+                "grade_scale": {"A": 90, "B": 80, "C": 70, "D": 60, "F": 0}
+            }
+
         exam = Exam(
             name=name,
             director_id=director_id,
@@ -32,33 +44,32 @@ class ExamService:
             time_limit_minutes=time_limit_minutes,
         )
 
-        # Set default grading criteria if not provided
-        if grading_criteria is None:
-            grading_criteria = {
-                "grade_scale": {"A": 90, "B": 80, "C": 70, "D": 60, "F": 0}
-            }
-
+        # Set grading criteria before adding to session (grading_criteria is NOT NULL)
         exam.set_grading_criteria(grading_criteria)
 
         db.session.add(exam)
-        db.session.commit()
         return exam
 
     @staticmethod
+    @transactional(domain="exam")
     def add_challenge_to_exam(
         exam_id: int,
         challenge_id: int,
         order: Optional[int] = None,
         weight: float = 1.0,
     ) -> ExamChallenge:
-        """Add a challenge to an exam."""
+        """Add a challenge to an exam with automatic order assignment.
+
+        Auto-assigns order if not provided (next sequential number).
+        Transaction handled by @transactional decorator.
+        """
         exam = db.session.get(Exam, exam_id)
         if exam is None:
             from flask import abort
 
             abort(404)
 
-        # Auto-assign order if not provided
+        # Auto-assign order if not provided - finds max existing order and increments by 1
         if order is None:
             max_order = (
                 db.session.query(db.func.max(ExamChallenge.order))
@@ -72,24 +83,36 @@ class ExamService:
         )
 
         db.session.add(exam_challenge)
-        db.session.commit()
         return exam_challenge
 
     @staticmethod
+    @transactional(domain="exam")
     def remove_challenge_from_exam(exam_id: int, challenge_id: int) -> None:
-        """Remove a challenge from an exam."""
+        """Remove a challenge from an exam.
+
+        Uses first_or_404() for automatic 404 handling if challenge not found.
+        Transaction handled by @transactional decorator.
+        """
         exam_challenge = ExamChallenge.query.filter_by(
             exam_id=exam_id, challenge_id=challenge_id
         ).first_or_404()
 
         db.session.delete(exam_challenge)
-        db.session.commit()
 
     @staticmethod
+    @transactional(domain="exam")
     def reorder_exam_challenges(
         exam_id: int, challenge_orders: List[Dict[str, int]]
     ) -> None:
-        """Reorder challenges in an exam.
+        """Reorder challenges in an exam with bulk update.
+
+        Updates the order field for multiple challenges in a single transaction.
+        Skips challenges that don't exist (graceful handling).
+        Transaction handled by @transactional decorator.
+
+        WARNING: Does not handle order swapping properly due to unique constraint.
+        May fail if new order values conflict with existing orders during update.
+        TODO: Implement proper order swapping with temporary values.
 
         Args:
             exam_id: ID of the exam
@@ -103,22 +126,34 @@ class ExamService:
             if exam_challenge:
                 exam_challenge.order = item["order"]
 
-        db.session.commit()
-
     @staticmethod
     def get_director_exams(director_id: int) -> List[Exam]:
-        """Get all exams created by a director."""
+        """Get all active exams created by a specific director.
+
+        Only returns exams with is_active=True.
+        Read-only operation, no transaction needed.
+        """
         return Exam.query.filter_by(director_id=director_id, is_active=True).all()
 
     @staticmethod
     def get_available_exams() -> List[Exam]:
-        """Get all active exams available for students."""
+        """Get all active exams available for student enrollment.
+
+        Returns all exams with is_active=True across all directors.
+        Read-only operation, no transaction needed.
+        """
         return Exam.query.filter_by(is_active=True).all()
 
     @staticmethod
+    @transactional(domain="exam")
     def start_exam_attempt(user_id: int, exam_id: int) -> ExamAttempt:
-        """Start a new exam attempt for a user."""
-        # Check if user already has an active attempt
+        """Start a new exam attempt for a user with duplicate prevention.
+
+        Returns existing active attempt if found, otherwise creates new one.
+        Automatically initializes challenge results through ExamAttempt.start_exam().
+        Transaction handled by @transactional decorator.
+        """
+        # Prevent duplicate active attempts - return existing if found
         existing_attempt = ExamAttempt.query.filter_by(
             user_id=user_id, exam_id=exam_id, completed=False
         ).first()
@@ -126,19 +161,19 @@ class ExamService:
         if existing_attempt:
             return existing_attempt
 
-        # Create new attempt
+        # Create new attempt and flush to get ID for challenge initialization
         attempt = ExamAttempt(user_id=user_id, exam_id=exam_id)
 
         db.session.add(attempt)
         db.session.flush()  # Get the ID
 
-        # Initialize challenge results
+        # Initialize ExamChallengeResult records for all challenges in exam
         attempt.start_exam()
-        db.session.commit()
 
         return attempt
 
     @staticmethod
+    @transactional(domain="exam")
     def complete_exam_challenge(
         exam_attempt_id: int,
         exam_challenge_id: int,
@@ -146,15 +181,18 @@ class ExamService:
         passed: Optional[bool] = None,
         notes: Optional[str] = None,
     ) -> ExamChallengeResult:
-        """Complete a specific challenge within an exam attempt."""
+        """Complete a specific challenge within an exam attempt.
+
+        Updates challenge result and auto-completes exam if all challenges done.
+        Transaction handled by @transactional decorator.
+        """
         result = ExamChallengeResult.query.filter_by(
             exam_attempt_id=exam_attempt_id, exam_challenge_id=exam_challenge_id
         ).first_or_404()
 
         result.complete_challenge(score=score, passed=passed, notes=notes)
-        db.session.commit()
 
-        # Check if all challenges are completed
+        # Auto-complete exam if all challenges are now complete
         attempt = db.session.get(ExamAttempt, exam_attempt_id)
         if attempt is None:
             from flask import abort
@@ -164,15 +202,19 @@ class ExamService:
 
         if progress["is_complete"] and not attempt.completed:
             attempt.complete_exam()
-            db.session.commit()
 
         return result
 
     @staticmethod
+    @transactional(domain="exam")
     def complete_exam_attempt(
         exam_attempt_id: int, notes: Optional[str] = None
     ) -> ExamAttempt:
-        """Manually complete an exam attempt."""
+        """Manually complete an exam attempt by director/admin.
+
+        Allows forced completion even if not all challenges are done.
+        Transaction handled by @transactional decorator.
+        """
         attempt = db.session.get(ExamAttempt, exam_attempt_id)
         if attempt is None:
             from flask import abort
@@ -181,13 +223,15 @@ class ExamService:
 
         if not attempt.completed:
             attempt.complete_exam(notes=notes)
-            db.session.commit()
 
         return attempt
 
     @staticmethod
     def get_user_exam_attempts(user_id: int) -> List[ExamAttempt]:
-        """Get all exam attempts for a user."""
+        """Get all exam attempts for a user, ordered by most recent first.
+
+        Read-only operation, no transaction needed.
+        """
         return (
             ExamAttempt.query.filter_by(user_id=user_id)
             .order_by(text("started_at DESC"))
@@ -196,7 +240,11 @@ class ExamService:
 
     @staticmethod
     def get_exam_statistics(exam_id: int) -> Dict[str, Any]:
-        """Get detailed statistics for an exam."""
+        """Get detailed statistics for a specific exam.
+
+        Delegates to Exam.get_statistics() for calculation logic.
+        Read-only operation, no transaction needed.
+        """
         exam = db.session.get(Exam, exam_id)
         if exam is None:
             from flask import abort
@@ -206,7 +254,11 @@ class ExamService:
 
     @staticmethod
     def get_director_statistics(director_id: int) -> Dict[str, Any]:
-        """Get statistics for all exams created by a director."""
+        """Get aggregated statistics across all exams created by a director.
+
+        Calculates total exams, attempts, grade distribution, and per-exam stats.
+        Read-only operation, no transaction needed.
+        """
         exams = ExamService.get_director_exams(director_id)
 
         total_exams = len(exams)
@@ -214,7 +266,7 @@ class ExamService:
             exam.attempts.filter_by(completed=True).count() for exam in exams
         )
 
-        # Calculate average grade across all exams
+        # Collect all final grades from completed attempts across director's exams
         all_grades = []
         for exam in exams:
             for attempt in exam.attempts.filter_by(completed=True):
@@ -233,6 +285,7 @@ class ExamService:
         }
 
     @staticmethod
+    @transactional(domain="exam")
     def update_exam(
         exam_id: int,
         name: Optional[str] = None,
@@ -241,7 +294,11 @@ class ExamService:
         time_limit_minutes: Optional[int] = None,
         is_active: Optional[bool] = None,
     ) -> Exam:
-        """Update exam details."""
+        """Update exam details with selective field updates.
+
+        Only updates provided fields (None values are ignored).
+        Transaction handled by @transactional decorator.
+        """
         exam = db.session.get(Exam, exam_id)
         if exam is None:
             from flask import abort
@@ -259,23 +316,31 @@ class ExamService:
         if is_active is not None:
             exam.is_active = is_active
 
-        db.session.commit()
         return exam
 
     @staticmethod
+    @transactional(domain="exam")
     def delete_exam(exam_id: int) -> None:
-        """Delete an exam (soft delete by marking inactive)."""
+        """Delete an exam via soft delete (marks as inactive).
+
+        Sets is_active=False instead of hard delete to preserve data integrity.
+        Transaction handled by @transactional decorator.
+        """
         exam = db.session.get(Exam, exam_id)
         if exam is None:
             from flask import abort
 
             abort(404)
         exam.is_active = False
-        db.session.commit()
 
     @staticmethod
     def can_user_take_exam(user_id: int, exam_id: int) -> bool:
-        """Check if a user can take an exam (no recent completed attempts)."""
-        # Check if user can take exam (allow retakes for now)
-        # For now, allow retakes (could add time restrictions later)
+        """Check if a user can take an exam.
+
+        Currently allows unlimited retakes. Future enhancement could add
+        time restrictions or attempt limits based on exam configuration.
+        Read-only operation, no transaction needed.
+        """
+        # TODO: Implement configurable retake policies (time restrictions, attempt limits)
+        # For now, allow unlimited retakes for maximum flexibility
         return True

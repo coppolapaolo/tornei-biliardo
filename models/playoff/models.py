@@ -14,28 +14,43 @@ from enum import Enum
 
 
 from ..base import db, BaseModel, TimestampMixin
+from models.transaction.manager import transactional
 
 if TYPE_CHECKING:
     from ..classification.models import Classification
 
 
 class PlayoffType(Enum):
-    """Types of playoff configurations."""
+    """Enumeration of supported playoff qualification strategies.
 
-    TOP_N = "top_n"  # Top N players (e.g., top 6)
-    ELITE_ACADEMY = "elite_academy"  # Elite and Academy divisions
-    CONDITIONAL = "conditional"  # Based on specific criteria
-    BOTTOM_EXCLUDE = "bottom_exclude"  # Exclude top players (e.g., 3rd place and below)
+    Defines the different algorithms available for determining which players
+    qualify for playoff tournaments based on campionato final classification.
+    """
+
+    TOP_N = "top_n"  # Top N classified players (e.g., top 6 for elite tournament)
+    ELITE_ACADEMY = "elite_academy"  # Two-tier system: elite (1-6) + academy (7-12)
+    CONDITIONAL = (
+        "conditional"  # Custom criteria-based qualification (performance thresholds)
+    )
+    BOTTOM_EXCLUDE = "bottom_exclude"  # Exclude top performers, include next tier (e.g., 3rd place and below)
 
 
 class QualificationStatus(Enum):
-    """Status of playoff qualification."""
+    """Enumeration of playoff qualification lifecycle states.
 
-    PENDING = "pending"  # Waiting for player response
-    CONFIRMED = "confirmed"  # Player confirmed participation
-    DECLINED = "declined"  # Player declined participation
-    EXPIRED = "expired"  # Qualification offer expired
-    REPLACED = "replaced"  # Replaced by next eligible player
+    Tracks the progression of individual player qualifications from initial
+    notification through final resolution (confirmed, declined, or expired).
+    """
+
+    PENDING = "pending"  # Awaiting player response to qualification notification
+    CONFIRMED = "confirmed"  # Player accepted qualification (tournament-ready)
+    DECLINED = "declined"  # Player declined qualification (triggers replacement)
+    EXPIRED = (
+        "expired"  # Response deadline passed without response (triggers replacement)
+    )
+    REPLACED = (
+        "replaced"  # Audit status when qualification is replaced by another player
+    )
 
 
 class PlayoffConfiguration(BaseModel, TimestampMixin):
@@ -201,14 +216,33 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
     def _evaluate_custom_criteria(
         self, classification: "Classification", criteria: Dict[str, Any]
     ) -> bool:
-        """Evaluate custom qualification criteria."""
-        # Example custom criteria evaluation
-        # This can be extended based on specific requirements
+        """Evaluate custom qualification criteria for CONDITIONAL playoff type.
 
+        Provides flexible, criteria-based qualification beyond simple position ranking.
+        Enables complex tournament designs with performance-based requirements.
+
+        Args:
+            classification: Player's final campionato classification record
+            criteria: Custom criteria dictionary with threshold values
+
+        Returns:
+            bool: True if player meets all specified custom criteria
+
+        Supported Custom Criteria:
+            - min_matches_won: Minimum total matches won in campionato
+            - min_point_difference: Minimum total point differential
+            - max_position: Maximum allowed final position (exclusion threshold)
+
+        Extensibility:
+            Additional criteria can be added here for future tournament designs
+            without database schema changes.
+        """
+        # Performance-based criteria: minimum matches won threshold
         min_matches_won = criteria.get("min_matches_won")
         if min_matches_won and classification.total_matches_won < min_matches_won:
             return False
 
+        # Statistical criteria: minimum point differential requirement
         min_point_difference = criteria.get("min_point_difference")
         if (
             min_point_difference
@@ -216,14 +250,23 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
         ):
             return False
 
+        # Position-based exclusion: maximum allowed position
         max_position = criteria.get("max_position")
         if max_position and classification.position > max_position:
             return False
 
         return True
 
+    @transactional(domain="playoff")
     def generate_qualifications(self) -> List["PlayoffQualification"]:
-        """Generate playoff qualifications based on criteria."""
+        """Generate playoff qualifications based on criteria.
+
+        Transaction Management:
+        Uses @transactional(domain="playoff") to ensure atomic qualification
+        creation with rollback if any qualification fails validation.
+        Read-only methods (evaluate_qualifications, _meets_minimum_requirements)
+        do not require transactions as they only query data.
+        """
         qualified_players = self.evaluate_qualifications()
         qualifications = []
 
@@ -243,7 +286,6 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
                 db.session.add(qualification)
                 qualifications.append(qualification)
 
-        db.session.commit()
         return qualifications
 
     def __repr__(self) -> str:
@@ -251,7 +293,22 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
 
 class PlayoffQualification(BaseModel, TimestampMixin):
-    """Individual player qualification for a playoff."""
+    """Individual player qualification record for playoff tournament participation.
+
+    Represents a single player's qualification for a specific playoff configuration.
+    Tracks the complete qualification lifecycle from initial qualification through
+    player response and potential replacement.
+
+    Status Transitions:
+    PENDING -> CONFIRMED (player accepts)
+    PENDING -> DECLINED (player declines, triggers replacement)
+    PENDING -> EXPIRED (deadline passed, triggers replacement)
+    DECLINED/EXPIRED -> REPLACED (audit trail when replaced)
+
+    Business Context:
+    Each qualification is linked to the player's campionato performance position
+    and includes audit information for transparency and fairness verification.
+    """
 
     __tablename__ = "playoff_qualification"
 
@@ -292,7 +349,20 @@ class PlayoffQualification(BaseModel, TimestampMixin):
     replaced_by = db.relationship("User", foreign_keys=[replaced_by_id])
 
     def confirm_participation(self) -> None:
-        """Confirm participation in playoff."""
+        """Confirm player acceptance of playoff qualification.
+
+        Transitions qualification from PENDING to CONFIRMED status and records
+        response timestamp for audit trail. Confirmed players become eligible
+        for tournament registration when playoff reaches readiness threshold.
+
+        Raises:
+            ValueError: If qualification is not in PENDING status
+
+        Side Effects:
+            - Updates status to CONFIRMED
+            - Records responded_at timestamp
+            - May trigger tournament readiness check in calling service
+        """
         if self.status != QualificationStatus.PENDING:
             raise ValueError("Can only confirm pending qualifications")
 
@@ -300,14 +370,35 @@ class PlayoffQualification(BaseModel, TimestampMixin):
         self.responded_at = datetime.utcnow()
 
     def decline_participation(self) -> Optional["PlayoffQualification"]:
-        """Decline participation and trigger replacement process."""
+        """Decline playoff qualification and initiate replacement discovery.
+
+        Transitions qualification from PENDING to DECLINED status and triggers
+        the replacement player discovery process to maintain tournament viability.
+
+        Returns:
+            Optional[PlayoffQualification]: New qualification for replacement player,
+                                          None if no replacement method available
+
+        Raises:
+            ValueError: If qualification is not in PENDING status
+
+        Side Effects:
+            - Updates status to DECLINED with response timestamp
+            - Triggers replacement player search (if method exists)
+            - Maintains audit trail of qualification decisions
+
+        Note:
+            Replacement logic is handled by PlayoffService.find_replacement_player()
+            rather than configuration._find_replacement() for proper transaction management.
+        """
         if self.status != QualificationStatus.PENDING:
             raise ValueError("Can only decline pending qualifications")
 
         self.status = QualificationStatus.DECLINED
         self.responded_at = datetime.utcnow()
 
-        # Find next eligible player for replacement
+        # Legacy replacement pattern - actual replacement handled by PlayoffService
+        # TODO: Remove this pattern in favor of service-level replacement coordination
         return (
             self.configuration._find_replacement()
             if hasattr(self.configuration, "_find_replacement")
@@ -315,13 +406,32 @@ class PlayoffQualification(BaseModel, TimestampMixin):
         )
 
     def expire_qualification(self) -> Optional["PlayoffQualification"]:
-        """Mark qualification as expired and find replacement."""
+        """Mark qualification as expired due to response deadline and trigger replacement.
+
+        Called by maintenance processes when response_deadline has passed without
+        player response. Transitions qualification to EXPIRED status and initiates
+        replacement discovery to prevent tournament delays.
+
+        Returns:
+            Optional[PlayoffQualification]: New qualification for replacement player,
+                                          None if no replacement method available
+
+        Business Logic:
+            - Only affects PENDING qualifications (confirmed ones never expire)
+            - No response timestamp needed (expiration is system-driven)
+            - Maintains audit trail with EXPIRED status
+
+        Note:
+            Like decline_participation(), actual replacement is handled by
+            PlayoffService.find_replacement_player() for transaction consistency.
+        """
         if self.status != QualificationStatus.PENDING:
             return None
 
         self.status = QualificationStatus.EXPIRED
 
-        # Find replacement
+        # Legacy replacement pattern - actual replacement handled by PlayoffService
+        # TODO: Remove this pattern in favor of service-level replacement coordination
         return (
             self.configuration._find_replacement()
             if hasattr(self.configuration, "_find_replacement")
@@ -333,7 +443,22 @@ class PlayoffQualification(BaseModel, TimestampMixin):
 
 
 class PlayoffTournament(BaseModel, TimestampMixin):
-    """The actual playoff campionato/gara."""
+    """Actual playoff tournament entity for execution and management.
+
+    Represents the executable tournament entity created when a playoff configuration
+    reaches readiness threshold. This is separate from PlayoffConfiguration (which
+    defines qualification rules) and represents the actual tournament event.
+
+    Lifecycle States:
+    - setup: Tournament created, preparing for registration
+    - registration: Registration open for confirmed qualified players
+    - playing: Tournament in progress (linked to Gara for match execution)
+    - completed: Tournament finished with final results
+
+    Integration:
+    Future versions will link to Gara entity for actual match execution and
+    bracket management within the platform's tournament system.
+    """
 
     __tablename__ = "playoff_campionato"
 
@@ -376,22 +501,40 @@ class PlayoffTournament(BaseModel, TimestampMixin):
     winner = db.relationship("User", foreign_keys=[winner_id])
 
     def start_registration(self) -> None:
-        """Start the registration process for confirmed qualifiers."""
+        """Transition tournament to registration phase for confirmed qualified players.
+
+        Moves tournament from 'setup' to 'registration' status and prepares for
+        player registration. In future versions, will auto-register confirmed
+        qualified players and create linked Gara for match execution.
+
+        Raises:
+            ValueError: If tournament is not in 'setup' status
+
+        Side Effects:
+            - Updates status to 'registration'
+            - Records registration_start timestamp
+            - Future: Auto-creates Gara entity for match execution
+            - Future: Auto-registers confirmed qualified players
+
+        Integration Status:
+        Currently in transition phase - Gara integration is planned but not yet
+        implemented. TODO items indicate future service integration points.
+        """
         if self.status != "setup":
             raise ValueError("Can only start registration from setup status")
 
         self.status = "registration"
         self.registration_start = datetime.utcnow()
 
-        # Create inscriptions for confirmed qualifiers
-
-        confirmed_qualifications = self.configuration.qualifications.filter_by(
-            status=QualificationStatus.CONFIRMED
+        # Query confirmed qualifications for potential auto-registration
+        confirmed_qualifications = PlayoffQualification.query.filter_by(
+            configuration_id=self.configuration_id, status=QualificationStatus.CONFIRMED
         ).all()
 
+        # Future Gara Integration: Create linked tournament entity
         if not self.gara_id:
-            # Create the playoff gara if it doesn't exist
-            # TODO: Fix GaraService.create_gara call with proper parameters
+            # TODO: Implement GaraService integration for playoff tournament creation
+            # Will create actual tournament entity with proper playoff configuration
             # gara = GaraService.create_gara(
             #     campionato_id=self.configuration.campionato_id,
             #     director_id=1,  # Admin or first director
@@ -403,10 +546,11 @@ class PlayoffTournament(BaseModel, TimestampMixin):
             # self.gara_id = gara.id
             pass
 
-        # Auto-inscribe confirmed players
+        # Future Auto-Registration: Register confirmed qualified players
         for qualification in confirmed_qualifications:
             try:
-                # TODO: Fix GaraService.inscribe_user call - method doesn't exist
+                # TODO: Implement auto-registration for confirmed qualified players
+                # Will streamline transition from qualification to tournament participation
                 # GaraService.inscribe_user(self.gara_id, qualification.user_id)
                 # self.confirmed_participants += 1
                 pass
@@ -414,20 +558,60 @@ class PlayoffTournament(BaseModel, TimestampMixin):
                 print(f"Failed to inscribe user {qualification.user_id}: {e}")
 
     def complete_campionato(self, winner_id: Optional[int] = None) -> None:
-        """Mark campionato as completed."""
+        """Finalize tournament as completed with optional winner recording.
+
+        Transitions tournament to final 'completed' status and optionally records
+        winner for community recognition and statistical tracking.
+
+        Args:
+            winner_id: Optional tournament winner for community recognition
+
+        Side Effects:
+            - Updates status to 'completed'
+            - Records completion timestamp for audit trail
+            - Sets winner_id for community statistics and recognition
+
+        Business Value:
+            - Enables tournament archival and cleanup processes
+            - Feeds winner information into player statistics
+            - Provides completion audit trail for community records
+        """
         self.status = "completed"
         self.completed_at = datetime.utcnow()
         if winner_id:
             self.winner_id = winner_id
 
     def get_qualified_players(self) -> List["PlayoffQualification"]:
-        """Get all qualified players for this campionato."""
-        confirmed_quals = self.configuration.qualifications.filter_by(
-            status=QualificationStatus.CONFIRMED
+        """Get all active qualified players for tournament management.
+
+        Retrieves both confirmed and pending qualifications for tournament
+        planning and management. Excludes declined/expired qualifications
+        as they are not relevant for tournament execution.
+
+        Returns:
+            List[PlayoffQualification]: Active qualifications sorted by qualifying position
+
+        Business Logic:
+            - Includes CONFIRMED players (ready for tournament)
+            - Includes PENDING players (awaiting response)
+            - Excludes DECLINED/EXPIRED players (replaced or no longer eligible)
+            - Sorted by qualifying_position for fair bracket seeding
+
+        SQLAlchemy Pattern:
+        Uses separate queries for each status rather than IN clause for clarity
+        and to avoid potential query optimization issues.
+        """
+        # Query confirmed qualifications (tournament-ready players)
+        confirmed_quals = PlayoffQualification.query.filter_by(
+            configuration_id=self.configuration_id, status=QualificationStatus.CONFIRMED
         ).all()
-        pending_quals = self.configuration.qualifications.filter_by(
-            status=QualificationStatus.PENDING
+
+        # Query pending qualifications (awaiting player response)
+        pending_quals = PlayoffQualification.query.filter_by(
+            configuration_id=self.configuration_id, status=QualificationStatus.PENDING
         ).all()
+
+        # Combine and sort by original qualifying position for fair seeding
         all_quals = confirmed_quals + pending_quals
         all_quals.sort(key=lambda q: q.qualifying_position)
         return all_quals

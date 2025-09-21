@@ -6,9 +6,13 @@ Extracted from GaraService to follow Single Responsibility Principle.
 
 Business Operations:
 - Round lifecycle management (start, cancel, progress)
-- Match creation using different strategies
+- Match creation using different strategies (Amalfi, Random, Round-Robin, Elimination)
 - Round preview without database side effects
-- Integration with matchmaking strategies
+- Integration with matchmaking strategies through registry pattern
+
+Transaction Management:
+Write operations use @transactional(domain="competition") for atomic round
+operations with automatic rollback on strategy errors or validation failures.
 
 Author: Refactoring Phase 1 - Task 1.2 (GaraService Decomposition)
 Created: 2025-01-18
@@ -22,6 +26,7 @@ from datetime import datetime
 from models.base import db
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
+from models.transaction.manager import transactional
 
 
 class RoundService:
@@ -175,6 +180,7 @@ class RoundService:
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_first_round_startup(gara_id: int) -> Gara:
         """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
 
@@ -231,10 +237,10 @@ class RoundService:
             gara.status = GaraStatus.INSCRIPTION.value
             db.session.add(gara)
 
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def create_round_with_strategy(
         gara_id: int, round_number: int, discipline_override: Optional[str] = None
     ) -> tuple[int, int, int, int]:
@@ -386,7 +392,6 @@ class RoundService:
                     match.round_locked = True
                     db.session.add(match)
 
-            db.session.commit()
             return (total_matches, normal_matches, bye_matches, trio_matches)
 
         except Exception as e:
@@ -511,6 +516,7 @@ class RoundService:
             raise ValueError(f"Errore durante l'anteprima del turno: {str(e)}")
 
     @staticmethod
+    @transactional(domain="competition")
     def update_round_progression(gara_id: int) -> None:
         """Aggiorna la progressione dei turni e calcola le classifiche quando necessario."""
         from models.match.models import Match
@@ -554,8 +560,6 @@ class RoundService:
             else:
                 # Turno incompleto, ferma qui
                 break
-
-        db.session.commit()
 
 
 __all__ = ["RoundService"]

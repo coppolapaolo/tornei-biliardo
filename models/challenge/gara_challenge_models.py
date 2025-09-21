@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from sqlalchemy import desc, asc
 
 from ..base import db, BaseModel, TimestampMixin
+from models.transaction.manager import transactional
 
 if TYPE_CHECKING:
     from .models import Challenge
@@ -206,6 +207,7 @@ class GaraChallengeClassification(BaseModel):
     )
 
     @classmethod
+    @transactional(domain="challenge")
     def calculate_for_gara(cls, gara_id: int) -> List["GaraChallengeClassification"]:
         """Calculate and update challenge classification for a gara."""
         from models.user.models import User
@@ -230,7 +232,8 @@ class GaraChallengeClassification(BaseModel):
 
         classifications = []
 
-        # Disable autoflush to avoid premature commit with None positions
+        # Transaction safety: disable autoflush to prevent inconsistent state during calculation
+        # This ensures all classification positions are calculated before database commit
         with db.session.no_autoflush:
             for user in inscribed_users:
                 total_best_score = 0
@@ -273,7 +276,8 @@ class GaraChallengeClassification(BaseModel):
 
                 classifications.append(classification)
 
-            # Sort by total_best_score DESC, then by total_all_attempts ASC (lower is better for tiebreaker)
+            # Challenge classification ranking: best scores prioritized, attempt efficiency as tiebreaker
+            # Lower total_all_attempts indicates more efficient skill demonstration
             classifications.sort(
                 key=lambda x: (-x.total_best_score, x.total_all_attempts)
             )
@@ -282,7 +286,6 @@ class GaraChallengeClassification(BaseModel):
             for idx, classification in enumerate(classifications):
                 classification.position = idx + 1
 
-        db.session.commit()
         return classifications
 
     def get_user_challenge_details(self) -> List[Dict[str, Any]]:

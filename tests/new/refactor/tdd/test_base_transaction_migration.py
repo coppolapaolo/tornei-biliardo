@@ -78,7 +78,8 @@ class TestBaseTransactionMigrationPhase8:
         with app.app_context():
             db.create_all()
 
-            instance = TestModel(name='test')
+            instance = TestModel()
+            instance.name = 'test'
 
             # Should use transaction manager instead of direct commit
             with patch.object(instance, 'save_tx') as mock_save_tx:
@@ -103,7 +104,8 @@ class TestBaseTransactionMigrationPhase8:
         with app.app_context():
             db.create_all()
 
-            instance = TestModel(name='test')
+            instance = TestModel()
+            instance.name = 'test'
 
             with patch.object(instance, 'delete_tx') as mock_delete_tx:
                 instance.delete()
@@ -125,7 +127,8 @@ class TestBaseTransactionMigrationPhase8:
         with app.app_context():
             db.create_all()
 
-            instance = TestModel(name='test')
+            instance = TestModel()
+            instance.name = 'test'
 
             with patch.object(instance, 'save_with_validation_tx') as mock_save_tx:
                 mock_save_tx.return_value = instance
@@ -149,7 +152,8 @@ class TestBaseTransactionMigrationPhase8:
         with app.app_context():
             db.create_all()
 
-            instance = TestModel(name='test')
+            instance = TestModel()
+            instance.name = 'test'
 
             with patch.object(instance, 'save_tx') as mock_save_tx:
                 mock_save_tx.return_value = instance
@@ -173,7 +177,8 @@ class TestBaseTransactionMigrationPhase8:
         with app.app_context():
             db.create_all()
 
-            instance = TestModel(name='test')
+            instance = TestModel()
+            instance.name = 'test'
 
             with patch.object(instance, 'delete_tx') as mock_delete_tx:
                 instance.delete()

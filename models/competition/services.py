@@ -1,14 +1,43 @@
 """
 Module: models/competition/services
-Purpose: Service layer per il dominio Competition (Gara) +
-         state machine per le transizioni di stato di Gara.
-Data Structures: GaraService, ProvaStateMachine, RoundService
-Dependencies: models.base.db, models.competition.models, models.status_enum
-Note: InscriptionService extracted to inscription_service.py (Task 1.2)
+Purpose: Service layer per il dominio Competition (Gara) con transaction management
+         distribuito e state machine per transizioni di stato sicure.
 
-Nota sprint 4 (migrazione soft):
-- Le colonne DB restano VARCHAR; gli Enum sono string-based (compatibili).
-- Le route non devono più assegnare .status direttamente: usare le API qui esposte.
+**Architecture Overview:**
+- GaraService: Core business logic per gestione gare e tornei
+- ProvaStateMachine: Finite state machine per transizioni stato sicure
+- InscriptionService: Estratto in inscription_service.py (Task 1.2)
+- RoundService: Estratto in round_service.py (Task 1.2)
+
+**Transaction Management (@transactional pattern):**
+- Domain-specific transactions: @transactional(domain="competition")
+- Automatic rollback on exceptions for data consistency
+- Integration with distributed transaction manager
+- Eliminates manual db.session.commit() calls for better reliability
+
+**Data Structures:**
+- GaraService: Competition lifecycle management, administrative operations
+- ProvaStateMachine: State transitions (setup -> inscription -> playing -> completed)
+- Integration: OperationResult pattern for multi-domain orchestration
+
+**Dependencies:**
+- models.base.db: Database session management
+- models.competition.models: Gara, Inscription domain entities
+- models.status_enum: GaraStatus enum definitions
+- models.transaction.manager: @transactional decorator
+- models.orchestration.service: OperationResult for coordination
+
+**Migration Notes (Task 1.1 Transaction Management):**
+- Phase 19 completed: reset_tournament_to_round(), cancel_tournament() migrated
+- All service methods now use @transactional pattern for consistency
+- Database columns remain VARCHAR; Enum values are string-based (backward compatible)
+- Routes should use service APIs, never assign .status directly
+
+**Business Domain Context:**
+- Community platform for American Pool tournaments and competitions
+- Support for multiple tournament formats (standalone gare, campionatos)
+- Administrative operations with full audit trail requirements
+- Integration with matchmaking, notification, and classification domains
 """
 
 from __future__ import annotations
@@ -31,13 +60,35 @@ from models.exceptions import InvalidTransitionError
 
 
 class ProvaStateMachine:
-    """Regole di transizione per `Gara.status`.
+    """Finite State Machine per transizioni sicure dello stato Gara.
 
-    Stati persistiti ammessi: setup → inscription ↔ setup → playing → completed.
-    - setup → inscription: apertura iscrizioni
-    - inscription → setup: riapertura setup (es. modifica date/config)
-    - inscription → playing: inizio partite
-    - playing → completed: chiusura gara
+    **State Flow Diagram:**
+    setup → inscription ↔ setup → playing → completed → cancelled
+
+    **Transizioni Ammesse:**
+    - setup → inscription: Apertura periodo iscrizioni (validazione date richiesta)
+    - inscription → setup: Riapertura configurazione (modifica date/parametri)
+    - inscription → playing: Avvio torneo (validazione numero partecipanti)
+    - playing → completed: Chiusura naturale torneo
+    - any_state → cancelled: Cancellazione amministrativa (emergency)
+
+    **Transaction Safety:**
+    - Ogni metodo utilizza @transactional(domain="competition") per atomicità
+    - Validazione stato attuale prima di ogni transizione
+    - Rollback automatico su InvalidTransitionError
+    - Database consistency garantita per operazioni critiche
+
+    **Business Rules:**
+    - setup: Configurazione iniziale, modifiche libere
+    - inscription: Periodo iscrizioni attivo, configurazione bloccata
+    - playing: Torneo in corso, solo operazioni match permesse
+    - completed: Torneo terminato, solo consultazione
+    - cancelled: Stato finale, nessuna operazione permessa
+
+    **Integration Notes:**
+    - Utilizzato da GaraService per transizioni controllate
+    - Supporta workflow amministrativi attraverso OperationResult
+    - Compatible con legacy string-based status storage
     """
 
     @staticmethod
@@ -51,7 +102,11 @@ class ProvaStateMachine:
     @staticmethod
     @transactional(domain="competition")
     def to_inscription(gara: Gara) -> Gara:
-        """setup → inscription"""
+        """Transizione setup → inscription con validazione date.
+
+        @transactional garantisce atomicità durante apertura periodo iscrizioni.
+        Valida configurazione date prima del cambio stato.
+        """
         ProvaStateMachine._require(gara, GaraStatus.SETUP)
 
         # Validazione: le date di iscrizione devono essere impostate
@@ -66,7 +121,11 @@ class ProvaStateMachine:
     @staticmethod
     @transactional(domain="competition")
     def reopen_setup(gara: Gara) -> Gara:
-        """inscription → setup"""
+        """Transizione inscription → setup per modifiche configurazione.
+
+        @transactional assicura rollback sicuro se la riapertura fallisce.
+        Permette modifiche a date/parametri dopo chiusura iscrizioni.
+        """
         ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
         gara.status = GaraStatus.SETUP.value
         db.session.add(gara)
@@ -75,8 +134,14 @@ class ProvaStateMachine:
     @staticmethod
     @transactional(domain="competition")
     def start_playing(gara: Gara) -> Gara:
-        """inscription → playing.
-        Esegue controlli minimi: se disponibile, verifica numero iscritti >= 2.
+        """Transizione inscription → playing con validazione partecipanti.
+
+        @transactional protegge l'avvio torneo con controlli business rules:
+        - Validazione numero minimo partecipanti (default: 2)
+        - Inizializzazione current_round se necessario
+        - Cambio stato atomico per evitare inconsistenze
+
+        Critical business operation per avvio tornei community.
         """
         ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
 
@@ -107,7 +172,11 @@ class ProvaStateMachine:
     @staticmethod
     @transactional(domain="competition")
     def complete(gara: Gara) -> Gara:
-        """playing → completed"""
+        """Transizione playing → completed per chiusura torneo.
+
+        @transactional garantisce finalizzazione sicura dello stato torneo.
+        Operazione finale che blocca future modifiche ai risultati.
+        """
         ProvaStateMachine._require(gara, GaraStatus.PLAYING)
 
         # Controllo che non ci siano match ancora in corso
@@ -143,7 +212,33 @@ class ProvaStateMachine:
 
 
 class GaraService:
-    """Operazioni di business su Gara (creazione, query, validazione, transizioni)."""
+    """Service layer per gestione completa lifecycle delle Gare nel dominio Competition.
+
+    **Business Responsibilities:**
+    - Creazione e configurazione gare/tornei
+    - Gestione lifecycle attraverso ProvaStateMachine
+    - Operazioni amministrative (reset, cancellazione)
+    - Validazione business rules e constraints
+    - Coordinamento con servizi estratti (InscriptionService, RoundService)
+
+    **Transaction Management Pattern:**
+    - Tutti i metodi di modifica utilizzano @transactional(domain="competition")
+    - Eliminazione manuale db.session.commit() completata (Task 1.1)
+    - Rollback automatico su eccezioni per data consistency
+    - Integration con OperationResult per orchestrazione multi-domain
+
+    **Architecture Notes:**
+    - Facade pattern: mantiene compatibility con API esistenti
+    - Service decomposition: InscriptionService, RoundService estratti (Task 1.2)
+    - Domain isolation: transazioni specifiche per competition domain
+    - Future-ready: supporta estensioni community platform features
+
+    **Community Platform Integration:**
+    - Supporta standalone gare e campionatos
+    - Gestione tornei American Pool con multiple discipline
+    - Administrative operations con audit trail completo
+    - Integration ready per notification, payment, venue management
+    """
 
     # -----------------------------
     # CREAZIONE / QUERY DI SUPPORTO
@@ -160,7 +255,16 @@ class GaraService:
         director_id: Optional[int] = None,
         **kwargs,
     ) -> Gara:
-        """Crea una Gara (anche standalone se `campionato_id` è None)."""
+        """Creazione gara con validazione business rules e transaction safety.
+
+        @transactional assicura creazione atomica con rollback su validazione fallita.
+        Supporta sia gare campionato che standalone per flessibilità community.
+
+        Business validation:
+        - Requirement: campionato_id OR director_id (governance requirement)
+        - Date validation: no past dates per policy integrità
+        - Strategy configuration: applica configurazione matchmaking se fornita
+        """
         # Guard: una Gara deve appartenere a un campionato o avere un direttore esplicito
         if not campionato_id and not director_id:
             raise ValueError(
@@ -1130,20 +1234,47 @@ class GaraService:
         return InscriptionService.can_start_with_current_inscriptions(gara_id)
 
     @staticmethod
+    @transactional(domain="competition")
     def reset_tournament_to_round(
         gara_id: int, target_round: int, admin_id: int, reset_reason: str
     ) -> "OperationResult":
         """
-        Reset tournament to a specific round, removing all subsequent rounds and data.
+        Amministrazione torneo - Reset a round specifico con eliminazione dati successivi.
+
+        Questa operazione di amministrazione utilizza il pattern @transactional per garantire
+        consistenza dei dati durante il reset del torneo. Elimina completamente tutti i match
+        e le classifiche dei round successivi al target_round specificato.
+
+        **Transaction Management:**
+        - Domain: "competition" - Gestisce transazioni specifiche del dominio gare
+        - Boundary: Include eliminazione match, classifiche e aggiornamento stato torneo
+        - Rollback: Automatico in caso di errore per preservare integrità dati
+
+        **Business Logic:**
+        - Validazione round target (1 <= target <= current_round)
+        - Eliminazione cascata: Match -> RoundClassification -> Tournament state
+        - Unlock match precedenti per permettere modifiche post-reset
+        - Audit trail attraverso OperationResult per tracciabilità amministrativa
+
+        **Integration:**
+        - Orchestration: Restituisce OperationResult per coordinamento multi-dominio
+        - Domains affected: ["competition", "classification"]
+        - Admin requirements: Richiede privilegi amministrativi per esecuzione
 
         Args:
-            gara_id: ID of the tournament
-            target_round: Round number to reset to
-            admin_id: ID of the admin performing the reset
-            reset_reason: Reason for the reset
+            gara_id: ID della gara da resettare
+            target_round: Numero del round target (inclusivo)
+            admin_id: ID dell'amministratore che esegue il reset (audit trail)
+            reset_reason: Motivazione del reset (audit trail)
 
         Returns:
-            OperationResult with success status and details
+            OperationResult con stato successo e dettagli operazione:
+            - data: conteggi eliminazioni, stato finale, info audit
+            - affected_domains: domini coinvolti nell'operazione
+            - operation_type: TOURNAMENT_RESET per identificazione
+
+        Raises:
+            TransactionError: Se la transazione fallisce durante l'operazione
         """
         from models.match.models import Match
         from models.classification.models import RoundClassification
@@ -1205,7 +1336,6 @@ class GaraService:
             match.round_locked = False
 
         db.session.add(gara)
-        db.session.commit()
 
         return OperationResult.success_result(
             operation_type=OperationType.TOURNAMENT_RESET,
@@ -1221,6 +1351,7 @@ class GaraService:
         )
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_tournament(
         gara_id: int,
         admin_id: int,
@@ -1229,17 +1360,47 @@ class GaraService:
         notify_participants: bool = True,
     ) -> "OperationResult":
         """
-        Cancel a tournament completely.
+        Amministrazione torneo - Cancellazione completa torneo con workflow notifiche.
+
+        Operazione amministrativa critica che utilizza @transactional per garantire
+        atomicità durante la cancellazione completa del torneo. Gestisce il cambio
+        di stato a CANCELLED e coordina workflow di notifica partecipanti.
+
+        **Transaction Management:**
+        - Domain: "competition" - Transazione isolata per operazioni dominio gare
+        - Boundary: Aggiornamento status torneo con commit atomico
+        - Integration: Coordina con notification domain attraverso OperationResult
+
+        **Business Logic:**
+        - Status transition: qualsiasi stato -> GaraStatus.CANCELLED
+        - Preservazione dati: Non elimina dati storici, solo cambio stato
+        - Workflow futuro: Supporta refund_entry_fees e notify_participants
+
+        **Administrative Audit Trail:**
+        - admin_id: Tracciabilità dell'amministratore responsabile
+        - cancellation_reason: Motivazione per audit e comunicazioni
+        - timestamp: Automatico attraverso updated_at del modello Gara
+
+        **Orchestration Integration:**
+        - affected_domains: ["competition", "notification"] per coordinamento
+        - OperationType.TOURNAMENT_CANCELLATION per identificazione workflow
+        - Future extension: Integrazione con payment/refund systems
 
         Args:
-            gara_id: ID of the tournament
-            admin_id: ID of the admin performing the cancellation
-            cancellation_reason: Reason for the cancellation
-            refund_entry_fees: Whether to refund entry fees
-            notify_participants: Whether to notify participants
+            gara_id: ID della gara da cancellare
+            admin_id: ID dell'amministratore esecutore (audit trail obbligatorio)
+            cancellation_reason: Motivazione cancellazione (audit e notifiche)
+            refund_entry_fees: Flag per future integrazioni di rimborso automatico
+            notify_participants: Flag per attivazione workflow notifiche
 
         Returns:
-            OperationResult with success status and details
+            OperationResult con stato operazione e metadati orchestrazione:
+            - data: parametri cancellazione, stato finale, configurazione workflow
+            - affected_domains: domini per coordinamento successivo
+            - operation_type: TOURNAMENT_CANCELLATION per pipeline processing
+
+        Raises:
+            TransactionError: Se la transazione fallisce durante aggiornamento stato
         """
         from models.orchestration.service import OperationResult, OperationType
 
@@ -1258,7 +1419,6 @@ class GaraService:
         # Change status to cancelled
         gara.status = GaraStatus.CANCELLED.value
         db.session.add(gara)
-        db.session.commit()
 
         return OperationResult.success_result(
             operation_type=OperationType.TOURNAMENT_CANCELLATION,
@@ -1274,9 +1434,27 @@ class GaraService:
             affected_domains=["competition", "notification"],
         )
 
-    # Note: InscriptionService and RoundService have been extracted as separate services
-    # GaraService retains existing methods for backward compatibility
-    # New code should use InscriptionService and RoundService directly
+    # =====================================================================================
+    # ARCHITECTURE NOTES - Service Decomposition (Task 1.2)
+    # =====================================================================================
+    #
+    # InscriptionService and RoundService extracted as separate domain services.
+    # GaraService maintains facade methods for backward compatibility and orchestration.
+    #
+    # **Service Boundaries:**
+    # - GaraService: Core gara lifecycle, state transitions, administrative operations
+    # - InscriptionService: Registration management, waitlist, participant coordination
+    # - RoundService: Round creation, matchmaking strategy coordination, progression
+    #
+    # **Transaction Pattern:**
+    # - All services use @transactional(domain="competition") for consistency
+    # - Cross-service operations coordinate through OperationResult pattern
+    # - Distributed transaction management ensures ACID properties across domains
+    #
+    # **Development Guidelines:**
+    # - New code: Use specific services (InscriptionService, RoundService) directly
+    # - Legacy compatibility: GaraService facade methods remain functional
+    # - Migration: Gradual transition to decomposed services encouraged
 
 
 __all__ = [
