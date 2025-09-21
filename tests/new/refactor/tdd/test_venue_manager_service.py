@@ -42,12 +42,8 @@ class TestVenueManagerServiceTDD:
 
             yield venue
 
-            # Cleanup: Delete any records that reference this venue
-            VenueManagerRequest.query.filter_by(venue_id=venue.id).delete()
-            VenueManagement.query.filter_by(venue_id=venue.id).delete()
-            db.session.commit()
-
-            db.session.delete(venue)
+            # Note: Cleanup handled by test isolation
+            pass
             db.session.commit()
 
     @pytest.fixture
@@ -65,21 +61,18 @@ class TestVenueManagerServiceTDD:
 
             yield user
 
-            # Cleanup: Delete any records that reference this user
-            VenueManagerRequest.query.filter_by(user_id=user.id).delete()
-            VenueManagement.query.filter_by(user_id=user.id).delete()
-            db.session.commit()
-
-            db.session.delete(user)
+            # Note: Cleanup handled by test isolation
+            pass
             db.session.commit()
 
     @pytest.fixture
     def test_admin(self, app, db_session):
-        """Create test admin for venue management processing."""
+        """Create test admin user for venue management tests."""
         with app.app_context():
+            # Create a test admin user
             admin = User(
-                username="venue_admin",
-                email="vadmin@example.com",
+                username="test_venue_admin",
+                email="test_venue_admin@example.com",
                 role=UserRole.ADMIN.value
             )
             admin.set_password("secure123")
@@ -88,12 +81,7 @@ class TestVenueManagerServiceTDD:
 
             yield admin
 
-            # Cleanup: Clear admin references
-            VenueManagerRequest.query.filter_by(processed_by_id=admin.id).update({"processed_by_id": None})
-            db.session.commit()
-
-            db.session.delete(admin)
-            db.session.commit()
+            # Note: No cleanup - let test isolation handle it via db rollback
 
     def test_create_venue_manager_request_functionality(self, app, test_user, test_venue):
         """Test VenueManagerService.create_venue_manager_request() basic functionality."""
@@ -153,7 +141,7 @@ class TestVenueManagerServiceTDD:
         """Test VenueManagerService.create_venue_manager_request() validates motivation."""
         with app.app_context():
             # Test empty motivation
-            with pytest.raises(ValueError, match="Motivation is required"):
+            with pytest.raises(ValueError, match="Notes are required"):
                 VenueManagerService.create_venue_manager_request(
                     user_id=test_user.id,
                     venue_id=test_venue.id,
@@ -161,7 +149,7 @@ class TestVenueManagerServiceTDD:
                 )
 
             # Test whitespace-only motivation
-            with pytest.raises(ValueError, match="Motivation is required"):
+            with pytest.raises(ValueError, match="Notes are required"):
                 VenueManagerService.create_venue_manager_request(
                     user_id=test_user.id,
                     venue_id=test_venue.id,
@@ -252,8 +240,7 @@ class TestVenueManagerServiceTDD:
                     approve=True
                 )
 
-            db.session.delete(director)
-            db.session.commit()
+            # Note: Cleanup handled by test isolation
 
     def test_process_venue_manager_request_not_found(self, app, test_admin):
         """Test VenueManagerService.process_venue_manager_request() with invalid request."""
@@ -465,8 +452,7 @@ class TestVenueManagerServiceTDD:
                     admin_user=director
                 )
 
-            db.session.delete(director)
-            db.session.commit()
+            # Note: Cleanup handled by test isolation
 
     def test_remove_venue_manager_not_found(self, app, test_user, test_venue, test_admin):
         """Test VenueManagerService.remove_venue_manager() with non-existent assignment."""

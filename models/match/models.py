@@ -7,13 +7,13 @@ Dependencies: models.base.db, datetime
 
 from datetime import datetime
 from typing import Optional, Dict, Any, TYPE_CHECKING
-from models.base import db
+from models.base import db, TimestampMixin
 
 if TYPE_CHECKING:
     from .set_models import Set
 
 
-class Match(db.Model):
+class Match(db.Model, TimestampMixin):
     """Core match entity representing a game between players."""
 
     __tablename__ = "match"

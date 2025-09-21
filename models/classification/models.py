@@ -7,11 +7,11 @@ Dependencies: models.base.db, datetime
 """
 
 from datetime import datetime
-from models.base import db
+from models.base import db, TimestampMixin
 from sqlalchemy.orm import backref
 
 
-class Classification(db.Model):
+class Classification(db.Model, TimestampMixin):
     """
     Campionato overall classification tracking.
 
