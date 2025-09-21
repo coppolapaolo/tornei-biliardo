@@ -39,10 +39,11 @@ from models.classification.models import Classification
 from models.campionato.models import Campionato
 
 # Import decomposed services from Task 1.3
-from .profile_service import UserProfileService
-from .permission_service import UserPermissionService
-from .stats_service import UserStatsService
-from .venue_manager_service import VenueManagerService
+# These imports are used for service composition and delegation
+from .profile_service import UserProfileService  # noqa: F401
+from .permission_service import UserPermissionService  # noqa: F401
+from .stats_service import UserStatsService  # noqa: F401
+from .venue_manager_service import VenueManagerService  # noqa: F401
 
 
 class UserServiceCore(DomainService):
@@ -59,7 +60,18 @@ class UserServiceCore(DomainService):
 
 
 class UserService:
-    """Service class for user management operations."""
+    """Service class for user management operations.
+
+    **NOTE**: This service is being refactored as part of Task 1.3 UserService Decomposition.
+    Many methods delegate to specialized services:
+    - UserProfileService: User CRUD and authentication
+    - UserPermissionService: Roles and director requests
+    - UserStatsService: Statistics and analytics
+    - VenueManagerService: Venue management workflow
+
+    **Legacy Support**: This class maintains backward compatibility while the codebase
+    transitions to the decomposed services.
+    """
 
     @staticmethod
     @transactional(domain="user")
@@ -86,7 +98,8 @@ class UserService:
         Raises:
             ValueError: If validation fails or user already exists
         """
-        # Invariante: singolo amministratore attivo
+        # Business constraint: Only one active administrator allowed in the system
+        # This ensures clear governance and security responsibility
         if role == UserRole.ADMIN.value:
             exists_active_admin = (
                 User.query.filter_by(role=UserRole.ADMIN.value)
@@ -283,12 +296,14 @@ class UserService:
         if user.is_admin:
             raise ValueError("Cannot demote admin user")
 
-        # Remove from campionato director roles (per le specifiche: se non ha direttori -> gestito da admin)
+        # Remove from campionato director roles
+        # (per le specifiche: se non ha direttori -> gestito da admin)
         from ..user.models import TournamentDirector
 
         TournamentDirector.query.filter_by(user_id=user_id).delete()
 
-        # Transfer standalone competitions to admin (per le specifiche: se non ha direttori -> gestito da admin)
+        # Transfer standalone competitions to admin
+        # (per le specifiche: se non ha direttori -> gestito da admin)
         from ..competition.models import Gara
 
         standalone_garas = Gara.query.filter_by(director_id=user_id).all()
@@ -600,15 +615,22 @@ class UserService:
 
     @staticmethod
     def authenticate_user(username: str, password: str) -> Optional[User]:
-        """
-        Authenticate user by username and password.
+        """Authenticate user by username and password.
+
+        **NOTE**: This method is maintained for backward compatibility.
+        Consider using UserProfileService.authenticate_user() for new code.
 
         Args:
             username: Username to authenticate
             password: Password to verify
 
         Returns:
-            User if authentication successful, None otherwise
+            Optional[User]: User if authentication successful, None otherwise
+
+        Security:
+            - Case-insensitive username lookup
+            - Secure password hash verification
+            - No detailed error information returned for security
         """
         # Normalize username
         username_normalized = username.strip()
@@ -890,30 +912,6 @@ class DirectorRequestService:
 
         # Transaction managed by @transactional decorator
         return request
-
-
-class UserStatsService:
-    """Service class for user statistics and analytics."""
-
-    @staticmethod
-    def get_user_stats(user_id: int) -> Dict[str, Any]:
-        """
-        Get comprehensive statistics for a user.
-
-        Args:
-            user_id: ID of user
-
-        Returns:
-            Dict containing user statistics
-
-        Raises:
-            ValueError: If user not found
-        """
-        user = db.session.get(User, user_id)
-        if not user:
-            raise ValueError("User not found")
-
-        return user.get_statistics()
 
 
 class UserDeletionService:
@@ -1397,7 +1395,7 @@ class VenueManagementService:
             user_id=assignment.user_id,
             notification_type=NotificationType.ACCOUNT_UPDATE,
             title="Revoca Gestione Sala",
-            message=f"La tua gestione della sala è stata revocata dall'amministratore.",
+            message="La tua gestione della sala è stata revocata dall'amministratore.",
             priority=NotificationPriority.NORMAL,
         )
 
@@ -1460,5 +1458,5 @@ class VenueManagementService:
             return []
 
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids), BilliardHall.is_active == True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active.is_(True)
         ).all()

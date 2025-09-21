@@ -96,7 +96,7 @@ class TestUserPermissionsDetailed:
         # Case 1: Authenticated admin
         mock_user.is_authenticated = True
         mock_user.is_admin = True
-        assert UserPermissions.get_default_dashboard() == "admin.dashboard"
+        assert UserPermissions.get_default_dashboard() == "dashboard.dashboard"
 
         # Case 2: Authenticated non-admin (player)
         mock_user.is_admin = False

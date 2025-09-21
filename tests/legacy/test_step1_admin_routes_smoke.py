@@ -106,7 +106,7 @@ class TestAdminRoutesSmokeTests:
             with app.test_request_context("/"):
                 # Test that URL generation works for all major admin routes
                 urls_to_test = [
-                    ("admin.dashboard.dashboard",),
+                    # ("admin.dashboard.dashboard",), # Removed - admin dashboard now handled by unified dashboard
                     ("admin.campionato.create_campionato",),
                     ("admin.competition.create_gara_standalone",),
                     ("admin.user.users_list",),
@@ -148,7 +148,7 @@ class TestAdminRoutesSmokeTests:
             from routes.admin.competition import competition_bp
             from routes.admin.match import match_bp
             from routes.admin.user import user_bp
-            from routes.admin.dashboard import dashboard_bp
+            # from routes.admin.dashboard import dashboard_bp # Removed - admin dashboard deprecated
 
             # Verify blueprints are properly initialized
             assert admin_bp.name == "admin"
@@ -156,7 +156,7 @@ class TestAdminRoutesSmokeTests:
             assert competition_bp.name == "competition"
             assert match_bp.name == "match"
             assert user_bp.name == "user"
-            assert dashboard_bp.name == "dashboard"
+            # assert dashboard_bp.name == "dashboard" # Removed - admin dashboard deprecated
 
         except ImportError as e:
             pytest.fail(f"Circular import or missing import detected: {e}")

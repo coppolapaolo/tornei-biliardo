@@ -55,7 +55,8 @@ class UserProfileService:
             User: Newly created user instance with hashed password
 
         Raises:
-            ValueError: If validation fails, user already exists, or admin constraint violated
+            ValueError: If validation fails, user already exists, or admin
+                constraint violated
 
         Business Rules:
             - Only one active admin allowed in the system
@@ -129,7 +130,8 @@ class UserProfileService:
             User: Updated user instance
 
         Raises:
-            ValueError: If user not found, admin modification attempted, or validation fails
+            ValueError: If user not found, admin modification attempted, or
+                validation fails
 
         Business Rules:
             - Admin users cannot be modified
@@ -178,7 +180,8 @@ class UserProfileService:
             bool: True if password changed successfully, False if old password incorrect
 
         Raises:
-            ValueError: If user not found, admin modification attempted, or new password invalid
+            ValueError: If user not found, admin modification attempted, or new
+                password invalid
 
         Security Rules:
             - Admin passwords cannot be changed through this method
@@ -260,7 +263,19 @@ class UserProfileService:
     @staticmethod
     @read_only(domain="user")
     def get_user_by_username(username: str) -> Optional[User]:
-        """Get user by username."""
+        """Get user by username with case-insensitive lookup.
+
+        Args:
+            username: Username to search for
+
+        Returns:
+            Optional[User]: User instance if found, None otherwise
+
+        Search Behavior:
+            - Case-insensitive matching (converts to lowercase)
+            - Strips whitespace from input
+            - Returns None for empty/None username
+        """
         if not username:
             return None
         return User.query.filter(
@@ -270,7 +285,21 @@ class UserProfileService:
     @staticmethod
     @read_only(domain="user")
     def get_user_by_email(email: str) -> Optional[User]:
-        """Get user by email."""
+        """Get user by email with encrypted field handling.
+
+        Args:
+            email: Email address to search for
+
+        Returns:
+            Optional[User]: User instance if found, None otherwise
+
+        Implementation Notes:
+            - Handles encrypted email fields by loading all users in memory
+            - Case-insensitive matching (converts to lowercase)
+            - Strips whitespace from input
+            - Less efficient than username lookup due to encryption
+            - Returns None for empty/None email
+        """
         if not email:
             return None
         # For encrypted fields, we need to retrieve all users and filter in Python
@@ -284,13 +313,36 @@ class UserProfileService:
     @staticmethod
     @read_only(domain="user")
     def get_all_users() -> List[User]:
-        """Get all active users."""
+        """Get all active users (excluding soft-deleted users).
+
+        Returns:
+            List[User]: List of all non-deleted users
+
+        Soft Delete Handling:
+            - Filters out users with deleted_at timestamp
+            - Only returns currently active users
+            - Maintains audit trail by keeping deleted users in database
+            - Used for user listings and administrative views
+        """
         return User.query.filter(User.deleted_at.is_(None)).all()
 
     @staticmethod
     @read_only(domain="user")
     def get_users_by_role(role: str) -> List[User]:
-        """Get all users by role."""
+        """Get all active users by role.
+
+        Args:
+            role: User role to filter by ('admin', 'director', 'player')
+
+        Returns:
+            List[User]: List of active users with the specified role
+
+        Role Filtering:
+            - Filters by exact role match
+            - Excludes soft-deleted users
+            - Common roles: 'admin', 'director', 'player'
+            - Used for role-based user management and statistics
+        """
         return User.query.filter_by(role=role).filter(User.deleted_at.is_(None)).all()
 
     @staticmethod
@@ -302,7 +354,8 @@ class UserProfileService:
             user_id: ID of user to retrieve data for
 
         Returns:
-            Dict[str, Any]: Dictionary containing user, inscriptions, matches, and classifications
+            Dict[str, Any]: Dictionary containing user, inscriptions, matches,
+                and classifications
 
         Raises:
             ValueError: If user not found

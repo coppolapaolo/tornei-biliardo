@@ -486,7 +486,6 @@ class PermissionChecker:
         # Route-specific permission mapping
         route_permissions = {
             # Admin-only routes
-            "admin.dashboard": lambda u, **kw: u.is_admin,
             "admin.users_list": lambda u, **kw: u.is_admin,
             "admin.reset_database": lambda u, **kw: u.is_admin,
             "admin.director_requests": lambda u, **kw: u.is_admin,

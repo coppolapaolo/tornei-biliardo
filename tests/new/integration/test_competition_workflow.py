@@ -640,7 +640,7 @@ class TestDashboardWorkflow:
         client.post("/auth/login", data={"username": "admin", "password": "admin123"})
 
         # Access admin dashboard
-        response = client.get("/admin/dashboard")
+        response = client.get("/dashboard")
         assert response.status_code == 200
 
         # Dashboard should be accessible (content check disabled - stub implementation)

@@ -5,7 +5,7 @@ This service extracts user permission management responsibilities from UserServi
 following Task 1.3 decomposition patterns.
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 from models.base import db
 from models.user.models import User, DirectorRequest
 from models.user.role_enum import UserRole
@@ -45,7 +45,8 @@ class UserPermissionService:
             DirectorRequest: Newly created request in pending status
 
         Raises:
-            ValueError: If user not found, already director/admin, has pending request, or notes invalid
+            ValueError: If user not found, already director/admin, has pending
+                request, or notes invalid
 
         Business Rules:
             - Directors and admins cannot request promotion
@@ -134,13 +135,34 @@ class UserPermissionService:
     @staticmethod
     @read_only(domain="user")
     def get_pending_director_requests() -> List[DirectorRequest]:
-        """Get all pending director requests."""
+        """Get all pending director requests for admin review.
+
+        Returns:
+            List[DirectorRequest]: List of director requests awaiting admin processing
+
+        Usage:
+            - Used by admin interface to show pending requests
+            - Filtered to only 'pending' status requests
+            - Ordered by request creation date (implicit database order)
+        """
         return DirectorRequest.query.filter_by(status="pending").all()
 
     @staticmethod
     @read_only(domain="user")
     def get_director_requests_by_user(user_id: int) -> List[DirectorRequest]:
-        """Get all director requests for a specific user."""
+        """Get all director requests for a specific user.
+
+        Args:
+            user_id: ID of user to get requests for
+
+        Returns:
+            List[DirectorRequest]: List of all requests by the user (all statuses)
+
+        Usage:
+            - Shows user's complete request history
+            - Includes pending, approved, and rejected requests
+            - Useful for user profile and request status tracking
+        """
         return DirectorRequest.query.filter_by(user_id=user_id).all()
 
     @staticmethod
@@ -180,7 +202,19 @@ class UserPermissionService:
     @staticmethod
     @read_only(domain="user")
     def is_director_or_admin(user_id: int) -> bool:
-        """Check if user is director or admin."""
+        """Check if user has director or admin privileges.
+
+        Args:
+            user_id: ID of user to check
+
+        Returns:
+            bool: True if user is director or admin, False otherwise
+
+        Permission Levels:
+            - Returns True for both DIRECTOR and ADMIN roles
+            - Returns False for PLAYER role or non-existent users
+            - Used for authorization checks in tournament management
+        """
         user = db.session.get(User, user_id)
         if not user:
             return False
@@ -190,7 +224,20 @@ class UserPermissionService:
     @staticmethod
     @read_only(domain="user")
     def is_admin(user_id: int) -> bool:
-        """Check if user is admin."""
+        """Check if user has admin privileges.
+
+        Args:
+            user_id: ID of user to check
+
+        Returns:
+            bool: True if user is admin, False otherwise
+
+        Admin Privileges:
+            - Only ADMIN role returns True
+            - Directors and players return False
+            - Used for highest-level authorization checks
+            - Required for user management and system configuration
+        """
         user = db.session.get(User, user_id)
         if not user:
             return False
@@ -227,8 +274,8 @@ class UserPermissionService:
             "can_manage_users": user.role == UserRole.ADMIN.value,
             "can_view_admin_panel": user.role == UserRole.ADMIN.value,
             "can_approve_director_requests": user.role == UserRole.ADMIN.value,
-            "can_create_director_request": UserPermissionService.can_create_director_request(
-                user_id
+            "can_create_director_request": (
+                UserPermissionService.can_create_director_request(user_id)
             ),
             "is_director": user.role == UserRole.DIRECTOR.value,
             "is_admin": user.role == UserRole.ADMIN.value,

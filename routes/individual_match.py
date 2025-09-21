@@ -422,7 +422,7 @@ def admin_overview():
         return render_template("individual_match/admin_overview.html", **overview_data)
     except Exception as e:
         flash(f"Error loading admin overview: {str(e)}", "danger")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("dashboard.dashboard"))
 
 
 # Error handlers

@@ -223,7 +223,7 @@ def manage_handicap_rules():
         return render_template("rating/admin_rules.html", **rules_data)
     except Exception as e:
         flash(f"Error loading handicap rules: {str(e)}", "danger")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("dashboard.dashboard"))
 
 
 @rating_bp.route("/admin/rules/create", methods=["POST"])
@@ -313,7 +313,7 @@ def rating_statistics():
             return jsonify({"success": False, "error": error_msg}), 400
         else:
             flash(error_msg, "danger")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("dashboard.dashboard"))
 
 
 @rating_bp.route("/leaderboard")

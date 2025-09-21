@@ -151,7 +151,7 @@ class TestUserPermissionsImplementation:
             # Admin
             mock_user.is_authenticated = True
             mock_user.is_admin = True
-            assert UserPermissions.get_default_dashboard() == "admin.dashboard"
+            assert UserPermissions.get_default_dashboard() == "dashboard.dashboard"
 
             # Player
             mock_user.is_admin = False
@@ -185,7 +185,7 @@ class TestPlayerOnlyDecorator:
             result = test_function()
             assert result == "redirect_response"
             mock_flash.assert_called_once()
-            mock_url_for.assert_called_once_with("admin.dashboard")
+            mock_url_for.assert_called_once_with("dashboard.dashboard")
 
     def test_player_only_allows_non_admin(self):
         """Test player_only allows non-admin access."""

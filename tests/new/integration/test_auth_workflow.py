@@ -198,8 +198,8 @@ class TestAuthenticationRoutes:
         # Login as admin
         client.post("/auth/login", data={"username": "admin", "password": "admin123"})
 
-        # Test access to admin dashboard
-        response = client.get("/admin/dashboard")
+        # Test access to unified dashboard (admin will see admin content)
+        response = client.get("/dashboard")
         assert response.status_code == 200
 
     def test_director_access_after_login(self, client, db_session):
@@ -234,14 +234,14 @@ class TestAuthenticationRoutes:
         # Login as player
         client.post("/auth/login", data={"username": "player", "password": "player123"})
 
-        # Test cannot access admin dashboard
-        response = client.get("/admin/dashboard")
-        assert response.status_code == 403  # Forbidden
+        # Test unified dashboard shows player content for players
+        response = client.get("/dashboard")
+        assert response.status_code == 200  # Players can access dashboard
 
     def test_unauthenticated_user_redirected_to_login(self, client, db_session):
         """Test unauthenticated user gets 403 for protected routes."""
         # Test access to protected route without login
-        response = client.get("/admin/dashboard")
+        response = client.get("/admin/users")
         assert (
             response.status_code == 403
         )  # Forbidden - correct behavior for admin_required decorator

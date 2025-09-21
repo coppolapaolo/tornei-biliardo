@@ -509,7 +509,7 @@ class TestUserWorkflowsComplete:
             sess["_user_id"] = str(admin_user.id)
             sess["_fresh"] = True
 
-        response = client.get("/admin/")
+        response = client.get("/dashboard")
         assert response.status_code == 200
         admin_dashboard = response.data.decode("utf-8")
 

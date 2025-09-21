@@ -521,10 +521,7 @@ class TestPermissionChecker:
         db_session.add_all([admin, director, player])
         db_session.commit()
 
-        # Test admin routes
-        assert PermissionChecker.can_access_route(admin, "admin.dashboard") is True
-        assert PermissionChecker.can_access_route(director, "admin.dashboard") is False
-        assert PermissionChecker.can_access_route(player, "admin.dashboard") is False
+        # Test admin routes (admin.dashboard removed - now handled by unified dashboard)
 
         # Test user management routes
         assert PermissionChecker.can_access_route(admin, "admin.users_list") is True

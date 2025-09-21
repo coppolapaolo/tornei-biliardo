@@ -48,7 +48,8 @@ class VenueManagerService:
             VenueManagerRequest: Newly created request in pending status
 
         Raises:
-            ValueError: If user/venue not found, pending request exists, or motivation invalid
+            ValueError: If user/venue not found, pending request exists, or
+                motivation invalid
 
         Business Rules:
             - One pending request per user-venue pair
@@ -67,6 +68,7 @@ class VenueManagerService:
             raise ValueError("Venue not found")
 
         # Check for existing pending request
+        # Ensures only one pending request per user-venue pair at a time
         existing_request = VenueManagerRequest.query.filter_by(
             user_id=user_id, venue_id=venue_id, status="pending"
         ).first()
@@ -130,6 +132,7 @@ class VenueManagerService:
             request.notes = notes
 
             # Create venue management relationship upon approval
+            # This grants the user management privileges for the venue
             venue_management = VenueManagement(
                 user_id=request.user_id, venue_id=request.venue_id
             )

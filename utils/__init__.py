@@ -157,7 +157,7 @@ class UserPermissions:
     @staticmethod
     def get_default_dashboard():
         if current_user.is_authenticated:
-            return "admin.dashboard" if current_user.is_admin else "player.dashboard"
+            return "dashboard.dashboard" if current_user.is_admin else "player.dashboard"
         return "main.index"
 
 
@@ -175,7 +175,7 @@ def player_only(f):
                 "Utilizzare la dashboard amministratore.",
                 "warning",
             )
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("dashboard.dashboard"))
         return f(*args, **kwargs)
 
     return decorated_function

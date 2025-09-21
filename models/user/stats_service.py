@@ -5,9 +5,9 @@ This service extracts user statistics responsibilities from UserService
 following Task 1.3 decomposition patterns.
 """
 
-from typing import Optional, List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple
 from sqlalchemy.engine.row import Row
-from sqlalchemy import func, desc
+from sqlalchemy import func
 from models.base import db
 from models.user.models import User
 from models.transaction.manager import read_only
@@ -127,6 +127,7 @@ class UserStatsService:
         from models.status_enum import MatchStatus
 
         # Efficient single-query aggregation with outer joins to include all users
+        # Uses LEFT OUTER JOINs to ensure users without matches/inscriptions are included
         users_with_stats = (
             db.session.query(
                 User,
@@ -140,8 +141,8 @@ class UserStatsService:
                 Match,
                 db.and_(
                     db.or_(Match.player1_id == User.id, Match.player2_id == User.id),
-                    Match.status == MatchStatus.COMPLETED.value
-                )
+                    Match.status == MatchStatus.COMPLETED.value,
+                ),
             )
             .outerjoin(Inscription, Inscription.user_id == User.id)
             .group_by(User.id)
