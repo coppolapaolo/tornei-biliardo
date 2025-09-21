@@ -134,7 +134,9 @@ class VenueManagerService:
             # Create venue management relationship upon approval
             # This grants the user management privileges for the venue
             venue_management = VenueManagement(
-                user_id=request.user_id, venue_id=request.venue_id
+                user_id=request.user_id,
+                venue_id=request.venue_id,
+                assigned_by_id=admin_user.id
             )
             db.session.add(venue_management)
         else:
