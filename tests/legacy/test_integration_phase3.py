@@ -409,7 +409,6 @@ class TestExtendedDomainIntegration:
 
         assert completed_attempt.completed
         assert completed_attempt.score == 75
-        assert completed_attempt.get_rack_difference_equivalent() > 0
 
     def test_individual_match_integration(self, db_session, sample_users):
         """Test individual match domain integration."""

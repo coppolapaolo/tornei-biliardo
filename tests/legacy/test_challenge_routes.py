@@ -294,7 +294,6 @@ class TestChallengeRoutes:
 
             mock_completed_attempt = MagicMock()
             mock_completed_attempt.score = 85
-            mock_completed_attempt.get_rack_difference_equivalent.return_value = 2
             mock_service.complete_x_replacement_attempt.return_value = (
                 mock_completed_attempt
             )
