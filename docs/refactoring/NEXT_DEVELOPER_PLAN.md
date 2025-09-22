@@ -13,20 +13,27 @@
   - 133 test TDD passano tutti ✅
   - Backward compatibility mantenuta
 
+- **Transaction Migration**: 39.5% progresso - Pattern @transactional stabilito
+  - ✅ **MatchServices**: 13/14 commits migrated (1 excluded per custom logic)
+  - ✅ **ExamServices**: 10/10 commits migrated
+  - ✅ **PlayoffServices**: 9/9 commits migrated
+  - 70 total commit calls migrated su 177 (39.5%)
+  - Pattern documentato e test stabilizzati
+
 ### 🎯 Priorità Strategiche (Ordine di Impatto)
 
 ## 🥇 **PRIORITÀ 1: Transaction Migration (Raccomandato)**
 
 ### Perché questa priorità?
-1. **Alto Impatto Architetturale**: 139 commit calls in 32 file
+1. **Alto Impatto Architetturale**: 107 commit calls rimanenti in 30 file
 2. **Fondamenta Solide**: Pattern @transactional già testato e funzionante
 3. **Riduzione Rischio**: Eliminare transazioni manuali inconsistenti
 4. **Preparazione**: Facilita tutti i refactoring successivi
 
-### File High-Priority (33 commit calls totali)
-1. **models/match/services.py**: 14 commits (790 linee)
-2. **models/exam/services.py**: 10 commits (281 linee)
-3. **models/playoff/services.py**: 9 commits (393 linee)
+### File High-Priority Rimanenti (24 commit calls totali)
+1. **routes/player.py**: 9 commits (nuovo highest priority)
+2. **models/base.py**: 8 commits
+3. **models/campionato/services.py**: 7 commits
 
 ### Approccio Strategico
 **Stima Tempo**: 4-6 ore per i 3 file priority

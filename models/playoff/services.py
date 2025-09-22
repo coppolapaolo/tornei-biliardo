@@ -17,12 +17,14 @@ from .models import (
     PlayoffType,
     QualificationStatus,
 )
+from ..transaction.manager import transactional
 
 
 class PlayoffService:
     """Service for playoff management and business logic."""
 
     @staticmethod
+    @transactional(domain="playoff")
     def create_playoff_configuration(
         campionato_id: int,
         name: str,
@@ -54,7 +56,6 @@ class PlayoffService:
         configuration.set_qualification_criteria(qualification_criteria)
 
         db.session.add(configuration)
-        db.session.commit()
         return configuration
 
     @staticmethod
@@ -115,6 +116,7 @@ class PlayoffService:
         return results
 
     @staticmethod
+    @transactional(domain="playoff")
     def notify_qualified_players(configuration_id: int) -> int:
         """Send notifications to qualified players."""
         qualifications = PlayoffQualification.query.filter_by(
@@ -130,10 +132,10 @@ class PlayoffService:
             qualification.notified_at = datetime.utcnow()
             count += 1
 
-        db.session.commit()
         return count
 
     @staticmethod
+    @transactional(domain="playoff")
     def confirm_qualification(
         qualification_id: int, user_id: int
     ) -> PlayoffQualification:
@@ -143,7 +145,6 @@ class PlayoffService:
         ).first_or_404()
 
         qualification.confirm_participation()
-        db.session.commit()
 
         # Check if we can start the playoff campionato
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
@@ -151,6 +152,7 @@ class PlayoffService:
         return qualification
 
     @staticmethod
+    @transactional(domain="playoff")
     def decline_qualification(
         qualification_id: int, user_id: int
     ) -> Optional[PlayoffQualification]:
@@ -160,7 +162,6 @@ class PlayoffService:
         ).first_or_404()
 
         replacement = qualification.decline_participation()
-        db.session.commit()
 
         # Notify replacement if found
         if replacement:
@@ -169,6 +170,7 @@ class PlayoffService:
         return replacement
 
     @staticmethod
+    @transactional(domain="playoff")
     def find_replacement_player(
         configuration_id: int,
     ) -> Optional[PlayoffQualification]:
@@ -204,12 +206,12 @@ class PlayoffService:
                     qualification_reason=f"Replacement - {player_data['qualification_reason']}",
                 )
                 db.session.add(replacement)
-                db.session.commit()
                 return replacement
 
         return None
 
     @staticmethod
+    @transactional(domain="playoff")
     def expire_old_qualifications() -> int:
         """Expire qualifications that have passed their deadline."""
         expired_count = 0
@@ -233,10 +235,10 @@ class PlayoffService:
                 if replacement:
                     PlayoffService.notify_qualified_players(config.id)
 
-        db.session.commit()
         return expired_count
 
     @staticmethod
+    @transactional(domain="playoff")
     def create_playoff_campionato(configuration_id: int) -> PlayoffTournament:
         """Create the actual playoff campionato."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
@@ -264,11 +266,11 @@ class PlayoffService:
         )
 
         db.session.add(campionato)
-        db.session.commit()
 
         return campionato
 
     @staticmethod
+    @transactional(domain="playoff")
     def start_playoff_registration(campionato_id: int) -> PlayoffTournament:
         """Start registration for a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
@@ -277,7 +279,6 @@ class PlayoffService:
 
             abort(404)
         campionato.start_registration()
-        db.session.commit()
 
         return campionato
 
@@ -358,6 +359,7 @@ class PlayoffService:
             PlayoffService.create_playoff_campionato(configuration_id)
 
     @staticmethod
+    @transactional(domain="playoff")
     def complete_playoff_campionato(
         campionato_id: int, winner_id: Optional[int] = None
     ) -> PlayoffTournament:
@@ -368,7 +370,6 @@ class PlayoffService:
 
             abort(404)
         campionato.complete_campionato(winner_id)
-        db.session.commit()
 
         return campionato
 

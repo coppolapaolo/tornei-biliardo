@@ -11,12 +11,14 @@ from sqlalchemy import text
 
 from ..base import db
 from .models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from ..transaction.manager import transactional
 
 
 class ExamService:
     """Service for exam management and business logic."""
 
     @staticmethod
+    @transactional(domain="exam")
     def create_exam(
         name: str,
         director_id: int,
@@ -41,10 +43,10 @@ class ExamService:
         exam.set_grading_criteria(grading_criteria)
 
         db.session.add(exam)
-        db.session.commit()
         return exam
 
     @staticmethod
+    @transactional(domain="exam")
     def add_challenge_to_exam(
         exam_id: int,
         challenge_id: int,
@@ -72,10 +74,10 @@ class ExamService:
         )
 
         db.session.add(exam_challenge)
-        db.session.commit()
         return exam_challenge
 
     @staticmethod
+    @transactional(domain="exam")
     def remove_challenge_from_exam(exam_id: int, challenge_id: int) -> None:
         """Remove a challenge from an exam."""
         exam_challenge = ExamChallenge.query.filter_by(
@@ -83,9 +85,9 @@ class ExamService:
         ).first_or_404()
 
         db.session.delete(exam_challenge)
-        db.session.commit()
 
     @staticmethod
+    @transactional(domain="exam")
     def reorder_exam_challenges(
         exam_id: int, challenge_orders: List[Dict[str, int]]
     ) -> None:
@@ -103,8 +105,6 @@ class ExamService:
             if exam_challenge:
                 exam_challenge.order = item["order"]
 
-        db.session.commit()
-
     @staticmethod
     def get_director_exams(director_id: int) -> List[Exam]:
         """Get all exams created by a director."""
@@ -116,6 +116,7 @@ class ExamService:
         return Exam.query.filter_by(is_active=True).all()
 
     @staticmethod
+    @transactional(domain="exam")
     def start_exam_attempt(user_id: int, exam_id: int) -> ExamAttempt:
         """Start a new exam attempt for a user."""
         # Check if user already has an active attempt
@@ -134,11 +135,11 @@ class ExamService:
 
         # Initialize challenge results
         attempt.start_exam()
-        db.session.commit()
 
         return attempt
 
     @staticmethod
+    @transactional(domain="exam")
     def complete_exam_challenge(
         exam_attempt_id: int,
         exam_challenge_id: int,
@@ -152,7 +153,6 @@ class ExamService:
         ).first_or_404()
 
         result.complete_challenge(score=score, passed=passed, notes=notes)
-        db.session.commit()
 
         # Check if all challenges are completed
         attempt = db.session.get(ExamAttempt, exam_attempt_id)
@@ -164,11 +164,11 @@ class ExamService:
 
         if progress["is_complete"] and not attempt.completed:
             attempt.complete_exam()
-            db.session.commit()
 
         return result
 
     @staticmethod
+    @transactional(domain="exam")
     def complete_exam_attempt(
         exam_attempt_id: int, notes: Optional[str] = None
     ) -> ExamAttempt:
@@ -181,7 +181,6 @@ class ExamService:
 
         if not attempt.completed:
             attempt.complete_exam(notes=notes)
-            db.session.commit()
 
         return attempt
 
@@ -233,6 +232,7 @@ class ExamService:
         }
 
     @staticmethod
+    @transactional(domain="exam")
     def update_exam(
         exam_id: int,
         name: Optional[str] = None,
@@ -259,10 +259,10 @@ class ExamService:
         if is_active is not None:
             exam.is_active = is_active
 
-        db.session.commit()
         return exam
 
     @staticmethod
+    @transactional(domain="exam")
     def delete_exam(exam_id: int) -> None:
         """Delete an exam (soft delete by marking inactive)."""
         exam = db.session.get(Exam, exam_id)
@@ -271,7 +271,6 @@ class ExamService:
 
             abort(404)
         exam.is_active = False
-        db.session.commit()
 
     @staticmethod
     def can_user_take_exam(user_id: int, exam_id: int) -> bool:

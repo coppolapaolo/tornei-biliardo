@@ -3,7 +3,7 @@
 ## Overall Status: 🔴 Phase 1 - Stabilization Starting (Transaction Migration Priority)
 
 ### Phase 1: Stabilizzazione Core 🔄
-- [ ] Task 1.1: Transaction Management (21.5% complete - 139/177 commit calls) 🟡
+- [ ] Task 1.1: Transaction Management (39.5% complete - 107/177 commit calls) 🟡
   - [x] Analyze current transaction patterns (177 commit calls in models+routes+utils) ✅
   - [x] Leverage existing TransactionManager with @transactional decorator ✅
   - [x] Migrate InscriptionService (4/4 commit calls) ✅
@@ -14,12 +14,18 @@
     - [x] Phase 1: Core Proposal Lifecycle (5 methods) ✅
     - [x] Phase 2: Match Execution Lifecycle (5 methods) ✅
     - [x] Phase 3: Utility/Batch/Availability (4 methods) ✅
-  - [ ] Migrate other high-impact services (139 commit calls remaining) ⏳
-    - [ ] models/match/services.py (14 commits - highest priority)
-    - [ ] models/exam/services.py (10 commits)
-    - [ ] models/playoff/services.py (9 commits)
-    - [ ] routes/player.py (9 commits)
+  - [x] Migrate MatchServices (13/14 commit calls - MOSTLY COMPLETED) ✅
+    - [x] MatchService: 5/5 methods with @transactional ✅
+    - [x] RackService: 7/7 methods with @transactional ✅
+    - [x] MatchResultService: 2/2 methods with @transactional ✅
+    - [x] **EXCLUDED**: reset_to_pending() - documented custom transaction logic ✅
+  - [x] Migrate ExamServices (10/10 commit calls - FULLY COMPLETED) ✅
+  - [x] Migrate PlayoffServices (9/9 commit calls - FULLY COMPLETED) ✅
+  - [ ] Migrate other high-impact services (107 commit calls remaining) ⏳
+    - [ ] routes/player.py (9 commits - highest priority)
     - [ ] models/base.py (8 commits)
+    - [ ] models/campionato/services.py (7 commits)
+    - [ ] routes/admin/competitions.py (6 commits)
 - [ ] Task 1.2: Decompose GaraService (24.1% complete - 1286/1695 lines) 🟡
   - [x] Create characterization tests for current GaraService behavior ✅
   - [x] Extract StateService (ProvaStateMachine methods) ✅
@@ -78,11 +84,13 @@
   - [ ] Consolidate template duplications ⏳
 
 ## 📋 Current Context (REAL STATE - September 2025)
-- **Overall Progress**: 🟡 Phase 1 Stabilization - UserService facade implemented successfully
+- **Overall Progress**: 🟡 Phase 1 Stabilization - Transaction Migration in progress
 - **✅ COMPLETED**: UserService Facade Pattern (20.6% - 141 lines removed, 133 tests passing)
-- **🎯 NEXT PRIORITY**: Transaction Migration (21.5% - 139 commits remaining)
-  - **High Impact Files**: models/match/services.py (14), models/exam/services.py (10), models/playoff/services.py (9)
-  - **Estimated Effort**: 4-6 hours for high-priority files (33 commits total)
+- **✅ COMPLETED**: MatchServices Transaction Migration (13/14 commits - 1 excluded for custom logic)
+- **✅ COMPLETED**: ExamServices + PlayoffServices Transaction Migration (19/19 commits)
+- **🎯 NEXT PRIORITY**: Transaction Migration (39.5% - 107 commits remaining)
+  - **High Impact Files**: routes/player.py (9), models/base.py (8), models/campionato/services.py (7)
+  - **Estimated Effort**: 2-3 hours for high-priority files (24 commits total)
   - **ROI**: High - pattern established, foundational improvement
 - **Future**: GaraService Decomposition (24.1% - 1286 lines remaining)
 - **Achievement**: UserService decomposition with working facade pattern and complete test coverage
@@ -102,7 +110,7 @@
   - [x] Achieved: 36.5% reduction, 1139 lines remaining ✅
 
 ## 📊 Baseline Metrics (Script Analysis - September 2025)
-- **Direct db.session.commit() calls**: 177 identified → 139 remaining (38 migrated via @transactional, 21.5% progress)
+- **Direct db.session.commit() calls**: 177 identified → 107 remaining (70 migrated via @transactional, 39.5% progress)
   - InscriptionService: 4/4 calls migrated ✅
   - IndividualMatchServices: 17/17 calls migrated (FULLY COMPLETED) ✅
     - Phase 1: Core Proposal Lifecycle (5 methods) ✅
@@ -117,7 +125,14 @@
   - UserDeletionService: 1/1 calls migrated ✅
   - VenueManagerRequestService: 3/3 calls migrated ✅
   - VenueManagementService: 2/2 calls migrated ✅
-  - Target: Migrate all 177 calls to @transactional pattern
+  - MatchServices: 13/14 calls migrated (MOSTLY COMPLETED) ✅
+    - MatchService: 5/5 methods migrated ✅
+    - RackService: 7/7 methods migrated ✅
+    - MatchResultService: 2/2 methods migrated ✅
+    - ⚠️ **EXCLUDED**: `reset_to_pending()` - custom transaction logic with OperationResult pattern
+  - ExamServices: 10/10 calls migrated (FULLY COMPLETED) ✅
+  - PlayoffServices: 9/9 calls migrated (FULLY COMPLETED) ✅
+  - Target: Migrate all 177 calls to @transactional pattern (excluding special cases)
 - **GaraService lines**: 1695 baseline → 1286 current (target: <500, 24.1% progress)
 - **UserService lines**: 1464 baseline → 1163 current (target: <500, 20.6% progress)
   - **Achieved**: 4 services extracted (1374 total lines) + facade pattern implemented with 141 lines delegated

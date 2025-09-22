@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 from models.base import db
 from models.status_enum import MatchStatus
 from .models import Match, Rack, TrioMatch
-
+from models.transaction.manager import transactional
 
 from models.exceptions import InvalidTransitionError
 
@@ -31,6 +31,7 @@ class MatchService:
     # CREAZIONE / QUERY DI SUPPORTO
     # -----------------------------
     @staticmethod
+    @transactional(domain="match")
     def create_match(
         gara_id: int,
         round_number: int,
@@ -56,7 +57,6 @@ class MatchService:
             match_distance=gara.distance,
         )
         db.session.add(match)
-        db.session.commit()
         return match
 
     @staticmethod
@@ -64,6 +64,7 @@ class MatchService:
         return Match.query.filter_by(gara_id=gara_id).all()
 
     @staticmethod
+    @transactional(domain="match")
     def create_trio_match(match_id: int, player3_id: int) -> TrioMatch:
         """Crea l'entità TrioMatch e marca il match come trio (compat)."""
         trio = TrioMatch(match_id=match_id, waiting_player_id=player3_id)
@@ -72,13 +73,13 @@ class MatchService:
         if match is not None:
             match.is_trio = True  # compat con modello esistente
             db.session.add(match)
-        db.session.commit()
         return trio
 
     # -----------------------------
     # STATE MACHINE FACADE
     # -----------------------------
     @staticmethod
+    @transactional(domain="match")
     def to_playing(match_id: int) -> Match:
         """pending/completed → playing
         (riapertura consentita in flussi admin o dopo rimozione rack)"""
@@ -94,10 +95,10 @@ class MatchService:
             )
         match.status = MatchStatus.PLAYING.value
         db.session.add(match)
-        db.session.commit()
         return match
 
     @staticmethod
+    @transactional(domain="match")
     def to_completed(match_id: int) -> Match:
         """playing → completed (consente anche pending →
         completed per amministratore)."""
@@ -110,7 +111,6 @@ class MatchService:
             )
         match.status = MatchStatus.COMPLETED.value
         db.session.add(match)
-        db.session.commit()
         return match
 
     @staticmethod
@@ -119,6 +119,11 @@ class MatchService:
     ) -> "OperationResult":
         """Qualsiasi → pending. Opzione per azzerare flag di validazione admin.
         Non rimuove i rack (responsabilità di RackService).
+
+        NOTE: This method is intentionally NOT decorated with @transactional
+        because it implements custom transaction management with explicit
+        rollback handling and OperationResult error reporting pattern.
+        Migration to @transactional would require changing the interface.
         """
         from ..orchestration.service import OperationResult, OperationType
         from .models import Rack
@@ -255,6 +260,7 @@ class MatchService:
             )
 
     @staticmethod
+    @transactional(domain="match")
     def admin_unlock_match(
         match_id: int,
         admin_id: int,
@@ -289,7 +295,6 @@ class MatchService:
         match.is_locked = False
         match.round_locked = False
         db.session.add(match)
-        db.session.commit()
 
         return OperationResult.success_result(
             operation_type=OperationType.RESULT_PROCESSING,
@@ -424,6 +429,7 @@ class RackService:
     """Service per gestione rack con business logic completa."""
 
     @staticmethod
+    @transactional(domain="match")
     def add_rack_result(
         match_id: int,
         rack_number: int,
@@ -460,10 +466,10 @@ class RackService:
 
             db.session.add(match)
 
-        db.session.commit()
         return rack
 
     @staticmethod
+    @transactional(domain="match")
     def add_rack_with_score_update(
         match_id: int,
         winner_id: int,
@@ -545,8 +551,6 @@ class RackService:
 
             MatchResultService.submit_result(match.id, final_winner_id)
 
-        db.session.commit()
-
         return {
             "success": True,
             "player1_score": match.player1_score,
@@ -555,6 +559,7 @@ class RackService:
         }
 
     @staticmethod
+    @transactional(domain="match")
     def set_match_result_direct(
         match_id: int, player1_score: int, player2_score: int
     ) -> None:
@@ -633,6 +638,7 @@ class RackService:
             MatchService.to_completed(match.id)
 
     @staticmethod
+    @transactional(domain="match")
     def reset_match_complete(match_id: int) -> None:
         """Reset completo di una partita eliminando tutti i rack."""
         match = db.session.get(Match, match_id)
@@ -657,9 +663,8 @@ class RackService:
 
         MatchService.reset_to_pending(match.id, clear_validation=True)
 
-        db.session.commit()
-
     @staticmethod
+    @transactional(domain="match")
     def remove_rack_admin(rack_id: int) -> dict:
         """Rimuove un rack e aggiorna il punteggio del match (admin).
 
@@ -698,8 +703,6 @@ class RackService:
                     MatchService.to_playing(match.id)
                     match.winner_id = None
 
-        db.session.commit()
-
         return {
             "success": True,
             "message": "Rack rimosso (Admin)",
@@ -709,6 +712,7 @@ class RackService:
         }
 
     @staticmethod
+    @transactional(domain="match")
     def validate_rack_admin(rack_id: int) -> None:
         """Valida un rack (admin)."""
         rack = db.session.get(Rack, rack_id)
@@ -723,9 +727,8 @@ class RackService:
             True  # Automaticamente confermato se validato dall'admin
         )
 
-        db.session.commit()
-
     @staticmethod
+    @transactional(domain="match")
     def remove_last_rack(match_id: int) -> Optional[Rack]:
         last = (
             Rack.query.filter_by(match_id=match_id)
@@ -734,7 +737,6 @@ class RackService:
         )
         if last:
             db.session.delete(last)
-            db.session.commit()
         return last
 
 
@@ -742,6 +744,7 @@ class MatchResultService:
     """Placeholder per gestione risultati/validazioni match."""
 
     @staticmethod
+    @transactional(domain="match")
     def validate_by_admin(match_id: int) -> Match:
         match = db.session.get(Match, match_id)
         if not match:
@@ -749,10 +752,10 @@ class MatchResultService:
         if hasattr(match, "validated_by_admin"):
             match.validated_by_admin = True
             db.session.add(match)
-            db.session.commit()
         return match
 
     @staticmethod
+    @transactional(domain="match")
     def submit_result(match_id: int, winner_id: int) -> Match:
         """
         Imposta il vincitore del match e porta lo stato a 'completed'
@@ -767,10 +770,9 @@ class MatchResultService:
         if winner_id not in (match.player1_id, match.player2_id):
             raise ValueError("winner_id non appartiene ai giocatori del match")
 
-        # set vincitore e commit prima della transizione
+        # set vincitore
         match.winner_id = winner_id
         db.session.add(match)
-        db.session.commit()
 
         # transizione centralizzata
         # import locale per evitare cicli
