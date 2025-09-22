@@ -21,22 +21,16 @@ from models import (
 from models.status_enum import (
     MatchStatus,
     GaraStatus,
-    DirectorRequestStatus,
 )
 from models.campionato.models import Campionato
-from models.classification.models import Classification
-from models.user.models import DirectorRequest
 from models.notification.services import NotificationService
 from models.notification.models import NotificationType, NotificationPriority
 from models.user.services import (
     UserDeletionService,
     UserService,
-    VenueManagerRequestService,
-    VenueManagementService,
 )
 from models.user.permission_service import UserPermissionService
 from models.transaction.manager import transactional
-from models.user.models import VenueManagerRequest
 from utils import (
     player_only,
     player_required,
@@ -79,14 +73,15 @@ def _handle_venue_creation_player(location: str) -> str:
 
     # Create new non-verified venue
     try:
-        new_venue = LocationService.create_billiard_hall(
+        LocationService.create_billiard_hall(
             name=location,
             added_by_id=current_user.id,
             # Set as non-verified (verified=False is default)
             # Note: number_of_tables is None, so it cannot be verified yet
         )
         flash(
-            f"Nuovo luogo '{location}' aggiunto. Per la verifica serve anche il numero di tavoli.",
+            f"Nuovo luogo '{location}' aggiunto. "
+            "Per la verifica serve anche il numero di tavoli.",
             "info",
         )
     except Exception as e:
@@ -206,7 +201,6 @@ def create_match_proposal():
 def accept_match_proposal(proposal_id):
     """Accept a match proposal"""
     from models.individual_match.models import (
-        MatchProposal,
         ProposalInvitation,
         InvitationStatus,
         ProposalStatus,
@@ -392,7 +386,8 @@ def gara_detail(gara_id):
         # Utente non iscritto: nessuna partita personale
         matches = []
 
-    # Per gli utenti non iscritti, recupera tutte le partite per mostrare l'andamento della gara
+    # Per gli utenti non iscritti, recupera tutte le partite
+    # per mostrare l'andamento della gara
     all_matches = None
     if not inscription:
         all_matches = (
@@ -540,7 +535,8 @@ def inscribe_to_gara(gara_id):
     if inscription:
         if inscription.is_waitlist:
             flash(
-                f"Aggiunto alla lista d'attesa per Gara {gara.number} (posizione {inscription.waitlist_position})!"
+                f"Aggiunto alla lista d'attesa per Gara {gara.number} "
+                f"(posizione {inscription.waitlist_position})!"
             )
         else:
             flash(f"Iscrizione alla Gara {gara.number} completata!")
@@ -575,7 +571,7 @@ def match_detail(match_id):
             db.session.query(GaraChallenge)
             .filter(
                 GaraChallenge.gara_id == match.gara_id,
-                GaraChallenge.is_active == True,
+                GaraChallenge.is_active.is_(True),
             )
             .options(joinedload(GaraChallenge.challenge))  # type: ignore[arg-type]
             .all()
@@ -674,6 +670,7 @@ def add_rack(match_id):
 @player_only
 def profile():
     """Profilo personale del giocatore"""
+    from models.classification.models import Classification
 
     # Iscrizioni dell'utente (incluse gare standalone)
     inscriptions = (
@@ -753,7 +750,9 @@ def profile():
             )
             .join(GaraChallenge)
             .join(Challenge)
-            .order_by(GaraChallengeAttempt.attempted_at.desc())  # type: ignore[attr-defined]
+            .order_by(
+                GaraChallengeAttempt.attempted_at.desc()  # type: ignore[reportAttributeAccessIssue]
+            )
             .all()
         )
 
@@ -809,7 +808,9 @@ def profile():
             for attempt in user_attempts[:20]:
                 challenge_history.append(
                     {
-                        "challenge_name": attempt.gara_challenge.challenge.get_display_name(),
+                        "challenge_name": (
+                            attempt.gara_challenge.challenge.get_display_name()
+                        ),
                         "gara_name": attempt.gara_challenge.gara.name,
                         "score": attempt.score,
                         "passed": attempt.passed,
@@ -819,7 +820,7 @@ def profile():
                     }
                 )
 
-    except Exception as e:
+    except Exception:
         # If challenge module is not available or there's an error, just skip
         pass
 
@@ -852,7 +853,6 @@ def view_profile(user_id):
     from models.competition.models import Gara, Inscription
     from models.match.models import Match
     from models.status_enum import MatchStatus
-    from models.classification.models import Classification
     from models.campionato.models import Campionato
     from models.challenge.models import Challenge, ChallengeAttempt
 
@@ -1093,7 +1093,8 @@ def mark_notification_read(notification_id):
 # ────────────────────────────────────────────────────────────────────────────────
 # VENUE MANAGER REQUESTS (venue listing moved to unified admin.venue controller)
 # ────────────────────────────────────────────────────────────────────────────────
-# NOTE: Main venue listing and details now handled by admin.venue.venues_list() and admin.venue.venue_detail()
+# NOTE: Main venue listing and details now handled by admin.venue.venues_list()
+# and admin.venue.venue_detail()
 # with role-based content negotiation pattern
 
 
@@ -1103,7 +1104,8 @@ def request_venue_manager():
     """Richiesta per diventare gestore di una sala specifica"""
     if current_user.is_admin:
         flash(
-            "Gli amministratori non hanno bisogno di richiedere il ruolo di gestore sala.",
+            "Gli amministratori non hanno bisogno di richiedere "
+            "il ruolo di gestore sala.",
             "info",
         )
         return redirect(url_for("admin.venue.venues_list"))
@@ -1129,7 +1131,10 @@ def request_venue_manager():
 
         flash_message = f"Richiesta per gestire '{venue.name}' inviata con successo!"
         if new_request.is_contested:
-            flash_message += " Nota: questa sala ha già un gestore, l'admin valuterà la tua richiesta."
+            flash_message += (
+                " Nota: questa sala ha già un gestore, "
+                "l'admin valuterà la tua richiesta."
+            )
         flash(flash_message, "success")
 
     except ValueError as e:
@@ -1433,7 +1438,8 @@ def set_location_availability():
             )
             if notifications_sent > 0:
                 flash(
-                    f"Notificati {notifications_sent} giocatori della tua disponibilità",
+                    f"Notificati {notifications_sent} giocatori "
+                    "della tua disponibilità",
                     "info",
                 )
 
@@ -1519,7 +1525,7 @@ def discover_available_players():
         locations = (
             db.session.query(PlayerAvailability.location)
             .filter(
-                PlayerAvailability.is_available == True,
+                PlayerAvailability.is_available.is_(True),
                 PlayerAvailability.user_id != current_user.id,
             )
             .distinct()
@@ -1540,7 +1546,7 @@ def discover_available_players():
             )
             .join(BilliardHall)
             .filter(
-                UserLocationAvailability.is_available == True,
+                UserLocationAvailability.is_available.is_(True),
                 UserLocationAvailability.user_id != current_user.id,
             )
             .distinct()
@@ -1571,7 +1577,7 @@ def discover_available_players():
 def request_availability_match(target_user_id):
     """Request a match with an available player"""
     from models.individual_match.availability_service import AvailabilityService
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     location = request.form.get("location", "").strip()
     message = request.form.get("message", "").strip()
@@ -1594,7 +1600,7 @@ def request_availability_match(target_user_id):
             return redirect(url_for("player.discover_available_players"))
 
     try:
-        proposal = AvailabilityService.create_availability_based_match_request(
+        AvailabilityService.create_availability_based_match_request(
             requesting_user_id=current_user.id,
             target_user_id=target_user_id,
             location=location,
@@ -1625,7 +1631,6 @@ def request_availability_match(target_user_id):
 def challenge_detail(gara_challenge_id):
     """Show challenge detail page for players"""
     from models.challenge.gara_challenge_models import GaraChallenge
-    from models.challenge.services import ChallengeService
 
     gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
     if not gara_challenge:
@@ -1863,6 +1868,8 @@ def export_profile_csv(user_id):
         output.getvalue(),
         mimetype="text/csv",
         headers={
-            "Content-Disposition": f"attachment; filename=player_{target_user.username}_history.csv"
+            "Content-Disposition": (
+                f"attachment; filename=player_{target_user.username}_history.csv"
+            )
         },
     )
