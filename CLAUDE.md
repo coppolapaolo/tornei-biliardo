@@ -467,18 +467,19 @@ The project is undergoing systematic refactoring to improve architecture and mai
 4. **Documentation Updates**: Keep refactoring docs current
 
 ### Current Status
-- **Task 1.1**: Transaction Management Migration (65% COMPLETE - IN PROGRESS)
-- **Task 1.2**: GaraService Decomposition (COMPLETED)
+- **Task 1.1**: Transaction Management Migration (66.7% COMPLETE - IN PROGRESS)
+- **Task 1.2**: GaraService Decomposition (24.1% COMPLETE - FACADE IMPLEMENTED, CLEANUP PENDING)
+- **Task 1.3**: UserService Decomposition (20.6% COMPLETE - FACADE IMPLEMENTED, CLEANUP PENDING)
 - **Test Stability**: Critical integration tests have been stabilized with isolation fixes
 
 **Latest Improvements (September 2025)**:
-- **Transaction Migration Progress**: Migrated 19+ `db.session.commit()` calls to `@transactional` pattern
-  - Completed: `routes/player.py`, `models/base.py`, `models/challenge/services.py`, `models/campionato/services.py`
-  - Next targets: `models/tiebreaker/services.py`, `models/rating/services.py`
-- **Code Quality Enhancements**: Resolved all 25 linting issues in `routes/player.py`
-  - Achieved: 0 flake8 errors, 0 pyright errors across migrated files
+- **Transaction Migration Progress**: Migrated 118+ `db.session.commit()` calls to `@transactional` pattern
+  - **Completed Domains**: `routes/player.py`, `models/base.py`, `models/challenge/services.py`, `models/campionato/services.py`, `models/tiebreaker/services.py`, `models/rating/services.py`
+  - **Next targets**: `routes/admin/venue.py` (7), `utils/__init__.py` (5), `routes/admin/competition.py` (5)
+- **Service Decomposition**: Facade patterns implemented for GaraService and UserService, but cleanup phases still pending
+- **Code Quality Enhancements**: Achieved 0 flake8 errors, 0 pyright errors across migrated files
 - Fixed test isolation issues in critical integration tests
 - Updated admin routes and integration test suite
 - All major use case workflows now have stable test coverage
 
-**Next Developer**: Transaction migration can continue - test suite is stable with `PYTHONPATH=. pytest tests/new/`
+**Next Developer**: Transaction migration can continue - test suite is stable with `PYTHONPATH=. pytest tests/new/ -n auto`
