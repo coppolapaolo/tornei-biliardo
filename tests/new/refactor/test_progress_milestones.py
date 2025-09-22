@@ -28,27 +28,10 @@ except ImportError:
 class TestRefactorMilestones:
     """Test che fungono da milestone per il refactoring."""
 
-    def test_transaction_migration_complete_milestone(self):
-        """MILESTONE: Fallisce quando migration transazioni è completa.
-
-        Target: Ridurre chiamate dirette a db.session.commit() da 201 a <10.
-        """
-        detector = RefactorProgressDetector()
-        data = detector.detect_transaction_migration()
-
-        if data["total_commits"] <= 10:
-            pytest.fail(
-                f"🎉 MILESTONE RAGGIUNTO! "
-                f"Transaction migration completa: {data['total_commits']} commits rimanenti "
-                f"(era {data['baseline']}). "
-                f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
-            )
-        else:
-            # This is expected during refactoring - test should pass
-            print(
-                f"Transaction migration progress: {data['progress_percent']:.1f}% "
-                f"({data['total_commits']}/{data['baseline']} remaining)"
-            )
+    # Transaction migration completed at 100% - milestone achieved!
+    # def test_transaction_migration_complete_milestone(self):
+    #     """MILESTONE COMPLETATO: Transaction migration 100% complete."""
+    #     pass
 
     def test_gara_service_decomposition_milestone(self):
         """MILESTONE: Fallisce quando GaraService è sotto 500 righe.
@@ -203,10 +186,10 @@ class TestRefactorProgressBaseline:
 
         detector = RefactorProgressDetector()
 
-        # Transaction migration baseline should reflect current progress (85.3% complete)
+        # Transaction migration baseline should reflect completion (100% complete)
         tx_data = detector.detect_transaction_migration()
-        assert tx_data["total_commits"] >= 20, "Transaction baseline seems too low"
-        assert tx_data["total_commits"] <= 50, "Transaction baseline seems too high - should be nearly complete"
+        assert tx_data["total_commits"] <= 10, "Transaction migration should be complete (<=10 commits remaining)"
+        assert tx_data["progress_percent"] >= 95.0, "Transaction migration should be >95% complete"
 
         # Service sizes should be substantial
         gara_data = detector.detect_service_size("models/competition/services.py", 1695)
