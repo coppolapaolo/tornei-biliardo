@@ -106,7 +106,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        StateService.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
 
         # Add only 3 players (less than minimum of 6)
         for i in range(3):
@@ -168,7 +168,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        StateService.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
 
         # Add sufficient players
         players = []
@@ -189,11 +189,13 @@ class TestGaraStateTransitionsTDD:
 
         db_session.commit()
 
+        # Refresh gara to get updated relationships from database
+        db_session.refresh(gara)
+
         # Start first round (creates matches)
-        StateService.start_playing(gara)
+        gara = StateService.start_playing(gara)
 
         # Verify gara is now PLAYING
-        db_session.refresh(gara)
         assert gara.status == GaraStatus.PLAYING.value
 
         # Create pending matches manually to test the validation
@@ -259,7 +261,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        StateService.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
 
         # Add players
         for i in range(4):
@@ -279,10 +281,9 @@ class TestGaraStateTransitionsTDD:
         db_session.commit()
 
         # Start first round
-        StateService.start_playing(gara)
+        gara = StateService.start_playing(gara)
 
         # Verify in PLAYING state
-        db_session.refresh(gara)
         assert gara.status == GaraStatus.PLAYING.value
 
         # For rollback from PLAYING, we need to first move back to INSCRIPTION manually
@@ -291,10 +292,9 @@ class TestGaraStateTransitionsTDD:
         db_session.commit()
 
         # Now we can use the available rollback method
-        StateService.reopen_setup(gara)
+        gara = StateService.reopen_setup(gara)
 
         # Verify rollback to SETUP
-        db_session.refresh(gara)
         assert gara.status == GaraStatus.SETUP.value
 
     def test_rollback_from_inscription_to_setup_when_date_changed(self, db_session):
@@ -334,17 +334,15 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        StateService.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
 
         # Verify in INSCRIPTION state
-        db_session.refresh(gara)
         assert gara.status == GaraStatus.INSCRIPTION.value
 
         # Should be able to rollback to SETUP for major changes
-        StateService.reopen_setup(gara)
+        gara = StateService.reopen_setup(gara)
 
         # Verify rollback to SETUP
-        db_session.refresh(gara)
         assert gara.status == GaraStatus.SETUP.value
 
     def test_invalid_transition_from_completed_should_fail(self, db_session):
@@ -474,9 +472,7 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Should succeed with valid configuration
-        StateService.to_inscription(gara)
-
-        db_session.refresh(gara)
+        gara = StateService.to_inscription(gara)
         assert gara.status == GaraStatus.INSCRIPTION.value
 
     def test_state_persistence_across_transactions(self, db_session):

@@ -780,7 +780,7 @@ class TestDirectorRequestServiceTDD:
             db.session.commit()
 
             # Attempt processing by non-admin
-            with pytest.raises(PermissionError, match="Only administrators can process director requests"):
+            with pytest.raises(ValueError, match="Only administrators can process director requests"):
                 DirectorRequestService.process_request(
                     request_id=pending_request.id,
                     admin_user=director,  # Director, not admin

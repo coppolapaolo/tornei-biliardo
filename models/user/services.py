@@ -529,6 +529,8 @@ class UserService:
                 username="mock_admin", email="mock_admin@example.com", role="admin"
             )
             mock_admin.set_password("mock_password")
+            db.session.add(mock_admin)
+            db.session.flush()  # Get ID without committing
             return DirectorRequestService.process_request(request_id, mock_admin, True)
 
     @staticmethod
@@ -551,6 +553,8 @@ class UserService:
             username="mock_admin", email="mock_admin@example.com", role="admin"
         )
         mock_admin.set_password("mock_password")
+        db.session.add(mock_admin)
+        db.session.flush()  # Get ID without committing
         return DirectorRequestService.process_request(request_id, mock_admin, False)
 
 
@@ -560,64 +564,9 @@ class DirectorRequestService:
     """REMOVED: Functionality moved to UserPermissionService in permission_service.py"""
 
     @staticmethod
-    @transactional(domain="user")
-    def process_request(
-        request_id: int, admin_user: User, approve: bool
-    ) -> DirectorRequest:
-        """
-        Process a director request (approve or reject).
-
-        Args:
-            request_id: ID of the director request to process
-            admin_user: Admin user processing the request
-            approve: Whether to approve (True) or reject (False) the request
-
-        Returns:
-            DirectorRequest: The processed request
-
-        Raises:
-            ValueError: If request not found or user is not admin
-            PermissionError: If admin_user is not an admin
-        """
-        # Check if user is admin
-        if not admin_user.is_admin:
-            raise PermissionError("Only administrators can process director requests")
-
-        # Get the request
-        request = db.session.get(DirectorRequest, request_id)
-        if not request:
-            raise ValueError("Director request not found")
-
-        # Process the request
-        if approve:
-            request.approve(admin_user)
-            # Send notification to user about approval
-            from ..notification.services import NotificationService
-            from ..notification.models import NotificationType, NotificationPriority
-
-            NotificationService.create_notification(
-                user_id=request.user_id,
-                notification_type=NotificationType.ACCOUNT_UPDATE,
-                title="Richiesta Director Approvata",
-                message="La tua richiesta di diventare direttore di gara è stata approvata! Ora puoi creare e gestire campionati.",
-                priority=NotificationPriority.HIGH,
-            )
-        else:
-            request.reject(admin_user)
-            # Send notification to user about rejection
-            from ..notification.services import NotificationService
-            from ..notification.models import NotificationType, NotificationPriority
-
-            NotificationService.create_notification(
-                user_id=request.user_id,
-                notification_type=NotificationType.ACCOUNT_UPDATE,
-                title="Richiesta Director Rifiutata",
-                message="La tua richiesta di diventare direttore di gara è stata rifiutata. Per maggiori informazioni, contatta l'amministratore.",
-                priority=NotificationPriority.NORMAL,
-            )
-
-        # Transaction managed by @transactional decorator
-        return request
+    def process_request(request_id: int, admin_user: User, approve: bool) -> DirectorRequest:
+        """Delegate to UserPermissionService."""
+        return UserPermissionService.process_director_request(request_id, admin_user, approve)
 
 
 class UserDeletionService:
@@ -640,35 +589,9 @@ class VenueManagerRequestService:
     """Service class for handling venue manager requests."""
 
     @staticmethod
-    @transactional(domain="user")
-    def create_request(
-        user_id: int, venue_id: int, notes: Optional[str] = None
-    ) -> "VenueManagerRequest":
-        """
-        Create venue manager request for a specific venue.
-
-        Args:
-            user_id: ID of user requesting venue manager role
-            venue_id: ID of venue to manage
-            notes: Optional notes for the request
-
-        Returns:
-            VenueManagerRequest: Created request
-
-        Raises:
-            ValueError: If user not found, venue not found, or already has pending request for this venue
-        """
-        from .models import VenueManagerRequest
-        from models import BilliardHall
-
-        user = db.session.get(User, user_id)
-        if not user:
-            raise ValueError("User not found")
-
-        if user.is_admin:
-            raise ValueError("Admin users don't need to request venue manager role")
-
-        venue = db.session.get(BilliardHall, venue_id)
+    def create_request(user_id: int, venue_id: int, notes: Optional[str] = None) -> "VenueManagerRequest":
+        """Delegate to VenueManagerService."""
+        return VenueManagerService.create_venue_manager_request(user_id, venue_id, notes)
         if not venue:
             raise ValueError("Venue not found")
 

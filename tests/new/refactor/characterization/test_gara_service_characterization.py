@@ -22,8 +22,8 @@ from models.base import db
 from models.competition.services import (
     GaraService,
     InscriptionService,
-    ProvaStateMachine,
 )
+from models.competition.state_service import StateService
 from models.competition.models import Gara, Inscription
 from models.user.models import User
 from models.user.role_enum import UserRole
@@ -256,23 +256,23 @@ class TestGaraServiceCharacterization:
         with pytest.raises(
             InvalidTransitionError, match="Date di iscrizione non impostate"
         ):
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
         # Con date funziona
         gara.inscription_start = start_time
         gara.inscription_end = end_time
-        gara = ProvaStateMachine.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
         assert gara.status == GaraStatus.INSCRIPTION.value
 
         # inscription -> setup
-        gara = ProvaStateMachine.reopen_setup(gara)
+        gara = StateService.reopen_setup(gara)
         assert gara.status == GaraStatus.SETUP.value
 
         # setup -> inscription -> playing (richiede iscritti)
-        gara = ProvaStateMachine.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
 
         with pytest.raises(InvalidTransitionError, match="Giocatori insufficienti"):
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
 
         # Con iscritti funziona (prima devo aprire le iscrizioni)
         start_time = datetime.now() - timedelta(minutes=10)
@@ -287,16 +287,16 @@ class TestGaraServiceCharacterization:
         gara.inscription_end = end_time
         db.session.commit()
 
-        gara = ProvaStateMachine.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
         InscriptionService.inscribe_user(self.director_user.id, gara.id)
 
-        gara = ProvaStateMachine.start_playing(gara)
+        gara = StateService.start_playing(gara)
         assert gara.status == GaraStatus.PLAYING.value
         assert gara.current_round == 1
 
         # playing -> completed
-        gara = ProvaStateMachine.complete(gara)
+        gara = StateService.complete(gara)
         assert gara.status == GaraStatus.COMPLETED.value
 
     def test_state_machine_validation_errors_characterization(self):
@@ -314,11 +314,11 @@ class TestGaraServiceCharacterization:
 
         # Transizioni non ammesse
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine.start_playing(gara)  # setup -> playing non ammesso
+            StateService.start_playing(gara)  # setup -> playing non ammesso
 
         gara.status = GaraStatus.PLAYING.value
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine.to_inscription(gara)  # playing -> inscription non ammesso
+            StateService.to_inscription(gara)  # playing -> inscription non ammesso
 
     # ===== GESTIONE ISCRIZIONI E DATE =====
 
@@ -539,38 +539,12 @@ class TestGaraServiceCharacterization:
         assert not_removed is False
 
     def test_get_director_garas_characterization(self):
-        """Caratterizza il recupero gare per direttore."""
-        tomorrow = date.today() + timedelta(days=1)
+        """REMOVED: get_director_garas method was removed in Task 1.2 cleanup.
 
-        # Gara come director_id
-        gara1 = GaraService.create_gara(
-            number=1,
-            name="Gara Diretta",
-            date=tomorrow,
-            discipline="palla 8",
-            distance=5,
-            director_id=self.director_user.id,
-        )
-
-        # Gara in cui NON è direttore
-        gara2 = GaraService.create_gara(
-            number=2,
-            name="Gara Altri",
-            date=tomorrow,
-            discipline="palla 9",
-            distance=3,
-            director_id=self.player_user.id,
-        )
-
-        director_garas = GaraService.get_director_garas(self.director_user.id)
-
-        # Solo la sua gara
-        assert len(director_garas) == 1
-        assert director_garas[0].id == gara1.id
-
-        # Utente senza gare
-        no_garas = GaraService.get_director_garas(999)
-        assert len(no_garas) == 0
+        This method was identified as unused in production routes and removed
+        as part of the GaraService decomposition cleanup phase.
+        """
+        pytest.skip("Method get_director_garas removed in refactoring Task 1.2")
 
 
 class TestInscriptionServiceCharacterization:

@@ -32,6 +32,7 @@ class RoundService:
     """
 
     @staticmethod
+    @transactional(domain="competition")
     def start_first_round(gara_id: int) -> Gara:
         """Avvia il primo turno della gara con controlli e sorteggio."""
         from models.competition.models import Inscription

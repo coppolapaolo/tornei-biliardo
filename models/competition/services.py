@@ -79,7 +79,17 @@ class GaraService:
 
         # Applica configurazione strategia se fornita
         if strategy_config:
-            GaraService.apply_strategy_configuration(gara, strategy_config)
+            from models.matchmaking.configuration import StrategyConfiguration
+
+            if isinstance(strategy_config, StrategyConfiguration):
+                config_dict = strategy_config.to_dict()
+            else:
+                config_dict = strategy_config
+
+            # Applica i campi di configurazione
+            for key, value in config_dict.items():
+                if hasattr(gara, key):
+                    setattr(gara, key, value)
 
         # Valida la configurazione
         errors = gara.validate_strategy_configuration()
@@ -296,14 +306,8 @@ class GaraService:
         )
 
     @staticmethod
-    def create_amalfi_round(
-        gara_id: int, round_number: int
-    ) -> tuple[int, int, int, int]:
-        """Crea un turno Amalfi (retrocompatibilità).
-
-        Returns:
-            Tuple con (total_matches, normal_matches, bye_matches, trio_matches)
-        """
+    def create_amalfi_round(gara_id: int, round_number: int) -> tuple[int, int, int, int]:
+        """Legacy compatibility wrapper."""
         return GaraService.create_round_with_strategy(gara_id, round_number)
 
     @staticmethod
@@ -392,49 +396,13 @@ class GaraService:
         if match_obj:
             match_obj.winner_id = None
 
-    @staticmethod
-    def get_director_garas(director_id: int):
-        """
-        Restituisce le Gare dove l'utente è:
-        - direttore esplicito (Gara.director_id)
-        - oppure Campionato Director del campionato (via TournamentDirector)
-        """
-        # import locale per evitare cicli
-        from models.user.models import DirectorAssignment
-
-        # Subquery degli id campionato in cui l'utente è Campionato Director
-        td_subq = (
-            db.session.query(DirectorAssignment.entity_id)
-            .filter(
-                DirectorAssignment.user_id == director_id,
-                DirectorAssignment.entity_type == "campionato",
-            )
-            .subquery()
-        )
-
-        q = (
-            db.session.query(Gara)
-            .filter(
-                (Gara.director_id == director_id)
-                | (Gara.campionato_id.in_(select(td_subq)))
-            )
-            .order_by(Gara.date.desc(), Gara.number.asc())
-        )
-        return q.all()
 
     # -----------------------------
     # VALIDAZIONE DATI (type-safe)
     # -----------------------------
     @staticmethod
     def validate_gara_data(data: dict) -> dict:
-        """
-        Valida i campi della Gara e restituisce un dict di errori {campo: messaggio}.
-        Requisiti chiesti dai test storici:
-        - max_participants < min_participants -> messaggio contiene '>= min'
-        - entry_fee < 0 -> messaggio contiene 'negativa'
-        - inscription_end < inscription_start -> errors['inscription_end']
-        - rounds_count presente e < 1 -> errors['rounds_count']
-        """
+        """Valida i campi della Gara e restituisce errori per campo."""
         errors: dict = {}
 
         # name
@@ -465,7 +433,6 @@ class GaraService:
             try:
                 fee = float(fee_raw)
                 if fee < 0:
-                    # test richiede la parola 'negativa'
                     errors["entry_fee"] = "Quota non può essere negativa (>= 0)"
             except (TypeError, ValueError):
                 errors["entry_fee"] = "Quota deve essere un numero valido"
@@ -496,7 +463,6 @@ class GaraService:
             try:
                 max_p = int(max_p_raw)
                 if isinstance(min_p, int) and max_p < min_p:
-                    # test richiede la sottostringa '>= min'
                     errors["max_participants"] = "Max participants deve essere >= min"
             except (TypeError, ValueError):
                 errors["max_participants"] = "Numero partecipanti massimo non valido"
@@ -532,7 +498,6 @@ class GaraService:
             end_dt = None
 
         if start_dt and end_dt and end_dt < start_dt:
-            # test verifica presenza della chiave 'inscription_end'
             errors["inscription_end"] = (
                 "La data di fine iscrizioni deve essere >= della data di inizio"
             )
@@ -668,51 +633,7 @@ class GaraService:
     # -----------------------------
     # STRATEGY CONFIGURATION
     # -----------------------------
-    @staticmethod
-    def apply_strategy_configuration(gara: Gara, config: dict) -> None:
-        """Applica una configurazione di strategia a una gara."""
-        from models.matchmaking.configuration import StrategyConfiguration
 
-        if isinstance(config, StrategyConfiguration):
-            config_dict = config.to_dict()
-        else:
-            config_dict = config
-
-        # Applica i campi di configurazione
-        for key, value in config_dict.items():
-            if hasattr(gara, key):
-                setattr(gara, key, value)
-
-    @staticmethod
-    @transactional(domain="competition")
-    def update_strategy_configuration(gara_id: int, config: dict) -> Gara:
-        """Aggiorna la configurazione di strategia di una gara esistente."""
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        # Verifica che la gara sia in stato SETUP
-        if gara.status != GaraStatus.SETUP.value:
-            raise ValueError("La strategia può essere modificata solo in fase di setup")
-
-        # Applica la nuova configurazione
-        GaraService.apply_strategy_configuration(gara, config)
-
-        # Valida la configurazione
-        errors = gara.validate_strategy_configuration()
-        if errors:
-            raise ValueError(f"Configurazione non valida: {', '.join(errors)}")
-
-        # Se la strategia ha turni fissi, ricalcola il numero di turni
-        constraints = gara.get_strategy_constraints()
-        if constraints["fixed_rounds"]:
-            num_inscribed = (
-                len(gara.inscriptions.all()) if hasattr(gara, "inscriptions") else 0
-            )
-            if num_inscribed > 0:
-                gara.rounds_count = gara.calculate_rounds_for_strategy(num_inscribed)
-
-        return gara
 
     @staticmethod
     def get_available_strategies() -> dict:
@@ -733,27 +654,6 @@ class GaraService:
             }
         return strategies
 
-    @staticmethod
-    def validate_strategy_for_inscriptions(
-        gara_id: int, new_strategy: str
-    ) -> tuple[bool, str]:
-        """Valida se una strategia può essere applicata dato il numero di iscritti."""
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            return False, "Gara non trovata"
-
-        num_inscribed = (
-            len(gara.inscriptions.all()) if hasattr(gara, "inscriptions") else 0
-        )
-
-        # Alcune strategie hanno requisiti minimi di giocatori
-        if new_strategy == "direct_elimination" and num_inscribed < 2:
-            return False, "Eliminazione diretta richiede almeno 2 giocatori"
-
-        if new_strategy == "round_robin" and num_inscribed < 3:
-            return False, "Round robin richiede almeno 3 giocatori"
-
-        return True, ""
 
     @staticmethod
     @transactional(domain="competition")

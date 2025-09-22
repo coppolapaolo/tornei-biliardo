@@ -20,7 +20,8 @@ class StateService:
     @staticmethod
     def _require(gara: Gara, expected: GaraStatus) -> None:
         """Validate required state for transition."""
-        if (gara.status or GaraStatus.SETUP.value) != expected.value:
+        current_status = gara.status or GaraStatus.SETUP.value
+        if current_status != expected.value:
             raise InvalidTransitionError(
                 f"Transizione non ammessa: {gara.status!r} → "
                 f"{expected.name.lower()} richiesta come stato corrente."
@@ -78,6 +79,18 @@ class StateService:
     def complete(gara: Gara) -> Gara:
         """playing → completed"""
         StateService._require(gara, GaraStatus.PLAYING)
+
+        # Check for pending or in-progress matches
+        from models.match.models import Match
+        from models.status_enum import MatchStatus
+
+        pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        ).first()
+
+        if pending_matches:
+            raise InvalidTransitionError("Match ancora in corso")
+
         gara.status = GaraStatus.COMPLETED.value
         db.session.add(gara)
         return gara

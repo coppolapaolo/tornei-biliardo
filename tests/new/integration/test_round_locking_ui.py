@@ -10,8 +10,8 @@ from models.user.role_enum import UserRole
 from models.competition.services import (
     GaraService,
     InscriptionService,
-    ProvaStateMachine,
 )
+from models.competition.state_service import StateService
 
 # Not needed: from models.matchmaking.service import MatchmakingService
 
@@ -68,7 +68,7 @@ class TestRoundLockingUI:
             )
 
             # Move to inscription status
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # 2. Create and register 4 players
             players = []
@@ -91,7 +91,7 @@ class TestRoundLockingUI:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # 3. Start playing and create first round matches
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
             GaraService.create_round_with_strategy(gara.id, 1)
 
             # Refresh gara to get current round updated
@@ -194,7 +194,7 @@ class TestRoundLockingUI:
                 ),
             )
 
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # Create 4 players
             players = []
@@ -217,7 +217,7 @@ class TestRoundLockingUI:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # 2. Start first round
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
             GaraService.create_round_with_strategy(gara.id, 1)
 
             # 3. Complete first round matches
@@ -286,7 +286,7 @@ class TestRoundLockingUI:
                 ),
             )
 
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # Create 6 players for more matches
             players = []
@@ -309,7 +309,7 @@ class TestRoundLockingUI:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # Start tournament and create all three rounds
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
 
             # Create multiple rounds (as many as the strategy allows)
             created_rounds = []

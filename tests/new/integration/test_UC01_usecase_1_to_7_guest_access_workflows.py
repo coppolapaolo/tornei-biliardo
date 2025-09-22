@@ -29,8 +29,8 @@ from models.status_enum import GaraStatus, MatchStatus
 from models.competition.services import (
     GaraService,
     InscriptionService,
-    ProvaStateMachine,
 )
+from models.competition.state_service import StateService
 from models.match.services import MatchService, RackService
 
 # Removed MatchmakingService import - using GaraService methods instead
@@ -119,7 +119,7 @@ class TestUseCaseOneComprehensive:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
             # Close inscriptions and start first round
-            ProvaStateMachine.start_playing(
+            StateService.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
@@ -257,7 +257,7 @@ class TestUseCaseOneComprehensive:
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
-            ProvaStateMachine.start_playing(
+            StateService.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
@@ -425,7 +425,7 @@ class TestUseCaseOneComprehensive:
             for player in players:
                 InscriptionService.inscribe_user(player.id, standalone_gara.id)
 
-            ProvaStateMachine.start_playing(
+            StateService.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
@@ -582,7 +582,7 @@ class TestUseCaseOneComprehensive:
             standalone_gara.matchmaking_strategy = "amalfi"
             db.session.commit()
 
-            ProvaStateMachine.start_playing(
+            StateService.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
@@ -737,7 +737,7 @@ class TestUseCaseOneComprehensive:
             standalone_gara.matchmaking_strategy = "random"
             db.session.commit()
 
-            ProvaStateMachine.start_playing(
+            StateService.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 
@@ -964,7 +964,7 @@ class TestUseCaseOneComprehensive:
             ]:  # Add 5 opponents (6 total) to meet minimum requirement
                 InscriptionService.inscribe_user(opponent.id, standalone_gara.id)
 
-            ProvaStateMachine.start_playing(
+            StateService.start_playing(
                 GaraService.get_gara_by_id(standalone_gara.id)
             )
 

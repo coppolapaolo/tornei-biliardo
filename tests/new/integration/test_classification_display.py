@@ -11,8 +11,8 @@ from models.status_enum import MatchStatus
 from models.competition.services import (
     GaraService,
     InscriptionService,
-    ProvaStateMachine,
 )
+from models.competition.state_service import StateService
 from models.classification.models import RoundClassification
 
 
@@ -65,7 +65,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Move to inscription status
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # 2. Create and register 4 players
             players = []
@@ -88,7 +88,7 @@ class TestClassificationDisplay:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # 3. Start playing and create first round matches
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
             GaraService.create_round_with_strategy(gara.id, 1)
 
             # Refresh gara to get current round updated
@@ -305,7 +305,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Start tournament but don't complete any matches
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # Create players
             players = []
@@ -328,7 +328,7 @@ class TestClassificationDisplay:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # Start playing and create first round
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
             GaraService.create_round_with_strategy(gara.id, 1)
 
             # Test: No classification should be shown
@@ -370,7 +370,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Move to inscription status
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # 2. Create and register 4 players
             players = []
@@ -393,7 +393,7 @@ class TestClassificationDisplay:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # 3. Start playing and create first round
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
             GaraService.create_round_with_strategy(gara.id, 1)
 
             # 4. Complete all matches in round 1 BUT don't create manual classifications
@@ -478,7 +478,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Move to inscription status
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
             # 2. Create and register 4 players
             players = []
@@ -501,7 +501,7 @@ class TestClassificationDisplay:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # 3. Start playing and create first round
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
             GaraService.create_round_with_strategy(gara.id, 1)
 
             # 4. Complete all matches in round 1 with initial results

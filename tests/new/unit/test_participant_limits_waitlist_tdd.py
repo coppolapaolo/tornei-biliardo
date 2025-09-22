@@ -23,9 +23,9 @@ from models.competition.models import WithdrawPolicy
 from models.status_enum import GaraStatus
 from models.competition.services import (
     GaraService,
-    ProvaStateMachine,
     InscriptionService,
 )
+from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
 
 
@@ -73,7 +73,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add exactly max_participants (4) players using service method
         players = []
@@ -152,7 +152,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add 3 regular participants
         regular_players = []
@@ -247,7 +247,7 @@ class TestParticipantLimitsWaitlistTDD:
         # Transition to inscription state if not already
         db_session.refresh(gara)
         if gara.status != GaraStatus.INSCRIPTION.value:
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
         # Try to inscribe after inscription period ended
         player_unique_id = str(uuid.uuid4())[:8]
@@ -304,7 +304,7 @@ class TestParticipantLimitsWaitlistTDD:
         # Transition to inscription state if not already
         db_session.refresh(gara)
         if gara.status != GaraStatus.INSCRIPTION.value:
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
         # Try to inscribe before inscription period starts
         player_unique_id = str(uuid.uuid4())[:8]
@@ -357,7 +357,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         player_unique_id = str(uuid.uuid4())[:8]
         player = User(
@@ -415,7 +415,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add players
         players = []
@@ -434,7 +434,7 @@ class TestParticipantLimitsWaitlistTDD:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        ProvaStateMachine.start_playing(gara)
+        StateService.start_playing(gara)
 
         # Player withdraws with forfeit policy
         InscriptionService.uninscribe_user(players[0].id, gara.id)
@@ -492,7 +492,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add players
         players = []
@@ -565,7 +565,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Director should be able to inscribe to their own tournament
         InscriptionService.inscribe_user(director.id, gara.id)
@@ -626,7 +626,7 @@ class TestParticipantLimitsWaitlistTDD:
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Admin should not be able to inscribe
         with pytest.raises(ValueError, match="Admin non può partecipare"):
