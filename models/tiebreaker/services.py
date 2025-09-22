@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, cast
 from datetime import datetime
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import (
     Tiebreaker,
     SpotShot,
@@ -26,6 +27,7 @@ class TiebreakerService:
     """Service for managing tiebreaker situations and resolution."""
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def create_spot_shot_tiebreaker(
         match_id: int,
         player1_id: int,
@@ -39,7 +41,7 @@ class TiebreakerService:
         # Default configuration for spot shots
         default_config = {
             "max_rounds": 5,  # Maximum rounds before sudden death
-            "sudden_death_after": 5,  # Switch to sudden death after this many tied rounds
+            "sudden_death_after": 5,  # Switch to sudden death after tied rounds
             "ball_type": "8_ball",  # or "9_ball"
         }
 
@@ -57,10 +59,10 @@ class TiebreakerService:
         )
 
         db.session.add(tiebreaker)
-        db.session.commit()
         return tiebreaker
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def create_rally_tiebreaker(
         match_id: int,
         player1_id: int,
@@ -88,10 +90,10 @@ class TiebreakerService:
         )
 
         db.session.add(tiebreaker)
-        db.session.commit()
         return tiebreaker
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def create_playoff_tiebreaker(
         match_id: int,
         player1_id: int,
@@ -119,10 +121,10 @@ class TiebreakerService:
         )
 
         db.session.add(tiebreaker)
-        db.session.commit()
         return tiebreaker
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def record_spot_shot(
         tiebreaker_id: int,
         player_id: int,
@@ -162,10 +164,10 @@ class TiebreakerService:
         # Check if tiebreaker is complete
         TiebreakerService._check_spot_shot_completion(tiebreaker)
 
-        db.session.commit()
         return spot_shot
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def record_rally_attempt(
         tiebreaker_id: int,
         player_id: int,
@@ -205,10 +207,10 @@ class TiebreakerService:
         # Check if tiebreaker is complete
         TiebreakerService._check_rally_completion(tiebreaker)
 
-        db.session.commit()
         return rally_attempt
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def create_playoff_match(
         tiebreaker_id: int,
         match_number: int,
@@ -233,10 +235,10 @@ class TiebreakerService:
         )
 
         db.session.add(playoff_match)
-        db.session.commit()
         return playoff_match
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def complete_playoff_match(
         playoff_match_id: int, winner_id: int, p1_score: int, p2_score: int
     ) -> PlayoffMatch:
@@ -252,7 +254,6 @@ class TiebreakerService:
         # Check if entire tiebreaker is complete
         TiebreakerService._check_playoff_completion(playoff_match.tiebreaker)
 
-        db.session.commit()
         return playoff_match
 
     @staticmethod
@@ -426,6 +427,7 @@ class TiebreakerConfigurationService:
     """Service for managing tiebreaker configurations."""
 
     @staticmethod
+    @transactional(domain="tiebreaker")
     def create_default_configuration(
         campionato_id: Optional[int] = None, gara_id: Optional[int] = None
     ) -> TiebreakerConfiguration:
@@ -452,7 +454,6 @@ class TiebreakerConfigurationService:
         )
 
         db.session.add(config)
-        db.session.commit()
         return config
 
     @staticmethod

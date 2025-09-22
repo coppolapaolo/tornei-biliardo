@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import (
     PlayerCategory,
     PlayerRating,
@@ -94,6 +95,7 @@ class RatingService:
         )
 
     @staticmethod
+    @transactional(domain="rating")
     def verify_rating(
         rating_id: int, verified_by_id: int, verified: bool = True
     ) -> PlayerRating:
@@ -107,7 +109,6 @@ class RatingService:
         rating.verified = verified
         rating.verified_by_id = verified_by_id if verified else None
 
-        db.session.commit()
         return rating
 
     @staticmethod
@@ -239,6 +240,7 @@ class RatingService:
         }
 
     @staticmethod
+    @transactional(domain="rating")
     def assign_player_category(
         user_id: int,
         category: CategoryLevel,
@@ -266,11 +268,11 @@ class RatingService:
         )
 
         db.session.add(new_category)
-        db.session.commit()
 
         return new_category
 
     @staticmethod
+    @transactional(domain="rating")
     def update_player_rating(
         user_id: int,
         rating_system: RatingSystem,
@@ -301,7 +303,6 @@ class RatingService:
             )
             db.session.add(rating)
 
-        db.session.commit()
         return rating
 
     @staticmethod
@@ -414,6 +415,7 @@ class CategoryService:
         return PlayerCategory.get_user_current_category(user_id)
 
     @staticmethod
+    @transactional(domain="rating")
     def expire_category(category_id: int) -> None:
         """Manually expire a category assignment."""
         category = db.session.get(PlayerCategory, category_id)
@@ -422,7 +424,6 @@ class CategoryService:
 
             abort(404)
         category.expire_category()
-        db.session.commit()
 
 
 class HandicapService:
@@ -448,6 +449,7 @@ class HandicapService:
         }
 
     @staticmethod
+    @transactional(domain="rating")
     def create_handicap_rule(
         name: str,
         description: Optional[str] = None,
@@ -493,10 +495,10 @@ class HandicapService:
                 )
                 db.session.add(rating_rule)
 
-        db.session.commit()
         return rule
 
     @staticmethod
+    @transactional(domain="rating")
     def update_rule_status(rule_id: int, is_active: bool) -> HandicapRule:
         """Update handicap rule active status."""
         rule = db.session.get(HandicapRule, rule_id)
@@ -505,7 +507,6 @@ class HandicapService:
 
             abort(404)
         rule.is_active = is_active
-        db.session.commit()
         return rule
 
     @staticmethod
@@ -624,6 +625,7 @@ class HandicapService:
         }
 
     @staticmethod
+    @transactional(domain="rating")
     def create_standard_handicap_rule() -> HandicapRule:
         """Create a standard handicap rule with typical category differences."""
 
@@ -676,7 +678,6 @@ class HandicapService:
             )
             db.session.add(rating_rule)
 
-        db.session.commit()
         return rule
 
     @staticmethod
