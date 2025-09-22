@@ -4,6 +4,8 @@ from __future__ import annotations
 import random
 from typing import List, Optional, Dict, TypedDict
 
+from models.transaction.manager import transactional
+
 from models import (
     db,
     Match,
@@ -39,6 +41,7 @@ class AmalfiEngine:
     # ────────────────────────────────────────────────────────────────────────────
     # Entry point
     # ────────────────────────────────────────────────────────────────────────────
+    @transactional(domain="amalfi")
     def create_round_matches(self, round_number: int) -> List[Match]:
         """
         Crea abbinamenti per un turno specifico secondo algoritmo Amalfi.
@@ -55,7 +58,6 @@ class AmalfiEngine:
         self._finalize_forfeit_matches(matches)
 
         # Persistenza atomica dei match creati (l'engine storico già aggiungeva i match)
-        db.session.commit()
         return matches
 
     def preview_round_pairings(self, round_number: int) -> Dict:

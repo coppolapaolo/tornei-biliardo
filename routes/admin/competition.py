@@ -77,7 +77,6 @@ def _handle_venue_creation(
             # Then modify to set as disabled and non-verified
             new_venue.is_active = False
             new_venue.verified = False
-            db.session.commit()
 
             flash(
                 f"Nuovo luogo '{location}' aggiunto come disattivato. Sarà verificato dall'admin.",
@@ -98,6 +97,7 @@ def _handle_venue_creation(
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
 @login_required
 @director_or_admin_required
+@transactional(domain="competition")
 def create_gara_standalone():
     """Crea gara standalone (admin o director)"""
     if request.method == "POST":
@@ -367,6 +367,7 @@ def create_gara():
 @competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])
 @login_required
 @gara_manager_required
+@transactional(domain="competition")
 def edit_gara(gara_id):
     """Modifica gara"""
     gara = db.session.get(Gara, gara_id)

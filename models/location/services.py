@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import BilliardHall, UserLocationAvailability, DayOfWeek
 
 
@@ -17,6 +18,7 @@ class LocationService:
     """Service for location and availability management."""
 
     @staticmethod
+    @transactional(domain="location")
     def create_billiard_hall(
         name: str,
         address: Optional[str] = None,
@@ -55,7 +57,6 @@ class LocationService:
             hall.set_amenities(amenities)
 
         db.session.add(hall)
-        db.session.commit()
 
         return hall
 
