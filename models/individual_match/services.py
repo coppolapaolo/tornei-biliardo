@@ -837,6 +837,7 @@ class IndividualMatchService:
         return count
 
     @staticmethod
+    @transactional(domain="individual_match")
     def confirm_rack_result(rack_id: int, confirming_player_id: int) -> Dict[str, Any]:
         """Confirm a rack result."""
         rack = db.session.get(IndividualRack, rack_id)
@@ -845,7 +846,6 @@ class IndividualMatchService:
 
         # Mark as confirmed by player
         rack.confirmed_by_player = True
-        db.session.commit()
 
         return {"success": True, "message": "Rack result confirmed"}
 

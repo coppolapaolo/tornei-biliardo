@@ -550,6 +550,7 @@ def edit_challenge(challenge_id):
             )
 
     except ValueError as e:
+        db.session.rollback()
         error_msg = f"Error updating challenge: {str(e)}"
         if request.is_json:
             return jsonify({"success": False, "error": error_msg}), 400

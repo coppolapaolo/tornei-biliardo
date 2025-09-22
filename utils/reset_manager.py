@@ -71,20 +71,28 @@ class ResetManager:
 
     def reset_base(self) -> Dict[str, Any]:
         """Reset base: solo admin"""
-        # Drop e ricrea tutte le tabelle
-        db.drop_all()
-        db.create_all()
+        try:
+            # Drop e ricrea tutte le tabelle
+            db.drop_all()
+            db.create_all()
 
-        # Crea solo l'admin
-        admin = self._create_admin()
+            # Crea solo l'admin
+            admin = self._create_admin()
 
-        db.session.commit()
+            db.session.commit()
 
-        return {
-            "status": "success",
-            "message": "Database resettato con successo (solo admin)",
-            "data": {"admin": admin},
-        }
+            return {
+                "status": "success",
+                "message": "Database resettato con successo (solo admin)",
+                "data": {"admin": admin},
+            }
+        except Exception as e:
+            db.session.rollback()
+            return {
+                "status": "error",
+                "message": f"Errore durante il reset del database: {str(e)}",
+                "data": None,
+            }
 
     def save_current_state(self, name: str, description: str = "") -> Dict[str, Any]:
         """Salva lo stato corrente del database come snapshot"""

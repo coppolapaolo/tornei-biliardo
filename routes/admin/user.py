@@ -140,6 +140,7 @@ def process_director_request(req_id):
 
         flash("Richiesta processata con successo.")
     except (PermissionError, ValueError) as e:
+        db.session.rollback()
         flash(str(e), "error")
 
     return redirect(url_for("admin.user.director_requests"))

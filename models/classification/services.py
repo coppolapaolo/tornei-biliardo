@@ -21,6 +21,7 @@ from ..scoring.strategies import (
     FargoRatingScoringPolicy,
     EloRatingScoringPolicy,
 )
+from ..transaction import transactional
 
 
 class ClassificationService:
@@ -168,10 +169,17 @@ class ClassificationService:
         print(
             f"DEBUG ClassificationService: About to commit {len(classifications)} classifications"
         )
-        db.session.commit()
-        print(
-            f"DEBUG ClassificationService: Commit completed, returning {len(classifications)} classifications"
-        )
+
+        try:
+            db.session.commit()
+            print(
+                f"DEBUG ClassificationService: Commit completed, returning {len(classifications)} classifications"
+            )
+        except Exception as e:
+            db.session.rollback()
+            print(f"DEBUG ClassificationService: Commit failed, rolling back: {str(e)}")
+            raise
+
         return classifications
 
     @staticmethod

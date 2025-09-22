@@ -14,6 +14,7 @@ from enum import Enum
 
 
 from ..base import db, BaseModel, TimestampMixin
+from ..transaction import transactional
 
 if TYPE_CHECKING:
     from ..classification.models import Classification
@@ -222,6 +223,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
         return True
 
+    @transactional
     def generate_qualifications(self) -> List["PlayoffQualification"]:
         """Generate playoff qualifications based on criteria."""
         qualified_players = self.evaluate_qualifications()
@@ -243,7 +245,6 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
                 db.session.add(qualification)
                 qualifications.append(qualification)
 
-        db.session.commit()
         return qualifications
 
     def __repr__(self) -> str:

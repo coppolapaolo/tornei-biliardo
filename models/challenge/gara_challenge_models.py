@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from sqlalchemy import desc, asc
 
 from ..base import db, BaseModel, TimestampMixin
+from ..transaction import transactional
 
 if TYPE_CHECKING:
     from .models import Challenge
@@ -206,6 +207,7 @@ class GaraChallengeClassification(BaseModel):
     )
 
     @classmethod
+    @transactional
     def calculate_for_gara(cls, gara_id: int) -> List["GaraChallengeClassification"]:
         """Calculate and update challenge classification for a gara."""
         from models.user.models import User
@@ -282,7 +284,6 @@ class GaraChallengeClassification(BaseModel):
             for idx, classification in enumerate(classifications):
                 classification.position = idx + 1
 
-        db.session.commit()
         return classifications
 
     def get_user_challenge_details(self) -> List[Dict[str, Any]]:
