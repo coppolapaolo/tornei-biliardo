@@ -34,6 +34,8 @@ from models.user.services import (
     VenueManagerRequestService,
     VenueManagementService,
 )
+from models.user.permission_service import UserPermissionService
+from models.transaction.manager import transactional
 from models.user.models import VenueManagerRequest
 from utils import (
     player_only,
@@ -1010,39 +1012,35 @@ def change_password():
 @player_only
 def request_director():
     """Richiede la promozione a direttore di gara"""
-    if current_user.role != "player":
-        flash("Solo i giocatori possono richiedere di diventare direttori.")
-        return redirect(url_for("player.profile"))
-    if current_user.director_request:
-        flash("Hai già una richiesta in sospeso o è stata valutata.")
-        return redirect(url_for("player.profile"))
-
-    reason = request.form.get("reason", "").strip()
-    req = DirectorRequest(
-        user_id=current_user.id,
-        status=DirectorRequestStatus.PENDING.value,
-        notes=reason,
-    )
-    db.session.add(req)
-    db.session.commit()
-
-    # Invia notifica all'admin
-    admin = User.query.filter_by(role="admin").first()
-    if admin:
-        NotificationService.create_notification(
-            user_id=admin.id,
-            notification_type=NotificationType.ACCOUNT_UPDATE,
-            title="Nuova richiesta Director",
-            message=(
-                f"L'utente {current_user.username} ha richiesto di "
-                "diventare direttore di gara."
-            ),
-            priority=NotificationPriority.HIGH,
-            action_url=url_for("admin.user.director_requests"),
-            action_text="Gestisci richieste",
+    try:
+        reason = request.form.get("reason", "").strip()
+        UserPermissionService.request_director_promotion(
+            user_id=current_user.id, notes=reason
         )
 
-    flash("Richiesta inviata. Sarai contattato dall'amministratore.")
+        # Invia notifica all'admin
+        admin = User.query.filter_by(role="admin").first()
+        if admin:
+            NotificationService.create_notification(
+                user_id=admin.id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title="Nuova richiesta Director",
+                message=(
+                    f"L'utente {current_user.username} ha richiesto di "
+                    "diventare direttore di gara."
+                ),
+                priority=NotificationPriority.HIGH,
+                action_url=url_for("admin.user.director_requests"),
+                action_text="Gestisci richieste",
+            )
+
+        flash("Richiesta inviata. Sarai contattato dall'amministratore.")
+
+    except ValueError as e:
+        flash(f"Errore: {str(e)}", "error")
+    except Exception as e:
+        flash(f"Errore inaspettato: {str(e)}", "error")
+
     return redirect(url_for("player.profile"))
 
 
@@ -1281,6 +1279,7 @@ def unsubscribe_from_gara(gara_id):
 
 @player_bp.route("/rack/<int:rack_id>/remove", methods=["POST"])
 @login_required
+@transactional(domain="match")
 def remove_rack(rack_id):
     """Rimuovi un rack inserito per errore"""
     rack = Rack.query.get_or_404(rack_id)
@@ -1311,8 +1310,6 @@ def remove_rack(rack_id):
         MatchService.to_playing(match.id)
         match.winner_id = None
 
-    db.session.commit()
-
     return jsonify(
         {
             "success": True,
@@ -1326,6 +1323,7 @@ def remove_rack(rack_id):
 
 @player_bp.route("/rack/<int:rack_id>/confirm", methods=["POST"])
 @login_required
+@transactional(domain="match")
 def confirm_rack(rack_id):
     """Conferma un rack inserito dall'altro giocatore"""
     rack = Rack.query.get_or_404(rack_id)
@@ -1341,13 +1339,13 @@ def confirm_rack(rack_id):
 
     # Conferma il rack
     rack.confirmed_by_player = True
-    db.session.commit()
 
     return jsonify({"success": True, "message": "Rack confermato"})
 
 
 @player_bp.route("/rack/<int:rack_id>/unconfirm", methods=["POST"])
 @login_required
+@transactional(domain="match")
 def unconfirm_rack(rack_id):
     """Rimuovi conferma da un rack"""
     rack = Rack.query.get_or_404(rack_id)
@@ -1363,7 +1361,6 @@ def unconfirm_rack(rack_id):
 
     # Rimuovi la conferma
     rack.confirmed_by_player = False
-    db.session.commit()
 
     return jsonify({"success": True, "message": "Conferma rimossa"})
 

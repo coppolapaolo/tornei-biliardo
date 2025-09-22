@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import (
     Notification,
     NotificationPreference,
@@ -24,6 +25,7 @@ class NotificationService:
     """Service for notification management and delivery."""
 
     @staticmethod
+    @transactional(domain="notification")
     def create_notification(
         user_id: int,
         notification_type: NotificationType,
@@ -65,7 +67,6 @@ class NotificationService:
             notification.set_related_entities(related_entities)
 
         db.session.add(notification)
-        db.session.commit()
 
         return notification
 
@@ -132,6 +133,7 @@ class NotificationService:
         return query.all()
 
     @staticmethod
+    @transactional(domain="notification")
     def mark_notification_read(notification_id: int, user_id: int) -> bool:
         """Mark a notification as read."""
         notification = Notification.query.filter_by(
@@ -142,10 +144,10 @@ class NotificationService:
             return False
 
         notification.mark_as_read()
-        db.session.commit()
         return True
 
     @staticmethod
+    @transactional(domain="notification")
     def dismiss_notification(notification_id: int, user_id: int) -> bool:
         """Dismiss a notification."""
         notification = Notification.query.filter_by(
@@ -156,10 +158,10 @@ class NotificationService:
             return False
 
         notification.dismiss()
-        db.session.commit()
         return True
 
     @staticmethod
+    @transactional(domain="notification")
     def mark_all_read(user_id: int) -> int:
         """Mark all notifications as read for a user."""
         notifications = (
@@ -180,7 +182,6 @@ class NotificationService:
             notification.mark_as_read()
             count += 1
 
-        db.session.commit()
         return count
 
     @staticmethod
@@ -200,6 +201,7 @@ class NotificationService:
         )
 
     @staticmethod
+    @transactional(domain="notification")
     def set_user_preference(
         user_id: int,
         notification_type: NotificationType,
@@ -251,7 +253,6 @@ class NotificationService:
             except ValueError:
                 pass
 
-        db.session.commit()
         return preference
 
     @staticmethod
@@ -261,6 +262,7 @@ class NotificationService:
         return {pref.notification_type.value: pref for pref in preferences}
 
     @staticmethod
+    @transactional(domain="notification")
     def expire_old_notifications() -> int:
         """Expire old notifications that have passed their expiry time."""
         expired_notifications = Notification.query.filter(
@@ -275,10 +277,10 @@ class NotificationService:
             notification.expire()
             count += 1
 
-        db.session.commit()
         return count
 
     @staticmethod
+    @transactional(domain="notification")
     def cleanup_old_notifications(days_old: int = 30) -> int:
         """Delete old notifications to keep database clean."""
         cutoff_date = datetime.utcnow() - timedelta(days=days_old)
@@ -298,7 +300,6 @@ class NotificationService:
         for notification in old_notifications:
             db.session.delete(notification)
 
-        db.session.commit()
         return count
 
     # Specific notification creators for common use cases
@@ -373,6 +374,7 @@ class NotificationService:
         )
 
     @staticmethod
+    @transactional(domain="notification")
     def create_default_templates() -> List[NotificationTemplate]:
         """Create default notification templates."""
         templates_data = [
@@ -431,5 +433,4 @@ class NotificationService:
                 db.session.add(template)
                 templates.append(template)
 
-        db.session.commit()
         return templates

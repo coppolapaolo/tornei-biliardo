@@ -15,6 +15,16 @@ from sqlalchemy.engine import Engine
 import sqlite3
 from datetime import datetime
 
+# Import transactional decorator - doing a direct import to avoid circular imports
+try:
+    from .transaction.manager import transactional
+except ImportError:
+    # Fallback if transaction manager is not available
+    def transactional(domain=None):
+        def decorator(func):
+            return func
+        return decorator
+
 # Initialize SQLAlchemy instance
 db = SQLAlchemy()
 
@@ -36,16 +46,16 @@ class UtilityMixin:
     adding any additional database columns.
     """
 
+    @transactional(domain="base")
     def save(self):
         """Save the model instance to database"""
         db.session.add(self)
-        db.session.commit()
         return self
 
+    @transactional(domain="base")
     def delete(self):
         """Delete the model instance from database"""
         db.session.delete(self)
-        db.session.commit()
 
     def to_dict(self):
         """Convert model instance to dictionary"""
@@ -171,6 +181,7 @@ class ValidationMixin:
         """
         return True
 
+    @transactional(domain="base")
     def save_with_validation(self):
         """Save the model after validation"""
         if self.validate():
@@ -181,7 +192,6 @@ class ValidationMixin:
             else:
                 # Fallback: manual save to database if no save method
                 db.session.add(self)
-                db.session.commit()
                 return self
         return None
 
@@ -205,16 +215,16 @@ class BaseModel(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
+    @transactional(domain="base")
     def save(self):
         """Save the model instance to database"""
         db.session.add(self)
-        db.session.commit()
         return self
 
+    @transactional(domain="base")
     def delete(self):
         """Delete the model instance from database"""
         db.session.delete(self)
-        db.session.commit()
 
     def to_dict(self):
         """Convert model instance to dictionary"""
@@ -261,6 +271,7 @@ class TimestampedModel(TimestampMixin, UtilityMixin, db.Model):
 # Utility functions for common database operations
 
 
+@transactional(domain="base")
 def get_or_create(model_class, **kwargs):
     """
     Get existing instance or create new one if it doesn't exist.
@@ -278,10 +289,10 @@ def get_or_create(model_class, **kwargs):
     else:
         instance = model_class(**kwargs)
         db.session.add(instance)
-        db.session.commit()
         return instance, True
 
 
+@transactional(domain="base")
 def bulk_create(model_class, instances_data):
     """
     Create multiple instances efficiently.
@@ -299,7 +310,6 @@ def bulk_create(model_class, instances_data):
         instances.append(instance)
 
     db.session.add_all(instances)
-    db.session.commit()
     return instances
 
 
