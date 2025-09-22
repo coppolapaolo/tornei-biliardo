@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy import desc
 
 from ..base import db
+from ..transaction.manager import transactional
 from .models import Challenge, ChallengeAttempt, ChallengeFavorite
 
 
@@ -25,6 +26,7 @@ class ChallengeService:
     """
 
     @staticmethod
+    @transactional(domain="challenge")
     def create_challenge(
         description: str,
         image_path: str,
@@ -50,10 +52,10 @@ class ChallengeService:
         )
 
         db.session.add(challenge)
-        db.session.commit()
         return challenge
 
     @staticmethod
+    @transactional(domain="challenge")
     def update_challenge(
         challenge_id: int,
         description: Optional[str] = None,
@@ -91,7 +93,6 @@ class ChallengeService:
         if is_active is not None:
             challenge.is_active = is_active
 
-        db.session.commit()
         return challenge
 
     @staticmethod
@@ -180,6 +181,7 @@ class ChallengeService:
         return result
 
     @staticmethod
+    @transactional(domain="challenge")
     def start_challenge_attempt(
         user_id: int,
         challenge_id: int,
@@ -195,10 +197,10 @@ class ChallengeService:
         )
 
         db.session.add(attempt)
-        db.session.commit()
         return attempt
 
     @staticmethod
+    @transactional(domain="challenge")
     def complete_challenge_attempt(
         attempt_id: int,
         score: Optional[int] = None,
@@ -216,10 +218,10 @@ class ChallengeService:
         if notes:
             attempt.notes = notes
 
-        db.session.commit()
         return attempt
 
     @staticmethod
+    @transactional(domain="challenge")
     def toggle_favorite(user_id: int, challenge_id: int) -> bool:
         """Toggle challenge as favorite. Returns True if added, False if removed."""
         favorite = (
@@ -230,12 +232,10 @@ class ChallengeService:
 
         if favorite:
             db.session.delete(favorite)
-            db.session.commit()
             return False
         else:
             favorite = ChallengeFavorite(user_id=user_id, challenge_id=challenge_id)
             db.session.add(favorite)
-            db.session.commit()
             return True
 
     @staticmethod
@@ -337,6 +337,7 @@ class ChallengeService:
         return attempt
 
     @staticmethod
+    @transactional(domain="challenge")
     def _create_x_replacement_match_result(attempt: ChallengeAttempt) -> None:
         """Create a match result equivalent for X replacement challenge."""
         from ..match.models import Match
@@ -370,8 +371,6 @@ class ChallengeService:
         match.player1_score = max(1, attempt.score or 0)  # At least 1 for the win
         match.player2_score = 0  # X gets 0
 
-        db.session.commit()
-
     @staticmethod
     def get_admin_statistics() -> List[Dict[str, Any]]:
         """Get statistics for all challenges (admin view)."""
@@ -391,6 +390,7 @@ class ChallengeService:
         )
 
     @staticmethod
+    @transactional(domain="challenge")
     def delete_challenge(challenge_id: int) -> None:
         """Elimina una sfida con logica intelligente per preservare integrità dati.
 
@@ -444,8 +444,6 @@ class ChallengeService:
         else:
             # Soft delete: marca inattiva ma preserva per dati storici
             challenge.is_active = False
-
-        db.session.commit()
 
     @staticmethod
     def record_attempt(

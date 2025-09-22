@@ -16,7 +16,7 @@ The models are organized into business domains with clear separation of concerns
 - **ValidationMixin**: Model validation framework
 - **BaseModel**: Full-featured base with timestamps and utilities
 - **SimpleModel**: Utility methods only, no timestamps
-- **Database utilities**: get_or_create, bulk_create, safe_commit
+- **Database utilities**: get_or_create, bulk_create
 
 #### `status_enum.py` - State Management
 Centralized enumerations for application states:

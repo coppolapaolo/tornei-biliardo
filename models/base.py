@@ -313,21 +313,6 @@ def bulk_create(model_class, instances_data):
     return instances
 
 
-def safe_commit():
-    """
-    Safely commit database changes with error handling.
-
-    Returns:
-        bool: True if commit successful, False otherwise
-    """
-    try:
-        db.session.commit()
-        return True
-    except Exception as e:
-        db.session.rollback()
-        print(f"Database commit failed: {str(e)}")
-        return False
-
 
 # Database initialization helpers
 def init_db(app):

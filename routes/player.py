@@ -202,6 +202,7 @@ def create_match_proposal():
 @player_bp.route("/match-proposals/<int:proposal_id>/accept", methods=["POST"])
 @login_required
 @player_only
+@transactional(domain="individual_match")
 def accept_match_proposal(proposal_id):
     """Accept a match proposal"""
     from models.individual_match.models import (
@@ -262,7 +263,6 @@ def accept_match_proposal(proposal_id):
                 db.session.add(individual_match)
 
             db.session.flush()
-            db.session.commit()
             flash(
                 "Match proposal accepted successfully! You can now play the match.",
                 "success",
@@ -278,6 +278,7 @@ def accept_match_proposal(proposal_id):
 @player_bp.route("/match-proposals/<int:proposal_id>/reject", methods=["POST"])
 @login_required
 @player_only
+@transactional(domain="individual_match")
 def reject_match_proposal(proposal_id):
     """Reject a match proposal"""
     from models.individual_match.models import (
@@ -327,7 +328,6 @@ def reject_match_proposal(proposal_id):
                     db.session.delete(existing_match)
 
             db.session.flush()
-            db.session.commit()
             flash("Match proposal rejected successfully.", "info")
 
     except Exception as e:
@@ -1046,6 +1046,7 @@ def request_director():
 
 @player_bp.route("/notifications")
 @login_required
+@transactional(domain="notification")
 def notifications():
     """Mostra le notifiche dell'utente"""
     from models.notification.models import Notification, NotificationStatus
@@ -1063,8 +1064,6 @@ def notifications():
             notif.status = NotificationStatus.SENT
             notif.sent_at = datetime.utcnow()
 
-    db.session.commit()
-
     return render_template(
         "player/notifications.html", notifications=user_notifications
     )
@@ -1072,6 +1071,7 @@ def notifications():
 
 @player_bp.route("/notifications/<int:notification_id>/mark_read", methods=["POST"])
 @login_required
+@transactional(domain="notification")
 def mark_notification_read(notification_id):
     """Segna una notifica come letta"""
     from models.notification.models import Notification, NotificationStatus
@@ -1082,7 +1082,6 @@ def mark_notification_read(notification_id):
 
     notification.status = NotificationStatus.READ
     notification.read_at = datetime.utcnow()
-    db.session.commit()
 
     # If there's an action URL, redirect to it
     if notification.action_url:
@@ -1170,6 +1169,7 @@ def my_venue_requests():
 
 @player_bp.route("/notifications/mark_all_read", methods=["POST"])
 @login_required
+@transactional(domain="notification")
 def mark_all_notifications_read():
     """Segna tutte le notifiche come lette"""
     from models.notification.models import Notification, NotificationStatus
@@ -1178,7 +1178,6 @@ def mark_all_notifications_read():
         Notification.status != NotificationStatus.READ
     ).update({"status": NotificationStatus.READ, "read_at": datetime.utcnow()})
 
-    db.session.commit()
     flash("Tutte le notifiche sono state segnate come lette.")
     return redirect(url_for("player.notifications"))
 

@@ -22,7 +22,6 @@ from .base import (
     db,
     get_or_create,
     bulk_create,
-    safe_commit,
     init_db,
     reset_db,
 )
@@ -115,7 +114,6 @@ __all__ = [
     "db",
     "get_or_create",
     "bulk_create",
-    "safe_commit",
     "init_db",
     "reset_db",
     # User domain models (Phase 1)
