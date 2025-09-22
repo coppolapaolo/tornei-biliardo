@@ -23,9 +23,9 @@ from sqlalchemy import select
 from models.base import db
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
+from models.transaction.manager import transactional
 from .inscription_service import InscriptionService
 from .round_service import RoundService
-from ..transaction.manager import transactional
 
 from models.exceptions import InvalidTransitionError
 
@@ -1130,6 +1130,7 @@ class GaraService:
         return InscriptionService.can_start_with_current_inscriptions(gara_id)
 
     @staticmethod
+    @transactional(domain="competition")
     def reset_tournament_to_round(
         gara_id: int, target_round: int, admin_id: int, reset_reason: str
     ) -> "OperationResult":
@@ -1205,7 +1206,7 @@ class GaraService:
             match.round_locked = False
 
         db.session.add(gara)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         return OperationResult.success_result(
             operation_type=OperationType.TOURNAMENT_RESET,
@@ -1221,6 +1222,7 @@ class GaraService:
         )
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_tournament(
         gara_id: int,
         admin_id: int,
@@ -1258,7 +1260,7 @@ class GaraService:
         # Change status to cancelled
         gara.status = GaraStatus.CANCELLED.value
         db.session.add(gara)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
         return OperationResult.success_result(
             operation_type=OperationType.TOURNAMENT_CANCELLATION,

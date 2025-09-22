@@ -18,12 +18,14 @@ from .gara_challenge_models import (
     GaraChallengeAttempt,
     GaraChallengeClassification,
 )
+from ..transaction.manager import transactional
 
 
 class GaraChallengeService:
     """Service for managing challenges within competitions."""
 
     @staticmethod
+    @transactional(domain="challenge")
     def add_challenge_to_gara(
         gara_id: int,
         challenge_id: int,
@@ -72,13 +74,14 @@ class GaraChallengeService:
 
         try:
             db.session.add(gara_challenge)
-            db.session.commit()
+            # Transaction managed by @transactional decorator
             return gara_challenge
         except IntegrityError:
             db.session.rollback()
             raise ValueError("Errore durante l'aggiunta della challenge alla gara")
 
     @staticmethod
+    @transactional(domain="challenge")
     def remove_challenge_from_gara(
         gara_id: int, challenge_id: int, round_number: int
     ) -> bool:
@@ -110,7 +113,7 @@ class GaraChallengeService:
         else:
             db.session.delete(gara_challenge)
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return True
 
     @staticmethod
@@ -161,6 +164,7 @@ class GaraChallengeService:
         )
 
     @staticmethod
+    @transactional(domain="challenge")
     def record_challenge_attempt(
         gara_challenge_id: int,
         user_id: int,
@@ -215,7 +219,7 @@ class GaraChallengeService:
 
         try:
             db.session.add(attempt)
-            db.session.commit()
+            # Transaction managed by @transactional decorator
 
             # Update the gara challenge classification
             GaraChallengeService.update_gara_classification(gara_challenge.gara_id)

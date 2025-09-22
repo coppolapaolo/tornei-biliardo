@@ -292,6 +292,7 @@ class InscriptionService:
         return False
 
     @staticmethod
+    @transactional(domain="competition")
     def open_inscriptions(
         gara_id: int, inscription_start: datetime, inscription_end: datetime
     ) -> "Gara":

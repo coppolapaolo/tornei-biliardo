@@ -13,6 +13,7 @@ from models.competition.models import Gara
 from models.match.models import Match
 from models.status_enum import GaraStatus, MatchStatus
 from models.classification.models import RoundClassification
+from models.transaction.manager import transactional
 
 
 class RoundLockStatus(Enum):
@@ -84,6 +85,7 @@ class AdvancedRoundManager:
         return True, ""
 
     @staticmethod
+    @transactional(domain="competition")
     def reset_match_with_validation(
         match_id: int, admin_override: bool = False
     ) -> Tuple[bool, str]:
@@ -120,7 +122,7 @@ class AdvancedRoundManager:
                 match.gara_id, match.round_number
             )
 
-            db.session.commit()
+            # Transaction managed by @transactional decorator
             return True, "Match resettato con successo"
 
         except Exception as e:
@@ -133,6 +135,7 @@ class AdvancedRoundManager:
             return False, f"Errore nel reset del match: {str(e)}"
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_round(
         gara_id: int, round_number: int, admin_override: bool = False
     ) -> Tuple[bool, str]:
@@ -189,7 +192,7 @@ class AdvancedRoundManager:
                 if gara.current_round == 0:
                     gara.status = GaraStatus.INSCRIPTION.value
 
-            db.session.commit()
+            # Transaction managed by @transactional decorator
             return True, f"Turno {round_number} cancellato con successo"
 
         except Exception as e:
@@ -197,6 +200,7 @@ class AdvancedRoundManager:
             return False, f"Errore nella cancellazione del turno: {str(e)}"
 
     @staticmethod
+    @transactional(domain="competition")
     def bulk_reset_round_matches(
         gara_id: int, round_number: int
     ) -> Tuple[bool, str, Dict[str, int]]:
@@ -241,7 +245,7 @@ class AdvancedRoundManager:
                     gara_id, round_number
                 )
 
-            db.session.commit()
+            # Transaction managed by @transactional decorator
 
             stats = {
                 "reset_count": reset_count,

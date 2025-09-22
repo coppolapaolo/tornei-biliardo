@@ -9,6 +9,7 @@ Dependencies: models.base.db, datetime
 from datetime import datetime
 from models.base import db, TimestampMixin
 from sqlalchemy.orm import backref
+from models.transaction.manager import transactional
 
 
 class Classification(db.Model, TimestampMixin):
@@ -91,6 +92,7 @@ class RoundClassification(db.Model):
     )
 
     @staticmethod
+    @transactional(domain="classification")
     def calculate_classification_after_round(gara_id, round_number):
         """
         Calculate classification after a specific round.
@@ -257,7 +259,7 @@ class RoundClassification(db.Model):
                 )
                 db.session.add(classification)
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return sorted_players
 
     def __repr__(self):
@@ -337,6 +339,7 @@ class PlayerEncounter(db.Model):
         return encounter is not None
 
     @staticmethod
+    @transactional(domain="classification")
     def record_encounter(gara_id, player1_id, player2_id, round_number):
         """
         Record that two players have played against each other.
@@ -370,7 +373,7 @@ class PlayerEncounter(db.Model):
             round_number=round_number,
         )
         db.session.add(encounter)
-        db.session.commit()
+        # Transaction managed by @transactional decorator
         return encounter
 
     def __repr__(self):

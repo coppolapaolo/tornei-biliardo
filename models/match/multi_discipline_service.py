@@ -8,12 +8,14 @@ from typing import List, Dict, Any
 from ..base import db
 from .models import Match
 from .set_models import Set
+from ..transaction.manager import transactional
 
 
 class MultiDisciplineService:
     """Service for managing multi-discipline match configurations."""
 
     @staticmethod
+    @transactional(domain="match")
     def configure_rotating_disciplines(
         match_id: int, disciplines: List[str], rotation_type: str = "set_level"
     ) -> None:
@@ -57,9 +59,10 @@ class MultiDisciplineService:
         else:
             raise ValueError(f"Unsupported rotation type: {rotation_type}")
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
     @staticmethod
+    @transactional(domain="match")
     def configure_custom_disciplines(
         match_id: int, set_configurations: Dict[int, Dict[str, Any]]
     ) -> None:
@@ -108,7 +111,7 @@ class MultiDisciplineService:
                 match_set.discipline = config.get("discipline", "palla_8")
                 match_set.is_multi_discipline = False
 
-        db.session.commit()
+        # Transaction managed by @transactional decorator
 
     @staticmethod
     def get_available_disciplines() -> List[Dict[str, str]]:

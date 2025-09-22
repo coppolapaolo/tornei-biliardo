@@ -456,16 +456,15 @@ def debug_create_player():
             break
         counter += 1
 
-    # Crea il nuovo utente
-    new_user = User(
+    # Crea il nuovo utente usando il servizio
+    from models.user.services import UserService
+
+    new_user = UserService.create_user(
         username=username,
         email=f"{username}@debug.local",
         role="player",
-        password_hash=generate_password_hash("123456"),
+        password="123456"  # Il servizio si occupa dell'hashing
     )
-
-    db.session.add(new_user)
-    db.session.commit()
 
     flash(f"Player '{username}' creato con successo! Password: 123456", "success")
     return redirect(request.referrer or url_for("dashboard.dashboard"))
@@ -514,31 +513,31 @@ def debug_fill_gara(gara_id):
 
     if len(available_players) < needed:
         # Trova il prossimo numero per i nuovi player
+        from models.user.services import UserService
+
         counter = 1
         while len(players_to_add) < needed:
             username = f"player{counter}"
             existing = User.query.filter_by(username=username).first()
             if not existing:
-                # Crea nuovo player
-                new_player = User(
+                # Crea nuovo player usando il servizio
+                new_player = UserService.create_user(
                     username=username,
                     email=f"{username}@debug.local",
                     role="player",
-                    password_hash=generate_password_hash("123456"),
+                    password="123456"
                 )
-                db.session.add(new_player)
-                db.session.flush()  # Per ottenere l'ID
                 players_to_add.append(new_player)
             counter += 1
 
-    # Iscrive i giocatori alla gara
+    # Iscrive i giocatori alla gara usando il servizio
+    from models.competition.inscription_service import InscriptionService
+
     new_inscriptions = 0
     for player in players_to_add[:needed]:
-        inscription = Inscription(user_id=player.id, gara_id=gara_id)
-        db.session.add(inscription)
-        new_inscriptions += 1
-
-    db.session.commit()
+        inscription = InscriptionService.inscribe_user(player.id, gara_id)
+        if inscription:
+            new_inscriptions += 1
 
     flash(
         f"Aggiunti {new_inscriptions} iscritti alla gara. Totale: {current_inscriptions + new_inscriptions}",
@@ -617,8 +616,7 @@ def debug_complete_current_round(gara_id):
         match._check_and_complete_gara_if_needed(match)
         completed_count += 1
 
-    db.session.commit()
-
+    # Flask handles transaction commit automatically
     # Dopo aver completato i match, controlla se ci sono turni da aggiornare
     from models.competition.services import GaraService
 
