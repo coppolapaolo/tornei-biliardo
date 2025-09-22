@@ -26,120 +26,10 @@ from .models import Gara, Inscription
 from models.transaction.manager import transactional
 from .inscription_service import InscriptionService
 from .round_service import RoundService
+from .state_service import StateService
 
 from models.exceptions import InvalidTransitionError
 
-
-class ProvaStateMachine:
-    """Regole di transizione per `Gara.status`.
-
-    Stati persistiti ammessi: setup → inscription ↔ setup → playing → completed.
-    - setup → inscription: apertura iscrizioni
-    - inscription → setup: riapertura setup (es. modifica date/config)
-    - inscription → playing: inizio partite
-    - playing → completed: chiusura gara
-    """
-
-    @staticmethod
-    def _require(gara: Gara, expected: GaraStatus) -> None:
-        if (gara.status or GaraStatus.SETUP.value) != expected.value:
-            raise InvalidTransitionError(
-                f"Transizione non ammessa: {gara.status!r} → "
-                f"{expected.name.lower()} richiesta come stato corrente."
-            )
-
-    @staticmethod
-    @transactional(domain="competition")
-    def to_inscription(gara: Gara) -> Gara:
-        """setup → inscription"""
-        ProvaStateMachine._require(gara, GaraStatus.SETUP)
-
-        # Validazione: le date di iscrizione devono essere impostate
-        if not gara.inscription_start or not gara.inscription_end:
-            raise InvalidTransitionError("Date di iscrizione non impostate")
-
-        gara.status = GaraStatus.INSCRIPTION.value
-        gara.updated_at = getattr(gara, "updated_at", None) or None  # compat
-        db.session.add(gara)
-        return gara
-
-    @staticmethod
-    @transactional(domain="competition")
-    def reopen_setup(gara: Gara) -> Gara:
-        """inscription → setup"""
-        ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
-        gara.status = GaraStatus.SETUP.value
-        db.session.add(gara)
-        return gara
-
-    @staticmethod
-    @transactional(domain="competition")
-    def start_playing(gara: Gara) -> Gara:
-        """inscription → playing.
-        Esegue controlli minimi: se disponibile, verifica numero iscritti >= 2.
-        """
-        ProvaStateMachine._require(gara, GaraStatus.INSCRIPTION)
-
-        # Controllo sul numero di iscritti vs minimo richiesto
-        min_required = gara.min_participants or 2
-        try:
-            count = len(gara.inscriptions)  # type: ignore[attr-defined]
-        except Exception:
-            count = None
-        if count is not None and count < min_required:
-            raise InvalidTransitionError(
-                f"Giocatori insufficienti per iniziare (minimo: {min_required}, iscritti: {count})."
-            )
-
-        gara.status = GaraStatus.PLAYING.value
-        # Se il modello espone current_round/rounds_count, inizializza con cautela
-        if hasattr(gara, "current_round") and getattr(gara, "current_round") in (
-            None,
-            0,
-        ):
-            try:
-                setattr(gara, "current_round", 1)
-            except Exception:
-                pass
-        db.session.add(gara)
-        return gara
-
-    @staticmethod
-    @transactional(domain="competition")
-    def complete(gara: Gara) -> Gara:
-        """playing → completed"""
-        ProvaStateMachine._require(gara, GaraStatus.PLAYING)
-
-        # Controllo che non ci siano match ancora in corso
-        try:
-            from models import Match  # Import locale per evitare circular imports
-            from models.status_enum import MatchStatus
-
-            pending_matches = (
-                db.session.query(Match)
-                .filter(
-                    Match.gara_id == gara.id,
-                    Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
-                )
-                .count()
-            )
-
-            if pending_matches > 0:
-                raise InvalidTransitionError(
-                    f"Match ancora in corso ({pending_matches} match pending/playing). "
-                    "Completare tutti i match prima di chiudere il torneo."
-                )
-        except InvalidTransitionError:
-            # Re-raise validation errors - these should not be ignored
-            raise
-        except Exception as e:
-            # Se c'è un errore nell'accesso ai match, procedi comunque
-            # per evitare di bloccare il sistema
-            pass
-
-        gara.status = GaraStatus.COMPLETED.value
-        db.session.add(gara)
-        return gara
 
 
 class GaraService:
@@ -300,221 +190,13 @@ class GaraService:
     @staticmethod
     def start_first_round(gara_id: int) -> Gara:
         """Avvia il primo turno della gara con controlli e sorteggio."""
-        from models.competition.models import Inscription
-        import random
-
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        if gara.current_round != 0:
-            raise ValueError("La gara è già iniziata!")
-
-        # Verifica numero minimo partecipanti (escludi lista d'attesa)
-        inscriptions = (
-            db.session.query(Inscription)
-            .filter_by(gara_id=gara_id, is_waitlist=False)
-            .all()
-        )
-        if len(inscriptions) < gara.min_participants:
-            raise ValueError(
-                f"Servono almeno {gara.min_participants} iscritti per avviare la gara!"
-            )
-
-        # Genera il sorteggio iniziale
-        random.shuffle(inscriptions)
-
-        # Assegna ordine sorteggio
-        for i, inscription in enumerate(inscriptions, 1):
-            inscription.initial_order = i
-
-        # Gestione diversa per strategia Random vs altre strategie
-        if gara.matchmaking_strategy == "random":
-            # Per strategia Random: crea tutti i turni subito usando la strategia
-            from models.matchmaking.bootstrap import get_registry
-
-            registry = get_registry()
-
-            # Mappatura nome strategia: enum -> registry
-            strategy_mapping = {
-                "random": "random_anti_rematch",
-                "amalfi": "amalfi",
-                "round_robin": "round_robin",
-                "direct_elimination": "direct_elimination",
-                "double_knockout": "double_knockout",
-            }
-
-            registry_name = strategy_mapping.get(gara.matchmaking_strategy)
-            if not registry_name:
-                raise ValueError(
-                    f"Mapping per strategia {gara.matchmaking_strategy} non trovato"
-                )
-
-            strategy = registry.get(registry_name)
-            if not strategy:
-                raise ValueError(f"Strategia {registry_name} non trovata nel registry")
-
-            # Crea tutti i turni contemporaneamente
-            from models.match.models import Match
-
-            for round_num in range(1, gara.rounds_count + 1):
-                pairings = strategy.propose(gara, round_num)
-
-                # Get discipline configuration for this round
-                from models.competition.round_configuration import RoundConfiguration
-
-                round_config = RoundConfiguration.get_for_gara_round(gara_id, round_num)
-                round_discipline = round_config.discipline if round_config else None
-
-                # Crea i match nel database
-                for pairing in pairings:
-                    if len(pairing.players) == 1 and pairing.is_bye:
-                        # Match con X - assegnalo come completato con punteggio pieno
-                        bye_score = (
-                            gara.get_winning_score() if gara.best_of else gara.distance
-                        )
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_num,
-                            player1_id=pairing.players[0],
-                            player2_id=None,
-                            is_bye=True,
-                            player1_score=bye_score,
-                            winner_id=pairing.players[0],
-                            status="completed",
-                            discipline=round_discipline,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 2 and not pairing.is_bye:
-                        # Match normale
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_num,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            discipline=round_discipline,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 3:
-                        # Match trio
-                        from models.match.models import TrioMatch
-
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_num,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            is_trio=True,
-                            discipline=round_discipline,
-                        )
-                        db.session.add(match)
-
-                        # Crea il record TrioMatch con tutti e tre i giocatori
-                        trio_match = TrioMatch(
-                            match=match,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            player3_id=pairing.players[2],
-                        )
-                        db.session.add(trio_match)
-
-            # Imposta il turno corrente al primo
-            gara.current_round = 1
-            gara = ProvaStateMachine.start_playing(gara)
-
-        else:
-            # Per altre strategie: crea solo il primo turno
-            from utils import create_round_matches  # Import locale
-
-            create_round_matches(gara, inscriptions, 1)
-
-            gara.current_round = 1
-            gara = ProvaStateMachine.start_playing(gara)
-
-        return gara
+        return RoundService.start_first_round(gara_id)
 
     @staticmethod
     @transactional(domain="competition")
     def cancel_first_round_startup(gara_id: int) -> Gara:
-        """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
-
-        Riporta la gara allo stato 'inscription' e rimuove tutte le partite del primo turno.
-        Utilizzabile solo se il primo turno è stato avviato ma nessun risultato è stato inserito.
-        """
-        from models.match.models import Match, TrioMatch
-        from models.status_enum import MatchStatus
-
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        # Verifica che siamo al primo turno
-        if gara.current_round != 1:
-            raise ValueError(
-                "Questa funzione può essere usata solo per cancellare l'avvio del primo turno"
-            )
-
-        # Verifica che non ci siano risultati inseriti (neanche parziali)
-        first_round_matches = Match.query.filter_by(
-            gara_id=gara_id, round_number=1
-        ).all()
-
-        if not first_round_matches:
-            raise ValueError("Non ci sono partite del primo turno da cancellare")
-
-        # Controlla che non ci siano risultati inseriti (neanche parziali)
-        for match in first_round_matches:
-            if (
-                match.player1_score > 0
-                or match.player2_score > 0
-                or match.status != MatchStatus.PENDING.value
-            ):
-                raise ValueError(
-                    "Impossibile cancellare l'avvio: sono già stati inseriti risultati (anche parziali)"
-                )
-
-        # Rimuovi tutte le partite del primo turno
-        from models.classification.models import (
-            PlayerEncounter,
-            RoundClassification,
-        )
-
-        # Rimuovi eventuali trii collegati
-        for match in first_round_matches:
-            trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
-            if trio:
-                db.session.delete(trio)
-
-        # Rimuovi i PlayerEncounter del primo turno per ripristinare l'anti-rematch
-        encounters_to_remove = (
-            db.session.query(PlayerEncounter)
-            .filter_by(gara_id=gara_id, round_number=1)
-            .all()
-        )
-        for encounter in encounters_to_remove:
-            db.session.delete(encounter)
-
-        # Rimuovi le RoundClassification del primo turno
-        classifications_to_remove = (
-            db.session.query(RoundClassification)
-            .filter_by(gara_id=gara_id, round_number=1)
-            .all()
-        )
-        for classification in classifications_to_remove:
-            db.session.delete(classification)
-
-        # Rimuovi tutte le partite
-        for match in first_round_matches:
-            db.session.delete(match)
-
-        # Riporta la gara allo stato inscription
-        gara.current_round = 0
-        gara.status = GaraStatus.INSCRIPTION.value
-
-        db.session.add(gara)
-        return gara
+        """Cancella l'avvio del primo turno se non sono stati inseriti risultati."""
+        return RoundService.cancel_first_round_startup(gara_id)
 
     @staticmethod
     @transactional(domain="competition")
@@ -890,7 +572,7 @@ class GaraService:
         if end is not None:
             gara.inscription_end = end
 
-        gara = ProvaStateMachine.to_inscription(gara)
+        gara = StateService.to_inscription(gara)
 
         return gara
 
@@ -899,21 +581,21 @@ class GaraService:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
-        return ProvaStateMachine.reopen_setup(gara)
+        return StateService.reopen_setup(gara)
 
     @staticmethod
     def start_playing(gara_id: int) -> Gara:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
-        return ProvaStateMachine.start_playing(gara)
+        return StateService.start_playing(gara)
 
     @staticmethod
     def complete(gara_id: int) -> Gara:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
-        return ProvaStateMachine.complete(gara)
+        return StateService.complete(gara)
 
     @staticmethod
     @transactional(domain="competition")
@@ -1283,6 +965,5 @@ class GaraService:
 
 __all__ = [
     "GaraService",
-    "ProvaStateMachine",
     "InvalidTransitionError",
 ]

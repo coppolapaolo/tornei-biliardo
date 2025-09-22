@@ -142,10 +142,10 @@ class TestUserWorkflowsComplete:
         )
 
         # Make tournaments visible (move to inscription status)
-        from models.competition.services import ProvaStateMachine
+        from models.competition.state_service import StateService
 
-        ProvaStateMachine.to_inscription(gara_standalone)
-        ProvaStateMachine.to_inscription(gara_campionato)
+        StateService.to_inscription(gara_standalone)
+        StateService.to_inscription(gara_campionato)
 
         # Step 1: Guest Registration
         registration_data = {

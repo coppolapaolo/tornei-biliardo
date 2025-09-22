@@ -1,7 +1,7 @@
 """TDD tests for complex gara state transitions and workflows.
 
 This module implements Test-Driven Development for complex state transition
-scenarios not fully covered by existing tests, focusing on the ProvaStateMachine
+scenarios not fully covered by existing tests, focusing on the StateService
 and edge cases in gara lifecycle management.
 
 Following the Red-Green-Refactor cycle for state transitions:
@@ -21,7 +21,8 @@ from models import User, Gara, Inscription, Match
 from models.user.role_enum import UserRole
 from models.competition.models import WithdrawPolicy
 from models.status_enum import GaraStatus, MatchStatus
-from models.competition.services import GaraService, ProvaStateMachine
+from models.competition.services import GaraService
+from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
 
 
@@ -64,7 +65,7 @@ class TestGaraStateTransitionsTDD:
         with pytest.raises(
             InvalidTransitionError, match="Date di iscrizione non impostate"
         ):
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
     def test_inscription_to_playing_with_insufficient_players_should_fail(
         self, db_session
@@ -105,7 +106,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add only 3 players (less than minimum of 6)
         for i in range(3):
@@ -128,7 +129,7 @@ class TestGaraStateTransitionsTDD:
         with pytest.raises(
             InvalidTransitionError, match="Giocatori insufficienti per iniziare"
         ):
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
 
     def test_playing_to_completed_with_pending_matches_should_fail(self, db_session):
         """Test that PLAYING -> COMPLETED fails with pending matches.
@@ -167,7 +168,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add sufficient players
         players = []
@@ -189,7 +190,7 @@ class TestGaraStateTransitionsTDD:
         db_session.commit()
 
         # Start first round (creates matches)
-        ProvaStateMachine.start_playing(gara)
+        StateService.start_playing(gara)
 
         # Verify gara is now PLAYING
         db_session.refresh(gara)
@@ -217,7 +218,7 @@ class TestGaraStateTransitionsTDD:
 
         # Try to complete tournament with pending matches
         with pytest.raises(InvalidTransitionError, match="Match ancora in corso"):
-            ProvaStateMachine.complete(gara)
+            StateService.complete(gara)
 
     def test_rollback_from_playing_to_inscription_when_no_results_entered(
         self, db_session
@@ -258,7 +259,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Add players
         for i in range(4):
@@ -278,7 +279,7 @@ class TestGaraStateTransitionsTDD:
         db_session.commit()
 
         # Start first round
-        ProvaStateMachine.start_playing(gara)
+        StateService.start_playing(gara)
 
         # Verify in PLAYING state
         db_session.refresh(gara)
@@ -290,7 +291,7 @@ class TestGaraStateTransitionsTDD:
         db_session.commit()
 
         # Now we can use the available rollback method
-        ProvaStateMachine.reopen_setup(gara)
+        StateService.reopen_setup(gara)
 
         # Verify rollback to SETUP
         db_session.refresh(gara)
@@ -333,14 +334,14 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Verify in INSCRIPTION state
         db_session.refresh(gara)
         assert gara.status == GaraStatus.INSCRIPTION.value
 
         # Should be able to rollback to SETUP for major changes
-        ProvaStateMachine.reopen_setup(gara)
+        StateService.reopen_setup(gara)
 
         # Verify rollback to SETUP
         db_session.refresh(gara)
@@ -382,13 +383,13 @@ class TestGaraStateTransitionsTDD:
 
         # All transitions should fail from COMPLETED
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine.start_playing(gara)
+            StateService.start_playing(gara)
 
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine.reopen_setup(gara)
+            StateService.reopen_setup(gara)
 
     def test_concurrent_state_transition_should_handle_race_condition(self, db_session):
         """Test that concurrent state transitions are handled safely.
@@ -428,11 +429,11 @@ class TestGaraStateTransitionsTDD:
         )
 
         # First transition should succeed
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Second concurrent transition should fail (already in INSCRIPTION state)
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
-            ProvaStateMachine.to_inscription(gara)
+            StateService.to_inscription(gara)
 
     def test_state_transition_with_validation_callbacks(self, db_session):
         """Test state transitions trigger proper validation callbacks.
@@ -473,7 +474,7 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Should succeed with valid configuration
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         db_session.refresh(gara)
         assert gara.status == GaraStatus.INSCRIPTION.value
@@ -517,7 +518,7 @@ class TestGaraStateTransitionsTDD:
             gara.id, inscription_start, inscription_end
         )
 
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Commit and clear session to ensure persistence
         db_session.commit()

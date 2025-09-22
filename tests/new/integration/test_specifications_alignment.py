@@ -205,9 +205,9 @@ class TestSpecificationsAlignmentFixed:
         )
 
         # Make tournament visible
-        from models.competition.services import ProvaStateMachine
+        from models.competition.state_service import StateService
 
-        ProvaStateMachine.to_inscription(gara)
+        StateService.to_inscription(gara)
 
         # Test guest home access (no authentication)
         response = client.get("/")

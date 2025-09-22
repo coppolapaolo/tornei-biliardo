@@ -35,7 +35,8 @@ from utils import (
     director_or_admin_required,
     trio_manager_required,
 )
-from models.competition.services import GaraService, ProvaStateMachine
+from models.competition.services import GaraService
+from models.competition.state_service import StateService
 from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
 from models.classification.models import RoundClassification
 from models.location.models import BilliardHall
@@ -859,7 +860,7 @@ def close_inscriptions(gara_id):
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Usa il service layer per tornare allo stato setup
-        ProvaStateMachine.reopen_setup(gara)
+        StateService.reopen_setup(gara)
         flash(
             "Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.",
             "success",

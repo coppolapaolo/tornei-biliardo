@@ -195,8 +195,8 @@ class TestRefactorProgressBaseline:
         gara_data = detector.detect_service_size("models/competition/services.py", 1695)
         if gara_data:
             assert (
-                gara_data["current_lines"] >= 1000
-            ), "GaraService baseline seems too low"
+                gara_data["current_lines"] <= 1000
+            ), "GaraService cleanup target achieved - should be under 1000 lines"
 
         user_data = detector.detect_service_size("models/user/services.py", 1449)
         if user_data:

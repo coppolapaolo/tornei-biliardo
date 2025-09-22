@@ -21,7 +21,8 @@ from models import User, Gara, Inscription
 from models.user.role_enum import UserRole
 from models.competition.models import WithdrawPolicy
 from models.status_enum import GaraStatus
-from models.competition.services import GaraService, ProvaStateMachine
+from models.competition.services import GaraService
+from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
 
 
