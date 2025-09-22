@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from models.base import db
+from models.base import db, transactional
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
 
@@ -175,6 +175,7 @@ class RoundService:
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def cancel_first_round_startup(gara_id: int) -> Gara:
         """Cancella l'avvio del primo turno se non sono stati inseriti risultati.
 
@@ -231,10 +232,10 @@ class RoundService:
             gara.status = GaraStatus.INSCRIPTION.value
             db.session.add(gara)
 
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def create_round_with_strategy(
         gara_id: int, round_number: int, discipline_override: Optional[str] = None
     ) -> tuple[int, int, int, int]:
@@ -386,7 +387,6 @@ class RoundService:
                     match.round_locked = True
                     db.session.add(match)
 
-            db.session.commit()
             return (total_matches, normal_matches, bye_matches, trio_matches)
 
         except Exception as e:
@@ -511,6 +511,7 @@ class RoundService:
             raise ValueError(f"Errore durante l'anteprima del turno: {str(e)}")
 
     @staticmethod
+    @transactional(domain="competition")
     def update_round_progression(gara_id: int) -> None:
         """Aggiorna la progressione dei turni e calcola le classifiche quando necessario."""
         from models.match.models import Match
@@ -554,8 +555,6 @@ class RoundService:
             else:
                 # Turno incompleto, ferma qui
                 break
-
-        db.session.commit()
 
 
 __all__ = ["RoundService"]

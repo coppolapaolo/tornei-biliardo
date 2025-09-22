@@ -5,7 +5,7 @@ Extracted from ProvaStateMachine to follow Single Responsibility Principle
 while maintaining the same simple interface and behavior.
 """
 
-from models.base import db
+from models.base import db, transactional
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
 from models.competition.models import Gara
@@ -27,6 +27,7 @@ class StateService:
             )
 
     @staticmethod
+    @transactional(domain="competition")
     def to_inscription(gara: Gara) -> Gara:
         """setup → inscription"""
         StateService._require(gara, GaraStatus.SETUP)
@@ -37,19 +38,19 @@ class StateService:
 
         gara.status = GaraStatus.INSCRIPTION.value
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def reopen_setup(gara: Gara) -> Gara:
         """inscription → setup"""
         StateService._require(gara, GaraStatus.INSCRIPTION)
         gara.status = GaraStatus.SETUP.value
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def start_playing(gara: Gara) -> Gara:
         """inscription → playing"""
         StateService._require(gara, GaraStatus.INSCRIPTION)
@@ -70,14 +71,13 @@ class StateService:
         gara.status = GaraStatus.PLAYING.value
         gara.current_round = 1
         db.session.add(gara)
-        db.session.commit()
         return gara
 
     @staticmethod
+    @transactional(domain="competition")
     def complete(gara: Gara) -> Gara:
         """playing → completed"""
         StateService._require(gara, GaraStatus.PLAYING)
         gara.status = GaraStatus.COMPLETED.value
         db.session.add(gara)
-        db.session.commit()
         return gara

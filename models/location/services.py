@@ -80,6 +80,7 @@ class LocationService:
         return query.order_by(BilliardHall.name).all()
 
     @staticmethod
+    @transactional(domain="location")
     def set_user_availability(
         user_id: int,
         billiard_hall_id: int,
@@ -131,7 +132,6 @@ class LocationService:
             except ValueError:
                 pass
 
-        db.session.commit()
         return availability
 
     @staticmethod
@@ -299,6 +299,7 @@ class LocationService:
         return suggestions
 
     @staticmethod
+    @transactional(domain="location")
     def record_match_at_location(user_id: int, location_name: str) -> None:
         """Record that a user played a match at a location."""
 
@@ -328,9 +329,8 @@ class LocationService:
             )
             db.session.add(availability)
 
-        db.session.commit()
-
     @staticmethod
+    @transactional(domain="location")
     def update_billiard_hall(hall_id: int, **kwargs) -> BilliardHall:
         """Update billiard hall information."""
 
@@ -370,7 +370,6 @@ class LocationService:
         if "business_hours" in kwargs:
             hall.set_business_hours(kwargs["business_hours"])
 
-        db.session.commit()
         return hall
 
     @staticmethod

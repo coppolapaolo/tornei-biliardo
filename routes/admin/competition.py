@@ -456,14 +456,13 @@ def edit_gara(gara_id):
                             discipline=round_discipline,
                         )
 
-                # Commit round configurations
-                db.session.commit()
+                # Round configurations will be committed by transaction decorator
             else:
                 # For non-random strategies, clear any existing round configurations
                 from models.competition.round_configuration import RoundConfiguration
 
                 RoundConfiguration.delete_for_gara(gara_id)
-                db.session.commit()
+                # Changes will be committed by transaction decorator
 
             flash("Gara aggiornata con successo!")
         except ValueError as ve:
@@ -986,6 +985,7 @@ def amalfi_classification(gara_id, round_number):
 )
 @login_required
 @gara_manager_required
+@transactional(domain="competition")
 def amalfi_start_round(gara_id, round_number):
     """Avvia un turno specifico con algoritmo Amalfi"""
     gara = Gara.query.get_or_404(gara_id)
@@ -1052,7 +1052,7 @@ def amalfi_start_round(gara_id, round_number):
         # Aggiorna il turno corrente DOPO il cambio di stato
         gara.current_round = round_number
         db.session.add(gara)
-        db.session.commit()
+        # Changes will be committed by transaction decorator
 
         # Costruisci il messaggio di successo
         message = f"Turno {round_number} avviato con successo! Creati {total} abbinamenti Amalfi."
@@ -1087,6 +1087,7 @@ def amalfi_start_round(gara_id, round_number):
 @competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
 @login_required
 @gara_manager_required
+@transactional(domain="competition")
 def start_round_generic(gara_id, round_number):
     """Avvia un turno specifico con la strategia configurata nella gara"""
     gara = Gara.query.get_or_404(gara_id)
@@ -1164,7 +1165,7 @@ def start_round_generic(gara_id, round_number):
         # Aggiorna il turno corrente DOPO il cambio di stato
         gara.current_round = round_number
         db.session.add(gara)
-        db.session.commit()
+        # Changes will be committed by transaction decorator
 
         # Messaggio di successo
         strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
