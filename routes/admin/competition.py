@@ -14,6 +14,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from datetime import datetime
+from models.transaction.manager import transactional
 
 from models import (
     db,

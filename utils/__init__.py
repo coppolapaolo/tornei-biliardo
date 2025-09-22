@@ -20,6 +20,7 @@ from flask_login import current_user
 from models.user.permissions import PermissionChecker, RoleRequirement
 from models.user.role_enum import UserRole
 from models.competition.services import GaraService
+from models.transaction.manager import transactional
 
 # --------------------------------------------------------------------------
 # Decorator aggiornati con il nuovo permission system
@@ -544,6 +545,7 @@ def calculate_round_classification(gara_id, round_number):
 # --------------------------------------------------------------------------
 # Funzioni di bootstrap / sample data
 # --------------------------------------------------------------------------
+@transactional(domain="utils")
 def create_default_users():
     """Crea tre utenti di base (admin + 2 player)."""
     from models import User, db  # Local import to avoid circular dependency
@@ -558,10 +560,10 @@ def create_default_users():
     pino.set_password("pino123")
 
     db.session.add_all([admin, mario, pino])
-    db.session.commit()
     return admin, mario, pino
 
 
+@transactional(domain="utils")
 def create_sample_campionato():
     """Crea due campionati di esempio con gare collegate."""
     from models import Campionato, db  # Local import to avoid circular dependency
@@ -575,7 +577,6 @@ def create_sample_campionato():
         is_active=True,
     )
     db.session.add(tournament1)
-    db.session.commit()
 
     tournament2 = Campionato(
         name="Coppa Estate 2025",
@@ -586,7 +587,6 @@ def create_sample_campionato():
         is_active=True,
     )
     db.session.add(tournament2)
-    db.session.commit()
 
     from datetime import date, timedelta
 
@@ -643,13 +643,13 @@ def create_sample_campionato():
         status="setup",
     )
 
-    db.session.commit()
     print("✅ Creati 2 campionati di esempio:")
     print(f"   - {tournament1.name} (ID: {tournament1.id}) con 2 gare")
     print(f"   - {tournament2.name} (ID: {tournament2.id}) con 1 gara")
     return tournament1, tournament2
 
 
+@transactional(domain="utils")
 def create_admin_if_not_exists():
     """Garantisce la presenza di un admin nel DB, leggendo credenziali da config/env.
 
@@ -693,7 +693,6 @@ def create_admin_if_not_exists():
     )
     admin.set_password(password)
     db.session.add(admin)
-    db.session.commit()
     return admin
 
 

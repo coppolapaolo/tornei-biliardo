@@ -12,6 +12,7 @@ from models import BilliardHall
 from models.location.services import LocationService
 from models.user.services import VenueManagerRequestService, VenueManagementService
 from models.user.models import VenueManagerRequest, User
+from models.transaction.manager import transactional
 from utils import admin_required, venue_manager_required
 from flask_login import login_required, current_user
 from models.base import db
@@ -208,6 +209,7 @@ def venue_detail(venue_id):
 
 @venue_bp.route("/venues/new", methods=["GET", "POST"])
 @admin_required
+@transactional(domain="venue")
 def create_venue():
     """Crea nuova sala biliardo"""
     if request.method == "POST":
@@ -256,7 +258,6 @@ def create_venue():
             # Set business hours if provided
             if business_hours:
                 venue.business_hours = business_hours
-                db.session.commit()
 
             flash("Sala biliardo creata con successo!", "success")
             return redirect(url_for("admin.venue.venue_detail", venue_id=venue.id))
@@ -333,6 +334,7 @@ def edit_venue(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/delete", methods=["POST"])
 @admin_required
+@transactional(domain="venue")
 def delete_venue(venue_id):
     """Disattiva sala biliardo (soft delete)"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -343,7 +345,6 @@ def delete_venue(venue_id):
 
     try:
         venue.is_active = False
-        db.session.commit()
         flash(f"Sala biliardo '{venue.name}' disattivata.", "success")
     except Exception as e:
         flash(f"Errore nella disattivazione: {e}", "error")
@@ -353,6 +354,7 @@ def delete_venue(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/activate", methods=["POST"])
 @admin_required
+@transactional(domain="venue")
 def activate_venue(venue_id):
     """Attiva sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -363,7 +365,6 @@ def activate_venue(venue_id):
 
     try:
         venue.is_active = True
-        db.session.commit()
         flash(f"Sala biliardo '{venue.name}' attivata.", "success")
     except Exception as e:
         flash(f"Errore nell'attivazione: {e}", "error")
@@ -373,6 +374,7 @@ def activate_venue(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/toggle", methods=["POST"])
 @admin_required
+@transactional(domain="venue")
 def toggle_venue_status(venue_id):
     """API AJAX per cambiare stato venue (is_active o verified)"""
     from flask import jsonify
@@ -391,7 +393,6 @@ def toggle_venue_status(venue_id):
 
         # Update the field
         setattr(venue, field, value)
-        db.session.commit()
 
         # Generate appropriate message
         if field == "is_active":
@@ -410,6 +411,7 @@ def toggle_venue_status(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/verify", methods=["POST"])
 @venue_manager_required
+@transactional(domain="venue")
 def verify_venue(venue_id):
     """Verifica sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -420,7 +422,6 @@ def verify_venue(venue_id):
 
     try:
         venue.verified = not venue.verified
-        db.session.commit()
         status = "verificata" if venue.verified else "non verificata"
         flash(f"Sala biliardo '{venue.name}' ora è {status}.", "success")
     except Exception as e:
@@ -431,6 +432,7 @@ def verify_venue(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/table_numbers", methods=["POST"])
 @venue_manager_required
+@transactional(domain="venue")
 def update_table_numbers(venue_id):
     """Aggiorna numerazione tavoli"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -456,7 +458,6 @@ def update_table_numbers(venue_id):
             current_amenities.append(f"Tavoli: {table_numbers}")
 
         venue.set_amenities(current_amenities)
-        db.session.commit()
 
         flash("Numerazione tavoli aggiornata!", "success")
     except Exception as e:
@@ -467,6 +468,7 @@ def update_table_numbers(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/photo", methods=["POST"])
 @venue_manager_required
+@transactional(domain="venue")
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -514,7 +516,6 @@ def upload_photo(venue_id):
             venue_db_path = ImagePathManager.get_venue_db_path(filename)
             current_amenities.append(f"Foto: {venue_db_path}")
             venue.set_amenities(current_amenities)
-            db.session.commit()
 
             flash("Foto caricata e ridimensionata con successo!", "success")
         except Exception as e:
