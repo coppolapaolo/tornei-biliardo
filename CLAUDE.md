@@ -467,14 +467,18 @@ The project is undergoing systematic refactoring to improve architecture and mai
 4. **Documentation Updates**: Keep refactoring docs current
 
 ### Current Status
-- **Task 1.1**: Transaction Management Migration (IN PROGRESS - SUSPENDED)
+- **Task 1.1**: Transaction Management Migration (65% COMPLETE - IN PROGRESS)
 - **Task 1.2**: GaraService Decomposition (COMPLETED)
 - **Test Stability**: Critical integration tests have been stabilized with isolation fixes
 
 **Latest Improvements (September 2025)**:
+- **Transaction Migration Progress**: Migrated 19+ `db.session.commit()` calls to `@transactional` pattern
+  - Completed: `routes/player.py`, `models/base.py`, `models/challenge/services.py`, `models/campionato/services.py`
+  - Next targets: `models/tiebreaker/services.py`, `models/rating/services.py`
+- **Code Quality Enhancements**: Resolved all 25 linting issues in `routes/player.py`
+  - Achieved: 0 flake8 errors, 0 pyright errors across migrated files
 - Fixed test isolation issues in critical integration tests
 - Updated admin routes and integration test suite
-- Resolved shared state problems in refactor TDD tests
 - All major use case workflows now have stable test coverage
 
-**Next Developer**: Refactoring can proceed - test suite is stable with `PYTHONPATH=. pytest tests/new/`
+**Next Developer**: Transaction migration can continue - test suite is stable with `PYTHONPATH=. pytest tests/new/`
