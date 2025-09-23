@@ -54,26 +54,8 @@ class TestRefactorMilestones:
                 f"({data['current_lines']}/{data['target_lines']} lines)"
             )
 
-    def test_user_service_decomposition_milestone(self):
-        """MILESTONE: Fallisce quando UserService è sotto 500 righe.
-
-        Target: Ridurre UserService da 1449 righe a <500.
-        """
-        detector = RefactorProgressDetector()
-        data = detector.detect_service_size("models/user/services.py", 1449)
-
-        if data and data["current_lines"] < 500:
-            pytest.fail(
-                f"🎉 MILESTONE RAGGIUNTO! "
-                f"UserService decomposition completa: {data['current_lines']} righe "
-                f"(era {data['baseline_lines']}). "
-                f"Aggiornare REFACTOR_PROGRESS.md e rimuovere questo test."
-            )
-        elif data:
-            print(
-                f"UserService decomposition progress: {data['reduction_percent']:.1f}% "
-                f"({data['current_lines']}/{data['target_lines']} lines)"
-            )
+    # MILESTONE COMPLETED ✅: UserService decomposition achieved 477 lines (target <500)
+    # Original test removed as milestone was reached (Task 1.3 completed)
 
     def test_amalfi_migration_milestone(self):
         """MILESTONE: Fallisce quando migration amalfi è completa.
@@ -200,9 +182,10 @@ class TestRefactorProgressBaseline:
 
         user_data = detector.detect_service_size("models/user/services.py", 1449)
         if user_data:
+            # Task 1.3 completed: UserService successfully decomposed to 477 lines
             assert (
-                user_data["current_lines"] >= 800
-            ), "UserService baseline seems too low"
+                user_data["current_lines"] <= 500
+            ), f"UserService decomposition complete - should be under 500 lines (currently {user_data['current_lines']})"
 
     def test_progress_detection_is_working(self):
         """Verifica che il sistema di detection progress sia funzionante."""

@@ -30,6 +30,48 @@ Quando si incontrano test che falliscono:
 3. Solo se il test è corretto, modificare il codice
 4. Applicare `black` e `pyright` ai file modificati
 
+### 4. Service Extraction Safety Protocol ⚠️
+**CRITICO**: Per evitare errori durante l'estrazione di servizi, seguire SEMPRE questo protocollo:
+
+#### Pre-Extraction Checklist
+1. **Analisi Completa delle Dipendenze**:
+   - Identificare TUTTE le dipendenze cross-domain (notifications, logging, caching, etc.)
+   - Controllare imports interni e pattern nascosti
+   - Verificare chiamate a servizi esterni (NotificationService, etc.)
+
+2. **Behavioral Analysis**:
+   - Leggere TUTTO il codice del metodo originale, non solo la logica principale
+   - Identificare side effects (notifiche, audit, cleanup, etc.)
+   - Documentare comportamenti impliciti
+
+#### During Extraction
+3. **Complete Functional Equivalence**:
+   - ✅ Copiare TUTTA la logica, inclusi side effects
+   - ✅ Mantenere TUTTI gli imports necessari
+   - ✅ Preservare la stessa signature e contract
+   - ❌ MAI omettere "dettagli secondari" come notifiche
+
+4. **Immediate Testing**:
+   - Testare SUBITO dopo l'estrazione con test esistenti
+   - Verificare che nessun test fallisca
+   - Se test falliscono, analizzare specs in `docs/` per capire cosa è corretto
+
+#### Post-Extraction Verification
+5. **Comprehensive Testing**:
+   - Eseguire TUTTI i test che usano il servizio estratto
+   - Verificare integration tests e use case tests
+   - Controllare che i side effects funzionino (es. notifiche arrivino)
+
+6. **Documentation Update**:
+   - Aggiornare documentazione del servizio estratto
+   - Documentare eventuali breaking changes
+   - Aggiornare imports nei test se necessario
+
+#### Lesson Learned (September 2025)
+**Errore Critico Evitato**: Durante l'estrazione di VenueManagerService, la logica delle notifiche fu omessa nell'implementazione estratta, causando test failures. L'errore fu corretto analizzando le specifiche e confrontando implementazione originale vs estratta.
+
+**Regola d'Oro**: **SEMPRE verificare behavioral equivalence PRIMA di rimuovere implementazioni originali.**
+
 ## Documenti
 
 ### [REFACTOR_PROGRESS.md](./REFACTOR_PROGRESS.md)
@@ -39,11 +81,6 @@ Documentazione completa dello stato del refactoring:
 - Statistiche dei commit calls migrati
 - Strategia e pianificazione delle fasi successive
 
-### [REFACTOR_PLAN_ROUND_EXTRACTION.md](./REFACTOR_PLAN_ROUND_EXTRACTION.md)
-Piano specifico per l'estrazione del RoundService:
-- Estrazione logica dei round da GaraService
-- Separazione delle responsabilità tra servizi
-- Refactoring delle dipendenze e dei test
 
 ## Comando per Test
 

@@ -170,10 +170,43 @@ class VenueManagerService:
                 assigned_by_id=admin_user.id
             )
             db.session.add(venue_management)
+
+            # Send notification to user about approval
+            from models.notification.services import NotificationService
+            from models.notification.models import NotificationType, NotificationPriority
+
+            message = f"La tua richiesta per gestire '{request.venue.name}' è stata approvata! Ora puoi gestire questa sala."
+            if notes:
+                message += f" Nota dell'admin: {notes}"
+
+            NotificationService.create_notification(
+                user_id=request.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title=f"Richiesta Gestore '{request.venue.name}' Approvata",
+                message=message,
+                priority=NotificationPriority.HIGH,
+            )
         else:
             request.status = "rejected"
             request.processed_by_id = admin_user.id
             request.notes = notes
+
+            # Send notification to user about rejection
+            from models.notification.services import NotificationService
+            from models.notification.models import NotificationType, NotificationPriority
+
+            message = f"La tua richiesta per gestire '{request.venue.name}' è stata rifiutata."
+            if notes:
+                message += f" Motivo: {notes}"
+            message += " Per maggiori informazioni, contatta l'amministratore."
+
+            NotificationService.create_notification(
+                user_id=request.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title=f"Richiesta Gestore '{request.venue.name}' Rifiutata",
+                message=message,
+                priority=NotificationPriority.NORMAL,
+            )
 
         return request
 
@@ -315,3 +348,124 @@ class VenueManagerService:
 
         db.session.delete(venue_management)
         return True
+
+    @staticmethod
+    @transactional(domain="user")
+    def assign_venue_manager(
+        user_id: int, venue_id: int, assigned_by: User
+    ) -> VenueManagement:
+        """Assign a user as manager of a venue.
+
+        Args:
+            user_id: ID of user to assign as manager
+            venue_id: ID of venue to assign
+            assigned_by: Admin user making the assignment
+
+        Returns:
+            VenueManagement: Created assignment
+
+        Raises:
+            ValueError: If user/venue not found or venue already has manager
+            PermissionError: If assigned_by is not admin
+        """
+        if assigned_by.role != UserRole.ADMIN.value:
+            raise ValueError("Only administrators can assign venue managers")
+
+        # Import User model for user validation
+        from models.user.models import User
+
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        # Import BilliardHall model for venue validation
+        from models.location.models import BilliardHall
+
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError("Venue not found")
+
+        # Check if venue already has an active manager
+        existing_assignment = VenueManagement.query.filter_by(
+            venue_id=venue_id
+        ).first()
+        if existing_assignment:
+            raise ValueError("Venue already has a manager")
+
+        # Create assignment
+        assignment = VenueManagement(
+            user_id=user_id, venue_id=venue_id, assigned_by_id=assigned_by.id
+        )
+        db.session.add(assignment)
+
+        return assignment
+
+    @staticmethod
+    @transactional(domain="user")
+    def revoke_venue_manager(assignment_id: int, revoked_by: User) -> VenueManagement:
+        """Revoke venue manager assignment.
+
+        Args:
+            assignment_id: ID of assignment to revoke
+            revoked_by: Admin user revoking the assignment
+
+        Returns:
+            VenueManagement: Revoked assignment
+
+        Raises:
+            ValueError: If assignment not found
+            PermissionError: If revoked_by is not admin
+        """
+        if revoked_by.role != UserRole.ADMIN.value:
+            raise ValueError("Only administrators can revoke venue manager assignments")
+
+        assignment = db.session.get(VenueManagement, assignment_id)
+        if not assignment:
+            raise ValueError("Venue management assignment not found")
+
+        # Soft delete the assignment by setting a revoked_by field if it exists,
+        # or delete it completely
+        db.session.delete(assignment)
+
+        # Send notification to user
+        from models.notification.services import NotificationService
+        from models.notification.models import NotificationType, NotificationPriority
+
+        NotificationService.create_notification(
+            user_id=assignment.user_id,
+            notification_type=NotificationType.ACCOUNT_UPDATE,
+            title="Revoca Gestione Sala",
+            message="La tua gestione della sala è stata revocata dall'amministratore.",
+            priority=NotificationPriority.NORMAL,
+        )
+
+        return assignment
+
+    @staticmethod
+    @read_only(domain="user")
+    def get_venue_assignments(venue_id: int) -> List[VenueManagement]:
+        """Get all assignments for a venue (including inactive ones).
+
+        Args:
+            venue_id: ID of venue
+
+        Returns:
+            List of VenueManagement assignments for the venue
+        """
+        return VenueManagement.query.filter_by(venue_id=venue_id).all()
+
+    @staticmethod
+    @read_only(domain="user")
+    def get_venue_manager(venue_id: int) -> Optional:
+        """Get current manager of a venue.
+
+        Args:
+            venue_id: ID of venue to get manager for
+
+        Returns:
+            User: Current venue manager or None if no manager assigned
+        """
+        from models.user.models import User
+
+        assignment = VenueManagement.query.filter_by(venue_id=venue_id).first()
+        return assignment.user if assignment else None

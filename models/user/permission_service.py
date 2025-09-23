@@ -67,7 +67,7 @@ class UserPermissionService:
             user_id=user_id, status="pending"
         ).first()
         if existing_request:
-            raise ValueError("User already has pending director request")
+            raise ValueError("User already has a pending director request")
 
         # Validate notes
         if not notes or not notes.strip():

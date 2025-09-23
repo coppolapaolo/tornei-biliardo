@@ -12,7 +12,7 @@ import pytest
 from flask import url_for
 from models.base import db
 from models.user.models import User, VenueManagerRequest
-from models.user.services import VenueManagerRequestService
+from models.user.venue_manager_service import VenueManagerService
 from models.notification.models import (
     Notification,
     NotificationType,
@@ -90,7 +90,7 @@ class TestVenueManagerNotifications:
             ).count()
 
             # Player makes venue manager request
-            request = VenueManagerRequestService.create_request(
+            request = VenueManagerService.create_venue_manager_request(
                 user_id=player.id,
                 venue_id=venue.id,
                 notes="I would like to manage this venue",
@@ -143,7 +143,7 @@ class TestVenueManagerNotifications:
             ).count()
 
             # Director makes venue manager request
-            request = VenueManagerRequestService.create_request(
+            request = VenueManagerService.create_venue_manager_request(
                 user_id=director.id,
                 venue_id=venue.id,
                 notes="As a director, I can help manage this venue",
@@ -200,7 +200,7 @@ class TestVenueManagerNotifications:
             db.session.commit()
 
             # Now player requests to manage same venue (contested)
-            request = VenueManagerRequestService.create_request(
+            request = VenueManagerService.create_venue_manager_request(
                 user_id=player.id,
                 venue_id=venue.id,
                 notes="I want to replace the current manager",
@@ -241,7 +241,7 @@ class TestVenueManagerNotifications:
             db.session.commit()
 
             # Player makes venue manager request
-            request = VenueManagerRequestService.create_request(
+            request = VenueManagerService.create_venue_manager_request(
                 user_id=player.id,
                 venue_id=venue.id,
                 notes="Please consider my request",
@@ -270,7 +270,7 @@ class TestVenueManagerNotifications:
             venue = BilliardHall.query.get(self.venue_id)
 
             # Player makes venue manager request
-            request = VenueManagerRequestService.create_request(
+            request = VenueManagerService.create_venue_manager_request(
                 user_id=player.id,
                 venue_id=venue.id,
                 notes="Please approve my request",
@@ -281,7 +281,7 @@ class TestVenueManagerNotifications:
             db.session.commit()
 
             # Admin rejects the request
-            VenueManagerRequestService.process_request(
+            VenueManagerService.process_venue_manager_request(
                 request_id=request.id,
                 admin_user=admin,
                 approve=False,
@@ -311,7 +311,7 @@ class TestVenueManagerNotifications:
             venue = BilliardHall.query.get(self.venue_id)
 
             # Player makes venue manager request
-            request = VenueManagerRequestService.create_request(
+            request = VenueManagerService.create_venue_manager_request(
                 user_id=player.id,
                 venue_id=venue.id,
                 notes="Please approve my request",
@@ -322,7 +322,7 @@ class TestVenueManagerNotifications:
             db.session.commit()
 
             # Admin approves the request
-            VenueManagerRequestService.process_request(
+            VenueManagerService.process_venue_manager_request(
                 request_id=request.id,
                 admin_user=admin,
                 approve=True,

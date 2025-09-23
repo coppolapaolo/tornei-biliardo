@@ -27,9 +27,9 @@ from .services import (
     UserService,
     DirectorRequestService,
     UserStatsService,
-    VenueManagerRequestService,
     VenueManagementService,
 )
+from .venue_manager_service import VenueManagerService
 
 # Export all public classes and functions
 __all__ = [
@@ -46,7 +46,7 @@ __all__ = [
     "UserService",
     "DirectorRequestService",
     "UserStatsService",
-    "VenueManagerRequestService",
+    "VenueManagerService",
     "VenueManagementService",
 ]
 
@@ -83,7 +83,7 @@ def get_user_services():
         "UserService": UserService,
         "DirectorRequestService": DirectorRequestService,
         "UserStatsService": UserStatsService,
-        "VenueManagerRequestService": VenueManagerRequestService,
+        "VenueManagerService": VenueManagerService,
         "VenueManagementService": VenueManagementService,
     }
 

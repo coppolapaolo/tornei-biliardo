@@ -2,7 +2,6 @@
 
 import pytest
 import uuid
-from models.user.services import DirectorRequestService
 from datetime import datetime
 
 from models import User, DirectorRequest

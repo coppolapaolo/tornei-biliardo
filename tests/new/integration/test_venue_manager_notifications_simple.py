@@ -11,7 +11,7 @@ Created: 2025-09-11
 import pytest
 from models.base import db
 from models.user.models import User, VenueManagerRequest
-from models.user.services import VenueManagerRequestService
+from models.user.venue_manager_service import VenueManagerService
 from models.notification.models import (
     Notification,
     NotificationType,
@@ -52,7 +52,7 @@ def test_player_venue_manager_request_creates_admin_notification(app, client):
         ).count()
 
         # Player makes venue manager request
-        request = VenueManagerRequestService.create_request(
+        request = VenueManagerService.create_venue_manager_request(
             user_id=player.id,
             venue_id=test_venue.id,
             notes="I would like to manage this venue",
@@ -127,7 +127,7 @@ def test_director_venue_manager_request_creates_admin_notification(app, client):
         ).count()
 
         # Director makes venue manager request
-        request = VenueManagerRequestService.create_request(
+        request = VenueManagerService.create_venue_manager_request(
             user_id=director.id,
             venue_id=test_venue.id,
             notes="As a director, I can help manage this venue",
@@ -197,7 +197,7 @@ def test_admin_rejection_notifies_requester(app, client):
         )
 
         # Player makes venue manager request
-        request = VenueManagerRequestService.create_request(
+        request = VenueManagerService.create_venue_manager_request(
             user_id=player.id, venue_id=test_venue.id, notes="Please approve my request"
         )
 
@@ -206,7 +206,7 @@ def test_admin_rejection_notifies_requester(app, client):
         db.session.commit()
 
         # Admin rejects the request
-        VenueManagerRequestService.process_request(
+        VenueManagerService.process_venue_manager_request(
             request_id=request.id,
             admin_user=admin,
             approve=False,
@@ -260,7 +260,7 @@ def test_admin_approval_notifies_requester(app, client):
         )
 
         # Player makes venue manager request
-        request = VenueManagerRequestService.create_request(
+        request = VenueManagerService.create_venue_manager_request(
             user_id=player.id, venue_id=test_venue.id, notes="Please approve my request"
         )
 
@@ -269,7 +269,7 @@ def test_admin_approval_notifies_requester(app, client):
         db.session.commit()
 
         # Admin approves the request
-        VenueManagerRequestService.process_request(
+        VenueManagerService.process_venue_manager_request(
             request_id=request.id,
             admin_user=admin,
             approve=True,

@@ -10,7 +10,8 @@ from PIL import Image, ImageOps
 
 from models import BilliardHall
 from models.location.services import LocationService
-from models.user.services import VenueManagerRequestService, VenueManagementService
+from models.user.services import VenueManagementService
+from models.user.venue_manager_service import VenueManagerService
 from models.user.models import VenueManagerRequest, User
 from models.transaction.manager import transactional
 from utils import admin_required, venue_manager_required
@@ -26,7 +27,7 @@ venue_bp = Blueprint("venue", __name__)
 def venues_list():
     """Lista delle sale biliardo - vista role-based (Content Negotiation Pattern)"""
     from flask_login import current_user
-    from models.user.services import VenueManagerRequestService
+    # VenueManagerRequestService functionality is now in VenueManagerService
 
     venues = BilliardHall.query.order_by(
         BilliardHall.is_active.desc(), BilliardHall.name
@@ -61,9 +62,7 @@ def venues_list():
             from models.status_enum import VenueManagerRequestStatus
 
             pending_requests = (
-                VenueManagerRequestService.get_requests_by_venue_and_status(
-                    venue.id, VenueManagerRequestStatus.PENDING
-                )
+                VenueManagerService.get_venue_manager_requests_by_venue(venue.id)
             )
 
             # Check if current user is manager of this venue
@@ -93,10 +92,10 @@ def venues_list():
             if not current_user.is_admin:
                 from models.status_enum import VenueManagerRequestStatus
 
-                has_pending_request_for_venue = (
-                    VenueManagerRequestService.has_pending_request_for_venue(
-                        current_user.id, venue.id
-                    )
+                # Check if user has pending request for this venue
+                user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+                has_pending_request_for_venue = any(
+                    req.venue_id == venue.id and req.status == "pending" for req in user_requests
                 )
 
             venues_with_managers.append(
@@ -110,11 +109,10 @@ def venues_list():
             )
 
         # Check if user has pending venue manager requests
-        has_pending_requests = (
-            VenueManagerRequestService.has_pending_request_for_venue(current_user.id)
-            if not current_user.is_admin
-            else False
-        )
+        has_pending_requests = False
+        if not current_user.is_admin:
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+            has_pending_requests = any(req.status == "pending" for req in user_requests)
 
         return render_template(
             "player/venues.html",
@@ -158,7 +156,7 @@ def venue_detail(venue_id):
     if current_user.is_admin or current_user.can_manage_venue(venue_id):
         # Vista completa admin/manager
         # Get all approved venue manager requests (users eligible to be assigned)
-        all_requests = VenueManagerRequestService.get_all_requests()
+        all_requests = VenueManagerService.get_pending_venue_manager_requests()
         from models.status_enum import VenueManagerRequestStatus
 
         approved_requests = [
@@ -191,11 +189,8 @@ def venue_detail(venue_id):
         # Check if user has pending requests
         has_pending_requests = False
         if not current_user.is_admin:
-            has_pending_requests = (
-                VenueManagerRequestService.has_pending_request_for_venue(
-                    current_user.id
-                )
-            )
+            user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
+            has_pending_requests = any(req.status == "pending" for req in user_requests)
 
         return render_template(
             "player/venue_detail.html",
@@ -598,7 +593,7 @@ def _allowed_file(filename):
 @admin_required
 def venue_manager_requests():
     """Lista delle richieste per diventare gestori di sale"""
-    requests = VenueManagerRequestService.get_all_requests()
+    requests = VenueManagerService.get_pending_venue_manager_requests()
     return render_template("admin/venue_manager_requests.html", requests=requests)
 
 
@@ -614,12 +609,12 @@ def process_venue_manager_request(request_id):
 
         admin_user = cast(User, current_user)
         if action == "approve":
-            VenueManagerRequestService.process_request(
+            VenueManagerService.process_venue_manager_request(
                 request_id, admin_user, True, admin_notes
             )
             flash("Richiesta approvata con successo!", "success")
         elif action == "reject":
-            VenueManagerRequestService.process_request(
+            VenueManagerService.process_venue_manager_request(
                 request_id, admin_user, False, admin_notes
             )
             flash("Richiesta rifiutata.", "info")

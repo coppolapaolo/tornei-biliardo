@@ -416,7 +416,7 @@ class TestUserPermissionServiceTDD:
             )
 
             # Attempt duplicate request
-            with pytest.raises(ValueError, match="User already has pending director request"):
+            with pytest.raises(ValueError, match="User already has a pending director request"):
                 UserPermissionService.request_director_promotion(
                     user_id=player.id,
                     notes="Duplicate request"

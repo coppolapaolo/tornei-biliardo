@@ -14,7 +14,7 @@ Created: 2025-09-11
 import pytest
 from models.base import db
 from models.user.models import User
-from models.user.services import VenueManagerRequestService
+from models.user.venue_manager_service import VenueManagerService
 from models.notification.models import (
     Notification,
     NotificationType,
