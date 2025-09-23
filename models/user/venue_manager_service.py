@@ -79,15 +79,46 @@ class VenueManagerService:
         if not notes or not notes.strip():
             raise ValueError("Notes are required")
 
+        # Check if venue already has a manager (contested request)
+        from models.user.models import VenueManagement
+        current_manager = VenueManagement.query.filter_by(venue_id=venue_id).first()
+        is_contested = current_manager is not None
+
         # Create new request
         request = VenueManagerRequest(
             user_id=user_id,
             venue_id=venue_id,
             notes=notes.strip(),
             status="pending",
+            is_contested=is_contested,
         )
 
         db.session.add(request)
+
+        # Create notifications for all admin users
+        from models.notification.models import Notification, NotificationType, NotificationStatus, NotificationPriority
+        from models.user.role_enum import UserRole
+
+        admin_users = User.query.filter_by(role=UserRole.ADMIN.value).all()
+        notification_priority = NotificationPriority.HIGH if is_contested else NotificationPriority.NORMAL
+
+        # Different message for contested requests
+        if is_contested:
+            message = f"ATTENZIONE: L'utente {user.username} ha richiesto di gestire la venue {venue.name} (la venue ha già un gestore)"
+        else:
+            message = f"L'utente {user.username} ha richiesto di gestire la venue {venue.name}"
+
+        for admin in admin_users:
+            notification = Notification(
+                user_id=admin.id,
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                title=f"Richiesta Gestore Sala - {venue.name}",
+                message=message,
+                status=NotificationStatus.PENDING,
+                priority=notification_priority,
+            )
+            db.session.add(notification)
+
         return request
 
     @staticmethod

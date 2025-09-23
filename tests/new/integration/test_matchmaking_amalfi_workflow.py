@@ -155,7 +155,8 @@ class TestAmalfiCompleteWorkflow:
         # ====== STEP 4: Avvio Primo Turno (Random) ======
         GaraService.start_first_round(gara.id)
 
-        db_session.refresh(gara)
+        # Reload gara from database to get updated status
+        gara = db_session.get(Gara, gara.id)
         assert gara.status == GaraStatus.PLAYING.value
         assert gara.current_round == 1
 

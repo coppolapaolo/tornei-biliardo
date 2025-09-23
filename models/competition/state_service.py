@@ -28,7 +28,6 @@ class StateService:
             )
 
     @staticmethod
-    @transactional(domain="competition")
     def to_inscription(gara: Gara) -> Gara:
         """setup → inscription"""
         StateService._require(gara, GaraStatus.SETUP)
@@ -51,7 +50,6 @@ class StateService:
         return gara
 
     @staticmethod
-    @transactional(domain="competition")
     def start_playing(gara: Gara) -> Gara:
         """inscription → playing"""
         StateService._require(gara, GaraStatus.INSCRIPTION)
