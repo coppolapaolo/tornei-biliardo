@@ -4,9 +4,41 @@ Questa directory contiene tutta la documentazione relativa al refactoring sistem
 
 ## Stato Attuale
 
-**🎉 FASE 1 COMPLETATA - Pronto per Fase 2 e 3 in Parallelo**
+**⚠️ FASE 3 WORK IN PROGRESS - HAS CRITICAL ISSUES**
 
-La Fase 1 del refactoring è **100% completata** con tutte le tasks (1.1, 1.2, 1.3) finite. Foundation solida stabilita per development parallelo di Fase 2 e Fase 3.
+- **✅ FASE 1**: 100% completata (Tasks 1.1, 1.2, 1.3) - foundation solida
+- **❌ FASE 2**: Non iniziata (Event System + Notification Factory)
+- **⚠️ FASE 3**: PARZIALE con **9 TEST FAILURES** che bloccano il progresso
+  - Task 3.1: Non tentato (Move Amalfi Directory)
+  - Task 3.2: Parziale, ha introdotto errori di validazione MatchmakingService
+  - Task 3.3: Appena iniziato (Codebase cleanup)
+
+**🔥 AZIONE IMMEDIATA RICHIESTA**: Risolvere i 9 test failures prima di continuare qualsiasi sviluppo.
+
+### ⚠️ Problemi Critici Fase 3 (da Risolvere Subito)
+
+```bash
+# Test che falliscono (verificato 2025-09-23)
+PYTHONPATH=. pytest tests/new/ -n auto --tb=short
+# Output: 539 passed, 9 FAILED, 3 skipped
+
+# Errore ricorrente:
+ValueError: Validation failed: (validation.errors è vuoto)
+```
+
+**Root Cause**: Modifiche in `models/competition/round_service.py:291` hanno rotto la validazione del MatchmakingService.
+
+**Files Modificati con Issues**:
+- `routes/admin/competition.py` - ✅ OK (get_amalfi_classification sostituito)
+- `models/competition/round_manager.py` - ✅ OK (get_amalfi_classification sostituito)
+- `models/competition/round_service.py` - ❌ BROKEN (MatchmakingService validation)
+- `models/matchmaking/bindings/amalfi_binding.py` - ✅ OK (kept direct calls)
+
+**Next Developer Action**:
+1. Debug perché `validation.ok` è False ma `validation.errors` è vuoto
+2. Confrontare logica validation prima vs dopo refactoring
+3. Fix o revert delle modifiche problematiche
+4. Ripetere test: PYTHONPATH=. pytest tests/new/ -n auto
 
 ## Principi Fondamentali
 

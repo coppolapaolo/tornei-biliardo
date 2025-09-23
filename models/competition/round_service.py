@@ -281,11 +281,32 @@ class RoundService:
             # Ottieni la strategia configurata
             strategy_name = gara.matchmaking_strategy or "amalfi"
 
-            # Se è Amalfi, usa il binding esistente per compatibilità
+            # Se è Amalfi, usa il MatchmakingService unificato
             if strategy_name in ["amalfi", "advanced_amalfi"]:
-                from amalfi import create_amalfi_round_matches
+                from models.matchmaking.bootstrap import get_matchmaking_service
 
-                create_amalfi_round_matches(gara, round_number)
+                matchmaking_service = get_matchmaking_service()
+
+                # Usa il service unificato - questo crea i match automaticamente nel database
+                pairings = matchmaking_service.run(
+                    strategy_name="amalfi", gara=gara, round_number=round_number
+                )
+
+                # Il MatchmakingService ha già creato i match, non serve crearli manualmente
+                # Conta solo i match per restituire le statistiche
+                matches = (
+                    db.session.query(Match)
+                    .filter_by(gara_id=gara_id, round_number=round_number)
+                    .all()
+                )
+                normal_matches = sum(
+                    1
+                    for m in matches
+                    if not m.is_bye and not getattr(m, "is_trio", False)
+                )
+                bye_matches = sum(1 for m in matches if m.is_bye)
+                trio_matches = sum(1 for m in matches if getattr(m, "is_trio", False))
+                return (len(matches), normal_matches, bye_matches, trio_matches)
             else:
                 # Usa il registry per altre strategie
                 from models.matchmaking.bootstrap import get_registry

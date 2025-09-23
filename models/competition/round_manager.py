@@ -13,6 +13,7 @@ from models.competition.models import Gara
 from models.match.models import Match
 from models.status_enum import GaraStatus, MatchStatus
 from models.classification.models import RoundClassification
+from models.classification.services import RoundClassificationService
 from models.transaction.manager import transactional
 
 
@@ -322,7 +323,6 @@ class AdvancedRoundManager:
         gara_id: int, affected_round: int
     ) -> None:
         """Recalculate classifications for affected rounds after match modification."""
-        from amalfi.engine import get_amalfi_classification
 
         # Recalculate classification for the affected round and all subsequent rounds
         max_round = (
@@ -340,7 +340,7 @@ class AdvancedRoundManager:
                 ).delete()
 
                 # Recalculate classification
-                classification = get_amalfi_classification(gara_id, round_num)
+                classification = RoundClassificationService.get_round_standings(gara_id, round_num)
 
                 # Save new classification
                 for i, player_data in enumerate(classification, 1):

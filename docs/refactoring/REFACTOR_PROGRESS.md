@@ -92,43 +92,93 @@
   - [ ] Replace duplicate code with factory calls ⏳
   - [ ] Centralize error handling and logging ⏳
 
-### Phase 3: Ottimizzazione Pattern ⏳
-- [ ] Task 3.1: Move Amalfi Directory (0%) ⏳
-  - [ ] Analyze 13 files importing from amalfi/ ⏳
-  - [ ] Create models/matchmaking/strategies/amalfi/ structure ⏳
-  - [ ] Move amalfi/engine.py with git mv (preserve history) ⏳
-  - [ ] Create temporary compatibility wrapper ⏳
-  - [ ] Update imports gradually (models → routes → tests) ⏳
-  - [ ] Remove wrapper after full migration ⏳
-- [ ] Task 3.2: Complete Strategy Pattern (0%) ⏳
-  - [ ] Remove direct amalfi/engine.py calls from services ⏳
-  - [ ] Use unified MatchmakingService exclusively ⏳
-  - [ ] Update preview routes to use strategy system ⏳
-  - [ ] Verify behavior remains identical ⏳
-- [ ] Task 3.3: Cleanup Codebase (0%) ⏳
-  - [ ] Remove debug files (debug_permissions.py, create_uc01_snapshots*.py) ⏳
-  - [ ] Clean obsolete database snapshots ⏳
-  - [ ] Standardize naming conventions (IT/EN mix) ⏳
-  - [ ] Consolidate template duplications ⏳
+### Phase 3: Ottimizzazione Pattern ⚠️ **WORK IN PROGRESS - HAS ISSUES**
+- [ ] Task 3.1: Move Amalfi Directory (0% - NOT ATTEMPTED) ❌
+  - [x] **COMPLETED**: Analyze 13 files importing from amalfi/ ✅
+  - [ ] **NEXT**: Create models/matchmaking/strategies/amalfi/ structure ⏳
+  - [ ] **NEXT**: Move amalfi/engine.py with git mv (preserve history) ⏳
+  - [ ] **NEXT**: Create temporary compatibility wrapper ⏳
+  - [ ] **NEXT**: Update imports gradually (models → routes → tests) ⏳
+  - [ ] **NEXT**: Remove wrapper after full migration ⏳
+  - [ ] **NOTE**: ADR-001 documented previous failure, needs re-evaluation ⚠️
+- [~] Task 3.2: Complete Strategy Pattern (25% - PARTIAL with ISSUES) ⚠️
+  - [x] **COMPLETED**: Replace get_amalfi_classification → RoundClassificationService.get_round_standings ✅
+    - routes/admin/competition.py: 2 occurrences replaced ✅
+    - models/competition/round_manager.py: 1 occurrence replaced ✅
+  - [~] **PARTIAL**: Replace create_amalfi_round_matches → MatchmakingService ⚠️
+    - models/competition/round_service.py: Replaced but INTRODUCED 9 TEST FAILURES ❌
+    - models/matchmaking/bindings/amalfi_binding.py: Kept direct calls (architectural boundary) ✅
+  - [ ] **BROKEN**: MatchmakingService validation failures in multiple tests ❌
+  - [ ] **NEXT**: Fix validation errors causing test failures ⏳
+  - [ ] **NEXT**: Update preview routes to use strategy system ⏳
+- [ ] Task 3.3: Cleanup Codebase (5% - BARELY STARTED) ❌
+  - [x] **VERIFIED**: Debug files mentioned in docs NOT FOUND in codebase ✅
+  - [ ] **NEXT**: Identify actual obsolete files to clean ⏳
+  - [ ] **NEXT**: Standardize naming conventions (IT/EN mix) ⏳
+  - [ ] **NEXT**: Consolidate template duplications ⏳
 
 ## 📋 Current Context (REAL STATE - September 2025)
-- **Overall Progress**: 🟢 Phase 1 Stabilization - Tasks 1.1 & 1.2 COMPLETED!
-- **🎉 MILESTONE ACHIEVED**: Transaction Migration (100% - 177/177 commits analyzed, 169 migrated, 8 excluded by design)
-- **🎉 MILESTONE ACHIEVED**: GaraService Decomposition (48.7% reduction - 1695→869 lines, clean architecture)
-- **✅ PROGRESS**: UserService Active Delegation (30.8% - 222 lines removed, proven facade pattern, 133 tests passing)
-- **✅ COMPLETED**: MatchServices Transaction Migration (13/14 commits - 1 excluded for custom logic)
-- **✅ COMPLETED**: ExamServices + PlayoffServices Transaction Migration (19/19 commits)
-- **✅ COMPLETED**: Critical Services Migration (9 files) - models, routes, utils with @transactional
-- **✅ COMPLETED**: Task 1.2 GaraService Decomposition (48.7% reduction, 869/1695 lines)
-  - **Infrastructure**: StateService, InscriptionService, RoundService extracted
-  - **Facade Pattern**: Backward compatibility maintained throughout
-  - **Cleanup Achievement**: 100 lines removed (969→869), 6 dead methods eliminated
-  - **ROI**: High - clean service boundaries, optimized architecture
-- **Future**: Task 1.3 UserService final cleanup (30.8% - continue delegation conversion and remove duplicate services)
-- **Achievement**: Robust transactional foundation with 100% migration rate + proven delegation pattern
-- **🎯 NEXT PRIORITY**: Task 1.3 UserService final cleanup (30.8% - continue converting duplicate methods to delegation)
-- **Blocked On**: None - solid foundation with validated approach ready for continuation
-- **Last Updated**: 2025-09-22 [Task 1.3 UserService Active Delegation Progress - 30.8% complete]
+- **Overall Progress**: 🟢 Phase 1 COMPLETED, ⚠️ Phase 3 PARTIAL with ISSUES
+- **🎉 MILESTONE ACHIEVED**: Phase 1 - Transaction Migration (100% - 177/177 commits analyzed, 169 migrated, 8 excluded by design) ✅
+- **🎉 MILESTONE ACHIEVED**: Phase 1 - GaraService Decomposition (48.7% reduction - 1695→869 lines, clean architecture) ✅
+- **🎉 MILESTONE ACHIEVED**: Phase 1 - UserService Decomposition (56.1% reduction - 1087→477 lines, facade pattern) ✅
+- **⚠️ CURRENT ISSUE**: Phase 3 - Task 3.2 introduced **9 TEST FAILURES** in MatchmakingService validation ❌
+  - Failing tests: classification_display, anti_rematch, match_modification, etc.
+  - Error pattern: `ValueError: Validation failed:` (empty validation errors)
+  - Root cause: MatchmakingService validation logic broken during refactoring
+- **✅ PARTIAL SUCCESS**: Phase 3 - get_amalfi_classification → RoundClassificationService migration successful ✅
+- **❌ INCOMPLETE**: Phase 3 - Task 3.1 (Move Amalfi Directory) not attempted
+- **❌ INCOMPLETE**: Phase 3 - Task 3.3 (Cleanup Codebase) barely started
+- **🎯 NEXT CRITICAL PRIORITY**: Fix the 9 test failures caused by MatchmakingService changes
+- **🎯 NEXT DEVELOPMENT PRIORITY**: Complete Task 3.1 (Move Amalfi Directory) despite ADR-001 concerns
+- **Blocked On**: MatchmakingService validation errors must be resolved before continuing
+- **Branch**: refactor/phase-3-optimization (contains broken changes)
+- **Test Status**: 539 passed, **9 FAILED**, 3 skipped (regression from previous 548 passed)
+- **Last Updated**: 2025-09-23 [Phase 3 partial work with validation issues - requires fixes]
+
+## 🚀 Next Developer Instructions (CRITICAL READ)
+
+### ⚠️ **IMMEDIATE PRIORITY: Fix Test Failures**
+Before continuing any development, the 9 test failures MUST be resolved:
+
+```bash
+# Run failing tests to understand issue
+PYTHONPATH=. pytest tests/new/integration/test_classification_display.py::TestClassificationDisplay::test_classification_only_shown_for_completed_rounds -v -s
+
+# Error pattern: ValueError: Validation failed: (empty validation errors)
+# Root cause: MatchmakingService.run() validation logic broken in models/competition/round_service.py:291
+```
+
+**Investigation Steps**:
+1. **Compare validation logic**: Check how validation worked before refactoring vs after
+2. **Debug empty validation errors**: Find why `validation.errors` is empty but `validation.ok` is False
+3. **Test isolation**: Verify specific Amalfi test still passes vs integration tests that fail
+4. **Revert if needed**: Consider reverting changes in models/competition/round_service.py if fix is complex
+
+### 📋 **TASK COMPLETION ORDER**
+1. **FIX TESTS FIRST** - Resolve 9 validation failures ⚠️
+2. **Task 3.1** - Move Amalfi Directory (ignore ADR-001, user wants it done)
+3. **Task 3.2** - Complete Strategy Pattern cleanup
+4. **Task 3.3** - Codebase cleanup and standardization
+
+### 🔍 **VERIFIED FINDINGS FOR TASK 3.1**
+Files importing from `amalfi/` (analysis completed):
+- `routes/admin/competition.py` - validate_amalfi_configuration (1 import)
+- `models/competition/round_manager.py` - ALREADY FIXED ✅
+- `models/competition/round_service.py` - ALREADY MIGRATED ✅
+- `models/matchmaking/bindings/amalfi_binding.py` - validate_amalfi_configuration, create_amalfi_round_matches (2 imports)
+- Plus ~9 test files (legacy tests can be updated later)
+
+### 🏗️ **ARCHITECTURAL LESSONS LEARNED**
+- **Layer Boundaries Matter**: `amalfi_binding.py` must keep direct calls to avoid recursion
+- **Validation is Critical**: MatchmakingService validation more complex than anticipated
+- **ADR-001 May Be Wrong**: Previous "failure" might have been incomplete, not impossible
+- **Integration Tests Catch More**: Unit tests passed, integration tests revealed issues
+
+### 📁 **BRANCH STATUS**
+- **Current Branch**: `refactor/phase-3-optimization`
+- **Status**: Contains partial changes with broken tests
+- **Action**: Fix tests on current branch, DO NOT MERGE until tests pass
 
 ## 🎯 Current Sprint Goals
 - [x] Set up refactor test structure ✅

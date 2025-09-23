@@ -37,8 +37,9 @@ from utils import (
 )
 from models.competition.services import GaraService
 from models.competition.state_service import StateService
-from amalfi.engine import get_amalfi_classification, validate_amalfi_configuration
+from amalfi.engine import validate_amalfi_configuration
 from models.classification.models import RoundClassification
+from models.classification.services import RoundClassificationService
 from models.location.models import BilliardHall
 from models.location.services import LocationService
 
@@ -956,12 +957,12 @@ def amalfi_classification(gara_id, round_number):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Ottieni o calcola classifica
-    classification = get_amalfi_classification(gara_id, round_number)
+    classification = RoundClassificationService.get_round_standings(gara_id, round_number)
     if not classification:
         # Calcola classifica se non esiste (questo metodo ritorna tuple, non oggetti)
         RoundClassification.calculate_classification_after_round(gara_id, round_number)
         # Ricarica la classifica dopo il calcolo (ora sono oggetti RoundClassification)
-        classification = get_amalfi_classification(gara_id, round_number)
+        classification = RoundClassificationService.get_round_standings(gara_id, round_number)
 
     # Statistiche aggiuntive
     total_players = len(classification)
