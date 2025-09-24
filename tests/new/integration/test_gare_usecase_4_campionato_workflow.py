@@ -223,7 +223,7 @@ class TestUseCaseCampionatoWorkflow:
             date=date.today() + timedelta(days=15),
             location="Arena C",
             description="Final regular competition with Round-robin",
-            rounds_count=5,  # Round-robin determines rounds
+            rounds_count=4,  # Valid rounds for 8 players
             min_participants=6,
             max_participants=8,
             entry_fee=30.0,

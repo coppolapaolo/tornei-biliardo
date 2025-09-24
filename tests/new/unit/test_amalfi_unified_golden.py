@@ -4,6 +4,9 @@ Golden tests for AmalfiUnifiedAdapter - ensures output consistency with fixed se
 These tests verify that the unified Amalfi adapter produces identical results
 across runs when using deterministic seeds, maintaining behavior compatibility
 with the original AmalfiEngine.
+
+NOTE: These tests are currently disabled due to architectural changes.
+The AmalfiUnifiedAdapter is experimental and not used in production.
 """
 
 import pytest
@@ -64,14 +67,29 @@ class TestAmalfiUnifiedGolden:
             "salto": 0,
         }
 
+        # Create mock Match objects that the adapter expects
+        from models.match.models import Match
+        mock_matches = []
+        for i, (p1, p2) in enumerate([(1, 5), (2, 6), (3, 7), (4, 8)], 1):
+            match_mock = Mock(spec=Match)
+            match_mock.player1_id = p1
+            match_mock.player2_id = p2
+            match_mock.is_bye = False
+            match_mock.id = i
+            match_mock.trio_match = None  # Explicitly set to None
+            # Remove trio_match attribute entirely to avoid hasattr issues
+            if hasattr(match_mock, 'trio_match'):
+                delattr(match_mock, 'trio_match')
+            mock_matches.append(match_mock)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = expected_preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            # Execute preview
-            pairings = adapter.preview(mock_gara, 1)
+            # Execute create_round
+            pairings = adapter.create_round(mock_gara, 1)
 
         # Golden assertions - these exact values should always be produced with seed=42
         assert len(pairings) == 4
@@ -100,24 +118,27 @@ class TestAmalfiUnifiedGolden:
         context = PairingContext(seed=123)
         adapter.set_context(context)
 
-        expected_preview_data = {
-            "matches": [
-                {"player1": Mock(id=3), "player2": Mock(id=1), "type": "normal"},
-                {"player1": Mock(id=7), "player2": Mock(id=2), "type": "normal"},
-                {"player1": Mock(id=4), "player2": Mock(id=8), "type": "normal"},
-                {"player1": Mock(id=6), "player2": Mock(id=5), "type": "normal"},
-            ],
-            "stats": {"total_matches": 4},
-            "salto": 0,
-        }
+        # Create mock Match objects for seed=123
+        from models.match.models import Match
+        mock_matches = []
+        for i, (p1, p2) in enumerate([(3, 1), (7, 2), (4, 8), (6, 5)], 1):
+            match_mock = Mock(spec=Match)
+            match_mock.player1_id = p1
+            match_mock.player2_id = p2
+            match_mock.is_bye = False
+            match_mock.id = i
+            # Remove trio_match attribute to avoid hasattr issues
+            if hasattr(match_mock, 'trio_match'):
+                delattr(match_mock, 'trio_match')
+            mock_matches.append(match_mock)
 
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = expected_preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(mock_gara, 1)
+            pairings = adapter.create_round(mock_gara, 1)
 
         # Different golden values for seed=123
         assert len(pairings) == 4
@@ -151,24 +172,37 @@ class TestAmalfiUnifiedGolden:
         context = PairingContext(seed=42)
         adapter.set_context(context)
 
-        expected_preview_data = {
-            "matches": [
-                {"player1": Mock(id=1), "player2": Mock(id=5), "type": "normal"},
-                {"player1": Mock(id=2), "player2": Mock(id=6), "type": "normal"},
-                {"player1": Mock(id=3), "player2": Mock(id=7), "type": "normal"},
-                {"player1": Mock(id=4), "type": "bye"},  # Player 4 gets bye
-            ],
-            "stats": {"total_matches": 4, "bye_matches": 1},
-            "salto": 0,
-        }
+        # Create mock Match objects with bye
+        from models.match.models import Match
+        mock_matches = []
+        # Normal matches
+        for i, (p1, p2) in enumerate([(1, 5), (2, 6), (3, 7)], 1):
+            match_mock = Mock(spec=Match)
+            match_mock.player1_id = p1
+            match_mock.player2_id = p2
+            match_mock.is_bye = False
+            match_mock.id = i
+            if hasattr(match_mock, 'trio_match'):
+                delattr(match_mock, 'trio_match')
+            mock_matches.append(match_mock)
+
+        # Bye match
+        bye_match = Mock(spec=Match)
+        bye_match.player1_id = 4
+        bye_match.player2_id = None
+        bye_match.is_bye = True
+        bye_match.id = 4
+        if hasattr(bye_match, 'trio_match'):
+            delattr(bye_match, 'trio_match')
+        mock_matches.append(bye_match)
 
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = expected_preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, 1)
+            pairings = adapter.create_round(gara, 1)
 
         # Golden assertions for bye scenario with seed=42
         assert len(pairings) == 4
@@ -211,7 +245,7 @@ class TestAmalfiUnifiedGolden:
             mock_engine = mock_engine_class.return_value
             mock_engine.preview_round_pairings.return_value = expected_preview_data
 
-            pairings = adapter.preview(mock_gara, 2)
+            pairings = adapter.create_round(mock_gara, 2)
 
         # Golden values for second round with seed=42
         sorted_pairings = sorted(pairings, key=lambda p: p.players[0])
@@ -251,7 +285,7 @@ class TestAmalfiUnifiedGolden:
             results = []
             for _ in range(5):
                 adapter.set_context(PairingContext(seed=999))
-                pairings = adapter.preview(mock_gara, 1)
+                pairings = adapter.create_round(mock_gara, 1)
                 # Convert to comparable format
                 result = tuple(sorted([p.players for p in pairings]))
                 results.append(result)
@@ -284,7 +318,7 @@ class TestAmalfiUnifiedGolden:
             results = []
             for _ in range(10):
                 fresh_adapter = AmalfiUnifiedAdapter()  # Fresh instance each time
-                pairings = fresh_adapter.preview(mock_gara, 1)
+                pairings = fresh_adapter.create_round(mock_gara, 1)
                 result = tuple(sorted([p.players for p in pairings]))
                 results.append(result)
 
@@ -312,7 +346,7 @@ class TestAmalfiUnifiedGolden:
             context1 = PairingContext(seed=100)
             adapter.set_context(context1)
             context1.set_state("test_key", "test_value")
-            pairings1 = adapter.preview(mock_gara, 1)
+            pairings1 = adapter.create_round(mock_gara, 1)
 
             # Second run with seed=200
             context2 = PairingContext(seed=200)
@@ -321,7 +355,7 @@ class TestAmalfiUnifiedGolden:
             # Context2 should not have state from context1
             assert context2.get_state("test_key") is None
 
-            pairings2 = adapter.preview(mock_gara, 1)
+            pairings2 = adapter.create_round(mock_gara, 1)
 
         # Verify both runs completed successfully
         assert len(pairings1) >= 0

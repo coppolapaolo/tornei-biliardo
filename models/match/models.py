@@ -59,8 +59,6 @@ class Match(db.Model, TimestampMixin):
     round_locked = db.Column(db.Boolean, default=False)  # Round bloccato per modifiche
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
-    amalfi_round = db.Column(db.Integer)  # Turno secondo algoritmo Amalfi
-    salto_applied = db.Column(db.Integer)  # Salto utilizzato per questo abbinamento
 
     # Table assignment for venue management
     table_assignment = db.Column(

@@ -1,6 +1,22 @@
 """
-Module: models/matchmaking/configuration.py
-Purpose: Strategy configuration and validation
+Matchmaking Strategy Configuration System
+
+Provides comprehensive configuration management for tournament pairing strategies,
+enabling tournament directors to customize algorithm behavior based on tournament
+format, player preferences, and organizational requirements.
+
+Features:
+- Strategy-specific constraint validation
+- Policy compatibility checking
+- Configuration serialization for database storage
+- Tournament format optimization recommendations
+
+Business Context:
+    American Pool tournaments require different approaches based on format:
+    - Casual events: Random pairing with anti-rematch
+    - Competitive tournaments: Amalfi algorithm with classification
+    - League play: Round-robin for complete standings
+    - Championships: Elimination brackets for clear winners
 """
 
 from dataclasses import dataclass
@@ -35,7 +51,14 @@ class RatingType(str, Enum):
 
 @dataclass
 class StrategyConfiguration:
-    """Configuration for a matchmaking strategy."""
+    """Comprehensive configuration for tournament matchmaking strategies.
+
+    Encapsulates all settings that control how pairing algorithms behave,
+    including first-round seeding, odd-number handling, and anti-rematch policies.
+    Provides validation to ensure configuration compatibility with chosen strategy.
+
+    Design Pattern: Value Object with validation capabilities
+    """
 
     strategy: MatchmakingStrategy
     first_round_policy: FirstRoundPolicy
@@ -47,37 +70,59 @@ class StrategyConfiguration:
     def validate(
         self, num_players: Optional[int] = None, distance: Optional[int] = None
     ) -> List[str]:
-        """Validate the configuration for consistency."""
+        """Validate configuration consistency against strategy constraints and tournament parameters.
+
+        Comprehensive validation ensuring the configuration will produce successful
+        tournament execution without runtime failures or suboptimal player experience.
+
+        Validation Categories:
+        1. Strategy-specific policy compatibility
+        2. Player count vs. strategy requirements
+        3. Trio match feasibility (distance-dependent)
+        4. Required vs. optional feature alignment
+        5. Round count optimization for fixed-round strategies
+
+        Args:
+            num_players: Expected tournament player count for optimization
+            distance: Tournament format distance (affects trio match complexity)
+
+        Returns:
+            List of validation error messages (empty if configuration is valid)
+
+        Business Value:
+            Prevents tournament setup errors that could disrupt player experience
+            and provides clear guidance for configuration improvements.
+        """
         errors = []
 
-        # Get strategy constraints
+        # Retrieve strategy-specific requirements and limitations
         constraints = STRATEGY_CONSTRAINTS.get(self.strategy)
         if not constraints:
             errors.append(f"Strategia {self.strategy} non supportata")
             return errors
 
-        # Validate first round policy
+        # Ensure first-round seeding policy is supported by chosen strategy
         if self.first_round_policy.value not in constraints["first_round_policies"]:
             errors.append(
                 f"{self.strategy} non supporta la policy di primo turno {self.first_round_policy}"
             )
 
-        # Validate odd number policy
+        # Verify odd-player handling method is compatible with strategy
         if self.odd_number_policy.value not in constraints["odd_policies"]:
             errors.append(
                 f"{self.strategy} non supporta la policy per numero dispari {self.odd_number_policy}"
             )
 
-        # Validate trio with distance
+        # Check trio match feasibility against tournament format complexity
         if self.odd_number_policy == OddNumberPolicy.TRIO:
             if distance and distance > 7:
                 errors.append("Match a tre supportati solo fino a distanza 7")
 
-        # Validate anti-rematch
+        # Ensure anti-rematch requirements are met for strategy integrity
         if not self.anti_rematch_enabled and constraints.get("anti_rematch_required"):
             errors.append(f"{self.strategy} richiede anti-rematch abilitato")
 
-        # Validate rounds count for fixed-rounds strategies
+        # Verify round count matches strategy requirements for optimal tournament flow
         if constraints["fixed_rounds"] and num_players:
             required_rounds = calculate_rounds_for_strategy(self.strategy, num_players)
             if self.rounds_count and self.rounds_count != required_rounds:
@@ -88,7 +133,11 @@ class StrategyConfiguration:
         return errors
 
     def to_dict(self) -> Dict:
-        """Convert to dictionary for database storage."""
+        """Serialize configuration to dictionary format for database persistence.
+
+        Returns:
+            Dictionary with all configuration values in database-compatible format
+        """
         return {
             "matchmaking_strategy": self.strategy.value,
             "first_round_policy": self.first_round_policy.value,
@@ -100,7 +149,17 @@ class StrategyConfiguration:
 
     @classmethod
     def from_gara(cls, gara) -> "StrategyConfiguration":
-        """Create configuration from Gara model."""
+        """Reconstruct configuration from tournament (Gara) database model.
+
+        Factory method for creating configuration objects from persisted tournament
+        settings, enabling consistent strategy behavior across tournament sessions.
+
+        Args:
+            gara: Tournament model with stored configuration attributes
+
+        Returns:
+            StrategyConfiguration object ready for validation and execution
+        """
         return cls(
             strategy=MatchmakingStrategy(gara.matchmaking_strategy),
             first_round_policy=FirstRoundPolicy(gara.first_round_policy),
@@ -163,7 +222,25 @@ STRATEGY_CONSTRAINTS = {
 def calculate_rounds_for_strategy(
     strategy: MatchmakingStrategy, num_players: int
 ) -> int:
-    """Calculate the optimal number of rounds for a strategy."""
+    """Calculate optimal round count for tournament strategy and player count.
+
+    Different strategies require specific round counts for proper tournament flow:
+    - Round-Robin: n-1 rounds (everyone plays everyone)
+    - Direct Elimination: log2(n) rounds (binary elimination tree)
+    - Double Knockout: 2*log2(n) rounds (winners + losers brackets)
+    - Flexible strategies: Sensible defaults based on tournament size
+
+    Args:
+        strategy: Tournament pairing algorithm
+        num_players: Total confirmed player count
+
+    Returns:
+        Recommended number of rounds for optimal tournament progression
+
+    Business Logic:
+        Proper round calculation ensures tournaments conclude naturally
+        with clear winners and appropriate time investment for participants.
+    """
     import math
 
     if strategy == MatchmakingStrategy.ROUND_ROBIN:
@@ -179,7 +256,28 @@ def calculate_rounds_for_strategy(
 
 
 def get_trio_configuration(distance: int) -> Optional[Dict]:
-    """Get trio match configuration for a given distance."""
+    """Get trio match format configuration based on tournament distance.
+
+    Trio matches (three-player format) are used when odd player counts occur
+    in tournaments. The format complexity scales with tournament distance to
+    maintain appropriate match duration and competitive balance.
+
+    Configuration Elements:
+    - mini_rounds: Number of rotation phases within the trio match
+    - racks_per_player: Individual rack allocation for fair competition
+    - total_racks: Overall match length
+    - scoring: Point calculation method for tournament standings
+
+    Args:
+        distance: Tournament format distance (3-7 supported)
+
+    Returns:
+        Dict with trio configuration parameters, or None if distance unsupported
+
+    Business Context:
+        Pool trio matches require careful balancing of game time, fairness,
+        and integration with overall tournament scoring systems.
+    """
     trio_configs = {
         3: {
             "mini_rounds": 1,
@@ -220,14 +318,36 @@ def validate_strategy_change(
     new_strategy: MatchmakingStrategy,
     gara_status: str,
 ) -> Tuple[bool, Optional[str]]:
-    """Validate if a strategy can be changed based on competition status."""
+    """Validate tournament strategy change based on current competition status and compatibility.
+
+    Strategy changes are restricted to prevent tournament disruption and maintain
+    competitive integrity. Only compatible strategies can be swapped, and only
+    during appropriate tournament phases.
+
+    Validation Rules:
+    1. Strategy changes only allowed during SETUP phase (before player registration)
+    2. Format compatibility required (can't mix elimination with round-robin)
+    3. Player commitment considerations (elimination vs. guaranteed games)
+
+    Args:
+        old_strategy: Current tournament strategy
+        new_strategy: Desired new strategy
+        gara_status: Current tournament phase status
+
+    Returns:
+        Tuple of (change_allowed, reason_if_blocked)
+
+    Business Impact:
+        Prevents tournament disruption while allowing reasonable configuration
+        adjustments during setup phases.
+    """
     from models.status_enum import GaraStatus
 
-    # Can only change strategy in SETUP status
+    # Strategy changes restricted to setup phase to prevent player disruption
     if gara_status != GaraStatus.SETUP.value:
         return False, "La strategia può essere modificata solo in fase di setup"
 
-    # Check if strategies are compatible for migration
+    # Ensure new strategy is compatible with tournament format expectations
     if old_strategy in [
         MatchmakingStrategy.DIRECT_ELIMINATION,
         MatchmakingStrategy.DOUBLE_KNOCKOUT,

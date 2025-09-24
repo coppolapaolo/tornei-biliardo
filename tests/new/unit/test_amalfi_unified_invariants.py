@@ -25,6 +25,32 @@ class TestAmalfiUnifiedInvariants:
         """Create AmalfiUnifiedAdapter instance."""
         return AmalfiUnifiedAdapter()
 
+    def create_mock_matches_from_pairings_data(self, pairings_data: List[dict]) -> List:
+        """Helper to create mock Match objects from pairings data."""
+        from models.match.models import Match
+        mock_matches = []
+
+        for i, pairing in enumerate(pairings_data, 1):
+            match_mock = Mock(spec=Match)
+            match_mock.id = i
+
+            if pairing.get("type") == "bye":
+                match_mock.player1_id = pairing["player1"].id
+                match_mock.player2_id = None
+                match_mock.is_bye = True
+            else:
+                match_mock.player1_id = pairing["player1"].id
+                match_mock.player2_id = pairing["player2"].id
+                match_mock.is_bye = False
+
+            # Remove trio_match attribute to avoid hasattr issues
+            if hasattr(match_mock, 'trio_match'):
+                delattr(match_mock, 'trio_match')
+
+            mock_matches.append(match_mock)
+
+        return mock_matches
+
     def create_mock_gara(self, num_players: int, gara_id: int = 1) -> Mock:
         """Helper to create mock Gara with specified number of players."""
         gara = Mock(spec=Gara)
@@ -76,13 +102,16 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, 1)
+            pairings = adapter.create_round(gara, 1)
 
         # Extract all assigned player IDs
         assigned_players = set()
@@ -112,13 +141,16 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, 1)
+            pairings = adapter.create_round(gara, 1)
 
         # Extract all assigned players
         assigned_players = set()
@@ -152,13 +184,16 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, 1)
+            pairings = adapter.create_round(gara, 1)
 
         # Invariant: No self-pairing allowed
         for pairing in pairings:
@@ -187,13 +222,16 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, 1)
+            pairings = adapter.create_round(gara, 1)
 
         # Invariant: Quality must be in valid bounds
         for pairing in pairings:
@@ -217,13 +255,16 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, round_num)
+            pairings = adapter.create_round(gara, round_num)
 
         # Invariant: All pairings must have the requested round number
         for pairing in pairings:
@@ -248,13 +289,16 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
-            pairings = adapter.preview(gara, 1)
+            pairings = adapter.create_round(gara, 1)
 
         for pairing in pairings:
             # Invariant: Valid pairing structure according to is_valid_pairing property
@@ -317,20 +361,23 @@ class TestAmalfiUnifiedInvariants:
 
         preview_data = self.create_preview_data(pairings_data)
 
+        # Convert pairings data to mock Match objects
+        mock_matches = self.create_mock_matches_from_pairings_data(pairings_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             # Run twice with same seed
             context1 = PairingContext(seed=777)
             adapter.set_context(context1)
-            pairings1 = adapter.preview(gara, 1)
+            pairings1 = adapter.create_round(gara, 1)
 
             context2 = PairingContext(seed=777)  # Same seed
             adapter.set_context(context2)
-            pairings2 = adapter.preview(gara, 1)
+            pairings2 = adapter.create_round(gara, 1)
 
         # Invariant: Identical seeds must produce identical results
         assert len(pairings1) == len(pairings2)
@@ -404,21 +451,25 @@ class TestAmalfiUnifiedInvariants:
         preview_data_r1 = self.create_preview_data(round1_data)
         preview_data_r2 = self.create_preview_data(round2_data)
 
+        # Convert pairings data to mock Match objects for both rounds
+        mock_matches_r1 = self.create_mock_matches_from_pairings_data(round1_data)
+        mock_matches_r2 = self.create_mock_matches_from_pairings_data(round2_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
 
             # Round 1
-            mock_engine.preview_round_pairings.return_value = preview_data_r1
+            mock_engine.create_round_matches.return_value = mock_matches_r1
             context = PairingContext(seed=123)
             adapter.set_context(context)
-            pairings_r1 = adapter.preview(gara, 1)
+            pairings_r1 = adapter.create_round(gara, 1)
 
             # Round 2
-            mock_engine.preview_round_pairings.return_value = preview_data_r2
+            mock_engine.create_round_matches.return_value = mock_matches_r2
             adapter.set_context(PairingContext(seed=123))
-            pairings_r2 = adapter.preview(gara, 2)
+            pairings_r2 = adapter.create_round(gara, 2)
 
         # Invariant: Different rounds should generally produce different pairings
         # (This is a business rule validation, not guaranteed but expected in most cases)

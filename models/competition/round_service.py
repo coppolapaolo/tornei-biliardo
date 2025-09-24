@@ -287,7 +287,7 @@ class RoundService:
 
                 matchmaking_service = get_matchmaking_service()
 
-                # Usa il service unificato - questo crea i match automaticamente nel database
+                # Usa il service unificato senza preview
                 pairings = matchmaking_service.run(
                     strategy_name="amalfi", gara=gara, round_number=round_number
                 )
@@ -306,6 +306,18 @@ class RoundService:
                 )
                 bye_matches = sum(1 for m in matches if m.is_bye)
                 trio_matches = sum(1 for m in matches if getattr(m, "is_trio", False))
+
+                # Lock previous round matches when creating a new round
+                if round_number > 1:
+                    previous_round_matches = (
+                        db.session.query(Match)
+                        .filter_by(gara_id=gara_id, round_number=round_number - 1)
+                        .all()
+                    )
+                    for match in previous_round_matches:
+                        match.round_locked = True
+                        db.session.add(match)
+
                 return (len(matches), normal_matches, bye_matches, trio_matches)
             else:
                 # Usa il registry per altre strategie
@@ -372,15 +384,17 @@ class RoundService:
                             discipline=discipline_override,
                         )
                         db.session.add(match)
+                        db.session.flush()  # Assicura che il match abbia un ID
 
                         # Crea il record TrioMatch con tutti e tre i giocatori
                         trio_match = TrioMatch(
-                            match=match,
+                            match_id=match.id,
                             player1_id=pairing.players[0],
                             player2_id=pairing.players[1],
                             player3_id=pairing.players[2],
                         )
                         db.session.add(trio_match)
+                        db.session.flush()  # Assicura che il TrioMatch sia visibile
 
             # Conta i risultati
             matches = (

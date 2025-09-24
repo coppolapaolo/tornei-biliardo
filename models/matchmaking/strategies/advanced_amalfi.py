@@ -11,18 +11,40 @@ from models.matchmaking.strategies.amalfi_adapter import AmalfiStrategy
 
 @dataclass
 class AdvancedPairingOptions:
-    """Options for advanced pairing generation."""
+    """Configuration options for advanced Amalfi pairing strategy enhancements.
 
-    allow_x_replacement: bool = True
-    allow_trio_matches: bool = True
-    use_challenges_for_x: bool = True
-    use_individual_matches_for_x: bool = True
-    max_trio_size: int = 3
-    anti_rematch_weight: float = 0.8
+    Controls sophisticated tournament features that go beyond basic pairing:
+    X-replacement alternatives, trio match handling, and enhanced anti-rematch logic.
+    These options enable tournament directors to optimize player engagement and
+    competitive balance based on specific tournament objectives.
+    """
+
+    allow_x_replacement: bool = True  # Enable bye alternatives (challenges, individual matches)
+    allow_trio_matches: bool = True  # Support three-player matches for odd counts
+    use_challenges_for_x: bool = True  # Offer skill challenges as bye replacement
+    use_individual_matches_for_x: bool = True  # Enable casual matches during byes
+    max_trio_size: int = 3  # Maximum players per trio match
+    anti_rematch_weight: float = 0.8  # Quality penalty for repeated pairings (0.0-1.0)
 
 
 class AdvancedAmalfiStrategy(BaseStrategy):
-    """Advanced Amalfi strategy with X-replacement, trio matches, and anti-rematch logic."""
+    """Enhanced Amalfi strategy with community engagement and advanced tournament features.
+
+    Extends the sophisticated Amalfi algorithm with modern tournament management
+    capabilities including X-replacement systems (bye alternatives), trio match
+    support, and enhanced anti-rematch intelligence. Designed for competitive
+    pool tournaments that prioritize player engagement and community building.
+
+    Advanced Features:
+    - X-replacement: Challenges and individual matches instead of sitting out
+    - Trio matches: Three-player formats to minimize byes
+    - Enhanced anti-rematch: Weighted quality assessment for rematch avoidance
+    - Challenge integration: Skill development opportunities during tournament
+    - Individual match support: Casual play opportunities for community building
+
+    Design Pattern: Decorator (enhances base Amalfi) + Strategy + Template Method
+    Business Context: Competitive American Pool tournaments with community focus
+    """
 
     # Strategy metadata
     name = "advanced_amalfi"
@@ -36,12 +58,28 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     requires_classification = True
 
     def __init__(self, base_amalfi_strategy: AmalfiStrategy):
+        """Initialize advanced strategy as decorator over base Amalfi algorithm.
+
+        Args:
+            base_amalfi_strategy: Core Amalfi algorithm to enhance with advanced features
+        """
         super().__init__()
         self._base_strategy = base_amalfi_strategy
         self._options = AdvancedPairingOptions()
 
     def validate(self, gara: object) -> ValidationResult:
-        """Validate gara for advanced Amalfi strategy."""
+        """Validate tournament configuration for advanced Amalfi strategy requirements.
+
+        Combines base Amalfi validation with advanced feature compatibility checks.
+        Ensures tournament settings support enhanced features like trio matches,
+        challenge integration, and X-replacement systems.
+
+        Args:
+            gara: Tournament object to validate against advanced requirements
+
+        Returns:
+            ValidationResult with comprehensive feedback on configuration compatibility
+        """
         # Cast to Gara for type safety
         gara_obj: Gara = gara  # type: ignore
 
@@ -79,9 +117,11 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             errors.extend(base_validation.errors)
             warnings.extend(base_validation.warnings)
 
-        # Additional validations for advanced features
+        # Check compatibility between advanced features and tournament settings
         if self._options.allow_trio_matches and gara_obj.without_x:
-            warnings.append("Trio matches enabled with 'without X' mode - may conflict")
+            warnings.append(
+                "Trio matches enabled with 'without X' mode - configuration may need review"
+            )
 
         return {"errors": errors, "warnings": warnings}
 
@@ -128,9 +168,27 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     def _generate_x_replacement(
         self, gara: Gara, player_id: int, round_number: int, preview_mode: bool
     ) -> Optional[Pairing]:
-        """Generate X replacement using challenges or individual matches."""
+        """Generate meaningful activity alternatives for players who would receive a bye.
 
-        # Try challenge-based replacement first
+        X-replacement maximizes player engagement by offering skill challenges or
+        individual matches instead of sitting idle. This maintains tournament momentum
+        while providing additional competitive and social opportunities.
+
+        Replacement Priority:
+        1. Skill challenges: Individual practice with tournament scoring integration
+        2. Individual matches: Casual games with available players
+
+        Args:
+            gara: Tournament context with available challenges and players
+            player_id: Player receiving the bye who needs alternative activity
+            round_number: Current round number for context
+            preview_mode: Whether this is preview (no side effects) or execution
+
+        Returns:
+            Alternative Pairing object, or None if no suitable replacement available
+        """
+
+        # Priority 1: Skill challenges provide individual development opportunities
         if self._options.use_challenges_for_x:
             challenge_replacement = self._try_challenge_replacement(
                 gara, player_id, round_number, preview_mode
@@ -138,7 +196,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             if challenge_replacement:
                 return challenge_replacement
 
-        # Try individual match replacement
+        # Priority 2: Individual matches maintain social and competitive engagement
         if self._options.use_individual_matches_for_x:
             individual_replacement = self._try_individual_match_replacement(
                 gara, player_id, round_number, preview_mode
@@ -151,20 +209,28 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     def _try_challenge_replacement(
         self, gara: Gara, player_id: int, round_number: int, preview_mode: bool
     ) -> Optional[Pairing]:
-        """Try to replace X with a challenge."""
-        # Find suitable challenge for this player
+        """Attempt to replace bye with skill challenge for individual development.
+
+        Challenges provide structured skill practice that integrates with tournament
+        scoring while keeping players engaged. This approach transforms downtime
+        into valuable training opportunities.
+
+        Returns:
+            Challenge-based Pairing with high quality score (meaningful activity)
+        """
+        # Locate appropriate skill challenge matching player level and tournament context
         suitable_challenge = self._find_suitable_challenge(gara, player_id)
 
         if suitable_challenge:
-            # Create a "challenge pairing" that will be handled specially
+            # Create challenge pairing with high engagement value
             challenge_pairing = Pairing(
                 players=(player_id,),
-                is_bye=False,  # Not a bye, but a special challenge match
+                is_bye=False,  # Challenge activity, not idle time
                 round_number=round_number,
-                pairing_quality=0.9,  # High quality as it's meaningful
-                estimated_duration=20,  # Challenge duration
-                requires_handicap=False,
-                notes=f"Challenge: {suitable_challenge.name}",
+                pairing_quality=0.9,  # High quality due to skill development value
+                estimated_duration=20,  # Typical challenge completion time
+                requires_handicap=False,  # Individual challenges don't need handicaps
+                notes=f"Skill Challenge: {suitable_challenge.name}",
             )
             return challenge_pairing
 
@@ -173,20 +239,28 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     def _try_individual_match_replacement(
         self, gara: Gara, player_id: int, round_number: int, preview_mode: bool
     ) -> Optional[Pairing]:
-        """Try to replace X with an individual match."""
-        # Find suitable opponent for individual match
+        """Attempt to replace bye with individual match for social engagement.
+
+        Individual matches provide casual competitive opportunities with other
+        available players, maintaining the social aspects of tournament participation
+        while ensuring no player sits idle unnecessarily.
+
+        Returns:
+            Individual match Pairing with moderate quality (social engagement value)
+        """
+        # Identify available player for casual competitive engagement
         suitable_opponent = self._find_suitable_opponent(gara, player_id, round_number)
 
         if suitable_opponent:
-            # Create individual match pairing
+            # Create casual match pairing for social engagement
             individual_pairing = Pairing(
                 players=(player_id, suitable_opponent),
                 is_bye=False,
                 round_number=round_number,
-                pairing_quality=0.7,  # Medium quality
-                estimated_duration=45,  # Individual match duration
-                requires_handicap=True,  # May need handicap
-                notes="Individual match replacement for X",
+                pairing_quality=0.7,  # Good quality for casual competitive play
+                estimated_duration=45,  # Standard individual match duration
+                requires_handicap=True,  # May benefit from skill balancing
+                notes="Casual match for bye replacement and community engagement",
             )
             return individual_pairing
 
@@ -211,19 +285,30 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     def _find_suitable_challenge(
         self, gara: Gara, player_id: int
     ) -> Optional[Challenge]:
-        """Find a suitable challenge for X replacement."""
-        # Look for challenges that are appropriate for this player and gara
+        """Locate appropriate skill challenge for individual player development.
+
+        Searches for challenges that match the player's skill level and tournament
+        context, ensuring the X-replacement activity provides meaningful value.
+
+        Args:
+            gara: Tournament context for challenge scope
+            player_id: Player needing alternative activity
+
+        Returns:
+            Challenge object suitable for tournament integration, or None if unavailable
+        """
+        # Query challenge system for tournament-appropriate skill development opportunities
         from models.challenge.services import ChallengeService
 
         try:
-            # Get challenges suitable for X replacement
+            # Request challenge recommendation from challenge service
             suitable_challenge = ChallengeService.get_challenge_for_x_replacement(
                 gara.id
             )
 
             return suitable_challenge
         except Exception:
-            # If challenge service is not available, return None
+            # Graceful degradation if challenge system unavailable
             pass
 
         return None
@@ -367,10 +452,28 @@ class AdvancedAmalfiStrategy(BaseStrategy):
     def _calculate_enhanced_pairing_quality(
         self, pairing: Pairing, gara: Gara, round_number: int
     ) -> float:
-        """Calculate enhanced pairing quality with anti-rematch consideration."""
+        """Calculate pairing quality with advanced anti-rematch intelligence.
+
+        Enhances base pairing quality assessment by incorporating encounter history
+        and applying configurable penalties for repeated matchups. This promotes
+        variety and fairness throughout the tournament.
+
+        Quality Factors:
+        - Base algorithmic quality from Amalfi engine
+        - Anti-rematch penalty based on encounter history
+        - Weighted adjustment using configured anti_rematch_weight
+
+        Args:
+            pairing: Pairing object to assess
+            gara: Tournament context for encounter history
+            round_number: Current round for temporal context
+
+        Returns:
+            Enhanced quality score incorporating rematch avoidance preferences
+        """
         base_quality = pairing.pairing_quality or 0.5
 
-        # Check if players have played before (anti-rematch)
+        # Apply anti-rematch intelligence to promote variety and fairness
         from models.classification.models import PlayerEncounter
 
         if len(pairing.players) >= 2:
@@ -378,7 +481,7 @@ class AdvancedAmalfiStrategy(BaseStrategy):
             have_played = PlayerEncounter.have_played(gara.id, player1_id, player2_id)
 
             if have_played:
-                # Reduce quality for rematch
+                # Apply configured quality penalty for repeated matchups
                 return base_quality * self._options.anti_rematch_weight
 
         return base_quality

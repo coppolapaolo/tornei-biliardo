@@ -58,7 +58,7 @@ class TestRoundLockingUI:
                 distance=5,
                 campionato_id=None,
                 director_id=admin_user.id,
-                rounds_count=3,
+                rounds_count=2,
                 inscription_start=datetime.combine(
                     date.today() - timedelta(days=7), datetime.min.time()
                 ),
@@ -277,7 +277,7 @@ class TestRoundLockingUI:
                 distance=5,
                 campionato_id=None,
                 director_id=admin_user.id,
-                rounds_count=3,
+                rounds_count=2,
                 inscription_start=datetime.combine(
                     date.today() - timedelta(days=7), datetime.min.time()
                 ),

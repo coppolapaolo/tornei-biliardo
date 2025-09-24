@@ -371,7 +371,7 @@ class TestAmalfiCompleteWorkflow:
             date=tomorrow,
             location="Test Location",
             description="Test anti-rematch logic",
-            rounds_count=5,  # More rounds to test anti-rematch
+            rounds_count=3,  # Valid rounds for 6 players to test anti-rematch
             min_participants=4,
             max_participants=6,
             entry_fee=10.0,

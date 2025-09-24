@@ -58,6 +58,13 @@ class AmalfiEngine:
         self._finalize_forfeit_matches(matches)
 
         # Persistenza atomica dei match creati (l'engine storico già aggiungeva i match)
+
+        # Carica esplicitamente le relazioni trio_match per i trio matches
+        for match in matches:
+            if getattr(match, "is_trio", False):
+                # Forza il caricamento della relazione trio_match
+                _ = match.trio_match
+
         return matches
 
     def preview_round_pairings(self, round_number: int) -> Dict:
@@ -273,7 +280,22 @@ class AmalfiEngine:
         # 🔧 FIX contratto: registra incontri con ordine corretto
         # (gara_id, p1, p2, round)
         for match in matches:
-            if not getattr(match, "is_bye", False):
+            if getattr(match, "is_bye", False):
+                continue
+            if getattr(match, "is_trio", False):
+                # Per trio match, registra tutti e tre gli incontri
+                trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+                if trio:
+                    PlayerEncounter.record_encounter(
+                        self.gara.id, trio.player1_id, trio.player2_id, 1
+                    )
+                    PlayerEncounter.record_encounter(
+                        self.gara.id, trio.player1_id, trio.player3_id, 1
+                    )
+                    PlayerEncounter.record_encounter(
+                        self.gara.id, trio.player2_id, trio.player3_id, 1
+                    )
+            else:
                 PlayerEncounter.record_encounter(
                     self.gara.id, match.player1_id, match.player2_id, 1
                 )
@@ -310,25 +332,58 @@ class AmalfiEngine:
 
         # Dispari → bye oppure trasformazione in trio a seconda della modalità
         if len(players) % 2 == 1:
-            bye_player = players[-1]
-            bye_score = (
-                self.gara.get_winning_score()
-                if self.gara.best_of
-                else self.gara.distance
-            )
-            match = Match(
-                gara_id=self.gara.id,
-                round_number=1,
-                player1_id=bye_player.id,
-                is_bye=True,
-                player1_score=bye_score,
-                winner_id=bye_player.id,
-                status="completed",
-                amalfi_round=1,
-                match_distance=self.gara.distance,
-            )
-            matches.append(match)
-            players = players[:-1]
+            if self.gara.odd_number_policy == "trio" and len(players) >= 3:
+                # Crea trio con gli ultimi 3 giocatori
+                trio_players = players[-3:]
+                players = players[:-3]
+
+                # Crea match base con i primi due giocatori del trio
+                match = Match(
+                    gara_id=self.gara.id,
+                    round_number=1,
+                    player1_id=trio_players[0].id,
+                    player2_id=trio_players[1].id,
+                    is_trio=True,
+                    match_distance=self.gara.distance,
+                )
+                matches.append(match)
+
+                # Aggiungi il trio match subito per ottenere l'ID
+                db.session.add(match)
+                db.session.flush()  # Ottiene l'ID senza commit
+
+                # Crea il record TrioMatch
+                trio = TrioMatch(
+                    match_id=match.id,
+                    player1_id=trio_players[0].id,
+                    player2_id=trio_players[1].id,
+                    player3_id=trio_players[2].id,
+                )
+                db.session.add(trio)
+                db.session.flush()  # Assicura che il TrioMatch sia visibile immediatamente
+
+                # Rimuovi il match dalla lista per evitare doppio add
+                matches.pop()
+            else:
+                # Logica bye originale
+                bye_player = players[-1]
+                bye_score = (
+                    self.gara.get_winning_score()
+                    if self.gara.best_of
+                    else self.gara.distance
+                )
+                match = Match(
+                    gara_id=self.gara.id,
+                    round_number=1,
+                    player1_id=bye_player.id,
+                    is_bye=True,
+                    player1_score=bye_score,
+                    winner_id=bye_player.id,
+                    status="completed",
+                    match_distance=self.gara.distance,
+                )
+                matches.append(match)
+                players = players[:-1]
 
         # Coppie rimanenti
         for i in range(0, len(players), 2):
@@ -337,7 +392,6 @@ class AmalfiEngine:
                 round_number=1,
                 player1_id=players[i].id,
                 player2_id=players[i + 1].id,
-                amalfi_round=1,
                 match_distance=self.gara.distance,
             )
             matches.append(match)
@@ -422,8 +476,6 @@ class AmalfiEngine:
                     round_number=round_number,
                     player1_id=current_class.user_id,
                     player2_id=target_class.user_id,
-                    amalfi_round=round_number,
-                    salto_applied=salto,
                     match_distance=self.gara.distance,
                 )
                 db.session.add(match)
@@ -433,6 +485,8 @@ class AmalfiEngine:
         # Gestisci disparità
         unmatched = [c for c in classification if c.user_id not in matched_players]
         if unmatched:
+            # Flush per assegnare gli ID ai match prima di creare trio
+            db.session.flush()
             self._handle_unmatched_player(unmatched[0], matches, round_number)
 
         return matches
@@ -597,6 +651,7 @@ class AmalfiEngine:
             player3_id=third_player_id,
         )
         db.session.add(trio)
+        db.session.flush()  # Assicura che il TrioMatch sia visibile immediatamente
 
     def _create_bye_match(self, player_id: int, round_number: int) -> None:
         score = (
@@ -610,7 +665,6 @@ class AmalfiEngine:
             player1_score=score,
             winner_id=player_id,
             status="completed",
-            amalfi_round=round_number,
             match_distance=self.gara.distance,
         )
         db.session.add(bye)
@@ -753,7 +807,6 @@ class AmalfiEngine:
                         "player1": current.user,
                         "player2": target.user,
                         "type": "normal",
-                        "salto_applied": salto,
                     }
                 )
                 matched.update({current.user_id, target.user_id})

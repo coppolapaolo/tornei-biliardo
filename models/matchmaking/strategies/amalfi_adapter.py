@@ -49,52 +49,20 @@ class AmalfiStrategy(BaseStrategy):
     # ── validate (override to use injected function) ──────────────────────────
     def validate(self, gara: object) -> ValidationResult:
         ok, messages = self._validate_fn(gara)
-        return ValidationResult(ok=ok, messages=messages)
+        if ok:
+            return ValidationResult.success(warnings=list(messages))
+        else:
+            return ValidationResult.failure(list(messages))
 
     # ── _generate_pairings (abstract method implementation) ──────────────────
     def _generate_pairings(
         self,
         processed_data: Dict[str, Any],
         round_number: int,
-        preview_mode: bool = True,
     ) -> Sequence[Pairing]:
         """Generate pairings using the Amalfi engine."""
         gara = processed_data["gara"]
-
-        if preview_mode:
-            return self._generate_preview_pairings(gara, round_number)
-        else:
-            return self._generate_actual_pairings(gara, round_number)
-
-    def _generate_preview_pairings(
-        self, gara: object, round_number: int
-    ) -> Sequence[Pairing]:
-        """Generate preview pairings without side effects."""
-        gara_typed = cast(Gara, gara)
-        engine = AmalfiEngine(gara_typed)  # rispetta WithdrawPolicy via patch in engine
-        raw = (
-            engine._preview_first_round()
-            if int(round_number) == 1
-            else engine.preview_next_round_matches(int(round_number))
-        )
-        result: list[Pairing] = []
-        for m in raw:
-            players: list[int] = []
-            if m.get("player1"):
-                players.append(int(m["player1"].id))
-            if m.get("player2"):
-                players.append(int(m["player2"].id))
-            if m.get("player3"):
-                players.append(int(m["player3"].id))
-            is_bye = m.get("type") == "bye" or len(players) == 1
-            result.append(
-                Pairing(
-                    players=tuple(players),
-                    is_bye=is_bye,
-                    round_number=int(round_number),
-                )
-            )
-        return result
+        return self._generate_actual_pairings(gara, round_number)
 
     def _generate_actual_pairings(
         self, gara: object, round_number: int

@@ -348,8 +348,9 @@ class TestUseCaseMatchModification:
         db_session.commit()
 
         # Verify round 1 is now locked
-        for match in round1_matches:
-            db_session.refresh(match)
+        # Re-fetch matches from database to see changes from service transaction
+        round1_matches_updated = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
+        for match in round1_matches_updated:
             assert match.is_locked is True or match.round_locked is True
 
         print(f"Round 1 matches locked after starting round 2")

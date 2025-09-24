@@ -25,6 +25,33 @@ class TestAmalfiUnifiedPerformance:
         """Create AmalfiUnifiedAdapter instance."""
         return AmalfiUnifiedAdapter()
 
+    def create_mock_matches_from_preview_data(self, preview_data: dict) -> List:
+        """Helper to create mock Match objects from preview data."""
+        from models.match.models import Match
+        mock_matches = []
+
+        matches_data = preview_data.get("matches", [])
+        for i, match_data in enumerate(matches_data, 1):
+            match_mock = Mock(spec=Match)
+            match_mock.id = i
+
+            if match_data.get("type") == "bye":
+                match_mock.player1_id = match_data["player1"].id
+                match_mock.player2_id = None
+                match_mock.is_bye = True
+            else:
+                match_mock.player1_id = match_data["player1"].id
+                match_mock.player2_id = match_data["player2"].id
+                match_mock.is_bye = False
+
+            # Remove trio_match attribute to avoid hasattr issues
+            if hasattr(match_mock, 'trio_match'):
+                delattr(match_mock, 'trio_match')
+
+            mock_matches.append(match_mock)
+
+        return mock_matches
+
     def create_large_mock_gara(self, num_players: int) -> Mock:
         """Create mock Gara with large number of players for performance testing."""
         gara = Mock(spec=Gara)
@@ -86,15 +113,18 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(num_players)
         preview_data = self.create_large_preview_data(num_players)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             # Measure preview performance
             pairings, execution_time = self.measure_execution_time(
-                adapter.preview, gara, 1
+                adapter.create_round, gara, 1
             )
 
         # Performance requirement: < 2 seconds for small tournaments
@@ -117,15 +147,18 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(num_players)
         preview_data = self.create_large_preview_data(num_players)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             # Measure preview performance
             pairings, execution_time = self.measure_execution_time(
-                adapter.preview, gara, 1
+                adapter.create_round, gara, 1
             )
 
         # More lenient requirement for large tournaments, but should still be reasonable
@@ -148,21 +181,24 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(32)
         preview_data = self.create_large_preview_data(32)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             # Test without context
             _, time_without_context = self.measure_execution_time(
-                adapter.preview, gara, 1
+                adapter.create_round, gara, 1
             )
 
             # Test with context
             context = PairingContext(seed=42)
             adapter.set_context(context)
-            _, time_with_context = self.measure_execution_time(adapter.preview, gara, 1)
+            _, time_with_context = self.measure_execution_time(adapter.create_round, gara, 1)
 
         # Context setup should add minimal overhead (< 10% increase)
         overhead_ratio = (
@@ -183,11 +219,14 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(16)
         preview_data = self.create_large_preview_data(16)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             context = PairingContext(seed=42)
             adapter.set_context(context)
@@ -197,7 +236,7 @@ class TestAmalfiUnifiedPerformance:
 
             for round_num in range(1, num_rounds + 1):
                 _, round_time = self.measure_execution_time(
-                    adapter.preview, gara, round_num
+                    adapter.create_round, gara, round_num
                 )
                 total_time += round_time
 
@@ -225,6 +264,9 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(100)
         preview_data = self.create_large_preview_data(100)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         # Measure memory before
         initial_refs = sys.getrefcount(gara)
 
@@ -232,14 +274,14 @@ class TestAmalfiUnifiedPerformance:
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             context = PairingContext(seed=42)
             adapter.set_context(context)
 
             # Run multiple times to check for memory leaks
             for _ in range(10):
-                pairings = adapter.preview(gara, 1)
+                pairings = adapter.create_round(gara, 1)
                 # Verify pairings are created but don't hold references
                 assert len(pairings) > 0
 
@@ -281,11 +323,14 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(50)
         preview_data = self.create_large_preview_data(50)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             # Test multiple different seeds
             seeds = [42, 123, 999, 777, 555]
@@ -296,7 +341,7 @@ class TestAmalfiUnifiedPerformance:
                 adapter.set_context(context)
 
                 _, execution_time = self.measure_execution_time(
-                    adapter.preview, gara, 1
+                    adapter.create_round, gara, 1
                 )
                 times.append(execution_time)
 
@@ -332,17 +377,20 @@ class TestAmalfiUnifiedPerformance:
             gara = self.create_large_mock_gara(num_players)
             preview_data = self.create_large_preview_data(num_players)
 
+            # Convert preview data to mock Match objects
+            mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
             with patch(
                 "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
             ) as mock_engine_class:
                 mock_engine = mock_engine_class.return_value
-                mock_engine.preview_round_pairings.return_value = preview_data
+                mock_engine.create_round_matches.return_value = mock_matches
 
                 context = PairingContext(seed=42)
                 adapter.set_context(context)
 
                 _, execution_time = self.measure_execution_time(
-                    adapter.preview, gara, 1
+                    adapter.create_round, gara, 1
                 )
 
             assert (
@@ -361,17 +409,20 @@ class TestAmalfiUnifiedPerformance:
         gara = self.create_large_mock_gara(32)
         preview_data = self.create_large_preview_data(32)
 
+        # Convert preview data to mock Match objects
+        mock_matches = self.create_mock_matches_from_preview_data(preview_data)
+
         with patch(
             "models.matchmaking.strategies.amalfi_unified_adapter.AmalfiEngine"
         ) as mock_engine_class:
             mock_engine = mock_engine_class.return_value
-            mock_engine.preview_round_pairings.return_value = preview_data
+            mock_engine.create_round_matches.return_value = mock_matches
 
             context = PairingContext(seed=42)
             adapter.set_context(context)
 
             # Execute and measure
-            _, execution_time = self.measure_execution_time(adapter.preview, gara, 1)
+            _, execution_time = self.measure_execution_time(adapter.create_round, gara, 1)
 
             # Get metrics
             metrics = adapter.get_metrics()

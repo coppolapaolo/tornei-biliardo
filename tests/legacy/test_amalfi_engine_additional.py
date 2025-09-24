@@ -320,7 +320,6 @@ class TestAmalfiEnginePlayerEncounters:
             round_number=1,
             player1_id=user1.id,
             player2_id=user2.id,
-            amalfi_round=1,
         )
         match.gara = gara
         db_session.add(match)

@@ -176,12 +176,14 @@ class TransactionManager:
                         db.session.begin_nested()
                         context.add_savepoint(savepoint_name)
                         logger.debug(
-                            f"Created savepoint {savepoint_name} within existing transaction"
+                            f"Created savepoint {savepoint_name} within "
+                            "existing transaction"
                         )
                         is_nested = True  # Treat as nested for commit/rollback logic
                     except Exception as e:
                         logger.warning(
-                            f"Failed to create savepoint, proceeding without transaction boundaries: {e}"
+                            f"Failed to create savepoint, proceeding without "
+                            f"transaction boundaries: {e}"
                         )
                         # Continue without explicit transaction management
                 else:
@@ -190,11 +192,13 @@ class TransactionManager:
 
                     # Set isolation level if specified
                     if isolation_level:
-                        # Check if we're using SQLite (doesn't support SET TRANSACTION ISOLATION LEVEL)
+                        # Check if we're using SQLite
+                        # (doesn't support SET TRANSACTION ISOLATION LEVEL)
                         if "sqlite" not in str(db.engine.dialect).lower():
                             db.session.execute(
                                 text(
-                                    f"SET TRANSACTION ISOLATION LEVEL {isolation_level.value}"
+                                    f"SET TRANSACTION ISOLATION LEVEL "
+                                    f"{isolation_level.value}"
                                 )
                             )
                             logger.debug(
@@ -205,7 +209,8 @@ class TransactionManager:
 
                     # Set read-only if specified
                     if read_only:
-                        # Check if we're using SQLite (doesn't support SET TRANSACTION READ ONLY)
+                        # Check if we're using SQLite
+                        # (doesn't support SET TRANSACTION READ ONLY)
                         if "sqlite" not in str(db.engine.dialect).lower():
                             db.session.execute(text("SET TRANSACTION READ ONLY"))
                             logger.debug("Set transaction to read-only")
@@ -220,7 +225,8 @@ class TransactionManager:
 
             # Commit the transaction/savepoint
             if is_nested:
-                # For nested transactions (savepoints), we need to explicitly release the savepoint
+                # For nested transactions (savepoints), we need to explicitly release
+                # the savepoint
                 # This ensures the changes are preserved within the parent transaction
                 try:
                     db.session.commit()  # This releases the savepoint in SQLAlchemy
@@ -235,11 +241,13 @@ class TransactionManager:
                     try:
                         db.session.rollback()
                         logger.warning(
-                            f"Rolled back to savepoint {transaction_id} due to release failure"
+                            f"Rolled back to savepoint {transaction_id} due to "
+                            "release failure"
                         )
                     except Exception as rollback_error:
                         logger.error(
-                            f"Failed to rollback to savepoint {transaction_id}: {rollback_error}"
+                            f"Failed to rollback to savepoint {transaction_id}: "
+                            f"{rollback_error}"
                         )
             else:
                 try:
@@ -408,7 +416,7 @@ def transactional(
         def wrapper(*args, **kwargs) -> T:
             with transaction_manager.transaction(
                 isolation_level=isolation_level, read_only=read_only
-            ) as context:
+            ):
                 if domain:
                     transaction_manager.track_domain_access(domain)
 
