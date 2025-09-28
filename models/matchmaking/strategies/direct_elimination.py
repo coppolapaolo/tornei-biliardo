@@ -7,7 +7,7 @@ Requirements: SPECIFICHE.md - Direct elimination campionato format
 from __future__ import annotations
 
 import math
-from typing import Sequence, List, Optional, Dict, Any, TYPE_CHECKING, cast
+from typing import Sequence, List, Dict, Any, TYPE_CHECKING, cast
 
 from .base import Pairing, BaseStrategy
 
@@ -45,7 +45,9 @@ class DirectEliminationStrategy(BaseStrategy):
             player_count = len(active_inscriptions)
 
             # Calculate required rounds
-            required_rounds = math.ceil(math.log2(player_count)) if player_count > 0 else 0
+            required_rounds = (
+                math.ceil(math.log2(player_count)) if player_count > 0 else 0
+            )
 
             if hasattr(gara, "rounds_count"):
                 rounds_count = getattr(gara, "rounds_count")
@@ -62,14 +64,18 @@ class DirectEliminationStrategy(BaseStrategy):
 
     def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(
+            gara, round_number  # type: ignore[arg-type]
+        )
 
     def _generate_pairings(
         self, processed_data: Dict[str, Any], round_number: int
     ) -> Sequence[Pairing]:
         """Generate Direct Elimination pairings for the round."""
         gara = processed_data["gara"]
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(
+            gara, round_number  # type: ignore[arg-type]
+        )
 
     def _generate_round_pairings(
         self, gara: object, round_number: int
@@ -92,7 +98,11 @@ class DirectEliminationStrategy(BaseStrategy):
         """Generate first round pairings with proper seeding and byes."""
         # Get active players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+        active_inscriptions = [
+            i for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
+        ]
 
         # Sort players by seeding (use classification or random)
         player_ids = self._get_seeded_players(gara, active_inscriptions)
@@ -220,8 +230,6 @@ class DirectEliminationStrategy(BaseStrategy):
         """Calculate number of byes needed."""
         bracket_size = self.get_bracket_size(player_count)
         return bracket_size - player_count
-
-
 
 class DirectEliminationPairingStrategy(DirectEliminationStrategy):
     """Alias for compatibility with existing strategy registry."""

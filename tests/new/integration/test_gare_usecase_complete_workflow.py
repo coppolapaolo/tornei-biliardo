@@ -108,8 +108,6 @@ class TestUseCaseGareComplete:
         # (Challenge system would be implemented separately)
 
         # Verify final state
-        from models.classification.models import RoundClassification
-
         final_classification = (
             RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
             .order_by(RoundClassification.position)

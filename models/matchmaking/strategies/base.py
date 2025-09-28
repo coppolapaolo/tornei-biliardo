@@ -356,6 +356,8 @@ class BaseStrategy(PairingStrategy):
         """Get active inscriptions for the gara."""
         inscriptions = getattr(gara, "inscriptions", [])
         return [
-            i for i in inscriptions if hasattr(i, "status") and i.status == "confirmed"
+            i for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
         ]
 

@@ -93,7 +93,7 @@ class RoundService:
             from models.match.models import Match
 
             for round_num in range(1, gara.rounds_count + 1):
-                pairings = strategy.propose(gara, round_num)
+                pairings = strategy.create_round(gara, round_num)
 
                 # Get discipline configuration for this round
                 from models.competition.round_configuration import RoundConfiguration
@@ -321,6 +321,7 @@ class RoundService:
                         winner_id=pairing.players[0],
                         status="completed",
                         discipline=discipline_override,
+                        match_distance=gara.distance,
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 2 and not pairing.is_bye:
@@ -332,6 +333,7 @@ class RoundService:
                         player2_id=pairing.players[1],
                         is_bye=False,
                         discipline=discipline_override,
+                        match_distance=gara.distance,
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 3:
@@ -344,6 +346,7 @@ class RoundService:
                         is_bye=False,
                         is_trio=True,
                         discipline=discipline_override,
+                        match_distance=gara.distance,
                     )
                     db.session.add(match)
                     db.session.flush()  # Assicura che il match abbia un ID

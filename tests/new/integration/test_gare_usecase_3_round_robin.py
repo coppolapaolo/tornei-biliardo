@@ -203,7 +203,6 @@ class TestUseCaseRoundRobinMultiSet:
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Step 8: Verify final classification
-        from models.classification.models import RoundClassification
 
         final_classification = (
             RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)

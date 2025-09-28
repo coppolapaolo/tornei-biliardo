@@ -264,6 +264,7 @@ class AmalfiStrategy(BaseStrategy):
         - Salto = numero_turni_totali - turno_corrente
         - Cerca di evitare i rematch quando possibile
         - Gestisce i numeri dispari aggiungendo temporaneamente BYE_PLAYER_ID
+        - Evita che un giocatore abbia più di un bye nel torneo
         """
         players = [c.user_id for c in classifica]
         abbinati: set[int] = set()
@@ -274,6 +275,10 @@ class AmalfiStrategy(BaseStrategy):
 
         # Normalizza per algoritmo uniforme: aggiungi BYE_PLAYER_ID se dispari
         gara_id = classifica[0].gara_id if classifica else None
+
+        # Ottieni i giocatori che hanno già avuto un bye
+        players_with_bye = self._get_players_with_bye(gara_id) if gara_id else set()
+
         if len(players) % 2 == 1:
             players = players + [self.BYE_PLAYER_ID]
 
@@ -292,6 +297,7 @@ class AmalfiStrategy(BaseStrategy):
             # 1. p2 è già abbinato
             # 2. Non hai ancora fatto abbastanza salti (salto > 0)
             # 3. I due giocatori hanno già giocato insieme (anti-rematch)
+            # 4. p1 ha già avuto un bye e p2 è BYE_PLAYER_ID (max 1 bye per giocatore)
             while (
                 players[p2] in abbinati
                 or salto > 0
@@ -299,6 +305,10 @@ class AmalfiStrategy(BaseStrategy):
                     players[p2] != self.BYE_PLAYER_ID
                     and gara_id
                     and self._have_already_played(players[p1], players[p2], gara_id)
+                )
+                or (
+                    players[p2] == self.BYE_PLAYER_ID
+                    and players[p1] in players_with_bye
                 )
             ):
                 # Se p2 non è abbinato, decrementa il salto
@@ -334,6 +344,18 @@ class AmalfiStrategy(BaseStrategy):
         """Controlla se due giocatori hanno già giocato insieme in questa gara."""
         return not anti_rematch_allowed(gara_id, player1_id, player2_id)
 
+    def _get_players_with_bye(self, gara_id: int) -> set[int]:
+        """Ottieni l'insieme dei giocatori che hanno già avuto un bye in questa gara."""
+        from models.match.models import Match
+
+        bye_matches = (
+            db.session.query(Match)
+            .filter_by(gara_id=gara_id, is_bye=True)
+            .all()
+        )
+
+        return {match.player1_id for match in bye_matches if match.player1_id}
+
     def _get_classification(
         self, gara_id: int, round_number: int
     ) -> List[RoundClassification]:
@@ -354,14 +376,11 @@ class AmalfiStrategy(BaseStrategy):
             if hasattr(inscriptions, "all"):
                 inscriptions = inscriptions.all()  # type: ignore[attr-defined]
 
-        # More flexible filtering - accept confirmed or any without status
+        # Filter active inscriptions (not withdrawn, not waitlist)
         active = []
         for i in inscriptions:
-            if hasattr(i, "status"):
-                if i.status == "confirmed":
-                    active.append(i)
-            else:
-                # No status field, assume active
+            if (not getattr(i, "is_withdrawn", False) and
+                not getattr(i, "is_waitlist", False)):
                 active.append(i)
 
         return active

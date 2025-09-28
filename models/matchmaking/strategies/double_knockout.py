@@ -166,7 +166,11 @@ class DoubleKnockoutStrategy(BaseStrategy):
 
         # Get all players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+        active_inscriptions = [
+            i for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
+        ]
         for inscription in active_inscriptions:
             player_status[inscription.user_id] = "active"
 

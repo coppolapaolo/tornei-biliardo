@@ -122,6 +122,9 @@ class TestRandomAntiRematchStrategy:
 
     def test_anti_rematch_with_limited_options(self):
         """Test behavior when avoiding rematches limits options."""
+        import random
+        random.seed(42)  # Reset random state for test isolation
+
         player_ids = [1, 2, 3, 4]
         # Many previous matches, limiting options
         previous_pairings = {(1, 2), (1, 3), (2, 4)}
@@ -218,6 +221,9 @@ class TestRandomAntiRematchStrategy:
 
     def test_bye_anti_rematch(self):
         """Test that bye assignments follow anti-rematch logic."""
+        import random
+        random.seed(123)  # Reset random state for test isolation
+
         player_ids = [1, 2, 3]
 
         # Mock gara with bye policy
@@ -229,7 +235,7 @@ class TestRandomAntiRematchStrategy:
         with patch.object(self.strategy, '_get_encounter_history') as mock_history:
             # Player 1 had bye in round 1
             mock_history.return_value = (
-                {(1, self.strategy.BYE_PLAYER_ID)},  # previous pairs
+                {tuple(sorted([1, self.strategy.BYE_PLAYER_ID]))},  # previous pairs in canonical form
                 {}  # trio count
             )
 

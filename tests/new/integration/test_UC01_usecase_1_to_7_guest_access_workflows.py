@@ -140,6 +140,9 @@ class TestUseCaseOneComprehensive:
                 first_round_matches, [(3, 2)] * len(first_round_matches)
             )
 
+            # Calculate classification after round 1 completion (required for Amalfi strategy)
+            RoundClassification.calculate_classification_after_round(standalone_gara.id, 1)
+
             # 1. Guest views tournament details (no authentication)
             response = client.get(f"/public/gara/{standalone_gara.id}")
             assert response.status_code == 200
@@ -284,6 +287,9 @@ class TestUseCaseOneComprehensive:
                     )
                     rack_num += 1
                 MatchService.to_completed(match.id)
+
+            # Calculate classification after round 1 completion (required for Amalfi strategy)
+            RoundClassification.calculate_classification_after_round(standalone_gara.id, 1)
 
             # Complete round 2
             GaraService.create_amalfi_round(standalone_gara.id, 2)
@@ -464,6 +470,9 @@ class TestUseCaseOneComprehensive:
                         match.id, 2, match.player2_id, match.player2_id
                     )
                 MatchService.to_completed(match.id)
+
+            # Calculate classification after round 1 completion (required for Amalfi strategy)
+            RoundClassification.calculate_classification_after_round(standalone_gara.id, 1)
 
             # Should now show button to start next round
             response = client.get(f"/gara/{standalone_gara.id}")
@@ -987,6 +996,9 @@ class TestUseCaseOneComprehensive:
                     player1_score=3 if winner == match.player1_id else 2,
                     player2_score=2 if winner == match.player1_id else 3,
                 )
+
+            # Calculate classification after round 1 completion (required for Amalfi strategy)
+            RoundClassification.calculate_classification_after_round(standalone_gara.id, 1)
 
             # Create round 2 to ensure player gets another match
             GaraService.create_amalfi_round(standalone_gara.id, 2)

@@ -116,6 +116,19 @@ class TestRoundLockingUI:
                 "Bloccato" not in html_content
             ), "Should not have locked indicators before second round starts"
 
+            # Complete first round matches before creating second round
+            from models.match.models import Match
+            from models.match.services import MatchService
+            from models.classification.models import RoundClassification
+
+            first_round_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
+            for match in first_round_matches:
+                if not match.is_bye:
+                    MatchService.to_completed(match.id)
+
+            # Calculate classification for round 1
+            RoundClassification.calculate_classification_after_round(gara.id, 1)
+
             # 5. Create second round matches (this should lock first round)
             GaraService.create_round_with_strategy(gara.id, 2)
 
@@ -236,6 +249,10 @@ class TestRoundLockingUI:
 
             db.session.commit()
 
+            # Calculate classification for round 1
+            from models.classification.models import RoundClassification
+            RoundClassification.calculate_classification_after_round(gara.id, 1)
+
             # 4. Start second round (this should lock first round completely)
             GaraService.create_round_with_strategy(gara.id, 2)
             db.session.refresh(gara)
@@ -313,10 +330,25 @@ class TestRoundLockingUI:
 
             # Create multiple rounds (as many as the strategy allows)
             created_rounds = []
+            from models.match.models import Match
+            from models.match.services import MatchService
+            from models.classification.models import RoundClassification
+
             for round_num in [1, 2, 3]:
                 try:
                     GaraService.create_round_with_strategy(gara.id, round_num)
                     created_rounds.append(round_num)
+
+                    # Complete matches of this round (except the last one)
+                    if round_num < 3:
+                        round_matches = Match.query.filter_by(gara_id=gara.id, round_number=round_num).all()
+                        for match in round_matches:
+                            if not match.is_bye:
+                                MatchService.to_completed(match.id)
+
+                        # Calculate classification for this round
+                        RoundClassification.calculate_classification_after_round(gara.id, round_num)
+
                 except Exception as e:
                     print(f"Could not create round {round_num}: {e}")
                     break

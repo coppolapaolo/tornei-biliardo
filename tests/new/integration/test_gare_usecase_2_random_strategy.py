@@ -285,7 +285,6 @@ class TestUseCaseRandomStrategyWithChallenges:
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Step 8: Verify final classification exists and uses rack-based ordering
-        from models.classification.models import RoundClassification
 
         final_classification = (
             RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
@@ -605,7 +604,6 @@ class TestUseCaseRandomStrategyVariants:
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Verify final results
-        from models.classification.models import RoundClassification
 
         final_classification = (
             RoundClassification.query.filter_by(gara_id=gara.id, round_number=2)

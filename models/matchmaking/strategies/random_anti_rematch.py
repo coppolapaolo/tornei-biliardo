@@ -9,6 +9,7 @@ from __future__ import annotations
 import random
 from itertools import combinations
 from typing import Sequence, List, Tuple, Set, Dict, Any, TYPE_CHECKING
+import networkx as nx
 
 from .base import Pairing, BaseStrategy
 
@@ -85,20 +86,20 @@ class RandomAntiRematchStrategy(BaseStrategy):
         pairings = []
 
         # Handle trio if odd number and trio is allowed
-        if (len(remaining_players) % 2 == 1 and
-                self._should_use_trio(remaining_players, gara)):
-            # Select optimal trio minimizing trio history and avoiding rematches
-            trio_players = self._select_optimal_trio(
-                remaining_players, trio_count, all_previous_pairs
-            )
-            remaining_players = [p for p in remaining_players if p not in trio_players]
-            pairings.append(
-                Pairing(players=tuple(trio_players), round_number=round_number)
-            )
-
-        # For remaining players: add BYE_PLAYER_ID if odd number (uniform algorithm)
-        if len(remaining_players) % 2 == 1:
-            remaining_players.append(self.BYE_PLAYER_ID)
+        if (len(remaining_players) % 2 == 1):
+            if (self._should_use_trio(remaining_players, gara)):
+                # Select optimal trio minimizing trio history and avoiding rematches
+                trio_players = self._select_optimal_trio(
+                    remaining_players, trio_count, all_previous_pairs
+                )
+                remaining_players = [
+                    p for p in remaining_players if p not in trio_players
+                ]
+                pairings.append(
+                    Pairing(players=tuple(trio_players), round_number=round_number)
+                )
+            else:
+                remaining_players.append(self.BYE_PLAYER_ID)
 
         # Generate pairings for all players (now even number including potential BYE)
         if len(remaining_players) >= 2:
@@ -121,8 +122,8 @@ class RandomAntiRematchStrategy(BaseStrategy):
             # Shuffle valid pairs to introduce randomness
             random.shuffle(valid_pairs)
 
-            # Apply greedy maximum matching
-            selected_pairs, _ = self._apply_greedy_matching(
+            # Apply maximum matching algorithm
+            selected_pairs = self._apply_maximum_matching(
                 valid_pairs,
                 remaining_players
             )
@@ -311,23 +312,31 @@ class RandomAntiRematchStrategy(BaseStrategy):
                     return False
         return True
 
-    def _apply_greedy_matching(
+    def _apply_maximum_matching(
         self, valid_pairs: List[Tuple[int, ...]], all_players: List[int]
-    ) -> Tuple[List[Tuple[int, int]], List[int]]:
-        """Apply greedy maximum matching algorithm.
+    ) -> List[Tuple[int, int]]:
+        """Apply maximum matching algorithm using NetworkX.
 
         Returns:
-            Tuple of (selected_pairs, remaining_unmatched_players)
+            List of selected pairs (maximum cardinality matching)
         """
-        used_players = set()
-        selected_pairs = []
+        if not valid_pairs:
+            return []
 
-        for pair in valid_pairs:
-            player1, player2 = pair
-            if player1 not in used_players and player2 not in used_players:
-                selected_pairs.append(pair)
-                used_players.add(player1)
-                used_players.add(player2)
+        # Filter to ensure all pairs have exactly 2 elements (for NetworkX)
+        valid_edges = [(p1, p2) for p1, p2 in valid_pairs if len((p1, p2)) == 2]
 
-        remaining = [p for p in all_players if p not in used_players]
-        return selected_pairs, remaining
+        if not valid_edges:
+            return []
+
+        # Create graph with players as nodes and valid pairs as edges
+        G = nx.Graph()
+        G.add_nodes_from(all_players)
+        G.add_edges_from(valid_edges)
+
+        # Find maximum cardinality matching
+        matching = nx.max_weight_matching(G, maxcardinality=True)
+
+        # Convert to sorted tuples for consistency
+        selected_pairs = [tuple(sorted(pair)) for pair in matching]
+        return selected_pairs
