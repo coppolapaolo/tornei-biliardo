@@ -1,7 +1,7 @@
 """
-Invariant tests for AmalfiUnifiedAdapter - validates business logic constraints.
+Invariant tests for unified AmalfiStrategy - validates business logic constraints.
 
-These tests verify that the unified Amalfi adapter maintains critical business
+These tests verify that the unified Amalfi strategy maintains critical business
 invariants regardless of input variations, ensuring correctness of the
 tournament pairing algorithm.
 """
@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import Mock, patch
 from typing import List, Set
 
-from models.matchmaking.strategies.amalfi_unified_adapter import AmalfiUnifiedAdapter
+from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.registry import PairingContext
 from models.matchmaking.strategies.base import Pairing, ValidationResult
 from models.competition.models import Gara
@@ -18,12 +18,12 @@ from models import Inscription
 
 
 class TestAmalfiUnifiedInvariants:
-    """Invariant tests for business logic validation in AmalfiUnifiedAdapter."""
+    """Invariant tests for business logic validation in unified AmalfiStrategy."""
 
     @pytest.fixture
     def adapter(self):
-        """Create AmalfiUnifiedAdapter instance."""
-        return AmalfiUnifiedAdapter()
+        """Create unified AmalfiStrategy instance."""
+        return AmalfiStrategy()
 
     def create_mock_matches_from_pairings_data(self, pairings_data: List[dict]) -> List:
         """Helper to create mock Match objects from pairings data."""

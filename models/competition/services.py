@@ -310,12 +310,6 @@ class GaraService:
         """Legacy compatibility wrapper."""
         return GaraService.create_round_with_strategy(gara_id, round_number)
 
-    @staticmethod
-    def preview_round_with_strategy(gara_id: int, round_number: int) -> dict:
-        """Facade: delegate to RoundService."""
-        from models.competition.round_service import RoundService
-
-        return RoundService.preview_round_with_strategy(gara_id, round_number)
 
     @staticmethod
     @transactional(domain="competition")

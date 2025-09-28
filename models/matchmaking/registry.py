@@ -27,10 +27,12 @@ class PairingContext:
         self._state: Dict[str, Any] = {}
 
     def get_rng(self) -> random.Random:
-        """Get deterministic random number generator for reproducible pairing algorithms.
+        """Get deterministic random number generator for reproducible
+        pairing algorithms.
 
         Returns:
-            Random instance seeded for deterministic behavior, or unseeded for normal operation
+            Random instance seeded for deterministic behavior, or
+            unseeded for normal operation
         """
         return self._rng
 
@@ -69,14 +71,16 @@ class StrategyFactory:
     def create(
         self, strategy_name: str, context: Optional[PairingContext] = None
     ) -> PairingStrategy:
-        """Create strategy instance with optional context injection for deterministic behavior.
+        """Create strategy instance with optional context injection
+        for deterministic behavior.
 
         Args:
             strategy_name: Identifier for the strategy to instantiate
             context: Optional execution context with seeding and state management
 
         Returns:
-            Strategy instance ready for pairing generation, with context injected if supported
+            Strategy instance ready for pairing generation,
+            with context injected if supported
         """
         base_strategy = self._registry.get(strategy_name)
 
@@ -194,8 +198,3 @@ class EngineRegistry:
     def factory(self) -> StrategyFactory:
         """Get strategy factory."""
         return self._factory
-
-
-# Backward compatibility alias for legacy code
-# TODO: Migrate all references to use EngineRegistry directly
-StrategyRegistry = EngineRegistry

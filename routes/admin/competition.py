@@ -37,7 +37,7 @@ from utils import (
 )
 from models.competition.services import GaraService
 from models.competition.state_service import StateService
-from amalfi.engine import validate_amalfi_configuration
+from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
 from models.location.models import BilliardHall
@@ -1019,9 +1019,11 @@ def amalfi_start_round(gara_id, round_number):
                 }
             )
 
-        validation = validate_amalfi_configuration(gara)
-        if not validation["is_valid"]:
-            errors = "; ".join(validation["errors"])
+        # Validate Amalfi configuration using strategy
+        strategy = AmalfiStrategy()
+        validation_result = strategy._validate_strategy_specific(gara)
+        if validation_result["errors"]:
+            errors = "; ".join(validation_result["errors"])
             return jsonify({"success": False, "error": f"Errore Amalfi: {errors}"})
 
         if round_number > 1:
@@ -1123,9 +1125,10 @@ def start_round_generic(gara_id, round_number):
 
         # Validazione specifica per strategia (solo Amalfi ha validazioni speciali)
         if gara.matchmaking_strategy == "amalfi":
-            validation = validate_amalfi_configuration(gara)
-            if not validation["is_valid"]:
-                errors = "; ".join(validation["errors"])
+            strategy = AmalfiStrategy()
+            validation_result = strategy._validate_strategy_specific(gara)
+            if validation_result["errors"]:
+                errors = "; ".join(validation_result["errors"])
                 return jsonify(
                     {"success": False, "error": f"Errore configurazione: {errors}"}
                 )

@@ -1,7 +1,7 @@
 """
-Smoke performance tests for AmalfiUnifiedAdapter.
+Smoke performance tests for unified AmalfiStrategy.
 
-These tests verify that the unified Amalfi adapter meets performance requirements
+These tests verify that the unified Amalfi strategy meets performance requirements
 (<2s for typical operations) and doesn't introduce significant overhead compared
 to the original implementation.
 """
@@ -11,19 +11,19 @@ import time
 from unittest.mock import Mock, patch
 from typing import List
 
-from models.matchmaking.strategies.amalfi_unified_adapter import AmalfiUnifiedAdapter
+from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.registry import PairingContext
 from models.competition.models import Gara
 from models import Inscription
 
 
 class TestAmalfiUnifiedPerformance:
-    """Smoke performance tests for AmalfiUnifiedAdapter."""
+    """Smoke performance tests for unified AmalfiStrategy."""
 
     @pytest.fixture
     def adapter(self):
-        """Create AmalfiUnifiedAdapter instance."""
-        return AmalfiUnifiedAdapter()
+        """Create unified AmalfiStrategy instance."""
+        return AmalfiStrategy()
 
     def create_mock_matches_from_preview_data(self, preview_data: dict) -> List:
         """Helper to create mock Match objects from preview data."""

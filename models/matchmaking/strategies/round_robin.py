@@ -6,15 +6,15 @@ Requirements: SPECIFICHE.md - Round Robin campionato format
 
 from __future__ import annotations
 
-from typing import Sequence, List, Tuple, Optional, TYPE_CHECKING
+from typing import Sequence, List, Tuple, Optional, Dict, Any, TYPE_CHECKING
 
-from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
+from .base import Pairing, BaseStrategy
 
 if TYPE_CHECKING:
     pass
 
 
-class RoundRobinStrategy(PairingStrategy):
+class RoundRobinStrategy(BaseStrategy):
     """Round Robin pairing strategy where everyone plays everyone else."""
 
     # PairingStrategy metadata
@@ -27,57 +27,50 @@ class RoundRobinStrategy(PairingStrategy):
     requires_classification = False
 
     def __init__(self):
+        super().__init__()
         self.strategy_name = "round_robin"
 
-    def validate(self, gara: object) -> ValidationResult:
-        """Validate if Round Robin can be used for this gara."""
+    def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
+        """Validate Round Robin specific requirements."""
+        errors = []
+        warnings = []
+
         try:
             # Get active inscriptions
             inscriptions = getattr(gara, "inscriptions", [])
-            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
+            active_inscriptions = [
+                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+            ]
             player_count = len(active_inscriptions)
-
-            if player_count < 3:
-                return ValidationResult(
-                    ok=False, messages=("Round Robin requires at least 3 players",)
-                )
-
-            if player_count > 16:
-                return ValidationResult(
-                    ok=False,
-                    messages=(
-                        "Round Robin with more than 16 players may be impractical",
-                    ),
-                )
 
             # Calculate required rounds
             required_rounds = (
                 player_count - 1 if player_count % 2 == 0 else player_count
-            )
+            ) if player_count > 0 else 0
 
             # Check if gara has rounds_count and validate
-            if (
-                hasattr(gara, "rounds_count")
-                and getattr(gara, "rounds_count", 0) < required_rounds
-            ):
-                return ValidationResult(
-                    ok=False,
-                    messages=(
-                        f"Round Robin requires {required_rounds} rounds, but gara has {getattr(gara, 'rounds_count', 0)}",
-                    ),
-                )
-
-            return ValidationResult(ok=True)
+            if hasattr(gara, "rounds_count"):
+                rounds_count = getattr(gara, "rounds_count", 0)
+                if rounds_count and rounds_count < required_rounds:
+                    errors.append(
+                        f"Round Robin requires {required_rounds} rounds, "
+                        f"but gara has {rounds_count}"
+                    )
 
         except Exception as e:
-            return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
+            warnings.append(f"Round Robin validation warning: {str(e)}")
+
+        return {"errors": errors, "warnings": warnings}
 
     def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
         return self._generate_round_pairings(gara, round_number)
 
-    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Propose actual pairings for the round."""
+    def _generate_pairings(
+        self, processed_data: Dict[str, Any], round_number: int
+    ) -> Sequence[Pairing]:
+        """Generate Round Robin pairings for the round."""
+        gara = processed_data["gara"]
         return self._generate_round_pairings(gara, round_number)
 
     def _generate_round_pairings(
@@ -185,9 +178,6 @@ class RoundRobinStrategy(PairingStrategy):
         """Calculate matches per player in Round Robin."""
         return max(0, player_count - 1)
 
-    def get_metrics(self) -> Optional[StrategyMetrics]:
-        """Get performance metrics from last execution."""
-        return None  # No metrics collection implemented yet
 
 
 class RoundRobinPairingStrategy(RoundRobinStrategy):

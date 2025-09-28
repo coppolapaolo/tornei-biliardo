@@ -7,15 +7,16 @@ Requirements: SPECIFICHE.md - Random pairing with rematch prevention
 from __future__ import annotations
 
 import random
-from typing import Sequence, List, Tuple, Optional, Set, TYPE_CHECKING
+from itertools import combinations
+from typing import Sequence, List, Tuple, Set, Dict, Any, TYPE_CHECKING
 
-from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
+from .base import Pairing, BaseStrategy
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
 
 
-class RandomAntiRematchStrategy(PairingStrategy):
+class RandomAntiRematchStrategy(BaseStrategy):
     """Random pairing strategy that prevents rematches."""
 
     # PairingStrategy metadata
@@ -27,102 +28,34 @@ class RandomAntiRematchStrategy(PairingStrategy):
     supports_byes = True
     requires_classification = False
 
-    def __init__(self, max_attempts: int = 100):
+    def __init__(self):
+        super().__init__()
         self.strategy_name = "random_anti_rematch"
-        self.max_attempts = max_attempts  # Max attempts to find valid pairing
 
-    def validate(self, gara: object) -> ValidationResult:
-        """Validate if Random Anti-Rematch can be used for this gara."""
-        try:
-            # Get active inscriptions
-            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-            active_inscriptions = [
-                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
-            ]
-            player_count = len(active_inscriptions)
-
-            if player_count < 2:
-                return ValidationResult(
-                    ok=False, messages=("Random pairing requires at least 2 players",)
-                )
-
-            # Check if anti-rematch is still feasible
-            if player_count > 2:
-                # With more than 2 players, anti-rematch should be feasible for reasonable round counts
-                max_possible_unique_matches = (player_count * (player_count - 1)) // 2
-
-                rounds_count = getattr(gara, "rounds_count", None)
-                if rounds_count and rounds_count > max_possible_unique_matches:
-                    return ValidationResult(
-                        ok=False,
-                        messages=(
-                            f"With {player_count} players, only {max_possible_unique_matches} unique matches possible, but {rounds_count} rounds planned",
-                        ),
-                    )
-
-            return ValidationResult(ok=True)
-
-        except Exception as e:
-            return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
-
-    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
-
-    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Propose actual pairings for the round."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
-
-    def _generate_round_pairings(
-        self, gara: object, round_number: int
-    ) -> List[Pairing]:
+    def _generate_pairings(
+        self, processed_data: Dict[str, Any], round_number: int
+    ) -> Sequence[Pairing]:
         """Generate random pairings while avoiding rematches."""
-        try:
-            # Get active players
-            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-            active_inscriptions = [
-                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
-            ]
-            player_ids = [i.user_id for i in active_inscriptions]
-
-            if len(player_ids) < 2:
-                return []
-
-            # Get previous matches to avoid rematches
-            previous_pairings = self._get_previous_pairings(gara, round_number)  # type: ignore[arg-type]
-
-            # Generate valid random pairings
-            pairings = self._generate_valid_random_pairings(
-                player_ids, previous_pairings, round_number, gara
-            )
-
-            return pairings
-
-        except Exception as e:
-            print(f"Error generating Random Anti-Rematch pairings: {e}")
-            return []
-
-    def _get_previous_pairings(
-        self, gara: "Gara", current_round: int
-    ) -> Set[Tuple[int, int]]:
-        """Get all previous pairings to avoid rematches."""
-        from ...match.models import Match
-
-        previous_matches = (
-            Match.query.filter_by(gara_id=gara.id)
-            .filter(Match.round_number < current_round)  # type: ignore[attr-defined]
-            .all()
+        gara = processed_data["gara"]
+        return self._generate_round_pairings(
+            gara, round_number  # type: ignore[arg-type]
         )
 
-        previous_pairings = set()
+    def _generate_round_pairings(self, gara: Gara, round_number: int) -> List[Pairing]:
+        """Generate random pairings while avoiding rematches."""
+        # Get active players
+        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
+        active_inscriptions = [
+            i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+        ]
+        player_ids = [i.user_id for i in active_inscriptions]
 
-        for match in previous_matches:
-            if match.player1_id and match.player2_id and not match.is_bye:
-                # Store pairing in canonical form (smaller ID first)
-                pair = tuple(sorted([match.player1_id, match.player2_id]))
-                previous_pairings.add(pair)
+        # Generate valid random pairings (encounter history handled internally)
+        pairings = self._generate_valid_random_pairings(
+            player_ids, set(), round_number, gara
+        )
 
-        return previous_pairings
+        return pairings
 
     def _generate_valid_random_pairings(
         self,
@@ -131,117 +64,88 @@ class RandomAntiRematchStrategy(PairingStrategy):
         round_number: int,
         gara: object = None,
     ) -> List[Pairing]:
-        """Generate random pairings that don't conflict with previous matches."""
+        """Generate random pairings using graph-based maximum matching approach."""
 
-        best_pairings = []
-        best_rematch_count = float("inf")
-
-        # Try multiple random arrangements to find the best one
-        for attempt in range(self.max_attempts):
-            pairings = self._attempt_random_pairing(
-                player_ids.copy(), previous_pairings, round_number, gara
+        if len(player_ids) < self.min_players:
+            raise ValueError(
+                f"{self.__class__.__name__} requires at least {self.min_players} "
+                f"players, got {len(player_ids)}."
             )
 
-            # Count rematches in this arrangement
-            rematch_count = self._count_rematches(pairings, previous_pairings)
+        # Get complete encounter history (pairs + trio counts) if gara available
+        if gara:
+            all_previous_pairs, trio_count = self._get_encounter_history(
+                gara, round_number  # type: ignore[arg-type]
+            )
+        else:
+            # Fallback to legacy behavior for compatibility
+            all_previous_pairs, trio_count = previous_pairings, {}
 
-            if rematch_count == 0:
-                # Found perfect solution with no rematches
-                return pairings
-            elif rematch_count < best_rematch_count:
-                # Better solution found
-                best_pairings = pairings
-                best_rematch_count = rematch_count
-
-        # Return best solution found
-        return best_pairings
-
-    def _attempt_random_pairing(
-        self,
-        player_ids: List[int],
-        previous_pairings: Set[Tuple[int, int]],
-        round_number: int,
-        gara: object = None,
-    ) -> List[Pairing]:
-        """Attempt one random pairing arrangement."""
-
-        # Shuffle players randomly
-        random.shuffle(player_ids)
-
-        pairings = []
         remaining_players = player_ids.copy()
+        pairings = []
 
         # Handle trio if odd number and trio is allowed
-        if len(remaining_players) % 2 == 1 and self._should_use_trio(
-            remaining_players, gara
-        ):
-            trio_players = remaining_players[:3]
-            remaining_players = remaining_players[3:]
+        if (len(remaining_players) % 2 == 1 and
+                self._should_use_trio(remaining_players, gara)):
+            # Select optimal trio minimizing trio history and avoiding rematches
+            trio_players = self._select_optimal_trio(
+                remaining_players, trio_count, all_previous_pairs
+            )
+            remaining_players = [p for p in remaining_players if p not in trio_players]
             pairings.append(
                 Pairing(players=tuple(trio_players), round_number=round_number)
             )
 
-        # Pair remaining players
-        while len(remaining_players) >= 2:
-            player1 = remaining_players.pop(0)
-            player2 = self._find_best_partner(
-                player1, remaining_players, previous_pairings
+        # For remaining players: add BYE_PLAYER_ID if odd number (uniform algorithm)
+        if len(remaining_players) % 2 == 1:
+            remaining_players.append(self.BYE_PLAYER_ID)
+
+        # Generate pairings for all players (now even number including potential BYE)
+        if len(remaining_players) >= 2:
+            # Generate all possible pairs (includes pairs with BYE_PLAYER_ID)
+            all_pairs = list(combinations(remaining_players, 2))
+
+            # Convert to canonical form (smaller ID first) to match
+            # all_previous_pairs format
+            canonical_pairs = [tuple(sorted(pair)) for pair in all_pairs]
+
+            # Filter out rematches (pairs that have already been played)
+            valid_pairs = [
+                pair for pair in canonical_pairs if pair not in all_previous_pairs
+            ]
+
+            # If no valid pairs available, fall back to allowing rematches
+            if not valid_pairs and len(remaining_players) >= 2:
+                valid_pairs = canonical_pairs
+
+            # Shuffle valid pairs to introduce randomness
+            random.shuffle(valid_pairs)
+
+            # Apply greedy maximum matching
+            selected_pairs, _ = self._apply_greedy_matching(
+                valid_pairs,
+                remaining_players
             )
 
-            if player2:
-                remaining_players.remove(player2)
-                pairings.append(
-                    Pairing(players=(player1, player2), round_number=round_number)
-                )
-            else:
-                # No valid partner found, pair with next available
-                player2 = remaining_players.pop(0)
-                pairings.append(
-                    Pairing(players=(player1, player2), round_number=round_number)
-                )
-
-        # Handle remaining single player (bye)
-        if remaining_players:
-            pairings.append(
-                Pairing(
-                    players=(remaining_players[0],),
-                    is_bye=True,
-                    round_number=round_number,
-                )
-            )
+            # Convert selected pairs to Pairing objects
+            for pair in selected_pairs:
+                if self.BYE_PLAYER_ID in pair:
+                    # Convert algorithmic bye back to real bye
+                    real_player = pair[0] if pair[1] == self.BYE_PLAYER_ID else pair[1]
+                    pairings.append(
+                        Pairing(
+                            players=(real_player,),
+                            is_bye=True,
+                            round_number=round_number,
+                        )
+                    )
+                else:
+                    # Regular 1v1 match
+                    pairings.append(
+                        Pairing(players=pair, round_number=round_number)
+                    )
 
         return pairings
-
-    def _find_best_partner(
-        self,
-        player_id: int,
-        available_players: List[int],
-        previous_pairings: Set[Tuple[int, int]],
-    ) -> Optional[int]:
-        """Find best partner for a player, preferring those without previous matches."""
-
-        # Prefer players we haven't played against
-        for candidate in available_players:
-            pair = tuple(sorted([player_id, candidate]))
-            if pair not in previous_pairings:
-                return candidate
-
-        # If all candidates are rematches, return the first one
-        return available_players[0] if available_players else None
-
-    def _count_rematches(
-        self, pairings: List[Pairing], previous_pairings: Set[Tuple[int, int]]
-    ) -> int:
-        """Count number of rematches in the proposed pairings."""
-        rematch_count = 0
-
-        for pairing in pairings:
-            if len(pairing.players) == 2 and not pairing.is_bye:
-                pair = tuple(sorted(pairing.players))
-                if pair in previous_pairings:
-                    rematch_count += 1
-
-        return rematch_count
 
     def _should_use_trio(self, player_ids: List[int], gara: object = None) -> bool:
         """Determine if trio should be used for odd number of players."""
@@ -262,54 +166,168 @@ class RandomAntiRematchStrategy(PairingStrategy):
         # For larger odd numbers, use bye instead
         return len(player_ids) in [3, 5, 7]
 
-    def can_generate_all_rounds(self, gara: object) -> bool:
-        """Check if all rounds can be generated without rematches."""
-        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [
-            i for i in inscriptions if not getattr(i, "is_withdrawn", False)
-        ]
-        player_count = len(active_inscriptions)
+    # New helper methods for graph-based algorithm (backward compatible)
 
-        if player_count < 2:
-            return False
+    def _get_encounter_history(
+        self, gara: "Gara", current_round: int
+    ) -> Tuple[Set[Tuple[int, int]], Dict[int, int]]:
+        """Get complete encounter history: all pairs + trio count per player.
 
-        # Calculate maximum unique pairings possible
-        max_unique_pairings = (player_count * (player_count - 1)) // 2
+        Returns:
+            Tuple of (all_previous_pairs, trio_count_per_player)
+        """
+        from ...match.models import Match, TrioMatch
 
-        # Each round uses roughly player_count/2 pairings
-        pairings_per_round = player_count // 2
-        max_rounds_without_rematch = max_unique_pairings // pairings_per_round
+        previous_matches = (
+            Match.query.filter_by(gara_id=gara.id)
+            .filter(Match.round_number < current_round)  # type: ignore[attr-defined]
+            .all()
+        )
 
-        rounds_count = getattr(gara, "rounds_count", 1)
-        return rounds_count <= max_rounds_without_rematch
+        previous_pairs = set()
+        trio_count = {}
 
-    def get_rematch_probability(self, gara: object, round_number: int) -> float:
-        """Calculate probability of rematches in the given round."""
-        inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [
-            i for i in inscriptions if not getattr(i, "is_withdrawn", False)
-        ]
-        player_count = len(active_inscriptions)
+        for match in previous_matches:
+            if match.is_trio:
+                # Handle trio matches - get all combinations of 3 players
+                trio_match = TrioMatch.query.filter_by(match_id=match.id).first()
+                if trio_match:
+                    players = [
+                        trio_match.player1_id,
+                        trio_match.player2_id,
+                        trio_match.player3_id,
+                    ]
 
-        if player_count < 2:
-            return 0.0
+                    # Update trio count for each player
+                    for player_id in players:
+                        trio_count[player_id] = trio_count.get(player_id, 0) + 1
 
-        # Calculate used pairings so far
-        total_possible_pairings = (player_count * (player_count - 1)) // 2
-        pairings_per_round = player_count // 2
-        used_pairings = (round_number - 1) * pairings_per_round
+                    # Add all possible pairs from the trio
+                    for i in range(len(players)):
+                        for j in range(i + 1, len(players)):
+                            pair = tuple(sorted([players[i], players[j]]))
+                            previous_pairs.add(pair)
 
-        if used_pairings >= total_possible_pairings:
-            return 1.0  # Guaranteed rematches
+            elif match.is_bye and match.player1_id:
+                # Convert DB bye to algorithmic pair: (player, BYE_PLAYER_ID)
+                pair = tuple(sorted([match.player1_id, self.BYE_PLAYER_ID]))
+                previous_pairs.add(pair)
 
-        # Simple approximation
-        remaining_pairings = total_possible_pairings - used_pairings
-        return max(0.0, 1.0 - (remaining_pairings / pairings_per_round))
+            elif match.player1_id and match.player2_id and not match.is_bye:
+                # Standard 1v1 match
+                pair = tuple(sorted([match.player1_id, match.player2_id]))
+                previous_pairs.add(pair)
 
-    def get_metrics(self) -> Optional[StrategyMetrics]:
-        """Get performance metrics from last execution."""
-        return None  # No metrics collection implemented yet
+        return previous_pairs, trio_count
 
+    def _select_optimal_trio(
+        self,
+        players: List[int],
+        trio_count: Dict[int, int],
+        previous_pairs: Set[Tuple[int, int]],
+    ) -> List[int]:
+        """Select optimal trio minimizing trio history and avoiding rematches."""
 
-class RandomAntiRematchPairingStrategy(RandomAntiRematchStrategy):
-    """Alias for compatibility with existing strategy registry."""
+        # Priority 1: Players who have never been in a trio
+        never_trio = [p for p in players if trio_count.get(p, 0) == 0]
+
+        if len(never_trio) >= 3:
+            # Try combinations from players who never did trio
+            for trio in combinations(never_trio, 3):
+                if self._trio_has_no_internal_rematches(trio, previous_pairs):
+                    return list(trio)
+
+            # If no trio without rematches found, apply cascading fallback logic:
+            # Get players with trio_count = 1
+            trio_count_1 = [p for p in players if trio_count.get(p, 0) == 1]
+            random.shuffle(trio_count_1)
+
+            # 1. Try to find 2 players from never_trio who haven't played together
+            #    + 1 from trio_count=1 who hasn't played with either
+            valid_pairs_never_trio = []
+            for p1, p2 in combinations(never_trio, 2):
+                if tuple(sorted([p1, p2])) not in previous_pairs:
+                    valid_pairs_never_trio.append((p1, p2))
+
+            if valid_pairs_never_trio:
+                random.shuffle(valid_pairs_never_trio)  # randomize order
+                for p1, p2 in valid_pairs_never_trio:
+                    for candidate in trio_count_1:
+                        if (
+                            tuple(sorted([p1, candidate])) not in previous_pairs
+                            and tuple(sorted([p2, candidate])) not in previous_pairs
+                        ):
+                            return [p1, p2, candidate]
+
+            # 2. If that fails, take 1 random from never_trio + 2 from trio_count=1
+            #    (ensuring anti-rematch)
+            if len(trio_count_1) >= 2:
+                chosen_never = random.choice(never_trio)
+                remaining_trio_count_1 = [p for p in trio_count_1]
+                random.shuffle(remaining_trio_count_1)
+
+                for i, p1 in enumerate(remaining_trio_count_1):
+                    if tuple(sorted([chosen_never, p1])) not in previous_pairs:
+                        for p2 in remaining_trio_count_1[i + 1 :]:
+                            if (
+                                tuple(sorted([chosen_never, p2])) not in previous_pairs
+                                and tuple(sorted([p1, p2])) not in previous_pairs
+                            ):
+                                return [chosen_never, p1, p2]
+
+            # 3. Ultimate fallback: pick first combination from never_trio anyway
+            return list(list(combinations(never_trio, 3))[0])
+
+        # Priority 2: Minimize total trio count and avoid internal rematches
+        best_trio = None
+        min_trio_count = float("inf")
+
+        for trio in combinations(players, 3):
+            total_trio_count = sum(trio_count.get(p, 0) for p in trio)
+
+            if (
+                total_trio_count < min_trio_count
+                and self._trio_has_no_internal_rematches(trio, previous_pairs)
+            ):
+                best_trio = trio
+                min_trio_count = total_trio_count
+
+        # Fallback: return any trio if no optimal found
+        if best_trio:
+            return list(best_trio)
+        else:
+            return list(list(combinations(players, 3))[0])
+
+    def _trio_has_no_internal_rematches(
+        self, trio: Tuple[int, int, int], previous_pairs: Set[Tuple[int, int]]
+    ) -> bool:
+        """Check if trio players haven't played against each other before."""
+
+        # Check all 3 pairs within the trio
+        for i in range(len(trio)):
+            for j in range(i + 1, len(trio)):
+                pair = tuple(sorted([trio[i], trio[j]]))
+                if pair in previous_pairs:
+                    return False
+        return True
+
+    def _apply_greedy_matching(
+        self, valid_pairs: List[Tuple[int, ...]], all_players: List[int]
+    ) -> Tuple[List[Tuple[int, int]], List[int]]:
+        """Apply greedy maximum matching algorithm.
+
+        Returns:
+            Tuple of (selected_pairs, remaining_unmatched_players)
+        """
+        used_players = set()
+        selected_pairs = []
+
+        for pair in valid_pairs:
+            player1, player2 = pair
+            if player1 not in used_players and player2 not in used_players:
+                selected_pairs.append(pair)
+                used_players.add(player1)
+                used_players.add(player2)
+
+        remaining = [p for p in all_players if p not in used_players]
+        return selected_pairs, remaining

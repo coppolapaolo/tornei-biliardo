@@ -16,21 +16,17 @@ Design Patterns: Singleton + Factory + Dependency Injection
 from __future__ import annotations
 from .registry import EngineRegistry
 from .service import MatchmakingService
-from .strategies.amalfi_adapter import AmalfiStrategy
+from .strategies.amalfi import AmalfiStrategy
 from .strategies.round_robin import RoundRobinStrategy
 from .strategies.direct_elimination import DirectEliminationStrategy
 from .strategies.double_knockout import DoubleKnockoutStrategy
 from .strategies.random_anti_rematch import RandomAntiRematchStrategy
-from .bindings.amalfi_binding import validate_gara, propose_pairings
 
 # Global strategy registry with all available tournament pairing algorithms
 _registry = EngineRegistry()
 
-# Register legacy Amalfi strategy with binding functions for backward compatibility
-# This preserves the sophisticated Amalfi algorithm while integrating with new architecture
-_registry.register(
-    AmalfiStrategy(validate_fn=validate_gara, propose_fn=propose_pairings)  # type: ignore
-)
+# Register pure Amalfi strategy
+_registry.register(AmalfiStrategy())
 
 # Register modern strategy implementations with full Strategy pattern support
 _registry.register(RoundRobinStrategy())  # All-play-all tournament format

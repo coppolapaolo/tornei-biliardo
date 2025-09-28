@@ -5,19 +5,17 @@ Test cases for advanced pairing strategies.
 import unittest
 from unittest.mock import Mock, patch
 
-from models.matchmaking.strategies.advanced_amalfi import AdvancedAmalfiStrategy
+from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.strategies.base import Pairing, ValidationResult
-from models.matchmaking.strategies.amalfi_adapter import AmalfiStrategy
 
 
 class TestAdvancedAmalfiStrategy(unittest.TestCase):
-    """Test cases for AdvancedAmalfiStrategy."""
+    """Test cases for advanced features in unified AmalfiStrategy."""
 
     def setUp(self):
         """Set up test fixtures."""
-        # Create a mock base Amalfi strategy
-        self.mock_base_strategy = Mock(spec=AmalfiStrategy)
-        self.strategy = AdvancedAmalfiStrategy(self.mock_base_strategy)
+        # Create unified Amalfi strategy with advanced features enabled
+        self.strategy = AmalfiStrategy(enable_advanced_features=True)
 
         # Create a mock gara
         self.mock_gara = Mock()

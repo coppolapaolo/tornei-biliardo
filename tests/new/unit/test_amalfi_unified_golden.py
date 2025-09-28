@@ -1,19 +1,16 @@
 """
-Golden tests for AmalfiUnifiedAdapter - ensures output consistency with fixed seed.
+Golden tests for unified AmalfiStrategy - ensures output consistency with fixed seed.
 
-These tests verify that the unified Amalfi adapter produces identical results
+These tests verify that the unified Amalfi strategy produces identical results
 across runs when using deterministic seeds, maintaining behavior compatibility
 with the original AmalfiEngine.
-
-NOTE: These tests are currently disabled due to architectural changes.
-The AmalfiUnifiedAdapter is experimental and not used in production.
 """
 
 import pytest
 from unittest.mock import Mock, patch
 from typing import List, Dict, Any
 
-from models.matchmaking.strategies.amalfi_unified_adapter import AmalfiUnifiedAdapter
+from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.registry import PairingContext
 from models.matchmaking.strategies.base import Pairing
 from models.competition.models import Gara
@@ -21,7 +18,7 @@ from models import User, Inscription
 
 
 class TestAmalfiUnifiedGolden:
-    """Golden tests for AmalfiUnifiedAdapter with deterministic seed behavior."""
+    """Golden tests for unified AmalfiStrategy with deterministic seed behavior."""
 
     @pytest.fixture
     def mock_gara(self):
@@ -46,8 +43,8 @@ class TestAmalfiUnifiedGolden:
 
     @pytest.fixture
     def adapter(self):
-        """Create AmalfiUnifiedAdapter instance."""
-        return AmalfiUnifiedAdapter()
+        """Create unified AmalfiStrategy instance."""
+        return AmalfiStrategy()
 
     def test_golden_first_round_seed_42(self, adapter, mock_gara):
         """Golden test: First round with seed=42 should produce consistent output."""
@@ -317,7 +314,7 @@ class TestAmalfiUnifiedGolden:
             # Run without setting context (no seed)
             results = []
             for _ in range(10):
-                fresh_adapter = AmalfiUnifiedAdapter()  # Fresh instance each time
+                fresh_adapter = AmalfiStrategy()  # Fresh instance each time
                 pairings = fresh_adapter.create_round(mock_gara, 1)
                 result = tuple(sorted([p.players for p in pairings]))
                 results.append(result)

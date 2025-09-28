@@ -24,7 +24,6 @@ from models.status_enum import GaraStatus, MatchStatus
 from models.competition.services import GaraService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
-from amalfi.engine import get_amalfi_classification
 
 
 @pytest.mark.integration
@@ -250,7 +249,11 @@ class TestUseCaseAmalfiBestOfTournaments:
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Verify final classification exists
-        final_classification = get_amalfi_classification(gara.id, 3)
+        final_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert final_classification is not None
         assert len(final_classification) == 8
 
@@ -407,7 +410,11 @@ class TestUseCaseAmalfiBestOfTournaments:
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Verify final results
-        final_classification = get_amalfi_classification(gara.id, 3)
+        final_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert final_classification is not None
         assert len(final_classification) == 9
 
@@ -593,7 +600,11 @@ class TestUseCaseAmalfiExactlyTournaments:
 
         # Step 5: Calculate final classification
         RoundClassification.calculate_classification_after_round(gara.id, 3)
-        final_classification = get_amalfi_classification(gara.id, 3)
+        final_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
+            .order_by(RoundClassification.position)
+            .all()
+        )
 
         # Step 6: Check final classification (tiebreaker system test simplified)
         # Note: Tiebreaker system would be tested separately as it's complex

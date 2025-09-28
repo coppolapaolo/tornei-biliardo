@@ -2,17 +2,13 @@ from __future__ import annotations
 from typing import Sequence, Dict, Any, Optional, List, TYPE_CHECKING
 from datetime import timedelta
 
-from .registry import EngineRegistry, PairingContext
+from .registry import EngineRegistry
 from .strategies.base import Pairing
 from ..base import db
 from ..match.services import MatchService
 from ..rating.services import RatingService, HandicapService
 from ..challenge.services import ChallengeService
 
-# Import strategies
-from .strategies.advanced_amalfi import AdvancedAmalfiStrategy
-from .strategies.amalfi_adapter import AmalfiStrategy
-from .strategies.amalfi_unified_adapter import AmalfiUnifiedAdapter
 
 if TYPE_CHECKING:
     pass
@@ -44,11 +40,13 @@ class MatchmakingOrchestrator:
         apply_handicaps: bool = True,
         handicap_rule_id: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """Create tournament round with automatic handicap calculation and enhanced match data.
+        """Create tournament round with automatic handicap calculation and
+        enhanced match data.
 
-        This method combines matchmaking strategy execution with handicap system integration
-        to create fair matches between players of different skill levels. It's designed
-        for competitive pool tournaments where skill balancing is crucial for game quality.
+        This method combines matchmaking strategy execution with handicap system
+        integration to create fair matches between players of different skill
+        levels. It's designed for competitive pool tournaments where skill balancing
+        is crucial for game quality.
 
         Args:
             gara_id: Tournament/competition identifier
@@ -58,12 +56,13 @@ class MatchmakingOrchestrator:
             handicap_rule_id: Specific handicap calculation rule to use
 
         Returns:
-            Dict containing round statistics, match count breakdowns, and created Match objects
-            with embedded handicap data for fair play enforcement
+            Dict containing round statistics, match count breakdowns, and created
+            Match objectt with embedded handicap data for fair play enforcement
 
         Business Logic:
             - Pool tournaments often require handicaps to balance skill differences
-            - Different disciplines (8-ball, 9-ball, etc.) may need different handicap rules
+            - Different disciplines (8-ball, 9-ball, etc.) may need different
+            handicap rules
             - Match format suggestions help tournament directors optimize game duration
         """
 
@@ -134,11 +133,13 @@ class MatchmakingOrchestrator:
     def suggest_x_replacement_strategies(
         self, gara_id: int, user_id: int, round_number: int
     ) -> List[Dict[str, Any]]:
-        """Suggest alternative activities for players who received a bye (X replacement).
+        """Suggest alternative activities for players who received
+        a bye (X replacement).
 
-        In pool tournaments, when there's an odd number of players, one player gets a "bye"
-        (sits out the round). This method suggests meaningful alternatives like completing
-        skill challenges or playing individual matches to keep all players engaged.
+        In pool tournaments, when there's an odd number of players, one player
+        gets a "bye" (sits out the round). This method suggests meaningful
+        alternatives like completing skill challenges or playing individual
+        matches to keep all players engaged.
 
         Args:
             gara_id: Tournament identifier
@@ -157,7 +158,8 @@ class MatchmakingOrchestrator:
         Business Context:
             Pool tournaments value player engagement. Rather than sitting idle during
             a bye round, players can practice skills, play casual games, or complete
-            unfinished matches, maintaining tournament momentum and community interaction.
+            unfinished matches, maintaining tournament momentum and community
+            interaction.
         """
 
         strategies = []
@@ -371,41 +373,6 @@ class MatchmakingService:
         self._registry = registry or EngineRegistry()
         self._orchestrator = MatchmakingOrchestrator(self)
 
-        # Register the advanced Amalfi strategy
-        self._register_advanced_strategies()
-
-    def _register_advanced_strategies(self):
-        """Register advanced pairing strategies with conflict resolution.
-
-        Handles the registration of enhanced strategies while avoiding naming conflicts.
-        The unified Amalfi strategy takes precedence over the legacy adapter, and the
-        advanced Amalfi requires a base strategy to compose functionality.
-
-        Strategy Resolution Logic:
-        - Only register if not already present (prevents duplicates)
-        - Advanced strategies compose over base strategies (Decorator pattern)
-        - Failed registrations are silently ignored to maintain system stability
-        """
-        # Register the unified Amalfi strategy only if not already present
-        try:
-            self._registry.get("amalfi_unified")
-        except KeyError:
-            unified_amalfi = AmalfiUnifiedAdapter()
-            self._registry.register(unified_amalfi)
-
-        # Register the advanced Amalfi strategy
-        try:
-            self._registry.get("amalfi_advanced")
-        except KeyError:
-            try:
-                base_amalfi = self._registry.get("amalfi")
-                if base_amalfi and isinstance(base_amalfi, AmalfiStrategy):
-                    advanced_amalfi = AdvancedAmalfiStrategy(base_amalfi)
-                    self._registry.register(advanced_amalfi)
-            except KeyError:
-                # If base amalfi strategy is not available, we can't register advanced one
-                pass
-
     def run(
         self,
         strategy_name: str,
@@ -482,7 +449,8 @@ class MatchmakingService:
         }
 
     def get_available_strategies(self) -> List[Dict[str, Any]]:
-        """Get comprehensive list of available pairing strategies with configuration details.
+        """Get comprehensive list of available pairing strategies with
+        configuration details.
 
         Provides tournament directors with strategy selection information including
         constraints and capabilities. This supports informed decision-making during
