@@ -13,6 +13,8 @@ from flask import url_for
 from models.base import db
 from models.user.models import User, VenueManagerRequest
 from models.user.venue_manager_service import VenueManagerService
+# Import events to ensure handlers are registered
+import models.events
 from models.notification.models import (
     Notification,
     NotificationType,

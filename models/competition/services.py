@@ -188,14 +188,16 @@ class GaraService:
                 message += f" del campionato '{campionato_name}'"
             message += f" del {gara.date.strftime('%d/%m/%Y')} è stata cancellata."
 
-            for participant_id in participant_ids:
-                NotificationService.create_notification(
-                    user_id=participant_id,
-                    notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                    title="Gara Cancellata",
-                    message=message,
-                    priority=NotificationPriority.HIGH,
-                )
+            # Use NotificationFactory for bulk notifications with error handling
+            from models.notification.factory import NotificationFactory
+            NotificationFactory.create_bulk_notification(
+                user_ids=participant_ids,
+                notification_type=NotificationType.TOURNAMENT_REGISTRATION,
+                title="Gara Cancellata",
+                message=message,
+                priority=NotificationPriority.HIGH,
+                continue_on_error=True,
+            )
 
     @staticmethod
     def start_first_round(gara_id: int) -> Gara:

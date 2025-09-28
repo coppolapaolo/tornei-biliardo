@@ -43,6 +43,7 @@ class NotificationType(Enum):
 
     SYSTEM_ANNOUNCEMENT = "system_announcement"  # System-wide announcement
     ACCOUNT_UPDATE = "account_update"  # Account-related updates
+    ADMIN_ACTION_REQUIRED = "admin_action_required"  # Action required by admin
 
 
 class NotificationPriority(Enum):

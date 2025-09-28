@@ -10,6 +10,11 @@ from models.base import db
 from models.user.models import User, VenueManagerRequest, VenueManagement
 from models.user.role_enum import UserRole
 from models.transaction.manager import transactional, read_only
+from models.events.base import EventBus
+from models.events.user_events import (
+    VenueManagerRequestCreatedEvent,
+    VenueManagerRequestProcessedEvent,
+)
 
 
 class VenueManagerService:
@@ -95,29 +100,22 @@ class VenueManagerService:
 
         db.session.add(request)
 
-        # Create notifications for all admin users
-        from models.notification.models import Notification, NotificationType, NotificationStatus, NotificationPriority
+        # Get admin user IDs for event
         from models.user.role_enum import UserRole
-
         admin_users = User.query.filter_by(role=UserRole.ADMIN.value).all()
-        notification_priority = NotificationPriority.HIGH if is_contested else NotificationPriority.NORMAL
+        admin_user_ids = [admin.id for admin in admin_users]
 
-        # Different message for contested requests
-        if is_contested:
-            message = f"ATTENZIONE: L'utente {user.username} ha richiesto di gestire la venue {venue.name} (la venue ha già un gestore)"
-        else:
-            message = f"L'utente {user.username} ha richiesto di gestire la venue {venue.name}"
-
-        for admin in admin_users:
-            notification = Notification(
-                user_id=admin.id,
-                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                title=f"Richiesta Gestore Sala - {venue.name}",
-                message=message,
-                status=NotificationStatus.PENDING,
-                priority=notification_priority,
-            )
-            db.session.add(notification)
+        # Publish event for venue manager request created
+        EventBus.publish(VenueManagerRequestCreatedEvent(
+            request_id=request.id,
+            user_id=user_id,
+            username=user.username,
+            venue_id=venue_id,
+            venue_name=venue.name,
+            motivation=notes.strip(),
+            admin_user_ids=admin_user_ids,
+            is_contested=is_contested
+        ))
 
         return request
 
@@ -171,42 +169,33 @@ class VenueManagerService:
             )
             db.session.add(venue_management)
 
-            # Send notification to user about approval
-            from models.notification.services import NotificationService
-            from models.notification.models import NotificationType, NotificationPriority
-
-            message = f"La tua richiesta per gestire '{request.venue.name}' è stata approvata! Ora puoi gestire questa sala."
-            if notes:
-                message += f" Nota dell'admin: {notes}"
-
-            NotificationService.create_notification(
+            # Publish event for venue manager request approved
+            EventBus.publish(VenueManagerRequestProcessedEvent(
+                request_id=request.id,
                 user_id=request.user_id,
-                notification_type=NotificationType.ACCOUNT_UPDATE,
-                title=f"Richiesta Gestore '{request.venue.name}' Approvata",
-                message=message,
-                priority=NotificationPriority.HIGH,
-            )
+                username=request.user.username,
+                venue_id=request.venue_id,
+                venue_name=request.venue.name,
+                status="approved",
+                processed_by_id=admin_user.id,
+                notes=notes
+            ))
         else:
             request.status = "rejected"
             request.processed_by_id = admin_user.id
             request.notes = notes
 
-            # Send notification to user about rejection
-            from models.notification.services import NotificationService
-            from models.notification.models import NotificationType, NotificationPriority
-
-            message = f"La tua richiesta per gestire '{request.venue.name}' è stata rifiutata."
-            if notes:
-                message += f" Motivo: {notes}"
-            message += " Per maggiori informazioni, contatta l'amministratore."
-
-            NotificationService.create_notification(
+            # Publish event for venue manager request rejected
+            EventBus.publish(VenueManagerRequestProcessedEvent(
+                request_id=request.id,
                 user_id=request.user_id,
-                notification_type=NotificationType.ACCOUNT_UPDATE,
-                title=f"Richiesta Gestore '{request.venue.name}' Rifiutata",
-                message=message,
-                priority=NotificationPriority.NORMAL,
-            )
+                username=request.user.username,
+                venue_id=request.venue_id,
+                venue_name=request.venue.name,
+                status="rejected",
+                processed_by_id=admin_user.id,
+                notes=notes
+            ))
 
         return request
 
@@ -427,17 +416,18 @@ class VenueManagerService:
         # or delete it completely
         db.session.delete(assignment)
 
-        # Send notification to user
-        from models.notification.services import NotificationService
-        from models.notification.models import NotificationType, NotificationPriority
-
-        NotificationService.create_notification(
+        # Publish event for venue manager assignment revoked
+        # Using VenueManagerRequestProcessedEvent for now, could create specific VenueAssignmentRevokedEvent later
+        EventBus.publish(VenueManagerRequestProcessedEvent(
+            request_id=0,  # No specific request for revocation
             user_id=assignment.user_id,
-            notification_type=NotificationType.ACCOUNT_UPDATE,
-            title="Revoca Gestione Sala",
-            message="La tua gestione della sala è stata revocata dall'amministratore.",
-            priority=NotificationPriority.NORMAL,
-        )
+            username=assignment.user.username,
+            venue_id=assignment.venue_id,
+            venue_name=assignment.venue.name,
+            status="revoked",
+            processed_by_id=admin_user.id,
+            notes="Gestione sala revocata dall'amministratore"
+        ))
 
         return assignment
 

@@ -17,7 +17,7 @@ from models.individual_match.models import (
 )
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
-from models.notification.services import NotificationService
+from models.notification.factory import NotificationFactory
 from models.notification.models import NotificationType, NotificationPriority
 
 
@@ -238,19 +238,20 @@ class AvailabilityService:
         )
         notification_message = message or default_message
 
-        for user in played_at_location:
-            try:
-                NotificationService.create_notification(
-                    user_id=user.id,
-                    notification_type=NotificationType.MATCH_PROPOSAL,
-                    title="Giocatore Disponibile",
-                    message=notification_message,
-                    priority=NotificationPriority.NORMAL,
-                )
-                notifications_sent += 1
-            except Exception as e:
-                # Log error but continue with other notifications
-                print(f"Error sending notification to user {user.id}: {e}")
+        # Use NotificationFactory for bulk notification with error handling
+        user_ids = [user.id for user in played_at_location]
+        notifications = NotificationFactory.create_bulk_notification(
+            user_ids=user_ids,
+            notification_type=NotificationType.MATCH_PROPOSAL,
+            title="Giocatore Disponibile",
+            message=notification_message,
+            priority=NotificationPriority.NORMAL,
+            continue_on_error=True,
+        )
+
+        # Count successful notifications
+        stats = NotificationFactory.get_notification_stats(notifications)
+        notifications_sent = stats["successful"]
 
         return notifications_sent
 

@@ -1,0 +1,410 @@
+"""
+Tests for the event system architecture.
+
+This module tests the EventBus, DomainEvent classes, and event handlers
+to ensure proper domain decoupling and notification generation.
+"""
+
+import pytest
+from unittest.mock import patch, MagicMock
+from datetime import datetime
+
+from models.events.base import EventBus, DomainEvent
+from models.events.user_events import (
+    DirectorRequestCreatedEvent,
+    VenueManagerRequestCreatedEvent,
+    VenueManagerRequestProcessedEvent,
+)
+from models.events.match_events import MatchProposalCreatedEvent, MatchAcceptedEvent
+from models.events.notification_handlers import NotificationEventHandlers
+from models.notification.models import NotificationType, NotificationPriority
+
+
+class TestDomainEvent:
+    """Test DomainEvent base functionality."""
+
+    def test_event_creation_with_defaults(self):
+        """Test that events are created with proper defaults."""
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="I want to be a director",
+            admin_user_ids=[1, 2]
+        )
+
+        assert event.request_id == 1
+        assert event.user_id == 123
+        assert event.username == "testuser"
+        assert event.domain == "user"
+        assert event.get_event_type() == "user.director_request_created"
+        assert event.event_id.startswith("evt_")
+        assert isinstance(event.occurred_at, datetime)
+
+    def test_event_to_dict(self):
+        """Test event serialization to dictionary."""
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="Test motivation",
+            admin_user_ids=[1, 2]
+        )
+        event.source = "test_service"
+
+        event_dict = event.to_dict()
+
+        assert event_dict["event_type"] == "user.director_request_created"
+        assert event_dict["domain"] == "user"
+        assert event_dict["source"] == "test_service"
+        assert event_dict["data"]["user_id"] == 123
+        assert event_dict["data"]["username"] == "testuser"
+
+    def test_match_event_creation(self):
+        """Test match domain event creation."""
+        event = MatchProposalCreatedEvent(
+            proposal_id=456,
+            proposer_id=123,
+            proposer_name="Player1",
+            target_user_id=789,
+            target_username="Player2",
+            location_name="Pool Hall",
+            is_public=False
+        )
+
+        assert event.proposal_id == 456
+        assert event.domain == "match"
+        assert event.get_event_type() == "match.proposal_created"
+        assert not event.is_public
+
+
+class TestEventBus:
+    """Test EventBus functionality."""
+
+    def setup_method(self):
+        """Clear event handlers before each test."""
+        EventBus.clear_handlers()
+        EventBus.enable()
+
+    def teardown_method(self):
+        """Clean up after each test."""
+        EventBus.clear_handlers()
+        EventBus.enable()
+
+    def test_handler_registration(self):
+        """Test registering and retrieving event handlers."""
+        def test_handler(event):
+            pass
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
+        handlers = EventBus.get_handlers(DirectorRequestCreatedEvent)
+
+        assert len(handlers) == 1
+        assert handlers[0].handler_func == test_handler
+
+    def test_handler_registration_with_decorator(self):
+        """Test registering handlers with decorator syntax."""
+        @EventBus.subscribe(DirectorRequestCreatedEvent, priority=5)
+        def test_handler(event):
+            pass
+
+        handlers = EventBus.get_handlers(DirectorRequestCreatedEvent)
+
+        assert len(handlers) == 1
+        assert handlers[0].priority == 5
+
+    def test_event_publishing(self):
+        """Test event publishing to registered handlers."""
+        handler_calls = []
+
+        def test_handler(event):
+            handler_calls.append(event)
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="Test",
+            admin_user_ids=[1]
+        )
+
+        EventBus.publish(event)
+
+        assert len(handler_calls) == 1
+        assert handler_calls[0] == event
+
+    def test_multiple_handlers_with_priority(self):
+        """Test that handlers are called in priority order."""
+        call_order = []
+
+        def handler_low(event):
+            call_order.append("low")
+
+        def handler_high(event):
+            call_order.append("high")
+
+        def handler_medium(event):
+            call_order.append("medium")
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, handler_low, priority=1)
+        EventBus.register_handler(DirectorRequestCreatedEvent, handler_high, priority=10)
+        EventBus.register_handler(DirectorRequestCreatedEvent, handler_medium, priority=5)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="Test",
+            admin_user_ids=[1]
+        )
+
+        EventBus.publish(event)
+
+        assert call_order == ["high", "medium", "low"]
+
+    def test_event_bus_disable_enable(self):
+        """Test disabling and enabling the event bus."""
+        handler_calls = []
+
+        def test_handler(event):
+            handler_calls.append(event)
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="Test",
+            admin_user_ids=[1]
+        )
+
+        # Disable and publish
+        EventBus.disable()
+        EventBus.publish(event)
+        assert len(handler_calls) == 0
+
+        # Enable and publish
+        EventBus.enable()
+        EventBus.publish(event)
+        assert len(handler_calls) == 1
+
+    def test_handler_error_isolation(self):
+        """Test that handler errors don't affect other handlers."""
+        handler_calls = []
+
+        def failing_handler(event):
+            raise Exception("Handler error")
+
+        def working_handler(event):
+            handler_calls.append("success")
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, failing_handler, priority=10)
+        EventBus.register_handler(DirectorRequestCreatedEvent, working_handler, priority=5)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="Test",
+            admin_user_ids=[1]
+        )
+
+        # Should not raise exception, working handler should still be called
+        EventBus.publish(event)
+        assert handler_calls == ["success"]
+
+    def test_clear_handlers(self):
+        """Test clearing event handlers."""
+        def test_handler(event):
+            pass
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
+        EventBus.register_handler(MatchProposalCreatedEvent, test_handler)
+
+        # Clear specific event type
+        EventBus.clear_handlers(DirectorRequestCreatedEvent)
+        assert len(EventBus.get_handlers(DirectorRequestCreatedEvent)) == 0
+        assert len(EventBus.get_handlers(MatchProposalCreatedEvent)) == 1
+
+        # Clear all handlers
+        EventBus.clear_handlers()
+        assert len(EventBus.get_handlers(MatchProposalCreatedEvent)) == 0
+
+    def test_event_bus_stats(self):
+        """Test EventBus statistics."""
+        def test_handler(event):
+            pass
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
+        EventBus.register_handler(MatchProposalCreatedEvent, test_handler)
+
+        stats = EventBus.get_stats()
+
+        assert stats["enabled"] is True
+        assert stats["event_types"] == 2
+        assert stats["total_handlers"] == 2
+        assert "DirectorRequestCreatedEvent" in stats["handlers_by_type"]
+        assert "MatchProposalCreatedEvent" in stats["handlers_by_type"]
+
+
+class TestNotificationEventHandlers:
+    """Test notification event handlers."""
+
+    def setup_method(self):
+        """Setup for each test."""
+        EventBus.clear_handlers()
+        # Re-register handlers
+        NotificationEventHandlers.register_all_handlers()
+
+    def teardown_method(self):
+        """Clean up after each test."""
+        EventBus.clear_handlers()
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_director_request_created_handler(self, mock_create_notification):
+        """Test director request created event handler."""
+        event = DirectorRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            motivation="I want to be a director",
+            admin_user_ids=[1, 2]
+        )
+
+        EventBus.publish(event)
+
+        # Should create notifications for both admins
+        assert mock_create_notification.call_count == 2
+        calls = mock_create_notification.call_args_list
+
+        # Verify first admin notification
+        first_call = calls[0][1]  # kwargs
+        assert first_call["user_id"] == 1
+        assert first_call["notification_type"] == NotificationType.SYSTEM_ANNOUNCEMENT
+        assert first_call["title"] == "Nuova Richiesta Direttore"
+        assert "testuser" in first_call["message"]
+        assert first_call["priority"] == NotificationPriority.HIGH
+
+        # Verify second admin notification
+        second_call = calls[1][1]  # kwargs
+        assert second_call["user_id"] == 2
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_venue_manager_request_processed_handler(self, mock_create_notification):
+        """Test venue manager request processed event handler."""
+        event = VenueManagerRequestProcessedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            venue_id=456,
+            venue_name="Test Pool Hall",
+            status="approved",
+            processed_by_id=789,
+            notes="Great candidate"
+        )
+
+        EventBus.publish(event)
+
+        # Should create notification for the user
+        mock_create_notification.assert_called_once()
+        call_kwargs = mock_create_notification.call_args[1]
+
+        assert call_kwargs["user_id"] == 123
+        assert call_kwargs["notification_type"] == NotificationType.ACCOUNT_UPDATE
+        assert "Approvata" in call_kwargs["title"]
+        assert "Test Pool Hall" in call_kwargs["title"]
+        assert "Congratulazioni" in call_kwargs["message"]
+        assert call_kwargs["priority"] == NotificationPriority.HIGH
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_venue_manager_request_contested_handler(self, mock_create_notification):
+        """Test contested venue manager request creates high priority notification."""
+        event = VenueManagerRequestCreatedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            venue_id=456,
+            venue_name="Test Pool Hall",
+            motivation="I want to manage this venue",
+            admin_user_ids=[1],
+            is_contested=True
+        )
+
+        EventBus.publish(event)
+
+        mock_create_notification.assert_called_once()
+        call_kwargs = mock_create_notification.call_args[1]
+
+        assert call_kwargs["priority"] == NotificationPriority.HIGH
+        assert "(CONTESA)" in call_kwargs["title"]
+        assert "ATTENZIONE" in call_kwargs["message"]
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_match_proposal_created_handler(self, mock_create_notification):
+        """Test match proposal created event handler."""
+        event = MatchProposalCreatedEvent(
+            proposal_id=456,
+            proposer_id=123,
+            proposer_name="Player1",
+            target_user_id=789,
+            target_username="Player2",
+            location_name="Pool Hall",
+            scheduled_time=datetime(2025, 10, 15, 20, 0),
+            notes="Let's play!"
+        )
+
+        EventBus.publish(event)
+
+        mock_create_notification.assert_called_once()
+        call_kwargs = mock_create_notification.call_args[1]
+
+        assert call_kwargs["user_id"] == 789
+        assert call_kwargs["notification_type"] == NotificationType.MATCH_PROPOSAL
+        assert call_kwargs["title"] == "Nuova Proposta di Partita"
+        assert "Player1" in call_kwargs["message"]
+        assert "Pool Hall" in call_kwargs["message"]
+        assert "Let's play!" in call_kwargs["message"]
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_match_proposal_public_no_notification(self, mock_create_notification):
+        """Test that public match proposals don't create notifications."""
+        event = MatchProposalCreatedEvent(
+            proposal_id=456,
+            proposer_id=123,
+            proposer_name="Player1",
+            target_user_id=None,  # No specific target
+            is_public=True
+        )
+
+        EventBus.publish(event)
+
+        # Should not create any notifications for public proposals
+        mock_create_notification.assert_not_called()
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_match_accepted_handler(self, mock_create_notification):
+        """Test match accepted event handler."""
+        event = MatchAcceptedEvent(
+            proposal_id=456,
+            match_id=789,
+            proposer_id=123,
+            proposer_name="Player1",
+            accepter_id=456,
+            accepter_name="Player2",
+            location_name="Pool Hall",
+            scheduled_time=datetime(2025, 10, 15, 20, 0)
+        )
+
+        EventBus.publish(event)
+
+        mock_create_notification.assert_called_once()
+        call_kwargs = mock_create_notification.call_args[1]
+
+        assert call_kwargs["user_id"] == 123  # Notify proposer
+        assert call_kwargs["notification_type"] == NotificationType.MATCH_ACCEPTED
+        assert call_kwargs["title"] == "Proposta di Partita Accettata!"
+        assert "Player2" in call_kwargs["message"]
+        assert "accettato" in call_kwargs["message"]

@@ -162,26 +162,21 @@ class InscriptionService:
                             insc.waitlist_position = i
 
                         # Invia notifica al promosso
-                        try:
-                            from models.notification.models import (
-                                NotificationType,
-                                NotificationPriority,
-                            )
+                        # Use NotificationFactory for standardized error handling
+                        from models.notification.factory import NotificationFactory
+                        from models.notification.models import NotificationPriority
 
-                            notification_result = NotificationService.create_notification(
-                                user_id=first_waitlist.user_id,
-                                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                                title="Posto disponibile!",
-                                message=f"Sei stato promosso dalla lista d'attesa per la gara '{gara.name or f'Gara {gara.number}'}'",
-                                priority=NotificationPriority.HIGH,
-                            )
-                            print(
-                                f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}"
-                            )
-                        except Exception as e:
-                            print(
-                                f"DEBUG: Error creating promotion notification for user {first_waitlist.user_id}: {e}"
-                            )
+                        notification_result = NotificationFactory.create_account_update_notification(
+                            user_id=first_waitlist.user_id,
+                            title="Posto disponibile!",
+                            message=f"Sei stato promosso dalla lista d'attesa per la gara '{gara.name or f'Gara {gara.number}'}'",
+                            priority=NotificationPriority.HIGH,
+                            update_type="waitlist_promotion",
+                            related_entities={"gara_id": gara.id, "gara_name": gara.name}
+                        )
+                        print(
+                            f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}"
+                        )
 
             # Transaction managed by @transactional decorator
             return True
