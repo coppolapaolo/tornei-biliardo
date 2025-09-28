@@ -11,7 +11,7 @@ from models.status_enum import GaraStatus, MatchStatus
 from models.competition.services import GaraService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
-from amalfi.engine import get_amalfi_classification
+# Removed: from amalfi.engine import get_amalfi_classification
 
 
 @pytest.mark.integration
@@ -182,7 +182,11 @@ class TestAmalfiCompleteWorkflow:
         # Calcola classificazione del primo turno
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
-        classification_round1 = get_amalfi_classification(gara.id, 1)
+        classification_round1 = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert classification_round1 is not None
         assert len(classification_round1) == 8
 
@@ -214,7 +218,11 @@ class TestAmalfiCompleteWorkflow:
         # ====== STEP 9: Classifica Secondo Turno ======
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
-        classification_round2 = get_amalfi_classification(gara.id, 2)
+        classification_round2 = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=2)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert classification_round2 is not None
         assert len(classification_round2) == 8
         self._verify_classification_ordering(classification_round2)
@@ -244,7 +252,11 @@ class TestAmalfiCompleteWorkflow:
         # ====== STEP 12: Classifica Finale ======
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
-        final_classification = get_amalfi_classification(gara.id, 3)
+        final_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert final_classification is not None
         assert len(final_classification) == 8
         self._verify_classification_ordering(final_classification)

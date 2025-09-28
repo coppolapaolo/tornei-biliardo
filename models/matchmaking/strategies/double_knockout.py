@@ -7,15 +7,15 @@ Requirements: SPECIFICHE.md - Double knockout campionato format
 from __future__ import annotations
 
 import math
-from typing import Sequence, List, Optional, Dict, TYPE_CHECKING, Any
+from typing import Sequence, List, Dict, TYPE_CHECKING, Any
 
-from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
+from .base import Pairing, BaseStrategy
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
 
 
-class DoubleKnockoutStrategy(PairingStrategy):
+class DoubleKnockoutStrategy(BaseStrategy):
     """Double Knockout (double elimination) pairing strategy."""
 
     # PairingStrategy metadata
@@ -28,55 +28,54 @@ class DoubleKnockoutStrategy(PairingStrategy):
     requires_classification = False
 
     def __init__(self):
+        super().__init__()
         self.strategy_name = "double_knockout"
 
-    def validate(self, gara: object) -> ValidationResult:
-        """Validate if Double Knockout can be used for this gara."""
+    def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
+        """Validate Double Knockout specific requirements."""
+        errors = []
+        warnings = []
+
         try:
             # Get active inscriptions
-            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
+            inscriptions = list(getattr(gara, "inscriptions", []))
+            active_inscriptions = [
+                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+            ]
             player_count = len(active_inscriptions)
 
-            if player_count < 4:
-                return ValidationResult(
-                    ok=False, messages=("Double Knockout requires at least 4 players",)
-                )
-
-            if player_count > 64:
-                return ValidationResult(
-                    ok=False,
-                    messages=(
-                        "Double Knockout with more than 64 players may be impractical",
-                    ),
-                )
-
             # Calculate required rounds (approximately 2 * log2(n) rounds)
-            required_rounds = self.get_total_rounds_needed(player_count)
+            if player_count > 0:
+                required_rounds = self.get_total_rounds_needed(player_count)
 
-            if (
-                getattr(gara, "rounds_count", None) is not None
-                and getattr(gara, "rounds_count") < required_rounds
-            ):
-                return ValidationResult(
-                    ok=False,
-                    messages=(
-                        f"Double Knockout requires approximately {required_rounds} rounds, but gara has {getattr(gara, 'rounds_count', 'unknown')}",
-                    ),
-                )
-
-            return ValidationResult(ok=True)
+                rounds_count = getattr(gara, "rounds_count", None)
+                if rounds_count is not None and rounds_count < required_rounds:
+                    errors.append(
+                        f"Double Knockout requires approximately {required_rounds} "
+                        f"rounds, but gara has {rounds_count}"
+                    )
 
         except Exception as e:
-            return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
+            warnings.append(f"Double Knockout validation warning: {str(e)}")
+
+        return {"errors": errors, "warnings": warnings}
 
     def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(
+            gara,  # type: ignore[arg-type]
+            round_number
+        )
 
-    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Propose actual pairings for the round."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
+    def _generate_pairings(
+        self, processed_data: Dict[str, Any], round_number: int
+    ) -> Sequence[Pairing]:
+        """Generate Double Knockout pairings for the round."""
+        gara = processed_data["gara"]
+        return self._generate_round_pairings(
+            gara,  # type: ignore[arg-type]
+            round_number
+        )
 
     def _generate_round_pairings(
         self, gara: object, round_number: int
@@ -111,7 +110,8 @@ class DoubleKnockoutStrategy(PairingStrategy):
         from ...match.models import Match
 
         # Get all completed matches up to previous round
-        # Use text() to create a raw SQL expression for the comparison to avoid mocking issues
+        # Use text() to create a raw SQL expression for the comparison to avoid
+        # mocking issues
         from sqlalchemy import text
 
         all_matches = (
@@ -166,7 +166,11 @@ class DoubleKnockoutStrategy(PairingStrategy):
 
         # Get all players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+        active_inscriptions = [
+            i for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
+        ]
         for inscription in active_inscriptions:
             player_status[inscription.user_id] = "active"
 
@@ -396,11 +400,3 @@ class DoubleKnockoutStrategy(PairingStrategy):
         grand_final_rounds = 2  # Could be 1 or 2 depending on reset
 
         return winners_rounds + losers_rounds + grand_final_rounds
-
-    def get_metrics(self) -> Optional[StrategyMetrics]:
-        """Get performance metrics from last execution."""
-        return None  # No metrics collection implemented yet
-
-
-class DoubleKnockoutPairingStrategy(DoubleKnockoutStrategy):
-    """Alias for compatibility with existing strategy registry."""

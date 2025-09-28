@@ -7,15 +7,15 @@ Requirements: SPECIFICHE.md - Direct elimination campionato format
 from __future__ import annotations
 
 import math
-from typing import Sequence, List, Optional, TYPE_CHECKING, cast
+from typing import Sequence, List, Dict, Any, TYPE_CHECKING, cast
 
-from .base import Pairing, ValidationResult, PairingStrategy, StrategyMetrics
+from .base import Pairing, BaseStrategy
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
 
 
-class DirectEliminationStrategy(PairingStrategy):
+class DirectEliminationStrategy(BaseStrategy):
     """Direct Elimination (single knockout) pairing strategy."""
 
     # PairingStrategy metadata
@@ -28,55 +28,54 @@ class DirectEliminationStrategy(PairingStrategy):
     requires_classification = False
 
     def __init__(self):
+        super().__init__()
         self.strategy_name = "direct_elimination"
 
-    def validate(self, gara: object) -> ValidationResult:
-        """Validate if Direct Elimination can be used for this gara."""
+    def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
+        """Validate Direct Elimination specific requirements."""
+        errors = []
+        warnings = []
+
         try:
             # Get active inscriptions
-            inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
+            inscriptions = list(getattr(gara, "inscriptions", []))
+            active_inscriptions = [
+                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+            ]
             player_count = len(active_inscriptions)
 
-            if player_count < 4:
-                return ValidationResult(
-                    ok=False,
-                    messages=("Direct Elimination requires at least 4 players",),
-                )
-
-            if player_count > 128:
-                return ValidationResult(
-                    ok=False,
-                    messages=(
-                        "Direct Elimination with more than 128 players may be impractical",
-                    ),
-                )
-
             # Calculate required rounds
-            required_rounds = math.ceil(math.log2(player_count))
+            required_rounds = (
+                math.ceil(math.log2(player_count)) if player_count > 0 else 0
+            )
 
             if hasattr(gara, "rounds_count"):
                 rounds_count = getattr(gara, "rounds_count")
-                if rounds_count < required_rounds:
-                    return ValidationResult(
-                        ok=False,
-                        messages=(
-                            f"Direct Elimination requires {required_rounds} rounds, but gara has {rounds_count}",
-                        ),
+                if rounds_count and rounds_count < required_rounds:
+                    errors.append(
+                        f"Direct Elimination requires {required_rounds} rounds, "
+                        f"but gara has {rounds_count}"
                     )
 
-            return ValidationResult(ok=True)
-
         except Exception as e:
-            return ValidationResult(ok=False, messages=(f"Validation error: {str(e)}",))
+            warnings.append(f"Direct Elimination validation warning: {str(e)}")
+
+        return {"errors": errors, "warnings": warnings}
 
     def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
         """Preview pairings for a specific round without side effects."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
+        return self._generate_round_pairings(
+            gara, round_number  # type: ignore[arg-type]
+        )
 
-    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Propose actual pairings for the round."""
-        return self._generate_round_pairings(gara, round_number)  # type: ignore[arg-type]
+    def _generate_pairings(
+        self, processed_data: Dict[str, Any], round_number: int
+    ) -> Sequence[Pairing]:
+        """Generate Direct Elimination pairings for the round."""
+        gara = processed_data["gara"]
+        return self._generate_round_pairings(
+            gara, round_number  # type: ignore[arg-type]
+        )
 
     def _generate_round_pairings(
         self, gara: object, round_number: int
@@ -99,7 +98,11 @@ class DirectEliminationStrategy(PairingStrategy):
         """Generate first round pairings with proper seeding and byes."""
         # Get active players
         inscriptions = list(gara.inscriptions)  # type: ignore[arg-type]
-        active_inscriptions = [i for i in inscriptions if i.status == "confirmed"]
+        active_inscriptions = [
+            i for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
+        ]
 
         # Sort players by seeding (use classification or random)
         player_ids = self._get_seeded_players(gara, active_inscriptions)
@@ -227,11 +230,6 @@ class DirectEliminationStrategy(PairingStrategy):
         """Calculate number of byes needed."""
         bracket_size = self.get_bracket_size(player_count)
         return bracket_size - player_count
-
-    def get_metrics(self) -> Optional[StrategyMetrics]:
-        """Get performance metrics from last execution."""
-        return None  # No metrics collection implemented yet
-
 
 class DirectEliminationPairingStrategy(DirectEliminationStrategy):
     """Alias for compatibility with existing strategy registry."""

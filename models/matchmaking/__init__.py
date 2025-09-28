@@ -51,6 +51,7 @@ from .service import MatchmakingService, matchmaking_service
 from .bootstrap import get_matchmaking_service, get_registry
 from .registry import EngineRegistry, PairingContext
 from .strategies.base import Pairing, ValidationResult, PairingStrategy, BaseStrategy
+from .amalfi_challenge_bye_service import AmalfiChallengeByeService
 
 __all__ = [
     "MatchmakingService",
@@ -63,4 +64,5 @@ __all__ = [
     "ValidationResult",
     "PairingStrategy",
     "BaseStrategy",
+    "AmalfiChallengeByeService",
 ]

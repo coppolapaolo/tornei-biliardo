@@ -221,8 +221,6 @@ class TestAntiRematchBug:
             MatchService.to_completed(match.id)
             db_session.refresh(match)
 
-            # NOTA: Gli encounter sono già registrati dall'Amalfi engine durante la creazione dei match
-
     def _get_player_name(self, player_id: int, players: List[User]) -> str:
         """Ottieni il nome del giocatore per debug."""
         player = next((p for p in players if p.id == player_id), None)

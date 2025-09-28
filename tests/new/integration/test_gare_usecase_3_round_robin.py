@@ -203,9 +203,12 @@ class TestUseCaseRoundRobinMultiSet:
         RoundClassification.calculate_classification_after_round(gara.id, 3)
 
         # Step 8: Verify final classification
-        from amalfi.engine import get_amalfi_classification
 
-        final_classification = get_amalfi_classification(gara.id, 3)
+        final_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert final_classification is not None
         assert len(final_classification) == 6
 

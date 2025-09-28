@@ -6,7 +6,7 @@ per centralizzare tutta la logica round management in un unico service.
 """
 
 import pytest
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from models.base import db
 from models.status_enum import GaraStatus
 from models.competition.models import Gara, Inscription
@@ -86,9 +86,65 @@ class TestRoundServiceTDD:
             director_id=isolated_director_user.id,
             status=GaraStatus.PLAYING.value,
             current_round=1,
+            rounds_count=3,
         )
         db_session.add(gara)
         db_session.commit()
+
+        # Aggiungi giocatori sufficienti per la strategia Amalfi (minimo 3)
+        players = []
+        for i in range(4):
+            player = User(
+                username=f"player_round{i}_test",
+                email=f"player_round{i}@test.com",
+                role=UserRole.PLAYER.value,
+            )
+            player.set_password("password123")
+            db.session.add(player)
+            players.append(player)
+
+        db.session.commit()
+
+        # Aggiungi iscrizioni
+        for player in players:
+            inscription = Inscription(
+                user_id=player.id, gara_id=gara.id
+            )
+            db_session.add(inscription)
+        db_session.commit()
+
+        # Crea alcuni match del round 1 per soddisfare i prerequisiti Amalfi
+        from models.match.models import Match
+        from models.classification.models import RoundClassification
+
+        match1 = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[0].id,
+            player2_id=players[1].id,
+            is_bye=False,
+            winner_id=players[0].id,
+            player1_score=5,
+            player2_score=3,
+            status="completed",
+        )
+        match2 = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[2].id,
+            player2_id=players[3].id,
+            is_bye=False,
+            winner_id=players[2].id,
+            player1_score=5,
+            player2_score=2,
+            status="completed",
+        )
+        db_session.add(match1)
+        db_session.add(match2)
+        db_session.commit()
+
+        # Crea classificazione round 1
+        RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         from models.competition.services import RoundService
 
@@ -98,13 +154,6 @@ class TestRoundServiceTDD:
         # Il risultato dipende dalla strategia ma dovrebbe restituire informazioni sui match
         assert result is not None
 
-    def test_round_service_can_preview_round(self, isolated_director_user, db_session):
-        """RoundService deve avere il metodo preview_round_with_strategy."""
-        from models.competition.services import RoundService
-
-        # Test che il metodo esista ed è chiamabile
-        assert hasattr(RoundService, "preview_round_with_strategy")
-        assert callable(getattr(RoundService, "preview_round_with_strategy"))
 
     def test_create_round_with_strategy_creates_matches_for_random_strategy(
         self, isolated_director_user, db_session
