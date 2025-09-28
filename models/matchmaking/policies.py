@@ -1,3 +1,14 @@
+"""Tournament pairing policies for handling odd player counts and rematch prevention.
+
+Provides business logic functions and enums for tournament management decisions
+that affect pairing quality and player experience. These policies ensure fair
+competition while adapting to practical constraints like odd player counts.
+
+Business Context:
+    Pool tournaments must balance competitive fairness with practical constraints.
+    These policies codify best practices for handling common tournament scenarios.
+"""
+
 from __future__ import annotations
 from enum import Enum
 
@@ -5,14 +16,36 @@ from models import PlayerEncounter
 
 
 class OddResolution(Enum):
+    """Enumeration of strategies for handling odd player counts in tournaments.
+
+    When tournaments have odd player numbers, one player would normally sit out.
+    These policies provide alternatives that maintain player engagement.
+
+    Values:
+        BYE: Traditional bye - one player sits out the round
+        TRIO: Three-player match format to keep all players active
+    """
     BYE = "bye"
     TRIO = "trio"
 
 
 def decide_trio_or_bye(*, campionato_without_x: bool, can_trio: bool) -> OddResolution:
-    """Regola minimale: se il campionato consente il trio e c'è almeno un 1v1
-    già costruito, scegli TRIO; altrimenti BYE.
-    Nessun side-effect.
+    """Determine optimal resolution for odd player count based on tournament configuration.
+
+    Business Logic:
+    - Trio matches maximize player engagement when tournament format supports them
+    - Bye assignment is used when trio matches aren't feasible or desirable
+    - Decision considers tournament rules (campionato_without_x) and match feasibility
+
+    Args:
+        campionato_without_x: Whether tournament allows trio match alternatives to byes
+        can_trio: Whether current round structure supports trio match format
+
+    Returns:
+        OddResolution indicating whether to use trio match or bye assignment
+
+    Design Principle:
+        Pure function with no side effects - enables testing and consistent behavior
     """
     return (
         OddResolution.TRIO if (campionato_without_x and can_trio) else OddResolution.BYE
@@ -20,7 +53,27 @@ def decide_trio_or_bye(*, campionato_without_x: bool, can_trio: bool) -> OddReso
 
 
 def anti_rematch_allowed(gara_id: int, a_id: int, b_id: int) -> bool:
-    """True se A e B non hanno mai giocato tra loro in questa gara.
-    Usa sola lettura sul dominio PlayerEncounter.
+    """Check if two players can be paired without creating a rematch within the tournament.
+
+    Anti-rematch logic is crucial for tournament fairness and player satisfaction.
+    Players expect variety in opponents throughout a tournament, and excessive
+    rematches can create competitive imbalances or player frustration.
+
+    Args:
+        gara_id: Tournament identifier to scope encounter history
+        a_id: First player's unique identifier
+        b_id: Second player's unique identifier
+
+    Returns:
+        True if players haven't faced each other in this tournament, False for rematch
+
+    Business Logic:
+        Uses read-only access to PlayerEncounter domain to check historical matchups.
+        This approach maintains data consistency while enabling concurrent access.
+
+    Performance Note:
+        This function may be called frequently during pairing generation.
+        PlayerEncounter.have_played() should be optimized for tournament-scoped queries.
     """
+    # Delegate to domain model for encounter history lookup with tournament scope
     return not PlayerEncounter.have_played(gara_id, a_id, b_id)

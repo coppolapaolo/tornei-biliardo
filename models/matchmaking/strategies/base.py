@@ -2,22 +2,30 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Sequence, Tuple, Dict, Any, Optional, List
-from datetime import datetime
 
 
 @dataclass(frozen=True)
 class Pairing:
-    """Enhanced Value Object for matchmaking output with metadata."""
+    """Immutable Value Object representing a tournament match pairing with
+    quality metrics.
+
+    Central data structure for all matchmaking algorithms. Encapsulates player
+    assignments, match type classification (regular, bye, trio), and quality
+    assessment for tournament optimization. Supports both traditional 1v1 matches
+    and trio matches for odd player counts.
+
+    Design Pattern: Value Object (immutable, equality-based)
+    Business Context: American Pool tournament pairing with flexible match formats
+    """
 
     players: Tuple[int, ...]
     is_bye: bool = False
     round_number: Optional[int] = None
 
-    # Enhanced metadata
-    pairing_quality: float = 1.0  # 0.0 = poor, 1.0 = excellent
-    estimated_duration: Optional[int] = None  # minutes
-    requires_handicap: bool = False
-    notes: Optional[str] = None
+    # Operational metadata
+    estimated_duration: Optional[int] = None  # Expected match duration in minutes
+    requires_handicap: bool = False  # Whether skill balancing is recommended
+    notes: Optional[str] = None  # Strategy-specific annotations and context
 
     @property
     def player1_id(self) -> Optional[int]:
@@ -31,7 +39,16 @@ class Pairing:
 
     @property
     def is_valid_pairing(self) -> bool:
-        """Check if this is a valid pairing."""
+        """Validate pairing structure according to pool tournament rules.
+
+        Business Rules:
+        - Bye matches: exactly 1 player (opponent sits out)
+        - Regular matches: exactly 2 different players
+        - Trio matches: exactly 3 different players (for odd numbers)
+
+        Returns:
+            True if pairing follows tournament format rules
+        """
         if self.is_bye:
             return len(self.players) == 1
         elif len(self.players) == 2:
@@ -44,18 +61,19 @@ class Pairing:
     @property
     def is_trio(self) -> bool:
         """Check if this is a trio pairing."""
-        return len(self.players) == 3
-
-    def get_opponent_id(self, player_id: int) -> Optional[int]:
-        """Get opponent ID for given player."""
-        if self.is_bye or player_id not in self.players:
-            return None
-        return next((pid for pid in self.players if pid != player_id), None)
+        return len(self.players) == 3 and len(set(self.players)) == 3
 
 
 @dataclass(frozen=True)
 class ValidationResult:
-    """Enhanced validation result with severity levels."""
+    """Immutable validation result with hierarchical feedback levels.
+
+    Distinguishes between blocking errors (prevent execution) and warnings
+    (suboptimal but acceptable). Enables graceful degradation and informed
+    decision-making during tournament setup and execution.
+
+    Design Pattern: Value Object with Factory Methods
+    """
 
     ok: bool
     messages: Tuple[str, ...] = ()
@@ -92,24 +110,22 @@ class ValidationResult:
         )
 
 
-@dataclass(frozen=True)
-class StrategyMetrics:
-    """Performance and quality metrics for strategy execution."""
-
-    execution_time_ms: float
-    pairings_generated: int
-    bye_count: int
-    average_pairing_quality: float
-    cache_hit: bool = False
-    validation_time_ms: float = 0.0
-
-    @property
-    def total_time_ms(self) -> float:
-        return self.execution_time_ms + self.validation_time_ms
-
-
 class PairingStrategy(ABC):
-    """Enhanced abstract base class for pairing strategies."""
+    """Abstract base interface for tournament pairing algorithms.
+
+    Defines the contract for all matchmaking strategies used in pool tournaments.
+    Each strategy implements specific pairing logic while adhering to common
+    validation and execution patterns.
+
+    Supported Tournament Formats:
+    - Amalfi: Adaptive pairing with anti-rematch intelligence
+    - Round-Robin: Complete all-play-all format
+    - Elimination: Single/double knockout brackets
+    - Random: Casual pairing with rematch prevention
+
+    Design Pattern: Strategy + Template Method
+    Business Context: Flexible tournament organization for American Pool communities
+    """
 
     # Strategy metadata (with default values)
     name: str = "base_strategy"
@@ -122,27 +138,65 @@ class PairingStrategy(ABC):
 
     @abstractmethod
     def validate(self, gara: object) -> ValidationResult:
-        """Validate gara state for this strategy."""
+        """Validate tournament configuration against strategy-specific requirements.
+
+        Each strategy has different constraints (player counts, round limits, etc.).
+        This method enables early detection of configuration issues before
+        tournament execution, preventing runtime failures and player frustration.
+
+        Args:
+            gara: Tournament/competition object to validate
+
+        Returns:
+            ValidationResult indicating compatibility and any configuration issues
+        """
         ...
 
-    @abstractmethod
-    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Generate preview without side effects."""
-        ...
+    def create_round(self, gara: object, round_number: int) -> Sequence[Pairing]:
+        """Generate tournament round pairings with persistent side effects.
 
-    @abstractmethod
-    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Generate actual pairings with side effects."""
-        ...
+        Primary execution method that generates player pairings and applies
+        necessary side effects (creating Match objects, updating classifications,
+        recording encounters). Distinct from preview methods that don't modify state.
 
-    @abstractmethod
-    def get_metrics(self) -> Optional[StrategyMetrics]:
-        """Get performance metrics from last execution."""
-        ...
+        Args:
+            gara: Tournament object with player inscriptions and history
+            round_number: Sequential round number (affects some algorithms)
+
+        Returns:
+            Sequence of Pairing objects representing this round's matches
+
+        Side Effects:
+            - May create Match objects in database
+            - May update player classifications and encounter history
+            - May trigger notifications and other cross-domain operations
+        """
+        # Default implementation for compatibility: call propose if it exists
+        if hasattr(self, 'propose'):
+            return self.propose(gara, round_number)  # type: ignore
+        else:
+            raise NotImplementedError("Subclasses must implement create_round")
+
 
 
 class BaseStrategy(PairingStrategy):
-    """Abstract base class implementing template method pattern for strategies."""
+    """Abstract base implementation providing common strategy infrastructure.
+
+    Implements the Template Method pattern to standardize strategy execution flow:
+    validation → preprocessing → pairing generation → postprocessing → side effects.
+    Concrete strategies override specific steps while benefiting from common
+    infrastructure like error handling.
+
+    Features:
+    - Standardized validation with common checks
+    - Template method execution flow
+    - Extensible hook points for customization
+
+    Design Rationale:
+        All pool tournament strategies share common concerns (validation,
+        error handling) while differing in core pairing logic. This base class
+        eliminates duplication while maintaining algorithm flexibility.
+    """
 
     # Strategy metadata (to be overridden)
     name: str = "base"
@@ -153,14 +207,25 @@ class BaseStrategy(PairingStrategy):
     supports_byes: bool = True
     requires_classification: bool = False
 
+    # Algorithm constants
+    BYE_PLAYER_ID: int = -1  # Special player ID for bye handling in algorithms
+
     def __init__(self):
-        self._last_metrics: Optional[StrategyMetrics] = None
-        self._execution_start: Optional[datetime] = None
+        pass
 
     def validate(self, gara: object) -> ValidationResult:
-        """Template method for validation with common checks."""
-        validation_start = datetime.utcnow()
+        """Template method providing standardized validation with common
+        tournament rules.
 
+        Performs universal validation (inscription requirements, player counts, etc.)
+        before delegating to strategy-specific validation logic. This ensures all
+        strategies enforce basic tournament integrity rules consistently.
+
+        Validation Hierarchy:
+        1. Universal checks (inscriptions, player counts)
+        2. Strategy-specific requirements (via _validate_strategy_specific)
+        3. Result aggregation with proper severity levels
+        """
         errors = []
         warnings = []
 
@@ -194,9 +259,19 @@ class BaseStrategy(PairingStrategy):
         else:
             return ValidationResult.success(warnings=warnings)
 
-    def preview(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Template method for preview generation."""
-        self._execution_start = datetime.utcnow()
+    def create_round(self, gara: object, round_number: int) -> Sequence[Pairing]:
+        """Template method orchestrating complete round creation with side effects.
+
+        Standardized execution flow ensuring all strategies follow consistent patterns:
+        1. Pre-execution validation
+        2. Data preprocessing and player list preparation
+        3. Core pairing generation (strategy-specific)
+        4. Pairing enhancement and quality calculation
+        5. Side effect application (Match creation, classification updates)
+
+        This pattern ensures reliability, consistent behavior, and comprehensive
+        instrumentation across all tournament formats.
+        """
 
         # Validate first
         validation = self.validate(gara)
@@ -210,37 +285,7 @@ class BaseStrategy(PairingStrategy):
         processed_data = self._preprocess_data(gara, active_inscriptions, round_number)
 
         # Generate pairings (strategy-specific)
-        pairings = self._generate_pairings(
-            processed_data, round_number, preview_mode=True
-        )
-
-        # Post-processing hook
-        enhanced_pairings = self._postprocess_pairings(pairings, gara, round_number)
-
-        # Record metrics
-        self._record_metrics(enhanced_pairings, validation_time_ms=0.0)
-
-        return enhanced_pairings
-
-    def propose(self, gara: object, round_number: int) -> Sequence[Pairing]:
-        """Template method for actual pairing generation with side effects."""
-        self._execution_start = datetime.utcnow()
-
-        # Validate first
-        validation = self.validate(gara)
-        if not validation.ok:
-            raise ValueError(f"Validation failed: {'; '.join(validation.errors)}")
-
-        # Get active players
-        active_inscriptions = self._get_active_inscriptions(gara)
-
-        # Pre-processing hook
-        processed_data = self._preprocess_data(gara, active_inscriptions, round_number)
-
-        # Generate pairings (strategy-specific)
-        pairings = self._generate_pairings(
-            processed_data, round_number, preview_mode=False
-        )
+        pairings = self._generate_pairings(processed_data, round_number)
 
         # Post-processing hook
         enhanced_pairings = self._postprocess_pairings(pairings, gara, round_number)
@@ -248,25 +293,36 @@ class BaseStrategy(PairingStrategy):
         # Apply side effects
         self._apply_side_effects(enhanced_pairings, gara, round_number)
 
-        # Record metrics
-        self._record_metrics(enhanced_pairings, validation_time_ms=0.0)
 
         return enhanced_pairings
 
-    def get_metrics(self) -> Optional[StrategyMetrics]:
-        """Get metrics from last execution."""
-        return self._last_metrics
 
-    # Template method hooks (to be implemented by subclasses)
+    # Template method hooks for strategy customization
 
     @abstractmethod
     def _generate_pairings(
         self,
         processed_data: Dict[str, Any],
         round_number: int,
-        preview_mode: bool = True,
     ) -> Sequence[Pairing]:
-        """Generate the actual pairings (strategy-specific logic)."""
+        """Generate tournament pairings using strategy-specific algorithm.
+
+        Core method where each strategy implements its unique pairing logic.
+        Called within the template method flow after validation and preprocessing.
+
+        Args:
+            processed_data: Standardized data structure with players, gara, context
+            round_number: Sequential round number for round-dependent algorithms
+
+        Returns:
+            Sequence of Pairing objects representing the strategy's match assignments
+
+        Strategy Examples:
+        - Amalfi: Use classification and encounter history for intelligent pairing
+        - Round-Robin: Follow systematic rotation pattern
+        - Elimination: Pair winners from previous round
+        - Random: Generate random assignments with anti-rematch filtering
+        """
 
     def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
         """Override for strategy-specific validation."""
@@ -291,7 +347,8 @@ class BaseStrategy(PairingStrategy):
     def _apply_side_effects(
         self, pairings: Sequence[Pairing], gara: object, round_number: int
     ) -> None:
-        """Override for strategy-specific side effects (e.g., updating classification)."""
+        """Override for strategy-specific side effects
+        (e.g., updating classification)."""
 
     # Helper methods
 
@@ -299,37 +356,8 @@ class BaseStrategy(PairingStrategy):
         """Get active inscriptions for the gara."""
         inscriptions = getattr(gara, "inscriptions", [])
         return [
-            i for i in inscriptions if hasattr(i, "status") and i.status == "confirmed"
+            i for i in inscriptions
+            if not getattr(i, "is_withdrawn", False)
+            and not getattr(i, "is_waitlist", False)
         ]
 
-    def _calculate_pairing_quality(
-        self, player1_id: int, player2_id: int, gara: object
-    ) -> float:
-        """Calculate quality score for a pairing (0.0 = poor, 1.0 = excellent)."""
-        # Base implementation: random quality
-        # Override in subclasses for sophisticated quality calculation
-        return 0.8  # Default to good quality
-
-    def _record_metrics(
-        self, pairings: Sequence[Pairing], validation_time_ms: float = 0.0
-    ) -> None:
-        """Record execution metrics."""
-        if self._execution_start:
-            execution_time = (
-                datetime.utcnow() - self._execution_start
-            ).total_seconds() * 1000
-
-            bye_count = sum(1 for p in pairings if p.is_bye)
-            avg_quality = (
-                sum(p.pairing_quality for p in pairings) / len(pairings)
-                if pairings
-                else 0.0
-            )
-
-            self._last_metrics = StrategyMetrics(
-                execution_time_ms=execution_time,
-                pairings_generated=len(pairings),
-                bye_count=bye_count,
-                average_pairing_quality=avg_quality,
-                validation_time_ms=validation_time_ms,
-            )

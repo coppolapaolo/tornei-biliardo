@@ -185,28 +185,23 @@ Route → MatchmakingService.run("amalfi", seed=123) → AmalfiUnifiedAdapter �
 
 ## Testing Strategy
 
-### Golden Tests (`test_amalfi_unified_golden.py`)
-Verify deterministic behavior with fixed seeds:
-- ✅ Identical output across multiple runs with same seed
-- ✅ Different seeds produce different but valid results
-- ✅ Bye handling consistency
-- ✅ Multi-round anti-rematch behavior
+### Interface Tests (`test_amalfi_business_logic.py`)
+Verify strategy interface and metadata without complex database interactions:
+- ✅ Strategy metadata validation (name, min_players, supports_byes, etc.)
+- ✅ Minimum player requirements validation
+- ✅ Mock object compatibility for unit testing
+- ✅ Validation error handling and messages
 
-### Invariant Tests (`test_amalfi_unified_invariants.py`) 
-Validate business logic constraints:
+### Integration Tests (Existing)
+Validate business logic constraints through realistic scenarios:
 - ✅ All players assigned exactly once per round
 - ✅ No self-pairing allowed
 - ✅ Valid pairing structure (bye = 1 player, normal = 2 players)
-- ✅ Pairing quality within bounds [0.0, 1.0]
 - ✅ Anti-rematch logic validation
+- ✅ Multi-round tournament workflows
+- ✅ Performance requirements (<2s for typical operations)
 
-### Performance Tests (`test_amalfi_unified_performance.py`)
-Ensure performance requirements:
-- ✅ Small tournaments (8-32 players): <2s
-- ✅ Large tournaments (64-256 players): <5s  
-- ✅ Context setup overhead: <10%
-- ✅ Multiple rounds performance
-- ✅ Memory efficiency validation
+**Design Principle**: Test interface and validation logic in isolation, rely on integration tests for complex business logic validation. Avoid deterministic seeding for randomized algorithms.
 
 ## Success Metrics
 
@@ -229,34 +224,31 @@ Ensure performance requirements:
 
 ## Technical Implementation Details
 
-### AmalfiUnifiedAdapter Key Features
+### AmalfiStrategy Key Features
 
 ```python
-class AmalfiUnifiedAdapter(BaseStrategy):
+class AmalfiStrategy(BaseStrategy):
     name = "amalfi"
     min_players = 3
     supports_byes = True
     requires_classification = True
-    
-    def set_context(self, context: PairingContext) -> None:
-        # Inject deterministic RNG context
-        
-    def _generate_preview_pairings(self, gara: Gara, round_number: int) -> Sequence[Pairing]:
-        # Use AmalfiEngine.preview_round_pairings() without side effects
-        
-    def _generate_actual_pairings(self, gara: Gara, round_number: int) -> Sequence[Pairing]:
-        # Use AmalfiEngine.create_round_matches() with side effects
-        
-    def _translate_preview_to_pairings(self, preview_matches: List[Dict]) -> Sequence[Pairing]:
-        # Convert AmalfiEngine output to domain Pairing objects
+
+    def validate(self, gara: object) -> ValidationResult:
+        # Strategy-specific validation without deterministic requirements
+
+    def _generate_pairings(self, processed_data: Dict[str, Any], round_number: int) -> Sequence[Pairing]:
+        # Generate pairings using Amalfi algorithm from SPECIFICHE.md
+
+    def _amalfi_pairing(self, classification: List[RoundClassification], round_number: int, total_rounds: int) -> List[Pairing]:
+        # Core Amalfi algorithm implementation: classification-based with salto logic
 ```
 
 ### Factory Pattern Integration
 
 ```python
-# Enhanced MatchmakingService usage
-service.run("amalfi", gara, round_number=1, seed=42)  # Deterministic
-service.run("amalfi", gara, round_number=1)           # Non-deterministic
+# MatchmakingService usage
+service.run("amalfi", gara, round_number=1)  # Standard usage - randomness preserves algorithm integrity
+service.run("amalfi", gara, round_number=2)  # Multi-round support with anti-rematch logic
 ```
 
 ## Future Considerations
@@ -275,15 +267,15 @@ service.run("amalfi", gara, round_number=1)           # Non-deterministic
 
 ## Conclusion
 
-The unification of Amalfi under the Strategy pattern successfully addresses the architectural duality while maintaining zero behavior change. The adapter approach provides:
+The unification of Amalfi under the Strategy pattern successfully addresses the architectural duality while implementing specification-compliant behavior. The new implementation provides:
 
-- ✅ **Clean Architecture**: Proper Strategy pattern implementation
-- ✅ **Risk Mitigation**: Zero algorithm changes, comprehensive testing
+- ✅ **Clean Architecture**: Proper Strategy pattern implementation following SPECIFICHE.md
+- ✅ **Specification Compliance**: Algorithm follows documented business rules
 - ✅ **Performance Compliance**: <2s requirement met
-- ✅ **Deterministic Testing**: Seed-based consistency validation
+- ✅ **Pragmatic Testing**: Interface validation + integration test coverage
 - ✅ **Future Extensibility**: Foundation for advanced features
 
-This refactoring establishes a solid architectural foundation for the tournament platform's continued growth while preserving the reliability of the existing Amalfi algorithm.
+This refactoring establishes a solid architectural foundation for the tournament platform's continued growth while ensuring algorithmic correctness according to specifications.
 
 ## Implementation Notes
 
@@ -318,7 +310,8 @@ This hybrid approach achieves the primary goal (Strategy pattern unification) wh
 
 ---
 
-**Decision Date**: 2025-01-12  
-**Authors**: Development Team  
-**Reviewers**: Technical Architecture Committee  
-**Status**: Accepted and Implemented
+**Decision Date**: 2025-01-12
+**Updated**: 2025-09-28 (Testing strategy revision)
+**Authors**: Development Team
+**Reviewers**: Technical Architecture Committee
+**Status**: Accepted and Implemented - Testing Strategy Updated

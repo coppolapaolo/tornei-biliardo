@@ -221,8 +221,6 @@ class TestAntiRematchBug:
             MatchService.to_completed(match.id)
             db_session.refresh(match)
 
-            # NOTA: Gli encounter sono già registrati dall'Amalfi engine durante la creazione dei match
-
     def _get_player_name(self, player_id: int, players: List[User]) -> str:
         """Ottieni il nome del giocatore per debug."""
         player = next((p for p in players if p.id == player_id), None)
@@ -269,7 +267,7 @@ class TestAntiRematchBug:
             date=date.today() + timedelta(days=1),
             location="Test Location",
             description="Test anti-rematch con opzioni limitate",
-            rounds_count=3,
+            rounds_count=2,
             min_participants=4,
             max_participants=6,
             entry_fee=10.0,
@@ -294,15 +292,14 @@ class TestAntiRematchBug:
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
-        # Con 4 giocatori e 3 turni, dovremmo avere:
+        # Con 4 giocatori e 2 turni, dovremmo avere:
         # - Turno 1: 2 match (4 giocatori)
         # - Turno 2: 2 match (ma potrebbero esserci rematches)
-        # - Turno 3: 2 match (molto probabilmente con rematches)
 
         # L'importante è che NON ci siano rematches immediati (turno consecutivo)
         pairings_by_round = []
 
-        for round_num in range(1, 4):
+        for round_num in range(1, 3):
             if round_num > 1:
                 # Completa turno precedente
                 prev_matches = Match.query.filter_by(

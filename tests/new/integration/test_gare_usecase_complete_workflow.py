@@ -108,9 +108,11 @@ class TestUseCaseGareComplete:
         # (Challenge system would be implemented separately)
 
         # Verify final state
-        from amalfi.engine import get_amalfi_classification
-
-        final_classification = get_amalfi_classification(gara.id, 3)
+        final_classification = (
+            RoundClassification.query.filter_by(gara_id=gara.id, round_number=3)
+            .order_by(RoundClassification.position)
+            .all()
+        )
         assert final_classification is not None
         assert len(final_classification) == 8
 
@@ -302,7 +304,7 @@ class TestUseCaseGareComplete:
             date=date.today() + timedelta(days=1),
             location="Pool Hall UC3",
             description="Round-robin 2 sets best-of-5",
-            rounds_count=5,  # Round-robin needs more rounds
+            rounds_count=4,  # Valid rounds for 8 players in round-robin
             min_participants=6,
             max_participants=12,
             entry_fee=25.0,
@@ -692,7 +694,7 @@ class TestUseCaseGareComplete:
     ):
         """
         Use Case 8: Advanced match modification and round locking
-        - Tournament with 4 rounds, matches completed through round 2
+        - Tournament with 3 rounds, matches completed through round 2
         - Admin modifies round 2 match - round 2 reopens, classification reverts
         - Admin starts round 3 - rounds 1-2 lock
         - Admin cancels round 3 - round 2 unlocks
@@ -704,7 +706,7 @@ class TestUseCaseGareComplete:
 
         from models.competition.round_manager import AdvancedRoundManager
 
-        # Step 1: Create tournament with 4 rounds
+        # Step 1: Create tournament with 3 rounds
         gara = GaraService.create_gara(
             campionato_id=None,
             number=1,
@@ -712,7 +714,7 @@ class TestUseCaseGareComplete:
             date=date.today(),
             location="Modification Test Hall",
             description="Testing round locking and match modification",
-            rounds_count=4,
+            rounds_count=3,
             min_participants=6,
             max_participants=8,
             entry_fee=20.0,

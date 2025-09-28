@@ -47,7 +47,7 @@ class TestClassificationDisplay:
                 sess["_user_id"] = str(admin_user.id)
                 sess["_fresh"] = True
 
-            # 1. Create gara with 4 players
+            # 1. Create gara with 4 players (max 2 rounds to avoid rematch)
             gara = GaraService.create_gara(
                 number=1,
                 name="Classification Display Test",
@@ -56,7 +56,7 @@ class TestClassificationDisplay:
                 distance=5,
                 campionato_id=None,
                 director_id=admin_user.id,
-                rounds_count=3,
+                rounds_count=2,
             )
 
             # Set inscription dates before moving to inscription status

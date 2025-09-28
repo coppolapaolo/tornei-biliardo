@@ -145,3 +145,9 @@ def clean_session():
         db.session.expunge_all()
 
     return _clean
+
+def pytest_runtest_logstart(nodeid, location):
+    print(f"\n>>> STARTING {nodeid}\n", flush=True)
+
+def pytest_runtest_logfinish(nodeid, location):
+    print(f"\n<<< FINISHED {nodeid}\n", flush=True)

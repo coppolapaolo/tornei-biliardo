@@ -93,7 +93,7 @@ class RoundService:
             from models.match.models import Match
 
             for round_num in range(1, gara.rounds_count + 1):
-                pairings = strategy.propose(gara, round_num)
+                pairings = strategy.create_round(gara, round_num)
 
                 # Get discipline configuration for this round
                 from models.competition.round_configuration import RoundConfiguration
@@ -281,85 +281,85 @@ class RoundService:
             # Ottieni la strategia configurata
             strategy_name = gara.matchmaking_strategy or "amalfi"
 
-            # Se è Amalfi, usa il binding esistente per compatibilità
-            if strategy_name in ["amalfi", "advanced_amalfi"]:
-                from amalfi import create_amalfi_round_matches
+            # Usa il registry per tutte le strategie
+            from models.matchmaking.bootstrap import get_registry
 
-                create_amalfi_round_matches(gara, round_number)
-            else:
-                # Usa il registry per altre strategie
-                from models.matchmaking.bootstrap import get_registry
+            registry = get_registry()
 
-                registry = get_registry()
+            # Mappatura nome strategia: enum -> registry
+            strategy_mapping = {
+                "random": "random_anti_rematch",
+                "amalfi": "amalfi",
+                "advanced_amalfi": "amalfi",  # Alias per compatibilità
+                "round_robin": "round_robin",
+                "direct_elimination": "direct_elimination",
+                "double_knockout": "double_knockout",
+            }
 
-                # Mappatura nome strategia: enum -> registry
-                strategy_mapping = {
-                    "random": "random_anti_rematch",
-                    "amalfi": "amalfi",
-                    "round_robin": "round_robin",
-                    "direct_elimination": "direct_elimination",
-                    "double_knockout": "double_knockout",
-                }
+            registry_name = strategy_mapping.get(strategy_name, strategy_name)
+            strategy = registry.get(registry_name)
+            if not strategy:
+                raise ValueError(f"Strategia '{strategy_name}' non trovata")
 
-                registry_name = strategy_mapping.get(strategy_name, strategy_name)
-                strategy = registry.get(registry_name)
-                if not strategy:
-                    raise ValueError(f"Strategia '{strategy_name}' non trovata")
+            # Genera gli abbinamenti usando l'interfaccia della strategia
+            pairings = strategy.create_round(gara, round_number)
 
-                # Genera gli abbinamenti usando l'interfaccia della strategia
-                pairings = strategy.propose(gara, round_number)
+            # Crea i match nel database
+            for pairing in pairings:
+                if len(pairing.players) == 1 and pairing.is_bye:
+                    # Match con X - assegnalo come completato con punteggio pieno
+                    bye_score = (
+                        gara.get_winning_score() if gara.best_of else gara.distance
+                    )
+                    match = Match(
+                        gara_id=gara_id,
+                        round_number=round_number,
+                        player1_id=pairing.players[0],
+                        player2_id=None,
+                        is_bye=True,
+                        player1_score=bye_score,
+                        winner_id=pairing.players[0],
+                        status="completed",
+                        discipline=discipline_override,
+                        match_distance=gara.distance,
+                    )
+                    db.session.add(match)
+                elif len(pairing.players) == 2 and not pairing.is_bye:
+                    # Match normale
+                    match = Match(
+                        gara_id=gara_id,
+                        round_number=round_number,
+                        player1_id=pairing.players[0],
+                        player2_id=pairing.players[1],
+                        is_bye=False,
+                        discipline=discipline_override,
+                        match_distance=gara.distance,
+                    )
+                    db.session.add(match)
+                elif len(pairing.players) == 3:
+                    # Match trio
+                    match = Match(
+                        gara_id=gara_id,
+                        round_number=round_number,
+                        player1_id=pairing.players[0],
+                        player2_id=pairing.players[1],
+                        is_bye=False,
+                        is_trio=True,
+                        discipline=discipline_override,
+                        match_distance=gara.distance,
+                    )
+                    db.session.add(match)
+                    db.session.flush()  # Assicura che il match abbia un ID
 
-                # Crea i match nel database
-                for pairing in pairings:
-                    if len(pairing.players) == 1 and pairing.is_bye:
-                        # Match con X - assegnalo come completato con punteggio pieno
-                        bye_score = (
-                            gara.get_winning_score() if gara.best_of else gara.distance
-                        )
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_number,
-                            player1_id=pairing.players[0],
-                            player2_id=None,
-                            is_bye=True,
-                            player1_score=bye_score,
-                            winner_id=pairing.players[0],
-                            status="completed",
-                            discipline=discipline_override,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 2 and not pairing.is_bye:
-                        # Match normale
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_number,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            discipline=discipline_override,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 3:
-                        # Match trio
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_number,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            is_trio=True,
-                            discipline=discipline_override,
-                        )
-                        db.session.add(match)
-
-                        # Crea il record TrioMatch con tutti e tre i giocatori
-                        trio_match = TrioMatch(
-                            match=match,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            player3_id=pairing.players[2],
-                        )
-                        db.session.add(trio_match)
+                    # Crea il record TrioMatch con tutti e tre i giocatori
+                    trio_match = TrioMatch(
+                        match_id=match.id,
+                        player1_id=pairing.players[0],
+                        player2_id=pairing.players[1],
+                        player3_id=pairing.players[2],
+                    )
+                    db.session.add(trio_match)
+                    db.session.flush()  # Assicura che il TrioMatch sia visibile
 
             # Conta i risultati
             matches = (
@@ -394,122 +394,6 @@ class RoundService:
             db.session.rollback()
             raise ValueError(f"Errore durante la creazione del turno: {str(e)}")
 
-    @staticmethod
-    def preview_round_with_strategy(gara_id: int, round_number: int) -> Dict[str, Any]:
-        """Anteprima di un turno usando la strategia configurata nella gara.
-
-        Returns:
-            Dict con informazioni sull'anteprima
-        """
-        try:
-            gara = db.session.get(Gara, gara_id)
-            if not gara:
-                raise ValueError(f"Gara {gara_id} non trovata")
-
-            # Verifica precondizioni
-            if round_number < 1 or round_number > gara.rounds_count:
-                raise ValueError(f"Turno {round_number} non valido")
-
-            # Ottieni la strategia configurata
-            strategy_name = gara.matchmaking_strategy or "amalfi"
-
-            if strategy_name in ["amalfi", "advanced_amalfi"]:
-                # Per Amalfi l'anteprima è gestita dal motore specifico
-                raise ValueError("Preview Amalfi deve essere gestito dal controller")
-            else:
-                # Usa il registry per altre strategie
-                from models.matchmaking.bootstrap import get_registry
-
-                registry = get_registry()
-
-                # Mappatura nome strategia: enum -> registry
-                strategy_mapping = {
-                    "random": "random_anti_rematch",
-                    "amalfi": "amalfi",
-                    "round_robin": "round_robin",
-                    "direct_elimination": "direct_elimination",
-                    "double_knockout": "double_knockout",
-                }
-
-                registry_name = strategy_mapping.get(strategy_name, strategy_name)
-                strategy = registry.get(registry_name)
-                if not strategy:
-                    raise ValueError(f"Strategia '{strategy_name}' non trovata")
-
-                # Ottieni i giocatori iscritti (escludi lista d'attesa)
-                from models.user.models import User
-
-                # Genera gli abbinamenti di anteprima usando l'interfaccia della strategia
-                pairings = strategy.preview(gara, round_number)
-
-                # Converti in formato per il template
-                matches = []
-                normal_count = 0
-                bye_count = 0
-                trio_count = 0
-
-                for pairing in pairings:
-                    if len(pairing.players) == 1 and pairing.is_bye:
-                        # Match con X
-                        bye_count += 1
-                        player1 = User.query.get(pairing.players[0])
-                        matches.append(
-                            {
-                                "player1": {
-                                    "id": player1.id,
-                                    "username": player1.username,
-                                },
-                                "player2": None,
-                                "is_bye": True,
-                                "type": "bye",
-                            }
-                        )
-                    elif len(pairing.players) == 2 and not pairing.is_bye:
-                        # Match normale
-                        normal_count += 1
-                        player1 = User.query.get(pairing.players[0])
-                        player2 = User.query.get(pairing.players[1])
-                        matches.append(
-                            {
-                                "player1": {
-                                    "id": player1.id,
-                                    "username": player1.username,
-                                },
-                                "player2": {
-                                    "id": player2.id,
-                                    "username": player2.username,
-                                },
-                                "is_bye": False,
-                                "type": "normal",
-                            }
-                        )
-                    elif len(pairing.players) == 3:
-                        # Match trio
-                        trio_count += 1
-                        players = [User.query.get(pid) for pid in pairing.players]
-                        matches.append(
-                            {
-                                "players": [
-                                    {"id": p.id, "username": p.username}
-                                    for p in players
-                                ],
-                                "is_trio": True,
-                                "type": "trio",
-                            }
-                        )
-
-                return {
-                    "matches": matches,
-                    "stats": {
-                        "total": len(matches),
-                        "normal": normal_count,
-                        "bye": bye_count,
-                        "trio": trio_count,
-                    },
-                }
-
-        except Exception as e:
-            raise ValueError(f"Errore durante l'anteprima del turno: {str(e)}")
 
     @staticmethod
     @transactional(domain="competition")

@@ -111,6 +111,12 @@ class MatchService:
             )
         match.status = MatchStatus.COMPLETED.value
         db.session.add(match)
+
+        # Registra automaticamente l'encounter per anti-rematch logic
+        # Usa il metodo esistente che gestisce correttamente bye e match normali
+        from models.classification.services import PlayerEncounterService
+        PlayerEncounterService.record_match_encounters(match)
+
         return match
 
     @staticmethod

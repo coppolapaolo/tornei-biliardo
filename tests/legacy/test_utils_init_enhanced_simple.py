@@ -618,7 +618,6 @@ class TestCreateRoundMatchesAmalfiCompatibleDetailed:
             round_number=1,
             player1_id=1,
             player2_id=2,
-            amalfi_round=1,  # This is the key difference from regular create_round_matches
         )
 
     @patch("utils.db")
@@ -654,12 +653,3 @@ class TestCreateRoundMatchesAmalfiCompatibleDetailed:
         assert mock_bye_match in matches
         assert mock_regular_match in matches
         mock_db.session.add_all.assert_called_once_with(matches)
-
-        # Verify both matches include amalfi_round
-        assert mock_match_class.call_count == 2
-
-        # Check that all calls included amalfi_round=1
-        for call in mock_match_class.call_args_list:
-            args, kwargs = call
-            assert "amalfi_round" in kwargs
-            assert kwargs["amalfi_round"] == 1
