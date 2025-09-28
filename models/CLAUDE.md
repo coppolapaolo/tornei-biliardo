@@ -52,6 +52,19 @@ Domain-specific exception classes for proper error handling.
 - Privacy-compliant personal data management
 - Community leadership promotion workflow
 
+### Campionato Domain (`campionato/`)
+**Purpose**: Multi-round tournament management and championship organization
+
+**Models**:
+- `Campionato`: Championship tournaments with multiple competitions (gare)
+
+**Features**:
+- Multi-competition championship tournaments
+- Tournament type configuration (Amalfi, Round-Robin, etc.)
+- Advanced options: challenge mode, final playoffs, scoring policies
+- Tournament lifecycle and progression management
+- Championship-wide statistics and standings
+
 ### Competition Domain (`competition/`)
 **Purpose**: Competition round management
 
@@ -168,6 +181,18 @@ Spot shot and rally systems for tie resolution.
 **Purpose**: Database performance
 - Query optimization strategies
 - Performance monitoring
+
+### Events (`events/`)
+**Purpose**: Domain decoupling through event-driven architecture
+- `DomainEvent`: Base class for all domain events with timestamp and metadata
+- `EventBus`: Central publish-subscribe event dispatcher with error handling
+- **Event Types**: Domain-specific events for loose coupling
+  - `UserEvents`: User registration, profile updates, role changes
+  - `CompetitionEvents`: Competition lifecycle, inscription changes, status updates
+  - `MatchEvents`: Match creation, scoring updates, completion
+  - `AvailabilityEvents`: Player availability changes, location updates
+- **Notification Handlers**: Event-driven notification delivery system
+- **Error Handling**: Robust error handling with logging and graceful degradation
 
 ## Development Guidelines
 

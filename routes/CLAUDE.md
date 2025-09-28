@@ -122,11 +122,11 @@ Administrative functionality is organized into specialized modules:
 - Location-based permissions
 - Venue request approvals
 
-#### `admin/dashboard.py` - Administrative Dashboard
-**Purpose**: System overview and administration
-- System-wide statistics
-- Administrative quick actions
-- User management overview
+#### Administrative Dashboard
+**Purpose**: System overview and administration (handled in general `dashboard.py`)
+- Role-based dashboard routing (Admin/Director/Player)
+- System-wide statistics and administrative quick actions
+- User management overview and competition monitoring
 
 ## Request Handling Patterns
 
