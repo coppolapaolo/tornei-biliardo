@@ -589,7 +589,7 @@ class RoleRequirement:
         def decorated_function(*args, **kwargs):
             if not current_user.is_director and not current_user.is_admin:
                 flash(
-                    "Accesso negato. Questa funzione è riservata ai direttori di torneo.",
+                    "Accesso negato. Funzione riservata ai direttori di torneo.",
                     "warning",
                 )
                 return redirect(url_for("dashboard.dashboard"))
