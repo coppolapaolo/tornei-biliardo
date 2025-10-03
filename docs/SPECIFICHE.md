@@ -4,7 +4,7 @@ L'app permette di organizzare Campionati di Biliardo, ma è anche una community 
 
 ## Tipologie di utenti
 
-La app ha un unico **Admin** configurato nelle impostazioni lato server. Admin non può essere cancellato e non può cambiare la password. L'email di ``admin`` è configurata, come la password nelle impostazioni lato server. 
+La app ha un unico **Admin** configurato nelle impostazioni lato server. Admin non può essere cancellato e non può cambiare la password. L'email di ``admin`` è configurata, come la password nelle impostazioni lato server. **L'utente admin è un utente speciale di sistema e non appare nella lista utenti dell'interfaccia di gestione**, che è dedicata alla gestione dei membri della community (player e director).
 
 Ci sono tre tipologie di utenti:
 1. **guest**: l'utente visitatore non loggato

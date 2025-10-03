@@ -258,6 +258,56 @@ class TestUserStatsServiceTDD:
                 user, _, _, _ = row
                 assert user.role != UserRole.ADMIN.value
 
+    def test_get_users_with_stats_excludes_admin_user(self, app):
+        """
+        Test that admin user is explicitly excluded from users list.
+
+        As per SPECIFICHE.md: "Admin non può essere cancellato" - admin is
+        a special system user configured server-side and should not appear
+        in the user management interface for community members.
+
+        Expected behavior:
+        - Admin user exists in database
+        - Admin user is NOT included in get_users_with_stats() results
+        - Only players and directors are shown in user management
+        """
+        with app.app_context():
+            from models.user.stats_service import UserStatsService
+
+            # Create explicit admin user
+            admin = User(
+                username="test_admin",
+                email="admin@test.com",
+                role=UserRole.ADMIN.value
+            )
+            admin.set_password("admin123")
+            db.session.add(admin)
+
+            # Create regular player
+            player = User(
+                username="test_player",
+                email="player@test.com",
+                role=UserRole.PLAYER.value
+            )
+            player.set_password("player123")
+            db.session.add(player)
+
+            db.session.commit()
+
+            # Act: get users with statistics
+            users_with_stats = UserStatsService.get_users_with_stats()
+
+            # Assert: admin is not in results
+            user_ids = [row[0].id for row in users_with_stats]
+            assert admin.id not in user_ids, "Admin user should be excluded from users list"
+
+            # Assert: player IS in results
+            assert player.id in user_ids, "Regular player should be included in users list"
+
+            # Assert: no users with admin role in results
+            admin_users = [row[0] for row in users_with_stats if row[0].role == UserRole.ADMIN.value]
+            assert len(admin_users) == 0, "No admin users should appear in user management list"
+
     def test_get_user_statistics_detailed_calculation(self, app, test_user_with_stats_data):
         """
         RED: Test UserStatsService.get_user_statistics() detailed statistics calculation.

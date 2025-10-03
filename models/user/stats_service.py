@@ -128,6 +128,7 @@ class UserStatsService:
 
         # Efficient single-query aggregation with outer joins to include all users
         # Uses LEFT OUTER JOINs to ensure users without matches/inscriptions are included
+        # Excludes admin user (special system user as per SPECIFICHE.md)
         users_with_stats = (
             db.session.query(
                 User,
@@ -137,6 +138,7 @@ class UserStatsService:
                     "won_matches"
                 ),
             )
+            .filter(User.role != "admin")  # Exclude special admin user
             .outerjoin(
                 Match,
                 db.and_(
