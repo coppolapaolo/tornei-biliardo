@@ -174,11 +174,14 @@ class AdvancedRoundManager:
         try:
             # Delete all matches in the round
             for match in round_matches:
-                # Delete associated racks first
+                # Delete associated racks first (bulk delete via query)
                 from models.match.models import Rack
 
                 Rack.query.filter_by(match_id=match.id).delete()
-                db.session.delete(match)  # TODO: perche' questo delete non viene gestito dal delete di match alla riga precedente?
+                # Delete match instance (requires explicit session delete)
+                # Note: Rack.query.delete() is bulk delete on query result
+                # while db.session.delete(match) deletes specific instance
+                db.session.delete(match)
 
             # Delete classifications for this round
             RoundClassification.query.filter_by(
@@ -340,7 +343,9 @@ class AdvancedRoundManager:
                 ).delete()
 
                 # Recalculate classification
-                classification = RoundClassificationService.get_round_standings(gara_id, round_num)
+                classification = RoundClassificationService.get_round_standings(
+                    gara_id, round_num
+                )
 
                 # Save new classification
                 for i, player_data in enumerate(classification, 1):

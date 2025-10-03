@@ -14,7 +14,7 @@ from models.matchmaking.configuration import (
     FirstRoundPolicy,
     OddNumberPolicy,
 )
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     pass
@@ -143,17 +143,6 @@ class Gara(db.Model):
     def is_standalone(self):
         """Check if this is a standalone competition."""
         return self.campionato_id is None
-
-    # TODO: controllare che funzioni sempre. Potrebbe essere admin?
-    # Come viene gestito? Se e' un metodo che non viene mai usato allora
-    # eliminare
-    def get_organizer(self):
-        """Get the competition organizer (director or campionato owner)."""
-        if self.is_standalone:
-            return self.director
-        if self.campionato and self.campionato.directors:
-            return self.campionato.directors[0]
-        return None
 
     # TODO: da rivedere se si cambia il modello ed e' Campionato l'unico a
     # sapere di gara
@@ -304,54 +293,40 @@ class Gara(db.Model):
         inscriptions_list = getattr(self, "inscriptions", []) or []
         return not inscriptions_list and self.status == GaraStatus.SETUP.value
 
-    def can_cancel_first_round(self):
-        """Verifica se l'avvio del primo turno può essere cancellato"""
-        if self.current_round != 1:
-            return False
+    def can_cancel_round(self, round_number: Optional[int] = None) -> bool:
+        """Verifica se l'avvio di un turno può essere cancellato.
+
+        Args:
+            round_number: Numero del turno da verificare. Se None, usa
+                current_round.
+
+        Returns:
+            bool: True se il turno può essere cancellato, False altrimenti.
+
+        Business Rules:
+            - La gara deve essere in stato PLAYING
+            - Il turno specificato deve esistere
+            - Non devono esserci risultati inseriti (neanche parziali)
+            - Tutti i match devono essere in stato PENDING
+        """
         if self.status != GaraStatus.PLAYING.value:
             return False
 
-        # Verifica che non ci siano risultati inseriti nelle partite del primo turno
+        # Use current_round if round_number not specified
+        target_round = round_number if round_number is not None else self.current_round
+
+        # Verifica che non ci siano risultati inseriti nelle partite del turno
         try:
             from models.match.models import Match
 
-            first_round_matches = Match.query.filter_by(
-                gara_id=self.id, round_number=1
+            round_matches = Match.query.filter_by(
+                gara_id=self.id, round_number=target_round
             ).all()
-            if not first_round_matches:
+            if not round_matches:
                 return False
 
             # Controlla che non ci siano risultati inseriti (neanche parziali)
-            for match in first_round_matches:
-                if (
-                    match.player1_score > 0
-                    or match.player2_score > 0
-                    or match.status != MatchStatus.PENDING.value
-                ):
-                    return False
-
-            return True
-        except Exception:
-            return False
-
-    # TODO: perche' un metodo diverso per cancel_first_round? cosa cambia?
-    def can_cancel_current_round(self):
-        """Verifica se l'avvio del turno corrente può essere cancellato"""
-        if self.status != GaraStatus.PLAYING.value:
-            return False
-
-        # Verifica che non ci siano risultati inseriti nelle partite del turno corrente
-        try:
-            from models.match.models import Match
-
-            current_round_matches = Match.query.filter_by(
-                gara_id=self.id, round_number=self.current_round
-            ).all()
-            if not current_round_matches:
-                return False
-
-            # Controlla che non ci siano risultati inseriti (neanche parziali)
-            for match in current_round_matches:
+            for match in round_matches:
                 if (
                     match.player1_score > 0
                     or match.player2_score > 0

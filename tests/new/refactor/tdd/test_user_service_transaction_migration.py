@@ -611,16 +611,14 @@ class TestUserServiceTransactionMigrationPhase3:
             user_in_session = db.session.get(User, test_user_phase3.id)
 
             # Act: cancel request
-            # TODO: Implement cancel_request functionality in VenueManagerService
-            # For now, skip this test since the method doesn't exist yet
-            pytest.skip("cancel_request functionality not yet implemented in VenueManagerService")
-            # cancelled_request = VenueManagerService.cancel_venue_manager_request(
-            #     request_id=request.id, user=user_in_session
-            # )
+            cancelled_request = VenueManagerService.cancel_venue_manager_request(
+                request_id=request.id, user=user_in_session
+            )
 
             # Assert: request was cancelled and committed
             assert cancelled_request is not None
             assert cancelled_request.id == request.id
+            assert cancelled_request.status == "cancelled"
 
             # Cleanup
             db.session.delete(cancelled_request)

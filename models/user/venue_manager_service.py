@@ -417,7 +417,8 @@ class VenueManagerService:
         db.session.delete(assignment)
 
         # Publish event for venue manager assignment revoked
-        # Using VenueManagerRequestProcessedEvent for now, could create specific VenueAssignmentRevokedEvent later
+        # Using VenueManagerRequestProcessedEvent for now, could create
+        # specific VenueAssignmentRevokedEvent later
         EventBus.publish(VenueManagerRequestProcessedEvent(
             request_id=0,  # No specific request for revocation
             user_id=assignment.user_id,
@@ -425,7 +426,7 @@ class VenueManagerService:
             venue_id=assignment.venue_id,
             venue_name=assignment.venue.name,
             status="revoked",
-            processed_by_id=admin_user.id,
+            processed_by_id=revoked_by.id,
             notes="Gestione sala revocata dall'amministratore"
         ))
 
@@ -446,7 +447,7 @@ class VenueManagerService:
 
     @staticmethod
     @read_only(domain="user")
-    def get_venue_manager(venue_id: int) -> Optional:
+    def get_venue_manager(venue_id: int) -> Optional[User]:
         """Get current manager of a venue.
 
         Args:
@@ -455,7 +456,42 @@ class VenueManagerService:
         Returns:
             User: Current venue manager or None if no manager assigned
         """
-        from models.user.models import User
-
         assignment = VenueManagement.query.filter_by(venue_id=venue_id).first()
         return assignment.user if assignment else None
+
+    @staticmethod
+    @transactional(domain="user")
+    def cancel_venue_manager_request(
+        request_id: int, user: User
+    ) -> VenueManagerRequest:
+        """Cancel a pending venue manager request.
+
+        Args:
+            request_id: ID of venue manager request to cancel
+            user: User cancelling the request (must be the requester)
+
+        Returns:
+            VenueManagerRequest: Cancelled request with updated status
+
+        Raises:
+            ValueError: If request not found, request not pending, or
+                user not authorized
+
+        Authorization:
+            - Only the original requester can cancel their own request
+            - Request must be in pending status
+        """
+        request = db.session.get(VenueManagerRequest, request_id)
+        if not request:
+            raise ValueError("Request not found")
+
+        if request.status != "pending":
+            raise ValueError("Only pending requests can be cancelled")
+
+        if request.user_id != user.id:
+            raise ValueError("You can only cancel your own requests")
+
+        # Update request status to cancelled
+        request.status = "cancelled"
+
+        return request

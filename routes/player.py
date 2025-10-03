@@ -749,7 +749,8 @@ def profile():
             .join(GaraChallenge)
             .join(Challenge)
             .order_by(
-                GaraChallengeAttempt.attempted_at.desc()  # type: ignore[reportAttributeAccessIssue]
+                # type: ignore[reportAttributeAccessIssue]
+                GaraChallengeAttempt.attempted_at.desc()
             )
             .all()
         )
@@ -1128,13 +1129,10 @@ def request_venue_manager():
 def cancel_venue_manager_request(request_id):
     """Annulla una richiesta per diventare gestore di sala"""
     try:
-        # TODO: Implement cancel_request functionality in VenueManagerService
-        # For now, this functionality is temporarily disabled
-        flash("Cancellazione richieste temporaneamente non disponibile.", "warning")
-        return redirect(url_for("admin.venue.venues_list"))
-
-        # from models.user.venue_manager_service import VenueManagerService
-        # VenueManagerService.cancel_venue_manager_request(request_id, cast(User, current_user))
+        from models.user.venue_manager_service import VenueManagerService
+        VenueManagerService.cancel_venue_manager_request(
+            request_id, cast(User, current_user)
+        )
         flash("Richiesta annullata con successo.", "success")
     except Exception as e:
         flash(f"Errore nell'annullare la richiesta: {str(e)}", "error")

@@ -212,7 +212,8 @@ class Campionato(db.Model):
     def restore(self) -> bool:
         """Restore a soft-deleted campionato.
 
-        TODO: non vanno ripristinate anche le gare? verificare
+        Also restores all related gare that were soft-deleted with the
+        campionato.
         """
         if not self.is_deleted:
             return False
@@ -221,6 +222,13 @@ class Campionato(db.Model):
         self.deleted_at = None
         self.deleted_reason = None
         self.is_active = True
+
+        # Also restore related gare that were soft-deleted
+        gare = getattr(self, "gare", [])
+        for gara in gare:
+            if hasattr(gara, "is_deleted") and gara.is_deleted:
+                if hasattr(gara, "restore"):
+                    gara.restore()
 
         return True
 
@@ -231,8 +239,15 @@ class Campionato(db.Model):
     def set_scoring_policy(self, policy_name: str) -> None:
         """Set the scoring policy for this campionato.
 
-        TODO: fargo ed elo non sono in alternativa.
-        bisogna modellare bene questa cosa, insieme alle classifiche
+        Note: This refers to the campionato classification scoring system,
+        not player ratings. Player ratings (Fargo/Elo) are stored in the
+        User model as per Phase 4 refactoring.
+
+        Args:
+            policy_name: One of "classic", "fargo", or "elo"
+
+        Raises:
+            ValueError: If policy_name is not valid
         """
         valid_policies = ["classic", "fargo", "elo"]
         if policy_name not in valid_policies:
