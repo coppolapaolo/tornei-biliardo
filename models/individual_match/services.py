@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 from ..base import db
 from ..transaction.manager import transactional
-from ..notification.services import NotificationService
 from .models import (
     MatchProposal,
     ProposalInvitation,
@@ -154,8 +153,8 @@ class IndividualMatchService:
         db.session.flush()  # Get the ID
 
         # Create invitations and send notifications
-        from ..notification.services import NotificationService
         from ..user.models import User
+        from ..notification.factory import NotificationFactory
 
         proposer = User.query.get(proposer_id)
 
@@ -166,22 +165,17 @@ class IndividualMatchService:
                 )
                 db.session.add(invitation)
 
-                # Send notification direttamente (come per le richieste direttore)
-                from ..notification.models import NotificationType, NotificationPriority
-                from flask import url_for
-
                 try:
-                    notification_result = NotificationService.create_notification(
+                    proposer_name = proposer.username if proposer else 'Un giocatore'
+                    scheduled_time_str = scheduled_at.strftime('%d/%m/%Y alle %H:%M') if scheduled_at else None
+
+                    notification_result = NotificationFactory.create_match_notification(
                         user_id=user_id,
-                        notification_type=NotificationType.MATCH_PROPOSAL,
-                        title="Nuovo Invito Match",
-                        message=(
-                            f"{proposer.username if proposer else 'Un giocatore'} ti ha invitato "
-                            f"per un match presso {location} il {scheduled_at.strftime('%d/%m/%Y alle %H:%M')}."
-                        ),
-                        priority=NotificationPriority.NORMAL,
-                        action_url=url_for("player.match_proposals", _external=False),
-                        action_text="Vedi Invito",
+                        match_type="proposal",
+                        player_names=[proposer_name],
+                        location_name=location,
+                        scheduled_time=scheduled_time_str,
+                        proposal_id=proposal.id,
                     )
                     print(
                         f"DEBUG: Notification created for user {user_id}: {notification_result}"
@@ -1003,23 +997,25 @@ class IndividualMatchService:
         )
 
         if other_invitations:
-            from ..notification.models import NotificationType, NotificationPriority
+            from ..notification.factory import NotificationFactory
+            from ..notification.models import NotificationPriority, NotificationType
 
             proposal_title = getattr(proposal, "title", "Open match proposal")
+            invited_user_ids = [inv.invited_user_id for inv in other_invitations]
 
-            for other_invitation in other_invitations:
-                try:
-                    NotificationService.create_notification(
-                        user_id=other_invitation.invited_user_id,
-                        notification_type=NotificationType.MATCH_DECLINED,
-                        title="Match Proposal Filled",
-                        message=f"The open match proposal '{proposal_title}' has been filled by another player.",
-                        priority=NotificationPriority.NORMAL,
-                    )
-                except Exception as e:
-                    # Log the exception for debugging but don't fail the operation
-                    print(f"Failed to create notification: {e}")
-                    pass
+            try:
+                NotificationFactory.create_bulk_notification(
+                    user_ids=invited_user_ids,
+                    notification_type=NotificationType.MATCH_DECLINED,
+                    title="Proposta Match Conclusa",
+                    message=f"La proposta di match '{proposal_title}' è stata accettata da un altro giocatore.",
+                    priority=NotificationPriority.NORMAL,
+                    continue_on_error=True,
+                )
+            except Exception as e:
+                # Log the exception for debugging but don't fail the operation
+                print(f"Failed to create notifications: {e}")
+                pass
 
         return {
             "success": True,

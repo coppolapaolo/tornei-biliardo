@@ -79,6 +79,24 @@ class UserPermissionService:
         )
 
         db.session.add(director_request)
+        db.session.flush()  # Ensure ID is available for event
+
+        # Emit event for notification system
+        from models.events.user_events import DirectorRequestCreatedEvent
+        from models.events.base import EventBus
+
+        admin_users = User.query.filter_by(role=UserRole.ADMIN.value).all()
+        admin_user_ids = [admin.id for admin in admin_users]
+
+        event = DirectorRequestCreatedEvent(
+            request_id=director_request.id,
+            user_id=user_id,
+            username=user.username,
+            motivation=notes.strip(),
+            admin_user_ids=admin_user_ids,
+        )
+        EventBus.publish(event)
+
         return director_request
 
     @staticmethod

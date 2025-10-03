@@ -23,8 +23,6 @@ from models.status_enum import (
     GaraStatus,
 )
 from models.campionato.models import Campionato
-from models.notification.services import NotificationService
-from models.notification.models import NotificationType, NotificationPriority
 from models.user.services import (
     UserDeletionService,
     UserService,
@@ -1018,22 +1016,7 @@ def request_director():
             user_id=current_user.id, notes=reason
         )
 
-        # Invia notifica all'admin
-        admin = User.query.filter_by(role="admin").first()
-        if admin:
-            NotificationService.create_notification(
-                user_id=admin.id,
-                notification_type=NotificationType.ACCOUNT_UPDATE,
-                title="Nuova richiesta Director",
-                message=(
-                    f"L'utente {current_user.username} ha richiesto di "
-                    "diventare direttore di gara."
-                ),
-                priority=NotificationPriority.HIGH,
-                action_url=url_for("admin.user.director_requests"),
-                action_text="Gestisci richieste",
-            )
-
+        # Notification sent via event system (DirectorRequestCreatedEvent)
         flash("Richiesta inviata. Sarai contattato dall'amministratore.")
 
     except ValueError as e:

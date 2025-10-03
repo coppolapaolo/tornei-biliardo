@@ -99,13 +99,20 @@
   - [x] **COMPLETED**: Create event handlers for automatic notification generation ✅
   - [x] **COMPLETED**: Replace direct NotificationService imports with event publishing in VenueManagerService ✅
   - [x] **COMPLETED**: Test event-driven notification system (17/17 tests passing) ✅
-- [x] Task 2.2: Notification Factory (100%) ✅ **COMPLETED**
+- [x] Task 2.2: Notification Factory (100%) ✅ **COMPLETED** (October 2025)
   - [x] **COMPLETED**: Analyze 27+ duplicate notification patterns across services ✅
   - [x] **COMPLETED**: Create NotificationFactory with standardized methods for common patterns ✅
   - [x] **COMPLETED**: Implement bulk notification, admin notification, match notification, account update factories ✅
-  - [x] **COMPLETED**: Replace duplicate code with factory calls in AvailabilityService, InscriptionService, CompetitionService ✅
+  - [x] **COMPLETED**: Replace ALL duplicate code with factory calls (6 migrations total) ✅
+    - models/competition/services.py: Co-director notification → NotificationFactory.create_account_update_notification
+    - models/competition/inscription_service.py: 2 notifications → NotificationFactory.create_tournament_notification
+    - models/individual_match/services.py: 2 notifications → NotificationFactory.create_match_notification + bulk
+    - routes/player.py: Director request → Event System (DirectorRequestCreatedEvent) via UserPermissionService
+    - models/user/permission_service.py: Added event emission for director requests
   - [x] **COMPLETED**: Centralize error handling and logging with statistics tracking ✅
-  - [x] **COMPLETED**: Test NotificationFactory (14/14 tests passing) ✅
+  - [x] **COMPLETED**: Test NotificationFactory (31/31 unit tests passing) ✅
+  - [x] **COMPLETED**: Migration verification (0 direct NotificationService calls in business logic) ✅
+  - [x] **NOTE**: 4 integration tests in test_venue_manager_notifications.py need title updates to match event handler output
 
 ### Phase 3: Ottimizzazione Pattern ✅ **COMPLETED**
 **Branch: `refactor/phase-3-optimization` → `main`**

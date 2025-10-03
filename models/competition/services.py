@@ -596,11 +596,8 @@ class GaraService:
 
         # Invia notifica al nuovo co-direttore
         try:
-            from models.notification.services import NotificationService
-            from models.notification.models import (
-                NotificationType,
-                NotificationPriority,
-            )
+            from models.notification.factory import NotificationFactory
+            from models.notification.models import NotificationPriority
             from models.competition.models import Gara
 
             gara = db.session.get(Gara, gara_id)
@@ -609,12 +606,13 @@ class GaraService:
             if gara.campionato:
                 gara_name += f" del campionato '{gara.campionato.name}'"
 
-            notification_result = NotificationService.create_notification(
+            notification_result = NotificationFactory.create_account_update_notification(
                 user_id=user_id,
-                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
                 title="Nominato co-direttore",
                 message=f"Sei stato nominato co-direttore della {gara_name}",
                 priority=NotificationPriority.NORMAL,
+                update_type="co_director_assignment",
+                related_entities={"gara_id": gara_id, "gara_name": gara_name},
             )
             print(
                 f"DEBUG: Director notification created for user {user_id}: {notification_result}"

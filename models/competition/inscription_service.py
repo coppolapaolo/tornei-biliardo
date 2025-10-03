@@ -113,7 +113,6 @@ class InscriptionService:
         Returns: True se rimossa, False se non trovata.
         """
         from models.competition.models import Gara
-        from models.notification.services import NotificationService
 
         inscription = (
             db.session.query(Inscription)
@@ -192,7 +191,6 @@ class InscriptionService:
         Returns: True se rimossa, False se non trovata.
         """
         from models.competition.models import Gara
-        from models.notification.services import NotificationService
         from models.user.models import User
 
         inscription = (
@@ -211,10 +209,8 @@ class InscriptionService:
 
             # Invia notifica all'utente discritto
             try:
-                from models.notification.models import (
-                    NotificationType,
-                    NotificationPriority,
-                )
+                from models.notification.factory import NotificationFactory
+                from models.notification.models import NotificationPriority
 
                 message = (
                     f"L'{admin_role} ha annullato la tua iscrizione alla {gara_name}"
@@ -222,12 +218,12 @@ class InscriptionService:
                 if inscription.is_waitlist:
                     message = f"L'{admin_role} ti ha rimosso dalla lista d'attesa per la {gara_name}"
 
-                notification_result = NotificationService.create_notification(
-                    user_id=user_id,
-                    notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                    title="Iscrizione annullata",
-                    message=message,
+                notification_result = NotificationFactory.create_tournament_notification(
+                    user_ids=[user_id],
+                    tournament_name=gara_name,
+                    message_template=message,
                     priority=NotificationPriority.HIGH,
+                    tournament_id=gara_id,
                 )
                 print(
                     f"DEBUG: Notification created for user {user_id}: {notification_result}"
@@ -267,12 +263,15 @@ class InscriptionService:
 
                     # Invia notifica al promosso
                     try:
-                        notification_result = NotificationService.create_notification(
-                            user_id=first_waitlist.user_id,
-                            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                            title="Posto disponibile!",
-                            message=f"Sei stato promosso dalla lista d'attesa per la {gara_name}",
+                        from models.notification.factory import NotificationFactory
+                        from models.notification.models import NotificationPriority
+
+                        notification_result = NotificationFactory.create_tournament_notification(
+                            user_ids=[first_waitlist.user_id],
+                            tournament_name=gara_name,
+                            message_template=f"Sei stato promosso dalla lista d'attesa per {gara_name}",
                             priority=NotificationPriority.HIGH,
+                            tournament_id=gara_id,
                         )
                         print(
                             f"DEBUG: Promotion notification created for user {first_waitlist.user_id}: {notification_result}"
