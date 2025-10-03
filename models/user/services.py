@@ -103,11 +103,6 @@ class UserService:
         """Delegate to UserPermissionService for director demotion."""
         return UserPermissionService.demote_director_to_player(user_id, demoted_by_id)
 
-    @staticmethod
-    def soft_delete_user(user_id: int) -> None:
-        """Delegate to UserProfileService for user soft deletion."""
-        return UserProfileService.soft_delete_user(user_id)
-
     # REMOVED: Large demote_director_to_player method body - now delegated
     # Lines removed: ~55 lines of complex business logic moved to UserPermissionService
 
@@ -305,9 +300,9 @@ class UserService:
         return User.query.filter_by(role=role).all()
 
     @staticmethod
-    def request_director_promotion(user_id: int, notes: str) -> DirectorRequest:
+    def request_director_promotion(user_id: int) -> DirectorRequest:
         """Delegate to UserPermissionService for director promotion requests."""
-        return UserPermissionService.request_director_promotion(user_id, notes)
+        return UserPermissionService.request_director_promotion(user_id)
 
     @staticmethod
     def get_director_requests() -> List[DirectorRequest]:

@@ -1011,10 +1011,7 @@ def change_password():
 def request_director():
     """Richiede la promozione a direttore di gara"""
     try:
-        reason = request.form.get("reason", "").strip()
-        UserPermissionService.request_director_promotion(
-            user_id=current_user.id, notes=reason
-        )
+        UserPermissionService.request_director_promotion(user_id=current_user.id)
 
         # Notification sent via event system (DirectorRequestCreatedEvent)
         flash("Richiesta inviata. Sarai contattato dall'amministratore.")
@@ -1031,7 +1028,7 @@ def request_director():
 @login_required
 @transactional(domain="notification")
 def notifications():
-    """Mostra le notifiche dell'utente"""
+    """Mostra le notifiche dell'utente (accessibile a tutti gli utenti autenticati)"""
     from models.notification.models import Notification, NotificationStatus
 
     # Get all notifications for current user

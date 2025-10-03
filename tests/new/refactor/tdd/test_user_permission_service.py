@@ -333,14 +333,13 @@ class TestUserPermissionServiceTDD:
 
             # Act: request director promotion
             director_request = UserPermissionService.request_director_promotion(
-                user_id=player.id,
-                notes="I want to become a tournament director"
+                user_id=player.id
             )
 
             # Assert: request was created
             assert director_request is not None
             assert director_request.user_id == player.id
-            assert director_request.notes == "I want to become a tournament director"
+            assert director_request.notes is None
             assert director_request.status == DirectorRequestStatus.PENDING.value
 
             # Verify it exists in database
@@ -376,15 +375,13 @@ class TestUserPermissionServiceTDD:
             # Test request by existing director
             with pytest.raises(ValueError, match="User is already director or admin"):
                 UserPermissionService.request_director_promotion(
-                    user_id=director.id,
-                    notes="Test request"
+                    user_id=director.id
                 )
 
             # Test request by existing admin
             with pytest.raises(ValueError, match="User is already director or admin"):
                 UserPermissionService.request_director_promotion(
-                    user_id=admin.id,
-                    notes="Test request"
+                    user_id=admin.id
                 )
 
             # Cleanup
@@ -411,15 +408,13 @@ class TestUserPermissionServiceTDD:
 
             # Create first request
             first_request = UserPermissionService.request_director_promotion(
-                user_id=player.id,
-                notes="First request"
+                user_id=player.id
             )
 
             # Attempt duplicate request
             with pytest.raises(ValueError, match="User already has a pending director request"):
                 UserPermissionService.request_director_promotion(
-                    user_id=player.id,
-                    notes="Duplicate request"
+                    user_id=player.id
                 )
 
             # Cleanup
@@ -451,10 +446,10 @@ class TestUserPermissionServiceTDD:
             db.session.commit()
 
             request1 = UserPermissionService.request_director_promotion(
-                user_id=player1.id, notes="Request 1"
+                user_id=player1.id
             )
             request2 = UserPermissionService.request_director_promotion(
-                user_id=player2.id, notes="Request 2"
+                user_id=player2.id
             )
 
             # Test getting all requests
@@ -496,8 +491,7 @@ class TestUserPermissionServiceTDD:
 
             # Create pending request
             pending_request = UserPermissionService.request_director_promotion(
-                user_id=player.id,
-                notes="Approval test request"
+                user_id=player.id
             )
 
             # Mock notification service
@@ -550,8 +544,7 @@ class TestUserPermissionServiceTDD:
 
             # Create pending request
             pending_request = UserPermissionService.request_director_promotion(
-                user_id=player.id,
-                notes="Compatibility test request"
+                user_id=player.id
             )
 
             # Mock notification service
@@ -598,8 +591,7 @@ class TestUserPermissionServiceTDD:
 
             # Create pending request
             pending_request = UserPermissionService.request_director_promotion(
-                user_id=player.id,
-                notes="Rejection test request"
+                user_id=player.id
             )
 
             # Mock notification service
@@ -881,8 +873,7 @@ class TestDirectorRequestServiceTDD:
 
             # Verify promotion request succeeds for player
             request = UserPermissionService.request_director_promotion(
-                user_id=player.id,
-                notes="Test business rules"
+                user_id=player.id
             )
             assert request is not None
 

@@ -45,7 +45,6 @@ class DirectorRequestCreatedEvent(DomainEvent):
     request_id: int
     user_id: int
     username: str
-    motivation: str
     admin_user_ids: list[int]
 
     def __post_init__(self):
@@ -60,7 +59,6 @@ class DirectorRequestCreatedEvent(DomainEvent):
             "request_id": self.request_id,
             "user_id": self.user_id,
             "username": self.username,
-            "motivation": self.motivation,
             "admin_user_ids": self.admin_user_ids
         }
 

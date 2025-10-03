@@ -110,8 +110,7 @@ class NotificationEventHandlers:
                     user_id=admin_id,
                     notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
                     title="Nuova Richiesta Direttore",
-                    message=f"L'utente {event.username} ha richiesto di diventare direttore. "
-                           f"Motivazione: {event.motivation}",
+                    message=f"L'utente {event.username} ha richiesto di diventare direttore.",
                     priority=NotificationPriority.HIGH,
                     related_entities={
                         "request_id": event.request_id,
@@ -129,7 +128,9 @@ class NotificationEventHandlers:
     def handle_director_request_processed(event: DirectorRequestProcessedEvent) -> None:
         """Handle director request processed by notifying the requester."""
         try:
-            if event.status == "approved":
+            from models.status_enum import DirectorRequestStatus
+
+            if event.status == DirectorRequestStatus.APPROVED.value:
                 title = "Richiesta Direttore Approvata"
                 message = f"Congratulazioni! La tua richiesta di diventare direttore è stata approvata."
                 if event.notes:

@@ -464,7 +464,7 @@ class TestUserService:
         mock_db.session.get.return_value = None
 
         with pytest.raises(ValueError, match="User not found"):
-            UserService.request_director_promotion(999, "notes")
+            UserService.request_director_promotion(999)
 
     @patch("models.user.services.db")
     def test_request_director_promotion_already_director(self, mock_db):
@@ -474,7 +474,7 @@ class TestUserService:
         mock_db.session.get.return_value = mock_user
 
         with pytest.raises(ValueError, match="User is already a director or admin"):
-            UserService.request_director_promotion(123, "notes")
+            UserService.request_director_promotion(123)
 
     @patch("models.user.services.DirectorRequest")
     @patch("models.user.services.db")
@@ -494,7 +494,7 @@ class TestUserService:
         with pytest.raises(
             ValueError, match="User already has a pending director request"
         ):
-            UserService.request_director_promotion(123, "notes")
+            UserService.request_director_promotion(123)
 
 
 class TestDirectorRequestService:

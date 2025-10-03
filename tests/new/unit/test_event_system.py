@@ -12,6 +12,7 @@ from datetime import datetime
 from models.events.base import EventBus, DomainEvent
 from models.events.user_events import (
     DirectorRequestCreatedEvent,
+    DirectorRequestProcessedEvent,
     VenueManagerRequestCreatedEvent,
     VenueManagerRequestProcessedEvent,
 )
@@ -29,7 +30,6 @@ class TestDomainEvent:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="I want to be a director",
             admin_user_ids=[1, 2]
         )
 
@@ -47,7 +47,6 @@ class TestDomainEvent:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="Test motivation",
             admin_user_ids=[1, 2]
         )
         event.source = "test_service"
@@ -126,7 +125,6 @@ class TestEventBus:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="Test",
             admin_user_ids=[1]
         )
 
@@ -156,7 +154,6 @@ class TestEventBus:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="Test",
             admin_user_ids=[1]
         )
 
@@ -177,7 +174,6 @@ class TestEventBus:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="Test",
             admin_user_ids=[1]
         )
 
@@ -208,7 +204,6 @@ class TestEventBus:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="Test",
             admin_user_ids=[1]
         )
 
@@ -270,7 +265,6 @@ class TestNotificationEventHandlers:
             request_id=1,
             user_id=123,
             username="testuser",
-            motivation="I want to be a director",
             admin_user_ids=[1, 2]
         )
 
@@ -291,6 +285,56 @@ class TestNotificationEventHandlers:
         # Verify second admin notification
         second_call = calls[1][1]  # kwargs
         assert second_call["user_id"] == 2
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_director_request_processed_approved_handler(self, mock_create_notification):
+        """Test director request approved event handler."""
+        event = DirectorRequestProcessedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            status="approved",
+            processed_by_id=999,
+            notes="Well qualified"
+        )
+
+        EventBus.publish(event)
+
+        # Should create notification for the user
+        mock_create_notification.assert_called_once()
+        call_kwargs = mock_create_notification.call_args[1]
+
+        assert call_kwargs["user_id"] == 123
+        assert call_kwargs["notification_type"] == NotificationType.ACCOUNT_UPDATE
+        assert "Approvata" in call_kwargs["title"]
+        assert "Congratulazioni" in call_kwargs["message"]
+        assert "Well qualified" in call_kwargs["message"]
+        assert call_kwargs["priority"] == NotificationPriority.HIGH
+
+    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    def test_director_request_processed_rejected_handler(self, mock_create_notification):
+        """Test director request rejected event handler."""
+        event = DirectorRequestProcessedEvent(
+            request_id=1,
+            user_id=123,
+            username="testuser",
+            status="rejected",
+            processed_by_id=999,
+            notes="Insufficient experience"
+        )
+
+        EventBus.publish(event)
+
+        # Should create notification for the user
+        mock_create_notification.assert_called_once()
+        call_kwargs = mock_create_notification.call_args[1]
+
+        assert call_kwargs["user_id"] == 123
+        assert call_kwargs["notification_type"] == NotificationType.ACCOUNT_UPDATE
+        assert "Rifiutata" in call_kwargs["title"]
+        assert "rifiutata" in call_kwargs["message"]
+        assert "Insufficient experience" in call_kwargs["message"]
+        assert call_kwargs["priority"] == NotificationPriority.NORMAL
 
     @patch('models.events.notification_handlers.NotificationService.create_notification')
     def test_venue_manager_request_processed_handler(self, mock_create_notification):

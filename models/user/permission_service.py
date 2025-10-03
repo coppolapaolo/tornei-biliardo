@@ -10,6 +10,7 @@ from datetime import datetime
 from models.base import db
 from models.user.models import User, DirectorRequest
 from models.user.role_enum import UserRole
+from models.status_enum import DirectorRequestStatus
 from models.transaction.manager import transactional, read_only
 
 
@@ -35,24 +36,22 @@ class UserPermissionService:
 
     @staticmethod
     @transactional(domain="user")
-    def create_director_request(user_id: int, notes: str) -> DirectorRequest:
+    def create_director_request(user_id: int) -> DirectorRequest:
         """Create new director request with validation and business rule enforcement.
 
         Args:
             user_id: ID of user requesting director promotion
-            notes: Written justification for director role request
 
         Returns:
             DirectorRequest: Newly created request in pending status
 
         Raises:
-            ValueError: If user not found, already director/admin, has pending
-                request, or notes invalid
+            ValueError: If user not found, already director/admin, or has pending request
 
         Business Rules:
             - Directors and admins cannot request promotion
             - Only one pending request allowed per user
-            - Notes are required and cannot be empty
+            - No justification required
         """
         user = db.session.get(User, user_id)
         if not user:
@@ -64,18 +63,14 @@ class UserPermissionService:
 
         # Check for existing pending request
         existing_request = DirectorRequest.query.filter_by(
-            user_id=user_id, status="pending"
+            user_id=user_id, status=DirectorRequestStatus.PENDING.value
         ).first()
         if existing_request:
             raise ValueError("User already has a pending director request")
 
-        # Validate notes
-        if not notes or not notes.strip():
-            raise ValueError("Notes are required")
-
         # Create new request
         director_request = DirectorRequest(
-            user_id=user_id, notes=notes.strip(), status="pending"
+            user_id=user_id, notes=None, status=DirectorRequestStatus.PENDING.value
         )
 
         db.session.add(director_request)
@@ -92,7 +87,6 @@ class UserPermissionService:
             request_id=director_request.id,
             user_id=user_id,
             username=user.username,
-            motivation=notes.strip(),
             admin_user_ids=admin_user_ids,
         )
         EventBus.publish(event)
@@ -131,12 +125,12 @@ class UserPermissionService:
         if not director_request:
             raise ValueError("Director request not found")
 
-        if director_request.status != "pending":
+        if director_request.status != DirectorRequestStatus.PENDING.value:
             raise ValueError("Director request is not pending")
 
         # Process the request with appropriate status and actions
         if approve:
-            director_request.status = "approved"
+            director_request.status = DirectorRequestStatus.APPROVED.value
             director_request.processed_by_id = admin_user.id
             director_request.processed_at = datetime.utcnow()
             director_request.notes = notes
@@ -146,10 +140,28 @@ class UserPermissionService:
             if user:
                 user.role = UserRole.DIRECTOR.value
         else:
-            director_request.status = "rejected"
+            director_request.status = DirectorRequestStatus.REJECTED.value
             director_request.processed_by_id = admin_user.id
             director_request.processed_at = datetime.utcnow()
             director_request.notes = notes
+
+        # Emit event for notification system
+        db.session.flush()  # Ensure changes are persisted before event
+
+        from models.events.user_events import DirectorRequestProcessedEvent
+        from models.events.base import EventBus
+
+        user = db.session.get(User, director_request.user_id)
+        if user:
+            event = DirectorRequestProcessedEvent(
+                request_id=director_request.id,
+                user_id=user.id,
+                username=user.username,
+                status=DirectorRequestStatus.APPROVED.value if approve else DirectorRequestStatus.REJECTED.value,
+                processed_by_id=admin_user.id,
+                notes=notes
+            )
+            EventBus.publish(event)
 
         return director_request
 
@@ -166,7 +178,9 @@ class UserPermissionService:
             - Filtered to only 'pending' status requests
             - Ordered by request creation date (implicit database order)
         """
-        return DirectorRequest.query.filter_by(status="pending").all()
+        return DirectorRequest.query.filter_by(
+            status=DirectorRequestStatus.PENDING.value
+        ).all()
 
     @staticmethod
     @read_only(domain="user")
@@ -213,7 +227,7 @@ class UserPermissionService:
 
         # Users with pending requests cannot submit additional requests
         existing_request = DirectorRequest.query.filter_by(
-            user_id=user_id, status="pending"
+            user_id=user_id, status=DirectorRequestStatus.PENDING.value
         ).first()
         if existing_request:
             return False
@@ -383,7 +397,7 @@ class UserPermissionService:
 
     @staticmethod
     @transactional(domain="user")
-    def request_director_promotion(user_id: int, notes: str) -> DirectorRequest:
+    def request_director_promotion(user_id: int) -> DirectorRequest:
         """Request director promotion (convenience alias).
 
         This is an alias for create_director_request() to provide alternative naming.
@@ -391,12 +405,11 @@ class UserPermissionService:
 
         Args:
             user_id: ID of user requesting promotion
-            notes: Written justification for director role
 
         Returns:
             DirectorRequest: Newly created request
         """
-        return UserPermissionService.create_director_request(user_id, notes)
+        return UserPermissionService.create_director_request(user_id)
 
     @staticmethod
     @read_only(domain="user")
