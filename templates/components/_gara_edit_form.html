@@ -70,13 +70,6 @@
                         <option value="rating" {% if gara.first_round_policy == 'rating' %}selected{% endif %}>Basato su Rating</option>
                         <option value="classification" {% if gara.first_round_policy == 'classification' %}selected{% endif %}>Basato su Classifica</option>
                     </select>
-                    <div id="rating_type_section" class="mt-2" {% if gara.first_round_policy != 'rating' %}style="display: none;"{% endif %}>
-                        <label for="rating_type" class="form-label">Tipo Rating</label>
-                        <select class="form-select" id="rating_type" name="rating_type">
-                            <option value="fargo" {% if (gara.rating_type or 'fargo') == 'fargo' %}selected{% endif %}>Fargo Rating</option>
-                            <option value="elo" {% if gara.rating_type == 'elo' %}selected{% endif %}>Elo Rating</option>
-                        </select>
-                    </div>
                 </div>
             </div>
             <div class="col-md-6">

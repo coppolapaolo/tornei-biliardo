@@ -70,7 +70,7 @@ class AvailabilityService:
         """Set player availability for a specific venue."""
         from datetime import time
 
-        # Parse preferred_times if provided (format: "HH:MM-HH:MM")
+        # Parse preferred_times if provided (format: "HH:MM-HH:MM"). TODO: bisogna assicurarsi che l'interfaccia forzi questo formato
         preferred_time_start = None
         preferred_time_end = None
         if preferred_times:

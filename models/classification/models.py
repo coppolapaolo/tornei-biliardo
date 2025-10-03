@@ -5,6 +5,7 @@ Purpose: Classification domain models
 Data Structures: Classification, RoundClassification, PlayerEncounter
 Dependencies: models.base.db, datetime
 """
+# TODO: questo va rivisto. Manca la classifica di gara e poi possono esserci varie altre classifiche, ad esempio quella di una o piu' challenge in una gara. Una classifica prende una serie di punteggi oppure una classifica precedente e una serie di punteggi e ha una logica di ordinamento e restituisce quell'ordinamento. la classifica delle gare amalfi, ad esempio, prende la classifica dell'ultimo turno e, se ci sono pari merito, prende i risultati dello spot shot rally e ordina i pari merito secondo quei risultati. la classifica delle gare random si comporta allo stesso modo. la classifica dei campionati amalfi prende tutti i match giocati e ordina per (match vinti, differenza rack vinti-persi, spot shot rally vinti). la classifica dei campionati random, invece ordina per (totale rack vinti, spot shot rally vinti). Altri campionati possono dare dei punteggi fissi alle posizioni ottenute nelle classifiche delle singole gare (Es. 1000pt al primo, 800 al secondo, 500 al terzo e quarto, ecc.) e la classifica finale del campionato puo' essere data dalla somma dei punti delle migliori n-1 gare. La struttura di classifica deve permettere di definire tutte queste varianti
 
 from datetime import datetime
 from models.base import db, TimestampMixin
@@ -47,7 +48,7 @@ class Classification(db.Model, TimestampMixin):
         return f"<Classification {self.user_id} -> {self.position}>"
 
 
-class RoundClassification(db.Model):
+class RoundClassification(db.Model): # TODO: round classification puo' avere diverse logiche di combinare i match di un round. non vale solo per Amalfi, ma per tutte le gare con piu' round. Esistono diversi round classification che implementano diverse logiche di ordinamento. Amalfi, di solito usa (match vint, differenza rack, ordine classifica turno precedente). Random di solito usa (numero rack vinti). Ma potrebbe essere diverso e ce ne potrebbero essere molti altri.
     """
     Dynamic classification after each round for Amalfi algorithm.
 
@@ -274,7 +275,8 @@ class PlayerEncounter(db.Model):
     Player encounter tracking for anti-reincontro logic.
 
     Tracks which players have already faced each other in a gara,
-    enabling the Amalfi algorithm to avoid repeat pairings when possible.
+    enabling the Pairing algorithm to avoid repeat pairings when possible.
+    Do not use if pairing algorithm allows to rematch
     """
 
     __tablename__ = "player_encounter"

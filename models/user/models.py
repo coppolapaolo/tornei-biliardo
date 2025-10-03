@@ -14,7 +14,6 @@ from typing import Any, Dict, List, TYPE_CHECKING
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.orm import backref
 
 from ..base import db, BaseModel  # BaseModel for timestamps
 from ..fields import EncryptedString  # Encrypted field types
@@ -48,6 +47,10 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     role = db.Column(db.String(20), nullable=False, default="player")
     # admin|director|player
     phone = db.Column(EncryptedString(100), nullable=True)  # Encrypted personal data
+
+    # Rating systems (player skill metrics)
+    fargo_rating = db.Column(db.Integer, nullable=True)  # Fargo rating
+    elo_rating = db.Column(db.Integer, nullable=True)  # Elo rating
 
     # per utenti cancellati
     previous_username = db.Column(db.String(80), nullable=True)
@@ -86,7 +89,10 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         foreign_keys="DirectorRequest.user_id",
         uselist=False,
         viewonly=True,
-        primaryjoin="and_(User.id==DirectorRequest.user_id, DirectorRequest.status=='pending')",
+        primaryjoin=(
+            "and_(User.id==DirectorRequest.user_id, "
+            "DirectorRequest.status=='pending')"
+        ),
     )
 
     # ───────────────────
@@ -205,7 +211,7 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             return []
 
         return BilliardHall.query.filter(
-            BilliardHall.id.in_(venue_ids), BilliardHall.is_active == True
+            BilliardHall.id.in_(venue_ids), BilliardHall.is_active is True
         ).all()
 
     # ───────────────────
@@ -234,7 +240,9 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         )
         from ..match.models import Match
 
-        total_inscriptions = Inscription.query.filter_by(user_id=self.id).count()
+        total_inscriptions = (
+            Inscription.query.filter_by(user_id=self.id).count()
+        )
 
         matches: List["Match"] = Match.query.filter(
             db.or_(Match.player1_id == self.id, Match.player2_id == self.id),
@@ -246,7 +254,8 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         lost_matches = total_matches - won_matches
         win_percentage = (won_matches / total_matches * 100) if total_matches else 0
 
-        # Conta solo i campionati con almeno una gara completata dove l'utente ha partecipato
+        # Conta solo i campionati con almeno una gara completata dove
+        # l'utente ha partecipato
         tournaments_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
@@ -333,7 +342,10 @@ class DirectorAssignment(BaseModel):
         return None
 
     def __repr__(self):
-        return f"<DirectorAssignment {self.user_id} -> {self.entity_type}:{self.entity_id}>"
+        return (
+            f"<DirectorAssignment {self.user_id} -> "
+            f"{self.entity_type}:{self.entity_id}>"
+        )
 
 
 # Legacy aliases for backward compatibility

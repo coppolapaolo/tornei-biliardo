@@ -90,7 +90,7 @@ class TestGaraCreationEdgeCasesTDD:
 
         # Random strategy should only support random first round
         with pytest.raises(
-            ValueError, match="Strategia casuale usa sempre abbinamento casuale"
+            ValueError, match="non supporta la policy di primo turno rating"
         ):
             GaraService.create_gara(
                 campionato_id=None,
@@ -125,7 +125,9 @@ class TestGaraCreationEdgeCasesTDD:
         tomorrow = date.today() + timedelta(days=1)
 
         # Round Robin should not support trio matches
-        with pytest.raises(ValueError, match="Round robin non supporta match a tre"):
+        with pytest.raises(
+            ValueError, match="non supporta la policy per numero dispari trio"
+        ):
             GaraService.create_gara(
                 campionato_id=None,
                 number=1,
@@ -380,7 +382,7 @@ class TestGaraCreationEdgeCasesTDD:
         tomorrow = date.today() + timedelta(days=1)
 
         with pytest.raises(
-            ValueError, match="Eliminazione diretta non supporta match a tre"
+            ValueError, match="non supporta la policy per numero dispari trio"
         ):
             GaraService.create_gara(
                 campionato_id=None,

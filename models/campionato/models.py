@@ -8,10 +8,11 @@ Dependencies: models.base.db, models.user.models
 from datetime import datetime
 from typing import TYPE_CHECKING
 from models.base import db
-from models.user.models import User, TournamentDirector
+from models.status_enum import TournamentStatus, GaraStatus, EntityType
+from models.matchmaking.configuration import MatchmakingStrategy
 
 if TYPE_CHECKING:
-    pass
+    from models.user.models import User, TournamentDirector
 
 
 class Campionato(db.Model):
@@ -23,7 +24,9 @@ class Campionato(db.Model):
     name = db.Column(db.String(100), nullable=False)
 
     # Campi configurazione
-    campionato_type = db.Column(db.String(50), nullable=False, default="Amalfi")
+    campionato_type = db.Column(
+        db.String(50), nullable=False, default=MatchmakingStrategy.AMALFI.value
+    )  # Matchmaking strategy type
     without_x = db.Column(db.Boolean, default=False)  # Opzione "senza X"
     final_playoffs = db.Column(db.Boolean, default=True)  # Play off finali
     challenge_mode = db.Column(db.Boolean, default=False)  # Challenge
@@ -57,7 +60,7 @@ class Campionato(db.Model):
             db.session.query(User)
             .join(DirectorAssignment, User.id == DirectorAssignment.user_id)
             .filter(
-                DirectorAssignment.entity_type == "campionato",
+                DirectorAssignment.entity_type == EntityType.CAMPIONATO.value,
                 DirectorAssignment.entity_id == self.id,
             )
             .all()
@@ -76,7 +79,11 @@ class Campionato(db.Model):
         gare = getattr(self, "gare", [])
         for gara in gare:
             # Cannot modify if gara has advanced status or has inscriptions
-            if gara.status in ["inscription", "playing", "completed"]:
+            if gara.status in [
+                GaraStatus.INSCRIPTION.value,
+                GaraStatus.PLAYING.value,
+                GaraStatus.COMPLETED.value,
+            ]:
                 return False
             if getattr(gara, "inscriptions", []):  # Se ha iscrizioni
                 return False
@@ -84,10 +91,10 @@ class Campionato(db.Model):
 
     def can_be_deleted(self):
         """Verifica se il campionato può essere cancellato"""
-        # Fix: Properly access the relationship collection
+        # Properly access the relationship collection
         gare = getattr(self, "gare", [])
         for gara in gare:
-            if getattr(gara, "inscriptions", []):  # Se ha iscrizioni
+            if getattr(gara, "inscriptions", []):
                 return False
         return True
 
@@ -95,29 +102,38 @@ class Campionato(db.Model):
         """Restituisce lo status del campionato"""
         gare = getattr(self, "gare", [])
         if not gare:
-            return "setup"
+            return TournamentStatus.SETUP.value
 
-        has_playing = any(p.status == "playing" for p in gare)
-        has_completed = any(p.status == "completed" for p in gare)
-        has_inscription = any(p.status == "inscription" for p in gare)
+        has_playing = any(p.status == GaraStatus.PLAYING.value for p in gare)
+        has_completed = any(
+            p.status == GaraStatus.COMPLETED.value for p in gare
+        )
+        has_inscription = any(
+            p.status == GaraStatus.INSCRIPTION.value for p in gare
+        )
 
         if has_playing:
-            return "in_progress"
+            return TournamentStatus.IN_PROGRESS.value
         elif has_completed and not has_playing and not has_inscription:
-            return "completed"
+            return TournamentStatus.COMPLETED.value
         elif has_inscription:
-            return "registration_open"
+            return TournamentStatus.REGISTRATION_OPEN.value
         else:
-            return "setup"
+            return TournamentStatus.SETUP.value
 
     def can_be_hard_deleted(self) -> bool:
-        """Check if campionato can be permanently deleted (no matches played)."""
-        # Fix: Properly access the relationship collections
+        """Check if campionato permanently deletable (no matches)."""
+        from models.status_enum import MatchStatus
+
+        # Properly access the relationship collections
         gare = getattr(self, "gare", [])
         for gara in gare:
             matches = getattr(gara, "matches", [])
             for match in matches:
-                if match.status in ["completed", "playing"]:
+                if match.status in [
+                    MatchStatus.COMPLETED.value,
+                    MatchStatus.PLAYING.value,
+                ]:
                     return False
         return True
 
@@ -125,20 +141,20 @@ class Campionato(db.Model):
         """Restituisce la classe CSS per il badge status"""
         status = self.get_status()
         return {
-            "setup": "bg-warning",
-            "registration_open": "bg-info",
-            "in_progress": "bg-primary",
-            "completed": "bg-success",
+            TournamentStatus.SETUP.value: "bg-warning",
+            TournamentStatus.REGISTRATION_OPEN.value: "bg-info",
+            TournamentStatus.IN_PROGRESS.value: "bg-primary",
+            TournamentStatus.COMPLETED.value: "bg-success",
         }.get(status, "bg-secondary")
 
     def get_status_text(self):
         """Restituisce il testo dello status"""
         status = self.get_status()
         return {
-            "setup": "Setup",
-            "registration_open": "Iscrizioni Aperte",
-            "in_progress": "In Corso",
-            "completed": "Completato",
+            TournamentStatus.SETUP.value: "Setup",
+            TournamentStatus.REGISTRATION_OPEN.value: "Iscrizioni Aperte",
+            TournamentStatus.IN_PROGRESS.value: "In Corso",
+            TournamentStatus.COMPLETED.value: "Completato",
         }.get(status, "Sconosciuto")
 
     def has_playoff_configurations(self) -> bool:
@@ -149,7 +165,7 @@ class Campionato(db.Model):
     def can_generate_playoffs(self) -> bool:
         """Check if campionato is ready for playoff generation."""
         return (
-            self.get_status() == "completed"
+            self.get_status() == TournamentStatus.COMPLETED.value
             and self.final_playoffs
             and self.has_playoff_configurations()
         )
@@ -194,7 +210,10 @@ class Campionato(db.Model):
         return True
 
     def restore(self) -> bool:
-        """Restore a soft-deleted campionato."""
+        """Restore a soft-deleted campionato.
+
+        TODO: non vanno ripristinate anche le gare? verificare
+        """
         if not self.is_deleted:
             return False
 
@@ -210,11 +229,16 @@ class Campionato(db.Model):
         return self.scoring_policy or "classic"
 
     def set_scoring_policy(self, policy_name: str) -> None:
-        """Set the scoring policy for this campionato."""
+        """Set the scoring policy for this campionato.
+
+        TODO: fargo ed elo non sono in alternativa.
+        bisogna modellare bene questa cosa, insieme alle classifiche
+        """
         valid_policies = ["classic", "fargo", "elo"]
         if policy_name not in valid_policies:
             raise ValueError(
-                f"Invalid scoring policy: {policy_name}. Valid options: {valid_policies}"
+                f"Invalid scoring policy: {policy_name}. "
+                f"Valid options: {valid_policies}"
             )
         self.scoring_policy = policy_name
 

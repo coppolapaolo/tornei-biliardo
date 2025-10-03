@@ -65,7 +65,7 @@ class Set(BaseModel, TimestampMixin):
         """Check if set can be modified (racks added/removed)."""
         return self.status == "playing"
 
-    def configure_multi_discipline(
+    def configure_multi_discipline( # TODO: questo mi sembra sovraingegnerizzato. 
         self, disciplines: List[str], mode: str = "rotation"
     ) -> None:
         """Configure multi-discipline mode for the set.
@@ -297,7 +297,7 @@ class Set(BaseModel, TimestampMixin):
         ]
 
 
-class SetRack(BaseModel, TimestampMixin):
+class SetRack(BaseModel, TimestampMixin): # TODO: non sono convinto che sia necessario e che non si possa usare Rack
     """A rack within a set."""
 
     __tablename__ = "set_rack"

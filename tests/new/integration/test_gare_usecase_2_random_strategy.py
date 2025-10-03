@@ -110,7 +110,6 @@ class TestUseCaseRandomStrategyWithChallenges:
             first_round_policy=FirstRoundPolicy.RANDOM.value,
             odd_number_policy=OddNumberPolicy.BYE.value,
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         assert gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value
@@ -428,7 +427,6 @@ class TestUseCaseRandomStrategyVariants:
             first_round_policy="random",
             odd_number_policy="bye",  # Bye handling
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # All 7 players inscribe
@@ -532,7 +530,6 @@ class TestUseCaseRandomStrategyVariants:
             first_round_policy="random",
             odd_number_policy="trio",  # Trio handling instead of bye
             anti_rematch_enabled=False,  # Disable for trio testing
-            rating_type=None,
         )
 
         # All 9 players inscribe

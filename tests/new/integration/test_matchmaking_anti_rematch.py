@@ -88,7 +88,6 @@ class TestAntiRematchBug:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,  # IMPORTANTE: anti-rematch abilitato!
-            rating_type=None,
         )
 
         # Iscrivi 6 giocatori
@@ -279,7 +278,6 @@ class TestAntiRematchBug:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Iscrivi 4 giocatori

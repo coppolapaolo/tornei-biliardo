@@ -131,7 +131,6 @@ class TestUseCaseAmalfiBestOfTournaments:
             first_round_policy="random",
             odd_number_policy="bye",  # Will handle X if odd
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         assert gara.status == GaraStatus.SETUP.value
@@ -300,7 +299,6 @@ class TestUseCaseAmalfiBestOfTournaments:
             first_round_policy="random",
             odd_number_policy="bye",  # Explicit bye handling
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 3: 9 players inscribe
@@ -545,7 +543,6 @@ class TestUseCaseAmalfiExactlyTournaments:
             first_round_policy="random",
             odd_number_policy="challenge",  # Use challenge for ties
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         assert gara.best_of is False
@@ -758,7 +755,6 @@ class TestUseCaseAmalfiWaitlistExpiry:
             first_round_policy="classification",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Open inscriptions with short window for testing expiry
@@ -862,7 +858,6 @@ class TestUseCaseAmalfiWaitlistExpiry:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Open inscriptions

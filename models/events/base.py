@@ -47,19 +47,10 @@ class DomainEvent(ABC):
     def __post_init__(self):
         """Initialize base event fields."""
         # Initialize base fields
-        self.event_id = f"evt_{datetime.utcnow().strftime('%Y%m%d_%H%M%S_%f')}"
-        self.occurred_at = datetime.utcnow()
+        timestamp = datetime.utcnow()
+        self.event_id = f"evt_{timestamp.strftime('%Y%m%d_%H%M%S_%f')}"
+        self.occurred_at = timestamp
         self.metadata = {}
-
-        # Set domain from class name if not already set
-        if not hasattr(self, 'domain') or not self.domain:
-            # Extract domain from event class name (e.g., UserRegisteredEvent -> user)
-            class_name = self.__class__.__name__
-            if class_name.endswith('Event'):
-                domain_part = class_name[:-5]  # Remove 'Event' suffix
-                # Convert CamelCase to snake_case for domain
-                import re
-                self.domain = re.sub(r'([A-Z])', r'_\1', domain_part).lower().lstrip('_')
 
     @abstractmethod
     def get_event_type(self) -> str:

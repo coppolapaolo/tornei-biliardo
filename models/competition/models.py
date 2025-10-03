@@ -8,7 +8,12 @@ Dependencies: models.base.db, datetime
 from datetime import datetime
 from models.base import db
 from enum import Enum
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
+from models.matchmaking.configuration import (
+    MatchmakingStrategy,
+    FirstRoundPolicy,
+    OddNumberPolicy,
+)
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -29,13 +34,19 @@ class Gara(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # FK nullable per supportare standalone competitions
+    # TODO: è giusto che gara sappia di campionato? oppure sarebbe piu'
+    # corretto che fosse modellata con una relazione e fosse campionato a
+    # sapere di gara?
     campionato_id = db.Column(
-        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"), nullable=True
+        db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"),
+        nullable=True
     )
 
     # Director FK per standalone competitions
     director_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
 
+    # TODO: number è informazione relativa a Campionato e non a gara
+    # e dovrebbe essere modellata dentro campionato
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
     date = db.Column(db.Date, nullable=False)
@@ -47,13 +58,15 @@ class Gara(db.Model):
     rounds_count = db.Column(
         db.Integer, nullable=False, default=3
     )  # Numero di turni per questa gara
-    min_participants = db.Column(db.Integer, default=2)  # Minimo iscritti
+    min_participants = db.Column(db.Integer, default=6)  # Minimo iscritti
     max_participants = db.Column(db.Integer)  # Massimo iscritti (opzionale)
     entry_fee = db.Column(db.Float, default=0.0)  # Quota di partecipazione
 
     # Game settings
     discipline = db.Column(db.String(50), nullable=False)  # palla 8, 9, 10
-    distance = db.Column(db.Integer, nullable=False)  # numero rack da giocare
+    # TODO: valutare se astrarre distanza per gestire i set.
+    # In questo caso best_of rientra nella distanza
+    distance = db.Column(db.Integer, nullable=False)
     best_of = db.Column(
         db.Boolean, default=False
     )  # Se True: "al meglio di", se False: "esatto numero"
@@ -74,20 +87,17 @@ class Gara(db.Model):
 
     # Matchmaking strategy configuration
     matchmaking_strategy = db.Column(
-        db.String(50), nullable=False, default="amalfi"
+        db.String(50), nullable=False, default=MatchmakingStrategy.AMALFI.value
     )  # amalfi, round_robin, direct_elimination, double_knockout, random
     first_round_policy = db.Column(
-        db.String(50), default="random"
+        db.String(50), default=FirstRoundPolicy.RANDOM.value
     )  # random, rating, classification
     odd_number_policy = db.Column(
-        db.String(50), default="bye"
+        db.String(50), default=OddNumberPolicy.BYE.value
     )  # bye, trio (trio solo per alcune strategie e distanze)
     anti_rematch_enabled = db.Column(
         db.Boolean, default=True
     )  # Evita reincontri tra giocatori
-    rating_type = db.Column(
-        db.String(20), default="fargo"
-    )  # Tipo di rating da usare: fargo, elo
 
     # Relazioni
     inscriptions = db.relationship(
@@ -125,11 +135,18 @@ class Gara(db.Model):
         )
 
     # Property per identificare se è standalone
+    # TODO: se la modellazione cambia e la relazione viene spostata in
+    # Campionato, forse anche questa non e' piu' una proprieta' di gara,
+    # ma un servizio legato al campionato? Qual e' il modo migliore di
+    # modellare questa cosa?
     @property
     def is_standalone(self):
         """Check if this is a standalone competition."""
         return self.campionato_id is None
 
+    # TODO: controllare che funzioni sempre. Potrebbe essere admin?
+    # Come viene gestito? Se e' un metodo che non viene mai usato allora
+    # eliminare
     def get_organizer(self):
         """Get the competition organizer (director or campionato owner)."""
         if self.is_standalone:
@@ -138,6 +155,8 @@ class Gara(db.Model):
             return self.campionato.directors[0]
         return None
 
+    # TODO: da rivedere se si cambia il modello ed e' Campionato l'unico a
+    # sapere di gara
     def get_display_name(self):
         """Get display name including campionato/standalone info."""
         if self.is_standalone:
@@ -155,16 +174,17 @@ class Gara(db.Model):
                 if hasattr(m, "round_number") and m.round_number == self.current_round
             ]
             all_matches_finished = all(
-                m.status == MatchStatus.COMPLETED.value for m in current_round_matches
+                m.status == MatchStatus.COMPLETED.value
+                for m in current_round_matches
             )
             if all_matches_finished:
                 if self.current_round < self.rounds_count:
-                    return "round_completed"
+                    return ProvaDerivedStatus.ROUND_COMPLETED.value
                 else:
-                    return "campionato_completed"
+                    return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
         elif self.status == GaraStatus.INSCRIPTION.value:
             if self.inscription_end and datetime.utcnow() > self.inscription_end:
-                return "inscription_closed"
+                return ProvaDerivedStatus.INSCRIPTION_CLOSED.value
         return self.status
 
     def get_status_badge_info(self):
@@ -218,97 +238,55 @@ class Gara(db.Model):
         return any(insc.user_id == user_id for insc in inscriptions_list)
 
     def validate_strategy_configuration(self):
-        """Valida la coerenza tra strategia di abbinamento e configurazioni."""
-        errors = []
+        """Valida coerenza strategia (delegato a StrategyConfiguration).
 
-        # Validazioni per round robin
-        if self.matchmaking_strategy == "round_robin":
-            if self.first_round_policy != "random":
-                errors.append("Round robin supporta solo abbinamento casuale")
-            if self.odd_number_policy == "trio":
-                errors.append("Round robin non supporta match a tre")
+        Usa models.matchmaking.configuration.StrategyConfiguration
+        per validazione centralizzata.
+        """
+        from models.matchmaking.configuration import StrategyConfiguration
 
-        # Validazioni per eliminazione diretta
-        elif self.matchmaking_strategy == "direct_elimination":
-            if self.odd_number_policy == "trio":
-                errors.append("Eliminazione diretta non supporta match a tre")
+        # Crea config da gara e valida
+        config = StrategyConfiguration.from_gara(self)
+        num_participants = len(getattr(self, "inscriptions", []) or [])
 
-        # Validazioni per strategia casuale
-        elif self.matchmaking_strategy == "random":
-            if self.first_round_policy != "random":
-                errors.append("Strategia casuale usa sempre abbinamento casuale")
-
-        # Validazioni per trio matches
-        if self.odd_number_policy == "trio":
-            if self.distance > 7:
-                errors.append("Match a tre supportati solo fino a distanza 7")
-            if self.matchmaking_strategy not in ["amalfi", "random"]:
-                errors.append(
-                    f"Match a tre non supportati con strategia {self.matchmaking_strategy}"
-                )
-            # Validazione per trio con exact number - trio richiede best_of per punteggio corretto
-            if not self.best_of:
-                errors.append(
-                    "Match a tre richiedono modalità 'al meglio di' per il punteggio corretto"
-                )
-
-        return errors
+        # Delega validazione a StrategyConfiguration
+        return config.validate(
+            num_players=num_participants if num_participants > 0 else None,
+            distance=self.distance,
+            best_of=self.best_of,
+        )
 
     def calculate_rounds_for_strategy(self, num_players):
-        """Calcola il numero di turni ottimale per la strategia e numero di giocatori."""
-        if self.matchmaking_strategy == "round_robin":
-            return num_players - 1 if num_players > 1 else 1
-        elif self.matchmaking_strategy == "direct_elimination":
-            import math
+        """Calcola turni ottimali (delegato a configuration module).
 
-            return math.ceil(math.log2(num_players)) if num_players > 1 else 1
-        elif self.matchmaking_strategy == "double_knockout":
-            import math
+        Usa models.matchmaking.configuration.calculate_rounds_for_strategy
+        """
+        from models.matchmaking.configuration import (
+            calculate_rounds_for_strategy,
+            MatchmakingStrategy,
+        )
 
-            # Double elimination richiede circa 2 * log2(n) turni
-            return 2 * math.ceil(math.log2(num_players)) if num_players > 1 else 1
-        else:
-            # Per amalfi e random, usa il valore configurato o un default sensato
-            return self.rounds_count or min(num_players - 1, 5)
+        strategy = MatchmakingStrategy(self.matchmaking_strategy)
+        return calculate_rounds_for_strategy(strategy, num_players)
 
     def get_strategy_constraints(self):
-        """Restituisce i vincoli della strategia selezionata."""
-        constraints = {
-            "round_robin": {
-                "first_round_policies": ["random"],
-                "odd_policies": ["bye"],
-                "fixed_rounds": True,
-                "anti_rematch": False,
-                "allow_trio": False,
-            },
-            "direct_elimination": {
-                "first_round_policies": ["random", "rating", "classification"],
-                "odd_policies": ["bye"],
-                "fixed_rounds": True,
-                "anti_rematch": False,
-                "allow_trio": False,
-            },
-            "double_knockout": {
-                "first_round_policies": ["random", "rating", "classification"],
-                "odd_policies": ["bye"],
-                "fixed_rounds": True,
-                "anti_rematch": False,
-                "allow_trio": False,
-            },
-            "amalfi": {
-                "first_round_policies": ["random", "rating", "classification"],
-                "odd_policies": ["bye", "bye_with_challenge", "trio"],
-                "fixed_rounds": False,
-                "anti_rematch": True,
-            },
-            "random": {
-                "first_round_policies": ["random"],
-                "odd_policies": ["bye", "bye_with_challenge", "trio"],
-                "fixed_rounds": False,
-                "anti_rematch": True,
-            },
-        }
-        return constraints.get(self.matchmaking_strategy, constraints["amalfi"])
+        """Vincoli strategia (delegato a STRATEGY_CONSTRAINTS).
+
+        Usa models.matchmaking.configuration.STRATEGY_CONSTRAINTS
+        """
+        from models.matchmaking.configuration import (
+            STRATEGY_CONSTRAINTS,
+            MatchmakingStrategy,
+        )
+
+        try:
+            strategy = MatchmakingStrategy(self.matchmaking_strategy)
+            return STRATEGY_CONSTRAINTS.get(
+                strategy, STRATEGY_CONSTRAINTS[MatchmakingStrategy.AMALFI]
+            )
+        except (ValueError, KeyError):
+            # Fallback to Amalfi if strategy not found
+            return STRATEGY_CONSTRAINTS[MatchmakingStrategy.AMALFI]
 
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
@@ -356,6 +334,7 @@ class Gara(db.Model):
         except Exception:
             return False
 
+    # TODO: perche' un metodo diverso per cancel_first_round? cosa cambia?
     def can_cancel_current_round(self):
         """Verifica se l'avvio del turno corrente può essere cancellato"""
         if self.status != GaraStatus.PLAYING.value:
@@ -384,6 +363,7 @@ class Gara(db.Model):
         except Exception:
             return False
 
+    # TODO: questo va aggiornato se si astrae in modo diverso Score
     def get_winning_score(self):
         """Restituisce il punteggio per vincere"""
         if self.best_of:
@@ -391,11 +371,13 @@ class Gara(db.Model):
         else:
             return self.distance
 
+    # TODO: questo va aggiornato se si astrae in modo diverso Score
     def is_match_finished(self, score1, score2):
         """Verifica se una partita è finita"""
         winning_score = self.get_winning_score()
         return score1 >= winning_score or score2 >= winning_score
 
+    # TODO: verificare che siano tutte le info e non manchino cose
     def copy_settings_from(self, source_gara):
         """Copia le impostazioni da un'altra gara"""
         self.discipline = source_gara.discipline

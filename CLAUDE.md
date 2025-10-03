@@ -2,6 +2,76 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 📑 Table of Contents
+
+- [🚀 Quick Reference](#-quick-reference)
+- [Project Overview](#project-overview)
+- [Commands](#commands)
+  - [Development Setup](#development-setup)
+  - [Testing](#testing)
+  - [Code Quality](#code-quality)
+- [Architecture](#architecture)
+- [Key Business Logic](#key-business-logic)
+- [Recent Development History](#recent-development-history)
+- [Critical Patterns & Examples](#critical-patterns--examples)
+  - [Transaction Management Pattern](#transaction-management-pattern)
+  - [Event System Pattern](#event-system-pattern)
+  - [Notification Factory Pattern](#notification-factory-pattern)
+  - [Strategy Pattern (Matchmaking)](#strategy-pattern-matchmaking)
+  - [Service Layer Pattern](#service-layer-pattern)
+- [Development Guidelines](#development-guidelines)
+- [Production Deployment](#production-deployment)
+- [Development Notes](#development-notes)
+- [Documentation Structure](#documentation-structure)
+- [Refactoring Documentation](#refactoring-documentation)
+
+---
+
+## 🚀 Quick Reference
+
+### Essential Commands
+```bash
+# Start development server
+python app.py
+
+# Run all tests (ALWAYS use -n auto for parallel execution)
+PYTHONPATH=. pytest tests/new/ -n auto
+
+# Type check (MANDATORY before commits)
+pyright
+
+# Format code
+black . && flake8
+```
+
+### Key Files & Locations
+- **Application Entry**: [app.py](app.py) - Flask factory pattern
+- **Configuration**: [config.py](config.py) - Environment-based config
+- **Database**: `instance/billiard_campionato.db` (SQLite dev)
+- **Main Documentation**: This file + subdirectory CLAUDE.md files
+- **Specifications**: [docs/SPECIFICHE.md](docs/SPECIFICHE.md) - Complete platform specs
+- **Use Cases**: [docs/usecases/](docs/usecases/) - UC01.md, UC02.md, gare.md, convenzioni.md
+- **Architecture Decisions**: [docs/adr/](docs/adr/) - ADR-001 and others
+- **Refactoring Docs**: [docs/refactoring/](docs/refactoring/) - README.md, REFACTOR_PROGRESS.md
+
+### New Developer Checklist
+- [ ] Clone repo and setup virtual environment
+- [ ] Install dependencies: `pip install -r requirements.txt requirements-dev.txt`
+- [ ] Run application: `python app.py` (creates DB automatically)
+- [ ] Run tests: `PYTHONPATH=. pytest tests/new/ -n auto` (should all pass)
+- [ ] Read [models/CLAUDE.md](models/CLAUDE.md), [routes/CLAUDE.md](routes/CLAUDE.md), [tests/CLAUDE.md](tests/CLAUDE.md)
+- [ ] Read [docs/SPECIFICHE.md](docs/SPECIFICHE.md) for platform overview
+- [ ] Review recent development history below
+- [ ] Check refactoring status: [docs/refactoring/REFACTOR_PROGRESS.md](docs/refactoring/REFACTOR_PROGRESS.md)
+
+### Quick Architecture Overview
+- **Pattern**: Domain-Driven Design with Service Layer + Strategy Pattern
+- **Transaction Management**: All services use `@transactional` decorator
+- **Type Safety**: 0 pyright errors maintained across codebase
+- **Testing**: Unit/Integration/E2E with pytest markers, parallel execution with `-n auto`
+
+---
+
 ## Project Overview
 
 This is a Flask-based **community platform for American Pool enthusiasts** that aspires to become the central hub for pool players. While currently focused on tournament organization and match management, the platform is designed to support any pool-related activity and foster a vibrant community of players.
@@ -42,39 +112,64 @@ python app.py
 ```
 
 ### Testing
-```bash
-# Run tests (excludes legacy tests by default)
-pytest
 
-# Run specific test types
-pytest -m unit
-pytest -m integration
-pytest -m e2e
+**IMPORTANT**: Always use `-n auto` for parallel test execution (user requirement).
+
+```bash
+# Run all tests (RECOMMENDED - fast parallel execution)
+PYTHONPATH=. pytest tests/new/ -n auto
+
+# Run specific test types (parallel)
+PYTHONPATH=. pytest tests/new/ -n auto -m unit
+PYTHONPATH=. pytest tests/new/ -n auto -m integration
+PYTHONPATH=. pytest tests/new/ -n auto -m e2e
 
 # Run with coverage
 pytest --cov
 
 # Run single test with proper path (CRITICAL for imports)
-PYTHONPATH=. pytest tests/new/unit/test_specific.py
+PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -n auto
 
-# Run single integration test
-PYTHONPATH=. pytest tests/new/integration/test_gare_usecase_1_amalfi_complete_workflow.py -v
+# Run specific test file or function
+PYTHONPATH=. pytest tests/new/integration/test_gare_usecase_1_amalfi_complete_workflow.py -v -n auto
+PYTHONPATH=. pytest tests/new/unit/test_file.py::TestClass::test_method -v -n auto
 
-# Run verbose with output
-PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -s
+# Run with verbose output and stdout capture disabled
+PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -s -n auto
 
-# Run tests with short traceback on failures
-PYTHONPATH=. pytest tests/new/unit/ -x --tb=short
+# Stop on first failure with short traceback
+PYTHONPATH=. pytest tests/new/unit/ -x --tb=short -n auto
 
-# Fast parallel execution (RECOMMENDED for development)
-PYTHONPATH=. pytest tests/new/ -n auto
+# Quick integration test execution with line-only traceback
+PYTHONPATH=. pytest tests/new/integration/ -n auto --tb=line
 
-# Quick integration test execution
-PYTHONPATH=. pytest tests/new/integration/ -n auto --tb=short
-
-# Run legacy tests (if needed)
+# Run legacy tests (if needed, without -n auto due to compatibility)
 pytest tests/legacy/
 ```
+
+#### Test Execution Troubleshooting
+
+**Import Errors (ModuleNotFoundError)**:
+- ✅ **Always use** `PYTHONPATH=.` prefix for test commands
+- Example: `PYTHONPATH=. pytest tests/new/unit/test_file.py`
+
+**Test Isolation Issues**:
+- Use `db_session.get()` instead of `db_session.refresh()` in integration tests
+- Avoid session conflicts by using proper transaction scoping
+- Check for shared state between parallel test runs
+
+**Slow Test Execution**:
+- ✅ **Always use** `-n auto` for parallel execution (speeds up tests significantly)
+- For debugging, run single test without `-n auto`: `PYTHONPATH=. pytest tests/new/unit/test_file.py::test_name -v -s`
+
+**Flaky Tests**:
+- Usually caused by improper database state management
+- Check for missing `db_session.commit()` or transaction rollback issues
+- Review test fixtures and ensure proper cleanup
+
+**All Tests Must Pass Before Refactoring**:
+- See [docs/refactoring/README.md](docs/refactoring/README.md) for test-first policy
+- 100% pass rate required before any architectural changes
 
 ### Code Quality
 ```bash
@@ -278,6 +373,29 @@ Platform built to foster pool community growth and engagement:
 
 ## Recent Development History
 
+### Type Safety & Architectural Fixes (October 2025) - ✅ COMPLETED
+Phase 4 refactoring completed with focus on type safety and architectural corrections:
+
+#### Phase 4.1: Enum Migration
+- **Completed**: Replaced 15+ string literals with existing enum values
+- **New**: Created EntityType enum for DirectorAssignment
+- **Refactored**: Delegated Gara validation methods to StrategyConfiguration
+- **Files Modified**: 4 model files with 0 pyright errors, 0 flake8 errors
+
+#### Phase 4.2: Rating System Fix (Critical Architectural Correction)
+- **Problem**: Rating systems (Fargo/Elo) incorrectly modeled as Gara property
+- **Solution**: Moved ratings to User model where they belong conceptually
+- **Changes**:
+  - ✅ Added `User.fargo_rating` and `User.elo_rating` fields
+  - ✅ Removed `Gara.rating_type` field and RatingType enum
+  - ✅ Refactored AmalfiStrategy to use User ratings directly
+  - ✅ Updated routes and templates (removed rating_type selectors)
+- **Impact**: Correct separation of concerns - Rating (Player) vs Scoring (Classification)
+- **Files Modified**: 8 files across models, routes, and templates
+- **Quality**: 0 pyright errors, 0 flake8 errors, backward compatible
+
+See [docs/refactoring/CHANGELOG_PHASE_4.md](docs/refactoring/CHANGELOG_PHASE_4.md) for complete details.
+
 ### Amalfi Algorithm Refactoring (September 2025) - ✅ COMPLETED
 Major refactoring successfully completed - Amalfi algorithm consolidated into unified strategy pattern with full specification compliance:
 
@@ -365,6 +483,187 @@ Major bug fix session addressing multiple competition workflow issues:
 9. **Status Labels**: Changed "Campionato Completato" to "Gara Completata" for completed competitions
 10. **Guest Classification**: Implemented fallback system showing RoundClassification from completed Amalfi provas when general campionato classification unavailable
 
+## Critical Patterns & Examples
+
+### Transaction Management Pattern
+
+All service methods that modify database state MUST use the `@transactional` decorator:
+
+```python
+from models.transaction.manager import transactional
+
+class GaraService:
+    @transactional
+    def create_gara(self, campionato_id: int, data: dict) -> Gara:
+        """
+        Creates a new gara within a transaction.
+
+        The @transactional decorator:
+        - Automatically commits on success
+        - Rolls back on exception
+        - Handles nested transactions properly
+        """
+        gara = Gara(
+            campionato_id=campionato_id,
+            nome=data['nome'],
+            data_gara=data['data_gara']
+        )
+        db.session.add(gara)
+        return gara  # Commit happens automatically
+```
+
+**Key Rules**:
+- ✅ Use `@transactional` for all methods that modify database
+- ❌ Never use `db.session.commit()` directly in services (8 exceptions exist for legacy code)
+- ✅ Let decorator handle commit/rollback automatically
+- ❌ Don't add `@transactional` to methods called within other `@transactional` methods
+
+### Event System Pattern
+
+Domain events decouple components and enable cross-domain notifications:
+
+```python
+from models.events.base import DomainEvent, EventType
+
+# 1. Emit an event from a service
+class InscriptionService:
+    @transactional
+    def create_inscription(self, gara_id: int, user_id: int) -> Inscription:
+        inscription = Inscription(gara_id=gara_id, user_id=user_id)
+        db.session.add(inscription)
+
+        # Emit event for other systems to react
+        DomainEvent.emit(
+            event_type=EventType.INSCRIPTION_CREATED,
+            entity_id=inscription.id,
+            entity_type='inscription',
+            actor_id=user_id,
+            data={'gara_id': gara_id, 'user_id': user_id}
+        )
+
+        return inscription
+
+# 2. Listen for events in another service
+from models.events.base import event_handler
+
+@event_handler(EventType.INSCRIPTION_CREATED)
+def handle_inscription_created(event: DomainEvent) -> None:
+    """Send notification when user joins a gara."""
+    NotificationFactory.create_notification(
+        user_id=event.data['user_id'],
+        notification_type='inscription_confirmed',
+        related_entity_id=event.data['gara_id']
+    )
+```
+
+**Available Event Types**:
+- `INSCRIPTION_CREATED`, `INSCRIPTION_CANCELLED`
+- `MATCH_CREATED`, `MATCH_COMPLETED`
+- `GARA_CREATED`, `GARA_COMPLETED`
+- `DIRECTOR_REQUEST_CREATED`, `DIRECTOR_REQUEST_APPROVED`
+- See `models/events/base.py` for complete list
+
+### Notification Factory Pattern
+
+Centralized notification creation with templates:
+
+```python
+from models.notification.factory import NotificationFactory
+from models.notification.models import NotificationType, NotificationPriority
+
+# Simple notification
+NotificationFactory.create_notification(
+    user_id=player.id,
+    notification_type=NotificationType.MATCH_ASSIGNED,
+    related_entity_id=match.id,
+    priority=NotificationPriority.NORMAL
+)
+
+# Notification with custom data
+NotificationFactory.create_notification(
+    user_id=director.id,
+    notification_type=NotificationType.DIRECTOR_REQUEST_APPROVED,
+    related_entity_id=request.id,
+    data={'approved_by': admin.username},
+    priority=NotificationPriority.HIGH
+)
+
+# Bulk notifications to multiple users
+user_ids = [player.id for player in gara.get_participants()]
+NotificationFactory.create_bulk_notifications(
+    user_ids=user_ids,
+    notification_type=NotificationType.GARA_CANCELLED,
+    related_entity_id=gara.id,
+    priority=NotificationPriority.URGENT
+)
+```
+
+### Strategy Pattern (Matchmaking)
+
+Flexible tournament pairing with strategy registration:
+
+```python
+from models.matchmaking.service import MatchmakingService
+from models.matchmaking.config import MatchmakingStrategy
+
+# Use Amalfi strategy for a gara
+service = MatchmakingService(
+    gara_id=gara.id,
+    strategy=MatchmakingStrategy.AMALFI
+)
+
+# Create pairings for next round
+matches = service.create_next_round()
+
+# Preview pairings without persisting (for campionato)
+pairings = service.preview_pairings(
+    participants=players,
+    strategy=MatchmakingStrategy.ROUND_ROBIN
+)
+```
+
+**Available Strategies**:
+- `AMALFI`: Specification-compliant pairing with anti-rematch
+- `ROUND_ROBIN`: All-play-all format
+- `DIRECT_ELIMINATION`: Knockout tournament
+- `RANDOM_ANTI_REMATCH`: Random with rematch avoidance
+
+### Service Layer Pattern
+
+Services encapsulate business logic with clean separation:
+
+```python
+# Facade pattern for backward compatibility
+class GaraService:
+    """Main service facade."""
+
+    def __init__(self):
+        self._state_service = StateService()
+        self._inscription_service = InscriptionService()
+        self._round_service = RoundService()
+
+    @transactional
+    def complete_gara(self, gara_id: int) -> Gara:
+        """Delegates to specialized services."""
+        gara = self._state_service.transition_to_completed(gara_id)
+        self._round_service.finalize_all_rounds(gara_id)
+        return gara
+
+# Specialized service for focused responsibility
+class StateService:
+    """Handles gara state transitions only."""
+
+    @transactional
+    def transition_to_completed(self, gara_id: int) -> Gara:
+        gara = db.session.get(Gara, gara_id)
+        if not self._can_complete(gara):
+            raise InvalidStateTransition("Cannot complete gara")
+
+        gara.status = GaraStatus.COMPLETATA
+        DomainEvent.emit(EventType.GARA_COMPLETED, gara.id)
+        return gara
+```
+
 ## Development Guidelines
 
 ### Type Safety & Quality Standards
@@ -426,14 +725,71 @@ PYTHONPATH=. pytest tests/new/ -n auto
 autoflake --remove-all-unused-imports --recursive --in-place .
 ```
 
+## Production Deployment
+
+### PythonAnywhere Configuration
+
+**Environment Setup**:
+```bash
+# Set environment variables in PythonAnywhere Web tab
+FLASK_ENV=production
+SECRET_KEY=<strong-random-secret>
+DATABASE_URL=<postgresql-connection-string>  # or use SQLite
+ADMIN_USERNAME=<admin-username>
+ADMIN_EMAIL=<admin-email>
+ADMIN_PASSWORD=<strong-admin-password>
+```
+
+**WSGI Configuration** (`/var/www/username_pythonanywhere_com_wsgi.py`):
+```python
+import sys
+import os
+
+# Add your project directory to the sys.path
+project_home = '/home/username/tornei-biliardo'
+if project_home not in sys.path:
+    sys.path = [project_home] + sys.path
+
+# Set environment variables
+os.environ['FLASK_ENV'] = 'production'
+
+# Import and create app
+from app import create_app
+application = create_app('production')
+```
+
+**Database Migration Workflow**:
+1. Test migrations locally with SQLite first
+2. Backup production database before changes
+3. Apply schema changes via `db.create_all()` or manual migration scripts
+4. Verify data integrity post-migration
+5. Monitor application logs for errors
+
+**Static Files**:
+- Ensure `/static/uploads/` directories exist with proper permissions
+- Configure PythonAnywhere to serve static files from `/static/`
+
+**Security Checklist**:
+- [ ] `SECRET_KEY` is strong and unique
+- [ ] `ADMIN_PASSWORD` is changed from default
+- [ ] `DEBUG_MODE = False` in production config
+- [ ] Database credentials are secure
+- [ ] HTTPS is enabled
+- [ ] Static file permissions are restricted
+
+**Monitoring & Logs**:
+- Check PythonAnywhere error logs regularly
+- Monitor database size (free tier limits)
+- Set up error notifications for critical failures
+
 ## Development Notes
 
 - The codebase uses Italian comments and variable names in many places
 - Git workflow uses feature branches
 - **Application is usually running**: No need to restart for most changes
-- **Database location**: `instance/` folder (SQLite)
+- **Database location**: `instance/` folder (SQLite in dev)
 - Production deployment on PythonAnywhere platform
-- **Type Safety**: Project maintains 0 pyright errors (achieved through systematic migration)
+- **Type Safety**: Project maintains 0 pyright errors (achieved through systematic migration including Phase 4)
 - **Transaction Management**: All services use `@transactional` decorator pattern for consistency and reliability
 - **Service Architecture**: Clean separation between domain services with facade patterns for backward compatibility
 - **Architecture principle**: "non cercare mai quick fix, ma scegli sempre le soluzioni più corrette secondo i principi di buona programmazione. non sovraingegnerizzare. Segui sempre soluzioni pulite ed eleganti"
@@ -441,13 +797,18 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 - Flexible matchmaking system now fully supports strategy preview, idempotent operations, and fallback classification display
 - All matchmaking strategies (Amalfi, Round-Robin, Elimination, Random) are fully implemented and tested
 - **All 8 use cases are now fully implemented** with comprehensive integration tests
-- **Refactoring Foundation Complete**: Phase 1 & 3 completed - solid foundation established for future development
-- ✅ **REFACTORING STATUS**: Amalfi algorithm refactoring successfully completed and merged to main
-  - Implementation: Specification-compliant AmalfiStrategy in models/matchmaking/strategies/amalfi.py
+- **Refactoring Complete**: Phases 1-4 completed - solid foundation established for future development
+- ✅ **REFACTORING STATUS**: All phases successfully completed and merged to main
+  - **Phase 1-3**: Transaction management, service decomposition, Amalfi algorithm modernization
+  - **Phase 4**: Type safety improvements and architectural fixes (October 2025)
+    - Enum migration: 15+ string literals replaced with enum values
+    - Rating system fix: Moved Fargo/Elo ratings from Gara to User model
+    - Architectural correctness: Rating (Player property) vs Scoring (classification logic)
+  - Implementation: Specification-compliant AmalfiStrategy using User ratings directly
   - Migration: Complete directory migration (amalfi/ → models/matchmaking/strategies/)
   - Integration: Unified strategy pattern working across all matchmaking scenarios
   - Testing: All unit and integration tests passing with new implementation
-  - Cleanup: Legacy directory and cache files completely removed
+  - Cleanup: Legacy directory, cache files, and architectural issues resolved
 
 ## Documentation Structure
 

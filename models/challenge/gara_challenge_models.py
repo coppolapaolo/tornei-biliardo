@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ..competition.models import Gara
 
 
-class GaraChallenge(BaseModel, TimestampMixin):
+class GaraChallenge(BaseModel, TimestampMixin): # TODO: forse questo dovrebbe solo estendere Challenge con le informazioni e i metodi relativi alla connessione con la gara, compresa la classifica. Mi sembra che ci sia troppa ripetizione
     """Link between a gara (competition) and a challenge."""
 
     __tablename__ = "gara_challenge"

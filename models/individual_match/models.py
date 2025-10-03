@@ -14,6 +14,7 @@ from enum import Enum
 from sqlalchemy import func
 
 from ..base import db, BaseModel, TimestampMixin
+from ..status_enum import Discipline
 
 if TYPE_CHECKING:
     from ..user.models import User
@@ -61,19 +62,25 @@ class MatchProposal(BaseModel, TimestampMixin):
     )
 
     # Match details
-    location = db.Column(db.String(255), nullable=False)
+    location = db.Column(db.String(255), nullable=False) # TODO: da modificare con un riferimento alle location nel DB
     scheduled_at = db.Column(db.DateTime, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
 
-    # Game configuration
-    discipline = db.Column(db.String(50), nullable=False, default="palla_8")
-    distance = db.Column(db.Integer, nullable=False, default=5)  # Racks to win
-    best_of = db.Column(db.Boolean, nullable=False, default=True)
-    break_rule = db.Column(db.String(20), nullable=False, default="alternate")
-
-    # Optional details
+    # Optional game configuration
+    discipline = db.Column(
+        db.String(50), nullable=True, default=Discipline.EIGHT_BALL.value
+    )  # Game discipline (usa Discipline enum)
+    distance = db.Column(
+        db.Integer, nullable=True, default=5
+    )  # TODO: revisione complessiva distanze con set
+    best_of = db.Column(
+        db.Boolean, nullable=True, default=True
+    )  # TODO: best_of attributo distanza - astrarre
+    break_rule = db.Column(
+        db.String(20), nullable=True, default="alternate"
+    )  # TODO: verificare impatto funzionamento app
     description = db.Column(db.Text, nullable=True)
-    entry_fee = db.Column(db.Numeric(10, 2), nullable=True)
+    entry_fee = db.Column(db.Numeric(10, 2), nullable=True, default=0)
 
     # Result tracking
     accepted_by_id = db.Column(
@@ -258,7 +265,7 @@ class ProposalInvitation(BaseModel, TimestampMixin):
         return f"<ProposalInvitation {self.proposal_id} -> {self.invited_user_id}: {self.status.value}>"
 
 
-class IndividualMatch(BaseModel, TimestampMixin):
+class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva una nuova classe e che non sia meglio modellare con un match normale?
     """An individual match between two players."""
 
     __tablename__ = "individual_match"
@@ -277,14 +284,14 @@ class IndividualMatch(BaseModel, TimestampMixin):
     )
 
     # Match details
-    location = db.Column(db.String(255), nullable=False)
-    scheduled_at = db.Column(db.DateTime, nullable=False)
+    location = db.Column(db.String(255), nullable=False) # TODO: e' necessario? non puo' fare riferimento alla location di proposal?
+    scheduled_at = db.Column(db.DateTime, nullable=False) # TODO: anche questo, credo, puo' fare riferimenot al relativo campo di proposal
     status = db.Column(
         db.Enum(MatchStatus), nullable=False, default=MatchStatus.SCHEDULED
     )
 
     # Game configuration
-    discipline = db.Column(db.String(50), nullable=False, default="palla_8")
+    discipline = db.Column(db.String(50), nullable=False, default="palla_8") # TODO: tutti questi sei da discipline fino a notes possono fare riferimento a proposal. perche' duplicare?
     distance = db.Column(db.Integer, nullable=False, default=5)
     best_of = db.Column(db.Boolean, nullable=False, default=True)
     break_rule = db.Column(db.String(20), nullable=False, default="alternate")
@@ -296,7 +303,7 @@ class IndividualMatch(BaseModel, TimestampMixin):
     # Results
     started_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
-    player1_score = db.Column(db.Integer, nullable=False, default=0)
+    player1_score = db.Column(db.Integer, nullable=False, default=0) # TODO: lo score, se la distanza diventa un oggetto complesso con i set, diventa anch'esso un oggetto complesso? Questo vale in generale, non solo per i match individuali
     player2_score = db.Column(db.Integer, nullable=False, default=0)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
 
@@ -348,7 +355,7 @@ class IndividualMatch(BaseModel, TimestampMixin):
         db.session.add(rack)
 
         # Update scores
-        if winner_id == self.player1_id:
+        if winner_id == self.player1_id: # TODO: forse questo va delegato ad un servizio che astrae il punteggio, ma non mi e' chiaro come modellare
             self.player1_score += 1
         else:
             self.player2_score += 1
@@ -370,7 +377,7 @@ class IndividualMatch(BaseModel, TimestampMixin):
             and self.player1_score + self.player2_score >= self.distance
         ):
             # Fixed distance completed
-            winner = (
+            winner = ( # TODO: e se e' un pareggio? bisogna prevedere la possibilità di pareggio nei match individuali? da decidere
                 self.player1_id
                 if self.player1_score > self.player2_score
                 else self.player2_id
@@ -419,7 +426,7 @@ class IndividualMatch(BaseModel, TimestampMixin):
         return f"<IndividualMatch {self.player1_id} vs {self.player2_id} at {self.location}>"
 
 
-class IndividualRack(BaseModel, TimestampMixin):
+class IndividualRack(BaseModel, TimestampMixin): # TODO: non sono convintissimo che serva questo e non sia sufficiente un Rack normale
     """A single rack within an individual match."""
 
     __tablename__ = "individual_rack"
@@ -460,7 +467,7 @@ class PlayerAvailability(BaseModel, TimestampMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
-    location = db.Column(db.String(255), nullable=False)
+    location = db.Column(db.String(255), nullable=False) # TODO: deve essere collegato alle location, non una stringa libera
 
     # Availability preferences
     is_available = db.Column(db.Boolean, nullable=False, default=True)

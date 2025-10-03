@@ -106,7 +106,6 @@ class TestUIFrontendBehaviors:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Register players and start tournament
@@ -212,7 +211,6 @@ class TestUIFrontendBehaviors:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Register players and start tournament
@@ -303,7 +301,6 @@ class TestUIFrontendBehaviors:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Create challenge after first round

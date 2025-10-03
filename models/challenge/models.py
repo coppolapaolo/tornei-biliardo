@@ -239,19 +239,21 @@ class Challenge(BaseModel, TimestampMixin):
 
     @property
     def image_filename(self) -> Optional[str]:
-        """
-        Estrae Nome File Immagine per Utilizzo nei Template
+        """Estrae nome file immagine (usa config.CHALLENGE_UPLOAD_FOLDER).
 
         Estrae solo il nome del file dal percorso completo dell'immagine
         per l'utilizzo nei template Jinja2 e nei componenti UI.
+        Path configurabile via config.CHALLENGE_UPLOAD_FOLDER.
 
         Returns:
             Nome file (es. 'challenge_001.jpg') o None se nessun percorso
 
         Template Usage:
-            <img src="{{ url_for('static', filename='challenges/' + challenge.img_filename) }}">
+            <img src="{{ url_for('static',
+                filename='uploads/challenges/' + challenge.image_filename) }}">
         """
         if self.image_path:
+            # Estrae solo il filename dal path completo
             return self.image_path.split("/")[-1]
         return None
 
@@ -303,7 +305,7 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
     notes = db.Column(db.Text, nullable=True)
 
     # Integrazione Campionati - quando usato come sostituzione X
-    gara_id = db.Column(
+    gara_id = db.Column( # TODO: non sono convinto che sia la modellazione giusta, perche' challenge non dovrebbe sapere nulla di campionati e gare e round. 
         db.Integer, db.ForeignKey("gara.id", ondelete="SET NULL"), nullable=True
     )  # Gara di appartenenza se usato come X
     round_number = db.Column(db.Integer, nullable=True)  # Turno specifico della gara
@@ -311,7 +313,7 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
     # Relationships
     challenge = db.relationship("Challenge", back_populates="attempts")
     user = db.relationship("User")
-    gara = db.relationship("Gara")
+    gara = db.relationship("Gara") # TODO: non sono sicuro che debba essere parte del modello 
 
     def complete_attempt(
         self, score: Optional[int] = None, passed: Optional[bool] = None

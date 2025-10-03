@@ -243,7 +243,6 @@ class TestUseCaseOneComprehensive:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         with app.test_client() as client:
@@ -414,7 +413,6 @@ class TestUseCaseOneComprehensive:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         with app.test_client() as client:
@@ -571,7 +569,6 @@ class TestUseCaseOneComprehensive:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         with app.test_client() as client:
@@ -726,7 +723,6 @@ class TestUseCaseOneComprehensive:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         with app.test_client() as client:
@@ -952,7 +948,6 @@ class TestUseCaseOneComprehensive:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         with app.test_client() as client:

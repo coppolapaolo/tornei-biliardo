@@ -105,7 +105,6 @@ class TestUseCaseRoundRobinMultiSet:
             first_round_policy="random",  # Not used in round-robin
             odd_number_policy="bye",
             anti_rematch_enabled=False,  # Not applicable for round-robin
-            rating_type=None,
             # Note: Multi-set support may not be fully implemented, simplified for testing
         )
 
@@ -356,7 +355,6 @@ class TestUseCaseRoundRobinVariants:
             first_round_policy="random",
             odd_number_policy="bye",  # Bye handling for odd numbers
             anti_rematch_enabled=False,
-            rating_type=None,
         )
 
         # All 5 players inscribe

@@ -60,7 +60,6 @@ class TestUseCaseGareComplete:
             first_round_policy="random",
             odd_number_policy="bye",  # X handling
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: 8 players inscribe
@@ -158,7 +157,6 @@ class TestUseCaseGareComplete:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Rest of workflow same as UC1 but with exactly-5 verification
@@ -213,7 +211,6 @@ class TestUseCaseGareComplete:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Add challenges after round 1 (2 attempts each)
@@ -316,7 +313,6 @@ class TestUseCaseGareComplete:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=False,  # Not needed for round-robin
-            rating_type=None,
             # Note: Multi-set support would need additional implementation
         )
 
@@ -401,7 +397,6 @@ class TestUseCaseGareComplete:
                 first_round_policy="classification" if gara_num > 1 else "random",
                 odd_number_policy="bye",
                 anti_rematch_enabled=True,
-                rating_type=None,
             )
 
             # Players inscribe
@@ -474,7 +469,6 @@ class TestUseCaseGareComplete:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Start tournament
@@ -726,7 +720,6 @@ class TestUseCaseGareComplete:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # Step 2: Complete rounds 1 and 2

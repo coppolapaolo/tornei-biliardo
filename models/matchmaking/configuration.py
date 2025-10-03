@@ -44,11 +44,6 @@ class OddNumberPolicy(str, Enum):
     TRIO = "trio"
 
 
-class RatingType(str, Enum):
-    FARGO = "fargo"
-    ELO = "elo"
-
-
 @dataclass
 class StrategyConfiguration:
     """Comprehensive configuration for tournament matchmaking strategies.
@@ -65,12 +60,17 @@ class StrategyConfiguration:
     odd_number_policy: OddNumberPolicy
     anti_rematch_enabled: bool
     rounds_count: Optional[int] = None
-    rating_type: Optional[RatingType] = None
 
     def validate(
-        self, num_players: Optional[int] = None, distance: Optional[int] = None
+        self,
+        num_players: Optional[int] = None,
+        distance: Optional[int] = None,
+        best_of: Optional[bool] = None,
     ) -> List[str]:
-        """Validate configuration consistency against strategy constraints and tournament parameters.
+        """Validate config consistency against strategy constraints.
+
+        Full title: Validate configuration consistency against strategy
+        constraints and tournament parameters.
 
         Comprehensive validation ensuring the configuration will produce successful
         tournament execution without runtime failures or suboptimal player experience.
@@ -85,6 +85,8 @@ class StrategyConfiguration:
         Args:
             num_players: Expected tournament player count for optimization
             distance: Tournament format distance (affects trio match complexity)
+            best_of: Whether match uses best-of or exact scoring
+                (trio requires best_of)
 
         Returns:
             List of validation error messages (empty if configuration is valid)
@@ -102,32 +104,49 @@ class StrategyConfiguration:
             return errors
 
         # Ensure first-round seeding policy is supported by chosen strategy
-        if self.first_round_policy.value not in constraints["first_round_policies"]:
+        if (
+            self.first_round_policy.value
+            not in constraints["first_round_policies"]
+        ):
             errors.append(
-                f"{self.strategy} non supporta la policy di primo turno {self.first_round_policy}"
+                f"{self.strategy} non supporta la policy di "
+                f"primo turno {self.first_round_policy}"
             )
 
         # Verify odd-player handling method is compatible with strategy
         if self.odd_number_policy.value not in constraints["odd_policies"]:
             errors.append(
-                f"{self.strategy} non supporta la policy per numero dispari {self.odd_number_policy}"
+                f"{self.strategy} non supporta la policy per "
+                f"numero dispari {self.odd_number_policy}"
             )
 
         # Check trio match feasibility against tournament format complexity
         if self.odd_number_policy == OddNumberPolicy.TRIO:
             if distance and distance > 7:
                 errors.append("Match a tre supportati solo fino a distanza 7")
+            if best_of is False:
+                errors.append(
+                    "Match a tre richiedono modalità 'al meglio di' (best_of=True)"
+                )
 
         # Ensure anti-rematch requirements are met for strategy integrity
-        if not self.anti_rematch_enabled and constraints.get("anti_rematch_required"):
-            errors.append(f"{self.strategy} richiede anti-rematch abilitato")
+        if not self.anti_rematch_enabled and constraints.get(
+            "anti_rematch_required"
+        ):
+            errors.append(
+                f"{self.strategy} richiede anti-rematch abilitato"
+            )
 
-        # Verify round count matches strategy requirements for optimal tournament flow
+        # Verify round count matches strategy requirements for optimal
+        # tournament flow
         if constraints["fixed_rounds"] and num_players:
-            required_rounds = calculate_rounds_for_strategy(self.strategy, num_players)
+            required_rounds = calculate_rounds_for_strategy(
+                self.strategy, num_players
+            )
             if self.rounds_count and self.rounds_count != required_rounds:
                 errors.append(
-                    f"{self.strategy} con {num_players} giocatori richiede esattamente {required_rounds} turni"
+                    f"{self.strategy} con {num_players} giocatori "
+                    f"richiede esattamente {required_rounds} turni"
                 )
 
         return errors
@@ -144,7 +163,6 @@ class StrategyConfiguration:
             "odd_number_policy": self.odd_number_policy.value,
             "anti_rematch_enabled": self.anti_rematch_enabled,
             "rounds_count": self.rounds_count,
-            "rating_type": self.rating_type.value if self.rating_type else None,
         }
 
     @classmethod
@@ -161,16 +179,21 @@ class StrategyConfiguration:
             StrategyConfiguration object ready for validation and execution
         """
         return cls(
-            strategy=MatchmakingStrategy(gara.matchmaking_strategy),
-            first_round_policy=FirstRoundPolicy(gara.first_round_policy),
-            odd_number_policy=OddNumberPolicy(gara.odd_number_policy),
-            anti_rematch_enabled=gara.anti_rematch_enabled,
-            rounds_count=gara.rounds_count,
-            rating_type=(
-                RatingType(gara.rating_type)
-                if hasattr(gara, "rating_type") and gara.rating_type
-                else None
+            strategy=MatchmakingStrategy(
+                gara.matchmaking_strategy or MatchmakingStrategy.AMALFI.value
             ),
+            first_round_policy=FirstRoundPolicy(
+                gara.first_round_policy or FirstRoundPolicy.RANDOM.value
+            ),
+            odd_number_policy=OddNumberPolicy(
+                gara.odd_number_policy or OddNumberPolicy.BYE.value
+            ),
+            anti_rematch_enabled=(
+                gara.anti_rematch_enabled
+                if gara.anti_rematch_enabled is not None
+                else True
+            ),
+            rounds_count=gara.rounds_count,
         )
 
 
@@ -318,7 +341,10 @@ def validate_strategy_change(
     new_strategy: MatchmakingStrategy,
     gara_status: str,
 ) -> Tuple[bool, Optional[str]]:
-    """Validate tournament strategy change based on current competition status and compatibility.
+    """Validate tournament strategy change based on competition status.
+
+    Full title: Validate tournament strategy change based on current
+    competition status and compatibility.
 
     Strategy changes are restricted to prevent tournament disruption and maintain
     competitive integrity. Only compatible strategies can be swapped, and only

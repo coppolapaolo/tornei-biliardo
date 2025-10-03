@@ -144,7 +144,6 @@ def create_gara_standalone():
             first_round_policy = request.form.get("first_round_policy", "random")
             odd_number_policy = request.form.get("odd_number_policy", "bye")
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
-            rating_type = request.form.get("rating_type", "fargo")
 
             # Validazione della configurazione delle strategie
             from models.matchmaking.configuration import (
@@ -152,7 +151,6 @@ def create_gara_standalone():
                 MatchmakingStrategy,
                 FirstRoundPolicy,
                 OddNumberPolicy,
-                RatingType,
             )
 
             try:
@@ -162,11 +160,6 @@ def create_gara_standalone():
                     odd_number_policy=OddNumberPolicy(odd_number_policy),
                     anti_rematch_enabled=anti_rematch_enabled,
                     rounds_count=rounds_count,
-                    rating_type=(
-                        RatingType(rating_type)
-                        if first_round_policy == "rating"
-                        else None
-                    ),
                 )
 
                 # Valida la configurazione con la distanza
@@ -200,7 +193,6 @@ def create_gara_standalone():
                 first_round_policy=first_round_policy,
                 odd_number_policy=odd_number_policy,
                 anti_rematch_enabled=anti_rematch_enabled,
-                rating_type=rating_type,
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
@@ -407,7 +399,6 @@ def edit_gara(gara_id):
                 "odd_number_policy", gara.odd_number_policy
             )
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
-            rating_type = request.form.get("rating_type", gara.rating_type)
 
             GaraService.update_gara(
                 gara_id=gara_id,
@@ -430,7 +421,6 @@ def edit_gara(gara_id):
                 first_round_policy=first_round_policy,
                 odd_number_policy=odd_number_policy,
                 anti_rematch_enabled=anti_rematch_enabled,
-                rating_type=rating_type,
             )
 
             # Handle round discipline configuration (only for random strategy)

@@ -108,7 +108,6 @@ class TestAmalfiCompleteWorkflow:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         assert gara is not None

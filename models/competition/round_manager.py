@@ -178,7 +178,7 @@ class AdvancedRoundManager:
                 from models.match.models import Rack
 
                 Rack.query.filter_by(match_id=match.id).delete()
-                db.session.delete(match)
+                db.session.delete(match)  # TODO: perche' questo delete non viene gestito dal delete di match alla riga precedente?
 
             # Delete classifications for this round
             RoundClassification.query.filter_by(

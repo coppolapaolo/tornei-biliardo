@@ -127,6 +127,46 @@
   - [x] **COMPLETED**: Clean Python cache directories and compiled files ✅
   - [x] **COMPLETED**: Codebase cleanup objectives achieved ✅
 
+### Phase 4: Type Safety & Architectural Fixes ✅ **COMPLETED** (October 2025)
+**Branch: `main` (direct commits)**
+- [x] Task 4.1: Enum Migration - Quick Wins (100%) ✅ **COMPLETED**
+  - [x] **COMPLETED**: Substituted 15+ string literals with existing enum values across 4 files ✅
+  - [x] **COMPLETED**: Created EntityType enum (only new enum needed) ✅
+  - [x] **COMPLETED**: Delegated 3 Gara methods to StrategyConfiguration ✅
+    - validate_strategy_configuration() → StrategyConfiguration.validate()
+    - calculate_rounds_for_strategy() → calculate_rounds_for_strategy()
+    - get_strategy_constraints() → STRATEGY_CONSTRAINTS dict
+  - [x] **COMPLETED**: Updated challenge image documentation to reference config ✅
+  - [x] **COMPLETED**: All pyright checks pass (0 errors) ✅
+  - [x] **Files Modified**: models/campionato/models.py, models/competition/models.py, models/match/models.py, models/individual_match/models.py ✅
+- [x] Task 4.2: Rating System Fix - Architectural Correction (100%) ✅ **COMPLETED**
+  - [x] **COMPLETED**: Removed gara.rating_type field (incorrect architectural pattern) ✅
+  - [x] **COMPLETED**: Added User.fargo_rating and User.elo_rating fields (correct: rating is Player property) ✅
+  - [x] **COMPLETED**: Removed RatingType enum from configuration (no longer needed) ✅
+  - [x] **COMPLETED**: Updated StrategyConfiguration dataclass (removed rating_type field) ✅
+  - [x] **COMPLETED**: Refactored AmalfiStrategy._create_rating_classification() to use User ratings ✅
+    - Uses user.fargo_rating as primary rating source
+    - Falls back to user.elo_rating if Fargo not available
+    - No dependency on gara.rating_type
+  - [x] **COMPLETED**: Removed rating_type from routes (create_gara_standalone, edit_gara) ✅
+  - [x] **COMPLETED**: Removed rating_type UI controls from 3 templates ✅
+  - [x] **COMPLETED**: Fixed ALL flake8 errors (including pre-existing line length issues) ✅
+  - [x] **COMPLETED**: All pyright checks pass (0 errors) ✅
+  - [x] **Files Modified**:
+    - models/user/models.py (added fargo_rating, elo_rating fields)
+    - models/competition/models.py (removed rating_type field)
+    - models/matchmaking/configuration.py (removed RatingType enum, updated StrategyConfiguration)
+    - models/matchmaking/strategies/amalfi.py (refactored to use User ratings)
+    - routes/admin/competition.py (removed rating_type parameter)
+    - templates/components/_gara_edit_form.html (removed rating_type selector)
+    - templates/admin/gara_edit.html (removed rating_type JavaScript)
+    - templates/admin/gara_create_standalone.html (removed rating_type selector)
+  - [x] **Architectural Impact**: ✅
+    - ✅ Rating systems (Fargo/Elo) now correctly modeled as Player properties
+    - ✅ FirstRoundPolicy.RATING retrieves ratings from User, not Gara/Campionato
+    - ✅ Separation of concerns: Rating (Player skill) vs Scoring (classification logic)
+    - ✅ No breaking changes: Backward compatible with existing functionality
+
 ### 🎯 Parallel Development Benefits
 - **Timeline**: Sequenziale ~6 settimane → Parallelo ~3-4 settimane (**50% time saving**)
 - **Resource Efficiency**: 2 developers possono lavorare simultaneamente su domini separati
@@ -139,17 +179,18 @@
 - **Merge Order**: Fase 2 (Event System) → main, poi Fase 3 (Structure) rebase e merge
 - **Test Requirements**: Entrambi i branch devono passare tutti i test prima del merge
 
-## 📋 Current Context (REAL STATE - September 2025)
-- **Overall Progress**: 🎉 **ALL PHASES COMPLETED** - Tasks 1.1, 1.2, 1.3, 2.1, 2.2, 3.1, 3.2, 3.3 (100%)
+## 📋 Current Context (REAL STATE - October 2025)
+- **Overall Progress**: 🎉 **ALL PHASES COMPLETED** + Enum Migration - Tasks 1.1, 1.2, 1.3, 2.1, 2.2, 3.1, 3.2, 3.3, 4.1, 4.2 (100%)
 - **🎉 MILESTONE ACHIEVED**: Phase 1 - Service Architecture Foundation (100% - transaction management, service decomposition) ✅
 - **🎉 MILESTONE ACHIEVED**: Phase 2 - Domain Decoupling (100% - event system + notification factory) ✅
 - **🎉 MILESTONE ACHIEVED**: Phase 3 - Amalfi Algorithm Modernization (100% - directory migration, strategy unification) ✅
+- **🎉 NEW MILESTONE**: Phase 4 - Type Safety & Architectural Fixes (100% - enum migration, rating system fix) ✅
 - **✅ REFACTORING COMPLETE**: All systematic refactoring objectives achieved with robust architecture
 - **🚀 PRODUCTION READY**: Complete foundation established for advanced features and deployment
-- **Achievement**: Complete platform modernization with event-driven architecture and standardized patterns
+- **Achievement**: Complete platform modernization with event-driven architecture, standardized patterns, and architectural fixes
 - **🎯 NEXT PRIORITY**: Ready for new feature development or production deployment
 - **Blocked On**: None - all refactoring objectives completed successfully
-- **Last Updated**: 2025-09-28 [All Phases Complete - Production Ready]
+- **Last Updated**: 2025-10-01 [All Phases Complete - Production Ready with Architectural Fixes]
 
 ## 🎯 Current Sprint Goals
 - [x] Set up refactor test structure ✅

@@ -112,13 +112,6 @@
                                         <option value="rating">Basato su Rating</option>
                                         <option value="classification">Basato su Classifica</option>
                                     </select>
-                                    <div id="rating_type_section" class="mt-2" style="display: none;">
-                                        <label for="rating_type" class="form-label">Tipo Rating</label>
-                                        <select class="form-select" id="rating_type" name="rating_type">
-                                            <option value="fargo">Fargo Rating</option>
-                                            <option value="elo">Elo Rating</option>
-                                        </select>
-                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -324,16 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
             trioWarning.style.display = 'none';
         }
     }
-    
-    // Listen for first round policy changes to show/hide rating type
-    firstRoundSelect.addEventListener('change', function() {
-        const ratingSection = document.getElementById('rating_type_section');
-        if (firstRoundSelect.value === 'rating') {
-            ratingSection.style.display = 'block';
-        } else {
-            ratingSection.style.display = 'none';
-        }
-    });
     
     // Listen for strategy changes
     strategySelect.addEventListener('change', updateStrategyUI);

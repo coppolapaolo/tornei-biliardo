@@ -8,7 +8,8 @@ from functools import wraps
 from app import db
 from models.competition.models import Gara, WithdrawPolicy
 from models.competition.services import GaraService
-from models.campionato.models import Campionato, TournamentDirector
+from models.campionato.models import Campionato
+from models import TournamentDirector
 
 
 director_bp = Blueprint("director", __name__, url_prefix="/director")
@@ -29,6 +30,6 @@ def director_required(f):
 
 @director_bp.route("/create_standalone")
 @director_required
-def create_standalone():
+def create_standalone():  # TODO: verificare se non si puo' cancellare
     """Create standalone competition form."""
     return "Director Create Standalone - OK"

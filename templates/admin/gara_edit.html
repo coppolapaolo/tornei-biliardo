@@ -144,19 +144,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Listen for first round policy changes to show/hide rating type
-    if (firstRoundSelect) {
-        firstRoundSelect.addEventListener('change', function() {
-            const ratingSection = document.getElementById('rating_type_section');
-            if (ratingSection) {
-                if (firstRoundSelect.value === 'rating') {
-                    ratingSection.style.display = 'block';
-                } else {
-                    ratingSection.style.display = 'none';
-                }
-            }
-        });
-    }
     
     // Listen for strategy changes
     if (strategySelect) {

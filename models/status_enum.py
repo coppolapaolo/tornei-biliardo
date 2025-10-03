@@ -25,6 +25,7 @@ __all__ = [
     "VenueManagerRequestStatus",
     "PlayoffConfirmationStatus",
     "Discipline",
+    "EntityType",
     "choices",
     "parse_enum",
 ]
@@ -129,6 +130,13 @@ class PlayoffConfirmationStatus(_StrEnum):
 # Utility generiche
 # ──────────────────────────────────────────────────────────────────────────────
 E = TypeVar("E", bound=_StrEnum)
+
+
+class EntityType(_StrEnum):
+    """Entity types for DirectorAssignment and similar relationships."""
+
+    CAMPIONATO = "campionato"
+    GARA = "gara"
 
 
 class Discipline(_StrEnum):

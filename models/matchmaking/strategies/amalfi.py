@@ -1,12 +1,15 @@
 from __future__ import annotations
 import random
-from typing import Sequence, Dict, Any, List
+from typing import Sequence, Dict, Any, List, TYPE_CHECKING
 
 from .base import BaseStrategy, Pairing
-from models.competition.models import Gara
-from models import RoundClassification, db
+from models import db
 from models.matchmaking.policies import anti_rematch_allowed
-from models.matchmaking.configuration import FirstRoundPolicy, RatingType
+from models.matchmaking.configuration import FirstRoundPolicy
+
+if TYPE_CHECKING:
+    from models.competition.models import Gara
+    from models.classification.models import RoundClassification
 
 
 class AmalfiStrategy(BaseStrategy):
@@ -63,7 +66,10 @@ class AmalfiStrategy(BaseStrategy):
                 )
 
             # Check rounds configuration
-            if hasattr(gara, "rounds_count") and gara.rounds_count < 1:  # type: ignore[attr-defined]
+            if (
+                hasattr(gara, "rounds_count")
+                and gara.rounds_count < 1  # type: ignore[attr-defined]
+            ):
                 errors.append("Tournament must have at least 1 round")
 
         except Exception as e:
@@ -99,8 +105,10 @@ class AmalfiStrategy(BaseStrategy):
 
         return self._amalfi_pairing(classification, round_number, gara.rounds_count)
 
-    def _get_first_round_classification(self, gara: Gara) -> List[RoundClassification]:
-        """Ottieni la classifica per il primo round basata sulla policy configurata."""
+    def _get_first_round_classification(
+        self, gara: Gara
+    ) -> List["RoundClassification"]:
+        """Ottieni la classifica per il primo round."""
         policy = getattr(gara, "first_round_policy", FirstRoundPolicy.RANDOM.value)
 
         if policy == FirstRoundPolicy.RANDOM.value:
@@ -113,8 +121,10 @@ class AmalfiStrategy(BaseStrategy):
             # Unknown policy, fallback to random
             return self._create_random_classification(gara)
 
-    def _create_random_classification(self, gara: Gara) -> List[RoundClassification]:
+    def _create_random_classification(self, gara: Gara) -> List["RoundClassification"]:
         """Crea una classifica casuale per il primo round."""
+        from models.classification.models import RoundClassification
+
         inscriptions = self._get_active_inscriptions(gara)
         if len(inscriptions) < self.min_players:
             raise ValueError(f"Servono almeno {self.min_players} iscritti")
@@ -140,8 +150,10 @@ class AmalfiStrategy(BaseStrategy):
 
     def _create_campionato_classification(
         self, gara: Gara
-    ) -> List[RoundClassification]:
+    ) -> List["RoundClassification"]:
         """Crea classifica basata sulla classifica del campionato."""
+        from models.classification.models import RoundClassification
+
         # Se gara standalone, fallback a random
         if not gara.campionato_id:
             return self._create_random_classification(gara)
@@ -202,37 +214,33 @@ class AmalfiStrategy(BaseStrategy):
 
         return classification
 
-    def _create_rating_classification(self, gara: Gara) -> List[RoundClassification]:
-        """Crea classifica basata sui rating dei giocatori."""
+    def _create_rating_classification(self, gara: Gara) -> List["RoundClassification"]:
+        """Crea classifica basata sui rating dei giocatori.
+
+        Usa fargo_rating dal modello User (rating primario).
+        Se non disponibile, usa elo_rating come fallback.
+        """
+        from models.classification.models import RoundClassification
+
         inscriptions = self._get_active_inscriptions(gara)
         if len(inscriptions) < self.min_players:
             raise ValueError(f"Servono almeno {self.min_players} iscritti")
 
-        rating_type = getattr(gara, "rating_type", RatingType.FARGO.value)
+        from models.user.models import User
 
-        # Ottieni rating per tutti i giocatori iscritti
-        from models.rating.models import PlayerRating, RatingSystem
-
-        # Converti stringa a enum
-        if rating_type == RatingType.FARGO.value:
-            rating_system = RatingSystem.FARGO
-        elif rating_type == RatingType.ELO.value:
-            rating_system = RatingSystem.ELO
-        else:
-            # Fallback a fargo
-            rating_system = RatingSystem.FARGO
-
+        # Ottieni rating dai giocatori iscritti
         inscribed_players = [insc.user_id for insc in inscriptions]
+        users = User.query.filter(User.id.in_(inscribed_players)).all()
 
-        # Ottieni rating per tutti i giocatori
-        ratings = (
-            PlayerRating.query.filter(PlayerRating.user_id.in_(inscribed_players))
-            .filter_by(rating_system=rating_system)
-            .all()
-        )
-
-        # Crea mappa player_id -> rating
-        player_ratings = {r.user_id: r.rating_value for r in ratings}
+        # Crea mappa player_id -> rating (usa Fargo come primario, Elo come fallback)
+        player_ratings = {}
+        for user in users:
+            if user.fargo_rating is not None:
+                player_ratings[user.id] = user.fargo_rating
+            elif user.elo_rating is not None:
+                player_ratings[user.id] = user.elo_rating
+            else:
+                player_ratings[user.id] = 0  # Default per giocatori senza rating
 
         # Ordina giocatori per rating (decrescente), poi per user_id per stabilità
         sorted_players = sorted(
@@ -255,7 +263,7 @@ class AmalfiStrategy(BaseStrategy):
         return classification
 
     def _amalfi_pairing(
-        self, classifica: List[RoundClassification], turno: int, max_turni: int
+        self, classifica: List["RoundClassification"], turno: int, max_turni: int
     ) -> Sequence[Pairing]:
         """Implementa l'algoritmo Amalfi secondo lo pseudocodice fornito.
 
@@ -358,8 +366,10 @@ class AmalfiStrategy(BaseStrategy):
 
     def _get_classification(
         self, gara_id: int, round_number: int
-    ) -> List[RoundClassification]:
+    ) -> List["RoundClassification"]:
         """Ottieni la classificazione di un round specifico."""
+        from models.classification.models import RoundClassification
+
         return (
             db.session.query(RoundClassification)
             .filter_by(gara_id=gara_id, round_number=round_number)
@@ -379,8 +389,10 @@ class AmalfiStrategy(BaseStrategy):
         # Filter active inscriptions (not withdrawn, not waitlist)
         active = []
         for i in inscriptions:
-            if (not getattr(i, "is_withdrawn", False) and
-                not getattr(i, "is_waitlist", False)):
+            if (
+                not getattr(i, "is_withdrawn", False)
+                and not getattr(i, "is_waitlist", False)
+            ):
                 active.append(i)
 
         return active

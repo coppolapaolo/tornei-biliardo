@@ -228,7 +228,6 @@ class TestUseCaseCampionatoWorkflow:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         assert gara1.campionato_id == campionato.id
@@ -266,7 +265,6 @@ class TestUseCaseCampionatoWorkflow:
             first_round_policy="random",
             odd_number_policy="trio",
             anti_rematch_enabled=True,
-            rating_type=None,
         )
 
         # 9 players inscribe (7 from first gara + 2 new players)
@@ -309,7 +307,6 @@ class TestUseCaseCampionatoWorkflow:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=False,  # Not applicable for round-robin
-            rating_type=None,
         )
 
         # 6 best players from campionato classification qualify
