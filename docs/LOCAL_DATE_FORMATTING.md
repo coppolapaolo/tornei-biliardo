@@ -1,32 +1,32 @@
-# Formattazione Date Locali nel Browser
+# Formattazione Date in Formato Italiano
 
 ## Panoramica
 
-Il sistema ora supporta la formattazione automatica delle date in formato italiano (`dd/mm/yyyy`) indipendentemente dalle impostazioni del browser, eliminando le inconsistenze tra formati.
+Il sistema formatta tutte le date in formato italiano (`dd/mm/yyyy`) direttamente lato server usando Python, garantendo consistenza totale indipendentemente dal browser.
 
 ## Come Funziona
 
-### 1. JavaScript Automatico (base.html)
+### 1. Formattazione Lato Server (Python)
 
-Il file `templates/base.html` contiene funzioni JavaScript che:
-- Formattano tutte le date in formato italiano `it-IT`
-- Usano `toLocaleString('it-IT')` per garantire formato dd/mm/yyyy
-- Si attivano automaticamente al caricamento della pagina
+I filtri Jinja formattano le date direttamente in Python usando `strftime()`:
+- Formato consistente garantito lato server
+- Nessuna dipendenza da JavaScript o locale del browser
+- Prestazioni migliori (nessun parsing client-side)
 
 ### 2. Filtri Jinja Disponibili
 
-Sono stati creati tre nuovi filtri Jinja per facilitare la formattazione:
+Sono stati creati tre filtri Jinja per la formattazione:
 
 #### `date_local` - Solo Data
 ```jinja
 {{ gara.date|date_local }}
-<!-- Output: 04/10/2025 (sempre formato italiano) -->
+<!-- Output: 04/10/2025 -->
 ```
 
 #### `datetime_local` - Data e Ora
 ```jinja
 {{ gara.inscription_end|datetime_local }}
-<!-- Output: 04/10/2025, 18:30 (sempre formato italiano) -->
+<!-- Output: 04/10/2025, 18:30 -->
 ```
 
 #### `time_local` - Solo Ora
@@ -37,21 +37,21 @@ Sono stati creati tre nuovi filtri Jinja per facilitare la formattazione:
 
 ## Migrazione dai Template Esistenti
 
-### Prima (formato fisso)
+### Prima (formato strftime manuale)
 ```jinja
 {{ gara.date.strftime('%d/%m/%Y') }}
 {{ inscription.created_at.strftime('%d/%m/%Y %H:%M') }}
 {{ gara.time.strftime('%H:%M') }}
 ```
 
-### Dopo (formato locale)
+### Dopo (filtri standardizzati)
 ```jinja
 {{ gara.date|date_local }}
 {{ inscription.created_at|datetime_local }}
 {{ gara.time|time_local }}
 ```
 
-## Esempi di Migrazione
+## Esempi di Utilizzo
 
 ### Esempio 1: Card Gara
 ```jinja
@@ -71,86 +71,101 @@ Scade: {{ p.inscription_end.strftime('%d/%m/%Y %H:%M') if p.inscription_end else
 Scade: {{ p.inscription_end|datetime_local }}
 ```
 
-### Esempio 3: Orario Gara
+### Esempio 3: Notifiche
 ```jinja
 <!-- PRIMA -->
-{% if gara.time %} {{ gara.time.strftime('%H:%M') }}{% endif %}
+{{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}
 
 <!-- DOPO -->
-{% if gara.time %} {{ gara.time|time_local }}{% endif %}
+{{ notification.created_at|datetime_local }}
 ```
 
-## Pattern Speciali
+## Gestione Valori Null
 
-### Date con Attributi data-*
-Per casi in cui serve mantenere il valore originale in un attributo:
-
-```jinja
-<span data-date="{{ gara.date.isoformat() }}">{{ gara.date|date_local }}</span>
-```
-
-Il JavaScript in `base.html` formatta automaticamente elementi con:
-- `data-date` → formato solo data
-- `data-datetime` → formato data e ora
-
-### Gestione Valori Null
 I filtri gestiscono automaticamente valori `None`:
 ```jinja
 {{ gara.date|date_local }}  <!-- Se None, mostra "N/A" -->
 ```
 
-## File Modificati
+## File Implementati
 
 ### File di Sistema
-1. **`templates/base.html`**:
-   - Funzioni JavaScript `TourneyUtils.formatDate()`, `formatDateOnly()`, `formatDateTime()`
-   - Auto-formattazione elementi con `data-date` e `data-datetime`
-   - Locale forzato a `'it-IT'` per consistenza
+1. **`utils/jinja.py`**:
+   - `format_date_local()` - filtro per solo data (dd/mm/yyyy)
+   - `format_datetime_local()` - filtro per data e ora (dd/mm/yyyy, HH:MM)
+   - `format_time_local()` - filtro per solo ora (HH:MM)
 
-2. **`utils/jinja.py`**:
-   - `format_date_local()` - filtro per solo data
-   - `format_datetime_local()` - filtro per data e ora
-   - `format_time_local()` - filtro per solo ora
-
-3. **`utils/status_ui.py`**:
+2. **`utils/status_ui.py`**:
    - Registrazione filtri nell'app Flask
+
+3. **`templates/base.html`**:
+   - JavaScript TourneyUtils per date UTC (mantiene compatibilità)
 
 ### Template Migrati
 - **56 sostituzioni** in **50 file template**
-- Nessun formato `strftime()` rimanente
+- Nessun formato `strftime()` manuale rimanente
 
-## Task Rimanenti
+## Script di Migrazione
 
-Per completare la migrazione, cercare nei template:
+Per migrare automaticamente i template esistenti:
 
 ```bash
-# Trova tutti gli usi di strftime
-grep -r "strftime" templates/
+# Dry-run (mostra modifiche senza applicarle)
+python scripts/migrate_date_formatting.py --dry-run
+
+# Applica migrazioni
+python scripts/migrate_date_formatting.py
+
+# Migra singolo file
+python scripts/migrate_date_formatting.py --file components/_gara_info.html
 ```
 
-Sostituire pattern comuni:
+Il script sostituisce automaticamente:
 - `.strftime('%d/%m/%Y')` → `|date_local`
 - `.strftime('%d/%m/%Y %H:%M')` → `|datetime_local`
 - `.strftime('%H:%M')` → `|time_local`
 
 ## Benefici
 
-1. **Consistenza**: Formato italiano uniforme in tutta l'applicazione
-2. **Semplicità**: Nessuna configurazione utente necessaria
-3. **Manutenibilità**: Cambio centralizzato del formato
-4. **User Experience**: Formato familiare per utenti italiani
+1. **Consistenza Totale**: Formato italiano uniforme in tutta l'applicazione
+2. **Affidabilità**: Nessuna dipendenza da impostazioni browser
+3. **Performance**: Formattazione lato server più veloce
+4. **Manutenibilità**: Un solo punto di modifica per cambiare formato
+5. **Semplicità**: Nessun JavaScript complesso per parsing date
 
-## Note Tecniche
+## Implementazione Tecnica
 
-- I filtri accettano oggetti `datetime`, `date` e `time` di Python
-- La formattazione usa `toLocaleString('it-IT')` per formato consistente
-- **Locale Forzato**: Sempre `'it-IT'` per formato dd/mm/yyyy indipendentemente dal browser
-- **Consistenza**: Tutte le date mostrate nello stesso formato italiano
-- Compatibile con tutti i browser moderni (Chrome, Firefox, Safari, Edge)
-- Fallback su formato ISO se la data non è valida
+### Formato Output (Python strftime)
 
-### Formato Output
+```python
+# utils/jinja.py
+def format_date_local(value):
+    if isinstance(value, datetime):
+        return value.strftime('%d/%m/%Y')
+    # ...
+
+def format_datetime_local(value):
+    if isinstance(value, datetime):
+        return value.strftime('%d/%m/%Y, %H:%M')
+    # ...
+```
+
+### Formati Supportati
 Indipendentemente dal browser, le date vengono sempre mostrate in formato italiano:
-- **Data**: 04/10/2025 (dd/mm/yyyy)
-- **Data e Ora**: 04/10/2025, 18:30
-- **Ora**: 18:30
+- **Data**: `04/10/2025` (dd/mm/yyyy)
+- **Data e Ora**: `04/10/2025, 18:30` (dd/mm/yyyy, HH:MM)
+- **Ora**: `18:30` (HH:MM)
+
+## Note per Sviluppatori
+
+1. **Usa sempre i filtri** invece di `strftime()` manuale nei template
+2. **Formato consistente** garantito automaticamente
+3. **Nessun JavaScript** necessario per formattazione base
+4. **Date UTC** ancora gestite da JavaScript per compatibilità
+
+## Migrazione Completata
+
+✅ Tutti i template migrati  
+✅ Formato italiano consistente  
+✅ Zero dipendenze da locale browser  
+✅ Script di migrazione disponibile
