@@ -53,7 +53,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <small class="text-muted">{{ request.requested_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                    <small class="text-muted">{{ request.requested_at|datetime_local }}</small>
                                     {% if request.notes %}
                                         <br><em>"{{ request.notes }}"</em>
                                     {% endif %}
@@ -78,7 +78,7 @@
                                 </td>
                                 <td>
                                     {% if request.processed_at %}
-                                        <small class="text-muted">{{ request.processed_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                        <small class="text-muted">{{ request.processed_at|datetime_local }}</small>
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}

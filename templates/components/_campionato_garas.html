@@ -27,7 +27,7 @@
                         {% for gara in provas %}
                             <tr>
                                 <td><strong>{{ gara.number }}</strong></td>
-                                <td>{{ gara.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ gara.date|date_local }}</td>
                                 <td>{{ gara.location or '-' }}</td>
                                 <td>
                                     {{ gara.discipline }}

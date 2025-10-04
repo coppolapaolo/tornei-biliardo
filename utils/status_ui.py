@@ -234,7 +234,7 @@ def filter_status_text(obj: Any, kind: Optional[str] = None) -> str:
 
 def register_status_filters(app) -> None:
     """Registra filtri **e** funzioni globali nel jinja_env dell'app Flask."""
-    # Filtri Jinja
+    # Filtri Jinja per status
     app.jinja_env.filters["status_badge"] = filter_status_badge
     app.jinja_env.filters["status_badge_class"] = filter_status_badge_class
     app.jinja_env.filters["status_text"] = filter_status_text
@@ -243,3 +243,10 @@ def register_status_filters(app) -> None:
     app.jinja_env.globals["status_badge"] = filter_status_badge
     app.jinja_env.globals["status_badge_class"] = filter_status_badge_class
     app.jinja_env.globals["status_text"] = filter_status_text
+
+    # Filtri Jinja per date (formattazione locale nel browser)
+    from utils.jinja import format_date_local, format_datetime_local, format_time_local
+
+    app.jinja_env.filters["date_local"] = format_date_local
+    app.jinja_env.filters["datetime_local"] = format_datetime_local
+    app.jinja_env.filters["time_local"] = format_time_local

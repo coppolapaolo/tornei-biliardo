@@ -8,7 +8,7 @@
         <p><strong>Username:</strong> {{ user.username }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
         <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
-        <p><strong>Registrato:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
+        <p><strong>Registrato:</strong> {{ user.created_at|date_local }}</p>
         {% if current_user.role == 'player' %}
             {% set dr = current_user|attr('director_request')|default(None, true) %}
             {% if dr %}

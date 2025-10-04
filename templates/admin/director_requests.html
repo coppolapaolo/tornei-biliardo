@@ -13,7 +13,7 @@
       {% for req in requests %}
         <tr>
           <td>{{ req.user.username }}</td>
-          <td>{{ req.requested_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ req.requested_at|datetime_local }}</td>
           <td>
             <form method="POST" action="{{ url_for('admin.user.approve_director_request', req_id=req.id) }}" style="display:inline;">
               <button type="submit" class="btn btn-success btn-sm">Approva</button>

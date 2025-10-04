@@ -12,7 +12,7 @@
                     <div>
                         <strong>Gara {{ inscription.gara.number }}</strong> - {{ inscription.gara.discipline }}
                         {% if inscription.gara.name %} ({{ inscription.gara.name }}){% endif %}
-                        <br><small class="text-muted">{{ inscription.gara.date.strftime('%d/%m/%Y') }} - 
+                        <br><small class="text-muted">{{ inscription.gara.date|date_local }} - 
                         {% if inscription.gara.best_of %}
                             Al meglio di {{ inscription.gara.distance }}
                         {% else %}

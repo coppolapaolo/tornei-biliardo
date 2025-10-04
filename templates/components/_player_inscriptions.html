@@ -19,7 +19,7 @@
                             <li>
                                 <small>
                                     Gara {{ inscription.gara.number }} - 
-                                    {{ inscription.gara.date.strftime('%d/%m/%Y') }}
+                                    {{ inscription.gara.date|date_local }}
                                     {{ status_badge(inscription.gara, 'gara') }}
                                 </small>
                             </li>
@@ -36,7 +36,7 @@
                         <li>
                             <small>
                                 {{ inscription.gara.name or ('Gara ' ~ inscription.gara.number) }} - 
-                                {{ inscription.gara.date.strftime('%d/%m/%Y') }}
+                                {{ inscription.gara.date|date_local }}
                                 {{ status_badge(inscription.gara, 'gara') }}
                             </small>
                         </li>

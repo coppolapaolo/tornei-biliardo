@@ -38,9 +38,9 @@
                                                             <p class="mb-1">
                                                                 <i class="fas fa-calendar"></i>
                                                                 {% if availability.recurring %}
-                                                                Ogni {{ availability.day_of_week }} alle {{ availability.time.strftime('%H:%M') }}
+                                                                Ogni {{ availability.day_of_week }} alle {{ availability.time|time_local }}
                                                                 {% else %}
-                                                                {{ availability.date.strftime('%d/%m/%Y') }} alle {{ availability.time.strftime('%H:%M') }}
+                                                                {{ availability.date|date_local }} alle {{ availability.time|time_local }}
                                                                 {% endif %}
                                                             </p>
                                                             {% if availability.notes %}

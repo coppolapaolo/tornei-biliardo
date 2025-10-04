@@ -18,7 +18,7 @@
             </a>
             <br><small class="text-muted">
               vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
-              – {{ match.scheduled_at.strftime('%d/%m/%Y') if match.scheduled_at else '-' }}
+              – {{ match.scheduled_at|date_local if match.scheduled_at else '-' }}
               <br><i class="fas fa-map-marker-alt"></i> {{ match.location }}
             </small>
           </div>

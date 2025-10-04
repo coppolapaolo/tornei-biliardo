@@ -14,7 +14,7 @@
                         <h6 class="mb-1">{{ inscription.gara.name }}</h6>
                         <p class="mb-1">
                             <small>
-                                📅 {{ inscription.gara.date.strftime('%d/%m/%Y') }} - 
+                                📅 {{ inscription.gara.date|date_local }} - 
                                 📍 {{ inscription.gara.location or 'Luogo da definire' }}
                             </small>
                         </p>

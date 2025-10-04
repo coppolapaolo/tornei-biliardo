@@ -228,10 +228,10 @@ Mercoledì: Chiuso
                         </div>
                     </div>
                     
-                    <p><strong>Creata:</strong> {{ venue.created_at.strftime('%d/%m/%Y alle %H:%M') }}</p>
+                    <p><strong>Creata:</strong> {{ venue.created_at|datetime_local }}</p>
                     
                     {% if venue.updated_at %}
-                    <p><strong>Modificata:</strong> {{ venue.updated_at.strftime('%d/%m/%Y alle %H:%M') }}</p>
+                    <p><strong>Modificata:</strong> {{ venue.updated_at|datetime_local }}</p>
                     {% endif %}
                 </div>
             </div>

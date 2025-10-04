@@ -10,7 +10,7 @@
     >
       {% if vm.selected_gara %}
         <i class="fas fa-bullseye me-2"></i>
-        {{ vm.selected_gara.name }}{% if vm.selected_gara.date %} ({{ vm.selected_gara.date.strftime('%d/%m') }}){% endif %}
+        {{ vm.selected_gara.name }}{% if vm.selected_gara.date %} ({{ vm.selected_gara.date|date_local }}){% endif %}
       {% elif vm.selected_campionato %}
         <i class="fas fa-trophy me-2"></i>
         {{ vm.selected_campionato.name }}

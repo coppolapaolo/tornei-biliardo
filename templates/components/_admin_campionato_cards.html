@@ -79,7 +79,7 @@
                 {% if debug_info.debug_mode %}
                     <div class="card-footer">
                         <small class="text-muted">
-                            DEBUG: ID {{ campionato.id }}, Creato {{ campionato.created_at.strftime('%d/%m/%Y') }},
+                            DEBUG: ID {{ campionato.id }}, Creato {{ campionato.created_at|date_local }},
                             Can Modify: {{ campionato.can_be_modified() }}, Can Delete: {{ campionato.can_be_deleted() }}
                         </small>
                     </div>

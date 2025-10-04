@@ -74,7 +74,7 @@
                             <i class="fas fa-clock"></i> 
                             <strong>Scade:</strong><br>
                             <span data-utc="{{ gara.inscription_end.isoformat() }}">
-                                {{ gara.inscription_end.strftime('%d/%m/%Y %H:%M') }}
+                                {{ gara.inscription_end|datetime_local }}
                             </span>
                         </small>
                     </div>
@@ -102,7 +102,7 @@
                         <i class="fas fa-clock"></i> 
                         <strong>Iscrizioni iniziano:</strong><br>
                         <span data-utc="{{ gara.inscription_start.isoformat() }}">
-                            {{ gara.inscription_start.strftime('%d/%m/%Y %H:%M') }}
+                            {{ gara.inscription_start|datetime_local }}
                         </span>
                     </small>
                 </div>

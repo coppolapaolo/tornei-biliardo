@@ -37,7 +37,7 @@
                                     {% endif %}
                                     <br>
                                     <small class="text-muted">
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}
                                         <br><i class="fas fa-map-marker-alt"></i> {{ proposal.location }}
                                     </small>
                                 </div>
@@ -119,7 +119,7 @@
                                     <br>
                                     <small class="text-muted">
                                         vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
-                                        – {{ match.completed_at.strftime('%d/%m/%Y') if match.completed_at }}
+                                        – {{ match.completed_at|date_local if match.completed_at }}
                                     </small>
                                 </div>
                                 <div class="text-end">

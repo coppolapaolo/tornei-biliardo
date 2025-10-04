@@ -34,7 +34,7 @@
                                             <h6 class="card-title">Gara {{ gara.number }}</h6>
                                             <p class="card-text mb-1">
                                                 <strong>{{ gara.discipline }}</strong><br>
-                                                <small class="text-muted">{{ gara.date.strftime('%d/%m/%Y') }}</small>
+                                                <small class="text-muted">{{ gara.date|date_local }}</small>
                                             </p>
                                             {% if gara.location %}
                                                 <p class="card-text mb-2">
@@ -50,14 +50,14 @@
                                                 <br><small class="text-success">
                                                     <i class="fas fa-clock"></i> 
                                                     Scade: <span data-utc="{{ gara.inscription_end.isoformat() if gara.inscription_end else '' }}">
-                                                        {{ gara.inscription_end.strftime('%d/%m %H:%M') if gara.inscription_end else 'N/A' }}
+                                                        {{ gara.inscription_end|datetime_local if gara.inscription_end else 'N/A' }}
                                                     </span>
                                                 </small>
                                             {% elif gara.get_real_status() == 'inscription_not_started' %}
                                                 <br><small class="text-info">
                                                     <i class="fas fa-clock"></i> 
                                                     Iniziano: <span data-utc="{{ gara.inscription_start.isoformat() if gara.inscription_start else '' }}">
-                                                        {{ gara.inscription_start.strftime('%d/%m %H:%M') if gara.inscription_start else 'N/A' }}
+                                                        {{ gara.inscription_start|datetime_local if gara.inscription_start else 'N/A' }}
                                                     </span>
                                                 </small>
                                             {% endif %}

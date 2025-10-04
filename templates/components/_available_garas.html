@@ -10,17 +10,14 @@
       <div>
         <strong>Gara {{ p.number }}</strong> - {{ p.discipline }}{% if p.name %} ({{ p.name }}){% endif %}
         <br><small class="text-muted">
-          {{ p.date.strftime('%d/%m/%Y') if p.date else '-' }} –
+          {{ p.date|date_local }} –
           {% if p.best_of %}Al meglio di {{ p.distance }}{% else %}{{ p.distance }} rack esatti{% endif %}
         </small>
         {% if p.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ p.location }}</small>{% endif %}
         <br>{% if p.is_full() %}<span class="badge bg-warning">Massimo raggiunto</span>{% else %}<span class="badge bg-success">Iscrizioni aperte</span>{% endif %}
         <span class="badge bg-warning ms-1">
           <i class="fas fa-clock"></i>
-          Scade:
-          <span data-utc="{{ p.inscription_end.isoformat() if p.inscription_end else '' }}">
-            {{ p.inscription_end.strftime('%d/%m/%Y %H:%M') if p.inscription_end else 'N/D' }}
-          </span>
+          Scade: {{ p.inscription_end|datetime_local }}
         </span>
         {% if p.entry_fee and p.entry_fee > 0 %}
           <br><small class="text-muted"><i class="fas fa-euro-sign"></i> Quota: €{{ "%.2f"|format(p.entry_fee) }}</small>

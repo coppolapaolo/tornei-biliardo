@@ -23,7 +23,7 @@
                             <a href="{{ url_for('admin.user.user_detail', user_id=inscription.user_id) }}" class="text-decoration-none">
                                 <i class="fas fa-user me-1"></i>{{ inscription.user.username }}
                             </a>
-                            <small class="text-muted d-block">Iscritto il {{ inscription.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            <small class="text-muted d-block">Iscritto il {{ inscription.created_at|datetime_local }}</small>
                         </div>
                         
                         {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
@@ -49,7 +49,7 @@
                             <a href="{{ url_for('admin.user.user_detail', user_id=inscription.user_id) }}" class="text-decoration-none">
                                 <i class="fas fa-user me-1"></i>{{ inscription.user.username }}
                             </a>
-                            <small class="text-muted d-block">In lista dal {{ inscription.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            <small class="text-muted d-block">In lista dal {{ inscription.created_at|datetime_local }}</small>
                         </div>
                         
                         {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}

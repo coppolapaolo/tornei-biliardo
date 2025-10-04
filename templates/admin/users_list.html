@@ -77,7 +77,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <small>{{ user.created_at.strftime('%d/%m/%Y') }}</small>
+                                    <small>{{ user.created_at|date_local }}</small>
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">

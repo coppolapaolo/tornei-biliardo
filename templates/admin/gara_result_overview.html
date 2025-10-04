@@ -7,7 +7,7 @@
     <div>
         <h1>Overview Risultati - Gara {{ gara.number }}</h1>
         <p class="text-muted mb-0">
-            {{ gara.campionato.name }} - {{ gara.date.strftime('%d/%m/%Y') }} - {{ gara.discipline }}
+            {{ gara.campionato.name }} - {{ gara.date|date_local }} - {{ gara.discipline }}
             {% if gara.best_of %}
                 (Al meglio di {{ gara.distance }})
             {% else %}

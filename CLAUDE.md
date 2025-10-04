@@ -31,6 +31,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Essential Commands
 ```bash
+# Activate virtual environment (REQUIRED for all commands)
+source venv/bin/activate
+
 # Start development server
 python app.py
 
@@ -372,6 +375,30 @@ Platform built to foster pool community growth and engagement:
 - **Advanced Management**: Round locking, bulk operations, match modifications
 
 ## Recent Development History
+
+### Local Date Formatting System (October 2025) - ✅ COMPLETED
+Implemented browser-locale date formatting to eliminate inconsistencies between `dd/mm/yyyy` and `mm/dd/yyyy` formats:
+
+### Local Date Formatting System (October 2025) - ✅ COMPLETED
+Implemented browser-locale date formatting to eliminate inconsistencies between `dd/mm/yyyy` and `mm/dd/yyyy` formats:
+
+#### Implementation
+- **JavaScript Auto-Formatting**: Added `TourneyUtils.formatDate()` functions in `base.html`
+- **Locale Detection**: Uses `navigator.language` with fallback to `'it-IT'`
+- **Jinja Filters**: Created `date_local`, `datetime_local`, `time_local` filters
+- **Template Migration**: Automated migration of 50+ templates with script
+- **Pattern**: `{{ date|date_local }}` replaces `{{ date.strftime('%d/%m/%Y') }}`
+- **UTC Consistency**: Both `data-utc` and `data-datetime` use same locale
+
+- ✅ **Formato Consistente**: Sempre dd/mm/yyyy indipendentemente dal browser dell'utente
+- ✅ **Consistency**: Unified format across entire application
+- ✅ **User Experience**: Users see dates in their preferred format
+- ✅ **Maintainability**: Centralized date formatting logic
+
+#### Migration Script
+- `scripts/migrate_date_formatting.py`: Automated template conversion
+- Replaced 56 `strftime()` calls across 50 template files
+- See [docs/LOCAL_DATE_FORMATTING.md](docs/LOCAL_DATE_FORMATTING.md) for complete guide
 
 ### Type Safety & Architectural Fixes (October 2025) - ✅ COMPLETED
 Phase 4 refactoring completed with focus on type safety and architectural corrections:

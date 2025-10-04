@@ -24,7 +24,7 @@
                 <span class="badge bg-primary">Giocatore</span>
             {% endif %}
         </p>
-        <p><strong>Registrato:</strong> {{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+        <p><strong>Registrato:</strong> {{ user.created_at|datetime_local }}</p>
         
         {% if debug_info.debug_mode %}
             <hr>

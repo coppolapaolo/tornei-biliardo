@@ -167,7 +167,7 @@
                                 <strong>{{ attempt.score }}</strong>
                             {% endif %}
                         </div>
-                        <small class="text-muted">{{ attempt.created_at.strftime('%d/%m %H:%M') }}</small>
+                        <small class="text-muted">{{ attempt.created_at|datetime_local }}</small>
                     </div>
                     {% endfor %}
                 </div>

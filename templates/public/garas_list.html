@@ -41,7 +41,7 @@
                                         {% endif %}
                                     </small>
                                 </td>
-                                <td>{{ gara.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ gara.date|date_local }}</td>
                                 <td>{{ gara.location or "-" }}</td>
                                 <td>
                                     {% set badge_info = gara.get_status_badge_info() %}

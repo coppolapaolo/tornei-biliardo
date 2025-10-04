@@ -43,37 +43,62 @@
         getTimezone: function() {
             return Intl.DateTimeFormat().resolvedOptions().timeZone;
         },
-        
-        // Converti UTC string in locale
+
+        // Converti UTC string in locale italiano
         utcToLocal: function(utcString) {
             if (!utcString) return 'N/A';
             const utcDate = new Date(utcString + 'Z'); // Force UTC
-            return utcDate.toLocaleString();
+            // Forza locale italiano per formato dd/mm/yyyy
+            return utcDate.toLocaleString('it-IT');
         },
-        
+
         // Converti locale in UTC per form
         localToUtc: function(localDatetimeString) {
             const localDate = new Date(localDatetimeString);
             return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
         },
-        
+
         // Ottieni orario attuale locale per confronti
         getCurrentLocal: function() {
             return new Date();
         },
-        
+
         // Verifica se un orario UTC è nel futuro
         isInFuture: function(utcString) {
             if (!utcString) return false;
             const utcDate = new Date(utcString + 'Z');
             return utcDate > new Date();
         },
-        
+
         // Verifica se un orario UTC è nel passato
         isInPast: function(utcString) {
             if (!utcString) return false;
             const utcDate = new Date(utcString + 'Z');
             return utcDate < new Date();
+        },
+
+        // Formatta data in formato italiano (dd/mm/yyyy)
+        formatDate: function(dateString, includeTime) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString; // Ritorna originale se invalida
+
+            const options = includeTime
+                ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
+                : { year: 'numeric', month: '2-digit', day: '2-digit' };
+
+            // Forza locale italiano per formato dd/mm/yyyy consistente
+            return date.toLocaleString('it-IT', options);
+        },
+
+        // Formatta solo la data (senza ora)
+        formatDateOnly: function(dateString) {
+            return this.formatDate(dateString, false);
+        },
+
+        // Formatta data e ora
+        formatDateTime: function(dateString) {
+            return this.formatDate(dateString, true);
         }
     };
 
@@ -84,7 +109,7 @@
             const utcTime = element.getAttribute('data-utc');
             element.textContent = TourneyUtils.utcToLocal(utcTime);
         });
-        
+
         // Cerca tutti i form datetime-local e imposta valori corretti
         document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
             if (input.hasAttribute('data-utc-value')) {
@@ -92,6 +117,18 @@
                 const localValue = TourneyUtils.localToUtc(utcValue);
                 input.value = localValue;
             }
+        });
+
+        // Formatta tutte le date con attributo data-date (solo data)
+        document.querySelectorAll('[data-date]').forEach(function(element) {
+            const dateValue = element.getAttribute('data-date');
+            element.textContent = TourneyUtils.formatDateOnly(dateValue);
+        });
+
+        // Formatta tutte le date con attributo data-datetime (data e ora)
+        document.querySelectorAll('[data-datetime]').forEach(function(element) {
+            const dateValue = element.getAttribute('data-datetime');
+            element.textContent = TourneyUtils.formatDateTime(dateValue);
         });
     });
     </script>    

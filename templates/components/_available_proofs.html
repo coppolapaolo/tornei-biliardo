@@ -11,7 +11,7 @@
                 <div>
                     <strong>Gara {{ gara.number }}</strong> - {{ gara.discipline }}
                     {% if gara.name %} ({{ gara.name }}){% endif %}
-                    <br><small class="text-muted">{{ gara.date.strftime('%d/%m/%Y') }} - 
+                    <br><small class="text-muted">{{ gara.date|date_local }} - 
                     {% if gara.best_of %}
                         Al meglio di {{ gara.distance }}
                     {% else %}
@@ -27,7 +27,7 @@
                     <span class="badge bg-warning ms-1">
                         <i class="fas fa-clock"></i> 
                         Scade: <span data-utc="{{ gara.inscription_end.isoformat() if gara.inscription_end else '' }}">
-                            {{ gara.inscription_end.strftime('%d/%m/%Y %H:%M') if gara.inscription_end else 'N/A' }}
+                            {{ gara.inscription_end|datetime_local if gara.inscription_end else 'N/A' }}
                         </span>
                     </span>
                     {% if gara.entry_fee > 0 %}

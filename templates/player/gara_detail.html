@@ -25,7 +25,7 @@
                         {% endif %}
                     </div>
                     
-                    <p><strong>Data iscrizione:</strong> {{ inscription.inscription_date.strftime('%d/%m/%Y %H:%M') if inscription.inscription_date else 'N/D' }}</p>
+                    <p><strong>Data iscrizione:</strong> {{ inscription.inscription_date|datetime_local if inscription.inscription_date else 'N/D' }}</p>
                     
                     {% if inscription.initial_order %}
                         <p><strong>Ordine sorteggio:</strong> {{ inscription.initial_order }}</p>

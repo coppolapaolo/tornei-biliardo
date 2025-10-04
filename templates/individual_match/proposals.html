@@ -73,7 +73,7 @@
                                     {{ proposal.status.value.title() }}
                                 </span>
                             </div>
-                            <small class="text-muted">{{ proposal.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            <small class="text-muted">{{ proposal.created_at|datetime_local }}</small>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -81,7 +81,7 @@
                                     <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}<br>
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}<br>
                                         <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
                                         {% if proposal.entry_fee %}
                                         <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
@@ -142,7 +142,7 @@
                                     {{ proposal.status.value.title() }}
                                 </span>
                             </div>
-                            <small class="text-muted">{{ proposal.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            <small class="text-muted">{{ proposal.created_at|datetime_local }}</small>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -150,7 +150,7 @@
                                     <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}<br>
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}<br>
                                         <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
                                         {% if proposal.entry_fee %}
                                         <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
@@ -218,7 +218,7 @@
                                 <strong>{{ proposal.proposer.username }}</strong> cerca un avversario
                                 <span class="badge bg-success ms-2">Aperto</span>
                             </div>
-                            <small class="text-muted">{{ proposal.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            <small class="text-muted">{{ proposal.created_at|datetime_local }}</small>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -226,7 +226,7 @@
                                     <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') if proposal.scheduled_at }}<br>
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}<br>
                                         <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
                                         {% if proposal.entry_fee %}
                                         <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}

@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col-md-4">
                 <strong>Tipo:</strong> {{ campionato.campionato_type }}<br>
-                <strong>Creato:</strong> {{ campionato.created_at.strftime('%d/%m/%Y') }}
+                <strong>Creato:</strong> {{ campionato.created_at|date_local }}
             </div>
             <div class="col-md-4">
                 <strong>Opzioni:</strong><br>

@@ -37,7 +37,7 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled small">
-                        <li><i class="fas fa-calendar"></i> {{ gara.date.strftime('%d/%m/%Y') }}</li>
+                        <li><i class="fas fa-calendar"></i> {{ gara.date|date_local }}</li>
                         <li><i class="fas fa-map-marker-alt"></i> {{ gara.location or "TBD" }}</li>
                         <li><i class="fas fa-gamepad"></i> {{ gara.discipline|title }}</li>
                         <li><i class="fas fa-layer-group"></i> Turno {{ gara.current_round }}/{{ gara.rounds_count }}</li>

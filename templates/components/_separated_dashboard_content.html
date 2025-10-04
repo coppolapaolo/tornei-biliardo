@@ -226,7 +226,7 @@
                 {% if item.next_prova_date %}
                   <small class="text-success fw-bold">
                     <i class="fas fa-calendar me-1"></i>
-                    {{ item.next_prova_date.strftime('%d/%m/%Y') }}
+                    {{ item.next_prova_date|date_local }}
                   </small>
                 {% endif %}
                 
@@ -239,7 +239,7 @@
                 {% if item.entity.inscription_end %}
                   <small class="text-warning d-block mt-1">
                     <i class="fas fa-clock"></i>
-                    Scade: {{ item.entity.inscription_end.strftime('%d/%m %H:%M') }}
+                    Scade: {{ item.entity.inscription_end|datetime_local }}
                   </small>
                 {% endif %}
               </div>
@@ -431,7 +431,7 @@
                 {% if item.next_prova_date %}
                   <small class="text-success fw-bold">
                     <i class="fas fa-calendar me-1"></i>
-                    Prossima: {{ item.next_prova_date.strftime('%d/%m/%Y') }}
+                    Prossima: {{ item.next_prova_date|date_local }}
                   </small>
                 {% else %}
                   <small class="text-muted">

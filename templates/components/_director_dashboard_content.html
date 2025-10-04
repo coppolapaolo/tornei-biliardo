@@ -28,7 +28,7 @@
               <small class="text-muted">
                 <i class="fas fa-user"></i> {{ proposal.proposer.username }}<br>
                 <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%d/%m/%Y %H:%M') }}<br>
+                <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local }}<br>
                 <i class="fas fa-trophy"></i> {{ proposal.distance }} {{ 'Best of' if proposal.best_of else 'Race to' }}
               </small>
             </p>

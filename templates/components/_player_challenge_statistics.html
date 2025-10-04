@@ -91,7 +91,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <small class="text-muted">{{ attempt.created_at.strftime('%d/%m/%Y') }}</small>
+                            <small class="text-muted">{{ attempt.created_at|date_local }}</small>
                         </td>
                     </tr>
                     {% endfor %}

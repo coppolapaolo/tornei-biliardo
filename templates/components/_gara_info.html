@@ -7,7 +7,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <strong>Data:</strong> {{ gara.date.strftime('%d/%m/%Y') }}{% if gara.time %} {{ gara.time.strftime('%H:%M') }}{% endif %}<br>
+                    <strong>Data:</strong> {{ gara.date|date_local }}{% if gara.time %} {{ gara.time|time_local }}{% endif %}<br>
                     <strong>Turni:</strong> {{ gara.rounds_count }}<br>
                     <strong>Tipo torneo:</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}
                 </div>

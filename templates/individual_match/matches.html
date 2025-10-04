@@ -115,7 +115,7 @@
                             <div class="text-center text-muted small mb-3">
                                 <div><i class="fas fa-map-marker-alt"></i> {{ match.location }}</div>
                                 {% if match.scheduled_at %}
-                                <div><i class="fas fa-clock"></i> {{ match.scheduled_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                                <div><i class="fas fa-clock"></i> {{ match.scheduled_at|datetime_local }}</div>
                                 {% endif %}
                                 <div>{{ match.distance }} {{ 'al meglio di' if match.best_of else 'esattamente' }}</div>
                             </div>
@@ -151,9 +151,9 @@
                         {% if match.completed_at or match.started_at %}
                         <div class="card-footer text-muted text-center small">
                             {% if match.completed_at %}
-                            Completato il {{ match.completed_at.strftime('%d/%m/%Y') }}
+                            Completato il {{ match.completed_at|date_local }}
                             {% elif match.started_at %}
-                            Iniziato il {{ match.started_at.strftime('%d/%m/%Y') }}
+                            Iniziato il {{ match.started_at|date_local }}
                             {% endif %}
                         </div>
                         {% endif %}

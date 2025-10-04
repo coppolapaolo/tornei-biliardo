@@ -15,7 +15,7 @@
                 {{ match.gara.distance }} rack esatti
             {% endif %}
         </p>
-        <p><strong>Data:</strong> {{ match.gara.date.strftime('%d/%m/%Y') }}</p>
+        <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>
         {% if match.gara.location %}
             <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
         {% endif %}

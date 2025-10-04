@@ -54,7 +54,7 @@
                         <div class="mb-2">
                             <i class="fas fa-calendar text-success"></i>
                             <h6 class="mb-0">Creata</h6>
-                            <small class="text-muted">{{ challenge.created_at.strftime('%d/%m/%Y') }}</small>
+                            <small class="text-muted">{{ challenge.created_at|date_local }}</small>
                         </div>
                     </div>
                 </div>

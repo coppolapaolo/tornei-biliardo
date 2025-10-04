@@ -37,7 +37,7 @@
                             <small class="text-muted">
                                 <i class="fas fa-user"></i> Da: {{ proposal.proposer.username }}<br>
                                 <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                                <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local }}<br>
                                 {% if proposal.distance %}<i class="fas fa-trophy"></i> {{ proposal.distance }} {{ 'Al meglio di' if proposal.best_of else 'Esatto numero' }}<br>{% endif %}
                             </small>
                         </p>
@@ -94,7 +94,7 @@
                         <p class="card-text">
                             <small class="text-muted">
                                 <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                                <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local }}<br>
                                 {% if proposal.distance %}<i class="fas fa-trophy"></i> {{ proposal.distance }} {{ 'Al meglio di' if proposal.best_of else 'Esatto numero' }}<br>{% endif %}
                             </small>
                         </p>
@@ -156,7 +156,7 @@
                             <small class="text-muted">
                                 <i class="fas fa-user"></i> Proposto da: {{ proposal.proposer.username }}<br>
                                 <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                <i class="fas fa-clock"></i> {{ proposal.scheduled_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                                <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local }}<br>
                                 {% if proposal.distance %}<i class="fas fa-trophy"></i> {{ proposal.distance }} {{ 'Al meglio di' if proposal.best_of else 'Esatto numero' }}<br>{% endif %}
                             </small>
                         </p>

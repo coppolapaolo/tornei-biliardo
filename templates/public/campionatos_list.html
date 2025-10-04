@@ -23,7 +23,7 @@
                                 {% endif %}
                                 
                                 <ul class="list-unstyled">
-                                    <li><i class="fas fa-calendar"></i> Creato: {{ campionato.created_at.strftime('%d/%m/%Y') }}</li>
+                                    <li><i class="fas fa-calendar"></i> Creato: {{ campionato.created_at|date_local }}</li>
                                     <li><i class="fas fa-users"></i> Stato: {{ "Attivo" if campionato.is_active else "Non Attivo" }}</li>
                                 </ul>
                             </div>

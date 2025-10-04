@@ -14,7 +14,7 @@
               vs {% if m.is_bye %}Bye{% else %}
                    {% if m.player1_id == current_user.id %}{{ m.player2.username }}{% else %}{{ m.player1.username }}{% endif %}
                  {% endif %}
-              – {{ m.gara.date.strftime('%d/%m/%Y') if m.gara.date else '-' }}
+              – {{ m.gara.date|date_local if m.gara.date else '-' }}
             </small>
           </div>
           <div class="text-end">
