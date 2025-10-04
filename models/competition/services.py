@@ -48,8 +48,10 @@ class GaraService:
         **kwargs,
     ) -> Gara:
         """Crea una Gara (anche standalone se `campionato_id` è None)."""
-        # Guard: una Gara deve appartenere a un campionato o avere un
-        # direttore esplicito
+        # Business Rule: ogni gara deve avere un responsabile
+        # - Gara di campionato: gestita dai directors del campionato
+        # - Gara standalone: richiede director_id esplicito (tipicamente
+        #   l'admin/director che la crea)
         if not campionato_id and not director_id:
             raise ValueError(
                 "Una Gara deve avere un campionato_id o un director_id (standalone)."
