@@ -1029,7 +1029,12 @@ def request_director():
 @transactional(domain="notification")
 def notifications():
     """Mostra le notifiche dell'utente (accessibile a tutti gli utenti autenticati)"""
-    from models.notification.models import Notification, NotificationStatus
+    from models.notification.models import (
+        Notification,
+        NotificationStatus,
+        NotificationPreference,
+        NotificationType,
+    )
 
     # Get all notifications for current user
     user_notifications = (
@@ -1044,8 +1049,17 @@ def notifications():
             notif.status = NotificationStatus.SENT
             notif.sent_at = datetime.utcnow()
 
+    # Get user's global auto-delete preference
+    # Use SYSTEM_ANNOUNCEMENT type as global setting
+    preference = NotificationPreference.get_user_preference(
+        current_user.id, NotificationType.SYSTEM_ANNOUNCEMENT
+    )
+    auto_delete_days = preference.auto_delete_days if preference else None
+
     return render_template(
-        "player/notifications.html", notifications=user_notifications
+        "player/notifications.html",
+        notifications=user_notifications,
+        auto_delete_days=auto_delete_days,
     )
 
 
@@ -1191,132 +1205,45 @@ def delete_selected_notifications():
     return redirect(url_for("player.notifications"))
 
 
-@player_bp.route("/notifications/settings", methods=["GET", "POST"])
+@player_bp.route("/notifications/update_auto_delete", methods=["POST"])
 @login_required
-def notification_settings():
-    """Gestione impostazioni notifiche (auto-cancellazione)"""
+def update_auto_delete():
+    """Aggiorna impostazione globale auto-cancellazione notifiche"""
     from models.notification.services import NotificationService
     from models.notification.models import NotificationType
 
-    if request.method == "POST":
-        # Process form submission
-        for notification_type in NotificationType:
-            enabled_key = f"enabled_{notification_type.value}"
-            days_key = f"days_{notification_type.value}"
+    is_enabled = "auto_delete_enabled" in request.form
+    days = request.form.get("auto_delete_days")
 
-            is_enabled = enabled_key in request.form
-            days = request.form.get(days_key)
+    if is_enabled and days:
+        try:
+            days_int = int(days)
+            if days_int < 1 or days_int > 365:
+                flash("Il numero di giorni deve essere tra 1 e 365.", "warning")
+                return redirect(url_for("player.notifications"))
 
-            if is_enabled and days:
-                try:
-                    days_int = int(days)
-                    NotificationService.set_user_preference(
-                        user_id=current_user.id,
-                        notification_type=notification_type,
-                        auto_delete_days=days_int,
-                    )
-                except (ValueError, TypeError):
-                    pass
-            else:
-                # Disable auto-delete for this type
-                NotificationService.set_user_preference(
-                    user_id=current_user.id,
-                    notification_type=notification_type,
-                    auto_delete_days=None,
-                )
-
-        flash("Impostazioni salvate con successo.", "success")
-        return redirect(url_for("player.notifications"))
-
-    # GET request - show settings page
-    preferences = NotificationService.get_user_preferences(current_user.id)
-
-    # Prepare notification types with display names and descriptions
-    notification_types_data = []
-    type_descriptions = {
-        NotificationType.MATCH_PROPOSAL: {
-            "display_name": "Proposta Partita",
-            "description": "Ricevi una proposta di partita da un altro giocatore",
-        },
-        NotificationType.MATCH_ACCEPTED: {
-            "display_name": "Partita Accettata",
-            "description": "La tua proposta di partita è stata accettata",
-        },
-        NotificationType.MATCH_DECLINED: {
-            "display_name": "Partita Rifiutata",
-            "description": "La tua proposta di partita è stata rifiutata",
-        },
-        NotificationType.MATCH_CANCELLED: {
-            "display_name": "Partita Cancellata",
-            "description": "Una partita programmata è stata cancellata",
-        },
-        NotificationType.MATCH_REMINDER: {
-            "display_name": "Promemoria Partita",
-            "description": "Promemoria per una partita imminente",
-        },
-        NotificationType.TOURNAMENT_INVITATION: {
-            "display_name": "Invito Torneo",
-            "description": "Sei stato invitato a un torneo",
-        },
-        NotificationType.TOURNAMENT_REGISTRATION: {
-            "display_name": "Registrazione Torneo",
-            "description": "Le iscrizioni per un torneo sono aperte",
-        },
-        NotificationType.TOURNAMENT_STARTING: {
-            "display_name": "Inizio Torneo",
-            "description": "Un torneo sta per iniziare",
-        },
-        NotificationType.TOURNAMENT_RESULTS: {
-            "display_name": "Risultati Torneo",
-            "description": "I risultati di un torneo sono disponibili",
-        },
-        NotificationType.PLAYOFF_INVITATION: {
-            "display_name": "Invito Playoff",
-            "description": "Sei stato qualificato per i playoff",
-        },
-        NotificationType.PLAYOFF_DEADLINE: {
-            "display_name": "Scadenza Playoff",
-            "description": "Scadenza per la risposta ai playoff",
-        },
-        NotificationType.CHALLENGE_ASSIGNED: {
-            "display_name": "Sfida Assegnata",
-            "description": "Ti è stata assegnata una nuova sfida",
-        },
-        NotificationType.EXAM_AVAILABLE: {
-            "display_name": "Esame Disponibile",
-            "description": "Un nuovo esame è disponibile",
-        },
-        NotificationType.SYSTEM_ANNOUNCEMENT: {
-            "display_name": "Annuncio Sistema",
-            "description": "Annuncio importante del sistema",
-        },
-        NotificationType.ACCOUNT_UPDATE: {
-            "display_name": "Aggiornamento Account",
-            "description": "Aggiornamenti relativi al tuo account",
-        },
-        NotificationType.ADMIN_ACTION_REQUIRED: {
-            "display_name": "Azione Admin Richiesta",
-            "description": "Azione richiesta dall'amministratore",
-        },
-    }
-
-    for notification_type in NotificationType:
-        type_info = type_descriptions.get(notification_type, {})
-        notification_types_data.append(
-            {
-                "value": notification_type.value,
-                "display_name": type_info.get(
-                    "display_name", notification_type.value.replace("_", " ").title()
-                ),
-                "description": type_info.get("description", ""),
-            }
+            # Set global auto-delete using SYSTEM_ANNOUNCEMENT as global setting
+            NotificationService.set_user_preference(
+                user_id=current_user.id,
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                auto_delete_days=days_int,
+            )
+            flash(
+                f"Auto-cancellazione attivata: le notifiche lette verranno eliminate dopo {days_int} giorni.",
+                "success",
+            )
+        except (ValueError, TypeError):
+            flash("Numero di giorni non valido.", "warning")
+    else:
+        # Disable auto-delete
+        NotificationService.set_user_preference(
+            user_id=current_user.id,
+            notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+            auto_delete_days=None,
         )
+        flash("Auto-cancellazione disattivata.", "success")
 
-    return render_template(
-        "player/notification_settings.html",
-        preferences=preferences,
-        notification_types=notification_types_data,
-    )
+    return redirect(url_for("player.notifications"))
 
 
 @player_bp.route("/delete_account", methods=["GET", "POST"])
