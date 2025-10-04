@@ -9,10 +9,13 @@ the application.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, TYPE_CHECKING
 
 from .services import NotificationService
 from .models import NotificationType, NotificationPriority
+
+if TYPE_CHECKING:
+    from .models import Notification
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,7 @@ class NotificationFactory:
         related_entities: Optional[Dict[str, Any]] = None,
         action_url: Optional[str] = None,
         action_text: Optional[str] = None,
-    ) -> List[Optional]:
+    ) -> List[Optional[Notification]]:
         """
         Create notifications for multiple admin users.
 
@@ -84,7 +87,7 @@ class NotificationFactory:
         action_url: Optional[str] = None,
         action_text: Optional[str] = None,
         continue_on_error: bool = True,
-    ) -> List[Optional]:
+    ) -> List[Optional[Notification]]:
         """
         Create notifications for multiple users with error handling.
 
@@ -142,7 +145,7 @@ class NotificationFactory:
         message_template: str,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         tournament_id: Optional[int] = None,
-    ) -> List[Optional]:
+    ) -> List[Optional[Notification]]:
         """
         Create tournament-related notifications for multiple users.
 
@@ -180,7 +183,7 @@ class NotificationFactory:
         notes: Optional[str] = None,
         match_id: Optional[int] = None,
         proposal_id: Optional[int] = None,
-    ) -> Optional:
+    ) -> Optional[Notification]:
         """
         Create match-related notification with standardized content.
 
@@ -261,7 +264,7 @@ class NotificationFactory:
         priority: NotificationPriority = NotificationPriority.NORMAL,
         update_type: Optional[str] = None,
         related_entities: Optional[Dict[str, Any]] = None,
-    ) -> Optional:
+    ) -> Optional[Notification]:
         """
         Create account update notification with standardized error handling.
 
@@ -301,7 +304,7 @@ class NotificationFactory:
         priority: NotificationPriority = NotificationPriority.NORMAL,
         action_url: Optional[str] = None,
         action_text: Optional[str] = None,
-    ) -> List[Optional]:
+    ) -> List[Optional[Notification]]:
         """
         Create system announcement for multiple users.
 
@@ -327,7 +330,7 @@ class NotificationFactory:
         )
 
     @staticmethod
-    def get_notification_stats(notifications: List[Optional]) -> Dict[str, int]:
+    def get_notification_stats(notifications: List[Optional[Notification]]) -> Dict[str, Union[int, float]]:
         """
         Get statistics from a list of notification creation results.
 

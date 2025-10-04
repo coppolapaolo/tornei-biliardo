@@ -35,7 +35,7 @@ class TestInscriptionServiceTDD:
         db_session.add(gara)
         db_session.commit()
 
-        from models.competition.services import InscriptionService
+        from models.competition.inscription_service import InscriptionService
 
         # Metodo deve essere spostato da GaraService
         start_time = datetime.now() + timedelta(minutes=10)
@@ -67,7 +67,7 @@ class TestInscriptionServiceTDD:
         db_session.add(gara)
         db_session.commit()
 
-        from models.competition.services import InscriptionService
+        from models.competition.inscription_service import InscriptionService
 
         # Metodo deve essere spostato da GaraService
         new_start = datetime.now() + timedelta(minutes=30)
@@ -98,7 +98,7 @@ class TestInscriptionServiceTDD:
         db_session.add(gara)
         db_session.commit()
 
-        from models.competition.services import InscriptionService
+        from models.competition.inscription_service import InscriptionService
 
         # Date sbagliate: fine prima di inizio
         wrong_start = datetime.now() + timedelta(days=2)

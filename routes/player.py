@@ -524,7 +524,7 @@ def inscribe_to_gara(gara_id):
         return redirect(url_for("player.dashboard"))
 
     # Usa il service per gestire automaticamente la logica waitlist
-    from models.competition.services import InscriptionService
+    from models.competition.inscription_service import InscriptionService
 
     inscription = InscriptionService.inscribe_user(
         user_id=current_user.id, gara_id=gara_id
@@ -749,8 +749,7 @@ def profile():
             .join(GaraChallenge)
             .join(Challenge)
             .order_by(
-                # type: ignore[reportAttributeAccessIssue]
-                GaraChallengeAttempt.attempted_at.desc()
+                GaraChallengeAttempt.attempted_at.desc()  # type: ignore[attr-defined]
             )
             .all()
         )
@@ -1169,6 +1168,157 @@ def mark_all_notifications_read():
     return redirect(url_for("player.notifications"))
 
 
+@player_bp.route("/notifications/delete_selected", methods=["POST"])
+@login_required
+def delete_selected_notifications():
+    """Cancella le notifiche selezionate"""
+    from models.notification.services import NotificationService
+
+    notification_ids = request.form.getlist("notification_ids[]")
+
+    if not notification_ids:
+        flash("Nessuna notifica selezionata.", "warning")
+        return redirect(url_for("player.notifications"))
+
+    # Convert to integers
+    notification_ids = [int(nid) for nid in notification_ids]
+
+    count = NotificationService.delete_notifications_bulk(
+        notification_ids, current_user.id
+    )
+
+    flash(f"{count} notifiche eliminate con successo.", "success")
+    return redirect(url_for("player.notifications"))
+
+
+@player_bp.route("/notifications/settings", methods=["GET", "POST"])
+@login_required
+def notification_settings():
+    """Gestione impostazioni notifiche (auto-cancellazione)"""
+    from models.notification.services import NotificationService
+    from models.notification.models import NotificationType
+
+    if request.method == "POST":
+        # Process form submission
+        for notification_type in NotificationType:
+            enabled_key = f"enabled_{notification_type.value}"
+            days_key = f"days_{notification_type.value}"
+
+            is_enabled = enabled_key in request.form
+            days = request.form.get(days_key)
+
+            if is_enabled and days:
+                try:
+                    days_int = int(days)
+                    NotificationService.set_user_preference(
+                        user_id=current_user.id,
+                        notification_type=notification_type,
+                        auto_delete_days=days_int,
+                    )
+                except (ValueError, TypeError):
+                    pass
+            else:
+                # Disable auto-delete for this type
+                NotificationService.set_user_preference(
+                    user_id=current_user.id,
+                    notification_type=notification_type,
+                    auto_delete_days=None,
+                )
+
+        flash("Impostazioni salvate con successo.", "success")
+        return redirect(url_for("player.notifications"))
+
+    # GET request - show settings page
+    preferences = NotificationService.get_user_preferences(current_user.id)
+
+    # Prepare notification types with display names and descriptions
+    notification_types_data = []
+    type_descriptions = {
+        NotificationType.MATCH_PROPOSAL: {
+            "display_name": "Proposta Partita",
+            "description": "Ricevi una proposta di partita da un altro giocatore",
+        },
+        NotificationType.MATCH_ACCEPTED: {
+            "display_name": "Partita Accettata",
+            "description": "La tua proposta di partita è stata accettata",
+        },
+        NotificationType.MATCH_DECLINED: {
+            "display_name": "Partita Rifiutata",
+            "description": "La tua proposta di partita è stata rifiutata",
+        },
+        NotificationType.MATCH_CANCELLED: {
+            "display_name": "Partita Cancellata",
+            "description": "Una partita programmata è stata cancellata",
+        },
+        NotificationType.MATCH_REMINDER: {
+            "display_name": "Promemoria Partita",
+            "description": "Promemoria per una partita imminente",
+        },
+        NotificationType.TOURNAMENT_INVITATION: {
+            "display_name": "Invito Torneo",
+            "description": "Sei stato invitato a un torneo",
+        },
+        NotificationType.TOURNAMENT_REGISTRATION: {
+            "display_name": "Registrazione Torneo",
+            "description": "Le iscrizioni per un torneo sono aperte",
+        },
+        NotificationType.TOURNAMENT_STARTING: {
+            "display_name": "Inizio Torneo",
+            "description": "Un torneo sta per iniziare",
+        },
+        NotificationType.TOURNAMENT_RESULTS: {
+            "display_name": "Risultati Torneo",
+            "description": "I risultati di un torneo sono disponibili",
+        },
+        NotificationType.PLAYOFF_INVITATION: {
+            "display_name": "Invito Playoff",
+            "description": "Sei stato qualificato per i playoff",
+        },
+        NotificationType.PLAYOFF_DEADLINE: {
+            "display_name": "Scadenza Playoff",
+            "description": "Scadenza per la risposta ai playoff",
+        },
+        NotificationType.CHALLENGE_ASSIGNED: {
+            "display_name": "Sfida Assegnata",
+            "description": "Ti è stata assegnata una nuova sfida",
+        },
+        NotificationType.EXAM_AVAILABLE: {
+            "display_name": "Esame Disponibile",
+            "description": "Un nuovo esame è disponibile",
+        },
+        NotificationType.SYSTEM_ANNOUNCEMENT: {
+            "display_name": "Annuncio Sistema",
+            "description": "Annuncio importante del sistema",
+        },
+        NotificationType.ACCOUNT_UPDATE: {
+            "display_name": "Aggiornamento Account",
+            "description": "Aggiornamenti relativi al tuo account",
+        },
+        NotificationType.ADMIN_ACTION_REQUIRED: {
+            "display_name": "Azione Admin Richiesta",
+            "description": "Azione richiesta dall'amministratore",
+        },
+    }
+
+    for notification_type in NotificationType:
+        type_info = type_descriptions.get(notification_type, {})
+        notification_types_data.append(
+            {
+                "value": notification_type.value,
+                "display_name": type_info.get(
+                    "display_name", notification_type.value.replace("_", " ").title()
+                ),
+                "description": type_info.get("description", ""),
+            }
+        )
+
+    return render_template(
+        "player/notification_settings.html",
+        preferences=preferences,
+        notification_types=notification_types_data,
+    )
+
+
 @player_bp.route("/delete_account", methods=["GET", "POST"])
 @login_required
 @player_only
@@ -1247,7 +1397,7 @@ def unsubscribe_from_gara(gara_id):
         return redirect(url_for("player.dashboard"))
 
     # Procedi con la disiscrizione usando il servizio
-    from models.competition.services import InscriptionService
+    from models.competition.inscription_service import InscriptionService
 
     success = InscriptionService.uninscribe_user(current_user.id, gara_id)
 

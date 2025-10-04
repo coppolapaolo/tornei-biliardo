@@ -1307,7 +1307,7 @@ def remove_director(gara_id):
 @gara_manager_required
 def admin_uninscribe_user(gara_id, user_id):
     """Disiscrive un utente dalla gara (solo admin/direttori)."""
-    from models.competition.services import InscriptionService
+    from models.competition.inscription_service import InscriptionService
     from models.user.models import User
     from models.competition.models import Gara
 

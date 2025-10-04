@@ -211,6 +211,7 @@ class NotificationService:
         quiet_hours_end: Optional[str] = None,
         max_per_day: Optional[int] = None,
         min_interval_minutes: Optional[int] = None,
+        auto_delete_days: Optional[int] = None,
     ) -> NotificationPreference:
         """Set user preference for a notification type."""
 
@@ -225,6 +226,8 @@ class NotificationService:
                 preference.max_per_day = max_per_day
             if min_interval_minutes is not None:
                 preference.min_interval_minutes = min_interval_minutes
+            if auto_delete_days is not None:
+                preference.auto_delete_days = auto_delete_days
         else:
             preference = NotificationPreference(
                 user_id=user_id,
@@ -233,6 +236,7 @@ class NotificationService:
                 email_enabled=email_enabled,
                 max_per_day=max_per_day,
                 min_interval_minutes=min_interval_minutes,
+                auto_delete_days=auto_delete_days,
             )
             db.session.add(preference)
 
@@ -301,6 +305,62 @@ class NotificationService:
             db.session.delete(notification)
 
         return count
+
+    @staticmethod
+    @transactional(domain="notification")
+    def delete_notifications_bulk(notification_ids: List[int], user_id: int) -> int:
+        """Delete multiple notifications by IDs for a specific user."""
+        notifications = Notification.query.filter(
+            Notification.id.in_(notification_ids),  # type: ignore[attr-defined]
+            Notification.user_id == user_id,
+        ).all()
+
+        count = len(notifications)
+        for notification in notifications:
+            db.session.delete(notification)
+
+        return count
+
+    @staticmethod
+    @transactional(domain="notification")
+    def auto_delete_by_user_preferences() -> int:
+        """Auto-delete old notifications based on user preferences."""
+        from sqlalchemy import and_
+
+        total_deleted = 0
+
+        # Get all users with auto-delete preferences set
+        preferences = NotificationPreference.query.filter(
+            NotificationPreference.auto_delete_days.isnot(None)  # type: ignore[attr-defined]
+        ).all()
+
+        for preference in preferences:
+            if not preference.auto_delete_days:
+                continue
+
+            cutoff_date = datetime.utcnow() - timedelta(days=preference.auto_delete_days)
+
+            # Delete old notifications of this type for this user
+            old_notifications = Notification.query.filter(
+                and_(
+                    Notification.user_id == preference.user_id,
+                    Notification.notification_type == preference.notification_type,
+                    Notification.created_at <= cutoff_date,
+                    Notification.status.in_(  # type: ignore[attr-defined]
+                        [
+                            NotificationStatus.READ,
+                            NotificationStatus.DISMISSED,
+                            NotificationStatus.EXPIRED,
+                        ]
+                    ),
+                )
+            ).all()
+
+            for notification in old_notifications:
+                db.session.delete(notification)
+                total_deleted += 1
+
+        return total_deleted
 
     # Specific notification creators for common use cases
 

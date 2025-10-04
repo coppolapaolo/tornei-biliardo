@@ -5,13 +5,18 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-bell"></i> Le mie Notifiche</h1>
-    {% if notifications %}
-    <form action="{{ url_for('player.mark_all_notifications_read') }}" method="POST" style="display: inline;">
-        <button type="submit" class="btn btn-outline-secondary">
-            <i class="fas fa-check-double"></i> Segna tutte come lette
-        </button>
-    </form>
-    {% endif %}
+    <div>
+        {% if notifications %}
+        <a href="{{ url_for('player.notification_settings') }}" class="btn btn-outline-info me-2">
+            <i class="fas fa-cog"></i> Impostazioni
+        </a>
+        <form action="{{ url_for('player.mark_all_notifications_read') }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="fas fa-check-double"></i> Segna tutte come lette
+            </button>
+        </form>
+        {% endif %}
+    </div>
 </div>
 
 {% if not notifications %}
@@ -19,49 +24,108 @@
     <i class="fas fa-info-circle"></i> Non hai notifiche.
 </div>
 {% else %}
-<div class="list-group">
-    {% for notification in notifications %}
-    <div class="list-group-item {% if notification.status.value == 'read' %}list-group-item-light{% endif %}">
-        <div class="d-flex w-100 justify-content-between">
-            <div class="flex-grow-1">
-                <h5 class="mb-1">
-                    {% if notification.status.value != 'read' %}
-                        <span class="badge bg-primary me-2">Nuova</span>
-                    {% endif %}
-                    {% if notification.priority.value == 'high' %}
-                        <span class="badge bg-danger me-2">Importante</span>
-                    {% elif notification.priority.value == 'urgent' %}
-                        <span class="badge bg-danger me-2">Urgente</span>
-                    {% endif %}
-                    {{ notification.title }}
-                </h5>
-                <p class="mb-1">{{ notification.message }}</p>
-                <small class="text-muted">
-                    <i class="fas fa-clock"></i> {{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}
-                    {% if notification.status.value == 'read' %}
-                        - Letta il {{ notification.read_at.strftime('%d/%m/%Y %H:%M') }}
-                    {% endif %}
-                </small>
-            </div>
-            <div class="ms-3">
-                {% if notification.action_url and notification.status.value != 'read' %}
-                <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-primary btn-sm">
+<form id="notification-form" action="{{ url_for('player.delete_selected_notifications') }}" method="POST">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <input type="checkbox" id="select-all" class="form-check-input me-2">
+            <label for="select-all" class="form-check-label">Seleziona tutte</label>
+        </div>
+        <button type="submit" class="btn btn-danger btn-sm" id="delete-selected-btn" disabled>
+            <i class="fas fa-trash"></i> Elimina selezionate
+        </button>
+    </div>
+
+    <div class="list-group">
+        {% for notification in notifications %}
+        <div class="list-group-item {% if notification.status.value == 'read' %}list-group-item-light{% endif %}">
+            <div class="d-flex w-100">
+                <div class="form-check me-3">
+                    <input type="checkbox" name="notification_ids[]" value="{{ notification.id }}"
+                           class="form-check-input notification-checkbox">
+                </div>
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">
+                        {% if notification.status.value != 'read' %}
+                            <span class="badge bg-primary me-2">Nuova</span>
+                        {% endif %}
+                        {% if notification.priority.value == 'high' %}
+                            <span class="badge bg-danger me-2">Importante</span>
+                        {% elif notification.priority.value == 'urgent' %}
+                            <span class="badge bg-danger me-2">Urgente</span>
+                        {% endif %}
+                        {{ notification.title }}
+                    </h5>
+                    <p class="mb-1">{{ notification.message }}</p>
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> {{ notification.created_at|datetime_local }}
+                        {% if notification.status.value == 'read' %}
+                            - Letta il {{ notification.read_at|datetime_local }}
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="ms-3">
+                    {% if notification.action_url and notification.status.value != 'read' %}
+                    <a href="{{ notification.action_url }}" class="btn btn-primary btn-sm"
+                       onclick="event.preventDefault(); markAsReadAndNavigate({{ notification.id }}, '{{ notification.action_url }}');">
                         <i class="fas fa-external-link-alt"></i> {{ notification.action_text or 'Vai' }}
-                    </button>
-                </form>
-                {% elif notification.status.value != 'read' %}
-                <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-check"></i> Segna come letta
-                    </button>
-                </form>
-                {% endif %}
+                    </a>
+                    {% elif notification.status.value != 'read' %}
+                    <form action="{{ url_for('player.mark_notification_read', notification_id=notification.id) }}"
+                          method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-check"></i> Segna come letta
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
+</form>
+
+<script>
+    // Handle select all checkbox
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.notification-checkbox');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateDeleteButton();
+    });
+
+    // Handle individual checkboxes
+    document.querySelectorAll('.notification-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateDeleteButton);
+    });
+
+    function updateDeleteButton() {
+        const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
+        const deleteBtn = document.getElementById('delete-selected-btn');
+        deleteBtn.disabled = checkedCount === 0;
+    }
+
+    // Confirm before deletion
+    document.getElementById('notification-form').addEventListener('submit', function(e) {
+        const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
+        if (checkedCount > 0) {
+            if (!confirm(`Sei sicuro di voler eliminare ${checkedCount} notifiche?`)) {
+                e.preventDefault();
+            }
+        } else {
+            e.preventDefault();
+        }
+    });
+
+    function markAsReadAndNavigate(notificationId, actionUrl) {
+        fetch(`/player/notifications/${notificationId}/mark_read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(() => {
+            window.location.href = actionUrl;
+        });
+    }
+</script>
 {% endif %}
 
 <div class="mt-4">

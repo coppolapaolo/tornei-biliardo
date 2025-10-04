@@ -198,6 +198,11 @@ class NotificationPreference(BaseModel, TimestampMixin):
         db.Integer, nullable=True
     )  # Minimum interval between notifications
 
+    # Auto-deletion settings
+    auto_delete_days = db.Column(
+        db.Integer, nullable=True
+    )  # Auto-delete notifications older than N days (NULL = no auto-delete)
+
     # Relationships
     user = db.relationship("User", foreign_keys=[user_id])
 
