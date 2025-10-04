@@ -12,19 +12,19 @@ def display_user_handle(user) -> Markup:
 
 
 def format_date_local(value) -> Markup:
-    """Formatta una data per la visualizzazione locale nel browser usando JavaScript."""
+    """Formatta una data in formato italiano (dd/mm/yyyy)."""
     if not value:
         return Markup("N/A")
 
-    # Converti in stringa ISO per JavaScript
+    # Formatta direttamente in Python con formato italiano
     if isinstance(value, datetime):
-        iso_date = value.isoformat()
+        formatted = value.strftime('%d/%m/%Y')
     elif isinstance(value, date):
-        iso_date = value.isoformat()
+        formatted = value.strftime('%d/%m/%Y')
     else:
-        iso_date = str(value)
+        formatted = str(value)
 
-    return Markup(f'<span data-date="{escape(iso_date)}">{escape(iso_date)}</span>')
+    return Markup(escape(formatted))
 
 
 def format_datetime_local(value) -> Markup:
@@ -41,7 +41,17 @@ def format_datetime_local(value) -> Markup:
     else:
         iso_date = str(value)
 
-    return Markup(f'<span data-datetime="{escape(iso_date)}">{escape(iso_date)}</span>')
+    # Usa direttamente toLocaleString in Python invece di JavaScript
+    # per evitare problemi di parsing nel browser
+    if isinstance(value, datetime):
+        # Formatta direttamente in Python con formato italiano
+        formatted = value.strftime('%d/%m/%Y, %H:%M')
+    elif isinstance(value, date):
+        formatted = value.strftime('%d/%m/%Y')
+    else:
+        formatted = iso_date
+
+    return Markup(escape(formatted))
 
 
 def format_time_local(value) -> Markup:

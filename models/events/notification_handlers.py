@@ -117,7 +117,7 @@ class NotificationEventHandlers:
                         "user_id": event.user_id,
                         "username": event.username
                     },
-                    action_url=f"/admin/director-requests/{event.request_id}",
+                    action_url="/admin/director_requests",
                     action_text="Gestisci Richiesta"
                 )
             logger.info(f"Sent director request notifications for request {event.request_id}")
@@ -191,7 +191,7 @@ class NotificationEventHandlers:
                         "venue_name": event.venue_name,
                         "is_contested": event.is_contested
                     },
-                    action_url=f"/admin/venue-manager-requests/{event.request_id}",
+                    action_url="/admin/manager-requests",
                     action_text="Gestisci Richiesta"
                 )
             logger.info(f"Sent venue manager request notifications for request {event.request_id}")
