@@ -1215,10 +1215,16 @@ def update_auto_delete():
     is_enabled = "auto_delete_enabled" in request.form
     days = request.form.get("auto_delete_days")
 
+    # Check if this is an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+              request.accept_mimetypes.accept_json
+
     if is_enabled and days:
         try:
             days_int = int(days)
             if days_int < 1 or days_int > 365:
+                if is_ajax:
+                    return {"success": False, "message": "Il numero di giorni deve essere tra 1 e 365."}, 400
                 flash("Il numero di giorni deve essere tra 1 e 365.", "warning")
                 return redirect(url_for("player.notifications"))
 
@@ -1228,11 +1234,14 @@ def update_auto_delete():
                 notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
                 auto_delete_days=days_int,
             )
-            flash(
-                f"Auto-cancellazione attivata: le notifiche lette verranno eliminate dopo {days_int} giorni.",
-                "success",
-            )
+
+            message = f"Auto-cancellazione attivata: le notifiche lette verranno eliminate dopo {days_int} giorni."
+            if is_ajax:
+                return {"success": True, "message": message}, 200
+            flash(message, "success")
         except (ValueError, TypeError):
+            if is_ajax:
+                return {"success": False, "message": "Numero di giorni non valido."}, 400
             flash("Numero di giorni non valido.", "warning")
     else:
         # Disable auto-delete
@@ -1241,7 +1250,10 @@ def update_auto_delete():
             notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
             auto_delete_days=None,
         )
-        flash("Auto-cancellazione disattivata.", "success")
+        message = "Auto-cancellazione disattivata."
+        if is_ajax:
+            return {"success": True, "message": message}, 200
+        flash(message, "success")
 
     return redirect(url_for("player.notifications"))
 

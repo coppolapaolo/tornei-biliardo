@@ -28,8 +28,7 @@
                     <div class="form-check form-switch">
                         <input type="checkbox" class="form-check-input" id="auto-delete-enabled"
                                name="auto_delete_enabled"
-                               {% if auto_delete_days %}checked{% endif %}
-                               onchange="toggleAutoDeletDays()">
+                               {% if auto_delete_days %}checked{% endif %}>
                         <label class="form-check-label" for="auto-delete-enabled">
                             <strong>Attiva auto-cancellazione</strong>
                         </label>
@@ -46,9 +45,7 @@
                     </div>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-save"></i> Salva
-                    </button>
+                    <span id="auto-delete-status" class="text-muted small"></span>
                 </div>
                 <div class="col">
                     <small class="text-muted">
@@ -126,12 +123,75 @@
 </form>
 
 <script>
-    // Auto-delete toggle
-    function toggleAutoDeletDays() {
+    // Auto-delete auto-save functionality
+    let autoDeleteTimeout = null;
+    const statusElement = document.getElementById('auto-delete-status');
+
+    function saveAutoDeleteSettings() {
+        const checkbox = document.getElementById('auto-delete-enabled');
+        const input = document.getElementById('auto-delete-days');
+        const form = document.getElementById('auto-delete-form');
+
+        // Show saving status
+        statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+
+        // Create FormData and submit via fetch
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                statusElement.innerHTML = '<i class="fas fa-check text-success"></i> Salvato';
+                setTimeout(() => {
+                    statusElement.innerHTML = '';
+                }, 2000);
+            } else {
+                statusElement.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Errore';
+            }
+        })
+        .catch(error => {
+            statusElement.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Errore';
+        });
+    }
+
+    function toggleAutoDeleteDays() {
         const checkbox = document.getElementById('auto-delete-enabled');
         const input = document.getElementById('auto-delete-days');
         input.disabled = !checkbox.checked;
+
+        // Auto-save when toggling
+        saveAutoDeleteSettings();
     }
+
+    function onAutoDeleteDaysChange() {
+        // Clear previous timeout
+        if (autoDeleteTimeout) {
+            clearTimeout(autoDeleteTimeout);
+        }
+
+        // Save after 1 second of inactivity
+        autoDeleteTimeout = setTimeout(() => {
+            saveAutoDeleteSettings();
+        }, 1000);
+    }
+
+    // Attach event listeners
+    document.getElementById('auto-delete-enabled').addEventListener('change', toggleAutoDeleteDays);
+    document.getElementById('auto-delete-days').addEventListener('input', onAutoDeleteDaysChange);
+
+    // Also save on blur (when user leaves the field) - more reliable than beforeunload
+    document.getElementById('auto-delete-days').addEventListener('blur', function() {
+        if (autoDeleteTimeout) {
+            clearTimeout(autoDeleteTimeout);
+            saveAutoDeleteSettings();
+        }
+    });
 
     // Handle select all checkbox
     document.getElementById('select-all').addEventListener('change', function() {
