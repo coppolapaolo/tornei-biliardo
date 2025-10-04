@@ -401,10 +401,14 @@ def edit_gara(gara_id):
             )
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
 
+            # Estrai il campo time
+            time_str = request.form.get("time", "20:00")
+
             GaraService.update_gara(
                 gara_id=gara_id,
                 name=request.form.get("name", gara.name),
                 date_str=request.form["date"],
+                time_str=time_str,
                 location=location,
                 description=request.form.get("description", ""),
                 rounds_count=int(request.form.get("rounds_count", 3)),

@@ -135,6 +135,12 @@ class GaraService:
 
             gara.date = datetime.strptime(kwargs["date_str"], "%Y-%m-%d").date()
 
+        # Gestione speciale per time
+        if "time_str" in kwargs:
+            from datetime import datetime
+
+            gara.time = datetime.strptime(kwargs["time_str"], "%H:%M").time()
+
         return gara
 
     @staticmethod

@@ -17,15 +17,15 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="date" class="form-label">Data</label>
-                        <input type="date" class="form-control" name="date" 
-                               value="{{ gara.date|date_local }}" required>
+                        <input type="date" class="form-control" name="date"
+                               value="{{ gara.date.isoformat() if gara.date else '' }}" required>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="time" class="form-label">Ora</label>
-                        <input type="time" class="form-control" name="time" 
-                               value="{{ gara.time|time_local if gara.time else '20:00' }}">
+                        <input type="time" class="form-control" name="time"
+                               value="{{ gara.time.strftime('%H:%M') if gara.time else '20:00' }}">
                     </div>
                 </div>
             </div>
