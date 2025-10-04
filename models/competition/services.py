@@ -13,23 +13,20 @@ Nota sprint 4 (migrazione soft):
 
 from __future__ import annotations
 
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.orchestration.service import OperationResult
 from datetime import date, datetime
-from sqlalchemy import select
 
 from models.base import db
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
 from models.transaction.manager import transactional
-from .inscription_service import InscriptionService
 from .round_service import RoundService
 from .state_service import StateService
 
 from models.exceptions import InvalidTransitionError
-
 
 
 class GaraService:
@@ -51,7 +48,8 @@ class GaraService:
         **kwargs,
     ) -> Gara:
         """Crea una Gara (anche standalone se `campionato_id` è None)."""
-        # Guard: una Gara deve appartenere a un campionato o avere un direttore esplicito
+        # Guard: una Gara deve appartenere a un campionato o avere un
+        # direttore esplicito
         if not campionato_id and not director_id:
             raise ValueError(
                 "Una Gara deve avere un campionato_id o un director_id (standalone)."
@@ -169,7 +167,7 @@ class GaraService:
         participant_ids = [inscription.user_id for inscription in inscriptions]
 
         # Prepara le informazioni per le notifiche
-        gara_name = f"Gara {gara.number}"
+        gara_name = gara.name
         campionato_name = gara.campionato.name if gara.campionato else "Standalone"
 
         # Cancella la gara
@@ -177,7 +175,6 @@ class GaraService:
 
         # Invia notifiche a tutti i partecipanti
         if participant_ids:
-            from models.notification.services import NotificationService
             from models.notification.models import (
                 NotificationPriority,
                 NotificationType,
@@ -190,6 +187,7 @@ class GaraService:
 
             # Use NotificationFactory for bulk notifications with error handling
             from models.notification.factory import NotificationFactory
+
             NotificationFactory.create_bulk_notification(
                 user_ids=participant_ids,
                 notification_type=NotificationType.TOURNAMENT_REGISTRATION,
@@ -249,7 +247,8 @@ class GaraService:
                 or match.status != MatchStatus.PENDING.value
             ):
                 raise ValueError(
-                    "Impossibile cancellare l'avvio: sono già stati inseriti risultati (anche parziali)"
+                    "Impossibile cancellare l'avvio: sono già stati inseriti "
+                    "risultati (anche parziali)"
                 )
 
         # Rimuovi tutte le partite del turno corrente e dati correlati
@@ -308,10 +307,11 @@ class GaraService:
         )
 
     @staticmethod
-    def create_amalfi_round(gara_id: int, round_number: int) -> tuple[int, int, int, int]:
+    def create_amalfi_round(
+        gara_id: int, round_number: int
+    ) -> tuple[int, int, int, int]:
         """Legacy compatibility wrapper."""
         return GaraService.create_round_with_strategy(gara_id, round_number)
-
 
     @staticmethod
     @transactional(domain="competition")
@@ -387,11 +387,11 @@ class GaraService:
 
         # Reset match associato
         MatchService.reset_to_pending(trio.match.id, clear_validation=True)
-        # Access the match object directly using db.session.get to avoid relationship property issues
+        # Access the match object directly using db.session.get to avoid
+        # relationship property issues
         match_obj = db.session.get(Match, trio.match_id)
         if match_obj:
             match_obj.winner_id = None
-
 
     # -----------------------------
     # VALIDAZIONE DATI (type-safe)
@@ -494,9 +494,9 @@ class GaraService:
             end_dt = None
 
         if start_dt and end_dt and end_dt < start_dt:
-            errors["inscription_end"] = (
-                "La data di fine iscrizioni deve essere >= della data di inizio"
-            )
+            errors[
+                "inscription_end"
+            ] = "La data di fine iscrizioni deve essere >= della data di inizio"
 
         # rounds_count (opzionale): >= 1
         rounds_raw = data.get("rounds_count")
@@ -606,16 +606,19 @@ class GaraService:
             if gara.campionato:
                 gara_name += f" del campionato '{gara.campionato.name}'"
 
-            notification_result = NotificationFactory.create_account_update_notification(
-                user_id=user_id,
-                title="Nominato co-direttore",
-                message=f"Sei stato nominato co-direttore della {gara_name}",
-                priority=NotificationPriority.NORMAL,
-                update_type="co_director_assignment",
-                related_entities={"gara_id": gara_id, "gara_name": gara_name},
+            notification_result = (
+                NotificationFactory.create_account_update_notification(
+                    user_id=user_id,
+                    title="Nominato co-direttore",
+                    message=f"Sei stato nominato co-direttore della {gara_name}",
+                    priority=NotificationPriority.NORMAL,
+                    update_type="co_director_assignment",
+                    related_entities={"gara_id": gara_id, "gara_name": gara_name},
+                )
             )
             print(
-                f"DEBUG: Director notification created for user {user_id}: {notification_result}"
+                f"DEBUG: Director notification created for user {user_id}: "
+                f"{notification_result}"
             )
         except Exception as e:
             print(
@@ -627,7 +630,6 @@ class GaraService:
     # -----------------------------
     # STRATEGY CONFIGURATION
     # -----------------------------
-
 
     @staticmethod
     def get_available_strategies() -> dict:
@@ -647,7 +649,6 @@ class GaraService:
                 "constraints": constraints,
             }
         return strategies
-
 
     @staticmethod
     @transactional(domain="competition")
@@ -744,7 +745,8 @@ class GaraService:
                 operation_type=OperationType.TOURNAMENT_RESET,
                 data={},
                 errors=[
-                    f"Invalid target round {target_round}. Must be between 1 and {gara.current_round}"
+                    f"Invalid target round {target_round}. Must be between 1 "
+                    f"and {gara.current_round}"
                 ],
                 warnings=[],
                 execution_time_ms=0.0,

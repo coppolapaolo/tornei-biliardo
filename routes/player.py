@@ -533,11 +533,11 @@ def inscribe_to_gara(gara_id):
     if inscription:
         if inscription.is_waitlist:
             flash(
-                f"Aggiunto alla lista d'attesa per Gara {gara.number} "
+                f"Aggiunto alla lista d'attesa per {gara.name} "
                 f"(posizione {inscription.waitlist_position})!"
             )
         else:
-            flash(f"Iscrizione alla Gara {gara.number} completata!")
+            flash(f"Iscrizione a {gara.name} completata!")
     else:
         flash("Errore durante l'iscrizione.", "error")
     # Redirect alla dashboard appropriata
@@ -1252,7 +1252,7 @@ def unsubscribe_from_gara(gara_id):
     success = InscriptionService.uninscribe_user(current_user.id, gara_id)
 
     if success:
-        flash(f"Disiscrizione dalla Gara {gara.number} completata!")
+        flash(f"Disiscrizione da {gara.name} completata!")
     else:
         flash("Errore durante la disiscrizione.", "error")
 

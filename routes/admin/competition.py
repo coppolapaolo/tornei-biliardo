@@ -81,7 +81,8 @@ def _handle_venue_creation(
             new_venue.verified = False
 
             flash(
-                f"Nuovo luogo '{location}' aggiunto come disattivato. Sarà verificato dall'admin.",
+                f"Nuovo luogo '{location}' aggiunto come disattivato. "
+                f"Sarà verificato dall'admin.",
                 "info",
             )
         except Exception as e:
@@ -510,7 +511,7 @@ def delete_gara(gara_id):
     # Determina se è standalone prima della cancellazione
     is_standalone = gara.campionato_id is None
     campionato_id = gara.campionato_id
-    gara_name = gara.name if gara.name else f"Gara {gara.number}"
+    gara_name = gara.name
 
     # Usa il service layer invece del direct database access
     try:
@@ -520,7 +521,7 @@ def delete_gara(gara_id):
         flash(str(ve), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    # Redirect appropriato: home per standalone, campionato detail per gare di campionato
+    # Redirect: home per standalone, campionato detail per gare campionato
     if is_standalone:
         return redirect(url_for("dashboard.dashboard"))
     else:
@@ -539,7 +540,7 @@ def cancel_gara(gara_id):
         abort(404)
 
     campionato_id = gara.campionato_id
-    gara_name = f"Gara {gara.number}"
+    gara_name = gara.name
 
     # Verifica che la gara possa essere cancellata
     if gara.status not in ["setup", "inscription"]:
@@ -550,7 +551,8 @@ def cancel_gara(gara_id):
         # Usa il service layer per cancellare con notifiche
         GaraService.cancel_gara_with_notifications(gara_id, current_user.id)
         flash(
-            f"{gara_name} cancellata con successo! I partecipanti sono stati notificati."
+            f"{gara_name} cancellata con successo! "
+            f"I partecipanti sono stati notificati."
         )
     except ValueError as ve:
         flash(str(ve), "error")
@@ -607,7 +609,8 @@ def gara_detail(gara_id):
     if gara.is_standalone and gara.director_id:
         assigned_director_ids.append(gara.director_id)
 
-    # Get available users for director selection (directors only, exclude admins, already assigned, and current user)
+    # Get available users for director selection (directors only, exclude
+    # admins, already assigned, and current user)
     query = (
         User.query.filter(User.role == "director")
         .filter(User.deleted_at.is_(None))
@@ -680,9 +683,9 @@ def gara_detail(gara_id):
         # Cerca la classificazione del turno completato più recente
         for round_num in range(gara.current_round, 0, -1):
             if is_round_completed(round_num):
-                # SEMPRE ricalcola la classificazione per garantire dati aggiornati
-                # Questo è necessario perché i risultati dei match potrebbero essere stati modificati
-                # dopo che la classificazione è stata calcolata inizialmente
+                # SEMPRE ricalcola la classificazione per garantire dati
+                # aggiornati. Necessario perché i risultati potrebbero essere
+                # stati modificati dopo il calcolo iniziale
                 RoundClassification.calculate_classification_after_round(
                     gara_id, round_num
                 )
@@ -817,7 +820,8 @@ def cancel_first_round(gara_id):
     try:
         GaraService.cancel_first_round_startup(gara_id)
         flash(
-            "Avvio del primo turno cancellato con successo! La gara è tornata allo stato di iscrizioni.",
+            "Avvio del primo turno cancellato con successo! "
+            "La gara è tornata allo stato di iscrizioni.",
             "success",
         )
     except ValueError as ve:
@@ -845,7 +849,8 @@ def close_inscriptions(gara_id):
         # Verifica che non ci siano iscrizioni attive
         if gara.get_active_inscriptions_count() > 0:
             flash(
-                "Non è possibile chiudere le iscrizioni quando ci sono già degli iscritti.",
+                "Non è possibile chiudere le iscrizioni quando ci sono già "
+                "degli iscritti.",
                 "error",
             )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -947,12 +952,16 @@ def amalfi_classification(gara_id, round_number):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Ottieni o calcola classifica
-    classification = RoundClassificationService.get_round_standings(gara_id, round_number)
+    classification = RoundClassificationService.get_round_standings(
+        gara_id, round_number
+    )
     if not classification:
         # Calcola classifica se non esiste (questo metodo ritorna tuple, non oggetti)
         RoundClassification.calculate_classification_after_round(gara_id, round_number)
         # Ricarica la classifica dopo il calcolo (ora sono oggetti RoundClassification)
-        classification = RoundClassificationService.get_round_standings(gara_id, round_number)
+        classification = RoundClassificationService.get_round_standings(
+            gara_id, round_number
+        )
 
     # Statistiche aggiuntive
     total_players = len(classification)
@@ -1027,7 +1036,8 @@ def amalfi_start_round(gara_id, round_number):
                 return jsonify(
                     {
                         "success": False,
-                        "error": f"Completa prima tutte le partite del turno {round_number-1}!",
+                        "error": f"Completa prima tutte le partite del "
+                        f"turno {round_number-1}!",
                     }
                 )
 
@@ -1049,7 +1059,10 @@ def amalfi_start_round(gara_id, round_number):
         # Changes will be committed by transaction decorator
 
         # Costruisci il messaggio di successo
-        message = f"Turno {round_number} avviato con successo! Creati {total} abbinamenti Amalfi."
+        message = (
+            f"Turno {round_number} avviato con successo! "
+            f"Creati {total} abbinamenti Amalfi."
+        )
         details = []
         if n_normal:
             details.append(f"Abbinamenti normali: {n_normal}")
@@ -1135,7 +1148,8 @@ def start_round_generic(gara_id, round_number):
                 return jsonify(
                     {
                         "success": False,
-                        "error": f"Completa prima tutte le partite del turno {round_number-1}!",
+                        "error": f"Completa prima tutte le partite del "
+                        f"turno {round_number-1}!",
                     }
                 )
 
@@ -1294,7 +1308,6 @@ def remove_director(gara_id):
 def admin_uninscribe_user(gara_id, user_id):
     """Disiscrive un utente dalla gara (solo admin/direttori)."""
     from models.competition.services import InscriptionService
-    from models.notification.services import NotificationService
     from models.user.models import User
     from models.competition.models import Gara
 
@@ -1314,7 +1327,8 @@ def admin_uninscribe_user(gara_id, user_id):
         # Verifica che la gara sia ancora in fase di iscrizioni
         if gara.status != GaraStatus.INSCRIPTION.value:
             flash(
-                "Non è possibile disiscrivere utenti quando il primo turno è già iniziato.",
+                "Non è possibile disiscrivere utenti quando il primo turno "
+                "è già iniziato.",
                 "error",
             )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -1416,7 +1430,8 @@ def add_challenge_to_gara(gara_id):
             jsonify(
                 {
                     "success": False,
-                    "error": "Non è possibile aggiungere challenge dopo l'inizio della gara",
+                    "error": "Non è possibile aggiungere challenge dopo "
+                    "l'inizio della gara",
                 }
             ),
             400,
@@ -1531,13 +1546,12 @@ def remove_challenge_from_gara(gara_id):
 @login_required
 @gara_manager_required
 def get_available_challenges_for_gara(gara_id):
-    """Get available challenges for selection, excluding those already added to the gara (AJAX endpoint)."""
+    """Get available challenges for selection, excluding those already added
+    to the gara (AJAX endpoint)."""
     from models.challenge import Challenge
     from models.challenge.gara_challenge_service import GaraChallengeService
 
     try:
-        gara = Gara.query.get_or_404(gara_id)
-
         # Get all active challenges
         all_challenges = (
             Challenge.query.filter_by(is_active=True)
@@ -1628,7 +1642,6 @@ def create_new_challenge():
     from models.challenge import ChallengeService
     import os
     from werkzeug.utils import secure_filename
-    from flask import current_app
 
     try:
         description = request.form["description"].strip()
@@ -1685,7 +1698,8 @@ def create_new_challenge():
                 jsonify(
                     {
                         "success": False,
-                        "error": "Formato file non supportato. Usa JPG, PNG, GIF o WebP",
+                        "error": "Formato file non supportato. "
+                        "Usa JPG, PNG, GIF o WebP",
                     }
                 ),
                 400,
