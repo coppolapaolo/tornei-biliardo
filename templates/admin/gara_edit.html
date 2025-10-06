@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Modifica Gara {{ gara.number }} - Admin{% endblock %}
+{% block title %}Modifica {% if gara.is_standalone %}{{ gara.name or 'Gara' }}{% else %}Gara {{ gara.number }}{% endif %} - Admin{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1>Modifica Gara {{ gara.number }}</h1>
-        <p class="text-muted mb-0">{{ gara.campionato.name }}</p>
+        <h1>Modifica {% if gara.is_standalone %}{{ gara.name or 'Gara' }}{% else %}Gara {{ gara.number }}{% endif %}</h1>
+        {% if not gara.is_standalone %}<p class="text-muted mb-0">{{ gara.campionato.name }}</p>{% endif %}
     </div>
     <div>
         <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-outline-secondary">

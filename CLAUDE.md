@@ -533,7 +533,7 @@ class GaraService:
         gara = Gara(
             campionato_id=campionato_id,
             nome=data['nome'],
-            data_gara=data['data_gara']
+            date=data['date']
         )
         db.session.add(gara)
         return gara  # Commit happens automatically
@@ -848,11 +848,13 @@ This project maintains comprehensive documentation at multiple levels:
 ### Directory-Specific Documentation
 Each major component has detailed documentation in its subdirectory:
 
-1. **[models/CLAUDE.md](models/CLAUDE.md)**: 
+1. **[models/CLAUDE.md](models/CLAUDE.md)**:
    - Domain-Driven Design architecture
    - Model organization and relationships
    - Database schema and mixins
    - Development guidelines for data layer
+   - **Quick Reference**: Critical attribute names and common patterns
+   - **Detailed Class Structures**: Complete field, method, and relationship documentation for 12+ core models
 
 2. **[routes/CLAUDE.md](routes/CLAUDE.md)**:
    - RESTful API organization
@@ -872,15 +874,57 @@ Each major component has detailed documentation in its subdirectory:
    - Coverage targets and quality metrics
    - Performance and security testing
 
+### Domain-Specific Model Documentation
+Critical business domains have focused CLAUDE.md files in their subdirectories:
+
+- **[models/competition/CLAUDE.md](models/competition/CLAUDE.md)** (~7,500 lines):
+  - Gara, Inscription models with all fields and methods
+  - GaraService, InscriptionService, RoundService, StateService, AdvancedRoundManager
+  - Complete competition lifecycle workflows
+  - State machine, validation patterns, and edge cases
+
+- **[models/matchmaking/CLAUDE.md](models/matchmaking/CLAUDE.md)** (~5,500 lines):
+  - BaseStrategy pattern and Pairing value objects
+  - All 5 strategies: Amalfi, RoundRobin, DirectElimination, DoubleKnockout, RandomAntiRematch
+  - Configuration, anti-rematch logic, odd-player handling
+  - Custom strategy implementation guide
+
+- **[models/match/CLAUDE.md](models/match/CLAUDE.md)** (~3,000 lines):
+  - Match, Set, SetRack, Rack, TrioMatch models
+  - MatchService and RackService with state machines
+  - Multi-set, multi-discipline match support
+  - Handicap system integration
+
+- **[models/SUBDIRECTORY_DOCS_SUMMARY.md](models/SUBDIRECTORY_DOCS_SUMMARY.md)**:
+  - Complete index of all model subdirectory documentation
+  - Documentation statistics and metrics
+  - Template for creating future domain documentation
+  - Recommended priorities for remaining 15+ domains
+
 ### Use Case Documentation
 - **`docs/usecases/gare.md`**: Complete specification of all 8 implemented use cases
 - **`docs/usecases/convenzioni.md`**: Testing conventions and variant notation
 
-### Navigation
-- Start with this root CLAUDE.md for project overview
-- Dive into specific directories for detailed technical information
+### Navigation Guide
+
+**For High-Level Overview:**
+- Start with this root **CLAUDE.md** for project structure and commands
+
+**For Domain-Specific Implementation:**
+- **Working on Competitions/Gare?** → Read [models/competition/CLAUDE.md](models/competition/CLAUDE.md)
+- **Working on Matchmaking/Strategies?** → Read [models/matchmaking/CLAUDE.md](models/matchmaking/CLAUDE.md)
+- **Working on Matches/Scoring?** → Read [models/match/CLAUDE.md](models/match/CLAUDE.md)
+- **Need Quick Model Reference?** → Check Quick Reference sections in [models/CLAUDE.md](models/CLAUDE.md)
+
+**For Layer-Specific Work:**
+- **Routes/API endpoints** → [routes/CLAUDE.md](routes/CLAUDE.md)
+- **Templates/UI** → [templates/CLAUDE.md](templates/CLAUDE.md)
+- **Testing** → [tests/CLAUDE.md](tests/CLAUDE.md)
+
+**Best Practice:**
 - Each subdirectory documentation is self-contained but cross-references related components
 - **Follow architectural principles**: Clean, elegant solutions without over-engineering
+- Use domain-specific CLAUDE.md files to find exact attribute names and method signatures
 
 ## Refactoring Documentation
 

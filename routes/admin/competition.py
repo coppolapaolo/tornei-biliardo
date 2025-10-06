@@ -835,23 +835,32 @@ def cancel_first_round(gara_id):
 
 
 @competition_bp.route("/<int:gara_id>/close_inscriptions", methods=["POST"])
+@transactional(domain="competition")
 @login_required
 @gara_manager_required
 def close_inscriptions(gara_id):
     """Chiude le iscrizioni e torna la gara allo stato setup se non ci sono iscritti"""
+    print(f"[DEBUG] close_inscriptions called for gara_id={gara_id}")
     try:
         gara = db.session.get(Gara, gara_id)
+        print(f"[DEBUG] Gara found: {gara is not None}, status: {gara.status if gara else 'N/A'}")
         if not gara:
+            print("[DEBUG] Gara not found")
             flash("Gara non trovata.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Verifica che la gara sia in stato inscription
+        print(f"[DEBUG] Checking status: {gara.status} == {GaraStatus.INSCRIPTION.value}")
         if gara.status != GaraStatus.INSCRIPTION.value:
+            print(f"[DEBUG] Gara not in INSCRIPTION state, current: {gara.status}")
             flash("La gara non è in stato di iscrizione.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Verifica che non ci siano iscrizioni attive
-        if gara.get_active_inscriptions_count() > 0:
+        active_count = gara.get_active_inscriptions_count()
+        print(f"[DEBUG] Active inscriptions count: {active_count}")
+        if active_count > 0:
+            print(f"[DEBUG] Cannot close: {active_count} active inscriptions")
             flash(
                 "Non è possibile chiudere le iscrizioni quando ci sono già "
                 "degli iscritti.",
@@ -860,13 +869,18 @@ def close_inscriptions(gara_id):
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Usa il service layer per tornare allo stato setup
+        print("[DEBUG] Calling StateService.reopen_setup")
         StateService.reopen_setup(gara)
+        print("[DEBUG] StateService.reopen_setup completed successfully")
         flash(
             "Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.",
             "success",
         )
 
     except Exception as e:
+        print(f"[DEBUG] Exception occurred: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         flash(f"Errore durante la chiusura delle iscrizioni: {str(e)}", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

@@ -83,7 +83,7 @@ class StateService:
         from models.status_enum import MatchStatus
 
         pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
-            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])  # type: ignore[attr-defined]
         ).first()
 
         if pending_matches:

@@ -9,9 +9,9 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Nome (opzionale)</label>
-                        <input type="text" class="form-control" name="name" 
-                               value="{{ gara.name or '' }}" placeholder="es: Prima Gara, Semifinale...">
+                        <label for="name" class="form-label">Nome {% if not gara.is_standalone %}(opzionale){% endif %}</label>
+                        <input type="text" class="form-control" name="name"
+                               value="{{ gara.name or '' }}" placeholder="es: Prima Gara, Semifinale..." {% if gara.is_standalone %}required{% endif %}>
                     </div>
                 </div>
                 <div class="col-md-4">

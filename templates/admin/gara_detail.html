@@ -371,22 +371,12 @@ function startRound(roundNumber) {
 
 function closeInscriptions(provaId) {
     if (confirm('Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.')) {
-        fetch(`/admin/gara/${provaId}/close_inscriptions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        }).then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                response.text().then(text => {
-                    alert('Errore durante la chiusura: ' + text);
-                });
-            }
-        }).catch(error => {
-            alert('Errore di rete durante la chiusura delle iscrizioni');
-        });
+        // Usa form submission invece di fetch per gestire correttamente i redirect e i flash messages
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/gara/${provaId}/close_inscriptions`;
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

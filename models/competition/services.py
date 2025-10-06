@@ -63,6 +63,10 @@ class GaraService:
         if isinstance(date, date_type) and date < date_type.today():
             raise ValueError("Data della gara non può essere nel passato")
 
+        # Validazione time - obbligatorio
+        if "time" not in kwargs or kwargs["time"] is None:
+            raise ValueError("L'orario della gara è obbligatorio")
+
         # Estrai configurazione strategia se presente
         strategy_config = kwargs.pop("strategy_config", None)
 
@@ -867,7 +871,10 @@ class GaraService:
     # New code should use InscriptionService and RoundService directly
 
 
+from models.competition.inscription_service import InscriptionService
+
 __all__ = [
     "GaraService",
+    "InscriptionService",
     "InvalidTransitionError",
 ]

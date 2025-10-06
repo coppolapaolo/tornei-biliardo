@@ -333,6 +333,7 @@ class TestGaraServiceCharacterization:
             discipline="palla 8",
             distance=5,
             director_id=self.director_user.id,
+            time=time(18, 0),
         )
 
         # Date valide
