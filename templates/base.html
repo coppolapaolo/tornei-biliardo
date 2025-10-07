@@ -264,10 +264,19 @@
     </nav>
 
     <main class="container mt-4">
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {% for category, message in messages %}
+                    {% if category == 'error' %}
+                        {% set alert_class = 'alert-danger' %}
+                    {% elif category == 'success' %}
+                        {% set alert_class = 'alert-success' %}
+                    {% elif category == 'warning' %}
+                        {% set alert_class = 'alert-warning' %}
+                    {% else %}
+                        {% set alert_class = 'alert-info' %}
+                    {% endif %}
+                    <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>

@@ -78,25 +78,14 @@ function startFirstRound(provaId, strategy) {
     } else {
         message = 'Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.';
     }
-    
+
     if (confirm(message)) {
-        fetch(`/admin/gara/${provaId}/start_first_round`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        }).then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                response.text().then(text => {
-                    alert('Errore durante l\'avvio: ' + text);
-                });
-            }
-        }).catch(error => {
-            console.error('Error:', error);
-            alert('Errore di rete durante l\'avvio della gara');
-        });
+        // Use form submission instead of fetch to preserve flash messages
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/gara/${provaId}/start_first_round`;
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 

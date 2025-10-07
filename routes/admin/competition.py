@@ -816,9 +816,9 @@ def modify_inscription_dates(gara_id):
 @competition_bp.route("/<int:gara_id>/start_first_round", methods=["POST"])
 @login_required
 @gara_manager_required
+@transactional()
 def start_first_round(gara_id):
     """Avvia primo turno della gara (o tutti i turni per strategia Random)"""
-    # Usa il service layer invece del direct database access
     try:
         from models import db, Gara
 
@@ -830,8 +830,16 @@ def start_first_round(gara_id):
             flash("Gara avviata! Tutti i turni sono stati creati.", "success")
         else:
             flash("Primo turno avviato!", "success")
+
     except ValueError as ve:
         flash(str(ve), "error")
+    except Exception as e:
+        # Log the full error for debugging
+        import traceback
+
+        print(f"ERROR starting first round: {str(e)}")
+        print(traceback.format_exc())
+        flash(f"Errore nell'avvio del turno: {str(e)}", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -863,14 +871,17 @@ def close_inscriptions(gara_id):
     print(f"[DEBUG] close_inscriptions called for gara_id={gara_id}")
     try:
         gara = db.session.get(Gara, gara_id)
-        print(f"[DEBUG] Gara found: {gara is not None}, status: {gara.status if gara else 'N/A'}")
+        status = gara.status if gara else "N/A"
+        print(f"[DEBUG] Gara found: {gara is not None}, status: {status}")
         if not gara:
             print("[DEBUG] Gara not found")
             flash("Gara non trovata.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Verifica che la gara sia in stato inscription
-        print(f"[DEBUG] Checking status: {gara.status} == {GaraStatus.INSCRIPTION.value}")
+        print(
+            f"[DEBUG] Checking status: {gara.status} == {GaraStatus.INSCRIPTION.value}"
+        )
         if gara.status != GaraStatus.INSCRIPTION.value:
             print(f"[DEBUG] Gara not in INSCRIPTION state, current: {gara.status}")
             flash("La gara non è in stato di iscrizione.", "error")
@@ -900,6 +911,7 @@ def close_inscriptions(gara_id):
     except Exception as e:
         print(f"[DEBUG] Exception occurred: {type(e).__name__}: {str(e)}")
         import traceback
+
         traceback.print_exc()
         flash(f"Errore durante la chiusura delle iscrizioni: {str(e)}", "error")
 

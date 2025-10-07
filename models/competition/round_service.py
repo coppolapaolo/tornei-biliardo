@@ -173,6 +173,11 @@ class RoundService:
 
             gara = StateService.start_playing(gara)
 
+        # Assign tables to matches after round creation
+        from models.match.table_assignment_service import TableAssignmentService
+
+        TableAssignmentService.assign_tables_to_round(gara_id, round_number=1)
+
         return gara
 
     @staticmethod

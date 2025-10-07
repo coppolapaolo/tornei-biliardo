@@ -50,6 +50,8 @@ class BilliardHall(BaseModel, TimestampMixin):
 
     # Facility details
     number_of_tables = db.Column(db.Integer, nullable=True)
+    # JSON list of table names ["1", "2", "Sala Rossa", etc.]
+    table_names = db.Column(db.Text, nullable=True)
     table_types = db.Column(db.Text, nullable=True)  # JSON string
     amenities = db.Column(db.Text, nullable=True)  # JSON string
 
@@ -91,6 +93,27 @@ class BilliardHall(BaseModel, TimestampMixin):
     def set_table_types(self, types: List[str]) -> None:
         """Set table types as JSON."""
         self.table_types = json.dumps(types) if types else None
+
+    def get_table_names(self) -> List[str]:
+        """Get table names as list.
+
+        If table_names is not set, generates default names ["1", "2", ...]
+        based on number_of_tables.
+        """
+        if self.table_names:
+            try:
+                return json.loads(self.table_names)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        # Generate default table names if not set
+        if self.number_of_tables:
+            return [str(i) for i in range(1, self.number_of_tables + 1)]
+        return []
+
+    def set_table_names(self, names: List[str]) -> None:
+        """Set table names as JSON."""
+        self.table_names = json.dumps(names) if names else None
 
     def get_amenities(self) -> List[str]:
         """Get amenities as list."""

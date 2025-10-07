@@ -19,6 +19,7 @@ from .set_models import Set, SetRack
 from .multi_discipline_service import MultiDisciplineService
 from .distance import Distance
 from .score import RackScore, MatchScore
+from .table_assignment_service import TableAssignmentService
 
 # Export all public classes and functions
 __all__ = [
@@ -36,6 +37,7 @@ __all__ = [
     "MatchScore",
     # Services
     "MultiDisciplineService",
+    "TableAssignmentService",
 ]
 
 # Domain version and metadata
