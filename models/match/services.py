@@ -491,13 +491,15 @@ class RackService:
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
 
-        # Verifica che il match non sia già finito
-        if match.gara.is_match_finished(match.player1_score, match.player2_score):
+        # Verifica che il match non sia già finito usando RackScore
+        if match.rack_score.is_complete():
             raise ValueError(
                 "Il match è già finito, non è possibile aggiungere altri punti"
             )
 
-        # Verifica che non si superi il limite anche con questo nuovo punto
+        # Simula aggiunta del nuovo rack per validare
+        from models.match.score import RackScore
+
         temp_p1_score = match.player1_score
         temp_p2_score = match.player2_score
 
@@ -506,20 +508,28 @@ class RackService:
         else:
             temp_p2_score += 1
 
-        # Valida in base al tipo di match
-        if match.gara.best_of:  # "al meglio di N"
-            # Per "al meglio di N", il limite per singolo giocatore è (N // 2) + 1
-            winning_score = match.gara.get_winning_score()
-            if temp_p1_score > winning_score or temp_p2_score > winning_score:
+        # Crea RackScore temporaneo per validare
+        temp_score = RackScore(
+            distance=match.gara.distance_config,
+            player1_racks=temp_p1_score,
+            player2_racks=temp_p2_score
+        )
+
+        # Valida in base al tipo di match usando distance_config
+        distance = match.gara.distance_config
+        if distance.racks_best_of:  # "al meglio di N"
+            winning_racks = distance.get_winning_racks()
+            if temp_p1_score > winning_racks or temp_p2_score > winning_racks:
                 raise ValueError(
-                    f"Match già completato - limite raggiunto per 'al meglio di {match.gara.distance}'"
+                    f"Match già completato - limite raggiunto per "
+                    f"'{distance.to_display_string()}'"
                 )
         else:  # "esattamente N"
-            # Per "esattamente N", il totale non può superare N
             total_racks = temp_p1_score + temp_p2_score
-            if total_racks > match.gara.distance:
+            if total_racks > distance.racks:
                 raise ValueError(
-                    f"Non è possibile superare il limite di {match.gara.distance} rack totali per questo match"
+                    f"Non è possibile superare il limite di {distance.racks} "
+                    f"rack totali per questo match"
                 )
 
         # Trova il prossimo numero rack
@@ -545,13 +555,22 @@ class RackService:
         else:
             match.player2_score += 1
 
-        # Se il match è finito, imposta il vincitore
-        if match.gara.is_match_finished(match.player1_score, match.player2_score):
-            final_winner_id = (
-                match.player1_id
-                if match.player1_score > match.player2_score
-                else match.player2_id
-            )
+        # Se il match è finito, imposta il vincitore usando RackScore
+        if match.rack_score.is_complete():
+            final_winner_id = match.rack_score.get_winner()
+            if final_winner_id is None:
+                # Tie - usa punteggio grezzo
+                final_winner_id = (
+                    match.player1_id
+                    if match.player1_score > match.player2_score
+                    else match.player2_id
+                )
+            else:
+                # Converti player number (1,2) a player_id
+                final_winner_id = (
+                    match.player1_id if final_winner_id == 1
+                    else match.player2_id
+                )
             # Import locale per evitare cicli
             from models.match.services import MatchResultService
 
