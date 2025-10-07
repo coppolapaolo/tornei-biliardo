@@ -17,6 +17,7 @@ Created: 2025-08-05
 from .models import Match, Rack, MatchResult, TrioMatch
 from .set_models import Set, SetRack
 from .multi_discipline_service import MultiDisciplineService
+from .distance import Distance
 
 # Export all public classes and functions
 __all__ = [
@@ -28,6 +29,8 @@ __all__ = [
     # Multi-set models
     "Set",
     "SetRack",
+    # Value Objects
+    "Distance",
     # Services
     "MultiDisciplineService",
 ]
