@@ -14,7 +14,7 @@
               {% endif %}
             </div>
             {# destra header: distanza (niente badge di stato) #}
-            {% set distance_label = (('Al meglio di ' ~ p.distance) if p.best_of else (p.distance ~ ' rack esatti')) %}
+            {% set distance_label = p.distance_config|format_distance %}
             <small class="text-muted">{{ distance_label }}</small>
           </div>
 

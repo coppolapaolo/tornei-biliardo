@@ -9,9 +9,7 @@
         <p class="text-muted mb-0">
             {{ gara.campionato.name }} - {{ gara.date|date_local }} - {{ gara.discipline }}
             {% if gara.best_of %}
-                (Al meglio di {{ gara.distance }})
-            {% else %}
-                ({{ gara.distance }} rack esatti)
+                ({{ gara.distance_config|format_distance }})
             {% endif %}
         </p>
     </div>
@@ -44,11 +42,12 @@
                     <div class="alert alert-warning">
                         <small>
                             <i class="fas fa-info-circle"></i>
-                            <strong>Modalità:</strong> 
+                            <strong>Modalità:</strong>
+                            {{ gara.distance_config|format_distance }}
                             {% if gara.best_of %}
-                                Al meglio di {{ gara.distance }} (vince chi arriva a {{ gara.get_winning_score() }})
+                                (vince chi arriva a {{ gara.get_winning_score() }})
                             {% else %}
-                                {{ gara.distance }} rack esatti (somma deve essere {{ gara.distance }})
+                                (somma deve essere {{ gara.distance }})
                             {% endif %}
                         </small>
                     </div>

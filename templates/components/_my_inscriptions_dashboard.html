@@ -12,12 +12,8 @@
                     <div>
                         <strong>Gara {{ inscription.gara.number }}</strong> - {{ inscription.gara.discipline }}
                         {% if inscription.gara.name %} ({{ inscription.gara.name }}){% endif %}
-                        <br><small class="text-muted">{{ inscription.gara.date|date_local }} - 
-                        {% if inscription.gara.best_of %}
-                            Al meglio di {{ inscription.gara.distance }}
-                        {% else %}
-                            {{ inscription.gara.distance }} rack esatti
-                        {% endif %}
+                        <br><small class="text-muted">{{ inscription.gara.date|date_local }} -
+                        {{ inscription.gara.distance_config|format_distance }}
                         </small>
                         {% if inscription.gara.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ inscription.gara.location }}</small>{% endif %}
                         {{ status_badge(inscription.gara, 'gara') }}

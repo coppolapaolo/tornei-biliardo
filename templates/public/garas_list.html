@@ -34,11 +34,7 @@
                                 <td>
                                     {{ gara.discipline|title }}
                                     <br><small class="text-muted">
-                                        {% if gara.best_of %}
-                                            Al meglio di {{ gara.distance }}
-                                        {% else %}
-                                            Esattamente {{ gara.distance }} rack
-                                        {% endif %}
+                                        {{ gara.distance_config|format_distance }}
                                     </small>
                                 </td>
                                 <td>{{ gara.date|date_local }}</td>

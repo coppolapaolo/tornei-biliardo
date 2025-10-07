@@ -83,7 +83,7 @@
             
             <small class="text-muted">
               <i class="fas fa-trophy me-1"></i>{{ match.gara.discipline|replace('_',' ')|title }}
-              - {{ ('Al meglio di ' ~ match.gara.distance) if match.gara.best_of else (match.gara.distance ~ ' rack') }}
+              - {{ match.gara.distance_config|format_distance }}
             </small>
           </div>
           
@@ -177,7 +177,7 @@
                   <small class="text-muted">
                     {{ item.entity.discipline|replace('_',' ')|title if item.entity.discipline }}
                     {% if item.entity.distance %}
-                      • {{ ('Al meglio di ' ~ item.entity.distance) if item.entity.best_of else (item.entity.distance ~ ' rack') }}
+                      • {{ item.entity.distance_config|format_distance }}
                     {% endif %}
                   </small>
                 </div>

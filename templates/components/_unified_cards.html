@@ -24,7 +24,7 @@
                   {% else %}
                     {{ item.entity.discipline|replace('_',' ')|title if item.entity.discipline }}
                     {% if item.entity.distance %}
-                      • {{ ('Al meglio di ' ~ item.entity.distance) if item.entity.best_of else (item.entity.distance ~ ' rack') }}
+                      • {{ item.entity.distance_config|format_distance }}
                     {% endif %}
                   {% endif %}
                 </small>
