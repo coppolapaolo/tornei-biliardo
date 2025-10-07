@@ -6,13 +6,49 @@ This directory contains the domain models for the American Pool community platfo
 
 This file provides an **overview** of the models architecture. For **detailed domain-specific documentation**, see:
 
-- **[models/competition/CLAUDE.md](competition/CLAUDE.md)**: Gara, Inscription, all competition services (~7,500 lines)
-- **[models/matchmaking/CLAUDE.md](matchmaking/CLAUDE.md)**: All matchmaking strategies and algorithms (~5,500 lines)
-- **[models/match/CLAUDE.md](match/CLAUDE.md)**: Match, Set, Rack models and services (~3,000 lines)
-- **[models/SUBDIRECTORY_DOCS_SUMMARY.md](SUBDIRECTORY_DOCS_SUMMARY.md)**: Complete index of all domain documentation
+### ✅ Complete Documentation Available
+- **[models/competition/CLAUDE.md](competition/CLAUDE.md)**: Gara, Inscription, all competition services (8 files, ~2,947 lines)
+- **[models/matchmaking/CLAUDE.md](matchmaking/CLAUDE.md)**: All matchmaking strategies and algorithms (14 files, ~3,372 lines)
+- **[models/match/CLAUDE.md](match/CLAUDE.md)**: Match, Set, Rack models and services (7 files, ~2,716 lines)
+- **[models/user/CLAUDE.md](user/CLAUDE.md)**: User, roles, permissions, services (10 files, ~3,653 lines) ⭐ NEW
+- **[models/notification/CLAUDE.md](notification/CLAUDE.md)**: Notification factory and delivery (4 files, ~1,231 lines) ⭐ NEW
+- **[models/individual_match/CLAUDE.md](individual_match/CLAUDE.md)**: Match proposals, availability system (4 files, ~2,057 lines) ⭐ NEW
+
+### 📋 Domain Quick Index (For Future Documentation)
+
+**Core Community Features:**
+- **user/** (10 files, 3,653 lines): User, DirectorRequest, VenueManagement, UserService + 4 specialized services
+- **notification/** (4 files, 1,231 lines): Notification, NotificationFactory, event-driven delivery
+- **individual_match/** (4 files, 2,057 lines): MatchProposal, PlayerAvailability, AvailabilityService
+
+**Tournament System:**
+- **competition/** (8 files, 2,947 lines): Gara, Inscription, GaraService + specialized services
+- **matchmaking/** (14 files, 3,372 lines): BaseStrategy, 5 pairing strategies, configuration
+- **match/** (7 files, 2,716 lines): Match, Set, Rack, TrioMatch, scoring services
+- **campionato/** (3 files, 1,076 lines): Campionato (tournament container), playoff configuration
+- **classification/** (3 files, 937 lines): Classification, RoundClassification, PlayerEncounter
+
+**Supporting Features:**
+- **challenge/** (5 files, 1,697 lines): Challenge, ChallengeAttempt, X-replacement system
+- **location/** (3 files, 764 lines): BilliardHall, UserLocationAvailability
+- **rating/** (3 files, 1,090 lines): HandicapRule, rating integration with User
+- **playoff/** (3 files, 857 lines): Playoff, PlayoffStage, elimination tournaments
+- **exam/** (3 files, 620 lines): Exam, ExamAttempt, challenge-based testing
+- **tiebreaker/** (3 files, 965 lines): SpotShot, RallyAttempt, tie resolution
+
+**Cross-Cutting Infrastructure:**
+- **events/** (7 files, 1,275 lines): DomainEvent, EventBus, @event_handler decorator
+- **transaction/** (2 files, 499 lines): @transactional decorator, transaction management
+- **dashboard/** (1 file, 1,065 lines): Dashboard aggregation and statistics
+- **orchestration/** (2 files, 374 lines): Multi-domain operation coordination
+- **caching/** (2 files, 572 lines): Cache manager, performance optimization
+- **optimization/** (2 files, 636 lines): Query optimizer
+- **scoring/** (3 files, 211 lines): Scoring utilities
+- **shared/** (2 files, 116 lines): Shared domain utilities
 
 **Use this file for:** Quick attribute reference, common patterns, architecture overview
 **Use domain-specific files for:** Complete class structures, all methods, detailed workflows
+**See:** [models/SUBDIRECTORY_DOCS_SUMMARY.md](SUBDIRECTORY_DOCS_SUMMARY.md) for documentation roadmap
 
 ## 📋 Quick Reference - Common Attributes & Gotchas
 

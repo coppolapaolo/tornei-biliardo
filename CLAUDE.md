@@ -31,13 +31,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Essential Commands
 ```bash
-# Activate virtual environment (REQUIRED for all commands)
+# ALWAYS activate virtual environment first (Mac)
 source venv/bin/activate
+
+# Verify you're in venv (should show venv/bin/python)
+which python
 
 # Start development server
 python app.py
 
-# Run all tests (ALWAYS use -n auto for parallel execution)
+# Run all tests (pytest.ini configures -m "not legacy" by default)
+# ALWAYS use -n auto for parallel execution
 PYTHONPATH=. pytest tests/new/ -n auto
 
 # Type check (MANDATORY before commits)
@@ -104,7 +108,7 @@ This is a Flask-based **community platform for American Pool enthusiasts** that 
 ```bash
 # Setup virtual environment
 python3 -m venv venv
-source venv/bin/activate  # Mac/Linux
+source venv/bin/activate  # Mac
 
 # Install dependencies
 pip install -r requirements.txt
@@ -112,6 +116,26 @@ pip install -r requirements-dev.txt
 
 # Run application
 python app.py
+```
+
+### Database Management
+
+**IMPORTANT**: Database reset and backup operations are available through the web UI.
+
+**Web Interface** (Development only):
+- Access `/reset` route (Admin only, requires `DEBUG_MODE=True`)
+- Features:
+  - Save current database state as named snapshot
+  - Restore any saved snapshot
+  - Reset to base (admin only)
+  - Delete custom snapshots
+- Snapshots stored in `db_snapshots/` directory
+- See [utils/reset_manager.py](utils/reset_manager.py) for implementation details
+
+**Command Line** (Alternative for scripting):
+```bash
+# Reset database with demo data
+python utils/reset_data.py
 ```
 
 ### Testing
@@ -199,10 +223,20 @@ autoflake --remove-all-unused-imports --recursive --in-place .
 
 ### Directory Documentation
 Each major directory contains detailed documentation in its own CLAUDE.md file:
-- **[models/CLAUDE.md](models/CLAUDE.md)**: Domain models, database architecture, and data structures
+
+**Layer Documentation:**
+- **[models/CLAUDE.md](models/CLAUDE.md)**: Domain models index, quick reference, common patterns ⭐ **UPDATED**
 - **[routes/CLAUDE.md](routes/CLAUDE.md)**: API endpoints, request handling, and route organization
 - **[templates/CLAUDE.md](templates/CLAUDE.md)**: UI components, template architecture, and frontend patterns
 - **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy, test organization, and quality assurance
+
+**Domain-Specific Documentation** (Complete Coverage):
+- **[models/user/CLAUDE.md](models/user/CLAUDE.md)**: User, roles, permissions, director/venue workflows ⭐ **NEW**
+- **[models/notification/CLAUDE.md](models/notification/CLAUDE.md)**: Notification factory, event-driven delivery ⭐ **NEW**
+- **[models/individual_match/CLAUDE.md](models/individual_match/CLAUDE.md)**: Match proposals, availability system ⭐ **NEW**
+- **[models/competition/CLAUDE.md](models/competition/CLAUDE.md)**: Gara, inscription, competition services
+- **[models/matchmaking/CLAUDE.md](models/matchmaking/CLAUDE.md)**: Pairing strategies and algorithms
+- **[models/match/CLAUDE.md](models/match/CLAUDE.md)**: Match, Set, Rack models and scoring
 
 ### Key Components
 
@@ -230,10 +264,12 @@ Domain-Driven Design architecture with modular organization:
 
 ##### Primary Business Domains
 
-**User Domain** (`user/`):
+**User Domain** (`user/`) - **[📖 Complete Docs](models/user/CLAUDE.md)**:
 - `User`: Core user entity with role-based permissions, soft delete, encrypted personal data
-- `TournamentDirector`, `DirectorRequest`: Director promotion system
-- `VenueManagerRequest`, `VenueManagement`: Location management permissions
+- `DirectorAssignment`: Generic director assignment (formerly TournamentDirector)
+- `DirectorRequest`, `VenueManagerRequest`: Promotion/assignment workflows
+- `UserService` (facade): Delegates to 4 specialized services (Phase 1.3 decomposition)
+- Services: UserPermissionService, VenueManagerService, UserProfileService, UserStatsService
 
 **Competition Domain** (`competition/`):
 - `Gara`: Competition rounds (standalone or campionato-based) with time, location, description
@@ -256,14 +292,22 @@ Domain-Driven Design architecture with modular organization:
 
 ##### Specialized Domains
 
+**Notification** (`notification/`) - **[📖 Complete Docs](models/notification/CLAUDE.md)**:
+- `Notification`: Event-driven notification system with delivery tracking
+- `NotificationFactory`: Bulk operations and standardized patterns
+- `NotificationPreference`: User preferences with quiet hours, frequency limits
+- Integration with domain events for cross-domain communication
+
+**Individual Match** (`individual_match/`) - **[📖 Complete Docs](models/individual_match/CLAUDE.md)**:
+- `MatchProposal`: DIRECT and OPEN match proposals with invitations
+- `PlayerAvailability`: Location-based player discovery
+- `AvailabilityService`: Complex matching and notification system (366 lines)
+- `IndividualMatch`, `IndividualRack`: Casual match scoring
+
 **Classification** (`classification/`): Player rankings and encounter tracking
-**Individual Match** (`individual_match/`): 
-- Match proposal system with invitations and status management
-- **`AvailabilityService`**: Player availability system with location-based matching and notifications
 **Challenge** (`challenge/`): Skill challenges and attempts with favorites, X-replacement integration
 **Exam** (`exam/`): Challenge-based examination system
 **Rating** (`rating/`): Player rating system with handicap rules and categories
-**Notification** (`notification/`): Comprehensive notification system with templates and preferences
 **Location** (`location/`): Billiard halls and user location availability
 **Playoff** (`playoff/`): Elimination tournaments with qualification system
 **Tiebreaker** (`tiebreaker/`): Spot shots and rally attempts for tie resolution
@@ -379,9 +423,6 @@ Platform built to foster pool community growth and engagement:
 ### Local Date Formatting System (October 2025) - ✅ COMPLETED
 Implemented browser-locale date formatting to eliminate inconsistencies between `dd/mm/yyyy` and `mm/dd/yyyy` formats:
 
-### Local Date Formatting System (October 2025) - ✅ COMPLETED
-Implemented browser-locale date formatting to eliminate inconsistencies between `dd/mm/yyyy` and `mm/dd/yyyy` formats:
-
 #### Implementation
 - **JavaScript Auto-Formatting**: Added `TourneyUtils.formatDate()` functions in `base.html`
 - **Locale Detection**: Uses `navigator.language` with fallback to `'it-IT'`
@@ -390,6 +431,7 @@ Implemented browser-locale date formatting to eliminate inconsistencies between 
 - **Pattern**: `{{ date|date_local }}` replaces `{{ date.strftime('%d/%m/%Y') }}`
 - **UTC Consistency**: Both `data-utc` and `data-datetime` use same locale
 
+#### Benefits
 - ✅ **Formato Consistente**: Sempre dd/mm/yyyy indipendentemente dal browser dell'utente
 - ✅ **Consistency**: Unified format across entire application
 - ✅ **User Experience**: Users see dates in their preferred format
