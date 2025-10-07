@@ -70,6 +70,11 @@ class Gara(db.Model):
         db.Boolean, default=False
     )  # Se True: "al meglio di", se False: "esatto numero"
 
+    # Multi-set configuration (Phase 6: Frontend Integration)
+    is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
+    match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
+    sets_best_of = db.Column(db.Boolean, default=True, nullable=True)  # Best-of vs exact sets
+
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
     inscription_end = db.Column(db.DateTime)
@@ -337,20 +342,36 @@ class Gara(db.Model):
         except Exception:
             return False
 
-    # TODO: questo va aggiornato se si astrae in modo diverso Score
     @property
     def distance_config(self):
         """Get Distance value object for this gara.
 
-        Returns unified Distance abstraction replacing distance/best_of.
-        Always returns single-set configuration for Gara.
+        Returns unified Distance abstraction supporting both single-set
+        and multi-set configurations.
 
         Returns:
             Distance: Immutable distance configuration
         """
         from models.match.distance import Distance
 
-        return Distance.from_gara(self)
+        if not self.is_multi_set:
+            # Single-set configuration (backward compatible)
+            return Distance(
+                racks=self.distance,
+                racks_best_of=self.best_of,
+                is_multi_set=False,
+                sets=1,
+                sets_best_of=True
+            )
+        else:
+            # Multi-set configuration (Phase 6: Frontend Integration)
+            return Distance(
+                racks=self.distance,
+                racks_best_of=self.best_of,
+                is_multi_set=True,
+                sets=self.match_distance if self.match_distance else 1,
+                sets_best_of=self.sets_best_of if self.sets_best_of is not None else True
+            )
 
     def get_winning_score(self):
         """Restituisce il punteggio per vincere.
