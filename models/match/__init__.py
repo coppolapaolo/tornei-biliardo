@@ -18,6 +18,7 @@ from .models import Match, Rack, MatchResult, TrioMatch
 from .set_models import Set, SetRack
 from .multi_discipline_service import MultiDisciplineService
 from .distance import Distance
+from .score import RackScore, MatchScore
 
 # Export all public classes and functions
 __all__ = [
@@ -31,6 +32,8 @@ __all__ = [
     "SetRack",
     # Value Objects
     "Distance",
+    "RackScore",
+    "MatchScore",
     # Services
     "MultiDisciplineService",
 ]
