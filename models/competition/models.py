@@ -64,8 +64,7 @@ class Gara(db.Model):
 
     # Game settings
     discipline = db.Column(db.String(50), nullable=False)  # palla 8, 9, 10
-    # TODO: valutare se astrarre distanza per gestire i set.
-    # In questo caso best_of rientra nella distanza
+    # Distance configuration (use distance_config property for abstraction)
     distance = db.Column(db.Integer, nullable=False)
     best_of = db.Column(
         db.Boolean, default=False
@@ -339,18 +338,49 @@ class Gara(db.Model):
             return False
 
     # TODO: questo va aggiornato se si astrae in modo diverso Score
-    def get_winning_score(self):
-        """Restituisce il punteggio per vincere"""
-        if self.best_of:
-            return (self.distance // 2) + 1
-        else:
-            return self.distance
+    @property
+    def distance_config(self):
+        """Get Distance value object for this gara.
 
-    # TODO: questo va aggiornato se si astrae in modo diverso Score
+        Returns unified Distance abstraction replacing distance/best_of.
+        Always returns single-set configuration for Gara.
+
+        Returns:
+            Distance: Immutable distance configuration
+        """
+        from models.match.distance import Distance
+
+        return Distance.from_gara(self)
+
+    def get_winning_score(self):
+        """Restituisce il punteggio per vincere.
+
+        DEPRECATED: Use distance_config.get_winning_racks() instead.
+        Maintained for backward compatibility.
+        """
+        return self.distance_config.get_winning_racks()
+
     def is_match_finished(self, score1, score2):
-        """Verifica se una partita è finita"""
-        winning_score = self.get_winning_score()
-        return score1 >= winning_score or score2 >= winning_score
+        """Verifica se una partita è finita.
+
+        DEPRECATED: Use RackScore.is_complete() instead.
+        Maintained for backward compatibility.
+
+        Args:
+            score1: Player 1 rack count
+            score2: Player 2 rack count
+
+        Returns:
+            bool: True if match is complete
+        """
+        from models.match.score import RackScore
+
+        rack_score = RackScore(
+            distance=self.distance_config,
+            player1_racks=score1,
+            player2_racks=score2
+        )
+        return rack_score.is_complete()
 
     # TODO: verificare che siano tutte le info e non manchino cose
     def copy_settings_from(self, source_gara):

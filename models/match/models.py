@@ -29,16 +29,16 @@ class Match(db.Model, TimestampMixin):
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     is_bye = db.Column(db.Boolean, default=False)  # partita contro X
 
-    # Risultati
-    player1_score = db.Column( # TODO: forse con i set si deve astrarre il punteggio. Da verificare
+    # Risultati (use rack_score/match_score properties for abstractions)
+    player1_score = db.Column(
         db.Integer, default=0
-    )  # Current racks won (legacy) or sets won
+    )  # Current racks won (single-set) or sets won (multi-set)
     player2_score = db.Column(
         db.Integer, default=0
-    )  # Current racks won (legacy) or sets won
+    )  # Current racks won (single-set) or sets won (multi-set)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    # Multi-set configuration. TODO: forser la distanza va astratta e i multiset vanno gestiti a livello di astrazione distanza, come per lo score. non vorrei sovraingegnerizzare. da valutare bene
+    # Multi-set configuration (use distance_config property for abstraction)
     match_distance = db.Column(db.Integer, default=1)  # Number of sets to win the match
     is_multi_set = db.Column(
         db.Boolean, default=False
@@ -143,6 +143,74 @@ class Match(db.Model, TimestampMixin):
     def is_completed(self) -> bool:
         """Check if match is completed."""
         return self.status == MatchStatus.COMPLETED.value
+
+    @property
+    def distance_config(self):
+        """Get Distance value object for this match.
+
+        Returns unified Distance abstraction supporting both single-set
+        and multi-set configurations.
+
+        Returns:
+            Distance: Immutable distance configuration
+        """
+        from .distance import Distance
+
+        return Distance.from_match(self)
+
+    @property
+    def rack_score(self):
+        """Get RackScore value object for single-set match.
+
+        Only valid for single-set matches. Use set.rack_score for
+        multi-set matches.
+
+        Returns:
+            RackScore: Current rack scoring
+
+        Raises:
+            ValueError: If called on multi-set match
+        """
+        from .score import RackScore
+
+        if self.is_multi_set:
+            raise ValueError(
+                "Use set.rack_score for multi-set matches. "
+                "Match.rack_score only valid for single-set matches."
+            )
+
+        return RackScore(
+            distance=self.distance_config,
+            player1_racks=self.player1_score,
+            player2_racks=self.player2_score
+        )
+
+    @property
+    def match_score(self):
+        """Get MatchScore value object for multi-set match.
+
+        Only valid for multi-set matches where player scores represent
+        sets won.
+
+        Returns:
+            MatchScore: Current set scoring
+
+        Raises:
+            ValueError: If called on single-set match
+        """
+        from .score import MatchScore
+
+        if not self.is_multi_set:
+            raise ValueError(
+                "Match.match_score only valid for multi-set matches. "
+                "Use Match.rack_score for single-set matches."
+            )
+
+        return MatchScore(
+            distance=self.distance_config,
+            player1_sets=self.player1_score,
+            player2_sets=self.player2_score
+        )
 
     def get_effective_discipline(self) -> str:
         """Get effective discipline (override or gara default)."""
