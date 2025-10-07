@@ -496,8 +496,8 @@ def debug_fill_gara(gara_id):
     needed = gara.min_participants - current_inscriptions
 
     # Trova giocatori esistenti non iscritti
-    existing_player_ids = (
-        db.session.query(Inscription.user_id).filter_by(gara_id=gara_id).subquery()
+    existing_player_ids = db.session.query(Inscription.user_id).filter_by(
+        gara_id=gara_id
     )
     available_players = (
         User.query.filter(User.role == "player")
