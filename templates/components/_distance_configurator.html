@@ -1,4 +1,4 @@
-<!-- Distance Configurator Component (Phase 6: Multi-Set Support)
+{# Distance Configurator Component (Phase 6: Multi-Set Support)
 
 Progressive Disclosure UI for configuring match distance:
 - Single-set (racks only)
@@ -12,14 +12,15 @@ Parameters:
 - sets_best_of: Boolean - best-of vs exact sets (optional, default true)
 - required: Boolean - make fields required (optional, default true)
 
-Usage:
-    {% include "components/_distance_configurator.html" with context %}
+Usage (in template that includes this component):
+    - For create form (uses defaults):
+      include "components/_distance_configurator.html"
 
-    Or with specific values for edit form:
-    {% with distance=gara.distance, best_of=gara.best_of, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, sets_best_of=gara.sets_best_of %}
-    {% include "components/_distance_configurator.html" %}
-    {% endwith %}
--->
+    - For edit form (passes gara values):
+      with distance=gara.distance, best_of=gara.best_of, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, sets_best_of=gara.sets_best_of
+      include "components/_distance_configurator.html"
+      endwith
+#}
 
 {% set distance_value = distance if distance is defined else 7 %}
 {% set best_of_value = best_of if best_of is defined else True %}
