@@ -1,0 +1,247 @@
+<!-- Distance Configurator Component (Phase 6: Multi-Set Support)
+
+Progressive Disclosure UI for configuring match distance:
+- Single-set (racks only)
+- Multi-set (sets + racks per set)
+
+Parameters:
+- distance: Current rack distance value (required)
+- best_of: Boolean - best-of vs exact racks (required)
+- is_multi_set: Boolean - enable multi-set mode (optional, default false)
+- match_distance: Number of sets (optional)
+- sets_best_of: Boolean - best-of vs exact sets (optional, default true)
+- required: Boolean - make fields required (optional, default true)
+
+Usage:
+    {% include "components/_distance_configurator.html" with context %}
+
+    Or with specific values for edit form:
+    {% include "components/_distance_configurator.html"
+       distance=gara.distance,
+       best_of=gara.best_of,
+       is_multi_set=gara.is_multi_set,
+       match_distance=gara.match_distance,
+       sets_best_of=gara.sets_best_of
+    %}
+-->
+
+{% set distance_value = distance if distance is defined else 7 %}
+{% set best_of_value = best_of if best_of is defined else True %}
+{% set is_multi_set_value = is_multi_set if is_multi_set is defined else False %}
+{% set match_distance_value = match_distance if match_distance is defined else 3 %}
+{% set sets_best_of_value = sets_best_of if sets_best_of is defined else True %}
+{% set is_required = required if required is defined else True %}
+
+<div class="card mb-3" id="distance-configuration">
+    <div class="card-header">
+        <h6><i class="fas fa-ruler"></i> Configurazione Distanza</h6>
+    </div>
+    <div class="card-body">
+        <!-- Rack Configuration (always visible) -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="distance" class="form-label">
+                        Rack per Set
+                        {% if is_required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    <input type="number"
+                           class="form-control"
+                           id="distance"
+                           name="distance"
+                           min="1"
+                           max="15"
+                           value="{{ distance_value }}"
+                           onchange="updateDistancePreview()"
+                           {% if is_required %}required{% endif %}>
+                    <small class="text-muted">Numero di rack da giocare in ogni set</small>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Modalità Rack</label>
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="exact_number"
+                               name="exact_number"
+                               onchange="updateDistancePreview()"
+                               {% if not best_of_value %}checked{% endif %}>
+                        <label class="form-check-label" for="exact_number">
+                            Numero esatto di rack
+                        </label>
+                        <small class="form-text text-muted d-block">
+                            Se non selezionato: "al meglio di N rack"<br>
+                            Se selezionato: "esattamente N rack"
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Multi-Set Toggle -->
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="is_multi_set"
+                       name="is_multi_set"
+                       onchange="toggleMultiSetOptions()"
+                       {% if is_multi_set_value %}checked{% endif %}>
+                <label class="form-check-label" for="is_multi_set">
+                    <strong>Match Multi-Set</strong>
+                </label>
+                <small class="form-text text-muted d-block">
+                    Abilita match diviso in più set (come nei tornei professionali)
+                </small>
+            </div>
+        </div>
+
+        <!-- Multi-Set Configuration (hidden by default) -->
+        <div id="multi-set-config" style="display: {% if is_multi_set_value %}block{% else %}none{% endif %};">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Configurazione Multi-Set:</strong>
+                Il match sarà diviso in più set. Ogni set avrà il numero di rack specificato sopra.
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="match_distance" class="form-label">
+                            Numero di Set
+                        </label>
+                        <input type="number"
+                               class="form-control"
+                               id="match_distance"
+                               name="match_distance"
+                               min="1"
+                               max="9"
+                               value="{{ match_distance_value }}"
+                               onchange="updateDistancePreview()">
+                        <small class="text-muted">Quanti set giocare nel match</small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Modalità Set</label>
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="sets_best_of"
+                                   name="sets_best_of"
+                                   onchange="updateDistancePreview()"
+                                   {% if sets_best_of_value %}checked{% endif %}>
+                            <label class="form-check-label" for="sets_best_of">
+                                "Al meglio di N set"
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Se selezionato: primo a vincere (N+1)/2 set<br>
+                                Se non selezionato: giocare tutti gli N set
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="alert alert-secondary mt-3" id="distance-preview">
+            <strong>Anteprima:</strong> <span id="preview-text">Best of 7 racks</span>
+        </div>
+    </div>
+</div>
+
+<script>
+// Progressive Disclosure: Show/hide multi-set options
+function toggleMultiSetOptions() {
+    const isMultiSet = document.getElementById('is_multi_set').checked;
+    const config = document.getElementById('multi-set-config');
+
+    if (isMultiSet) {
+        config.style.display = 'block';
+
+        // Ensure multi-set fields have values
+        const matchDistance = document.getElementById('match_distance');
+        if (!matchDistance.value || matchDistance.value < 1) {
+            matchDistance.value = 3; // Default to best of 3 sets
+        }
+    } else {
+        config.style.display = 'none';
+    }
+
+    updateDistancePreview();
+}
+
+// Live Preview: Update distance string as user types
+function updateDistancePreview() {
+    const distance = parseInt(document.getElementById('distance').value) || 7;
+    const exactNumber = document.getElementById('exact_number').checked;
+    const isMultiSet = document.getElementById('is_multi_set').checked;
+    const matchDistance = parseInt(document.getElementById('match_distance').value) || 3;
+    const setsBestOf = document.getElementById('sets_best_of').checked;
+
+    const previewText = document.getElementById('preview-text');
+
+    // Validate best-of must be odd
+    const racksOdd = distance % 2 === 1;
+    const setsOdd = matchDistance % 2 === 1;
+
+    if (!exactNumber && !racksOdd) {
+        previewText.innerHTML = '<span class="text-danger">⚠️ "Al meglio di" richiede numero dispari di rack!</span>';
+        return;
+    }
+
+    if (isMultiSet && setsBestOf && !setsOdd) {
+        previewText.innerHTML = '<span class="text-danger">⚠️ "Al meglio di" richiede numero dispari di set!</span>';
+        return;
+    }
+
+    // Build preview string (mimics Distance.to_display_string())
+    if (!isMultiSet) {
+        // Single-set
+        const racksDesc = exactNumber ? `esattamente ${distance}` : `al meglio di ${distance}`;
+        previewText.textContent = `${racksDesc.charAt(0).toUpperCase() + racksDesc.slice(1)} rack`;
+    } else {
+        // Multi-set
+        const setsDesc = setsBestOf ? `al meglio di ${matchDistance}` : `esattamente ${matchDistance}`;
+        const racksDesc = exactNumber ? `esattamente ${distance}` : `al meglio di ${distance}`;
+
+        previewText.textContent = `${setsDesc.charAt(0).toUpperCase() + setsDesc.slice(1)} set, ogni set ${racksDesc} rack`;
+    }
+}
+
+// Initialize preview on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateDistancePreview();
+});
+
+// Client-side validation
+function validateDistanceConfig() {
+    const distance = parseInt(document.getElementById('distance').value);
+    const exactNumber = document.getElementById('exact_number').checked;
+    const isMultiSet = document.getElementById('is_multi_set').checked;
+
+    // Validate best-of must be odd
+    if (!exactNumber && distance % 2 === 0) {
+        alert('Errore: "Al meglio di" richiede un numero dispari di rack!');
+        return false;
+    }
+
+    if (isMultiSet) {
+        const matchDistance = parseInt(document.getElementById('match_distance').value);
+        const setsBestOf = document.getElementById('sets_best_of').checked;
+
+        if (setsBestOf && matchDistance % 2 === 0) {
+            alert('Errore: "Al meglio di" richiede un numero dispari di set!');
+            return false;
+        }
+    }
+
+    return true;
+}
+</script>
