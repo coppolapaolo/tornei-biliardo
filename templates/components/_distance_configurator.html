@@ -16,13 +16,9 @@ Usage:
     {% include "components/_distance_configurator.html" with context %}
 
     Or with specific values for edit form:
-    {% include "components/_distance_configurator.html"
-       distance=gara.distance,
-       best_of=gara.best_of,
-       is_multi_set=gara.is_multi_set,
-       match_distance=gara.match_distance,
-       sets_best_of=gara.sets_best_of
-    %}
+    {% with distance=gara.distance, best_of=gara.best_of, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, sets_best_of=gara.sets_best_of %}
+    {% include "components/_distance_configurator.html" %}
+    {% endwith %}
 -->
 
 {% set distance_value = distance if distance is defined else 7 %}
