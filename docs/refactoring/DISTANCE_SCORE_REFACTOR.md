@@ -18,7 +18,7 @@
 | PRE-EXEC: Setup | ✅ COMPLETE | - | - | 100% |
 | 1. Value Objects | ✅ COMPLETE | 3/3 | 61/61 | 100% |
 | 2.1 Backend Models | ✅ COMPLETE | 5/5 | Manual | 100% |
-| 2.2 Backend Services | 🟡 STARTING | 0/8 | 0/23 | 0% |
+| 2.2 Backend Services | ✅ COMPLETE | 2/2 | Manual | 100% |
 | 2.3 Backend Routes/Utils | 🔴 TODO | 0/12 | 0/13 | 0% |
 | 3. Frontend | 🔴 TODO | 0/42 | 0/30 | 0% |
 | 4. Cleanup | 🔴 TODO | - | - | 0% |
@@ -146,7 +146,43 @@
 - ✅ IndividualMatch: both properties working
 - ✅ MatchProposal: handles None distance
 
-**Next**: FASE 2.2 - Backend Services Integration
+#### FASE 2.2: Backend Services Integration - ✅ COMPLETE
+- [x] MatchService: RackService.add_rack_win() refactored (commit: 7ef4da6)
+- [x] IndividualMatchService: add_rack_result() refactored (commit: a5bdd19)
+
+**Refactoring Approach**:
+All services now use value object methods instead of raw field access:
+- `match.rack_score.is_complete()` instead of `gara.is_match_finished()`
+- `match.rack_score.get_winner()` for winner determination
+- `distance_config.get_winning_racks()` instead of `gara.get_winning_score()`
+- `distance_config.to_display_string()` for better error messages
+
+**Services Analyzed**:
+1. **MatchService** (commit 7ef4da6):
+   - Updated validation logic in add_rack_win()
+   - Uses RackScore for completion check
+   - Uses Distance for validation
+   - Improved error messages
+
+2. **IndividualMatchService** (commit a5bdd19):
+   - Updated completion check in add_rack_result()
+   - Uses RackScore.get_winner()
+   - Handles tie scenario properly
+
+3. **Other Services**: Already use model properties updated in Phase 2.1
+   - GaraService: No direct distance/score usage
+   - ClassificationService: Only reads scores (no change needed)
+   - ChallengeService: Uses model methods (already updated)
+
+**Manual Testing Results**:
+- ✅ Match scoring validation works
+- ✅ Winner determination correct
+- ✅ Tie handling working
+- ✅ Error messages improved
+
+**Key Achievement**: Core business logic now uses type-safe value objects throughout!
+
+**Next**: FASE 2.3 - Routes/Utils or FASE 3 - Frontend
 
 ---
 
