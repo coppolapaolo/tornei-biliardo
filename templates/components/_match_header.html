@@ -15,10 +15,6 @@
     </div>
     <small class="text-muted">
         Gara {{ match.gara.number }} - Turno {{ match.round_number }} - {{ match.gara.discipline }}
-        {% if match.gara.best_of %}
-            (Al meglio di {{ match.gara.distance }})
-        {% else %}
-            ({{ match.gara.distance }} rack esatti)
-        {% endif %}
+        ({{ match.gara.distance_config|format_distance }})
     </small>
 </div>

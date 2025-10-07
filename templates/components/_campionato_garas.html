@@ -31,13 +31,9 @@
                                 <td>{{ gara.location or '-' }}</td>
                                 <td>
                                     {{ gara.discipline }}
-                                    {% if gara.best_of %}
-                                        <small class="text-muted">(al meglio di {{ gara.distance }})</small>
-                                    {% else %}
-                                        <small class="text-muted">({{ gara.distance }} rack)</small>
-                                    {% endif %}
+                                    <small class="text-muted">({{ gara|format_distance }})</small>
                                 </td>
-                                <td>{{ gara.distance }}</td>
+                                <td>{{ gara|format_distance_short }}</td>
                                 <td>
                                     {% if gara.entry_fee > 0 %}
                                         €{{ "%.2f"|format(gara.entry_fee) }}

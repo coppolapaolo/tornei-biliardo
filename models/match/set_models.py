@@ -267,6 +267,37 @@ class Set(BaseModel, TimestampMixin):
         """Check if set is completed."""
         return self.status == "completed"
 
+    @property
+    def distance_config(self):
+        """Get Distance value object for this set.
+
+        Returns unified Distance abstraction for rack configuration.
+        Always returns single-set configuration.
+
+        Returns:
+            Distance: Immutable distance configuration
+        """
+        from .distance import Distance
+
+        return Distance.from_set(self)
+
+    @property
+    def rack_score(self):
+        """Get RackScore value object for this set.
+
+        Returns current rack scoring within this set.
+
+        Returns:
+            RackScore: Current rack scoring
+        """
+        from .score import RackScore
+
+        return RackScore(
+            distance=self.distance_config,
+            player1_racks=self.player1_racks,
+            player2_racks=self.player2_racks
+        )
+
     def get_score_summary(self) -> Dict[str, Any]:
         """Get set score summary."""
         return {

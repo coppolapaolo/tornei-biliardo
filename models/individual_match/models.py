@@ -72,15 +72,20 @@ class MatchProposal(BaseModel, TimestampMixin):
     )  # Game discipline (usa Discipline enum)
     distance = db.Column(
         db.Integer, nullable=True, default=5
-    )  # TODO: revisione complessiva distanze con set
+    )  # Number of racks per set
     best_of = db.Column(
         db.Boolean, nullable=True, default=True
-    )  # TODO: best_of attributo distanza - astrarre
+    )  # Best-of vs exact racks
     break_rule = db.Column(
         db.String(20), nullable=True, default="alternate"
     )  # TODO: verificare impatto funzionamento app
     description = db.Column(db.Text, nullable=True)
     entry_fee = db.Column(db.Numeric(10, 2), nullable=True, default=0)
+
+    # Multi-set configuration (Phase 6: Frontend Integration)
+    is_multi_set = db.Column(db.Boolean, default=False, nullable=True)
+    match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
+    sets_best_of = db.Column(db.Boolean, default=True, nullable=True)  # Best-of vs exact sets
 
     # Result tracking
     accepted_by_id = db.Column(
@@ -101,6 +106,40 @@ class MatchProposal(BaseModel, TimestampMixin):
     individual_match = db.relationship(
         "IndividualMatch", back_populates="proposal", uselist=False
     )
+
+    @property
+    def distance_config(self):
+        """Get Distance value object for this proposal.
+
+        Returns unified Distance abstraction supporting both single-set
+        and multi-set configurations.
+
+        Returns:
+            Distance: Immutable distance configuration (None if not specified)
+        """
+        from models.match.distance import Distance
+
+        if self.distance is None:
+            return None
+
+        if not self.is_multi_set:
+            # Single-set configuration (backward compatible)
+            return Distance(
+                racks=self.distance,
+                racks_best_of=self.best_of if self.best_of is not None else True,
+                is_multi_set=False,
+                sets=1,
+                sets_best_of=True
+            )
+        else:
+            # Multi-set configuration (Phase 6: Frontend Integration)
+            return Distance(
+                racks=self.distance,
+                racks_best_of=self.best_of if self.best_of is not None else True,
+                is_multi_set=True,
+                sets=self.match_distance if self.match_distance else 1,
+                sets_best_of=self.sets_best_of if self.sets_best_of is not None else True
+            )
 
     def is_expired(self) -> bool:
         """Check if proposal has expired."""
@@ -152,6 +191,10 @@ class MatchProposal(BaseModel, TimestampMixin):
             best_of=self.best_of,
             break_rule=self.break_rule,
             entry_fee=self.entry_fee,
+            # Phase 6: Copy multi-set configuration
+            is_multi_set=self.is_multi_set if self.is_multi_set is not None else False,
+            match_distance=self.match_distance,
+            sets_best_of=self.sets_best_of,
         )
 
         db.session.add(individual_match)
@@ -296,6 +339,11 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
     best_of = db.Column(db.Boolean, nullable=False, default=True)
     break_rule = db.Column(db.String(20), nullable=False, default="alternate")
 
+    # Multi-set configuration (Phase 6: Frontend Integration)
+    is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
+    match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
+    sets_best_of = db.Column(db.Boolean, default=True, nullable=True)  # Best-of vs exact sets
+
     # Optional
     entry_fee = db.Column(db.Numeric(10, 2), nullable=True)
     notes = db.Column(db.Text, nullable=True)
@@ -320,6 +368,54 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
         cascade="all, delete-orphan",
         order_by="IndividualRack.rack_number",
     )
+
+    @property
+    def distance_config(self):
+        """Get Distance value object for this individual match.
+
+        Returns unified Distance abstraction supporting both single-set
+        and multi-set configurations.
+
+        Returns:
+            Distance: Immutable distance configuration
+        """
+        from models.match.distance import Distance
+
+        if not self.is_multi_set:
+            # Single-set configuration (backward compatible)
+            return Distance(
+                racks=self.distance,
+                racks_best_of=self.best_of,
+                is_multi_set=False,
+                sets=1,
+                sets_best_of=True
+            )
+        else:
+            # Multi-set configuration (Phase 6: Frontend Integration)
+            return Distance(
+                racks=self.distance,
+                racks_best_of=self.best_of,
+                is_multi_set=True,
+                sets=self.match_distance if self.match_distance else 1,
+                sets_best_of=self.sets_best_of if self.sets_best_of is not None else True
+            )
+
+    @property
+    def rack_score(self):
+        """Get RackScore value object for this match.
+
+        Returns current rack scoring.
+
+        Returns:
+            RackScore: Current rack scoring
+        """
+        from models.match.score import RackScore
+
+        return RackScore(
+            distance=self.distance_config,
+            player1_racks=self.player1_score,
+            player2_racks=self.player2_score
+        )
 
     def start_match(self) -> None:
         """Start the match."""

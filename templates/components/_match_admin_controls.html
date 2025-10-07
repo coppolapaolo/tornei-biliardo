@@ -31,10 +31,11 @@
                     </div>
                 </div>
                 <small class="text-muted">
+                    {{ match.gara.distance_config|format_distance }}:
                     {% if match.gara.best_of %}
-                        Al meglio di {{ match.gara.distance }}: uno dei giocatori deve raggiungere {{ match.gara.get_winning_score() }} punti
+                        uno dei giocatori deve raggiungere {{ match.gara.get_winning_score() }} punti
                     {% else %}
-                        {{ match.gara.distance }} rack esatti: la somma deve essere esattamente {{ match.gara.distance }}
+                        la somma deve essere esattamente {{ match.gara.distance }}
                     {% endif %}
                 </small>
             </form>

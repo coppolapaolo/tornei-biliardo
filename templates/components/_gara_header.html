@@ -3,12 +3,8 @@
     <div>
         <h1>{% if gara.campionato_id %}Gara {{ gara.number }}{% if gara.name %} - {{ gara.name }}{% endif %}{% else %}{{ gara.name or 'Gara Standalone' }}{% endif %}</h1>
         <p class="text-muted mb-0">
-            {{ gara.date|date_local }} - {{ gara.discipline.replace('_', ' ') }} - 
-            {% if gara.best_of %}
-                Al meglio di {{ gara.distance }}
-            {% else %}
-                {{ gara.distance }} rack esatti
-            {% endif %}
+            {{ gara.date|date_local }} - {{ gara.discipline.replace('_', ' ') }} -
+            {{ gara.distance_config|format_distance }}
             {% if gara.location %} - {{ gara.location }}{% endif %}
         </p>
     </div>

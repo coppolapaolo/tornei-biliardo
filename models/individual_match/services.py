@@ -543,16 +543,20 @@ class IndividualMatchService:
         else:
             match.player2_score += 1
 
-        # Check if match is complete
-        if (
-            match.player1_score >= match.distance
-            or match.player2_score >= match.distance
-        ):
+        # Check if match is complete using RackScore
+        if match.rack_score.is_complete():
             match.status = MatchStatus.COMPLETED
             match.completed_at = datetime.utcnow()
-            match.winner_id = (
-                winner_id if match.player1_score != match.player2_score else None
-            )
+
+            # Get winner from rack_score
+            winner_number = match.rack_score.get_winner()
+            if winner_number is None:
+                match.winner_id = None  # Tie
+            else:
+                match.winner_id = (
+                    match.player1_id if winner_number == 1
+                    else match.player2_id
+                )
 
         return rack
 

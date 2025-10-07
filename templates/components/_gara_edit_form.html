@@ -171,28 +171,19 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="distance" class="form-label">Rack/Distanza</label>
-                        <input type="number" class="form-control" name="distance" id="distance"
-                               min="1" max="15" value="{{ gara.distance }}" required>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="exact_number" class="form-label">Modalità</label>
-                        <div class="form-check mt-2" id="exact_number_container">
-                            <input class="form-check-input" type="checkbox" name="exact_number" id="exact_number"{{ ' checked' if not gara.best_of else '' }} disabled>
-                            <label class="form-check-label" for="exact_number">
-                                Numero esatto di rack (invece di "al meglio di")
-                            </label>
-                            <small class="form-text text-muted d-block">Disponibile solo per distanze dispari</small>
-                        </div>
-                        <small class="text-muted">
-                            <span id="game-mode-text"></span>
-                        </small>
-                    </div>
-                </div>
+            </div>
+    </div>
+</div>
+
+<!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
+{% with distance=gara.distance, best_of=gara.best_of, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, sets_best_of=gara.sets_best_of %}
+{% include "components/_distance_configurator.html" %}
+{% endwith %}
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">Impostazioni Torneo</h5>
+            <div class="row">
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="rounds_count" class="form-label">Turni</label>

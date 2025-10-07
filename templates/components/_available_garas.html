@@ -11,7 +11,7 @@
         <strong>Gara {{ p.number }}</strong> - {{ p.discipline }}{% if p.name %} ({{ p.name }}){% endif %}
         <br><small class="text-muted">
           {{ p.date|date_local }} –
-          {% if p.best_of %}Al meglio di {{ p.distance }}{% else %}{{ p.distance }} rack esatti{% endif %}
+          {{ p.distance_config|format_distance }}
         </small>
         {% if p.location %}<br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ p.location }}</small>{% endif %}
         <br>{% if p.is_full() %}<span class="badge bg-warning">Massimo raggiunto</span>{% else %}<span class="badge bg-success">Iscrizioni aperte</span>{% endif %}
