@@ -102,6 +102,29 @@ class MatchProposal(BaseModel, TimestampMixin):
         "IndividualMatch", back_populates="proposal", uselist=False
     )
 
+    @property
+    def distance_config(self):
+        """Get Distance value object for this proposal.
+
+        Returns unified Distance abstraction replacing distance/best_of.
+        Match proposals are always single-set.
+
+        Returns:
+            Distance: Immutable distance configuration (None if not specified)
+        """
+        from models.match.distance import Distance
+
+        if self.distance is None:
+            return None
+
+        return Distance(
+            racks=self.distance,
+            racks_best_of=self.best_of if self.best_of is not None else True,
+            is_multi_set=False,
+            sets=1,
+            sets_best_of=True
+        )
+
     def is_expired(self) -> bool:
         """Check if proposal has expired."""
         return datetime.utcnow() > self.expires_at
@@ -320,6 +343,43 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
         cascade="all, delete-orphan",
         order_by="IndividualRack.rack_number",
     )
+
+    @property
+    def distance_config(self):
+        """Get Distance value object for this individual match.
+
+        Returns unified Distance abstraction replacing distance/best_of.
+        Individual matches are always single-set.
+
+        Returns:
+            Distance: Immutable distance configuration
+        """
+        from models.match.distance import Distance
+
+        return Distance(
+            racks=self.distance,
+            racks_best_of=self.best_of,
+            is_multi_set=False,
+            sets=1,
+            sets_best_of=True
+        )
+
+    @property
+    def rack_score(self):
+        """Get RackScore value object for this match.
+
+        Returns current rack scoring.
+
+        Returns:
+            RackScore: Current rack scoring
+        """
+        from models.match.score import RackScore
+
+        return RackScore(
+            distance=self.distance_config,
+            player1_racks=self.player1_score,
+            player2_racks=self.player2_score
+        )
 
     def start_match(self) -> None:
         """Start the match."""
