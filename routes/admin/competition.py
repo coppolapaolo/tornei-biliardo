@@ -140,6 +140,12 @@ def create_gara_standalone():
                 "withdraw_policy", WithdrawPolicy.EXCLUDE.value
             )
 
+            # Multi-set configuration (Phase 6: Frontend Integration)
+            is_multi_set = "is_multi_set" in request.form
+            match_distance = request.form.get("match_distance")
+            match_distance = int(match_distance) if match_distance else None
+            sets_best_of = "sets_best_of" in request.form
+
             # Strategy configuration
             matchmaking_strategy = request.form.get("matchmaking_strategy", "amalfi")
             first_round_policy = request.form.get("first_round_policy", "random")
@@ -194,6 +200,10 @@ def create_gara_standalone():
                 first_round_policy=first_round_policy,
                 odd_number_policy=odd_number_policy,
                 anti_rematch_enabled=anti_rematch_enabled,
+                # Phase 6: Multi-set configuration
+                is_multi_set=is_multi_set,
+                match_distance=match_distance,
+                sets_best_of=sets_best_of,
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
@@ -382,6 +392,12 @@ def edit_gara(gara_id):
             exact_number = "exact_number" in request.form
             best_of = not exact_number
 
+            # Multi-set configuration (Phase 6: Frontend Integration)
+            is_multi_set = "is_multi_set" in request.form
+            match_distance = request.form.get("match_distance")
+            match_distance = int(match_distance) if match_distance else None
+            sets_best_of = "sets_best_of" in request.form
+
             # Handle venue auto-creation for location
             location = request.form.get("location", "").strip()
             number_of_tables = request.form.get("number_of_tables")
@@ -426,6 +442,10 @@ def edit_gara(gara_id):
                 first_round_policy=first_round_policy,
                 odd_number_policy=odd_number_policy,
                 anti_rematch_enabled=anti_rematch_enabled,
+                # Phase 6: Multi-set configuration
+                is_multi_set=is_multi_set,
+                match_distance=match_distance,
+                sets_best_of=sets_best_of,
             )
 
             # Handle round discipline configuration (only for random strategy)
