@@ -17,8 +17,8 @@
 |-------|--------|-------|-------|------------|
 | PRE-EXEC: Setup | ✅ COMPLETE | - | - | 100% |
 | 1. Value Objects | ✅ COMPLETE | 3/3 | 61/61 | 100% |
-| 2.1 Backend Models | 🟡 STARTING | 0/5 | 0/28 | 0% |
-| 2.2 Backend Services | 🔴 TODO | 0/8 | 0/23 | 0% |
+| 2.1 Backend Models | ✅ COMPLETE | 5/5 | Manual | 100% |
+| 2.2 Backend Services | 🟡 STARTING | 0/8 | 0/23 | 0% |
 | 2.3 Backend Routes/Utils | 🔴 TODO | 0/12 | 0/13 | 0% |
 | 3. Frontend | 🔴 TODO | 0/42 | 0/30 | 0% |
 | 4. Cleanup | 🔴 TODO | - | - | 0% |
@@ -97,7 +97,56 @@
 - FASE 1.3 MatchScore: ✅ 100% (16/16 tests)
 - **Phase 1 Total: 100%** (61/61 tests)
 
-**Next**: FASE 2.1 - Backend Models Integration (28 tests)
+#### FASE 2.1: Backend Models Integration - ✅ COMPLETE
+- [x] Gara model: distance_config property (commit: 4a2a53c)
+- [x] Match model: distance_config, rack_score, match_score properties
+- [x] Set model: distance_config, rack_score properties
+- [x] IndividualMatch model: distance_config, rack_score properties (commit: f615623)
+- [x] MatchProposal model: distance_config property (bonus)
+
+**Implementation Approach**:
+- Added `@property` methods for backward compatibility
+- DB fields unchanged - new properties added
+- Lazy imports to avoid circular dependencies
+- Error handling for single vs multi-set context
+- Deprecated legacy methods with clear guidance
+
+**Model Integration Summary**:
+1. **Gara** (commit 4a2a53c):
+   - `distance_config` → Distance.from_gara()
+   - Updated `get_winning_score()` to use distance_config
+   - Updated `is_match_finished()` to use RackScore
+   - Removed/updated TODO comments
+
+2. **Match** (commit 4a2a53c):
+   - `distance_config` → Distance.from_match()
+   - `rack_score` → RackScore (single-set only)
+   - `match_score` → MatchScore (multi-set only)
+   - Proper error handling prevents misuse
+
+3. **Set** (commit 4a2a53c):
+   - `distance_config` → Distance.from_set()
+   - `rack_score` → RackScore for set tracking
+
+4. **IndividualMatch** (commit f615623):
+   - `distance_config` → Distance (inline construction)
+   - `rack_score` → RackScore
+
+5. **MatchProposal** (commit f615623):
+   - `distance_config` → Distance (nullable)
+   - Handles None distance gracefully
+
+**Manual Testing Results**:
+- ✅ Gara.distance_config: best-of-7 → 4 to win
+- ✅ Match.rack_score: single-set scoring
+- ✅ Match.match_score: multi-set scoring
+- ✅ Error on rack_score for multi-set
+- ✅ Error on match_score for single-set
+- ✅ Set.rack_score: tracks racks per set
+- ✅ IndividualMatch: both properties working
+- ✅ MatchProposal: handles None distance
+
+**Next**: FASE 2.2 - Backend Services Integration
 
 ---
 
