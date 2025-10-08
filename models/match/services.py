@@ -498,8 +498,6 @@ class RackService:
             )
 
         # Simula aggiunta del nuovo rack per validare
-        from models.match.score import RackScore
-
         temp_p1_score = match.player1_score
         temp_p2_score = match.player2_score
 
@@ -507,13 +505,6 @@ class RackService:
             temp_p1_score += 1
         else:
             temp_p2_score += 1
-
-        # Crea RackScore temporaneo per validare
-        temp_score = RackScore(
-            distance=match.gara.distance_config,
-            player1_racks=temp_p1_score,
-            player2_racks=temp_p2_score
-        )
 
         # Valida in base al tipo di match usando distance_config
         distance = match.gara.distance_config
@@ -541,6 +532,8 @@ class RackService:
         next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
 
         # Crea il rack
+        # NOTA: add_rack_result già aggiorna automaticamente il punteggio del match
+        # quindi NON dobbiamo aggiornare player1_score/player2_score qui
         RackService.add_rack_result(
             match_id=match.id,
             rack_number=next_rack_number,
@@ -549,11 +542,8 @@ class RackService:
             validated_by_admin=validated_by_admin,
         )
 
-        # Aggiorna punteggio match
-        if winner_id == match.player1_id:
-            match.player1_score += 1
-        else:
-            match.player2_score += 1
+        # Ricarica il match per ottenere i punteggi aggiornati da add_rack_result
+        db.session.refresh(match)
 
         # Se il match è finito, imposta il vincitore usando RackScore
         if match.rack_score.is_complete():

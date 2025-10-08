@@ -15,6 +15,11 @@
         {% if match.gara.location %}
             <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
         {% endif %}
+        {% if match.table_assignment %}
+            <p><strong>Tavolo:</strong> {{ match.table_assignment }}</p>
+        {% else %}
+            <p><strong>Tavolo:</strong> <span class="text-muted">Non assegnato</span></p>
+        {% endif %}
         
         {% if debug_info.debug_mode %}
             <hr>

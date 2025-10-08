@@ -28,11 +28,22 @@
 
 {% block scripts %}
 <script>
+// Flag per prevenire chiamate multiple
+let isAddingRack = false;
+
 function addRackWin(winnerId) {
+    // Previeni chiamate multiple
+    if (isAddingRack) {
+        console.log('Richiesta già in corso, ignorata');
+        return;
+    }
+
+    isAddingRack = true;
+
     // Disabilita i pulsanti durante la richiesta
     const buttons = document.querySelectorAll('button[onclick^="addRackWin"]');
     buttons.forEach(btn => btn.disabled = true);
-    
+
     // Determina l'URL corretto in base ai permessi utente
     {% if current_user.is_admin %}
         const url = `/admin/match/{{ match.id }}/add_rack`;
@@ -42,7 +53,7 @@ function addRackWin(winnerId) {
     {% else %}
         const url = `/player/match/{{ match.id }}/add_rack`;
     {% endif %}
-    
+
     fetch(url, {
         method: 'POST',
         headers: {
@@ -57,12 +68,14 @@ function addRackWin(winnerId) {
         } else {
             alert('Errore: ' + (data.error || 'Errore sconosciuto'));
             buttons.forEach(btn => btn.disabled = false);
+            isAddingRack = false;
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('Errore durante l\'aggiornamento');
         buttons.forEach(btn => btn.disabled = false);
+        isAddingRack = false;
     });
 }
 

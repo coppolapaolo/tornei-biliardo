@@ -23,16 +23,16 @@
         </h6>
         <div class="row">
             <div class="col-6">
-                <button class="btn btn-outline-primary w-100" 
+                <button class="btn btn-outline-primary w-100"
                         onclick="addRackWin({{ match.player1_id }})"
-                        {% if match_completed %}disabled{% endif %}>
+                        {% if match_completed or not match.table_assignment %}disabled{% endif %}>
                     Rack {{ match.player1.username }}
                 </button>
             </div>
             <div class="col-6">
-                <button class="btn btn-outline-primary w-100" 
+                <button class="btn btn-outline-primary w-100"
                         onclick="addRackWin({{ match.player2_id }})"
-                        {% if match_completed %}disabled{% endif %}>
+                        {% if match_completed or not match.table_assignment %}disabled{% endif %}>
                     Rack {{ match.player2.username }}
                 </button>
             </div>
@@ -42,6 +42,13 @@
             <small class="text-muted">
                 <i class="fas fa-info-circle"></i>
                 {{ limit_message }}
+            </small>
+        </div>
+        {% elif not match.table_assignment %}
+        <div class="mt-2">
+            <small class="text-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Assegnare un tavolo prima di iniziare la partita
             </small>
         </div>
         {% endif %}
