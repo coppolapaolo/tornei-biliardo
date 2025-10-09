@@ -66,7 +66,9 @@ class InscriptionService:
             raise ValueError("Admin non può partecipare ai tornei")
 
         # Validazione: Verifica periodo di iscrizione
-        now = datetime.now()
+        # IMPORTANT: Use UTC for all datetime comparisons
+        # Database stores naive datetimes which are treated as UTC
+        now = datetime.utcnow()
         if gara.inscription_start and gara.inscription_end:
             if now < gara.inscription_start:
                 raise ValueError("Iscrizioni non ancora aperte")

@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - [🚀 Quick Reference](#-quick-reference)
 - [Project Overview](#project-overview)
+- [⏰ Critical: Timezone & Datetime Handling](#-critical-timezone--datetime-handling)
 - [Commands](#commands)
   - [Development Setup](#development-setup)
   - [Testing](#testing)
@@ -101,6 +102,54 @@ This is a Flask-based **community platform for American Pool enthusiasts** that 
 - Future expansion to any pool-related activities and events
 - Player rating systems and skill development tools
 - Social features for building the pool community
+
+## ⏰ Critical: Timezone & Datetime Handling
+
+**IMPORTANT**: The application uses a **UTC-based datetime convention** throughout the codebase.
+
+### Storage Convention
+- **All datetimes stored in database are UTC** (stored as naive datetime objects)
+- Database models use `db.Column(db.DateTime)` without timezone info
+- This is a project-wide convention maintained across 97+ datetime operations
+
+### Backend: Always Use UTC
+```python
+# ✅ CORRECT - Use UTC for all datetime operations
+from datetime import datetime
+
+now = datetime.utcnow()  # For comparisons, storage
+user.created_at = datetime.utcnow()
+
+# ❌ WRONG - Do NOT use local time in backend
+now = datetime.now()  # Only 2 acceptable uses exist in codebase
+```
+
+### Frontend: Automatic UTC → Local Conversion
+**JavaScript** (form submission):
+- User inputs local time in forms (e.g., "17:45 Italian time")
+- JavaScript converts to UTC before sending to backend
+- Example: `inscription_start_utc = localDate.toISOString().slice(0, 19)`
+
+**Jinja Templates** (display):
+- Use `|datetime_local` filter to convert UTC → Italian time (UTC+2)
+- Filter automatically adds +2 hours for display
+- Example: `{{ gara.inscription_end|datetime_local }}` displays "17:45" for "15:45 UTC" stored value
+
+### Implementation Details
+- **[utils/jinja.py:format_datetime_local()](utils/jinja.py#L30)**: Converts UTC to Italian time (UTC+2)
+- **[templates/gara_detail.html:addUTCFields()](templates/gara_detail.html#L340)**: Converts local input to UTC
+- **[models/competition/inscription_service.py:69](models/competition/inscription_service.py#L69)**: Uses `datetime.utcnow()` for comparisons
+
+### Known Limitations
+- **Hardcoded timezone**: Currently fixed to Italian time (UTC+2)
+- **No DST handling**: Does not account for daylight saving time transitions
+- **Future improvement**: Consider using `pytz` for proper timezone support
+
+### Migration History
+- **October 2025**: Fixed inscription deadline timezone display bug
+  - Issue: Inscription deadlines showed different times in admin (17:45) vs player dashboard (15:45)
+  - Root cause: Mixed use of `datetime.now()` vs `datetime.utcnow()` in comparisons
+  - Solution: Standardized on UTC throughout + proper display conversion
 
 ## Commands
 

@@ -1,6 +1,6 @@
 # utils/jinja.py — aggiunta di un helper per render accattivante
 from markupsafe import Markup, escape
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 
 
 def display_user_handle(user) -> Markup:
@@ -28,30 +28,30 @@ def format_date_local(value) -> Markup:
 
 
 def format_datetime_local(value) -> Markup:
-    """Formatta data e ora per la visualizzazione locale nel browser via JavaScript."""
+    """Formatta data e ora per la visualizzazione locale (Italia: UTC+2).
+
+    IMPORTANT: Database stores naive datetimes as UTC (project convention).
+    This filter converts UTC to Italian time (UTC+2 in summer, UTC+1 in winter).
+
+    NOTE: Hardcoded to Italian timezone. For multi-timezone support,
+    consider using pytz or JavaScript-based conversion.
+    """
     if not value:
         return Markup("N/A")
 
-    # Converti in stringa ISO per JavaScript
     if isinstance(value, datetime):
-        iso_date = value.isoformat()
+        # Database stores as UTC, convert to Italian time (UTC+2)
+        # TODO: Handle DST (daylight saving time) properly - currently fixed at +2
+        italian_time = value + timedelta(hours=2)
+        formatted = italian_time.strftime('%d/%m/%Y, %H:%M')
+        return Markup(escape(formatted))
     elif isinstance(value, date):
-        # Se è solo una data, usa mezzanotte
-        iso_date = datetime.combine(value, time.min).isoformat()
-    else:
-        iso_date = str(value)
-
-    # Usa direttamente toLocaleString in Python invece di JavaScript
-    # per evitare problemi di parsing nel browser
-    if isinstance(value, datetime):
-        # Formatta direttamente in Python con formato italiano
-        formatted = value.strftime('%d/%m/%Y, %H:%M')
-    elif isinstance(value, date):
+        # Just a date, no timezone conversion
         formatted = value.strftime('%d/%m/%Y')
+        return Markup(escape(formatted))
     else:
-        formatted = iso_date
-
-    return Markup(escape(formatted))
+        # Fallback for string values
+        return Markup(escape(str(value)))
 
 
 def format_time_local(value) -> Markup:
