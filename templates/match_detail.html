@@ -13,33 +13,11 @@
             </h1>
         </div>
         <div>
-            {# Dynamic back button based on user role and inscription #}
-            {% if current_user.is_admin or current_user.is_director %}
-                <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
-                   class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> Torna alla Gara
-                </a>
-            {% elif current_user.is_authenticated %}
-                {# Check if player is inscribed #}
-                {% set inscription = match.gara.inscriptions.all()|selectattr('user_id', 'equalto', current_user.id)|first %}
-                {% if inscription %}
-                    <a href="{{ url_for('player.gara_detail', gara_id=match.gara_id) }}"
-                       class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Torna alla Gara
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('main.public_gara_detail', gara_id=match.gara_id) }}"
-                       class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Torna alla Gara
-                    </a>
-                {% endif %}
-            {% else %}
-                {# Guest - use public route #}
-                <a href="{{ url_for('main.public_gara_detail', gara_id=match.gara_id) }}"
-                   class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> Torna alla Gara
-                </a>
-            {% endif %}
+            {# Unified back button - uses single adaptive gara_detail route #}
+            <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
+               class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Torna alla Gara
+            </a>
         </div>
     </div>
 

@@ -56,11 +56,14 @@
 {# Sezione Partite - adattiva #}
 <div class="row">
   <div class="col-md-8">
-    {% if user_inscription %}
-      {# Player iscritto: mostra solo le sue partite #}
+    {% if user_can_manage %}
+      {# Admin/Director con permessi: mostra tutte le partite #}
+      {% include "components/_gara_matches.html" %}
+    {% elif user_inscription %}
+      {# Player iscritto (senza permessi di gestione): mostra solo le sue partite #}
       {% include "components/_player_personal_matches.html" %}
     {% else %}
-      {# Admin/Guest: mostra tutte le partite #}
+      {# Guest: mostra tutte le partite (read-only) #}
       {% include "components/_gara_matches.html" %}
     {% endif %}
   </div>
