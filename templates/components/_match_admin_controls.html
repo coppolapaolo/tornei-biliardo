@@ -5,22 +5,44 @@
         <h6><i class="fas fa-user-shield"></i> {% if current_user.is_admin %}Controlli Amministratore{% else %}Controlli Direttore{% endif %}</h6>
     </div>
     <div class="card-body">
+        {# Quick Rack Entry Section - Always shown for admin/director #}
+        {% if match.status != 'completed' and not match.is_bye %}
+        <div class="mb-3">
+            <h6>Aggiungi Rack Singolo</h6>
+            <div class="row">
+                <div class="col-6">
+                    <button class="btn btn-primary w-100"
+                            onclick="addRackWin({{ match.player1_id }})">
+                        <i class="fas fa-plus"></i> Rack {{ match.player1.username }}
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-success w-100"
+                            onclick="addRackWin({{ match.player2_id }})">
+                        <i class="fas fa-plus"></i> Rack {{ match.player2.username }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <hr>
+        {% endif %}
+
         {% if match.status != 'completed' %}
             <!-- Form Risultato Diretto -->
-            <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" 
+            <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}"
                   method="POST" class="mb-3" onsubmit="return confirmSetResult()">
                 <h6>Imposta Risultato Diretto</h6>
                 <div class="row">
                     <div class="col-4">
                         <label class="form-label">{{ match.player1.username }}</label>
-                        <input type="number" class="form-control" name="player1_score" 
-                               min="0" max="{{ match.gara.distance }}" 
+                        <input type="number" class="form-control" name="player1_score"
+                               min="0" max="{{ match.gara.distance }}"
                                value="{{ match.player1_score }}" required>
                     </div>
                     <div class="col-4">
                         <label class="form-label">{{ match.player2.username }}</label>
-                        <input type="number" class="form-control" name="player2_score" 
-                               min="0" max="{{ match.gara.distance }}" 
+                        <input type="number" class="form-control" name="player2_score"
+                               min="0" max="{{ match.gara.distance }}"
                                value="{{ match.player2_score }}" required>
                     </div>
                     <div class="col-4">
@@ -40,7 +62,7 @@
                 </small>
             </form>
         {% endif %}
-        
+
         <!-- Reset Match -->
         {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
             <button class="btn btn-danger" onclick="resetMatch({{ match.id }})">

@@ -1,33 +1,222 @@
 {% extends "base.html" %}
 
-{% block title %}Partita - {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}{% endblock %}
+{% block title %}Match {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }} - Gara {{ match.gara.name }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            {% include "components/_match_header.html" %}
-            <div class="card-body">
-                {% include "components/_match_score.html" %}
-                {% include "components/_match_admin_controls.html" %}
-                {% include "components/_match_rack_input.html" %}
-                {% include "components/_match_racks_table.html" %}
-                {% include "components/_match_challenge_input.html" %}
-                {% include "components/_match_bye.html" %}
-            </div>
+<div class="container-fluid">
+    {# Match Header - consistent with gara header style #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="fas fa-gamepad"></i>
+                {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
+            </h1>
+            <p class="text-muted mb-0">
+                {{ match.gara.name }} - Turno {{ match.round_number }} -
+                {{ match.gara.discipline.replace('_', ' ') }} -
+                {{ match.gara.distance_config|format_distance }}
+                {% if match.table_assignment %}
+                    - Tavolo {{ match.table_assignment }}
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            {# Dynamic back button based on user role and inscription #}
+            {% if current_user.is_admin or current_user.is_director %}
+                <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alla Gara
+                </a>
+            {% elif current_user.is_authenticated %}
+                {# Check if player is inscribed #}
+                {% set inscription = match.gara.inscriptions.all()|selectattr('user_id', 'equalto', current_user.id)|first %}
+                {% if inscription %}
+                    <a href="{{ url_for('player.gara_detail', gara_id=match.gara_id) }}"
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Gara
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.public_gara_detail', gara_id=match.gara_id) }}"
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Gara
+                    </a>
+                {% endif %}
+            {% else %}
+                {# Guest - use public route #}
+                <a href="{{ url_for('main.public_gara_detail', gara_id=match.gara_id) }}"
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alla Gara
+                </a>
+            {% endif %}
         </div>
     </div>
-    
-    <div class="col-md-4">
-        {% include "components/_match_info.html" %}
-        
-        {% include "components/_match_navigation.html" %}
+
+    <div class="row">
+        <!-- Match Information and Scoring -->
+        <div class="col-md-8">
+            <!-- Match Header -->
+            <div class="card mb-4">
+                {% include "components/_match_header.html" %}
+                <div class="card-body">
+                    {% include "components/_match_score.html" %}
+
+                    {# Admin/Director Controls - Advanced Interface #}
+                    {% include "components/_match_admin_controls.html" %}
+
+                    {# Player Controls - Simplified Interface (only for players in this match) #}
+                    {% if current_user.is_authenticated and current_user.id in [match.player1_id, match.player2_id] %}
+                        {% if not (current_user.is_admin or current_user.is_director) %}
+                            {% include "components/_match_rack_input.html" %}
+                        {% endif %}
+                    {% endif %}
+
+                    {# Racks Table #}
+                    {% include "components/_match_racks_table.html" %}
+
+                    {# Challenge Input (if applicable) #}
+                    {% include "components/_match_challenge_input.html" %}
+
+                    {# Bye Match Info #}
+                    {% include "components/_match_bye.html" %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Match Information -->
+            {% include "components/_match_info.html" %}
+
+            <!-- Challenge Section -->
+            {% if available_challenges %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-star"></i> Challenge Disponibili</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Le challenge sono prove tecniche che puoi completare durante il match.</p>
+                    <div class="list-group">
+                        {% for gara_challenge in available_challenges %}
+                        <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ gara_challenge.challenge.get_display_name() }}</h6>
+                                {% if current_user.is_authenticated and current_user.id in player_challenge_progress %}
+                                    {% set progress = player_challenge_progress[current_user.id] %}
+                                    {% set challenge_data = progress.get('challenges', [])|selectattr('gara_challenge.id', 'equalto', gara_challenge.id)|first %}
+                                    {% if challenge_data %}
+                                    <small class="text-success">
+                                        <i class="fas fa-check-circle"></i> {{ challenge_data.get('attempts_count', 0) }}/{{ gara_challenge.max_attempts }}
+                                    </small>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <p class="mb-1 small text-muted">{{ gara_challenge.challenge.description|truncate(60) }}</p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions / Navigation -->
+            {% include "components/_match_navigation.html" %}
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+// NEW SIMPLIFIED UX - Add/Remove Racks with validation at end
+function addRack(winnerId) {
+    fetch(`/player/match/{{ match.id }}/racks/add`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `winner_id=${winnerId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + (data.error || 'Errore sconosciuto'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante l\'aggiunta del rack');
+    });
+}
+
+function removeRack(playerId) {
+    fetch(`/player/match/{{ match.id }}/racks/remove`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `player_id=${playerId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + (data.error || 'Impossibile rimuovere il rack'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante la rimozione del rack');
+    });
+}
+
+function confirmResult() {
+    fetch(`/player/match/{{ match.id }}/confirm`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + (data.error || 'Impossibile confermare il risultato'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante la conferma');
+    });
+}
+
+function rejectResult() {
+    if (confirm('Sei sicuro di voler rifiutare il risultato? L\'ultimo rack verrà rimosso.')) {
+        fetch(`/player/match/{{ match.id }}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Errore: ' + (data.error || 'Impossibile rifiutare il risultato'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Errore durante il rifiuto');
+        });
+    }
+}
+
 // Flag per prevenire chiamate multiple
 let isAddingRack = false;
 
@@ -98,98 +287,10 @@ function resetMatch(matchId) {
             } else {
                 alert('Errore durante il reset');
             }
-        });
-    }
-}
-
-function removeRackAdmin(rackId) {
-    if (confirm('Sei sicuro di voler rimuovere questo rack? (Admin)')) {
-        fetch(`/admin/match/rack/${rackId}/remove`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Errore: ' + (data.error || 'Impossibile rimuovere il rack'));
-            }
-        });
-    }
-}
-
-function validateRackAdmin(rackId) {
-    fetch(`/admin/match/rack/${rackId}/validate`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Errore durante la validazione');
-        }
-    });
-}
-
-// Funzioni Giocatori (esistenti)
-function removeRack(rackId) {
-    if (confirm('Sei sicuro di voler rimuovere questo rack?')) {
-        fetch(`/player/rack/${rackId}/remove`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Errore: ' + (data.error || 'Impossibile rimuovere il rack'));
-            }
-        });
-    }
-}
-
-function confirmRack(rackId) {
-    fetch(`/player/rack/${rackId}/confirm`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Errore: ' + (data.error || 'Impossibile confermare il rack'));
-        }
-    });
-}
-
-function unconfirmRack(rackId) {
-    if (confirm('Sei sicuro di voler rimuovere la conferma?')) {
-        fetch(`/player/rack/${rackId}/unconfirm`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Errore: ' + (data.error || 'Impossibile rimuovere la conferma'));
-            }
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Errore durante il reset');
         });
     }
 }
