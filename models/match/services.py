@@ -808,6 +808,9 @@ class RackService:
         for rack in existing_racks:
             db.session.delete(rack)
 
+        if match.status != MatchStatus.PLAYING.value:
+            MatchService.to_playing(match.id)
+
         # Crea i nuovi rack basati sul risultato
         rack_number = 1
 
@@ -829,10 +832,6 @@ class RackService:
         match.player1_score = player1_score
         match.player2_score = player2_score
         match.winner_id = winner_id
-
-        # Import locale per evitare cicli
-        from models.match.services import MatchService
-        from models.status_enum import MatchStatus
 
         # Solo transizione a completed se non è già completed
         if match.status != MatchStatus.COMPLETED.value:

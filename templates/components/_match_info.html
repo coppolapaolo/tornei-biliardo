@@ -4,8 +4,8 @@
         <h6>Info Partita</h6>
     </div>
     <div class="card-body">
-        <p><strong>Campionato:</strong> {{ match.gara.campionato.name }}</p>
-        <p><strong>Gara:</strong> {{ match.gara.number }}</p>
+        <p><strong>Campionato:</strong> {{ match.gara.campionato.name or 'N/A' }}</p>
+        <p><strong>Gara:</strong> {{ match.gara.name or match.gara.number }}</p>
         <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
         <p><strong>Disciplina:</strong> {{ match.gara.discipline }}</p>
         <p><strong>Modalità:</strong>

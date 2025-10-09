@@ -107,12 +107,13 @@ def create_app(config_name=None):
     # Filtri Jinja per status
     register_status_filters(app)
 
-    # Register Distance/Score formatting filters
-    from utils.jinja import format_distance, format_score, format_distance_short
+    # Register formatting filters
+    from utils.jinja import format_distance, format_score, format_distance_short, gara_display_name
 
     app.jinja_env.filters["format_distance"] = format_distance
     app.jinja_env.filters["format_score"] = format_score
     app.jinja_env.filters["format_distance_short"] = format_distance_short
+    app.jinja_env.filters["gara_display_name"] = gara_display_name
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

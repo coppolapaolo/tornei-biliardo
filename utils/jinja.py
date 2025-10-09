@@ -28,7 +28,7 @@ def format_date_local(value) -> Markup:
 
 
 def format_datetime_local(value) -> Markup:
-    """Formatta data e ora per la visualizzazione locale nel browser usando JavaScript."""
+    """Formatta data e ora per la visualizzazione locale nel browser via JavaScript."""
     if not value:
         return Markup("N/A")
 
@@ -162,3 +162,19 @@ def format_distance_short(gara_or_distance) -> Markup:
         return Markup(f"{prefix}{distance.racks}")
 
     return Markup("N/A")
+
+
+def gara_display_name(gara) -> Markup:
+    """Restituisce il nome della gara oppure 'Gara N' se il nome non c'e'.
+
+    Args:
+        gara: Gara model
+
+    Returns:
+        Markup: Formatted gara name with details
+    """
+    if not gara:
+        return Markup("N/A")
+
+    name = gara.name or f"Gara {gara.id}"
+    return Markup(escape(name))

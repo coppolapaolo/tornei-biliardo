@@ -7,31 +7,10 @@
     <div class="card-body">
         {# Quick Rack Entry Section - Always shown for admin/director #}
         {% if match.status != 'completed' and not match.is_bye %}
-        <div class="mb-3">
-            <h6>Aggiungi Rack Singolo</h6>
-            <div class="row">
-                <div class="col-6">
-                    <button class="btn btn-primary w-100"
-                            onclick="addRackWin({{ match.player1_id }})">
-                        <i class="fas fa-plus"></i> Rack {{ match.player1.username }}
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button class="btn btn-success w-100"
-                            onclick="addRackWin({{ match.player2_id }})">
-                        <i class="fas fa-plus"></i> Rack {{ match.player2.username }}
-                    </button>
-                </div>
-            </div>
-        </div>
-        <hr>
-        {% endif %}
-
-        {% if match.status != 'completed' %}
             <!-- Form Risultato Diretto -->
             <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}"
                   method="POST" class="mb-3" onsubmit="return confirmSetResult()">
-                <h6>Imposta Risultato Diretto</h6>
+                <h6>Imposta Risultato</h6>
                 <div class="row">
                     <div class="col-4">
                         <label class="form-label">{{ match.player1.username }}</label>

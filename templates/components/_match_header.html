@@ -1,20 +1,14 @@
 <!-- Match Header Component -->
 <div class="card-header">
     <div class="d-flex justify-content-between align-items-center">
-        <h4>
-            {{ match.player1.username }} 
-            {% if not match.is_bye %}
-                vs {{ match.player2.username }}
-            {% else %}
-                (Bye)
-            {% endif %}
-        </h4>
+        <small>
+        {{ match.gara|gara_display_name }} - Turno {{ match.round_number }} -
+        {{ match.gara.discipline.replace('_', ' ') }} -
+        {{ match.gara.distance_config|format_distance }}
+        - Tavolo {{ match.table_assignment or 'In attesa di assegnazione'}}
+        </small>
         <div>
             <span class="badge {{ match | status_badge_class }}">{{ match | status_text }}</span>
         </div>
     </div>
-    <small class="text-muted">
-        Gara {{ match.gara.number }} - Turno {{ match.round_number }} - {{ match.gara.discipline }}
-        ({{ match.gara.distance_config|format_distance }})
-    </small>
 </div>
