@@ -494,6 +494,24 @@ Phase 4 refactoring completed with focus on type safety and architectural correc
 
 See [docs/refactoring/CHANGELOG_PHASE_4.md](docs/refactoring/CHANGELOG_PHASE_4.md) for complete details.
 
+### Director Notification System (October 2025) - ✅ COMPLETED
+Implemented event-driven notification system for director assignment/removal and fixed architectural violation:
+
+#### Implementation
+- **New Events**: Created `DirectorAssignmentAddedEvent` and `DirectorAssignmentRemovedEvent` in [models/events/competition_events.py](models/events/competition_events.py)
+- **Notification Handlers**: Implemented handlers in [models/events/notification_handlers.py](models/events/notification_handlers.py)
+- **Service Refactoring**:
+  - ✅ Refactored `GaraService.add_director()` and `remove_director()` to use events
+  - ✅ Refactored `CampionatoService.add_director()` and `remove_director()` to use events
+  - ✅ Fixed architectural violation: `add_director()` was calling `NotificationFactory` directly instead of using event system
+
+#### Results
+- ✅ **Correct Architecture**: All director notifications now use event-driven pattern
+- ✅ **Unified System**: Same pattern for both gara and campionato
+- ✅ **Type Safety**: 0 pyright errors maintained
+- ✅ **Test Coverage**: 4 new tests in [tests/new/unit/test_director_assignment_notifications.py](tests/new/unit/test_director_assignment_notifications.py) (4/4 passing)
+- ✅ **User Experience**: Directors receive notifications when added or removed from competitions
+
 ### Amalfi Algorithm Refactoring (September 2025) - ✅ COMPLETED
 Major refactoring successfully completed - Amalfi algorithm consolidated into unified strategy pattern with full specification compliance:
 
@@ -659,7 +677,8 @@ def handle_inscription_created(event: DomainEvent) -> None:
 - `MATCH_CREATED`, `MATCH_COMPLETED`
 - `GARA_CREATED`, `GARA_COMPLETED`
 - `DIRECTOR_REQUEST_CREATED`, `DIRECTOR_REQUEST_APPROVED`
-- See `models/events/base.py` for complete list
+- `DIRECTOR_ASSIGNMENT_ADDED`, `DIRECTOR_ASSIGNMENT_REMOVED`
+- See `models/events/competition_events.py` for complete list
 
 ### Notification Factory Pattern
 

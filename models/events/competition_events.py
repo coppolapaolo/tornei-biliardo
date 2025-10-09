@@ -46,10 +46,16 @@ class CompetitionCreatedEvent(DomainEvent):
             "creator_name": self.creator_name,
             "location_id": self.location_id,
             "location_name": self.location_name,
-            "scheduled_time": self.scheduled_time.isoformat() if self.scheduled_time else None,
+            "scheduled_time": (
+                self.scheduled_time.isoformat() if self.scheduled_time else None
+            ),
             "min_participants": self.min_participants,
             "max_participants": self.max_participants,
-            "registration_deadline": self.registration_deadline.isoformat() if self.registration_deadline else None,
+            "registration_deadline": (
+                self.registration_deadline.isoformat()
+                if self.registration_deadline
+                else None
+            ),
             "is_campionato": self.is_campionato,
             "campionato_id": self.campionato_id
         }
@@ -80,8 +86,14 @@ class CompetitionRegistrationOpenedEvent(DomainEvent):
             "name": self.name,
             "location_id": self.location_id,
             "location_name": self.location_name,
-            "scheduled_time": self.scheduled_time.isoformat() if self.scheduled_time else None,
-            "registration_deadline": self.registration_deadline.isoformat() if self.registration_deadline else None,
+            "scheduled_time": (
+                self.scheduled_time.isoformat() if self.scheduled_time else None
+            ),
+            "registration_deadline": (
+                self.registration_deadline.isoformat()
+                if self.registration_deadline
+                else None
+            ),
             "eligible_user_ids": self.eligible_user_ids
         }
 
@@ -186,4 +198,62 @@ class InscriptionCreatedEvent(DomainEvent):
             "waitlist_position": self.waitlist_position,
             "location_id": self.location_id,
             "location_name": self.location_name
+        }
+
+
+@dataclass
+class DirectorAssignmentAddedEvent(DomainEvent):
+    """Event published when a director is added to a competition or campionato."""
+
+    entity_type: str  # 'gara' or 'campionato'
+    entity_id: int
+    entity_name: str
+    user_id: int
+    username: str
+    assigned_by_id: int
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.domain = "competition"
+
+    def get_event_type(self) -> str:
+        return "competition.director_assignment_added"
+
+    def _get_event_data(self) -> Dict[str, Any]:
+        return {
+            "entity_type": self.entity_type,
+            "entity_id": self.entity_id,
+            "entity_name": self.entity_name,
+            "user_id": self.user_id,
+            "username": self.username,
+            "assigned_by_id": self.assigned_by_id
+        }
+
+
+@dataclass
+class DirectorAssignmentRemovedEvent(DomainEvent):
+    """Event published when a director is removed from a competition or campionato."""
+
+    entity_type: str  # 'gara' or 'campionato'
+    entity_id: int
+    entity_name: str
+    user_id: int
+    username: str
+    removed_by_id: int
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.domain = "competition"
+
+    def get_event_type(self) -> str:
+        return "competition.director_assignment_removed"
+
+    def _get_event_data(self) -> Dict[str, Any]:
+        return {
+            "entity_type": self.entity_type,
+            "entity_id": self.entity_id,
+            "entity_name": self.entity_name,
+            "user_id": self.user_id,
+            "username": self.username,
+            "removed_by_id": self.removed_by_id
         }

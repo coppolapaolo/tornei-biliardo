@@ -27,6 +27,11 @@ from .round_service import RoundService
 from .state_service import StateService
 
 from models.exceptions import InvalidTransitionError
+from models.events.base import EventBus
+from models.events.competition_events import (
+    DirectorAssignmentAddedEvent,
+    DirectorAssignmentRemovedEvent
+)
 
 
 class GaraService:
@@ -606,36 +611,22 @@ class GaraService:
         )
         db.session.add(director_assoc)
 
-        # Invia notifica al nuovo co-direttore
-        try:
-            from models.notification.factory import NotificationFactory
-            from models.notification.models import NotificationPriority
-            from models.competition.models import Gara
+        # Pubblica evento per notifica (pattern event-driven)
+        gara = db.session.get(Gara, gara_id)
+        gara_name = gara.name or f"Gara {gara.number}"
 
-            gara = db.session.get(Gara, gara_id)
-            gara_name = gara.name or f"Gara {gara.number}"
+        if gara.campionato:
+            gara_name += f" del campionato '{gara.campionato.name}'"
 
-            if gara.campionato:
-                gara_name += f" del campionato '{gara.campionato.name}'"
-
-            notification_result = (
-                NotificationFactory.create_account_update_notification(
-                    user_id=user_id,
-                    title="Nominato co-direttore",
-                    message=f"Sei stato nominato co-direttore della {gara_name}",
-                    priority=NotificationPriority.NORMAL,
-                    update_type="co_director_assignment",
-                    related_entities={"gara_id": gara_id, "gara_name": gara_name},
-                )
-            )
-            print(
-                f"DEBUG: Director notification created for user {user_id}: "
-                f"{notification_result}"
-            )
-        except Exception as e:
-            print(
-                f"DEBUG: Error creating director notification for user {user_id}: {e}"
-            )
+        event = DirectorAssignmentAddedEvent(
+            entity_type="gara",
+            entity_id=gara_id,
+            entity_name=gara_name,
+            user_id=user_id,
+            username=user.username,
+            assigned_by_id=assigned_by_id
+        )
+        EventBus.publish(event)
 
         return True
 
@@ -670,17 +661,39 @@ class GaraService:
         Returns:
             True se rimosso con successo, False se non trovato
         """
-        from models.user.models import DirectorAssignment
+        from models.user.models import DirectorAssignment, User
 
         director_assoc = (
             db.session.query(DirectorAssignment)
             .filter_by(entity_type="gara", entity_id=gara_id, user_id=user_id)
             .first()
         )
-        if director_assoc:
-            db.session.delete(director_assoc)
-            return True
-        return False
+        if not director_assoc:
+            return False
+
+        # Recupera dati per evento prima di eliminare
+        user = db.session.get(User, user_id)
+        gara = db.session.get(Gara, gara_id)
+        gara_name = gara.name or f"Gara {gara.number}"
+
+        if gara.campionato:
+            gara_name += f" del campionato '{gara.campionato.name}'"
+
+        # Elimina associazione
+        db.session.delete(director_assoc)
+
+        # Pubblica evento per notifica (pattern event-driven)
+        event = DirectorAssignmentRemovedEvent(
+            entity_type="gara",
+            entity_id=gara_id,
+            entity_name=gara_name,
+            user_id=user_id,
+            username=user.username,
+            removed_by_id=director_assoc.assigned_by_id  # chi ha aggiunto
+        )
+        EventBus.publish(event)
+
+        return True
 
     @staticmethod
     def update_round_progression(gara_id: int) -> None:

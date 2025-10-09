@@ -23,6 +23,11 @@ from ..transaction.manager import (
     transactional,
     read_only,
 )
+from models.events.base import EventBus
+from models.events.competition_events import (
+    DirectorAssignmentAddedEvent,
+    DirectorAssignmentRemovedEvent
+)
 
 
 class TournamentService(DomainService):
@@ -210,6 +215,21 @@ class TournamentService(DomainService):
             )
         )
         db.session.add(assignment)
+
+        # Pubblica evento per notifica (pattern event-driven)
+        campionato = self._execute_with_tracking(
+            lambda: db.session.get(Campionato, campionato_id)
+        )
+        event = DirectorAssignmentAddedEvent(
+            entity_type="campionato",
+            entity_id=campionato_id,
+            entity_name=campionato.name,
+            user_id=user_id,
+            username=user.username,
+            assigned_by_id=assigned_by_id
+        )
+        EventBus.publish(event)
+
         return True
 
     @transactional(domain="campionato")
@@ -223,7 +243,7 @@ class TournamentService(DomainService):
         self._track_domain_access()
 
         # Import locale per evitare import circolari
-        from models.user.models import DirectorAssignment
+        from models.user.models import DirectorAssignment, User
 
         assignment = self._execute_with_tracking(
             lambda: DirectorAssignment.query.filter_by(
@@ -231,11 +251,32 @@ class TournamentService(DomainService):
             ).first()
         )
 
-        if assignment:
-            db.session.delete(assignment)
-            return True
+        if not assignment:
+            return False
 
-        return False
+        # Recupera dati per evento prima di eliminare
+        user = self._execute_with_tracking(
+            lambda: db.session.get(User, user_id)
+        )
+        campionato = self._execute_with_tracking(
+            lambda: db.session.get(Campionato, campionato_id)
+        )
+
+        # Elimina associazione
+        db.session.delete(assignment)
+
+        # Pubblica evento per notifica (pattern event-driven)
+        event = DirectorAssignmentRemovedEvent(
+            entity_type="campionato",
+            entity_id=campionato_id,
+            entity_name=campionato.name,
+            user_id=user_id,
+            username=user.username,
+            removed_by_id=assignment.assigned_by_id
+        )
+        EventBus.publish(event)
+
+        return True
 
     @read_only(domain="campionato")
     def get_active_campionatos(self) -> List[Campionato]:

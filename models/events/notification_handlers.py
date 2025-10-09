@@ -9,11 +9,9 @@ This decouples domains from direct notification dependencies.
 from __future__ import annotations
 
 import logging
-from typing import List
 
 from ..notification.services import NotificationService
 from ..notification.models import NotificationType, NotificationPriority
-from ..user.models import User
 from .base import EventBus
 from .user_events import (
     DirectorRequestCreatedEvent,
@@ -29,6 +27,8 @@ from .match_events import (
 from .competition_events import (
     CompetitionRegistrationOpenedEvent,
     InscriptionCreatedEvent,
+    DirectorAssignmentAddedEvent,
+    DirectorAssignmentRemovedEvent,
 )
 from .availability_events import (
     AvailabilityNotificationEvent,
@@ -86,6 +86,16 @@ class NotificationEventHandlers:
         EventBus.register_handler(
             CompetitionRegistrationOpenedEvent,
             NotificationEventHandlers.handle_competition_registration_opened,
+            priority=10
+        )
+        EventBus.register_handler(
+            DirectorAssignmentAddedEvent,
+            NotificationEventHandlers.handle_director_assignment_added,
+            priority=10
+        )
+        EventBus.register_handler(
+            DirectorAssignmentRemovedEvent,
+            NotificationEventHandlers.handle_director_assignment_removed,
             priority=10
         )
 
@@ -339,6 +349,84 @@ class NotificationEventHandlers:
             logger.info(f"Sent competition registration notifications for gara {event.gara_id}")
         except Exception as e:
             logger.error(f"Error handling competition registration opened event: {e}", exc_info=True)
+
+    # Competition domain notification handlers (continued)
+
+    @staticmethod
+    def handle_director_assignment_added(
+        event: DirectorAssignmentAddedEvent
+    ) -> None:
+        """Handle director assignment added by notifying the director."""
+        try:
+            entity_label = (
+                "gara" if event.entity_type == "gara" else "campionato"
+            )
+            title = "Nominato co-direttore"
+            message = (
+                f"Sei stato nominato co-direttore "
+                f"della {entity_label} '{event.entity_name}'"
+            )
+
+            NotificationService.create_notification(
+                user_id=event.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title=title,
+                message=message,
+                priority=NotificationPriority.NORMAL,
+                related_entities={
+                    "entity_type": event.entity_type,
+                    "entity_id": event.entity_id,
+                    "entity_name": event.entity_name,
+                    "assigned_by_id": event.assigned_by_id
+                }
+            )
+            logger.info(
+                f"Sent director assignment added notification "
+                f"to user {event.user_id}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Error handling director assignment added event: {e}",
+                exc_info=True
+            )
+
+    @staticmethod
+    def handle_director_assignment_removed(
+        event: DirectorAssignmentRemovedEvent
+    ) -> None:
+        """Handle director assignment removed by notifying the director."""
+        try:
+            entity_label = (
+                "gara" if event.entity_type == "gara" else "campionato"
+            )
+            title = "Rimosso da co-direttore"
+            message = (
+                f"Sei stato rimosso dal ruolo di co-direttore "
+                f"della {entity_label} '{event.entity_name}'"
+            )
+
+            NotificationService.create_notification(
+                user_id=event.user_id,
+                notification_type=NotificationType.ACCOUNT_UPDATE,
+                title=title,
+                message=message,
+                priority=NotificationPriority.NORMAL,
+                related_entities={
+                    "entity_type": event.entity_type,
+                    "entity_id": event.entity_id,
+                    "entity_name": event.entity_name,
+                    "removed_by_id": event.removed_by_id
+                }
+            )
+            logger.info(
+                f"Sent director assignment removed notification "
+                f"to user {event.user_id}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Error handling director assignment removed event: {e}",
+                exc_info=True
+            )
 
     # Availability domain notification handlers
 
