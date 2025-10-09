@@ -660,6 +660,130 @@ def add_rack(match_id):
         return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
 
 
+# ============ NEW SIMPLIFIED UX - Match (Tournament) Rack Management ============
+
+
+@player_bp.route("/match/<int:match_id>/racks/add", methods=["POST"])
+@login_required
+@match_player_required
+def add_rack_simplified(match_id):
+    """Add rack for player (new simplified UX for tournament matches)"""
+    winner_id = request.form.get("winner_id", type=int)
+
+    if not winner_id:
+        return jsonify({"error": "Winner ID is required"}), 400
+
+    try:
+        rack = MatchService.add_rack_for_player(
+            match_id=match_id, user_id=current_user.id, winner_id=winner_id
+        )
+
+        # Get updated match
+        match = db.session.get(Match, match_id)
+
+        return jsonify(
+            {
+                "success": True,
+                "rack_id": rack.id,
+                "rack_number": rack.rack_number,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "is_ready_for_validation": match.is_ready_for_validation(),
+            }
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore: {str(e)}"}), 500
+
+
+@player_bp.route("/match/<int:match_id>/racks/remove", methods=["POST"])
+@login_required
+@match_player_required
+def remove_rack_simplified(match_id):
+    """Remove last rack for player (new simplified UX for tournament matches)"""
+    player_id = request.form.get("player_id", type=int)
+
+    if not player_id:
+        return jsonify({"error": "Player ID is required"}), 400
+
+    try:
+        MatchService.remove_rack_for_player(
+            match_id=match_id, user_id=current_user.id, player_id=player_id
+        )
+
+        # Get updated match
+        match = db.session.get(Match, match_id)
+
+        return jsonify(
+            {
+                "success": True,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "is_ready_for_validation": match.is_ready_for_validation(),
+            }
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore: {str(e)}"}), 500
+
+
+@player_bp.route("/match/<int:match_id>/confirm", methods=["POST"])
+@login_required
+@match_player_required
+def confirm_match_result(match_id):
+    """Confirm match result (new simplified UX for tournament matches)"""
+    try:
+        match = MatchService.confirm_match_result(
+            match_id=match_id, user_id=current_user.id
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "player1_confirmed": match.player1_confirmed,
+                "player2_confirmed": match.player2_confirmed,
+                "status": match.status,
+                "completed": (match.player1_confirmed and match.player2_confirmed),
+            }
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore: {str(e)}"}), 500
+
+
+@player_bp.route("/match/<int:match_id>/reject", methods=["POST"])
+@login_required
+@match_player_required
+def reject_match_result(match_id):
+    """Reject match result - removes last rack (new simplified UX)"""
+    try:
+        match = MatchService.reject_match_result(
+            match_id=match_id, user_id=current_user.id
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "player1_confirmed": match.player1_confirmed,
+                "player2_confirmed": match.player2_confirmed,
+                "is_ready_for_validation": match.is_ready_for_validation(),
+            }
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore: {str(e)}"}), 500
+
+
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
 
 
@@ -1216,15 +1340,23 @@ def update_auto_delete():
     days = request.form.get("auto_delete_days")
 
     # Check if this is an AJAX request
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-              request.accept_mimetypes.accept_json
+    is_ajax = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or request.accept_mimetypes.accept_json
+    )
 
     if is_enabled and days:
         try:
             days_int = int(days)
             if days_int < 1 or days_int > 365:
                 if is_ajax:
-                    return {"success": False, "message": "Il numero di giorni deve essere tra 1 e 365."}, 400
+                    return (
+                        {
+                            "success": False,
+                            "message": "Il numero di giorni deve essere tra 1 e 365.",
+                        },
+                        400,
+                    )
                 flash("Il numero di giorni deve essere tra 1 e 365.", "warning")
                 return redirect(url_for("player.notifications"))
 
@@ -1235,13 +1367,19 @@ def update_auto_delete():
                 auto_delete_days=days_int,
             )
 
-            message = f"Auto-cancellazione attivata: le notifiche lette verranno eliminate dopo {days_int} giorni."
+            message = (
+                "Auto-cancellazione attivata: le notifiche lette verranno "
+                f"eliminate dopo {days_int} giorni."
+            )
             if is_ajax:
                 return {"success": True, "message": message}, 200
             flash(message, "success")
         except (ValueError, TypeError):
             if is_ajax:
-                return {"success": False, "message": "Numero di giorni non valido."}, 400
+                return (
+                    {"success": False, "message": "Numero di giorni non valido."},
+                    400,
+                )
             flash("Numero di giorni non valido.", "warning")
     else:
         # Disable auto-delete

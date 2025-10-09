@@ -9,12 +9,13 @@ from datetime import datetime
 from typing import Optional, Dict, Any, TYPE_CHECKING
 from models.base import db, TimestampMixin
 from models.status_enum import MatchStatus, Discipline
+from .base_match import BaseMatchMixin
 
 if TYPE_CHECKING:
     from .set_models import Set
 
 
-class Match(db.Model, TimestampMixin):
+class Match(db.Model, TimestampMixin, BaseMatchMixin):
     """Core match entity representing a game between players."""
 
     __tablename__ = "match"
@@ -23,7 +24,9 @@ class Match(db.Model, TimestampMixin):
     gara_id = db.Column(
         db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
     )
-    round_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3. TODO: non sono sicuro che round_number sia una proprieta' di Match e che Match debba sapere qual e' il suo round. da verificare il modello
+    round_number = db.Column(
+        db.Integer, nullable=False
+    )  # 1, 2, 3. TODO: non sono sicuro che round_number sia una proprieta' di Match e che Match debba sapere qual e' il suo round. da verificare il modello
 
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -74,10 +77,18 @@ class Match(db.Model, TimestampMixin):
     player2_handicap = db.Column(
         db.Integer, default=0
     )  # Starting advantage for player2
-    handicap_rule_id = db.Column( # TODO: da controllare se e come e' definito. non mi e' chiaro
-        db.Integer, db.ForeignKey("handicap_rule.id"), nullable=True
+    handicap_rule_id = (
+        db.Column(  # TODO: da controllare se e come e' definito. non mi e' chiaro
+            db.Integer, db.ForeignKey("handicap_rule.id"), nullable=True
+        )
     )
     handicap_explanation = db.Column(db.String(255), nullable=True)
+
+    # Validazione finale del risultato (nuova UX semplificata)
+    player1_confirmed = db.Column(db.Boolean, default=False, nullable=False)
+    player2_confirmed = db.Column(db.Boolean, default=False, nullable=False)
+    player1_confirmed_at = db.Column(db.DateTime, nullable=True)
+    player2_confirmed_at = db.Column(db.DateTime, nullable=True)
 
     # Relazioni
     player1 = db.relationship("User", foreign_keys=[player1_id])
@@ -182,7 +193,7 @@ class Match(db.Model, TimestampMixin):
         return RackScore(
             distance=self.distance_config,
             player1_racks=self.player1_score,
-            player2_racks=self.player2_score
+            player2_racks=self.player2_score,
         )
 
     @property
@@ -209,19 +220,20 @@ class Match(db.Model, TimestampMixin):
         return MatchScore(
             distance=self.distance_config,
             player1_sets=self.player1_score,
-            player2_sets=self.player2_score
+            player2_sets=self.player2_score,
         )
 
     def get_effective_discipline(self) -> str:
         """Get effective discipline (override or gara default)."""
         if self.discipline:
             return self.discipline
-        return (
-            self.gara.discipline if self.gara
-            else Discipline.EIGHT_BALL.value
-        )
+        return self.gara.discipline if self.gara else Discipline.EIGHT_BALL.value
 
-    def start_next_set(self) -> "Set": # TODO: non sono sicuro che la gestione dei set vada fatta in Match. da verificare la progettazione dell'Abstract data type
+    def start_next_set(
+        self,
+    ) -> (
+        "Set"
+    ):  # TODO: non sono sicuro che la gestione dei set vada fatta in Match. da verificare la progettazione dell'Abstract data type
         """Start the next set in a multi-set match."""
         if not self.is_multi_set:
             raise ValueError("This is not a multi-set match")
@@ -337,7 +349,11 @@ class Match(db.Model, TimestampMixin):
                 "winner_id": self.winner_id,
             }
 
-    def needs_tiebreaker(self) -> bool: # TODO: controllare il modello. forse sarebbe meglio astrarre queste cose in una classe Score che gestisce i rack del match e una classe Distance. da verificare e da discutere
+    def needs_tiebreaker(
+        self,
+    ) -> (
+        bool
+    ):  # TODO: controllare il modello. forse sarebbe meglio astrarre queste cose in una classe Score che gestisce i rack del match e una classe Distance. da verificare e da discutere
         """Check if match needs a tiebreaker (tied scores)."""
         if self.status != "completed":
             return False
@@ -386,7 +402,11 @@ class Match(db.Model, TimestampMixin):
         """Check if a tiebreaker can be started for this match."""
         return self.needs_tiebreaker() and not self.has_active_tiebreaker()
 
-    def supports_multi_discipline(self) -> bool: # TODO: controllare se la modellazione cosi' e' ok. la disciplina e' un campo strutturato? deve essere strutturato? oppure e' solo una descrizione. Per i match multi disciplina avevo in mente quelli di APA in cui i primi 4 rack sono a palla 8 e gli altri sono a palla 9 e si arriva al 7. Ma se il funzionamento dell'app non cambia allora si puo' lasciare questo come semplice valore di descrizione
+    def supports_multi_discipline(
+        self,
+    ) -> (
+        bool
+    ):  # TODO: controllare se la modellazione cosi' e' ok. la disciplina e' un campo strutturato? deve essere strutturato? oppure e' solo una descrizione. Per i match multi disciplina avevo in mente quelli di APA in cui i primi 4 rack sono a palla 8 e gli altri sono a palla 9 e si arriva al 7. Ma se il funzionamento dell'app non cambia allora si puo' lasciare questo come semplice valore di descrizione
         """Check if match supports multi-discipline play."""
         return (
             self.is_multi_set
@@ -449,7 +469,9 @@ class Match(db.Model, TimestampMixin):
             "sets": sets_summary,
         }
 
-    def _check_and_complete_gara_if_needed(self, match_obj): # TODO: perche' qui si occupa della gara? un match, dal punto di vista astratto non dovrebbe nemmeno sapere cos'e' una gara.
+    def _check_and_complete_gara_if_needed(
+        self, match_obj
+    ):  # TODO: perche' qui si occupa della gara? un match, dal punto di vista astratto non dovrebbe nemmeno sapere cos'e' una gara.
         """Controlla se tutti i match della gara sono completati e completa automaticamente la gara"""
         try:
             from models.competition.services import GaraService
@@ -482,6 +504,30 @@ class Match(db.Model, TimestampMixin):
             # Log l'errore ma non bloccare il completamento del match
             print(f"Errore nel completamento automatico della gara: {e}")
 
+    def _remove_last_rack(self, user_id: int) -> None:
+        """
+        Implementation of BaseMatch abstract method.
+        Remove last rack from match (soft delete).
+        """
+        # Find last non-deleted rack
+        last_rack = (
+            Rack.query.filter_by(match_id=self.id, is_deleted=False)
+            .order_by(Rack.rack_number.desc())
+            .first()
+        )
+
+        if last_rack:
+            # Soft delete the rack with log info
+            last_rack.is_deleted = True
+            last_rack.removed_by_id = user_id
+            last_rack.removed_at = datetime.utcnow()
+
+            # Update match scores
+            if last_rack.winner_id == self.player1_id:
+                self.player1_score = max(0, self.player1_score - 1)
+            elif last_rack.winner_id == self.player2_id:
+                self.player2_score = max(0, self.player2_score - 1)
+
 
 class Rack(db.Model):
     """Detailed tracking of individual racks within a match."""
@@ -493,10 +539,12 @@ class Rack(db.Model):
         db.Integer, db.ForeignKey("match.id", ondelete="CASCADE"), nullable=False
     )
     rack_number = db.Column(db.Integer, nullable=False)
-    winner_id = db.Column(db.Integer, db.ForeignKey("user.id")) # TODO: nel pool continuo, un rack non e' detto che abbia un vincitore, perche' ogni giocatore ha un punteggio. bisogna pensare anche questa cosa. 
+    winner_id = db.Column(
+        db.Integer, db.ForeignKey("user.id")
+    )  # TODO: nel pool continuo, un rack non e' detto che abbia un vincitore, perche' ogni giocatore ha un punteggio. bisogna pensare anche questa cosa.
 
     # NUOVI CAMPI per conferma punti
-    # TODO: forse questo va astratto con una classe Referto ed e' in quella classe che vanno messe queste info. 
+    # TODO: forse questo va astratto con una classe Referto ed e' in quella classe che vanno messe queste info.
     reported_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))  # chi ha segnato
     confirmed_by_player = db.Column(
         db.Boolean, default=False
@@ -508,9 +556,20 @@ class Rack(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Nuovi campi per UX semplificata (log operazioni)
+    added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    added_at = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)
+    removed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    removed_at = db.Column(db.DateTime, nullable=True)
+    is_deleted = db.Column(
+        db.Boolean, default=False, nullable=False
+    )  # Soft delete per tracciabilità
+
     # Relazioni
     winner = db.relationship("User", foreign_keys=[winner_id])
     reported_by = db.relationship("User", foreign_keys=[reported_by_id])
+    added_by = db.relationship("User", foreign_keys=[added_by_id])
+    removed_by = db.relationship("User", foreign_keys=[removed_by_id])
 
     def can_be_removed(self, current_user_id):
         """Verifica se il rack può essere rimosso"""
@@ -544,7 +603,9 @@ class Rack(db.Model):
         return f"<Rack {self.rack_number} (Match {self.match_id})>"
 
 
-class MatchResult(db.Model): # TODO: se si fa una classe Referto per i rack allora si potrebbe fare una gerarchia con referto e sottoclassi per rack e match? da verificare
+class MatchResult(
+    db.Model
+):  # TODO: se si fa una classe Referto per i rack allora si potrebbe fare una gerarchia con referto e sottoclassi per rack e match? da verificare
     """Tracking of match results submitted by players."""
 
     __tablename__ = "match_result"
@@ -591,7 +652,9 @@ class TrioMatch(db.Model):
 
     # Stato del trio
     is_completed = db.Column(db.Boolean, default=False)
-    winner_id = db.Column(db.Integer, db.ForeignKey("user.id")) # TODO: non e' detto che esista un winner
+    winner_id = db.Column(
+        db.Integer, db.ForeignKey("user.id")
+    )  # TODO: non e' detto che esista un winner
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

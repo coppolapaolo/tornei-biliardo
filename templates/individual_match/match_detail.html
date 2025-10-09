@@ -27,8 +27,8 @@
                             <small class="text-muted">{{ match.location }} - {{ match.scheduled_at|datetime_local if match.scheduled_at }}</small>
                         </div>
                         <div>
-                            <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' }} fs-6">
-                                {{ match.status.value.title() }}
+                            <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' }} fs-6">
+                                {{ match.status.value.replace('_', ' ').title() }}
                             </span>
                         </div>
                     </div>
@@ -40,6 +40,9 @@
                             <h1 class="display-4 {% if match.winner_id == match.player1_id %}text-success{% elif match.status.value == 'completed' %}text-danger{% else %}text-primary{% endif %}">
                                 {{ match.player1_score or 0 }}
                             </h1>
+                            {% if match.player1_confirmed and match.is_ready_for_validation() %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i> Confermato</span>
+                            {% endif %}
                         </div>
                         <div class="col-2">
                             <h3 class="text-muted">VS</h3>
@@ -50,6 +53,9 @@
                             <h1 class="display-4 {% if match.winner_id == match.player2_id %}text-success{% elif match.status.value == 'completed' %}text-danger{% else %}text-primary{% endif %}">
                                 {{ match.player2_score or 0 }}
                             </h1>
+                            {% if match.player2_confirmed and match.is_ready_for_validation() %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i> Confermato</span>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -74,8 +80,107 @@
                 </div>
             </div>
 
+            <!-- Score Control (only if match is in progress) -->
+            {% if match.status.value == 'in_progress' %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-calculator"></i> Gestione Punteggio</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Player 1 Controls -->
+                        <div class="col-md-6 text-center">
+                            <h5>{{ match.player1.username }}</h5>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success btn-lg" onclick="addRack({{ match.player1_id }})" {% if not match.can_add_rack() %}disabled{% endif %}>
+                                    <i class="fas fa-plus-circle"></i> Aggiungi Rack
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="removeRack({{ match.player1_id }})" {% if match.player1_score == 0 %}disabled{% endif %}>
+                                    <i class="fas fa-minus-circle"></i> Rimuovi Rack
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Player 2 Controls -->
+                        <div class="col-md-6 text-center">
+                            <h5>{{ match.player2.username }}</h5>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success btn-lg" onclick="addRack({{ match.player2_id }})" {% if not match.can_add_rack() %}disabled{% endif %}>
+                                    <i class="fas fa-plus-circle"></i> Aggiungi Rack
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="removeRack({{ match.player2_id }})" {% if match.player2_score == 0 %}disabled{% endif %}>
+                                    <i class="fas fa-minus-circle"></i> Rimuovi Rack
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if match.is_ready_for_validation() %}
+                    <div class="alert alert-warning text-center mt-3">
+                        <i class="fas fa-exclamation-triangle"></i> Match pronto per la validazione
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Validation Section (only if ready for validation) -->
+            {% if match.is_ready_for_validation() and match.status.value == 'in_progress' %}
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-flag-checkered"></i> Conferma Risultato</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-center mb-3">
+                        Il match ha raggiunto la distanza. Entrambi i giocatori devono confermare il risultato finale.
+                    </p>
+
+                    {% if current_user.id == match.player1_id %}
+                        {% if not match.player1_confirmed %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-success btn-lg w-100" onclick="confirmResult()">
+                                    <i class="fas fa-check"></i> Accetta Risultato
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-danger btn-lg w-100" onclick="rejectResult()">
+                                    <i class="fas fa-times"></i> Rifiuta (rimuove ultimo rack)
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-hourglass-half"></i> Hai confermato. In attesa di {{ match.player2.username }}...
+                        </div>
+                        {% endif %}
+                    {% elif current_user.id == match.player2_id %}
+                        {% if not match.player2_confirmed %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-success btn-lg w-100" onclick="confirmResult()">
+                                    <i class="fas fa-check"></i> Accetta Risultato
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-danger btn-lg w-100" onclick="rejectResult()">
+                                    <i class="fas fa-times"></i> Rifiuta (rimuove ultimo rack)
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-hourglass-half"></i> Hai confermato. In attesa di {{ match.player1.username }}...
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
             <!-- Rack History -->
-            {% if match.racks and match.racks|length %}
+            {% set active_racks = match.racks|selectattr('is_deleted', 'equalto', False)|list %}
+            {% if active_racks|length %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5><i class="fas fa-list-ol"></i> Storico Rack</h5>
@@ -89,12 +194,12 @@
                                     <th>Vincitore</th>
                                     <th>{{ match.player1.username }}</th>
                                     <th>{{ match.player2.username }}</th>
-                                    <th>Note</th>
-                                    <th>Stato</th>
+                                    <th>Aggiunto da</th>
+                                    <th>Quando</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for rack in match.racks|sort(attribute='rack_number') %}
+                                {% for rack in active_racks|sort(attribute='rack_number') %}
                                 <tr>
                                     <td><strong>{{ rack.rack_number }}</strong></td>
                                     <td>
@@ -113,14 +218,10 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <small class="text-muted">{{ rack.notes or '-' }}</small>
+                                        <small class="text-muted">{{ rack.added_by.username if rack.added_by else '-' }}</small>
                                     </td>
                                     <td>
-                                        {% if rack.confirmed_by_player %}
-                                        <span class="badge bg-success">Confermato</span>
-                                        {% else %}
-                                        <span class="badge bg-warning">In attesa conferma</span>
-                                        {% endif %}
+                                        <small class="text-muted">{{ rack.added_at|datetime_local if rack.added_at else '-' }}</small>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -131,76 +232,42 @@
             </div>
             {% endif %}
 
-            <!-- Rack Scoring (only if match is playing) -->
-            {% if match.status.value == 'playing' %}
+            <!-- Rack Log (deleted racks for dispute resolution) -->
+            {% set deleted_racks = match.racks|selectattr('is_deleted', 'equalto', True)|list %}
+            {% if deleted_racks|length %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-plus-circle"></i> Inserisci Risultato Rack</h5>
+                    <h5><i class="fas fa-history"></i> Log Operazioni (Rack Rimossi)</h5>
                 </div>
                 <div class="card-body">
-                    <form id="rackForm" method="POST" action="{{ url_for('individual_match.submit_rack_result', match_id=match.id) }}">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">Vincitore del rack:</label>
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="winner_id" id="player1" value="{{ match.player1_id }}" required>
-                                    <label class="btn btn-outline-primary" for="player1">{{ match.player1.username }}</label>
-
-                                    <input type="radio" class="btn-check" name="winner_id" id="player2" value="{{ match.player2_id }}" required>
-                                    <label class="btn btn-outline-success" for="player2">{{ match.player2.username }}</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="rackNotes" class="form-label">Note (opzionale):</label>
-                                <input type="text" class="form-control" id="rackNotes" name="notes" placeholder="Es: bella giocata, fallo, ecc.">
-                            </div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Aggiungi Rack
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Complete Match (only if match can be completed) -->
-            {% if match.status.value == 'playing' and match.can_be_completed() %}
-            <div class="card border-success">
-                <div class="card-header bg-success text-white">
-                    <h5><i class="fas fa-flag-checkered"></i> Completa Match</h5>
-                </div>
-                <div class="card-body">
-                    <p>Il match può essere completato. Conferma il vincitore:</p>
-                    <form method="POST" action="{{ url_for('individual_match.complete_match', match_id=match.id) }}">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <label class="form-label">Vincitore finale:</label>
-                                <div class="btn-group w-100" role="group">
-                                    {% if match.player1_score > match.player2_score %}
-                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner1" value="{{ match.player1_id }}" checked required>
-                                    <label class="btn btn-success" for="final_winner1">{{ match.player1.username }} ({{ match.player1_score }})</label>
-                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner2" value="{{ match.player2_id }}" required>
-                                    <label class="btn btn-outline-success" for="final_winner2">{{ match.player2.username }} ({{ match.player2_score }})</label>
-                                    {% else %}
-                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner1" value="{{ match.player1_id }}" required>
-                                    <label class="btn btn-outline-success" for="final_winner1">{{ match.player1.username }} ({{ match.player1_score }})</label>
-                                    <input type="radio" class="btn-check" name="winner_id" id="final_winner2" value="{{ match.player2_id }}" checked required>
-                                    <label class="btn btn-success" for="final_winner2">{{ match.player2.username }} ({{ match.player2_score }})</label>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">&nbsp;</label>
-                                <div>
-                                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Sei sicuro di voler completare il match?')">
-                                        <i class="fas fa-flag-checkered"></i> Completa
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rack</th>
+                                    <th>Vincitore</th>
+                                    <th>Aggiunto da</th>
+                                    <th>Aggiunto</th>
+                                    <th>Rimosso da</th>
+                                    <th>Rimosso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rack in deleted_racks|sort(attribute='removed_at', reverse=True) %}
+                                <tr class="text-muted">
+                                    <td><strong>{{ rack.rack_number }}</strong></td>
+                                    <td>
+                                        {% if rack.winner_id == match.player1_id %}{{ match.player1.username }}{% else %}{{ match.player2.username }}{% endif %}
+                                    </td>
+                                    <td>{{ rack.added_by.username if rack.added_by else '-' }}</td>
+                                    <td><small>{{ rack.added_at|datetime_local if rack.added_at else '-' }}</small></td>
+                                    <td>{{ rack.removed_by.username if rack.removed_by else '-' }}</td>
+                                    <td><small>{{ rack.removed_at|datetime_local if rack.removed_at else '-' }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -278,13 +345,15 @@
             <!-- Match Rules -->
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-book"></i> Regole</h5>
+                    <h5><i class="fas fa-book"></i> Nuovo Sistema UX</h5>
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled small text-muted">
-                        <li><i class="fas fa-check text-success"></i> Entrambi i giocatori devono confermare ogni rack</li>
-                        <li><i class="fas fa-check text-success"></i> Solo i partecipanti possono inserire risultati</li>
-                        <li><i class="fas fa-check text-success"></i> Il match si conclude quando viene raggiunta la quota</li>
+                        <li><i class="fas fa-check text-success"></i> Usa i pulsanti +/- per aggiungere/rimuovere rack</li>
+                        <li><i class="fas fa-check text-success"></i> Nessuna conferma necessaria per ogni rack</li>
+                        <li><i class="fas fa-check text-success"></i> Validazione finale quando si raggiunge la distanza</li>
+                        <li><i class="fas fa-check text-success"></i> Se rifiuti, l'ultimo rack viene rimosso automaticamente</li>
+                        <li><i class="fas fa-check text-success"></i> Il log tiene traccia di tutte le operazioni</li>
                         {% if match.best_of %}
                         <li><i class="fas fa-info text-info"></i> Formato "al meglio di": primo a {{ (match.distance + 1) // 2 }}</li>
                         {% else %}
@@ -300,15 +369,110 @@
 
 {% block scripts %}
 <script>
-document.getElementById('rackForm')?.addEventListener('submit', function(e) {
-    const winner = document.querySelector('input[name="winner_id"]:checked');
-    if (!winner) {
-        e.preventDefault();
-        alert('Seleziona il vincitore del rack');
-        return false;
+const matchId = {{ match.id }};
+
+function addRack(winnerId) {
+    fetch(`/player/match/${matchId}/racks/add`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ winner_id: winnerId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante l\'aggiunta del rack');
+    });
+}
+
+function removeRack(playerId) {
+    if (!confirm('Rimuovere l\'ultimo rack vinto da questo giocatore?')) {
+        return;
     }
 
-    return confirm('Confermi il risultato di questo rack?');
-});
+    fetch(`/player/match/${matchId}/racks/remove`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ player_id: playerId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Errore: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante la rimozione del rack');
+    });
+}
+
+function confirmResult() {
+    if (!confirm('Confermare il risultato del match?')) {
+        return;
+    }
+
+    fetch(`/player/match/${matchId}/confirm`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.completed) {
+                alert('Match completato con successo!');
+            } else {
+                alert('Risultato confermato! In attesa dell\'altro giocatore.');
+            }
+            location.reload();
+        } else {
+            alert('Errore: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante la conferma');
+    });
+}
+
+function rejectResult() {
+    if (!confirm('Rifiutare il risultato? L\'ultimo rack verrà rimosso e si potrà continuare a giocare.')) {
+        return;
+    }
+
+    fetch(`/player/match/${matchId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ultimo rack rimosso. Continuate a giocare!');
+            location.reload();
+        } else {
+            alert('Errore: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante il rifiuto');
+    });
+}
 </script>
 {% endblock %}

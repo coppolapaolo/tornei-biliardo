@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, date
 if TYPE_CHECKING:
     from ..user.models import User
 
+from sqlalchemy import func
 from ..base import db
 from ..transaction.manager import transactional
 from .models import (
@@ -24,7 +25,6 @@ from .models import (
     ProposalStatus,
     MatchStatus,
 )
-from .availability_service import AvailabilityService
 
 
 class MatchProposalService:
@@ -166,8 +166,12 @@ class IndividualMatchService:
                 db.session.add(invitation)
 
                 try:
-                    proposer_name = proposer.username if proposer else 'Un giocatore'
-                    scheduled_time_str = scheduled_at.strftime('%d/%m/%Y alle %H:%M') if scheduled_at else None
+                    proposer_name = proposer.username if proposer else "Un giocatore"
+                    scheduled_time_str = (
+                        scheduled_at.strftime("%d/%m/%Y alle %H:%M")
+                        if scheduled_at
+                        else None
+                    )
 
                     notification_result = NotificationFactory.create_match_notification(
                         user_id=user_id,
@@ -318,7 +322,7 @@ class IndividualMatchService:
         if response.lower() == "accepted":
             invitation.status = InvitationStatus.ACCEPTED
             # Create the individual match
-            match = IndividualMatchService.accept_proposal(
+            IndividualMatchService.accept_proposal(
                 user_id=invitee_id, proposal_id=invitation.proposal_id
             )
         else:
@@ -500,14 +504,12 @@ class IndividualMatchService:
 
     @staticmethod
     @transactional(domain="individual_match")
-    def submit_rack_result(
+    def add_rack_for_player(
         match_id: int,
         user_id: int,
         winner_id: int,
-        rack_number: int,
-        notes: Optional[str] = None,
     ) -> IndividualRack:
-        """Submit result for a rack in individual match."""
+        """Add a rack won by specified player (new simplified UX)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -522,17 +524,21 @@ class IndividualMatchService:
         if winner_id not in (match.player1_id, match.player2_id):
             raise ValueError("Invalid winner ID")
 
-        # Check if rack already exists
-        existing_rack = IndividualRack.query.filter_by(
-            match_id=match_id, rack_number=rack_number
-        ).first()
+        # Get next rack number
+        max_rack = (
+            db.session.query(func.max(IndividualRack.rack_number))
+            .filter_by(match_id=match_id, is_deleted=False)
+            .scalar()
+        )
+        rack_number = (max_rack or 0) + 1
 
-        if existing_rack:
-            raise ValueError(f"Rack {rack_number} already recorded")
-
-        # Create rack record
+        # Create rack record with log info
         rack = IndividualRack(
-            match_id=match_id, rack_number=rack_number, winner_id=winner_id, notes=notes
+            match_id=match_id,
+            rack_number=rack_number,
+            winner_id=winner_id,
+            added_by_id=user_id,
+            added_at=datetime.utcnow(),
         )
 
         db.session.add(rack)
@@ -543,22 +549,76 @@ class IndividualMatchService:
         else:
             match.player2_score += 1
 
-        # Check if match is complete using RackScore
-        if match.rack_score.is_complete():
-            match.status = MatchStatus.COMPLETED
-            match.completed_at = datetime.utcnow()
-
-            # Get winner from rack_score
-            winner_number = match.rack_score.get_winner()
-            if winner_number is None:
-                match.winner_id = None  # Tie
-            else:
-                match.winner_id = (
-                    match.player1_id if winner_number == 1
-                    else match.player2_id
-                )
+        # Reset confirmations when score changes
+        match.player1_confirmed = False
+        match.player2_confirmed = False
+        match.player1_confirmed_at = None
+        match.player2_confirmed_at = None
 
         return rack
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def remove_rack_for_player(
+        match_id: int,
+        user_id: int,
+        player_id: int,
+    ) -> None:
+        """Remove last rack won by specified player (new simplified UX)."""
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        # Verify user is part of this match
+        if user_id not in (match.player1_id, match.player2_id):
+            raise ValueError("User is not part of this match")
+
+        # Find last non-deleted rack won by the specified player
+        last_rack = (
+            IndividualRack.query.filter_by(
+                match_id=match_id, winner_id=player_id, is_deleted=False
+            )
+            .order_by(IndividualRack.rack_number.desc())
+            .first()
+        )
+
+        if not last_rack:
+            raise ValueError("No rack to remove for this player")
+
+        # Soft delete the rack with log info
+        last_rack.is_deleted = True
+        last_rack.removed_by_id = user_id
+        last_rack.removed_at = datetime.utcnow()
+
+        # Update match scores
+        if player_id == match.player1_id:
+            match.player1_score = max(0, match.player1_score - 1)
+        else:
+            match.player2_score = max(0, match.player2_score - 1)
+
+        # Reset confirmations when score changes
+        match.player1_confirmed = False
+        match.player2_confirmed = False
+        match.player1_confirmed_at = None
+        match.player2_confirmed_at = None
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def submit_rack_result(
+        match_id: int,
+        user_id: int,
+        winner_id: int,
+        rack_number: int,
+        notes: Optional[str] = None,
+    ) -> IndividualRack:
+        """Submit result for a rack - legacy method for backward compatibility."""
+        return IndividualMatchService.add_rack_for_player(
+            match_id=match_id,
+            user_id=user_id,
+            winner_id=winner_id,
+        )
 
     @staticmethod
     @transactional(domain="individual_match")
@@ -659,8 +719,46 @@ class IndividualMatchService:
 
     @staticmethod
     @transactional(domain="individual_match")
+    def confirm_match_result(match_id: int, user_id: int) -> IndividualMatch:
+        """Confirm match result by a player (new UX)."""
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        if user_id not in [match.player1_id, match.player2_id]:
+            raise ValueError("Only match players can confirm the result")
+
+        if not match.is_ready_for_validation():
+            raise ValueError("Match is not ready for validation")
+
+        match.confirm_result(user_id)
+        return match
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def reject_match_result(match_id: int, user_id: int) -> IndividualMatch:
+        """Reject match result - removes last rack (new UX)."""
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        if user_id not in [match.player1_id, match.player2_id]:
+            raise ValueError("Only match players can reject the result")
+
+        if not match.is_ready_for_validation():
+            raise ValueError("Match is not ready for validation")
+
+        match.reject_result(user_id)
+        return match
+
+    @staticmethod
+    @transactional(domain="individual_match")
     def complete_match(match_id: int, winner_id: int, user_id: int) -> IndividualMatch:
-        """Complete a match (must be one of the players)."""
+        """Complete a match - legacy method for backward compatibility."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             from flask import abort
@@ -671,7 +769,6 @@ class IndividualMatchService:
             raise ValueError("Only match players can complete the match")
 
         match.complete_match(winner_id)
-
         return match
 
     @staticmethod

@@ -15,6 +15,7 @@ from sqlalchemy import func
 
 from ..base import db, BaseModel, TimestampMixin
 from ..status_enum import Discipline
+from ..match.base_match import BaseMatchMixin
 
 if TYPE_CHECKING:
     from ..user.models import User
@@ -62,7 +63,9 @@ class MatchProposal(BaseModel, TimestampMixin):
     )
 
     # Match details
-    location = db.Column(db.String(255), nullable=False) # TODO: da modificare con un riferimento alle location nel DB
+    location = db.Column(
+        db.String(255), nullable=False
+    )  # TODO: da modificare con un riferimento alle location nel DB
     scheduled_at = db.Column(db.DateTime, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
 
@@ -85,7 +88,9 @@ class MatchProposal(BaseModel, TimestampMixin):
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=True)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    sets_best_of = db.Column(db.Boolean, default=True, nullable=True)  # Best-of vs exact sets
+    sets_best_of = db.Column(
+        db.Boolean, default=True, nullable=True
+    )  # Best-of vs exact sets
 
     # Result tracking
     accepted_by_id = db.Column(
@@ -129,7 +134,7 @@ class MatchProposal(BaseModel, TimestampMixin):
                 racks_best_of=self.best_of if self.best_of is not None else True,
                 is_multi_set=False,
                 sets=1,
-                sets_best_of=True
+                sets_best_of=True,
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
@@ -138,7 +143,9 @@ class MatchProposal(BaseModel, TimestampMixin):
                 racks_best_of=self.best_of if self.best_of is not None else True,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                sets_best_of=self.sets_best_of if self.sets_best_of is not None else True
+                sets_best_of=(
+                    self.sets_best_of if self.sets_best_of is not None else True
+                ),
             )
 
     def is_expired(self) -> bool:
@@ -249,7 +256,10 @@ class MatchProposal(BaseModel, TimestampMixin):
         return None
 
     def __repr__(self) -> str:
-        return f"<MatchProposal {self.proposer_id} -> {self.proposal_type.value} at {self.location}>"
+        return (
+            f"<MatchProposal {self.proposer_id} -> "
+            f"{self.proposal_type.value} at {self.location}>"
+        )
 
 
 class InvitationStatus(Enum):
@@ -305,11 +315,19 @@ class ProposalInvitation(BaseModel, TimestampMixin):
         self.responded_at = datetime.utcnow()
 
     def __repr__(self) -> str:
-        return f"<ProposalInvitation {self.proposal_id} -> {self.invited_user_id}: {self.status.value}>"
+        return (
+            f"<ProposalInvitation {self.proposal_id} -> "
+            f"{self.invited_user_id}: {self.status.value}>"
+        )
 
 
-class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva una nuova classe e che non sia meglio modellare con un match normale?
-    """An individual match between two players."""
+class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
+    """
+    An individual match between two players (casual match).
+
+    Inherits from BaseMatch to share validation/confirmation workflow
+    with tournament matches (Match).
+    """
 
     __tablename__ = "individual_match"
 
@@ -327,14 +345,19 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
     )
 
     # Match details
-    location = db.Column(db.String(255), nullable=False) # TODO: e' necessario? non puo' fare riferimento alla location di proposal?
-    scheduled_at = db.Column(db.DateTime, nullable=False) # TODO: anche questo, credo, puo' fare riferimenot al relativo campo di proposal
+    # TODO: e' necessario? non puo' fare riferimento alla location di proposal?
+    location = db.Column(db.String(255), nullable=False)
+    # TODO: anche questo, credo, puo' fare riferimento al relativo
+    # campo di proposal
+    scheduled_at = db.Column(db.DateTime, nullable=False)
     status = db.Column(
         db.Enum(MatchStatus), nullable=False, default=MatchStatus.SCHEDULED
     )
 
     # Game configuration
-    discipline = db.Column(db.String(50), nullable=False, default="palla_8") # TODO: tutti questi sei da discipline fino a notes possono fare riferimento a proposal. perche' duplicare?
+    # TODO: tutti questi sei da discipline fino a notes possono fare
+    # riferimento a proposal. perche' duplicare?
+    discipline = db.Column(db.String(50), nullable=False, default="palla_8")
     distance = db.Column(db.Integer, nullable=False, default=5)
     best_of = db.Column(db.Boolean, nullable=False, default=True)
     break_rule = db.Column(db.String(20), nullable=False, default="alternate")
@@ -342,7 +365,9 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    sets_best_of = db.Column(db.Boolean, default=True, nullable=True)  # Best-of vs exact sets
+    sets_best_of = db.Column(
+        db.Boolean, default=True, nullable=True
+    )  # Best-of vs exact sets
 
     # Optional
     entry_fee = db.Column(db.Numeric(10, 2), nullable=True)
@@ -351,9 +376,18 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
     # Results
     started_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
-    player1_score = db.Column(db.Integer, nullable=False, default=0) # TODO: lo score, se la distanza diventa un oggetto complesso con i set, diventa anch'esso un oggetto complesso? Questo vale in generale, non solo per i match individuali
+    # TODO: lo score, se la distanza diventa un oggetto complesso con i set,
+    # diventa anch'esso un oggetto complesso? Questo vale in generale,
+    # non solo per i match individuali
+    player1_score = db.Column(db.Integer, nullable=False, default=0)
     player2_score = db.Column(db.Integer, nullable=False, default=0)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+
+    # Validazione finale del risultato
+    player1_confirmed = db.Column(db.Boolean, default=False, nullable=False)
+    player2_confirmed = db.Column(db.Boolean, default=False, nullable=False)
+    player1_confirmed_at = db.Column(db.DateTime, nullable=True)
+    player2_confirmed_at = db.Column(db.DateTime, nullable=True)
 
     # Relationships
     proposal = db.relationship("MatchProposal", back_populates="individual_match")
@@ -388,7 +422,7 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
                 racks_best_of=self.best_of,
                 is_multi_set=False,
                 sets=1,
-                sets_best_of=True
+                sets_best_of=True,
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
@@ -397,7 +431,9 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
                 racks_best_of=self.best_of,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                sets_best_of=self.sets_best_of if self.sets_best_of is not None else True
+                sets_best_of=(
+                    self.sets_best_of if self.sets_best_of is not None else True
+                ),
             )
 
     @property
@@ -414,7 +450,7 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
         return RackScore(
             distance=self.distance_config,
             player1_racks=self.player1_score,
-            player2_racks=self.player2_score
+            player2_racks=self.player2_score,
         )
 
     def start_match(self) -> None:
@@ -431,6 +467,11 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
         """Add a rack result to the match."""
         if self.status != MatchStatus.IN_PROGRESS:
             raise ValueError("Cannot add rack result to non-active match")
+
+        if not self.can_add_rack():
+            raise ValueError(
+                "Cannot add rack: match has reached maximum and needs validation"
+            )
 
         if winner_id not in [self.player1_id, self.player2_id]:
             raise ValueError("Winner must be one of the match players")
@@ -451,7 +492,9 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
         db.session.add(rack)
 
         # Update scores
-        if winner_id == self.player1_id: # TODO: forse questo va delegato ad un servizio che astrae il punteggio, ma non mi e' chiaro come modellare
+        # TODO: forse questo va delegato ad un servizio che astrae
+        # il punteggio, ma non mi e' chiaro come modellare
+        if winner_id == self.player1_id:
             self.player1_score += 1
         else:
             self.player2_score += 1
@@ -473,7 +516,9 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
             and self.player1_score + self.player2_score >= self.distance
         ):
             # Fixed distance completed
-            winner = ( # TODO: e se e' un pareggio? bisogna prevedere la possibilità di pareggio nei match individuali? da decidere
+            # TODO: e se e' un pareggio? bisogna prevedere la possibilità
+            # di pareggio nei match individuali? da decidere
+            winner = (
                 self.player1_id
                 if self.player1_score > self.player2_score
                 else self.player2_id
@@ -518,11 +563,39 @@ class IndividualMatch(BaseModel, TimestampMixin): # TODO: siamo sicuri che serva
             return self.player2_score
         return 0
 
+    def _remove_last_rack(self, user_id: int) -> None:
+        """
+        Implementation of BaseMatch abstract method.
+        Remove last rack from match (soft delete).
+        """
+        # Remove last rack (logically delete it)
+        last_rack = (
+            IndividualRack.query.filter_by(match_id=self.id, is_deleted=False)
+            .order_by(IndividualRack.rack_number.desc())
+            .first()
+        )
+
+        if last_rack:
+            last_rack.is_deleted = True
+            last_rack.removed_by_id = user_id
+            last_rack.removed_at = datetime.utcnow()
+
+            # Update scores
+            if last_rack.winner_id == self.player1_id:
+                self.player1_score = max(0, self.player1_score - 1)
+            else:
+                self.player2_score = max(0, self.player2_score - 1)
+
     def __repr__(self) -> str:
-        return f"<IndividualMatch {self.player1_id} vs {self.player2_id} at {self.location}>"
+        return (
+            f"<IndividualMatch {self.player1_id} vs "
+            f"{self.player2_id} at {self.location}>"
+        )
 
 
-class IndividualRack(BaseModel, TimestampMixin): # TODO: non sono convintissimo che serva questo e non sia sufficiente un Rack normale
+# TODO: non sono convintissimo che serva questo e non sia sufficiente
+# un Rack normale
+class IndividualRack(BaseModel, TimestampMixin):
     """A single rack within an individual match."""
 
     __tablename__ = "individual_rack"
@@ -540,10 +613,21 @@ class IndividualRack(BaseModel, TimestampMixin): # TODO: non sono convintissimo 
     break_player_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     notes = db.Column(db.Text, nullable=True)
 
+    # Log delle operazioni per tracciare chi ha aggiunto/rimosso rack
+    added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    added_at = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)
+    removed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    removed_at = db.Column(db.DateTime, nullable=True)
+    is_deleted = db.Column(
+        db.Boolean, default=False, nullable=False
+    )  # Soft delete per il log
+
     # Relationships
     match = db.relationship("IndividualMatch", back_populates="racks")
     winner = db.relationship("User", foreign_keys=[winner_id])
     break_player = db.relationship("User", foreign_keys=[break_player_id])
+    added_by = db.relationship("User", foreign_keys=[added_by_id])
+    removed_by = db.relationship("User", foreign_keys=[removed_by_id])
 
     # Unique constraint: one rack per number per match
     __table_args__ = (
@@ -551,7 +635,10 @@ class IndividualRack(BaseModel, TimestampMixin): # TODO: non sono convintissimo 
     )
 
     def __repr__(self) -> str:
-        return f"<IndividualRack {self.match_id}-{self.rack_number}: winner={self.winner_id}>"
+        return (
+            f"<IndividualRack {self.match_id}-{self.rack_number}: "
+            f"winner={self.winner_id}>"
+        )
 
 
 class PlayerAvailability(BaseModel, TimestampMixin):
@@ -563,7 +650,9 @@ class PlayerAvailability(BaseModel, TimestampMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
-    location = db.Column(db.String(255), nullable=False) # TODO: deve essere collegato alle location, non una stringa libera
+    location = db.Column(
+        db.String(255), nullable=False
+    )  # TODO: deve essere collegato alle location, non una stringa libera
 
     # Availability preferences
     is_available = db.Column(db.Boolean, nullable=False, default=True)
@@ -583,4 +672,7 @@ class PlayerAvailability(BaseModel, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<PlayerAvailability {self.user_id} -> {self.location}: {self.is_available}>"
+        return (
+            f"<PlayerAvailability {self.user_id} -> {self.location}: "
+            f"{self.is_available}>"
+        )

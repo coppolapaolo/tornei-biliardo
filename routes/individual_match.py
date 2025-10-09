@@ -259,36 +259,142 @@ def start_match(match_id):
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
-@individual_match_bp.route("/matches/<int:match_id>/racks", methods=["POST"])
+@individual_match_bp.route("/matches/<int:match_id>/racks/add", methods=["POST"])
 @RoleRequirement.player_or_director_required
-def submit_rack_result(match_id):
-    """Submit result for a rack in individual match."""
+def add_rack(match_id):
+    """Add a rack for a player (new simplified UX)."""
     try:
         data = request.get_json() if request.is_json else request.form
 
-        rack = IndividualMatchService.submit_rack_result(
+        rack = IndividualMatchService.add_rack_for_player(
             match_id=match_id,
             user_id=current_user.id,
             winner_id=int(data["winner_id"]),
-            rack_number=int(data.get("rack_number", 1)),
-            notes=data.get("notes"),
+        )
+
+        if request.is_json:
+            match = IndividualMatch.query.get(match_id)
+            return jsonify(
+                {
+                    "success": True,
+                    "rack_number": rack.rack_number,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "is_ready_for_validation": match.is_ready_for_validation(),
+                }
+            )
+        else:
+            flash("Rack aggiunto!", "success")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        error_msg = f"Errore: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/racks/remove", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def remove_rack(match_id):
+    """Remove last rack for a player (new simplified UX)."""
+    try:
+        data = request.get_json() if request.is_json else request.form
+
+        IndividualMatchService.remove_rack_for_player(
+            match_id=match_id,
+            user_id=current_user.id,
+            player_id=int(data["player_id"]),
+        )
+
+        if request.is_json:
+            match = IndividualMatch.query.get(match_id)
+            return jsonify(
+                {
+                    "success": True,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "is_ready_for_validation": match.is_ready_for_validation(),
+                }
+            )
+        else:
+            flash("Rack rimosso!", "success")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        error_msg = f"Errore: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/confirm", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def confirm_result(match_id):
+    """Confirm match result (new simplified UX)."""
+    try:
+        match = IndividualMatchService.confirm_match_result(
+            match_id=match_id, user_id=current_user.id
         )
 
         if request.is_json:
             return jsonify(
                 {
                     "success": True,
-                    "rack_number": rack.rack_number,
-                    "winner_id": rack.winner_id,
-                    "message": "Rack result submitted successfully",
+                    "completed": match.status.value == "completed",
+                    "player1_confirmed": match.player1_confirmed,
+                    "player2_confirmed": match.player2_confirmed,
+                    "message": (
+                        "Match completato!"
+                        if match.status.value == "completed"
+                        else "Risultato confermato!"
+                    ),
                 }
             )
         else:
-            flash("Rack result submitted successfully!", "success")
+            if match.status.value == "completed":
+                flash("Match completato con successo!", "success")
+            else:
+                flash("Risultato confermato! In attesa dell'altro giocatore.", "info")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
-        error_msg = f"Error submitting rack result: {str(e)}"
+        error_msg = f"Errore: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/reject", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def reject_result(match_id):
+    """Reject match result - removes last rack (new simplified UX)."""
+    try:
+        match = IndividualMatchService.reject_match_result(
+            match_id=match_id, user_id=current_user.id
+        )
+
+        if request.is_json:
+            return jsonify(
+                {
+                    "success": True,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "message": "Ultimo rack rimosso. Continua a giocare.",
+                }
+            )
+        else:
+            flash("Risultato rifiutato. Ultimo rack rimosso.", "warning")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        error_msg = f"Errore: {str(e)}"
         if request.is_json:
             return jsonify({"success": False, "error": error_msg}), 400
         else:
@@ -299,12 +405,14 @@ def submit_rack_result(match_id):
 @individual_match_bp.route("/matches/<int:match_id>/complete", methods=["POST"])
 @RoleRequirement.player_or_director_required
 def complete_match(match_id):
-    """Complete an individual match."""
+    """Complete an individual match - legacy route for backward compatibility."""
     try:
         data = request.get_json() if request.is_json else request.form
 
         match = IndividualMatchService.complete_match(
-            match_id=match_id, user_id=current_user.id, winner_id=int(data["winner_id"])
+            match_id=match_id,
+            user_id=current_user.id,
+            winner_id=int(data["winner_id"]),
         )
 
         if request.is_json:

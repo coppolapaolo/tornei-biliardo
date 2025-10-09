@@ -12,6 +12,7 @@ per compatibilità con i test di separazione.
 from __future__ import annotations
 
 from typing import List, Optional, Dict, Any, TYPE_CHECKING
+from datetime import datetime
 
 if TYPE_CHECKING:
     from models.orchestration.service import OperationResult
@@ -430,6 +431,185 @@ class MatchService:
                 affected_domains=["match", "competition"],
             )
 
+    # ---------------------------------------
+    # NEW SIMPLIFIED UX - Rack Management
+    # ---------------------------------------
+    @staticmethod
+    @transactional(domain="match")
+    def add_rack_for_player(
+        match_id: int, user_id: int, winner_id: int
+    ) -> Rack:
+        """
+        Add a rack won by specified player (new simplified UX).
+
+        Similar to IndividualMatchService.add_rack_for_player but for
+        tournament matches.
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of user adding the rack
+            winner_id: ID of the player who won the rack
+
+        Returns:
+            The created Rack object
+
+        Raises:
+            ValueError: If user/winner invalid or match not found
+        """
+        from sqlalchemy import func
+
+        match = db.session.get(Match, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        # Verify winner is valid
+        if winner_id not in (match.player1_id, match.player2_id):
+            raise ValueError("Invalid winner ID")
+
+        # Get next rack number
+        max_rack = (
+            db.session.query(func.max(Rack.rack_number))
+            .filter_by(match_id=match_id, is_deleted=False)
+            .scalar()
+        )
+        rack_number = (max_rack or 0) + 1
+
+        # Create rack record with log info
+        rack = Rack(
+            match_id=match_id,
+            rack_number=rack_number,
+            winner_id=winner_id,
+            added_by_id=user_id,
+            added_at=datetime.utcnow(),
+        )
+
+        db.session.add(rack)
+
+        # Update match scores
+        if winner_id == match.player1_id:
+            match.player1_score += 1
+        else:
+            match.player2_score += 1
+
+        # Reset confirmations when score changes
+        match.reset_confirmations()
+
+        # Transizione soft: se il match è pending, portalo a playing
+        if match.status == MatchStatus.PENDING.value:
+            match.status = MatchStatus.PLAYING.value
+
+        return rack
+
+    @staticmethod
+    @transactional(domain="match")
+    def remove_rack_for_player(
+        match_id: int, user_id: int, player_id: int
+    ) -> None:
+        """
+        Remove last rack won by specified player (new simplified UX).
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of user removing the rack
+            player_id: ID of player whose rack to remove
+
+        Raises:
+            ValueError: If no rack to remove or invalid parameters
+        """
+        match = db.session.get(Match, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        # Find last non-deleted rack won by the specified player
+        last_rack = (
+            Rack.query.filter_by(
+                match_id=match_id, winner_id=player_id, is_deleted=False
+            )
+            .order_by(Rack.rack_number.desc())
+            .first()
+        )
+
+        if not last_rack:
+            raise ValueError("No rack to remove for this player")
+
+        # Soft delete the rack with log info
+        last_rack.is_deleted = True
+        last_rack.removed_by_id = user_id
+        last_rack.removed_at = datetime.utcnow()
+
+        # Update match scores
+        if player_id == match.player1_id:
+            match.player1_score = max(0, match.player1_score - 1)
+        else:
+            match.player2_score = max(0, match.player2_score - 1)
+
+        # Reset confirmations when score changes
+        match.reset_confirmations()
+
+    @staticmethod
+    @transactional(domain="match")
+    def confirm_match_result(match_id: int, user_id: int) -> Match:
+        """
+        Confirm match result by a player (new UX).
+
+        Uses BaseMatchMixin.confirm_result() method.
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of player confirming
+
+        Returns:
+            The updated Match object
+
+        Raises:
+            ValueError: If user not in match or match not ready
+        """
+        match = db.session.get(Match, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        if not match.is_ready_for_validation():
+            raise ValueError("Match is not ready for validation")
+
+        match.confirm_result(user_id)
+        return match
+
+    @staticmethod
+    @transactional(domain="match")
+    def reject_match_result(match_id: int, user_id: int) -> Match:
+        """
+        Reject match result - removes last rack (new UX).
+
+        Uses BaseMatchMixin.reject_result() method.
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of player rejecting
+
+        Returns:
+            The updated Match object
+
+        Raises:
+            ValueError: If user not in match or match not ready
+        """
+        match = db.session.get(Match, match_id)
+        if match is None:
+            from flask import abort
+
+            abort(404)
+
+        if not match.is_ready_for_validation():
+            raise ValueError("Match is not ready for validation")
+
+        match.reject_result(user_id)
+        return match
+
 
 class RackService:
     """Service per gestione rack con business logic completa."""
@@ -446,6 +626,13 @@ class RackService:
         validated_by_admin: bool = False,
         admin_note: Optional[str] = None,
     ) -> Rack:
+        # Check if rack can be added (match not at max)
+        match = db.session.get(Match, match_id)
+        if match and not match.can_add_rack():
+            raise ValueError(
+                "Cannot add rack: match has reached maximum and needs validation"
+            )
+
         rack = Rack(
             match_id=match_id,
             rack_number=rack_number,
@@ -458,7 +645,6 @@ class RackService:
         db.session.add(rack)
 
         # Update match scores when rack is added
-        match = db.session.get(Match, match_id)
         if match:
             # Update match scores based on winner
             if winner_id == match.player1_id:
@@ -799,9 +985,51 @@ class MatchResultService:
         return match
 
 
+# Helper function for simplified rack addition
+def add_rack(match_id: int, winner_id: int, added_by_id: int) -> Rack:
+    """
+    Simplified helper to add a rack to a match.
+
+    Args:
+        match_id: ID of the match
+        winner_id: ID of the player who won the rack
+        added_by_id: ID of the user adding the rack
+
+    Returns:
+        The created Rack instance
+
+    Raises:
+        ValueError: If match not found or rack cannot be added
+    """
+    match = db.session.get(Match, match_id)
+    if not match:
+        raise ValueError(f"Match {match_id} not found")
+
+    # Determine next rack number
+    from sqlalchemy import func
+
+    max_rack = (
+        db.session.query(func.max(Rack.rack_number))
+        .filter_by(match_id=match_id)
+        .scalar()
+    )
+    rack_number = (max_rack or 0) + 1
+
+    # Use RackService to add the rack with validation
+    return RackService.add_rack_result(
+        match_id=match_id,
+        rack_number=rack_number,
+        winner_id=winner_id,
+        reported_by_id=added_by_id,
+        confirmed_by_player=False,
+        validated_by_admin=False,
+    )
+
+
 __all__ = [
     "MatchService",
     "RackService",
     "MatchResultService",
     "InvalidTransitionError",
+    "add_rack",
 ]
