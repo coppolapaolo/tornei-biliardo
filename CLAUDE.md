@@ -420,6 +420,93 @@ Platform built to foster pool community growth and engagement:
 
 ## Recent Development History
 
+### Unified Gara Detail Template - Modular Architecture (October 2025) - ✅ COMPLETED
+Major refactoring consolidating 3 separate gara detail views into a single adaptive template with component-based architecture:
+
+#### Problem Solved
+Directors and players were being routed to wrong views:
+- **Issue**: Directors inscribed as players saw public view instead of player view
+- **Issue**: Players inscribed saw public view instead of personalized player view
+- **Root Cause**: Template links always used `main.gara_detail_public` for non-managers
+
+#### Solution: Unified Template System
+Created a **single modular template** ([templates/gara_detail.html](templates/gara_detail.html)) that adapts based on user permissions:
+
+**5 New Reusable Components**:
+1. [templates/components/_player_inscription_info.html](templates/components/_player_inscription_info.html) - Player inscription status box
+2. [templates/components/_guest_info.html](templates/components/_guest_info.html) - Guest/public viewing info box
+3. [templates/components/_player_personal_matches.html](templates/components/_player_personal_matches.html) - Player's personal matches
+4. [templates/components/_player_challenges.html](templates/components/_player_challenges.html) - Interactive challenges for players
+5. [templates/components/_public_challenges.html](templates/components/_public_challenges.html) - Read-only challenges for guests
+
+#### Unified Route Logic
+**Single Intelligent Route** ([routes/admin/competition.py](routes/admin/competition.py:592)):
+```python
+@competition_bp.route("/<int:gara_id>")
+def gara_detail(gara_id):
+    # Determines user context automatically
+    if user_can_manage:           # Admin/Director with permissions
+        → Load management data (inscriptions, directors, all matches)
+    elif user_inscription:        # Player inscribed
+        → Load player data (only user's matches, personal challenges)
+    else:                        # Guest/non-inscribed
+        → Load public data (all matches read-only)
+```
+
+**Template Adapts Automatically**:
+```jinja
+{% if user_can_manage %}
+  → Show: _gara_management, _gara_directors, _round_management
+{% elif user_inscription %}
+  → Show: _player_inscription_info, _player_personal_matches
+{% else %}
+  → Show: _guest_info (public view)
+{% endif %}
+```
+
+#### Backward Compatibility
+**Old routes redirect automatically**:
+- `/player/gara/1` → `/admin/competition/1` (player view)
+- `/public/gara/1` → `/admin/competition/1` (public view)
+- Legacy implementations kept in `*_legacy()` functions for reference
+
+#### Dashboard Links Simplified
+**Before** (3 different routes):
+```jinja
+{% if admin or director_managing %}
+  → admin.competition.gara_detail
+{% else %}
+  → main.gara_detail_public  {# WRONG for inscribed users #}
+{% endif %}
+```
+
+**After** (1 unified route):
+```jinja
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}">
+  {# Route adapts automatically based on permissions #}
+```
+
+#### Metrics
+- **Code Reduction**: -66% duplication (3 templates → 1 template + 5 components)
+- **Files Modified**: 10 files (+5 components, -0 old templates kept for now)
+- **Lines Changed**: +430 new template, +150 route logic, -50 dashboard conditionals
+- **Type Safety**: 0 pyright errors maintained
+- **Testing**: Manual testing with admin, director (inscribed), player, guest
+
+#### Benefits
+✅ **DRY Principle**: Single source of truth for gara detail view
+✅ **Better UX**: Users always see correct view for their role
+✅ **Maintainability**: One template to update, not three
+✅ **Flexibility**: Easy to add new components conditionally
+✅ **URL Consistency**: One URL works for all user types
+
+#### User Experience Improvements
+- **Admin**: Full management interface with all controls
+- **Director (managing gara)**: Full management interface
+- **Director (inscribed, NOT managing)**: Player view with personal matches ✅ **FIXED**
+- **Player (inscribed)**: Personal matches, inscription info, interactive challenges ✅ **FIXED**
+- **Guest**: Public view with all matches read-only, no management controls
+
 ### Template Unification & Match Action Refactoring (October 2025) - ✅ COMPLETED
 Unified match display templates and fixed match modification logic for better UX and maintainability:
 

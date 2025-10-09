@@ -1,0 +1,20 @@
+{# templates/components/_guest_info.html #}
+{# Box informazioni per guest/utenti non iscritti #}
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-eye"></i> Visualizzazione Pubblica</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Stai visualizzando questa gara come ospite
+            <br><small>Puoi vedere i risultati e la classifica ma non partecipare</small>
+        </div>
+        <p><strong>Turno corrente:</strong> {{ gara.current_round }} / {{ gara.rounds_count }}</p>
+        <p><strong>Stato:</strong>
+            <span class="badge {{ gara.get_status_badge_info()['class'] }}">
+                {{ gara.get_status_badge_info()['text'] }}
+            </span>
+        </p>
+    </div>
+</div>

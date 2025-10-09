@@ -243,7 +243,17 @@ def public_garas_list():
 @main_bp.route("/gara/<int:gara_id>")
 @main_bp.route("/public/gara/<int:gara_id>")
 def gara_detail_public(gara_id):
-    """Dettaglio gara pubblico - visibile anche ai guest non loggati"""
+    """
+    DEPRECATED: Redirect to unified gara_detail view.
+    La vista unificata in admin.competition.gara_detail si adatta
+    automaticamente in base ai permessi dell'utente (anche per guest).
+    """
+    return redirect(url_for('admin.competition.gara_detail', gara_id=gara_id))
+
+
+@main_bp.route("/public/gara/<int:gara_id>/legacy_view")
+def gara_detail_public_legacy(gara_id):
+    """OLD IMPLEMENTATION - kept for reference only"""
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         abort(404)
@@ -332,12 +342,7 @@ def gara_detail_public(gara_id):
             round_disciplines[round_num][discipline] += 1
 
     # Check if user can manage this gara (for directors/admins)
-    show_management = False
-    if current_user.is_authenticated:
-        show_management = getattr(current_user, "is_admin", False) or (
-            getattr(current_user, "is_director", False)
-            and (gara.director_id == current_user.id or gara.campionato_id is None)
-        )
+    show_management = current_user.can_manage_competition(gara.id)
 
     # Decide which template to use based on management permissions
     template = (

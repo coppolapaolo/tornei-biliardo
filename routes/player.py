@@ -356,7 +356,19 @@ def dashboard():
 @login_required
 @player_required
 def gara_detail(gara_id):
-    """Dettaglio gara con iscrizioni e partite dell'utente"""
+    """
+    DEPRECATED: Redirect to unified gara_detail view.
+    La vista unificata in admin.competition.gara_detail si adatta
+    automaticamente in base ai permessi dell'utente.
+    """
+    return redirect(url_for('admin.competition.gara_detail', gara_id=gara_id))
+
+
+@player_bp.route("/gara/<int:gara_id>/legacy_view")
+@login_required
+@player_required
+def gara_detail_legacy(gara_id):
+    """OLD IMPLEMENTATION - kept for reference only"""
     gara = db.session.get(Gara, gara_id)
     if gara is None:
         abort(404)

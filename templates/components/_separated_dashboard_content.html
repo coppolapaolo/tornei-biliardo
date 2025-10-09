@@ -285,34 +285,20 @@
               <div class="btn-group w-100" role="group">
                 {# Pulsanti per gare completate #}
                 {% if item.entity.get_real_status() in [GaraStatus.COMPLETED.value, 'campionato_completed'] %}
-                  {# Gara completata - pulsante per vedere risultati #}
-                  {% if current_user.is_admin or (current_user.is_director and item.can_manage) %}
-                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
-                       class="btn btn-outline-success btn-sm w-100">
-                      <i class="fas fa-trophy"></i> Vedi Risultati
-                    </a>
-                  {% else %}
-                    <a href="{{ url_for('main.gara_detail_public', gara_id=item.id) }}" 
-                       class="btn btn-outline-success btn-sm w-100">
-                      <i class="fas fa-trophy"></i> Vedi Risultati
-                    </a>
-                  {% endif %}
+                  {# Gara completata - route unificata si adatta automaticamente #}
+                  <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
+                     class="btn btn-outline-success btn-sm w-100">
+                    <i class="fas fa-trophy"></i> Vedi Risultati
+                  </a>
                   
                 {# Pulsanti per gare in corso #}
                 {% elif item.entity.get_real_status() == GaraStatus.PLAYING.value %}
-                  {# Gara in corso - pulsanti specifici #}
+                  {# Gara in corso - route unificata si adatta automaticamente #}
                   {% if item.can_view_details %}
-                    {% if current_user.is_admin or (current_user.is_director and item.can_manage) %}
-                      <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
-                         class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-eye"></i> Dettagli
-                      </a>
-                    {% else %}
-                      <a href="{{ url_for('main.gara_detail_public', gara_id=item.id) }}" 
-                         class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-eye"></i> Dettagli
-                      </a>
-                    {% endif %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
+                       class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-eye"></i> Dettagli
+                    </a>
                   {% endif %}
                   
                   {% if not current_user.is_admin %}
@@ -338,19 +324,12 @@
                   {% endif %}
                   
                 {% else %}
-                  {# Gara con iscrizioni aperte #}
+                  {# Gara con iscrizioni aperte - route unificata si adatta automaticamente #}
                   {% if item.can_view_details %}
-                    {% if current_user.is_admin or (current_user.is_director and item.can_manage) %}
-                      <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
-                         class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-eye"></i> Dettagli
-                      </a>
-                    {% else %}
-                      <a href="{{ url_for('main.gara_detail_public', gara_id=item.id) }}" 
-                         class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-eye"></i> Dettagli
-                      </a>
-                    {% endif %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
+                       class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-eye"></i> Dettagli
+                    </a>
                   {% endif %}
                   
                   {# Pulsante iscrizione/disiscrizione solo se iscrizioni sono aperte #}
