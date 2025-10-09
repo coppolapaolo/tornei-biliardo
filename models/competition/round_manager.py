@@ -22,7 +22,6 @@ class RoundLockStatus(Enum):
 
     UNLOCKED = "unlocked"
     LOCKED = "locked"
-    PARTIALLY_LOCKED = "partially_locked"
 
 
 class AdvancedRoundManager:
@@ -43,22 +42,6 @@ class AdvancedRoundManager:
         if subsequent_matches:
             return RoundLockStatus.LOCKED
 
-        # Check the current round status
-        round_matches = Match.query.filter_by(
-            gara_id=gara_id, round_number=round_number
-        ).all()
-
-        if not round_matches:
-            return RoundLockStatus.UNLOCKED
-
-        completed_matches = [
-            m for m in round_matches if m.status == MatchStatus.COMPLETED.value
-        ]
-
-        # If some matches are completed but not all, it's partially locked
-        if completed_matches and len(completed_matches) < len(round_matches):
-            return RoundLockStatus.PARTIALLY_LOCKED
-
         return RoundLockStatus.UNLOCKED
 
     @staticmethod
@@ -77,11 +60,6 @@ class AdvancedRoundManager:
                 False,
                 "Il turno è bloccato perché un turno successivo è già iniziato",
             )
-
-        if lock_status == RoundLockStatus.PARTIALLY_LOCKED:
-            # Allow modification only if this specific match is not completed
-            if match.status == MatchStatus.COMPLETED.value:
-                return False, "Il match è completato e il turno è parzialmente bloccato"
 
         return True, ""
 

@@ -716,7 +716,6 @@ def complete(gara: Gara) -> Gara:
 class RoundLockStatus(Enum):
     UNLOCKED = "unlocked"
     LOCKED = "locked"  # Subsequent round exists
-    PARTIALLY_LOCKED = "partially_locked"  # Some matches completed
 ```
 
 **Key Methods:**
@@ -731,7 +730,6 @@ def get_round_lock_status(
 
     Rules:
     - LOCKED: Any subsequent round has matches
-    - PARTIALLY_LOCKED: Some matches completed in this round
     - UNLOCKED: Otherwise
     """
 
@@ -743,8 +741,6 @@ def can_modify_match(match_id: int) -> Tuple[bool, str]:
 
     Rules:
     - Cannot modify if round is LOCKED
-    - Can modify incomplete matches in PARTIALLY_LOCKED round
-    - Cannot modify completed matches in PARTIALLY_LOCKED round
     """
 
 @transactional
@@ -806,8 +802,6 @@ lock_status = AdvancedRoundManager.get_round_lock_status(
 )
 if lock_status == RoundLockStatus.LOCKED:
     # Show locked icon
-elif lock_status == RoundLockStatus.PARTIALLY_LOCKED:
-    # Show partially locked icon
 ```
 
 ---
@@ -1087,8 +1081,6 @@ lock_status = AdvancedRoundManager.get_round_lock_status(
 
 if lock_status == RoundLockStatus.LOCKED:
     flash("Turno bloccato: esiste un turno successivo", "error")
-elif lock_status == RoundLockStatus.PARTIALLY_LOCKED:
-    flash("Turno parzialmente bloccato: alcuni match sono completati", "warning")
 else:
     # Allow modifications
 

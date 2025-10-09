@@ -934,38 +934,6 @@ def cancel_current_round(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
-@competition_bp.route("/<int:gara_id>/results_overview")
-@login_required
-@gara_manager_required
-def gara_results_overview(gara_id):
-    """Overview risultati gara per inserimento rapido (admin)"""
-    gara = Gara.query.get_or_404(gara_id)
-
-    # Organizza partite per turno
-    matches_by_round = {}
-    for round_num in range(1, gara.rounds_count + 1):
-        matches_by_round[round_num] = (
-            Match.query.filter_by(gara_id=gara_id, round_number=round_num)
-            .order_by(Match.id)
-            .all()
-        )
-
-    # Debug
-    import logging
-
-    logging.warning(f"DEBUG results_overview: gara.rounds_count = {gara.rounds_count}")
-    for round_num, matches in matches_by_round.items():
-        logging.warning(
-            f"DEBUG results_overview: Round {round_num} has {len(matches)} matches"
-        )
-
-    return render_template(
-        "admin/gara_result_overview.html",
-        gara=gara,
-        matches_by_round=matches_by_round,
-    )
-
-
 # ============ SISTEMA AMALFI ============
 
 

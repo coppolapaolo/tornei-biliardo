@@ -67,6 +67,55 @@
 {% if gara.matchmaking_strategy == 'random' %}
 {% include "components/_challenge_management_modal.html" %}
 {% endif %}
+
+<!-- Modal Risultato Rapido -->
+<div class="modal fade" id="quickResultModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Imposta Risultato Rapido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quickResultForm" onsubmit="return submitQuickResult(event)">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Modalità:</strong>
+                            {{ gara.distance_config|format_distance }}
+                            {% if gara.best_of %}
+                                (vince chi arriva a {{ gara.get_winning_score() }})
+                            {% else %}
+                                (somma deve essere {{ gara.distance }})
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <label id="player1Label" class="form-label">Giocatore 1</label>
+                            <input type="number" class="form-control" id="quickPlayer1Score"
+                                   min="0" max="{{ gara.distance }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label id="player2Label" class="form-label">Giocatore 2</label>
+                            <input type="number" class="form-control" id="quickPlayer2Score"
+                                   min="0" max="{{ gara.distance }}" required>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="quickMatchId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Imposta Risultato
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -366,6 +415,68 @@ function closeInscriptions(provaId) {
         form.action = `/admin/gara/${provaId}/close_inscriptions`;
         document.body.appendChild(form);
         form.submit();
+    }
+}
+
+// Quick Result Modal Functions
+let currentMatchId = null;
+
+function openQuickResult(matchId, player1Name, player2Name, player1Score, player2Score) {
+    currentMatchId = matchId;
+    document.getElementById('quickMatchId').value = matchId;
+    document.getElementById('player1Label').textContent = player1Name;
+    document.getElementById('player2Label').textContent = player2Name;
+    document.getElementById('quickPlayer1Score').value = player1Score;
+    document.getElementById('quickPlayer2Score').value = player2Score;
+}
+
+function submitQuickResult(event) {
+    event.preventDefault();
+
+    const matchId = document.getElementById('quickMatchId').value;
+    const player1Score = document.getElementById('quickPlayer1Score').value;
+    const player2Score = document.getElementById('quickPlayer2Score').value;
+
+    const formData = new FormData();
+    formData.append('player1_score', player1Score);
+    formData.append('player2_score', player2Score);
+
+    fetch(`/admin/match/${matchId}/set_result`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            // Chiudi modal e ricarica pagina
+            bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+            location.reload();
+        } else {
+            alert('Errore durante l\'impostazione del risultato');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante l\'impostazione del risultato');
+    });
+
+    return false;
+}
+
+function resetMatchQuick(matchId) {
+    if (confirm('Sei sicuro di voler resettare questa partita?')) {
+        fetch(`/admin/match/${matchId}/reset`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Errore durante il reset');
+            }
+        });
     }
 }
 </script>

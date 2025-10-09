@@ -420,6 +420,35 @@ Platform built to foster pool community growth and engagement:
 
 ## Recent Development History
 
+### Template Unification & Match Action Refactoring (October 2025) - ✅ COMPLETED
+Unified match display templates and fixed match modification logic for better UX and maintainability:
+
+#### Template Architecture Improvements
+- **Component Reuse**: Created unified `_match_result_row.html` component with 7 columns:
+  - Giocatore 1 | vs | Giocatore 2 | Risultato | Stato | Tavolo | Azioni
+- **Eliminated Duplication**: Removed ~170 lines of duplicate code in `_gara_matches.html`
+- **Removed Redundant Views**: Deleted `gara_result_overview.html` and `_gara_round_section.html`
+- **Simplified Navigation**: Removed duplicate "Overview Risultati" link from match navigation
+
+#### Backend Logic Fixes
+- **Fixed Round Locking**: ([models/competition/round_manager.py](models/competition/round_manager.py))
+  - Removed `PARTIALLY_LOCKED` state that incorrectly blocked completed matches in active round
+  - Simplified to: `LOCKED` (previous rounds) and `UNLOCKED` (active round)
+  - **Result**: Admin can now always modify matches in the active round (correct behavior)
+- **Route Cleanup**: Removed duplicate `gara_results_overview` route ([routes/admin/competition.py](routes/admin/competition.py))
+
+#### Enhanced Match Actions (Component-Based)
+- **Quick Result Button**: Fast score entry via modal (incomplete matches only)
+- **Edit Button**: Navigate to full match detail page (always available)
+- **Reset Button**: Clear match results (completed matches or matches with scores)
+- **Visual Consistency**: All actions in btn-group matching admin UI patterns
+
+#### Impact
+- ✅ **UX Improved**: Matches in active round always editable (previously blocked if completed)
+- ✅ **Code Quality**: -200 lines total (-170 template, -30 route)
+- ✅ **Maintainability**: Single source of truth for match row display
+- ✅ **Type Safety**: 0 pyright errors, 0 flake8 errors maintained
+
 ### Local Date Formatting System (October 2025) - ✅ COMPLETED
 Implemented browser-locale date formatting to eliminate inconsistencies between `dd/mm/yyyy` and `mm/dd/yyyy` formats:
 

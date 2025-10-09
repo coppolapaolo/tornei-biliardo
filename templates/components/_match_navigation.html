@@ -1,16 +1,12 @@
 <!-- Navigation Sidebar Component -->
 <div class="mt-3">
     {% if current_user.is_admin or current_user.is_director %}
-        <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}" 
-           class="btn btn-outline-secondary w-100 mb-2">
+        <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
+           class="btn btn-outline-secondary w-100">
             <i class="fas fa-arrow-left"></i> Torna alla Gara
         </a>
-        <a href="{{ url_for('admin.competition.gara_results_overview', gara_id=match.gara_id) }}" 
-           class="btn btn-outline-info w-100">
-            <i class="fas fa-list-alt"></i> Overview Risultati
-        </a>
     {% else %}
-        <a href="{{ url_for('player.dashboard') }}" 
+        <a href="{{ url_for('player.dashboard') }}"
            class="btn btn-outline-secondary w-100">
             <i class="fas fa-arrow-left"></i> Torna alla Dashboard
         </a>

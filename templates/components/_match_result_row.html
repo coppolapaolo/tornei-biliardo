@@ -6,6 +6,7 @@
             <i class="fas fa-crown text-warning ms-1"></i>
         {% endif %}
     </td>
+    <td class="text-center">vs</td>
     <td>
         {% if match.is_bye %}
             <em class="text-muted">Bye</em>
@@ -33,7 +34,7 @@
         {% if match.is_bye %}
             <span class="badge bg-info">Bye</span>
         {% elif match.status == 'pending' %}
-            <span class="badge bg-secondary">In Attesa</span>
+            <span class="badge bg-warning">In Attesa</span>
         {% elif match.status == 'playing' %}
             <span class="badge bg-primary">In Corso</span>
         {% elif match.status == 'completed' %}
@@ -41,7 +42,20 @@
         {% endif %}
     </td>
     <td>
-        {% if not match.is_bye %}
+        {% if match.table_assignment %}
+            <span class="badge bg-secondary">
+                <i class="fas fa-table"></i>
+                {{ match.table_assignment }}
+            </span>
+        {% else %}
+            <span class="text-muted small">
+                <i class="fas fa-hourglass-half"></i>
+                In attesa
+            </span>
+        {% endif %}
+    </td>
+    <td>
+        {% if not match.is_bye and match_can_modify.get(match.id, True) %}
             <div class="btn-group btn-group-sm" role="group">
                 <!-- Imposta Risultato Rapido -->
                 {% if match.status != 'completed' %}
@@ -67,6 +81,10 @@
                     </button>
                 {% endif %}
             </div>
+        {% elif not match.is_bye %}
+            <span class="text-muted small">
+                <i class="fas fa-lock"></i> Bloccato
+            </span>
         {% endif %}
     </td>
 </tr>
