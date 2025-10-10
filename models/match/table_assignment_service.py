@@ -74,6 +74,7 @@ class TableAssignmentService:
             Number of matches that received table assignments
         """
         from models.competition.models import Gara
+        from models.match.services import MatchService
 
         gara = db.session.get(Gara, gara_id)
         if not gara or not gara.location:
@@ -98,6 +99,7 @@ class TableAssignmentService:
         for i, match in enumerate(matches):
             if i < len(table_names):
                 match.table_assignment = table_names[i]
+                MatchService.to_playing(match.id)
                 assigned_count += 1
             else:
                 break  # No more tables available

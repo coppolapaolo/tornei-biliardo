@@ -1,5 +1,4 @@
 <!-- Admin Controls Component -->
-{% if current_user.is_admin or current_user.is_director %}
 <div class="card bg-warning bg-opacity-10 border-warning mb-3">
     <div class="card-header bg-warning bg-opacity-25">
         <h6><i class="fas fa-user-shield"></i> {% if current_user.is_admin %}Controlli Amministratore{% else %}Controlli Direttore{% endif %}</h6>
@@ -50,4 +49,3 @@
         {% endif %}
     </div>
 </div>
-{% endif %}

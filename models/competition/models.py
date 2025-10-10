@@ -334,7 +334,6 @@ class Gara(db.Model):
                 if (
                     match.player1_score > 0
                     or match.player2_score > 0
-                    or match.status != MatchStatus.PENDING.value
                 ):
                     return False
 

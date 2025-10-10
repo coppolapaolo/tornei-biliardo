@@ -31,13 +31,13 @@
                     {% include "components/_match_score.html" %}
 
                     {# Admin/Director Controls - Advanced Interface #}
-                    {% include "components/_match_admin_controls.html" %}
+                    {% if user_can_manage %}
+                        {% include "components/_match_admin_controls.html" %}
+                    {% endif %}
 
-                    {# Player Controls - Simplified Interface (only for players in this match) #}
-                    {% if current_user.is_authenticated and current_user.id in [match.player1_id, match.player2_id] %}
-                        {% if not (current_user.is_admin or current_user.is_director) %}
-                            {% include "components/_match_rack_input.html" %}
-                        {% endif %}
+                    {# Player Controls - Simplified Interface #}
+                    {% if user_is_player and not user_can_manage %}
+                        {% include "components/_match_rack_input.html" %}
                     {% endif %}
 
                     {# Racks Table #}

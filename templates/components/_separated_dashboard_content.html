@@ -89,12 +89,12 @@
           
           <div class="card-footer py-2 bg-transparent">
             {% if is_completed %}
-              <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" 
                  class="btn {{ 'btn-success' if is_winner else 'btn-warning' }} btn-sm w-100">
                 <i class="fas fa-eye"></i> Vedi Risultato
               </a>
             {% else %}
-              <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" 
                  class="btn btn-danger btn-sm w-100">
                 <i class="fas fa-play"></i> Gioca Partita
               </a>
@@ -306,7 +306,7 @@
                     {# Trova il match del giocatore corrente in questa gara #}
                     {% for match in vm.current_matches|default([]) %}
                       {% if match.gara_id == item.id and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
-                        <a href="{{ url_for('player.match_detail', match_id=match.id) }}" 
+                        <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" 
                            class="btn btn-warning btn-sm">
                           <i class="fas fa-play"></i> Vedi Match
                         </a>

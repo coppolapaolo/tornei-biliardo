@@ -410,61 +410,6 @@ def inscribe_to_gara(gara_id):
     return redirect(url_for("dashboard.dashboard"))
 
 
-@player_bp.route("/match/<int:match_id>")
-@login_required
-@match_player_required
-def match_detail(match_id):
-    """Dettaglio partita per giocatore"""
-    match = db.session.get(Match, match_id)
-    if match is None:
-        abort(404)
-
-    racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
-
-    # Get available challenges for this match's gara
-    available_challenges = []
-    player_challenge_progress = {}
-
-    if match.gara_id:
-        from models.challenge.gara_challenge_service import GaraChallengeService
-        from models.challenge.gara_challenge_models import GaraChallenge
-        from sqlalchemy.orm import joinedload
-
-        # Get available challenges for this gara
-        available_challenges = (
-            db.session.query(GaraChallenge)
-            .filter(
-                GaraChallenge.gara_id == match.gara_id,
-                GaraChallenge.is_active.is_(True),
-            )
-            .options(joinedload(GaraChallenge.challenge))  # type: ignore[arg-type]
-            .all()
-        )
-
-        # Get player challenge progress for both players
-        if match.player1_id:
-            progress = GaraChallengeService.get_user_gara_challenge_progress(
-                match.gara_id, match.player1_id
-            )
-            if progress:
-                player_challenge_progress[match.player1_id] = progress
-
-        if match.player2_id:
-            progress = GaraChallengeService.get_user_gara_challenge_progress(
-                match.gara_id, match.player2_id
-            )
-            if progress:
-                player_challenge_progress[match.player2_id] = progress
-
-    return render_template(
-        "match_detail.html",
-        match=match,
-        racks=racks,
-        available_challenges=available_challenges,
-        player_challenge_progress=player_challenge_progress,
-    )
-
-
 @player_bp.route("/match/<int:match_id>/report_rack", methods=["POST"])
 @login_required
 @match_player_required
@@ -479,7 +424,7 @@ def report_rack_result(match_id):
     # Verifica che il vincitore sia uno dei giocatori della partita
     if winner_id not in [match.player1_id, match.player2_id]:
         flash("Giocatore non valido.", "error")
-        return redirect(url_for("player.match_detail", match_id=match_id))
+        return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
     # Usa il service layer invece del direct database access
     try:

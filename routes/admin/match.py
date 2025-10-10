@@ -30,12 +30,34 @@ match_bp = Blueprint("match", __name__)
 
 @match_bp.route("/<int:match_id>")
 @login_required
-@match_manager_required
 def match_detail(match_id):
-    """Dettaglio partita per admin"""
+    """
+    Vista unificata per dettaglio match.
+    Si adatta automaticamente in base ai permessi dell'utente:
+    - Admin/Director con permessi → Vista gestionale completa
+    - Player iscritto → Vista personale semplificata
+    """
+    from flask_login import current_user
+
     match = db.session.get(Match, match_id)
     if match is None:
         abort(404)
+
+    # Determina permessi (pattern da gara_detail)
+    user_can_manage = False
+    user_is_player = False
+
+    if current_user.is_authenticated:
+        # Check se può gestire la gara di questo match
+        user_can_manage = current_user.can_manage_competition(match.gara_id)
+
+        # Check se è player nel match
+        user_is_player = current_user.id in [match.player1_id, match.player2_id]
+
+    # Verifica accesso: deve essere gestore O player
+    if not (user_can_manage or user_is_player):
+        abort(403)
+
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
 
     # Get available challenges for this match if it's a Random gara
@@ -72,6 +94,8 @@ def match_detail(match_id):
         "match_detail.html",
         match=match,
         racks=racks,
+        user_can_manage=user_can_manage,
+        user_is_player=user_is_player,
         available_challenges=available_challenges,
         player_challenge_progress=player_challenge_progress,
     )
@@ -333,7 +357,10 @@ def record_challenge_attempts():
                     jsonify(
                         {
                             "success": False,
-                            "error": "Specificare punteggio o risultato pass/fail per tutti i tentativi",
+                            "error": (
+                                "Specificare punteggio o risultato "
+                                "pass/fail per tutti i tentativi"
+                            ),
                         }
                     ),
                     400,
@@ -350,7 +377,10 @@ def record_challenge_attempts():
         return jsonify(
             {
                 "success": True,
-                "message": f"{len(recorded_attempts)} tentativo/i registrato/i con successo",
+                "message": (
+                    f"{len(recorded_attempts)} tentativo/i "
+                    "registrato/i con successo"
+                ),
                 "recorded_count": len(recorded_attempts),
             }
         )
