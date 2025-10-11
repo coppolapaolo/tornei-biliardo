@@ -744,35 +744,45 @@ def can_modify_match(match_id: int) -> Tuple[bool, str]:
     """
 
 @transactional
-def reset_match_with_validation(
-    match_id: int,
-    admin_override: bool = False
-) -> Tuple[bool, str]:
+def reset_match_with_validation(match_id: int) -> Tuple[bool, str]:
     """Reset match with validation and classification updates.
 
+    Business Rules (Use Case 8 requirement):
+    - Validates round locking: blocked if subsequent rounds exist
+    - Recalculates all classifications for affected rounds
+    - Updates round progression (may decrement current_round)
+    - Respects table_assignment for match state (PLAYING/PENDING)
+
     Process:
-    1. Check if modification allowed
+    1. Check if modification allowed (round locking)
     2. Store original state for rollback
-    3. Reset match
+    3. Reset match (intelligent state based on table_assignment)
     4. Recalculate affected classifications
     5. Update round progression
 
-    Returns: (success, message)
+    Returns:
+        Tuple[bool, str]: (success, message)
+        - success=False if round locked or error
+        - message contains failure reason or success confirmation
+
+    Note: admin_override parameter REMOVED (October 2025)
+          Locking always enforced per Use Case 8 specification.
     """
 
 @transactional
-def cancel_round(
-    gara_id: int,
-    round_number: int,
-    admin_override: bool = False
-) -> Tuple[bool, str]:
-    """Cancel entire round with validation.
+def cancel_round(gara_id: int, round_number: int) -> Tuple[bool, str]:
+    """Cancel entire round with proper validation.
 
-    Rules:
-    - Can only cancel current round or higher (unless admin_override)
-    - Cannot cancel if subsequent rounds exist (unless admin_override)
+    Business Rules:
+    - Can only cancel current round or future rounds
+    - Blocked if matches have partial results
+    - Admin must reset matches before canceling round
+    - Deletes all matches and racks in the round
 
-    Returns: (success, message)
+    Returns:
+        Tuple[bool, str]: (success, message)
+
+    Note: admin_override parameter REMOVED (October 2025)
     """
 ```
 
@@ -781,19 +791,16 @@ def cancel_round(
 # Check if match can be modified
 can_modify, reason = AdvancedRoundManager.can_modify_match(match.id)
 if not can_modify:
-    flash(reason, "error")
+    flash(reason, "error")  # Es: "Turno bloccato"
 else:
     # Allow modification
 
-# Reset match with validation
-success, message = AdvancedRoundManager.reset_match_with_validation(
-    match_id=match.id,
-    admin_override=current_user.is_admin
-)
+# Reset match with validation (no more admin_override)
+success, message = AdvancedRoundManager.reset_match_with_validation(match.id)
 if success:
     flash(message, "success")
 else:
-    flash(message, "error")
+    flash(message, "error")  # Round locked message shown
 
 # Check round lock status
 lock_status = AdvancedRoundManager.get_round_lock_status(
@@ -801,7 +808,8 @@ lock_status = AdvancedRoundManager.get_round_lock_status(
     round_number=2
 )
 if lock_status == RoundLockStatus.LOCKED:
-    # Show locked icon
+    # Show locked icon in UI
+    # User cannot modify matches in this round
 ```
 
 ---
@@ -1081,26 +1089,25 @@ lock_status = AdvancedRoundManager.get_round_lock_status(
 
 if lock_status == RoundLockStatus.LOCKED:
     flash("Turno bloccato: esiste un turno successivo", "error")
+    # User cannot modify this round
 else:
     # Allow modifications
 
-# Reset specific match with validation
-success, message = AdvancedRoundManager.reset_match_with_validation(
-    match_id=match.id,
-    admin_override=current_user.is_admin
-)
+# Reset specific match with validation (no more admin_override)
+success, message = AdvancedRoundManager.reset_match_with_validation(match_id=match.id)
 
 if success:
     flash(message, "success")
     # Classifications automatically recalculated
+    # Round progression updated (may decrement current_round)
+    # Match state set based on table_assignment
 else:
-    flash(message, "error")
+    flash(message, "error")  # Round locked or other error
 
-# Cancel entire round
+# Cancel entire round (no more admin_override)
 success, message = AdvancedRoundManager.cancel_round(
     gara_id=gara.id,
-    round_number=gara.current_round,
-    admin_override=current_user.is_admin
+    round_number=gara.current_round
 )
 ```
 

@@ -65,21 +65,34 @@ class AdvancedRoundManager:
 
     @staticmethod
     @transactional(domain="competition")
-    def reset_match_with_validation(
-        match_id: int, admin_override: bool = False
-    ) -> Tuple[bool, str]:
-        """Reset a match with advanced validation and classification updates."""
+    def reset_match_with_validation(match_id: int) -> Tuple[bool, str]:
+        """Reset a match with validation, classification updates and round progression.
+
+        Business Rules:
+        - Validates round locking: blocked if subsequent rounds exist
+        - Recalculates all classifications for affected rounds
+        - Updates round progression (may decrement current_round)
+        - Respects table_assignment for match state
+
+        Returns:
+            Tuple[bool, str]: (success, message)
+                success=False if round is locked or error occurs
+                message contains reason for failure or success confirmation
+
+        Use Case 8 Requirement:
+            Match modification blocked when subsequent rounds exist
+            to maintain tournament integrity.
+        """
         from models.match.services import RackService
 
         match = db.session.get(Match, match_id)
         if not match:
             return False, "Match non trovato"
 
-        # Check if modification is allowed
-        if not admin_override:
-            can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
-            if not can_modify:
-                return False, reason
+        # Always validate modification permission (no override)
+        can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
+        if not can_modify:
+            return False, reason
 
         # Store original match state for rollback
         original_status = match.status
@@ -115,16 +128,24 @@ class AdvancedRoundManager:
 
     @staticmethod
     @transactional(domain="competition")
-    def cancel_round(
-        gara_id: int, round_number: int, admin_override: bool = False
-    ) -> Tuple[bool, str]:
-        """Cancel an entire round with proper validation."""
+    def cancel_round(gara_id: int, round_number: int) -> Tuple[bool, str]:
+        """Cancel an entire round with proper validation.
+
+        Business Rules:
+        - Can only cancel current round or future rounds
+        - Cannot cancel if matches have partial results
+        - Deletes all matches and racks in the round
+        - Recalculates classifications for previous rounds
+
+        Returns:
+            Tuple[bool, str]: (success, message)
+        """
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return False, "Gara non trovata"
 
         # Only allow canceling the current round or higher
-        if round_number < gara.current_round and not admin_override:
+        if round_number < gara.current_round:
             return False, "Non puoi cancellare un turno precedente a quello corrente"
 
         # Get all matches in the round
@@ -135,19 +156,18 @@ class AdvancedRoundManager:
         if not round_matches:
             return False, f"Nessun match trovato per il turno {round_number}"
 
-        # Check if any matches have partial results (unless admin override)
-        if not admin_override:
-            matches_with_results = [
-                m
-                for m in round_matches
-                if m.player1_score is not None or m.player2_score is not None
-            ]
-            if matches_with_results:
-                return (
-                    False,
-                    "Alcuni match hanno già risultati parziali. "
-                    "Usa override admin per procedere.",
-                )
+        # Check if any matches have partial results
+        matches_with_results = [
+            m
+            for m in round_matches
+            if m.player1_score is not None or m.player2_score is not None
+        ]
+        if matches_with_results:
+            return (
+                False,
+                "Alcuni match hanno già risultati parziali. "
+                "Reset i match prima di cancellare il turno.",
+            )
 
         try:
             # Delete all matches in the round
@@ -212,7 +232,7 @@ class AdvancedRoundManager:
         try:
             for match in completed_matches:
                 success, message = AdvancedRoundManager.reset_match_with_validation(
-                    match.id, admin_override=True
+                    match.id
                 )
                 if success:
                     reset_count += 1

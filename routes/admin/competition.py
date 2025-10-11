@@ -1933,14 +1933,16 @@ def round_management_overview(gara_id):
 @login_required
 @gara_manager_required
 def reset_match_advanced(gara_id, match_id):
-    """Reset a match with advanced validation and classification updates."""
+    """Reset a match with advanced validation and classification updates.
+
+    Note: This route is functionally identical to /admin/match/<id>/reset
+          and is maintained for backward compatibility with existing links.
+          New code should use the simpler route.
+    """
     from models.competition.round_manager import AdvancedRoundManager
 
-    admin_override = request.form.get("admin_override") == "true"
-
-    success, message = AdvancedRoundManager.reset_match_with_validation(
-        match_id, admin_override=admin_override
-    )
+    # No more admin_override support (removed October 2025)
+    success, message = AdvancedRoundManager.reset_match_with_validation(match_id)
 
     if success:
         flash(message, "success")
@@ -1958,14 +1960,17 @@ def reset_match_advanced(gara_id, match_id):
 @login_required
 @gara_manager_required
 def cancel_round_advanced(gara_id, round_number):
-    """Cancel an entire round with proper validation."""
+    """Cancel an entire round with proper validation.
+
+    Business Rules:
+    - Can only cancel current round or future rounds
+    - Blocked if matches have partial results
+    - Admin must reset matches before canceling round
+    """
     from models.competition.round_manager import AdvancedRoundManager
 
-    admin_override = request.form.get("admin_override") == "true"
-
-    success, message = AdvancedRoundManager.cancel_round(
-        gara_id, round_number, admin_override=admin_override
-    )
+    # No more admin_override support (removed October 2025)
+    success, message = AdvancedRoundManager.cancel_round(gara_id, round_number)
 
     if success:
         flash(message, "success")

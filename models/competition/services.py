@@ -402,13 +402,9 @@ class GaraService:
         trio.is_completed = False
         trio.winner_id = None
 
-        # Reset match associato
-        MatchService.reset_to_pending(trio.match.id, clear_validation=True)
-        # Access the match object directly using db.session.get to avoid
-        # relationship property issues
-        match_obj = db.session.get(Match, trio.match_id)
-        if match_obj:
-            match_obj.winner_id = None
+        # Reset match associato using new unified method
+        from models.match.services import RackService
+        RackService.reset_match_complete(trio.match_id)
 
     # -----------------------------
     # VALIDAZIONE DATI (type-safe)

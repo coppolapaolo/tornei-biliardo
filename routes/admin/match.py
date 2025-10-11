@@ -158,25 +158,32 @@ def set_match_result_direct(match_id):
 @login_required
 @match_manager_required
 def reset_match(match_id):
-    """Reset completo di una partita (admin)"""
+    """Reset completo di una partita con validazione avanzata.
+
+    Features:
+    - Validazione round locking (blocca se round successivi esistono)
+    - Ricalcolo automatico classifiche per turni affetti
+    - Aggiornamento round progression (può decrementare current_round)
+    - Gestione intelligente stato match basata su table_assignment
+    - Conformità Use Case 8 specification
+
+    Implementazione:
+        Delega completamente ad AdvancedRoundManager per garantire
+        consistenza con business rules e integrità dati.
+    """
+    from models.competition.round_manager import AdvancedRoundManager
+
     try:
-        # Usa il service layer invece del direct database access
-        RackService.reset_match_complete(match_id)
+        # Usa reset avanzato con validazione completa
+        success, message = AdvancedRoundManager.reset_match_with_validation(match_id)
 
-        # Dopo aver resettato il match, controlla se ci sono turni da aggiornare
-        from models.match.models import Match
-        from models.competition.services import GaraService
+        if success:
+            flash("Partita resettata con successo!")
+        else:
+            flash(message, "error")
 
-        match = Match.query.get(match_id)
-        if match and match.gara_id:
-            GaraService.update_round_progression(match.gara_id)
-
-        flash("Partita resettata con successo!")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
-    except ValueError as ve:
-        flash(str(ve), "error")
-        return redirect(url_for("admin.match.match_detail", match_id=match_id))
     except Exception as e:
         flash(f"Errore durante il reset: {str(e)}", "error")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))

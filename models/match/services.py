@@ -124,14 +124,29 @@ class MatchService:
     def reset_to_pending(
         match_id: int, clear_validation: bool = True
     ) -> "OperationResult":
-        """Qualsiasi → pending. Opzione per azzerare flag di validazione admin.
-        Non rimuove i rack (responsabilità di RackService).
+        """DEPRECATED: Use RackService.reset_match_complete() instead.
+
+        This method is deprecated as of October 2025 and will be removed
+        in a future version. Use reset_match_complete() which provides:
+        - Intelligent state management based on table_assignment
+        - No duplication of rack deletion logic
+        - Cleaner architecture
+
+        Legacy behavior:
+        - Resets match to PENDING (always, ignoring table_assignment)
+        - Removes all racks (duplicates caller's work)
+        - Clears validation flags
 
         NOTE: This method is intentionally NOT decorated with @transactional
         because it implements custom transaction management with explicit
         rollback handling and OperationResult error reporting pattern.
-        Migration to @transactional would require changing the interface.
         """
+        import warnings
+        warnings.warn(
+            "reset_to_pending() is deprecated. Use RackService.reset_match_complete() instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         from ..orchestration.service import OperationResult, OperationType
         from .models import Rack
 
@@ -840,7 +855,11 @@ class RackService:
     @staticmethod
     @transactional(domain="match")
     def reset_match_complete(match_id: int) -> None:
-        """Reset completo di una partita eliminando tutti i rack."""
+        """Reset completo di una partita eliminando tutti i rack.
+
+        Il match viene riportato allo stato appropriato in base all'assegnazione
+        del tavolo: PLAYING se ha un tavolo, PENDING altrimenti.
+        """
         match = db.session.get(Match, match_id)
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
@@ -853,15 +872,24 @@ class RackService:
         for rack in existing_racks:
             db.session.delete(rack)
 
-        # Reset match
+        # Reset match scores
         match.player1_score = 0
         match.player2_score = 0
         match.winner_id = None
 
-        # Import locale per evitare cicli
-        from models.match.services import MatchService
+        # Stato intelligente basato su table_assignment:
+        # - Se ha tavolo assegnato → PLAYING (pronto per essere giocato)
+        # - Se non ha tavolo → PENDING (in attesa di assegnazione)
+        if match.table_assignment:
+            match.status = MatchStatus.PLAYING.value
+        else:
+            match.status = MatchStatus.PENDING.value
 
-        MatchService.reset_to_pending(match.id, clear_validation=True)
+        # Clear validation flags se presenti
+        if hasattr(match, "validated_by_admin"):
+            match.validated_by_admin = False
+
+        db.session.add(match)
 
     @staticmethod
     @transactional(domain="match")
