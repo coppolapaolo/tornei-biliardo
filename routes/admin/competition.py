@@ -824,6 +824,13 @@ def gara_detail(gara_id):
                 }
             )
 
+    # Get available tables for venue (for table assignment UI)
+    available_tables = []
+    if user_can_manage and gara.location:
+        from models.match.table_assignment_service import TableAssignmentService
+
+        available_tables = TableAssignmentService.get_table_names(gara.location)
+
     return render_template(
         "gara_detail.html",  # Template unificato
         gara=gara,
@@ -843,6 +850,7 @@ def gara_detail(gara_id):
         user_challenge_data=user_challenge_data,
         match_can_modify=match_can_modify,
         discipline_choices=Discipline.get_choices(),
+        available_tables=available_tables,
     )
 
 

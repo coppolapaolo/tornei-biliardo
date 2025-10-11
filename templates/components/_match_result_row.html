@@ -42,16 +42,34 @@
         {% endif %}
     </td>
     <td>
-        {% if match.table_assignment %}
-            <span class="badge bg-secondary">
-                <i class="fas fa-table"></i>
-                {{ match.table_assignment }}
-            </span>
+        {% if user_can_manage and available_tables %}
+            {# Admin/Director view: Dropdown interattivo per cambio tavolo #}
+            <select class="form-select form-select-sm table-assignment-select"
+                    data-match-id="{{ match.id }}"
+                    onchange="changeTableAssignment({{ match.id }}, this.value)">
+                <option value="" {% if not match.table_assignment %}selected{% endif %}>
+                    -- Nessun tavolo --
+                </option>
+                {% for table in available_tables %}
+                    <option value="{{ table }}"
+                            {% if match.table_assignment == table %}selected{% endif %}>
+                        Tavolo {{ table }}
+                    </option>
+                {% endfor %}
+            </select>
         {% else %}
-            <span class="text-muted small">
-                <i class="fas fa-hourglass-half"></i>
-                In attesa
-            </span>
+            {# Player/Guest view: Badge statico read-only #}
+            {% if match.table_assignment %}
+                <span class="badge bg-secondary">
+                    <i class="fas fa-table"></i>
+                    {{ match.table_assignment }}
+                </span>
+            {% else %}
+                <span class="text-muted small">
+                    <i class="fas fa-hourglass-half"></i>
+                    In attesa
+                </span>
+            {% endif %}
         {% endif %}
     </td>
     <td>

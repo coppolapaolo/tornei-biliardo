@@ -17,7 +17,7 @@ Created: 2025-10-07
 
 from __future__ import annotations
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from models.base import db, transactional
 from models.match.models import Match
@@ -173,3 +173,86 @@ class TableAssignmentService:
             return waiting_match
 
         return None
+
+    @staticmethod
+    @transactional(domain="match")
+    def reassign_table(
+        match_id: int, new_table: Optional[str]
+    ) -> Tuple[bool, str, Optional[int]]:
+        """Reassign a match to a different table with automatic swap if needed.
+
+        Business Rules:
+        - Validates round locking before allowing reassignment
+        - If new_table is occupied by another match in same round → automatic swap
+        - If new_table is free → simple assignment
+        - If new_table is None → removes table assignment
+        - Cross-round table sharing is allowed (same table, different rounds)
+
+        Args:
+            match_id: ID of the match to reassign
+            new_table: New table name, or None to remove assignment
+
+        Returns:
+            Tuple[bool, str, Optional[int]]: (success, message, swapped_match_id)
+            - success: True if operation succeeded
+            - message: Human-readable result message
+            - swapped_match_id: ID of match that was swapped, or None
+        """
+        from models.competition.round_manager import AdvancedRoundManager
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            return False, "Match non trovato", None
+
+        # Validate modification permission (respects round locking)
+        can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
+        if not can_modify:
+            return False, reason, None
+
+        old_table = match.table_assignment
+
+        # Case 1: Remove table assignment
+        if new_table is None:
+            match.table_assignment = None
+            return True, f"Tavolo '{old_table}' rimosso dal match", None
+
+        # Case 2: No change
+        if old_table == new_table:
+            return True, "Nessuna modifica necessaria", None
+
+        # Case 3: Check if new_table is occupied in SAME round
+        occupying_match = (
+            Match.query.filter_by(
+                gara_id=match.gara_id,
+                round_number=match.round_number,
+                table_assignment=new_table,
+            )
+            .filter(Match.id != match_id)
+            .first()
+        )
+
+        if occupying_match:
+            # Automatic swap with occupying match
+            occupying_match.table_assignment = old_table
+            match.table_assignment = new_table
+
+            if old_table:
+                msg = (
+                    f"Tavolo scambiato: Match #{match_id} → '{new_table}', "
+                    f"Match #{occupying_match.id} → '{old_table}'"
+                )
+            else:
+                msg = (
+                    f"Tavolo assegnato: Match #{match_id} → '{new_table}', "
+                    f"Match #{occupying_match.id} → senza tavolo"
+                )
+
+            return True, msg, occupying_match.id
+        else:
+            # Simple assignment (table is free in this round)
+            match.table_assignment = new_table
+            return (
+                True,
+                f"Tavolo assegnato: Match #{match_id} → '{new_table}'",
+                None,
+            )

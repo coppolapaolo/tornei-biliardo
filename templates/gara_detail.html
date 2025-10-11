@@ -522,6 +522,45 @@ function resetMatchQuick(matchId) {
         });
     }
 }
+
+function changeTableAssignment(matchId, newTable) {
+    // newTable può essere: "1", "A", "Sala Rossa", o "" (nessun tavolo)
+    const tableValue = newTable === "" ? null : newTable;
+
+    fetch(`/admin/match/${matchId}/assign-table`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            table_name: tableValue
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostra messaggio di successo
+            console.log(data.message);
+
+            // Se c'è stato uno swap, mostra notifica più dettagliata
+            if (data.swapped_match_id) {
+                alert(data.message + '\n\nLa pagina verrà ricaricata per mostrare le modifiche.');
+            }
+
+            // Ricarica la pagina per aggiornare la visualizzazione
+            location.reload();
+        } else {
+            // Mostra errore e ripristina selezione precedente
+            alert('Errore: ' + data.message);
+            location.reload(); // Ricarica per ripristinare lo stato corretto
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Errore durante l\'assegnazione del tavolo');
+        location.reload();
+    });
+}
 </script>
 {% endif %}
 {% endblock %}

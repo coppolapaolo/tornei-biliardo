@@ -189,6 +189,62 @@ def reset_match(match_id):
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
 
+@match_bp.route("/<int:match_id>/assign-table", methods=["POST"])
+@login_required
+@match_manager_required
+def assign_table(match_id):
+    """Assegna o cambia tavolo per un match con swap automatico.
+
+    Request JSON:
+        {
+            "table_name": "1" | "A" | "Sala Rossa" | null
+        }
+
+    Response JSON:
+        Success: {
+            "success": true,
+            "message": "Tavolo assegnato: ...",
+            "swapped_match_id": 123 (optional)
+        }
+        Error: {
+            "success": false,
+            "message": "Errore: ..."
+        }
+
+    Business Rules:
+        - Validazione round locking automatica
+        - Swap automatico se tavolo occupato nello stesso round
+        - Rimozione tavolo se table_name=null
+    """
+    from models.match.table_assignment_service import TableAssignmentService
+
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "message": "Dati mancanti"}), 400
+
+        new_table = data.get("table_name")
+
+        # Call service layer
+        success, message, swapped_match_id = TableAssignmentService.reassign_table(
+            match_id, new_table
+        )
+
+        response = {"success": success, "message": message}
+
+        if swapped_match_id:
+            response["swapped_match_id"] = swapped_match_id
+
+        status_code = 200 if success else 400
+        return jsonify(response), status_code
+
+    except Exception as e:
+        return (
+            jsonify({"success": False, "message": f"Errore: {str(e)}"}),
+            500,
+        )
+
+
 # ============ GESTIONE RACK ADMIN ============
 
 
