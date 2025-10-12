@@ -179,6 +179,49 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Assegnazione Tavolo -->
+  <div class="modal fade" id="tableAssignmentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-table"></i> Assegna Tavolo
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Info partita -->
+          <div class="alert alert-info mb-3">
+            <strong id="tableModalMatchInfo"></strong>
+          </div>
+
+          <!-- Tavolo attuale -->
+          <div id="currentTableInfo" class="mb-3" style="display: none;">
+            <small class="text-muted">
+              <i class="fas fa-info-circle"></i>
+              Tavolo attuale: <strong id="currentTableDisplay"></strong>
+            </small>
+          </div>
+
+          <!-- Griglia tavoli -->
+          <div class="table-grid" id="tableGrid">
+            <!-- Bottoni tavoli generati dinamicamente -->
+          </div>
+
+          <!-- Rimuovi tavolo -->
+          <button class="btn btn-outline-danger w-100" onclick="selectTableFromModal(null)">
+            <i class="fas fa-times-circle"></i> Rimuovi Tavolo
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Annulla
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endif %}
 {% endblock %}
 
@@ -523,11 +566,100 @@ function resetMatchQuick(matchId) {
     }
 }
 
-function changeTableAssignment(matchId, newTable) {
-    // newTable può essere: "1", "A", "Sala Rossa", o "" (nessun tavolo)
-    const tableValue = newTable === "" ? null : newTable;
+// ============ TABLE ASSIGNMENT MODAL SYSTEM ============
 
-    fetch(`/admin/match/${matchId}/assign-table`, {
+let tableAssignmentMatchId = null;
+let tableAssignmentCurrentTable = null;
+const availableTables = {{ available_tables|tojson|safe }};
+
+/**
+ * Apre il modal di assegnazione tavolo
+ * @param {number} matchId - ID del match
+ * @param {string|null} currentTable - Tavolo attualmente assegnato
+ * @param {string} player1 - Nome giocatore 1
+ * @param {string} player2 - Nome giocatore 2
+ */
+function openTableAssignment(matchId, currentTable, player1, player2) {
+    tableAssignmentMatchId = matchId;
+    tableAssignmentCurrentTable = currentTable;
+
+    // Aggiorna info partita nel modal
+    document.getElementById('tableModalMatchInfo').textContent =
+        `${player1} vs ${player2}`;
+
+    // Mostra/nascondi info tavolo attuale
+    if (currentTable) {
+        document.getElementById('currentTableInfo').style.display = 'block';
+        document.getElementById('currentTableDisplay').textContent = `Tavolo ${currentTable}`;
+    } else {
+        document.getElementById('currentTableInfo').style.display = 'none';
+    }
+
+    // Genera bottoni per i tavoli disponibili
+    generateTableButtons();
+}
+
+/**
+ * Genera i bottoni della griglia tavoli
+ */
+function generateTableButtons() {
+    const tableGrid = document.getElementById('tableGrid');
+    tableGrid.innerHTML = ''; // Pulisci griglia
+
+    availableTables.forEach(tableName => {
+        const button = document.createElement('button');
+        button.className = 'btn table-btn';
+
+        // Determina lo stato del bottone
+        if (tableName === tableAssignmentCurrentTable) {
+            // Tavolo corrente
+            button.classList.add('table-btn-current');
+            button.innerHTML = `
+                <div class="table-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="table-name">${tableName}</div>
+            `;
+            button.disabled = true;
+        } else if (isTableOccupied(tableName)) {
+            // Tavolo occupato (swap possibile)
+            button.classList.add('table-btn-occupied');
+            button.innerHTML = `
+                <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
+                <div class="table-name">${tableName}</div>
+            `;
+            button.title = 'Click per scambiare con match occupante';
+            button.onclick = () => selectTableFromModal(tableName);
+        } else {
+            // Tavolo disponibile
+            button.classList.add('table-btn-available');
+            button.innerHTML = `
+                <div class="table-icon"><i class="fas fa-table"></i></div>
+                <div class="table-name">${tableName}</div>
+            `;
+            button.onclick = () => selectTableFromModal(tableName);
+        }
+
+        tableGrid.appendChild(button);
+    });
+}
+
+/**
+ * Verifica se un tavolo è occupato (dummy - sempre false per ora)
+ * TODO: Implementare logica reale quando si passa info tavoli occupati dal backend
+ */
+function isTableOccupied(tableName) {
+    // Per ora consideriamo tutti i tavoli liberi
+    // In futuro si potrebbe passare dal backend una lista di tavoli occupati
+    return false;
+}
+
+/**
+ * Gestisce la selezione di un tavolo dal modal
+ * @param {string|null} newTable - Tavolo selezionato, o null per rimuovere
+ */
+function selectTableFromModal(newTable) {
+    const tableValue = newTable;
+
+    fetch(`/admin/match/${tableAssignmentMatchId}/assign-table`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -539,8 +671,9 @@ function changeTableAssignment(matchId, newTable) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Mostra messaggio di successo
-            console.log(data.message);
+            // Nascondi modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('tableAssignmentModal'));
+            if (modal) modal.hide();
 
             // Se c'è stato uno swap, mostra notifica più dettagliata
             if (data.swapped_match_id) {
@@ -550,15 +683,13 @@ function changeTableAssignment(matchId, newTable) {
             // Ricarica la pagina per aggiornare la visualizzazione
             location.reload();
         } else {
-            // Mostra errore e ripristina selezione precedente
+            // Mostra errore
             alert('Errore: ' + data.message);
-            location.reload(); // Ricarica per ripristinare lo stato corretto
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('Errore durante l\'assegnazione del tavolo');
-        location.reload();
     });
 }
 </script>

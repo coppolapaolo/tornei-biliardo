@@ -43,20 +43,24 @@
     </td>
     <td>
         {% if user_can_manage and available_tables %}
-            {# Admin/Director view: Dropdown interattivo per cambio tavolo #}
-            <select class="form-select form-select-sm table-assignment-select"
-                    data-match-id="{{ match.id }}"
-                    onchange="changeTableAssignment({{ match.id }}, this.value)">
-                <option value="" {% if not match.table_assignment %}selected{% endif %}>
-                    -- Nessun tavolo --
-                </option>
-                {% for table in available_tables %}
-                    <option value="{{ table }}"
-                            {% if match.table_assignment == table %}selected{% endif %}>
-                        Tavolo {{ table }}
-                    </option>
-                {% endfor %}
-            </select>
+            {# Admin/Director view: Badge cliccabile per apertura modal #}
+            {% if match.table_assignment %}
+                <span class="badge bg-primary cursor-pointer"
+                      data-bs-toggle="modal"
+                      data-bs-target="#tableAssignmentModal"
+                      onclick="openTableAssignment({{ match.id }}, '{{ match.table_assignment }}', '{{ match.player1.username }}', '{{ match.player2.username if not match.is_bye else "Bye" }}')">
+                    <i class="fas fa-table"></i>
+                    Tavolo {{ match.table_assignment }}
+                </span>
+            {% else %}
+                <span class="badge bg-warning cursor-pointer"
+                      data-bs-toggle="modal"
+                      data-bs-target="#tableAssignmentModal"
+                      onclick="openTableAssignment({{ match.id }}, null, '{{ match.player1.username }}', '{{ match.player2.username if not match.is_bye else "Bye" }}')">
+                    <i class="fas fa-plus-circle"></i>
+                    Assegna
+                </span>
+            {% endif %}
         {% else %}
             {# Player/Guest view: Badge statico read-only #}
             {% if match.table_assignment %}
