@@ -2,6 +2,7 @@
 from flask import Flask, request
 from flask_login import LoginManager, current_user
 import os
+import logging
 
 # Import configurazioni e modelli
 from config import config
@@ -25,6 +26,16 @@ def create_app(config_name=None):
     # Crea app Flask
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    
+    # Configura logging per debug
+    if config_name == "development":
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        # Abilita logging per i nostri moduli
+        logging.getLogger('models.match.table_assignment_service').setLevel(logging.INFO)
+        logging.getLogger('routes.admin.match').setLevel(logging.INFO)
 
     # Inizializza estensioni
     db.init_app(app)

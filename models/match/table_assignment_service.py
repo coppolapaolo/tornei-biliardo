@@ -183,7 +183,7 @@ class TableAssignmentService:
 
         Business Rules:
         - Validates round locking before allowing reassignment
-        - If new_table is occupied by another match in same round → automatic swap
+        - If new_table is occupied by another match in same round → other match table is removed
         - If new_table is free → simple assignment
         - If new_table is None → removes table assignment
         - Cross-round table sharing is allowed (same table, different rounds)
@@ -193,12 +193,13 @@ class TableAssignmentService:
             new_table: New table name, or None to remove assignment
 
         Returns:
-            Tuple[bool, str, Optional[int]]: (success, message, swapped_match_id)
+            Tuple[bool, str, Optional[int]]: (success, message, removed_match_id)
             - success: True if operation succeeded
             - message: Human-readable result message
-            - swapped_match_id: ID of match that was swapped, or None
+            - removed_match_id: ID of match whose table is removed, or None
         """
         from models.competition.round_manager import AdvancedRoundManager
+        from models.match.services import MatchService
 
         match = db.session.get(Match, match_id)
         if not match:
@@ -214,6 +215,8 @@ class TableAssignmentService:
         # Case 1: Remove table assignment
         if new_table is None:
             match.table_assignment = None
+            MatchService.reset_to_pending(match.id)
+            db.session.add(match)
             return True, f"Tavolo '{old_table}' rimosso dal match", None
 
         # Case 2: No change
@@ -233,26 +236,24 @@ class TableAssignmentService:
 
         if occupying_match:
             # Automatic swap with occupying match
-            occupying_match.table_assignment = old_table
+            occupying_match.table_assignment = None
             match.table_assignment = new_table
+            MatchService.to_playing(match.id)
+            MatchService.reset_to_pending(occupying_match.id)
+            db.session.add(occupying_match)
+            db.session.add(match)
 
-            if old_table:
-                msg = (
-                    f"Tavolo scambiato: Match #{match_id} → '{new_table}', "
-                    f"Match #{occupying_match.id} → '{old_table}'"
-                )
-            else:
-                msg = (
-                    f"Tavolo assegnato: Match #{match_id} → '{new_table}', "
-                    f"Match #{occupying_match.id} → senza tavolo"
-                )
+            msg = (
+                f"Tavolo assegnato: Match #{match_id} → '{new_table}', "
+                f"Match #{occupying_match.id} → senza tavolo"
+            )
 
             return True, msg, occupying_match.id
         else:
             # Simple assignment (table is free in this round)
             match.table_assignment = new_table
-            return (
-                True,
-                f"Tavolo assegnato: Match #{match_id} → '{new_table}'",
-                None,
-            )
+            MatchService.to_playing(match.id)
+            db.session.add(match)
+
+            msg = f"Tavolo assegnato: Match #{match_id} → '{new_table}'"
+            return True, msg, None

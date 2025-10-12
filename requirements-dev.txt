@@ -6,3 +6,4 @@ pytest-xdist  # For parallel test execution with -n auto
 autoflake
 pytest-cov>=4.0
 pyright  # Type checking - MANDATORY before commits
+debugpy  # Python debugger for VSCode

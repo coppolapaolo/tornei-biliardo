@@ -216,18 +216,39 @@ def assign_table(match_id):
         - Swap automatico se tavolo occupato nello stesso round
         - Rimozione tavolo se table_name=null
     """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    from models import db
     from models.match.table_assignment_service import TableAssignmentService
 
     try:
         data = request.get_json()
         if not data:
+            logger.error(f"No JSON data received for match {match_id}")
             return jsonify({"success": False, "message": "Dati mancanti"}), 400
 
         new_table = data.get("table_name")
+        logger.info(
+            f"Route assign_table called: match_id={match_id}, new_table={new_table}"
+        )
 
-        # Call service layer
+        # Call service layer (has @transactional)
         success, message, swapped_match_id = TableAssignmentService.reassign_table(
             match_id, new_table
+        )
+
+        # CRITICAL: Explicit commit required for Flask routes
+        # The @transactional decorator in reassign_table() creates a savepoint
+        # within the Flask request's session, but doesn't commit the parent
+        # transaction. Flask-SQLAlchemy requires explicit commit at route level.
+        if success:
+            db.session.commit()
+            logger.info("Changes committed to database")
+
+        logger.info(
+            f"Service returned: success={success}, message='{message}', "
+            f"swapped_match_id={swapped_match_id}"
         )
 
         response = {"success": success, "message": message}
@@ -236,9 +257,14 @@ def assign_table(match_id):
             response["swapped_match_id"] = swapped_match_id
 
         status_code = 200 if success else 400
+        logger.info(f"Returning response: {response} with status {status_code}")
         return jsonify(response), status_code
 
     except Exception as e:
+        logger.error(
+            f"Exception in assign_table for match {match_id}: {str(e)}", exc_info=True
+        )
+        db.session.rollback()  # Rollback on error
         return (
             jsonify({"success": False, "message": f"Errore: {str(e)}"}),
             500,

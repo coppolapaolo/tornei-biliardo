@@ -658,6 +658,8 @@ function isTableOccupied(tableName) {
  */
 function selectTableFromModal(newTable) {
     const tableValue = newTable;
+    
+    console.log(`selectTableFromModal called: matchId=${tableAssignmentMatchId}, newTable=${tableValue}`);
 
     fetch(`/admin/match/${tableAssignmentMatchId}/assign-table`, {
         method: 'POST',
@@ -668,27 +670,36 @@ function selectTableFromModal(newTable) {
             table_name: tableValue
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
+        
         if (data.success) {
+            console.log('Success! Message:', data.message);
+            
             // Nascondi modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('tableAssignmentModal'));
             if (modal) modal.hide();
 
             // Se c'è stato uno swap, mostra notifica più dettagliata
             if (data.swapped_match_id) {
+                console.log('Swap detected, swapped_match_id:', data.swapped_match_id);
                 alert(data.message + '\n\nLa pagina verrà ricaricata per mostrare le modifiche.');
             }
 
             // Ricarica la pagina per aggiornare la visualizzazione
+            console.log('Reloading page...');
             location.reload();
         } else {
-            // Mostra errore
+            console.error('Error from server:', data.message);
             alert('Errore: ' + data.message);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Network error:', error);
         alert('Errore durante l\'assegnazione del tavolo');
     });
 }

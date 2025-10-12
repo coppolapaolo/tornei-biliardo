@@ -629,6 +629,7 @@ def gara_detail(gara_id):
             .all()
         )
         all_matches = None  # Non serve per admin
+        
     elif user_inscription:
         # PLAYER VIEW: Solo le sue partite
         matches = (
@@ -797,15 +798,13 @@ def gara_detail(gara_id):
         if GaraChallengeService.has_active_challenges(gara_id):
             if user_can_manage:
                 # Admin view: challenge classification
-                challenge_classification = GaraChallengeService.update_gara_classification(
-                    gara_id
+                challenge_classification = (
+                    GaraChallengeService.update_gara_classification(gara_id)
                 )
             gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
 
     # Per player iscritto: carica challenge personali
     if user_inscription and gara_challenges:
-        from models.challenge.gara_challenge_models import GaraChallenge
-
         user_challenge_data = []
         for gara_challenge in gara_challenges:
             user_attempts = gara_challenge.get_user_attempts(current_user.id)
