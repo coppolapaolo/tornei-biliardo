@@ -595,6 +595,31 @@ def reject_match_result(match_id):
         return jsonify({"error": f"Errore: {str(e)}"}), 500
 
 
+@player_bp.route("/match/<int:match_id>/forfeit", methods=["POST"])
+@login_required
+@match_player_required
+def forfeit_match(match_id):
+    """Forfeit match - current user loses automatically"""
+    try:
+        match = MatchService.forfeit_match(
+            match_id=match_id, user_id=current_user.id
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "status": match.status,
+                "winner_id": match.winner_id,
+                "message": f"Forfait dichiarato. {match.winner.username} vince per forfait."
+            }
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore: {str(e)}"}), 500
+
+
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
 
 

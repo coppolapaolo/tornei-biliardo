@@ -178,3 +178,51 @@ def gara_display_name(gara) -> Markup:
 
     name = gara.name or f"Gara {gara.id}"
     return Markup(escape(name))
+
+
+def player_name_with_forfeit(user, gara_id=None, is_forfeit=False) -> Markup:
+    """Formatta il nome del giocatore con indicatore forfait se necessario.
+
+    Args:
+        user: User model
+        gara_id: Optional gara ID (deprecated - use is_forfeit instead)
+        is_forfeit: Boolean indicating if player has forfeited (preferred)
+
+    Returns:
+        Markup: Player name with forfeit indicator if applicable
+
+    Examples:
+        {{ player|player_name_with_forfeit(is_forfeit=True) }}
+        → "<s class='text-muted'>Mario</s> <i class='fas fa-flag text-muted small' title='Forfait'>F</i>"
+
+        {{ player|player_name_with_forfeit(gara.id) }}  # Legacy, triggers query
+        → "<s class='text-muted'>Mario</s> <i class='fas fa-flag text-muted small' title='Forfait'>F</i>"
+    """
+    if not user:
+        return Markup('<span class="text-muted">Bye</span>')
+
+    username = escape(user.username)
+
+    # Use is_forfeit directly if provided (no query)
+    if is_forfeit:
+        return Markup(
+            f'<s class="text-muted">{username}</s> '
+            f'<i class="fas fa-flag text-muted small ms-1" title="Forfait">F</i>'
+        )
+
+    # Fallback: query if gara_id provided but not is_forfeit (legacy)
+    if gara_id:
+        try:
+            from models.competition.withdraw_policy_service import WithdrawPolicyService
+            is_forfeit_db = WithdrawPolicyService.is_player_forfeit(gara_id, user.id)
+
+            if is_forfeit_db:
+                return Markup(
+                    f'<s class="text-muted">{username}</s> '
+                    f'<i class="fas fa-flag text-muted small ms-1" title="Forfait">F</i>'
+                )
+        except Exception:
+            # Se c'è un errore nel controllo forfait, mostra solo il nome
+            pass
+
+    return Markup(username)

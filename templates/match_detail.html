@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Match {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }} - Gara {{ match.gara.name }}{% endblock %}
+{% block title %}Match {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else 'Bye' }} - Gara {{ match.gara.name }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -9,7 +9,7 @@
         <div>
             <h1>
                 <i class="fas fa-gamepad"></i>
-                {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
+                {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else 'Bye' }}
             </h1>
         </div>
         <div>
@@ -40,8 +40,6 @@
                         {% include "components/_match_rack_input.html" %}
                     {% endif %}
 
-                    {# Racks Table #}
-                    {% include "components/_match_racks_table.html" %}
 
                     {# Challenge Input (if applicable) #}
                     {% include "components/_match_challenge_input.html" %}
@@ -153,7 +151,8 @@ function confirmResult() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            // Redirect alla dashboard invece di ricaricare la pagina
+            window.location.href = '/dashboard';
         } else {
             alert('Errore: ' + (data.error || 'Impossibile confermare il risultato'));
         }
@@ -183,6 +182,30 @@ function rejectResult() {
         .catch(error => {
             console.error('Error:', error);
             alert('Errore durante il rifiuto');
+        });
+    }
+}
+
+function forfeitMatch() {
+    if (confirm('Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.')) {
+        fetch(`/player/match/{{ match.id }}/forfeit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Forfait dichiarato');
+                location.reload();
+            } else {
+                alert('Errore: ' + (data.error || 'Impossibile dichiarare forfait'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Errore durante la dichiarazione di forfait');
         });
     }
 }

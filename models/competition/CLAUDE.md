@@ -30,6 +30,7 @@ from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.competition.state_service import StateService
 from models.competition.round_manager import AdvancedRoundManager
+from models.competition.withdraw_policy_service import WithdrawPolicyService
 
 # Quick Status Check
 from models.status_enum import GaraStatus
@@ -238,6 +239,10 @@ initial_order: int - nullable (sorteggio iniziale)
 # Withdrawal
 is_withdrawn: bool - default False
 withdrawn_at: datetime - nullable
+
+# Forfait (added Oct 2025)
+is_forfeit: bool - default False
+forfeit_at: datetime - nullable
 
 # Waitlist
 is_waitlist: bool - default False
@@ -702,6 +707,71 @@ def complete(gara: Gara) -> Gara:
 - All methods validate current state before transition
 - Use InvalidTransitionError for clear error messages
 - StateService methods are called by higher-level services (GaraService, RoundService)
+
+---
+
+### WithdrawPolicyService (`withdraw_policy_service.py`)
+
+**File**: `models/competition/withdraw_policy_service.py`
+
+**Purpose**: Handles player forfeits and withdrawal policies for competitions.
+
+**Key Methods:**
+
+```python
+@transactional(domain="competition")
+def handle_forfeit(gara_id: int, user_id: int) -> str:
+    """Handle player forfeit according to gara's withdraw_policy.
+
+    Two policy behaviors:
+    - FORFEIT: Mark player as forfeit but keep in inscriptions
+    - EXCLUDE: Remove player from inscriptions completely
+
+    Returns:
+        "forfeit_marked" or "excluded"
+
+    Raises:
+        ValueError: If gara not found or user not inscribed
+    """
+
+@staticmethod
+def get_active_inscriptions(gara_id: int) -> list[Inscription]:
+    """Get active inscriptions (not withdrawn, not waitlist).
+
+    Includes forfeit players (they still participate in matchmaking).
+    """
+
+@staticmethod
+def get_forfeit_inscriptions(gara_id: int) -> list[Inscription]:
+    """Get inscriptions marked as forfeit (for auto-completion logic)."""
+
+@staticmethod
+def is_player_forfeit(gara_id: int, user_id: int) -> bool:
+    """Check if a specific player is marked as forfeit in this gara."""
+```
+
+**Usage Example:**
+```python
+from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+# Handle forfeit when player forfeits a match
+action = WithdrawPolicyService.handle_forfeit(
+    gara_id=match.gara_id,
+    user_id=player.id
+)
+# action = "forfeit_marked" or "excluded"
+
+# Check forfeit status for UI display
+is_forfeit = WithdrawPolicyService.is_player_forfeit(
+    gara_id=gara.id,
+    user_id=player.id
+)
+```
+
+**Integration Points:**
+- Called by `MatchService.forfeit_match()` after match completion
+- Used in templates via `player_name_with_forfeit` Jinja filter
+- Respects gara's `withdraw_policy` setting (FORFEIT vs EXCLUDE)
 
 ---
 

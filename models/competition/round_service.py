@@ -309,6 +309,13 @@ class RoundService:
             # Genera gli abbinamenti usando l'interfaccia della strategia
             pairings = strategy.create_round(gara, round_number)
 
+            # Get forfeit players for this gara to handle completed matches
+            from models.competition.withdraw_policy_service import WithdrawPolicyService
+            forfeit_user_ids = set(
+                inscription.user_id
+                for inscription in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
+            )
+
             # Crea i match nel database
             for pairing in pairings:
                 if len(pairing.players) == 1 and pairing.is_bye:
@@ -330,17 +337,58 @@ class RoundService:
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 2 and not pairing.is_bye:
-                    # Match normale
-                    match = Match(
-                        gara_id=gara_id,
-                        round_number=round_number,
-                        player1_id=pairing.players[0],
-                        player2_id=pairing.players[1],
-                        is_bye=False,
-                        discipline=discipline_override,
-                        match_distance=gara.distance,
-                    )
-                    db.session.add(match)
+                    # Check if any player is forfeit - create completed match
+                    player1_forfeit = pairing.players[0] in forfeit_user_ids
+                    player2_forfeit = pairing.players[1] in forfeit_user_ids
+
+                    if player1_forfeit or player2_forfeit:
+                        # At least one player forfeited - match is auto-completed
+                        winning_score = (
+                            gara.get_winning_score() if gara.best_of else gara.distance
+                        )
+
+                        if player1_forfeit and player2_forfeit:
+                            # Both forfeit - player1 wins (arbitrary but consistent)
+                            winner_id = pairing.players[0]
+                            player1_score = winning_score
+                            player2_score = 0
+                        elif player1_forfeit:
+                            # Player1 forfeit - player2 wins
+                            winner_id = pairing.players[1]
+                            player1_score = 0
+                            player2_score = winning_score
+                        else:
+                            # Player2 forfeit - player1 wins
+                            winner_id = pairing.players[0]
+                            player1_score = winning_score
+                            player2_score = 0
+
+                        match = Match(
+                            gara_id=gara_id,
+                            round_number=round_number,
+                            player1_id=pairing.players[0],
+                            player2_id=pairing.players[1],
+                            is_bye=False,
+                            player1_score=player1_score,
+                            player2_score=player2_score,
+                            winner_id=winner_id,
+                            status="completed",
+                            discipline=discipline_override,
+                            match_distance=gara.distance,
+                        )
+                        db.session.add(match)
+                    else:
+                        # Match normale - nessun forfait
+                        match = Match(
+                            gara_id=gara_id,
+                            round_number=round_number,
+                            player1_id=pairing.players[0],
+                            player2_id=pairing.players[1],
+                            is_bye=False,
+                            discipline=discipline_override,
+                            match_distance=gara.distance,
+                        )
+                        db.session.add(match)
                 elif len(pairing.players) == 3:
                     # Match trio
                     match = Match(

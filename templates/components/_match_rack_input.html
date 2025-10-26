@@ -1,5 +1,5 @@
 <!-- Rack Input Component -->
-{% if match.status != 'completed' and (current_user.id in [match.player1_id, match.player2_id] or current_user.is_admin or current_user.is_director) %}
+{% if match.status != 'completed' and (user_is_player or user_can_manage) %}
 {% if match.gara.best_of %}
     {# Caso "al meglio di N" - controlla se uno dei giocatori ha raggiunto il punteggio vincente #}
     {% set winning_score = match.gara.get_winning_score() %}
@@ -15,34 +15,61 @@
 <div class="card bg-light mb-3">
     <div class="card-body">
         <h6>
-            {% if current_user.is_admin or current_user.is_director %}
-                Aggiungi rack singolo
+            {% if user_can_manage %}
+                Gestione rack
             {% else %}
-                Aggiungi risultato rack
+                Gestione risultato rack
             {% endif %}
         </h6>
+        {% set current_user_confirmed = (current_user.id == match.player1_id and match.player1_confirmed) or (current_user.id == match.player2_id and match.player2_confirmed) %}
+        {% if not current_user_confirmed %}
         <div class="row">
             <div class="col-6">
-                <button class="btn btn-outline-primary w-100"
-                        onclick="addRackWin({{ match.player1_id }})"
-                        {% if match_completed or not match.table_assignment %}disabled{% endif %}>
-                    Rack {{ match.player1.username }}
-                </button>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary"
+                            onclick="addRackWin({{ match.player1_id }})"
+                            {% if match_completed or not match.table_assignment %}disabled{% endif %}>
+                        <i class="fas fa-plus"></i> Rack {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }}
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm"
+                            onclick="removeRack({{ match.player1_id }})"
+                            {% if match.player1_score == 0 or not match.table_assignment %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> Rimuovi
+                    </button>
+                </div>
             </div>
             <div class="col-6">
-                <button class="btn btn-outline-primary w-100"
-                        onclick="addRackWin({{ match.player2_id }})"
-                        {% if match_completed or not match.table_assignment %}disabled{% endif %}>
-                    Rack {{ match.player2.username }}
-                </button>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary"
+                            onclick="addRackWin({{ match.player2_id }})"
+                            {% if match_completed or not match.table_assignment %}disabled{% endif %}>
+                        <i class="fas fa-plus"></i> Rack {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) }}
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm"
+                            onclick="removeRack({{ match.player2_id }})"
+                            {% if match.player2_score == 0 or not match.table_assignment %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> Rimuovi
+                    </button>
+                </div>
             </div>
         </div>
+        {% endif %}
         {% if match_completed %}
-        <div class="mt-2">
-            <small class="text-muted">
-                <i class="fas fa-info-circle"></i>
-                {{ limit_message }}
-            </small>
+        <div class="mt-3">
+            <div class="alert alert-success mb-2">
+                <i class="fas fa-flag-checkered"></i>
+                {{ limit_message }} raggiunto
+            </div>
+            {% if not current_user_confirmed %}
+            <button class="btn btn-success w-100" onclick="confirmResult()">
+                <i class="fas fa-check"></i> Accetta risultato
+            </button>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-check-circle"></i>
+                Hai confermato il risultato. In attesa dell'altro giocatore.
+            </div>
+            {% endif %}
         </div>
         {% elif not match.table_assignment %}
         <div class="mt-2">
@@ -50,6 +77,15 @@
                 <i class="fas fa-exclamation-triangle"></i>
                 Assegnare un tavolo prima di iniziare la partita
             </small>
+        </div>
+        {% endif %}
+
+        <!-- Forfait button (only for players, not managers, not completed, not bye) -->
+        {% if user_is_player and not user_can_manage and not match_completed and not match.is_bye %}
+        <div class="mt-3">
+            <button class="btn btn-outline-secondary w-100" onclick="forfeitMatch()">
+                <i class="fas fa-flag"></i> Dichiara forfait
+            </button>
         </div>
         {% endif %}
     </div>

@@ -7,3 +7,4 @@ autoflake
 pytest-cov>=4.0
 pyright  # Type checking - MANDATORY before commits
 debugpy  # Python debugger for VSCode
+playwright  # E2E testing framework

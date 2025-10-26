@@ -51,8 +51,34 @@ def match_detail(match_id):
         # Check se può gestire la gara di questo match
         user_can_manage = current_user.can_manage_competition(match.gara_id)
 
-        # Check se è player nel match
-        user_is_player = current_user.id in [match.player1_id, match.player2_id]
+        # Check se è player nel match AND non ha dato forfait
+        is_player_in_match = current_user.id in [match.player1_id, match.player2_id]
+
+        # Se è player nel match, verifica che non abbia dato forfait
+        if is_player_in_match:
+            from models.competition.withdraw_policy_service import WithdrawPolicyService
+            has_forfeit = WithdrawPolicyService.is_player_forfeit(
+                gara_id=match.gara_id,
+                user_id=current_user.id
+            )
+            user_is_player = not has_forfeit
+        else:
+            user_is_player = False
+
+    # Pre-load forfait status to avoid N+1 queries in template
+    player1_is_forfeit = False
+    player2_is_forfeit = False
+    if match.player1:
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+        player1_is_forfeit = WithdrawPolicyService.is_player_forfeit(
+            gara_id=match.gara_id,
+            user_id=match.player1_id
+        )
+    if match.player2:
+        player2_is_forfeit = WithdrawPolicyService.is_player_forfeit(
+            gara_id=match.gara_id,
+            user_id=match.player2_id
+        )
 
     # Verifica accesso: deve essere gestore O player
     if not (user_can_manage or user_is_player):
@@ -98,6 +124,8 @@ def match_detail(match_id):
         user_is_player=user_is_player,
         available_challenges=available_challenges,
         player_challenge_progress=player_challenge_progress,
+        player1_is_forfeit=player1_is_forfeit,
+        player2_is_forfeit=player2_is_forfeit,
     )
 
 

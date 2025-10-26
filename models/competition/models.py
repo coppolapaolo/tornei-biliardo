@@ -459,6 +459,10 @@ class Inscription(db.Model):
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)
 
+    # Forfait status (for withdraw policy handling)
+    is_forfeit = db.Column(db.Boolean, default=False, nullable=False)
+    forfeit_at = db.Column(db.DateTime, nullable=True)
+
     # Lista d'attesa
     is_waitlist = db.Column(db.Boolean, default=False, nullable=False)
     waitlist_position = db.Column(db.Integer, nullable=True)

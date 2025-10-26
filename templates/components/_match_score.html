@@ -6,7 +6,7 @@
         <h2 class="{% if match.winner_id == match.player1_id %}text-success{% endif %}">
             {{ match.player1_score }}
         </h2>
-        <h5>{{ match.player1.username }}</h5>
+        <h5>{{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }}</h5>
         {% if match.gara.best_of %}
             <small class="text-muted">Vince con {{ match.gara.get_winning_score() }}</small>
         {% endif %}
@@ -18,7 +18,7 @@
         <h2 class="{% if match.winner_id == match.player2_id %}text-success{% endif %}">
             {{ match.player2_score }}
         </h2>
-        <h5>{{ match.player2.username }}</h5>
+        <h5>{{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) }}</h5>
         {% if match.gara.best_of %}
             <small class="text-muted">Vince con {{ match.gara.get_winning_score() }}</small>
         {% endif %}

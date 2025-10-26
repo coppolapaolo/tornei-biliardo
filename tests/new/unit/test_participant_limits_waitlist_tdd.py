@@ -400,6 +400,7 @@ class TestParticipantLimitsWaitlistTDD:
             number=1,
             name="Forfeit Policy Test",
             date=tomorrow,
+            time=datetime.now().time(),
             discipline="palla 9",
             distance=7,
             best_of=True,

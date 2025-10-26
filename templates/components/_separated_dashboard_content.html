@@ -84,6 +84,11 @@
             <small class="text-muted">
               <i class="fas fa-trophy me-1"></i>{{ match.gara.discipline|replace('_',' ')|title }}
               - {{ match.gara.distance_config|format_distance }}
+              {% if match.table_assignment %}
+                <br><i class="fas fa-table me-1"></i>Tavolo {{ match.table_assignment }}
+              {% else %}
+                <br><i class="fas fa-clock me-1 text-warning"></i>In attesa del tavolo
+              {% endif %}
             </small>
           </div>
           

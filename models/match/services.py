@@ -118,6 +118,10 @@ class MatchService:
         from models.classification.services import PlayerEncounterService
         PlayerEncounterService.record_match_encounters(match)
 
+        # Libera automaticamente il tavolo e assegnalo al prossimo match in attesa
+        from models.match.table_assignment_service import TableAssignmentService
+        TableAssignmentService.free_table_and_reassign(match.id)
+
         return match
 
     @staticmethod
@@ -562,6 +566,19 @@ class MatchService:
         else:
             match.player2_score = max(0, match.player2_score - 1)
 
+        # Controlla se il punteggio giustifica ancora il winner_id
+        should_clear_winner = False
+        if match.gara.best_of:
+            winning_score = match.gara.get_winning_score()
+            if max(match.player1_score, match.player2_score) < winning_score:
+                should_clear_winner = True
+        else:  # esatto numero
+            if (match.player1_score + match.player2_score) < match.gara.distance:
+                should_clear_winner = True
+
+        if should_clear_winner:
+            match.winner_id = None
+
         # Reset confirmations when score changes
         match.reset_confirmations()
 
@@ -623,6 +640,83 @@ class MatchService:
             raise ValueError("Match is not ready for validation")
 
         match.reject_result(user_id)
+        return match
+
+    @staticmethod
+    @transactional(domain="match")
+    def forfeit_match(match_id: int, user_id: int) -> Match:
+        """
+        Forfeit match - user loses automatically, opponent gets maximum score.
+
+        Also handles gara-level forfait policy (FORFEIT vs EXCLUDE).
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of player forfeiting
+
+        Returns:
+            The updated Match object
+
+        Raises:
+            ValueError: If user not in match or match already completed
+        """
+        match = db.session.get(Match, match_id)
+        if match is None:
+            from flask import abort
+            abort(404)
+
+        # Check if user is a player in this match
+        if user_id not in [match.player1_id, match.player2_id]:
+            raise ValueError("User is not a player in this match")
+
+        # Prevent forfeit on bye matches (automatic wins)
+        if match.is_bye:
+            raise ValueError("Cannot forfeit a bye match - it's an automatic win")
+
+        # Check if match can be forfeited
+        if match.status == MatchStatus.COMPLETED.value:
+            raise ValueError("Cannot forfeit a completed match")
+
+        # Determine winner (the other player)
+        if user_id == match.player1_id:
+            winner_id = match.player2_id
+            forfeit_player = 1
+        else:
+            winner_id = match.player1_id
+            forfeit_player = 2
+
+        # Get Distance object for proper scoring calculation
+        distance = match.distance_config
+
+        # Calculate maximum score for winner
+        if match.is_multi_set:
+            # Multi-set: winner gets winning sets
+            winning_score = distance.get_winning_sets()
+        else:
+            # Single-set: winner gets winning racks
+            winning_score = distance.get_winning_racks()
+
+        # Set scores
+        if forfeit_player == 1:
+            match.player1_score = 0
+            match.player2_score = winning_score
+        else:
+            match.player1_score = winning_score
+            match.player2_score = 0
+
+        # Set winner
+        match.winner_id = winner_id
+
+        # Use existing to_completed method for proper state transition and PlayerEncounter handling
+        match = MatchService.to_completed(match_id)
+
+        # Handle gara-level forfait policy
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+        WithdrawPolicyService.handle_forfeit(
+            gara_id=match.gara_id,
+            user_id=user_id
+        )
+
         return match
 
 
@@ -746,7 +840,7 @@ class RackService:
         # Ricarica il match per ottenere i punteggi aggiornati da add_rack_result
         db.session.refresh(match)
 
-        # Se il match è finito, imposta il vincitore usando RackScore
+        # Se il match è finito, comportamento diverso per admin vs player
         if match.rack_score.is_complete():
             final_winner_id = match.rack_score.get_winner()
             if final_winner_id is None:
@@ -762,10 +856,18 @@ class RackService:
                     match.player1_id if final_winner_id == 1
                     else match.player2_id
                 )
-            # Import locale per evitare cicli
-            from models.match.services import MatchResultService
 
-            MatchResultService.submit_result(match.id, final_winner_id)
+            if validated_by_admin:
+                # Admin: completa automaticamente il match
+                from models.match.services import MatchResultService
+                MatchResultService.submit_result(match.id, final_winner_id)
+            else:
+                # Player: imposta solo il vincitore, lascia il match in "playing" per la conferma
+                match.winner_id = final_winner_id
+                db.session.add(match)
+
+                # Reset delle conferme quando il risultato cambia
+                match.reset_confirmations()
 
         return {
             "success": True,
@@ -918,18 +1020,22 @@ class RackService:
         else:
             match.player2_score = max(0, match.player2_score - 1)
 
-        # Se il match era completato e ora non ha più i punti per essere vinto,
-        # rimettilo in playing
-        if match.status == MatchStatus.COMPLETED.value:
-            if match.gara.best_of:
-                winning_score = match.gara.get_winning_score()
-                if max(match.player1_score, match.player2_score) < winning_score:
-                    MatchService.to_playing(match.id)
-                    match.winner_id = None
-            else:  # esatto numero
-                if (match.player1_score + match.player2_score) < match.gara.distance:
-                    MatchService.to_playing(match.id)
-                    match.winner_id = None
+        # Controlla sempre se il punteggio giustifica ancora il winner_id
+        should_clear_winner = False
+        if match.gara.best_of:
+            winning_score = match.gara.get_winning_score()
+            if max(match.player1_score, match.player2_score) < winning_score:
+                should_clear_winner = True
+        else:  # esatto numero
+            if (match.player1_score + match.player2_score) < match.gara.distance:
+                should_clear_winner = True
+
+        if should_clear_winner:
+            match.winner_id = None
+            match.reset_confirmations()
+            # Se era completed, rimettilo in playing
+            if match.status == MatchStatus.COMPLETED.value:
+                MatchService.to_playing(match.id)
 
         return {
             "success": True,
