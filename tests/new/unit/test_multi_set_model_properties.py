@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 class TestGaraMultiSetProperty:
     """Test Gara.distance_config with multi-set support."""
 
-    def test_gara_single_set_best_of(self):
+    def test_gara_single_set_race_to(self):
         """Test single-set best-of configuration (backward compatible)."""
         gara = Gara(
             campionato_id=None,
@@ -55,7 +55,7 @@ class TestGaraMultiSetProperty:
         assert distance.is_multi_set is False
         assert distance.to_display_string() == "Exactly 5 racks"
 
-    def test_gara_multi_set_best_of_sets_best_of_racks(self):
+    def test_gara_multi_set_race_to_sets_race_to_racks(self):
         """Test multi-set with best-of sets and best-of racks."""
         gara = Gara(
             campionato_id=None,
@@ -80,7 +80,7 @@ class TestGaraMultiSetProperty:
         assert distance.get_winning_racks() == 5
         assert distance.get_winning_sets() == 3
 
-    def test_gara_multi_set_exact_sets_best_of_racks(self):
+    def test_gara_multi_set_exact_sets_race_to_racks(self):
         """Test multi-set with exact sets and best-of racks."""
         gara = Gara(
             campionato_id=None,
@@ -143,7 +143,7 @@ class TestGaraMultiSetProperty:
 class TestMatchProposalMultiSetProperty:
     """Test MatchProposal.distance_config with multi-set support."""
 
-    def test_proposal_single_set_best_of(self):
+    def test_proposal_single_set_race_to(self):
         """Test proposal single-set configuration."""
         proposal = MatchProposal(
             proposer_id=1,

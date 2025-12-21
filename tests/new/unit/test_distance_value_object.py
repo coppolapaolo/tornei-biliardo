@@ -15,7 +15,7 @@ from models.match.distance import Distance
 class TestDistanceCreation:
     """Test Distance object creation and validation."""
 
-    def test_create_single_set_distance_best_of_7(self):
+    def test_create_single_set_distance_race_to_7(self):
         """Create single-set race-to-7 distance."""
         distance = Distance(racks=7, is_race_to_racks=True, is_multi_set=False)
 
@@ -26,7 +26,7 @@ class TestDistanceCreation:
         assert distance.get_winning_racks() == 7
         assert distance.get_winning_sets() == 1
 
-    def test_create_single_set_distance_best_of_5(self):
+    def test_create_single_set_distance_race_to_5(self):
         """Create single-set race-to-5 distance."""
         distance = Distance(racks=5, is_race_to_racks=True)
 
@@ -51,7 +51,7 @@ class TestDistanceCreation:
         assert distance.is_race_to_racks is False
         assert distance.get_winning_racks() == 3
 
-    def test_create_multi_set_best_of_3_sets_best_of_5_racks(self):
+    def test_create_multi_set_race_to_3_sets_race_to_5_racks(self):
         """Create multi-set: race-to-3 sets, each race-to-5 racks."""
         distance = Distance(
             racks=5,
@@ -69,7 +69,7 @@ class TestDistanceCreation:
         assert distance.get_winning_racks() == 5  # Per set
         assert distance.get_winning_sets() == 3  # For match
 
-    def test_create_multi_set_best_of_5_sets_best_of_7_racks(self):
+    def test_create_multi_set_race_to_5_sets_race_to_7_racks(self):
         """Create multi-set: race-to-5 sets, each race-to-7 racks."""
         distance = Distance(
             racks=7,
@@ -82,7 +82,7 @@ class TestDistanceCreation:
         assert distance.get_winning_racks() == 7
         assert distance.get_winning_sets() == 5
 
-    def test_create_multi_set_exact_4_sets_best_of_3_racks(self):
+    def test_create_multi_set_exact_4_sets_race_to_3_racks(self):
         """Create multi-set: exactly-4 sets, each race-to-3 racks."""
         distance = Distance(
             racks=3,
@@ -116,7 +116,7 @@ class TestDistanceCreation:
         assert distance.get_winning_racks() == 3
         assert distance.get_winning_sets() == 2
 
-    def test_create_multi_set_best_of_3_sets_exact_2_racks(self):
+    def test_create_multi_set_race_to_3_sets_exact_2_racks(self):
         """Create multi-set: race-to-3 sets, each exactly-2 racks."""
         distance = Distance(
             racks=2,
@@ -187,7 +187,7 @@ class TestDistanceValidation:
 class TestDistanceDisplayStrings:
     """Test human-readable display strings."""
 
-    def test_display_single_set_best_of_7(self):
+    def test_display_single_set_race_to_7(self):
         """Display string for race-to-7 single-set."""
         distance = Distance(racks=7, is_race_to_racks=True)
         assert distance.to_display_string() == "Al 7 rack"
@@ -197,7 +197,7 @@ class TestDistanceDisplayStrings:
         distance = Distance(racks=4, is_race_to_racks=False)
         assert distance.to_display_string() == "Exactly 4 racks"
 
-    def test_display_multi_set_best_of_3_sets_best_of_5_racks(self):
+    def test_display_multi_set_race_to_3_sets_race_to_5_racks(self):
         """Display: race-to-3 sets, each race-to-5 racks."""
         distance = Distance(
             racks=5,
@@ -209,7 +209,7 @@ class TestDistanceDisplayStrings:
         expected = "Al 3 set, ogni set al 5 rack"
         assert distance.to_display_string() == expected
 
-    def test_display_multi_set_exact_4_sets_best_of_3_racks(self):
+    def test_display_multi_set_exact_4_sets_race_to_3_racks(self):
         """Display: exactly-4 sets, each race-to-3 racks."""
         distance = Distance(
             racks=3,
@@ -221,7 +221,7 @@ class TestDistanceDisplayStrings:
         expected = "Exactly 4 sets, ogni set al 3 rack"
         assert distance.to_display_string() == expected
 
-    def test_display_multi_set_best_of_5_sets_exact_2_racks(self):
+    def test_display_multi_set_race_to_5_sets_exact_2_racks(self):
         """Display: race-to-5 sets, each exactly-2 racks."""
         distance = Distance(
             racks=2,
@@ -265,7 +265,7 @@ class TestDistanceImmutability:
 class TestDistanceFactoryMethods:
     """Test factory methods for creating Distance from models."""
 
-    def test_from_gara_best_of_7(self):
+    def test_from_gara_race_to_7(self):
         """Create Distance from gara with race-to-7."""
         # Mock gara object
         class MockGara:
@@ -330,7 +330,7 @@ class TestDistanceFactoryMethods:
         assert distance.get_winning_racks() == 5
         assert distance.get_winning_sets() == 3
 
-    def test_from_set_best_of_5(self):
+    def test_from_set_race_to_5(self):
         """Create Distance from Set with race-to-5."""
         class MockSet:
             distance = 5

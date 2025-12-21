@@ -12,7 +12,7 @@ from models.match.score import RackScore, MatchScore
 class TestFormatDistanceFilter:
     """Test format_distance Jinja filter."""
 
-    def test_format_distance_single_set_best_of_7(self):
+    def test_format_distance_single_set_race_to_7(self):
         """Format best-of-7 single-set distance."""
         distance = Distance(racks=7, is_race_to_racks=True)
         result = format_distance(distance)
@@ -138,7 +138,7 @@ class TestFormatScoreFilter:
 class TestFormatDistanceShortFilter:
     """Test format_distance_short Jinja filter."""
 
-    def test_format_distance_short_best_of_7(self):
+    def test_format_distance_short_race_to_7(self):
         """Format best-of-7 as BO7."""
         distance = Distance(racks=7, is_race_to_racks=True)
         result = format_distance_short(distance)
