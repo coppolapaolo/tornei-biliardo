@@ -43,7 +43,7 @@ class TestBaseMatchMaxRacksValidation:
         # Then: Should be able to add rack
         assert result is True
 
-    def test_can_add_rack_returns_true_for_best_of_not_at_target(
+    def test_can_add_rack_returns_true_for_race_to_not_at_target(
         self, db_session, sample_match
     ):
         """Best-of format: should allow rack when no player reached target."""
@@ -58,7 +58,7 @@ class TestBaseMatchMaxRacksValidation:
         # Then: Should be able to add rack
         assert result is True
 
-    def test_can_add_rack_returns_false_for_best_of_at_target(
+    def test_can_add_rack_returns_false_for_race_to_at_target(
         self, db_session, sample_match
     ):
         """Best-of format: should not allow rack when target reached."""
