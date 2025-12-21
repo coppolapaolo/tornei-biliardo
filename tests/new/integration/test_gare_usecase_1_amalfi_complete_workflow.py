@@ -150,8 +150,8 @@ class TestUseCaseAmalfiBestOfTournaments:
             assert inscription.is_waitlist is False  # Not on waitlist = confirmed
 
         # Step 3: Open inscriptions and start first round
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -306,8 +306,8 @@ class TestUseCaseAmalfiBestOfTournaments:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Step 4: Start tournament
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -553,8 +553,8 @@ class TestUseCaseAmalfiExactlyTournaments:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Step 3: Start tournament
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -758,8 +758,8 @@ class TestUseCaseAmalfiWaitlistExpiry:
         )
 
         # Step 2: Open inscriptions with short window for testing expiry
-        inscription_start = datetime.now() - timedelta(minutes=30)
-        inscription_end = datetime.now() + timedelta(minutes=10)  # Will expire soon
+        inscription_start = datetime.utcnow() - timedelta(minutes=30)
+        inscription_end = datetime.utcnow() + timedelta(minutes=10)  # Will expire soon
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         db_session.refresh(gara)
@@ -794,7 +794,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
 
         # Step 5: Test auto-expiry by simulating inscription deadline passage
         # Manually set inscription_end to past to simulate expiry
-        gara.inscription_end = datetime.now() - timedelta(minutes=1)
+        gara.inscription_end = datetime.utcnow() - timedelta(minutes=1)
         db_session.add(gara)
         db_session.commit()
 
@@ -861,8 +861,8 @@ class TestUseCaseAmalfiWaitlistExpiry:
         )
 
         # Open inscriptions
-        inscription_start = datetime.now() - timedelta(minutes=30)
-        inscription_end = datetime.now() + timedelta(minutes=5)
+        inscription_start = datetime.utcnow() - timedelta(minutes=30)
+        inscription_end = datetime.utcnow() + timedelta(minutes=5)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Only 6 players inscribe (less than minimum 8)
@@ -870,7 +870,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
             InscriptionService.inscribe_user(players_11[i].id, gara.id)
 
         # Simulate expiry
-        gara.inscription_end = datetime.now() - timedelta(minutes=1)
+        gara.inscription_end = datetime.utcnow() - timedelta(minutes=1)
         db_session.add(gara)
         db_session.commit()
 

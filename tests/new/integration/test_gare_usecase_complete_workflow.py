@@ -68,8 +68,8 @@ class TestUseCaseGareComplete:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Step 3: Open and close inscriptions
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Step 4: Start first round with random pairing
@@ -164,8 +164,8 @@ class TestUseCaseGareComplete:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -232,8 +232,8 @@ class TestUseCaseGareComplete:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -321,8 +321,8 @@ class TestUseCaseGareComplete:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -404,8 +404,8 @@ class TestUseCaseGareComplete:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # Start and complete gara
-            inscription_start = datetime.now() - timedelta(hours=1)
-            inscription_end = datetime.now() + timedelta(hours=1)
+            inscription_start = datetime.utcnow() - timedelta(hours=1)
+            inscription_end = datetime.utcnow() + timedelta(hours=1)
             GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
             GaraService.start_first_round(gara.id)
 
@@ -476,8 +476,8 @@ class TestUseCaseGareComplete:
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=2)
-        inscription_end = datetime.now() - timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=2)
+        inscription_end = datetime.utcnow() - timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -540,7 +540,7 @@ class TestUseCaseGareComplete:
             proposer_id=player1.id,
             invited_user_ids=[player2.id],
             location="Individual Match Hall",
-            scheduled_at=datetime.now() + timedelta(days=1),
+            scheduled_at=datetime.utcnow() + timedelta(days=1),
             discipline="palla_8",
             distance=5,
             description="UC6 individual match test",
@@ -727,8 +727,8 @@ class TestUseCaseGareComplete:
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=2)
-        inscription_end = datetime.now() - timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=2)
+        inscription_end = datetime.utcnow() - timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

@@ -79,8 +79,8 @@ class TestIndividualMatchServiceTransactionMigration:
                 mock_notification.return_value = {"success": True}
 
                 # Act: create direct proposal
-                scheduled_time = datetime.now() + timedelta(hours=2)
-                expires_time = datetime.now() + timedelta(hours=1)
+                scheduled_time = datetime.utcnow() + timedelta(hours=2)
+                expires_time = datetime.utcnow() + timedelta(hours=1)
 
                 proposal = IndividualMatchService.create_direct_proposal(
                     proposer_id=proposer.id,
@@ -131,8 +131,8 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Act: create open proposal
-            scheduled_time = datetime.now() + timedelta(hours=3)
-            expires_time = datetime.now() + timedelta(hours=1)
+            scheduled_time = datetime.utcnow() + timedelta(hours=3)
+            expires_time = datetime.utcnow() + timedelta(hours=1)
 
             proposal = IndividualMatchService.create_open_proposal(
                 proposer_id=proposer.id,
@@ -263,8 +263,8 @@ class TestIndividualMatchServiceTransactionMigration:
                 "models.notification.services.NotificationService.create_notification"
             ):
                 # Create proposal
-                scheduled_time = datetime.now() + timedelta(hours=4)
-                expires_time = datetime.now() + timedelta(hours=1)
+                scheduled_time = datetime.utcnow() + timedelta(hours=4)
+                expires_time = datetime.utcnow() + timedelta(hours=1)
 
                 proposal = IndividualMatchService.create_direct_proposal(
                     proposer_id=proposer.id,

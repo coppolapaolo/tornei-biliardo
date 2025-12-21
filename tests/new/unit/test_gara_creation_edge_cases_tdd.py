@@ -162,8 +162,8 @@ class TestGaraCreationEdgeCasesTDD:
         gara_date = date.today() + timedelta(days=60)
 
         # Inscriptions start today, end next month
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(days=30)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(days=30)
 
         gara = GaraService.create_gara(
             campionato_id=None,
@@ -254,7 +254,7 @@ class TestGaraCreationEdgeCasesTDD:
         )
 
         # Try to set inscription end after gara date
-        inscription_start = datetime.now()
+        inscription_start = datetime.utcnow()
         inscription_end = datetime.combine(
             tomorrow + timedelta(days=1), datetime.min.time()
         ) + timedelta(hours=1)

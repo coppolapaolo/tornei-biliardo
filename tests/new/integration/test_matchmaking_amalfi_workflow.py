@@ -123,8 +123,8 @@ class TestAmalfiCompleteWorkflow:
         assert gara.status == GaraStatus.SETUP.value
 
         # ====== STEP 2: Apertura Iscrizioni ======
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
 
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
@@ -404,8 +404,8 @@ class TestAmalfiCompleteWorkflow:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Open inscriptions and start
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -491,8 +491,8 @@ class TestAmalfiCompleteWorkflow:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start gara
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

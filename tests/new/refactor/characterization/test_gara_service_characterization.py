@@ -243,8 +243,8 @@ class TestGaraServiceCharacterization:
         assert gara.status == GaraStatus.SETUP.value
 
         # setup -> inscription (richiede date)
-        start_time = datetime.now() + timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() + timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
 
         # Rimuovi le date di iscrizione per testare la validazione
         # (create_gara le imposta automaticamente per prevenire errori di stato)
@@ -275,8 +275,8 @@ class TestGaraServiceCharacterization:
             StateService.start_playing(gara)
 
         # Con iscritti funziona (prima devo aprire le iscrizioni)
-        start_time = datetime.now() - timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
 
         # Ripristino lo stato setup se necessario
         if gara.status != GaraStatus.SETUP.value:
@@ -337,8 +337,8 @@ class TestGaraServiceCharacterization:
         )
 
         # Date valide
-        start_time = datetime.now() + timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() + timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
 
         updated_gara = InscriptionService.open_inscriptions(
             gara.id, start_time, end_time
@@ -365,8 +365,8 @@ class TestGaraServiceCharacterization:
             director_id=self.director_user.id,
         )
 
-        start_time = datetime.now() + timedelta(minutes=30)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() + timedelta(minutes=30)
+        end_time = datetime.utcnow() + timedelta(days=1)
 
         # Modifica date prima dell'apertura
         updated_gara = InscriptionService.modify_inscription_dates(
@@ -450,8 +450,8 @@ class TestGaraServiceCharacterization:
             GaraService.start_first_round(gara.id)
 
         # Apri iscrizioni prima
-        start_time = datetime.now() - timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         # Con iscritti sufficienti
@@ -484,8 +484,8 @@ class TestGaraServiceCharacterization:
             GaraService.cancel_first_round_startup(gara.id)
 
         # Apri iscrizioni e iscrivi giocatori
-        start_time = datetime.now() - timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
@@ -615,8 +615,8 @@ class TestInscriptionServiceCharacterization:
         )
 
         # Apri iscrizioni prima
-        start_time = datetime.now() - timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         # Prima iscrizione
@@ -639,8 +639,8 @@ class TestInscriptionServiceCharacterization:
         tomorrow = date.today() + timedelta(days=1)
 
         # Gara con date iscrizioni future
-        start_future = datetime.now() + timedelta(hours=1)
-        end_future = datetime.now() + timedelta(days=1)
+        start_future = datetime.utcnow() + timedelta(hours=1)
+        end_future = datetime.utcnow() + timedelta(days=1)
 
         gara = GaraService.create_gara(
             number=1,
@@ -658,8 +658,8 @@ class TestInscriptionServiceCharacterization:
             InscriptionService.inscribe_user(self.player_user.id, gara.id)
 
         # Iscrizione dopo chiusura
-        gara.inscription_start = datetime.now() - timedelta(days=2)
-        gara.inscription_end = datetime.now() - timedelta(days=1)
+        gara.inscription_start = datetime.utcnow() - timedelta(days=2)
+        gara.inscription_end = datetime.utcnow() - timedelta(days=1)
         db.session.commit()
 
         with pytest.raises(ValueError, match="Iscrizioni chiuse"):
@@ -679,8 +679,8 @@ class TestInscriptionServiceCharacterization:
         )
 
         # Apri iscrizioni e iscrivi utenti
-        start_time = datetime.now() - timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
@@ -716,8 +716,8 @@ class TestInscriptionServiceCharacterization:
         )
 
         # Apri iscrizioni e iscrivi utente
-        start_time = datetime.now() - timedelta(minutes=10)
-        end_time = datetime.now() + timedelta(days=1)
+        start_time = datetime.utcnow() - timedelta(minutes=10)
+        end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player2_user.id, gara.id)

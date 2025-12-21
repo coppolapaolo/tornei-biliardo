@@ -108,7 +108,7 @@ class TestUseCaseOneComprehensive:
             # Setup: Register players and start first round
 
             # First set inscription dates and transition to inscription state
-            now = datetime.now()
+            now = datetime.utcnow()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
@@ -249,7 +249,7 @@ class TestUseCaseOneComprehensive:
             # Setup: Complete tournament up to round 2
 
             # First set inscription dates and transition to inscription state
-            now = datetime.now()
+            now = datetime.utcnow()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
@@ -419,7 +419,7 @@ class TestUseCaseOneComprehensive:
             # Setup tournament with random strategy and 3 rounds
 
             # First set inscription dates and transition to inscription state
-            now = datetime.now()
+            now = datetime.utcnow()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
@@ -575,7 +575,7 @@ class TestUseCaseOneComprehensive:
             # Setup with Amalfi strategy (as mentioned in UC4)
 
             # First set inscription dates and transition to inscription state
-            now = datetime.now()
+            now = datetime.utcnow()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
@@ -729,7 +729,7 @@ class TestUseCaseOneComprehensive:
             # Setup random tournament
 
             # First set inscription dates and transition to inscription state
-            now = datetime.now()
+            now = datetime.utcnow()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
@@ -954,7 +954,7 @@ class TestUseCaseOneComprehensive:
             player = players[0]
 
             # First set inscription dates and transition to inscription state
-            now = datetime.now()
+            now = datetime.utcnow()
             GaraService.open_inscriptions(
                 standalone_gara.id,
                 inscription_start=now - timedelta(hours=1),
