@@ -189,6 +189,7 @@ def sample_match(db_session, sample_users):
         distance=5,
         best_of=True,
         status=GaraStatus.INSCRIPTION.value,
+        time=datetime.utcnow().time(),
     )
     db_session.add(gara)
     db_session.flush()

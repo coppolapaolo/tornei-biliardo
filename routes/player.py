@@ -231,14 +231,6 @@ def accept_match_proposal(proposal_id):
                 proposal.accepted_by_id = current_user.id
                 proposal.accepted_at = datetime.utcnow()
 
-            # Create IndividualMatch if it doesn't exist
-            from models.individual_match.models import IndividualMatch, MatchStatus
-
-            existing_match = IndividualMatch.query.filter_by(
-                proposal_id=proposal.id
-            ).first()
-
-            if not existing_match:
                 individual_match = IndividualMatch(
                     proposal_id=proposal.id,
                     player1_id=proposal.proposer_id,
@@ -250,7 +242,7 @@ def accept_match_proposal(proposal_id):
                     best_of=proposal.best_of,
                     break_rule=proposal.break_rule,
                     entry_fee=proposal.entry_fee,
-                    status=MatchStatus.SCHEDULED,
+                    status=MatchStatus.SCHEDULED.value,
                 )
                 db.session.add(individual_match)
 
@@ -310,13 +302,7 @@ def reject_match_proposal(proposal_id):
                 proposal.accepted_by_id = None
                 proposal.accepted_at = None
 
-                # Cancel the IndividualMatch if it exists and hasn't started
-                from models.individual_match.models import IndividualMatch, MatchStatus
-
-                existing_match = IndividualMatch.query.filter_by(
-                    proposal_id=proposal.id
-                ).first()
-                if existing_match and existing_match.status == MatchStatus.SCHEDULED:
+                if existing_match and existing_match.status == MatchStatus.SCHEDULED.value:
                     db.session.delete(existing_match)
 
             db.session.flush()

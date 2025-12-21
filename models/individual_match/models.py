@@ -14,7 +14,7 @@ from enum import Enum
 from sqlalchemy import func
 
 from ..base import db, BaseModel, TimestampMixin
-from ..status_enum import Discipline
+from ..status_enum import Discipline, MatchStatus
 from ..match.base_match import BaseMatchMixin
 
 if TYPE_CHECKING:
@@ -35,15 +35,6 @@ class ProposalStatus(Enum):
     ACCEPTED = "accepted"  # Someone accepted
     EXPIRED = "expired"  # Time limit reached
     CANCELLED = "cancelled"  # Cancelled by proposer
-
-
-class MatchStatus(Enum):
-    """Status of individual matches."""
-
-    SCHEDULED = "scheduled"  # Match is scheduled
-    IN_PROGRESS = "in_progress"  # Match is being played
-    COMPLETED = "completed"  # Match is finished
-    CANCELLED = "cancelled"  # Match was cancelled
 
 
 class MatchProposal(BaseModel, TimestampMixin):
@@ -260,6 +251,16 @@ class MatchProposal(BaseModel, TimestampMixin):
             f"<MatchProposal {self.proposer_id} -> "
             f"{self.proposal_type.value} at {self.location}>"
         )
+
+
+class InvitationStatus(Enum):
+    """Status of individual invitations within a proposal."""
+
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
 
 
 class InvitationStatus(Enum):

@@ -23,8 +23,8 @@ from .models import (
     PlayerAvailability,
     ProposalType,
     ProposalStatus,
-    MatchStatus,
 )
+from ..status_enum import MatchStatus
 
 
 class MatchProposalService:
@@ -696,7 +696,9 @@ class IndividualMatchService:
         )
 
         if status_filter:
-            query = query.filter_by(status=status_filter)
+            # Ensure we are using the enum value for comparison
+            target_status = status_filter.value if hasattr(status_filter, 'value') else status_filter
+            query = query.filter(IndividualMatch.status == target_status)
 
         return query.order_by(IndividualMatch.scheduled_at.desc()).all()
 

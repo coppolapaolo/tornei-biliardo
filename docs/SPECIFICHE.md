@@ -87,7 +87,17 @@ Un'altra variante, che si accompagna al break continuo per il set (il giocatore 
 
 Un **match** può essere con handicap o no. Se c'è l'handicap allora dipende dalla differenza di categoria dei giocatori o dalla differenza di rating (fargo o elo) dei giocatori. Un esempio di handicap può essere questo: se un giocatore di categoria A è abbinato con uno di categoria C, parte da -2, se è abbinato con uno di categoria B parte da -1 come pure un giocatore di categoria B abbinato con uno di C.
 
-La app permette anche agli utenti ``player`` di organizzare **match _standalone_** con un altro utente.
+La app permette anche agli utenti ``player`` di organizzare **match _standalone_** (casual match) con un altro utente. Questi match utilizzano la stessa interfaccia di gestione dei rack dei match di torneo tramite un componente unificato (**BaseMatchMixin**), garantendo una UX coerente.
+
+### Ciclo di vita dei Match
+
+Tutti i match (sia di torneo che individuali) condividono un set unificato di stati (**MatchStatus**):
+
+- **Stati Torneo**: `pending` (in attesa di inizio) -> `playing` (in corso) -> `completed` (finito, attesa conferma) -> `validated` (confermato).
+- **Stati Individuali**: `scheduled` (proposto/accettato) -> `in_progress` (giocato) -> `completed` (finito).
+- **Stati Comuni**: `cancelled` (annullato).
+
+Questa unificazione permette di tracciare le statistiche e gestire i risultati in modo centralizzato.
 
 ## Rack
 
@@ -102,7 +112,7 @@ Una **classifica** può essere collegata ad un turno, una **gara** o ad un **cam
 I **playoff** sono una **gara** speciale a cui per iscriversi occorre avere alcune caratteristiche. Ad esempio un campionato può definire un playoff per i primi 6 classificati. Oppure un playoff Elite per i primi 6 e Academy per i secondi 6. Oppure, ancora, un playoff solo per i giocatori dal terzo posto in giù che hanno partecipato ad almeno 5 gare del campionato.
 Alla fine del campionato i giocatori che soddisfano i criteri del playoff ricevono una notifica di accesso ai playoff e possono iscriversi o rifiutare. Nei playoff con un numero limitato di partecipanti (ad esempio i primi 6), se un giocatore rifiuta, la notifica passa al primo degli esclusi e così via fino a quando un numero di giocatori pari ai posti disponibili ha dato l'ok oppure sono finiti i giocatori. 
 
-### Challenge (to do)
+### Challenge
 
 Una **challenge** è una gara di abilità che un giocatore può affrontare da solo. Consiste in una immagine, che mostra la disposizione delle biglie sul tavolo e un testo di spiegazione. È identificata da un nome. 
 Ha un punteggio minimo e massimo oppure un superato/non superato. 
@@ -111,7 +121,7 @@ I risultati delle **challenge** compaiono nelle statistiche individuali dei gioc
 Un giocatore può scegliere una **challenge** da un elenco generale o da quelle che ha già provato o dalle sue preferite.
 Un giocatore può aggiungere/togliere una **challenge** dalle sue preferite.
 
-### Esame (to do)
+### Esame
 
 Un **esame** è formato da più **challenge** e una griglia di valutazione che associa i punteggi ottenuti a i livelli per l'esame.
 Un utente ``director`` o ``admin`` può creare un **esame**.

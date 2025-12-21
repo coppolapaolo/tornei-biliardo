@@ -85,10 +85,25 @@ class TournamentStatus(_StrEnum):
 # Fonte: models/match/models.py
 # ──────────────────────────────────────────────────────────────────────────────
 class MatchStatus(_StrEnum):
+    """
+    Status for all match types (tournament and individual).
+
+    Tournament matches: PENDING -> PLAYING -> COMPLETED -> VALIDATED
+    Individual matches: SCHEDULED -> IN_PROGRESS -> COMPLETED/CANCELLED
+    """
+
+    # Tournament match lifecycle
     PENDING = "pending"
     PLAYING = "playing"
+
+    # Individual match lifecycle
+    SCHEDULED = "scheduled"
+    IN_PROGRESS = "in_progress"
+
+    # Common final states
     COMPLETED = "completed"
-    VALIDATED = "validated"  # opzionale/solo flussi admin
+    VALIDATED = "validated"  # optional/admin only
+    CANCELLED = "cancelled"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

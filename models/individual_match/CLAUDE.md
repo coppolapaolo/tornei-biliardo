@@ -56,7 +56,7 @@ from models.individual_match.models import (
     ProposalType,
     ProposalStatus,
     InvitationStatus,
-    MatchStatus,
+    MatchStatus,  # From status_enum
 )
 
 # Services
@@ -405,10 +405,18 @@ updated_at: datetime
 
 **Enum:**
 ```python
-MatchStatus:
+MatchStatus (from status_enum):
+    # Tournament matches
+    PENDING = "pending"
+    PLAYING = "playing"
+
+    # Individual matches
     SCHEDULED = "scheduled"
     IN_PROGRESS = "in_progress"
+
+    # Common
     COMPLETED = "completed"
+    VALIDATED = "validated"
     CANCELLED = "cancelled"
 ```
 

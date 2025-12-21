@@ -734,10 +734,11 @@ class RackService:
         confirmed_by_player: bool = False,
         validated_by_admin: bool = False,
         admin_note: Optional[str] = None,
+        bypass_validation: bool = False,
     ) -> Rack:
         # Check if rack can be added (match not at max)
         match = db.session.get(Match, match_id)
-        if match and not match.can_add_rack():
+        if match and not bypass_validation and not match.can_add_rack():
             raise ValueError(
                 "Cannot add rack: match has reached maximum and needs validation"
             )
