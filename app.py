@@ -87,13 +87,19 @@ def create_app(config_name=None):
     def inject_permissions():
         """Inject permission helpers into all Jinja2 templates"""
         # Get unread notifications count for current user
+        # Cache in Flask's g object to avoid N+1 queries during request
         unread_count = 0
         if current_user.is_authenticated:
+            from flask import g
             from models.notification.models import Notification, NotificationStatus
 
-            unread_count = Notification.query.filter_by(
-                user_id=current_user.id, status=NotificationStatus.PENDING
-            ).count()
+            # Check if already computed during this request
+            if not hasattr(g, 'unread_notifications_count'):
+                g.unread_notifications_count = Notification.query.filter_by(
+                    user_id=current_user.id, status=NotificationStatus.PENDING
+                ).count()
+
+            unread_count = g.unread_notifications_count
 
         return {
             "can_inscribe": UserPermissions.can_inscribe_to_gara(),
