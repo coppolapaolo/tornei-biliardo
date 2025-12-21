@@ -78,23 +78,20 @@ class BaseMatchMixin:
         if not hasattr(self, "status"):
             return False
 
-        # Import both MatchStatus types
-        from models.status_enum import MatchStatus as TournamentMatchStatus
-        from models.individual_match.models import (
-            MatchStatus as IndividualMatchStatus,
-        )
+        # Status-based validation
+        from models.status_enum import MatchStatus as SharedMatchStatus
 
-        # Handle both string and enum status
-        # Match (tournament) stores status as string
-        # IndividualMatch stores status as enum
-        if isinstance(self.status, str):
-            # For tournament matches, only PLAYING status allows adding racks
-            if self.status != TournamentMatchStatus.PLAYING.value:
-                return False
-        else:
-            # IndividualMatch uses IndividualMatchStatus enum
-            if self.status != IndividualMatchStatus.IN_PROGRESS:
-                return False
+        # Extract value if it is an enum member
+        status_val = self.status.value if hasattr(self.status, "value") else self.status
+
+        # Both 'playing' (tournament) and 'in_progress' (individual) are active states
+        active_states = [
+            SharedMatchStatus.PLAYING.value,
+            SharedMatchStatus.IN_PROGRESS.value,
+        ]
+
+        if status_val not in active_states:
+            return False
 
         # Cannot add rack if match is at validation stage
         return not self.is_ready_for_validation()
@@ -110,23 +107,20 @@ class BaseMatchMixin:
         if not hasattr(self, "status"):
             return False
 
-        # Import both MatchStatus types
-        from models.status_enum import MatchStatus as TournamentMatchStatus
-        from models.individual_match.models import (
-            MatchStatus as IndividualMatchStatus,
-        )
+        # Status-based validation
+        from models.status_enum import MatchStatus as SharedMatchStatus
 
-        # Handle both string and enum status
-        # Match (tournament) stores status as string
-        # IndividualMatch stores status as enum
-        if isinstance(self.status, str):
-            # Match uses TournamentMatchStatus values
-            if self.status not in [TournamentMatchStatus.PLAYING.value]:
-                return False
-        else:
-            # IndividualMatch uses IndividualMatchStatus enum
-            if self.status not in [IndividualMatchStatus.IN_PROGRESS]:
-                return False
+        # Extract value if it is an enum member
+        status_val = self.status.value if hasattr(self.status, "value") else self.status
+
+        # Active states
+        active_states = [
+            SharedMatchStatus.PLAYING.value,
+            SharedMatchStatus.IN_PROGRESS.value,
+        ]
+
+        if status_val not in active_states:
+            return False
 
         # Check using RackScore if match is complete
         return self.rack_score.is_complete()

@@ -254,7 +254,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             match_id=self.id,
             set_number=self.current_set_number,
             distance=getattr(current_set, "distance", 5) if current_set else 5,
-            best_of=getattr(current_set, "best_of", True) if current_set else True,
+            is_race_to=getattr(current_set, "is_race_to", True) if current_set else True,
         )
 
         from ..base import db

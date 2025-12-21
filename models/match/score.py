@@ -10,7 +10,7 @@ Two-Level Scoring System:
 Examples:
     Single-set match (best of 7):
         rack_score = RackScore(
-            distance=Distance(racks=7, racks_best_of=True),
+            distance=Distance(racks=7, is_race_to_racks=True),
             player1_racks=4,
             player2_racks=2
         )
@@ -93,8 +93,8 @@ class RackScore:
         """
         winning_racks = self.distance.get_winning_racks()
 
-        if self.distance.racks_best_of:
-            # Best-of: First to winning_racks
+        if self.distance.is_race_to_racks:
+            # Race-to: First to winning_racks
             if self.player3_racks is not None:
                 # Trio match
                 return (
@@ -227,8 +227,8 @@ class MatchScore:
         """
         winning_sets = self.distance.get_winning_sets()
 
-        if self.distance.sets_best_of:
-            # Best-of: First to winning_sets
+        if self.distance.is_race_to_sets:
+            # Race-to: First to winning_sets
             return (
                 self.player1_sets >= winning_sets
                 or self.player2_sets >= winning_sets

@@ -281,7 +281,7 @@ class TestRackService:
                 ):
                     # Mock the gara and its methods
                     mock_gara = Mock()
-                    mock_gara.best_of = True
+                    mock_gara.is_race_to = True
                     mock_gara.distance = 5
                     mock_match.gara = mock_gara
 

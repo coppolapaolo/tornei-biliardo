@@ -66,14 +66,14 @@ class Gara(db.Model):
     discipline = db.Column(db.String(50), nullable=False)  # palla 8, 9, 10
     # Distance configuration (use distance_config property for abstraction)
     distance = db.Column(db.Integer, nullable=False)
-    best_of = db.Column(
+    is_race_to = db.Column(
         db.Boolean, default=False
-    )  # Se True: "al meglio di", se False: "esatto numero"
+    )  # Se True: "al N rack", se False: "esatto numero"
 
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    sets_best_of = db.Column(db.Boolean, default=True, nullable=True)  # Best-of vs exact sets
+    is_race_to_sets = db.Column(db.Boolean, default=True, nullable=True)  # Race-to vs exact sets
 
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
@@ -246,7 +246,7 @@ class Gara(db.Model):
         return config.validate(
             num_players=num_participants if num_participants > 0 else None,
             distance=self.distance,
-            best_of=self.best_of,
+            is_race_to=self.is_race_to,
         )
 
     def calculate_rounds_for_strategy(self, num_players):
@@ -357,19 +357,19 @@ class Gara(db.Model):
             # Single-set configuration (backward compatible)
             return Distance(
                 racks=self.distance,
-                racks_best_of=self.best_of,
+                is_race_to_racks=self.is_race_to,
                 is_multi_set=False,
                 sets=1,
-                sets_best_of=True
+                is_race_to_sets=True
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
             return Distance(
                 racks=self.distance,
-                racks_best_of=self.best_of,
+                is_race_to_racks=self.is_race_to,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                sets_best_of=self.sets_best_of if self.sets_best_of is not None else True
+                is_race_to_sets=self.is_race_to_sets if self.is_race_to_sets is not None else True
             )
 
     def get_winning_score(self):
@@ -407,7 +407,7 @@ class Gara(db.Model):
         """Copia le impostazioni da un'altra gara"""
         self.discipline = source_gara.discipline
         self.distance = source_gara.distance
-        self.best_of = source_gara.best_of
+        self.is_race_to = source_gara.is_race_to
         self.rounds_count = source_gara.rounds_count
         self.min_participants = source_gara.min_participants
         self.max_participants = source_gara.max_participants

@@ -60,7 +60,7 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
@@ -68,12 +68,13 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         # Add exactly max_participants (4) players using service method
         players = []
@@ -139,7 +140,7 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=3,
@@ -147,12 +148,13 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         # Add 3 regular participants
         regular_players = []
@@ -231,15 +233,15 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
         )
 
         # Set inscription dates in the past
-        inscription_start = datetime.now() - timedelta(hours=2)
-        inscription_end = datetime.now() - timedelta(hours=1)  # Already closed
+        inscription_start = datetime.utcnow() - timedelta(hours=2)
+        inscription_end = datetime.utcnow() - timedelta(hours=1)  # Already closed
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -288,15 +290,15 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
         )
 
         # Set inscription dates in the future
-        inscription_start = datetime.now() + timedelta(hours=1)  # Starts in 1 hour
-        inscription_end = datetime.now() + timedelta(hours=3)
+        inscription_start = datetime.utcnow() + timedelta(hours=1)  # Starts in 1 hour
+        inscription_end = datetime.utcnow() + timedelta(hours=3)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -345,19 +347,20 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         player_unique_id = str(uuid.uuid4())[:8]
         player = User(
@@ -400,10 +403,10 @@ class TestParticipantLimitsWaitlistTDD:
             number=1,
             name="Forfeit Policy Test",
             date=tomorrow,
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
@@ -411,12 +414,13 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         # Add players
         players = []
@@ -480,7 +484,7 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
@@ -488,12 +492,13 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         # Add players
         players = []
@@ -554,19 +559,20 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         # Director should be able to inscribe to their own tournament
         InscriptionService.inscribe_user(director.id, gara.id)
@@ -615,19 +621,20 @@ class TestParticipantLimitsWaitlistTDD:
             date=tomorrow,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             rounds_count=3,
             min_participants=4,
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-        StateService.to_inscription(gara)
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            StateService.to_inscription(gara)
 
         # Admin should not be able to inscribe
         with pytest.raises(ValueError, match="Admin non può partecipare"):

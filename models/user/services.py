@@ -300,9 +300,12 @@ class UserService:
         return User.query.filter_by(role=role).all()
 
     @staticmethod
-    def request_director_promotion(user_id: int) -> DirectorRequest:
+    def request_director_promotion(
+        user_id: int, notes: Optional[str] = None
+    ) -> DirectorRequest:
         """Delegate to UserPermissionService for director promotion requests."""
-        return UserPermissionService.request_director_promotion(user_id)
+        return UserPermissionService.request_director_promotion(user_id, notes)
+
 
     @staticmethod
     def get_director_requests() -> List[DirectorRequest]:

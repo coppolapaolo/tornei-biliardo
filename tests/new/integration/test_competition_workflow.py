@@ -96,7 +96,7 @@ class TestCampionatoWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
         db_session.commit()  # Commit the gara to database
 
@@ -356,7 +356,7 @@ class TestGaraWorkflow:
                 "entry_fee": "15.0",
                 "discipline": "9_ball",
                 "distance": "7",
-                "exact_number": "",  # Not checked, so best_of=True
+                "exact_number": "",  # Not checked, so is_race_to=True
                 "withdraw_policy": "exclude",
             },
             follow_redirects=True,
@@ -375,7 +375,7 @@ class TestGaraWorkflow:
             assert gara.director_id == director.id
             assert gara.discipline == "9_ball"
             assert gara.distance == 7
-            assert gara.best_of is True
+            assert gara.is_race_to is True
 
     def test_gara_detail_access_workflow(self, client, db_session):
         """Test gara detail access workflow."""
@@ -401,7 +401,7 @@ class TestGaraWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -439,7 +439,7 @@ class TestGaraWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -468,7 +468,7 @@ class TestGaraWorkflow:
                 "entry_fee": "20.0",
                 "discipline": "palla 8",
                 "distance": "5",
-                "exact_number": "on",  # Checked, so best_of=False
+                "exact_number": "on",  # Checked, so is_race_to=False
                 "withdraw_policy": "include",
             },
             follow_redirects=True,
@@ -488,7 +488,7 @@ class TestGaraWorkflow:
         assert gara.entry_fee == 20.0
         assert gara.discipline == "palla 8"
         assert gara.distance == 5
-        assert gara.best_of is False
+        assert gara.is_race_to is False
 
     def test_gara_delete_workflow(self, client, db_session):
         """Test gara delete workflow."""
@@ -514,7 +514,7 @@ class TestGaraWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
         gara_id = gara.id
@@ -563,7 +563,7 @@ class TestGaraWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=main_director.id,
         )
 
@@ -632,7 +632,7 @@ class TestDashboardWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -731,7 +731,7 @@ class TestDashboardWorkflow:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 

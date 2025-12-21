@@ -21,7 +21,7 @@ class Set(BaseModel, TimestampMixin):
 
     # Scoring configuration
     distance = db.Column(db.Integer, nullable=False, default=5)
-    best_of = db.Column(db.Boolean, nullable=False, default=True)
+    is_race_to = db.Column(db.Boolean, nullable=False, default=True)
 
     # Current scores
     player1_racks = db.Column(db.Integer, nullable=False, default=0)
@@ -235,8 +235,8 @@ class Set(BaseModel, TimestampMixin):
 
     def _check_set_completion(self) -> None:
         """Check if set is completed based on scoring rules."""
-        if self.best_of:
-            # Best of X: first to reach distance wins
+        if self.is_race_to:
+            # Race to X: first to reach distance wins
             if self.player1_racks >= self.distance:
                 self._complete_set(self.match.player1_id)
             elif self.player2_racks >= self.distance:
@@ -279,7 +279,13 @@ class Set(BaseModel, TimestampMixin):
         """
         from .distance import Distance
 
-        return Distance.from_set(self)
+        return Distance(
+            racks=self.distance,
+            is_race_to_racks=self.is_race_to,
+            is_multi_set=False,
+            sets=1,
+            is_race_to_sets=True
+        )
 
     @property
     def rack_score(self):
@@ -303,7 +309,7 @@ class Set(BaseModel, TimestampMixin):
         return {
             "set_number": self.set_number,
             "distance": self.distance,
-            "best_of": self.best_of,
+            "is_race_to": self.is_race_to,
             "discipline": self.discipline,
             "is_multi_discipline": self.is_multi_discipline,
             "player1_racks": self.player1_racks,

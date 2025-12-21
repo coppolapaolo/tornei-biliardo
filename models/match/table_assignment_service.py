@@ -235,24 +235,51 @@ class TableAssignmentService:
         )
 
         if occupying_match:
-            # Automatic swap with occupying match
-            occupying_match.table_assignment = None
+            # Automatic swap/eviction with occupying match
+            swapped = False
+            if old_table:
+                occupying_match.table_assignment = old_table
+                # Ensure occupying match status is correct if it now has a table
+                if (occupying_match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
+                    try:
+                        MatchService.to_playing(occupying_match.id)
+                    except Exception:
+                        pass
+                swapped = True
+            else:
+                occupying_match.table_assignment = None
+                MatchService.reset_to_pending(occupying_match.id)
+
             match.table_assignment = new_table
-            MatchService.to_playing(match.id)
-            MatchService.reset_to_pending(occupying_match.id)
+            if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
+                try:
+                    MatchService.to_playing(match.id)
+                except Exception:
+                    pass
+
             db.session.add(occupying_match)
             db.session.add(match)
 
-            msg = (
-                f"Tavolo assegnato: Match #{match_id} → '{new_table}', "
-                f"Match #{occupying_match.id} → senza tavolo"
-            )
+            if swapped:
+                msg = (
+                    f"Tavolo scambiato: Match #{match_id} → '{new_table}', "
+                    f"Match #{occupying_match.id} → '{old_table}'"
+                )
+            else:
+                msg = (
+                    f"Tavolo assegnato: Match #{match_id} → '{new_table}', "
+                    f"Match #{occupying_match.id} → senza tavolo"
+                )
 
             return True, msg, occupying_match.id
         else:
             # Simple assignment (table is free in this round)
             match.table_assignment = new_table
-            MatchService.to_playing(match.id)
+            if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
+                try:
+                    MatchService.to_playing(match.id)
+                except Exception:
+                    pass
             db.session.add(match)
 
             msg = f"Tavolo assegnato: Match #{match_id} → '{new_table}'"

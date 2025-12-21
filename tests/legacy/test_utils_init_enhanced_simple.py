@@ -161,7 +161,7 @@ class TestCreateRoundMatchesDetailed:
         # Setup gara
         mock_gara = Mock()
         mock_gara.id = 1
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.get_winning_score.return_value = 5
         mock_gara.distance = 7
 
@@ -241,7 +241,7 @@ class TestCreateRoundMatchesDetailed:
         # Setup gara
         mock_gara = Mock()
         mock_gara.id = 1
-        mock_gara.best_of = False  # Distance mode
+        mock_gara.is_race_to = False  # Distance mode
         mock_gara.distance = 7
 
         # Setup players (odd number)
@@ -629,7 +629,7 @@ class TestCreateRoundMatchesAmalfiCompatibleDetailed:
         # Setup gara
         mock_gara = Mock()
         mock_gara.id = 1
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.get_winning_score.return_value = 5
 
         # Setup players (odd number)

@@ -23,7 +23,7 @@ class TestGaraMultiSetProperty:
             date=datetime.now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=False
         )
 
@@ -31,10 +31,10 @@ class TestGaraMultiSetProperty:
 
         assert isinstance(distance, Distance)
         assert distance.racks == 7
-        assert distance.racks_best_of is True
+        assert distance.is_race_to_racks is True
         assert distance.is_multi_set is False
         assert distance.sets == 1
-        assert distance.to_display_string() == "Best of 7 racks"
+        assert distance.to_display_string() == "Al 7 rack"
 
     def test_gara_single_set_exact(self):
         """Test single-set exact configuration (backward compatible)."""
@@ -44,14 +44,14 @@ class TestGaraMultiSetProperty:
             date=datetime.now().date(),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
-            best_of=False,
+            is_race_to=False,
             is_multi_set=False
         )
 
         distance = gara.distance_config
 
         assert distance.racks == 5
-        assert distance.racks_best_of is False
+        assert distance.is_race_to_racks is False
         assert distance.is_multi_set is False
         assert distance.to_display_string() == "Exactly 5 racks"
 
@@ -62,23 +62,23 @@ class TestGaraMultiSetProperty:
             number=1,
             date=datetime.now().date(),
             discipline=Discipline.TEN_BALL.value,
-            distance=5,  # Racks per set
-            best_of=True,  # Best-of racks
+            distance=5,  # Racks per set (Race-to-5)
+            is_race_to=True,  # Race-to racks
             is_multi_set=True,
-            match_distance=3,  # Number of sets
-            sets_best_of=True  # Best-of sets
+            match_distance=3,  # Sets to play (Race-to-3)
+            is_race_to_sets=True  # Race-to sets
         )
 
         distance = gara.distance_config
 
         assert distance.racks == 5
-        assert distance.racks_best_of is True
+        assert distance.is_race_to_racks is True
         assert distance.is_multi_set is True
         assert distance.sets == 3
-        assert distance.sets_best_of is True
-        assert distance.to_display_string() == "Best of 3 sets, each set best of 5 racks"
-        assert distance.get_winning_racks() == 3  # 5//2 + 1
-        assert distance.get_winning_sets() == 2  # 3//2 + 1
+        assert distance.is_race_to_sets is True
+        assert distance.to_display_string() == "Al 3 set, ogni set al 5 rack"
+        assert distance.get_winning_racks() == 5
+        assert distance.get_winning_sets() == 3
 
     def test_gara_multi_set_exact_sets_best_of_racks(self):
         """Test multi-set with exact sets and best-of racks."""
@@ -88,18 +88,18 @@ class TestGaraMultiSetProperty:
             date=datetime.now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=3,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=True,
             match_distance=4,  # Play exactly 4 sets
-            sets_best_of=False  # Exact sets
+            is_race_to_sets=False  # Exact sets
         )
 
         distance = gara.distance_config
 
         assert distance.racks == 3
         assert distance.sets == 4
-        assert distance.sets_best_of is False
-        assert distance.to_display_string() == "Exactly 4 sets, each set best of 3 racks"
+        assert distance.is_race_to_sets is False
+        assert distance.to_display_string() == "Exactly 4 sets, ogni set al 3 rack"
 
     def test_gara_multi_set_defaults(self):
         """Test multi-set with None values uses defaults."""
@@ -109,16 +109,16 @@ class TestGaraMultiSetProperty:
             date=datetime.now().date(),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=True,
             match_distance=None,  # Should default to 1
-            sets_best_of=None  # Should default to True
+            is_race_to_sets=None  # Should default to True
         )
 
         distance = gara.distance_config
 
         assert distance.sets == 1  # Default when None
-        assert distance.sets_best_of is True  # Default when None
+        assert distance.is_race_to_sets is True  # Default when None
 
     def test_gara_backward_compatibility_no_multi_set_fields(self):
         """Test backward compatibility when multi-set fields don't exist."""
@@ -128,8 +128,8 @@ class TestGaraMultiSetProperty:
             date=datetime.now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
-            best_of=True
-            # No is_multi_set, match_distance, sets_best_of
+            is_race_to=True
+            # No is_multi_set, match_distance, is_race_to_sets
         )
 
         # is_multi_set defaults to False
@@ -137,7 +137,7 @@ class TestGaraMultiSetProperty:
 
         assert distance.racks == 7
         assert distance.is_multi_set is False
-        assert distance.to_display_string() == "Best of 7 racks"
+        assert distance.to_display_string() == "Al 7 rack"
 
 
 class TestMatchProposalMultiSetProperty:
@@ -153,7 +153,7 @@ class TestMatchProposalMultiSetProperty:
             expires_at=datetime.now() + timedelta(days=1),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=False
         )
 
@@ -161,7 +161,7 @@ class TestMatchProposalMultiSetProperty:
 
         assert distance is not None
         assert distance.racks == 7
-        assert distance.racks_best_of is True
+        assert distance.is_race_to_racks is True
         assert distance.is_multi_set is False
 
     def test_proposal_multi_set(self):
@@ -174,18 +174,18 @@ class TestMatchProposalMultiSetProperty:
             expires_at=datetime.now() + timedelta(days=1),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=True,
             match_distance=3,
-            sets_best_of=True
+            is_race_to_sets=True
         )
 
         distance = proposal.distance_config
 
         assert distance.is_multi_set is True
         assert distance.sets == 3
-        assert distance.sets_best_of is True
-        assert distance.to_display_string() == "Best of 3 sets, each set best of 5 racks"
+        assert distance.is_race_to_sets is True
+        assert distance.to_display_string() == "Al 3 set, ogni set al 5 rack"
 
     def test_proposal_no_distance(self):
         """Test proposal without distance returns None."""
@@ -213,7 +213,7 @@ class TestIndividualMatchMultiSetProperty:
             scheduled_at=datetime.now(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=False
         )
 
@@ -221,7 +221,7 @@ class TestIndividualMatchMultiSetProperty:
 
         assert distance.racks == 7
         assert distance.is_multi_set is False
-        assert distance.to_display_string() == "Best of 7 racks"
+        assert distance.to_display_string() == "Al 7 rack"
 
     def test_individual_match_multi_set(self):
         """Test individual match multi-set configuration."""
@@ -232,18 +232,18 @@ class TestIndividualMatchMultiSetProperty:
             scheduled_at=datetime.now(),
             discipline=Discipline.TEN_BALL.value,
             distance=3,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=True,
             match_distance=5,
-            sets_best_of=True
+            is_race_to_sets=True
         )
 
         distance = match.distance_config
 
         assert distance.is_multi_set is True
         assert distance.sets == 5
-        assert distance.sets_best_of is True
-        assert distance.to_display_string() == "Best of 5 sets, each set best of 3 racks"
+        assert distance.is_race_to_sets is True
+        assert distance.to_display_string() == "Al 5 set, ogni set al 3 rack"
 
 
 class TestMatchProposalAcceptCopiesMultiSet:
@@ -259,7 +259,7 @@ class TestMatchProposalAcceptCopiesMultiSet:
             expires_at=datetime.now() + timedelta(days=1),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=False
         )
 
@@ -270,7 +270,7 @@ class TestMatchProposalAcceptCopiesMultiSet:
         # For unit test, verify the field mapping
         assert proposal.is_multi_set is False
         assert proposal.distance == 7
-        assert proposal.best_of is True
+        assert proposal.is_race_to is True
 
     def test_accept_multi_set_proposal(self):
         """Test accepting multi-set proposal creates correct IndividualMatch."""
@@ -282,16 +282,16 @@ class TestMatchProposalAcceptCopiesMultiSet:
             expires_at=datetime.now() + timedelta(days=1),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
-            best_of=True,
+            is_race_to=True,
             is_multi_set=True,
             match_distance=3,
-            sets_best_of=True
+            is_race_to_sets=True
         )
 
         # Verify multi-set fields are set correctly
         assert proposal.is_multi_set is True
         assert proposal.match_distance == 3
-        assert proposal.sets_best_of is True
+        assert proposal.is_race_to_sets is True
 
         # The accept() method should copy these to IndividualMatch
         # (verified in integration test)

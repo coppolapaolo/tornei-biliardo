@@ -16,9 +16,10 @@
             <i class="fas fa-arrow-left"></i> Torna ai Campionati
         </a>
         {% if campionato.can_be_modified() %}
-            <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Modifica Campionato
-            </a>
+        <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
+            class="btn btn-warning">
+            <i class="fas fa-edit"></i> Modifica Campionato
+        </a>
         {% endif %}
     </div>
 </div>
@@ -60,45 +61,46 @@
 
 {% block scripts %}
 <script>
-function deleteProva(provaId, provaNumber) {
-    if (confirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
-        fetch(`/admin/gara/${provaId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        }).then(response => {
-            if (response.ok) {
-                location.reload();
-            }
-        });
+    function deleteProva(provaId, provaNumber) {
+        if (confirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
+            fetch(`/admin/gara/${provaId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
     }
-}
 
-// Auto-popolamento dinamico + logica modalità di gioco
-document.addEventListener('DOMContentLoaded', function() {
-    const copyFromPreviousCheck = document.getElementById('copy_from_previous');
-    const createDistanceInput = document.getElementById('create_distance');
-    const createExactNumberCheck = document.getElementById('create_exact_number');
-    const createGameModeText = document.getElementById('create-game-mode-text');
-    
-    // Dati dell'ultima gara per auto-popolamento
-    {% if provas %}
-    const lastProva = {{ {
-        'location': provas[-1].location or '',
-        'min_participants': provas[-1].min_participants,
-        'max_participants': provas[-1].max_participants or '',
-        'entry_fee': provas[-1].entry_fee,
-        'discipline': provas[-1].discipline,
-        'distance': provas[-1].distance,
-        'exact_number': not provas[-1].best_of,
-        'rounds_count': provas[-1].rounds_count,
-        'description': provas[-1].description or ''
-    } | tojson }};
+    // Auto-popolamento dinamico + logica modalità di gioco
+    document.addEventListener('DOMContentLoaded', function () {
+        const copyFromPreviousCheck = document.getElementById('copy_from_previous');
+        const createDistanceInput = document.getElementById('create_distance');
+        const createExactNumberCheck = document.getElementById('create_exact_number');
+        const createGameModeText = document.getElementById('create-game-mode-text');
+
+        // Dati dell'ultima gara per auto-popolamento
+        {% if provas %}
+        const lastProva = {{ {
+            'location': provas[-1].location or '',
+            'min_participants': provas[-1].min_participants,
+            'max_participants': provas[-1].max_participants or '',
+            'entry_fee': provas[-1].entry_fee,
+            'discipline': provas[-1].discipline,
+            'distance': provas[-1].distance,
+            'exact_number': not provas[-1].is_race_to,
+            'rounds_count': provas[-1].rounds_count,
+            'description': provas[-1].description or ''
+    } | tojson
+    }};
     {% else %}
     const lastProva = null;
     {% endif %}
-    
+
     // Funzione per copiare valori dalla gara precedente
     function copyFromPrevious() {
         if (copyFromPreviousCheck.checked && lastProva) {
@@ -111,47 +113,39 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('create_exact_number').checked = lastProva.exact_number;
             document.getElementById('create_rounds_count').value = lastProva.rounds_count;
             document.getElementById('create_description').value = lastProva.description;
-            
+
             updateCreateGameModeText();
         }
     }
-    
+
     // Funzione per aggiornare testo modalità di gioco nel modal creazione
     function updateCreateGameModeText() {
         const distance = parseInt(createDistanceInput.value) || 7;
         const isExactNumber = createExactNumberCheck.checked;
-        const isDistanceOdd = distance % 2 === 1;
-        
-        // Abilita/disabilita la checkbox in base al numero di rack
-        if (isDistanceOdd && distance > 1) {
-            createExactNumberCheck.disabled = false;
-            createExactNumberCheck.parentElement.parentElement.style.opacity = '1';
-        } else {
-            createExactNumberCheck.disabled = true;
-            createExactNumberCheck.checked = false;
-            createExactNumberCheck.parentElement.parentElement.style.opacity = '0.5';
-        }
-        
+        // In Race-to mode, any number is valid
+        createExactNumberCheck.disabled = false;
+        createExactNumberCheck.parentElement.parentElement.style.opacity = '1';
+
         if (isExactNumber && !createExactNumberCheck.disabled) {
             createGameModeText.textContent = `Esatto numero: ${distance} rack totali`;
         } else {
             const winScore = Math.floor(distance / 2) + 1;
-            createGameModeText.textContent = `Al meglio di ${distance} (vince con ${winScore})`;
+            createGameModeText.textContent = `Al ${distance} (si vince a ${distance} rack)`;
         }
     }
-    
+
     // Event listeners
     if (copyFromPreviousCheck) {
         copyFromPreviousCheck.addEventListener('change', copyFromPrevious);
-        
+
         // Auto-copia all'apertura del modal se è checked
-        document.getElementById('newProvaModal').addEventListener('shown.bs.modal', function() {
+        document.getElementById('newProvaModal').addEventListener('shown.bs.modal', function () {
             if (copyFromPreviousCheck.checked) {
                 copyFromPrevious();
             }
         });
     }
-    
+
     if (createDistanceInput && createExactNumberCheck && createGameModeText) {
         createDistanceInput.addEventListener('input', updateCreateGameModeText);
         createExactNumberCheck.addEventListener('change', updateCreateGameModeText);

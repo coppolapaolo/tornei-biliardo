@@ -97,7 +97,7 @@ class TestUserWorkflowsComplete:
             entry_fee=20.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             inscription_start=datetime.combine(
@@ -130,7 +130,7 @@ class TestUserWorkflowsComplete:
             entry_fee=25.0,
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             inscription_start=datetime.combine(
@@ -335,7 +335,7 @@ class TestUserWorkflowsComplete:
             entry_fee=15.0,
             discipline="palla_10",
             distance=6,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -441,7 +441,7 @@ class TestUserWorkflowsComplete:
             entry_fee=20.0,
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=future_director.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -552,7 +552,7 @@ class TestUserWorkflowsComplete:
             entry_fee=15.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -642,7 +642,7 @@ class TestUserWorkflowsComplete:
             entry_fee=15.0,
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -795,7 +795,7 @@ class TestUserWorkflowsComplete:
                 entry_fee=20.0,
                 discipline="palla_9",
                 distance=5,
-                best_of=True,
+                is_race_to=True,
                 director_id=admin_user.id,
                 matchmaking_strategy="amalfi",
             )

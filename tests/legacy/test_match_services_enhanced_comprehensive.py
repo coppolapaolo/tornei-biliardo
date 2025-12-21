@@ -488,7 +488,7 @@ class TestRackServiceEnhanced:
         mock_match.is_bye = False
 
         mock_gara = Mock()
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.distance = 9
         mock_gara.get_winning_score.return_value = 5
         mock_match.gara = mock_gara
@@ -507,7 +507,7 @@ class TestRackServiceEnhanced:
         mock_match.is_bye = False
 
         mock_gara = Mock()
-        mock_gara.best_of = False
+        mock_gara.is_race_to = False
         mock_gara.distance = 9
         mock_match.gara = mock_gara
 
@@ -523,7 +523,7 @@ class TestRackServiceEnhanced:
         mock_match.is_bye = False
 
         mock_gara = Mock()
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.get_winning_score.return_value = 5
         mock_match.gara = mock_gara
 
@@ -627,7 +627,7 @@ class TestRackServiceEnhanced:
 
         # Mock gara (exact racks)
         mock_gara = Mock()
-        mock_gara.best_of = False
+        mock_gara.is_race_to = False
         mock_gara.distance = 9
         mock_match.gara = mock_gara
 

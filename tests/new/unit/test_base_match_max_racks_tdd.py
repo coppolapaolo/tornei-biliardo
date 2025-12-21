@@ -62,8 +62,8 @@ class TestBaseMatchMaxRacksValidation:
         self, db_session, sample_match
     ):
         """Best-of format: should not allow rack when target reached."""
-        # Given: Best-of 5 match where player1 reached target (3)
-        sample_match.player1_score = 3
+        # Given: Race to 5 match where player1 reached target (5)
+        sample_match.player1_score = 5
         sample_match.player2_score = 2
         sample_match.status = MatchStatus.PLAYING.value
 
@@ -147,7 +147,7 @@ class TestIndividualMatchCannotAddRackAtMax:
         sample_individual_match.player1_score = 5
         sample_individual_match.player2_score = 3
         sample_individual_match.distance = 5
-        sample_individual_match.best_of = True
+        sample_individual_match.is_race_to = True
         sample_individual_match.status = IndividualMatchStatus.IN_PROGRESS
 
         # When/Then: Adding rack should raise ValueError
@@ -166,7 +166,7 @@ class TestIndividualMatchCannotAddRackAtMax:
         sample_individual_match.player1_score = 2
         sample_individual_match.player2_score = 1
         sample_individual_match.distance = 5
-        sample_individual_match.best_of = True
+        sample_individual_match.is_race_to = True
         sample_individual_match.status = IndividualMatchStatus.IN_PROGRESS
 
         # When: Adding rack
@@ -242,7 +242,7 @@ def sample_match(db_session, sample_users):
         date=datetime.utcnow().date(),
         discipline="palla_8",
         distance=5,
-        best_of=True,
+        is_race_to=True,
         status=GaraStatus.INSCRIPTION.value,
     )
     db_session.add(gara)
@@ -270,14 +270,14 @@ def sample_match_exact_distance(db_session, sample_users):
     from models.competition.models import Gara
     from models.status_enum import GaraStatus
 
-    # Create a gara with exact distance (best_of=False)
+    # Create a gara with exact distance (is_race_to=False)
     gara = Gara(
         number=2,
         name="Test Gara Exact",
         date=datetime.utcnow().date(),
         discipline="palla_8",
         distance=5,
-        best_of=False,  # Exact distance
+        is_race_to=False,  # Exact distance
         status=GaraStatus.INSCRIPTION.value,
     )
     db_session.add(gara)
@@ -313,7 +313,7 @@ def sample_individual_match(db_session, sample_users):
         scheduled_at=datetime.utcnow(),
         discipline="palla_8",
         distance=5,
-        best_of=True,
+        is_race_to=True,
         status=IndividualMatchStatus.IN_PROGRESS,
     )
     db_session.add(match)
@@ -336,7 +336,7 @@ def sample_tournament_match(db_session, sample_users):
         date=datetime.utcnow().date(),
         discipline="palla_8",
         distance=5,
-        best_of=True,
+        is_race_to=True,
         status=GaraStatus.PLAYING.value,
     )
     db_session.add(gara)

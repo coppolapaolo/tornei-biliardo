@@ -102,7 +102,7 @@ class TestUseCaseMatchModification:
             entry_fee=15.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -316,7 +316,7 @@ class TestUseCaseMatchModification:
             entry_fee=20.0,
             discipline="palla_8",
             distance=6,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -460,7 +460,7 @@ class TestUseCaseMatchModification:
             entry_fee=10.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -585,7 +585,7 @@ class TestUseCaseMatchModification:
             entry_fee=5.0,
             discipline="palla_8",
             distance=4,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -730,7 +730,7 @@ class TestUseCaseAdvancedMatchManagement:
             entry_fee=0.0,
             discipline="palla_9",
             distance=3,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
         )

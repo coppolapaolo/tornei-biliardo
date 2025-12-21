@@ -15,13 +15,13 @@
       <div>
         <strong>{{ proposal.discipline.replace('_', ' ').title() }} Match</strong>
         <br><small class="text-muted">
-          <i class="fas fa-user"></i> {{ proposal.proposer.username }} – 
+          <i class="fas fa-user"></i> {{ proposal.proposer.username }} –
           <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}
-          <br><i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local }} – 
-          <i class="fas fa-trophy"></i> {{ proposal.distance }} {{ 'Best of' if proposal.best_of else 'Race to' }}
+          <br><i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local }} –
+          <i class="fas fa-trophy"></i> {{ 'Al' if proposal.is_race_to else 'Esatto numero' }} {{ proposal.distance }}
         </small>
         {% if proposal.entry_fee %}
-          <br><small class="text-warning"><i class="fas fa-euro-sign"></i> Entry Fee: €{{ proposal.entry_fee }}</small>
+        <br><small class="text-warning"><i class="fas fa-euro-sign"></i> Entry Fee: €{{ proposal.entry_fee }}</small>
         {% endif %}
       </div>
       <form method="POST" action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}">

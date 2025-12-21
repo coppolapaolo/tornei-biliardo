@@ -67,9 +67,9 @@ class MatchProposal(BaseModel, TimestampMixin):
     distance = db.Column(
         db.Integer, nullable=True, default=5
     )  # Number of racks per set
-    best_of = db.Column(
+    is_race_to = db.Column(
         db.Boolean, nullable=True, default=True
-    )  # Best-of vs exact racks
+    )  # Race-to vs exact racks
     break_rule = db.Column(
         db.String(20), nullable=True, default="alternate"
     )  # TODO: verificare impatto funzionamento app
@@ -79,9 +79,9 @@ class MatchProposal(BaseModel, TimestampMixin):
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=True)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    sets_best_of = db.Column(
+    is_race_to_sets = db.Column(
         db.Boolean, default=True, nullable=True
-    )  # Best-of vs exact sets
+    )  # Race-to vs exact sets
 
     # Result tracking
     accepted_by_id = db.Column(
@@ -122,21 +122,19 @@ class MatchProposal(BaseModel, TimestampMixin):
             # Single-set configuration (backward compatible)
             return Distance(
                 racks=self.distance,
-                racks_best_of=self.best_of if self.best_of is not None else True,
+                is_race_to_racks=self.is_race_to,
                 is_multi_set=False,
                 sets=1,
-                sets_best_of=True,
+                is_race_to_sets=True,
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
             return Distance(
                 racks=self.distance,
-                racks_best_of=self.best_of if self.best_of is not None else True,
+                is_race_to_racks=self.is_race_to,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                sets_best_of=(
-                    self.sets_best_of if self.sets_best_of is not None else True
-                ),
+                is_race_to_sets=self.is_race_to_sets,
             )
 
     def is_expired(self) -> bool:
@@ -186,13 +184,13 @@ class MatchProposal(BaseModel, TimestampMixin):
             scheduled_at=self.scheduled_at,
             discipline=self.discipline,
             distance=self.distance,
-            best_of=self.best_of,
+            is_race_to=self.is_race_to,
             break_rule=self.break_rule,
             entry_fee=self.entry_fee,
             # Phase 6: Copy multi-set configuration
             is_multi_set=self.is_multi_set if self.is_multi_set is not None else False,
             match_distance=self.match_distance,
-            sets_best_of=self.sets_best_of,
+            is_race_to_sets=self.is_race_to_sets,
         )
 
         db.session.add(individual_match)
@@ -360,15 +358,15 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
     # riferimento a proposal. perche' duplicare?
     discipline = db.Column(db.String(50), nullable=False, default="palla_8")
     distance = db.Column(db.Integer, nullable=False, default=5)
-    best_of = db.Column(db.Boolean, nullable=False, default=True)
+    is_race_to = db.Column(db.Boolean, nullable=False, default=True)
     break_rule = db.Column(db.String(20), nullable=False, default="alternate")
 
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
     match_distance = db.Column(db.Integer, nullable=True)  # Number of sets
-    sets_best_of = db.Column(
+    is_race_to_sets = db.Column(
         db.Boolean, default=True, nullable=True
-    )  # Best-of vs exact sets
+    )  # Race-to vs exact sets
 
     # Optional
     entry_fee = db.Column(db.Numeric(10, 2), nullable=True)
@@ -420,21 +418,19 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             # Single-set configuration (backward compatible)
             return Distance(
                 racks=self.distance,
-                racks_best_of=self.best_of,
+                is_race_to_racks=self.is_race_to,
                 is_multi_set=False,
                 sets=1,
-                sets_best_of=True,
+                is_race_to_sets=True,
             )
         else:
             # Multi-set configuration (Phase 6: Frontend Integration)
             return Distance(
                 racks=self.distance,
-                racks_best_of=self.best_of,
+                is_race_to_racks=self.is_race_to,
                 is_multi_set=True,
                 sets=self.match_distance if self.match_distance else 1,
-                sets_best_of=(
-                    self.sets_best_of if self.sets_best_of is not None else True
-                ),
+                is_race_to_sets=self.is_race_to_sets,
             )
 
     @property
@@ -501,29 +497,17 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             self.player2_score += 1
 
         # Check if match is completed
-        if self.best_of:
-            # Best of X: first to reach distance wins
-            target_score = self.distance
-        else:
-            # Fixed distance: play exactly distance racks
-            target_score = (self.distance + 1) // 2  # Majority
+        # Use Distance object logic for unified behavior
+        dist = self.distance_config
+        target_racks = dist.get_winning_racks()
 
-        if self.player1_score >= target_score:
+        if self.player1_score >= target_racks:
             self.complete_match(self.player1_id)
-        elif self.player2_score >= target_score:
+        elif self.player2_score >= target_racks:
             self.complete_match(self.player2_id)
-        elif (
-            not self.best_of
-            and self.player1_score + self.player2_score >= self.distance
-        ):
-            # Fixed distance completed
-            # TODO: e se e' un pareggio? bisogna prevedere la possibilità
-            # di pareggio nei match individuali? da decidere
-            winner = (
-                self.player1_id
-                if self.player1_score > self.player2_score
-                else self.player2_id
-            )
+        elif not dist.is_race_to_racks and (self.player1_score + self.player2_score >= dist.racks):
+            # Exactly N mode completed (use majority as winner for now if not already decided)
+            winner = self.player1_id if self.player1_score > self.player2_score else self.player2_id
             self.complete_match(winner)
 
         return rack

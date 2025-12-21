@@ -391,7 +391,7 @@ class TestRackService:
         mock_db.session.get.return_value = mock_match
 
         mock_gara = Mock()
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.get_winning_score.return_value = 5
         mock_match.gara = mock_gara
 
@@ -443,7 +443,7 @@ class TestRackService:
         mock_db.session.get.return_value = mock_match
 
         mock_gara = Mock()
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.distance = 9
         mock_gara.get_winning_score.return_value = 5
         mock_match.gara = mock_gara
@@ -459,7 +459,7 @@ class TestRackService:
         mock_db.session.get.return_value = mock_match
 
         mock_gara = Mock()
-        mock_gara.best_of = False
+        mock_gara.is_race_to = False
         mock_gara.distance = 7
         mock_match.gara = mock_gara
 
@@ -474,7 +474,7 @@ class TestRackService:
         mock_db.session.get.return_value = mock_match
 
         mock_gara = Mock()
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.get_winning_score.return_value = 5
         mock_match.gara = mock_gara
 
@@ -542,7 +542,7 @@ class TestRackService:
         mock_rack.match = mock_match
 
         mock_gara = Mock()
-        mock_gara.best_of = True
+        mock_gara.is_race_to = True
         mock_gara.get_winning_score.return_value = 5
         mock_match.gara = mock_gara
 

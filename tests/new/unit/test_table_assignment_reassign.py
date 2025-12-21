@@ -45,7 +45,7 @@ class TestTableAssignmentReassign:
             location=venue.name,
             discipline=Discipline.EIGHT_BALL.value,
             distance=5,
-            best_of=True,
+            is_race_to=True,
             status=GaraStatus.PLAYING.value,
             current_round=1,
             rounds_count=3,

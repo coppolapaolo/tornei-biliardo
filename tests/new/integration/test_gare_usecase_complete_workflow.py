@@ -54,7 +54,7 @@ class TestUseCaseGareComplete:
             entry_fee=15.0,
             discipline="palla_9",
             distance=9,
-            best_of=True,  # Best-of-9
+            is_race_to=True,  # Best-of-9
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -151,7 +151,7 @@ class TestUseCaseGareComplete:
             entry_fee=20.0,
             discipline="palla_9",
             distance=5,
-            best_of=False,  # Exactly 5 racks
+            is_race_to=False,  # Exactly 5 racks
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -205,7 +205,7 @@ class TestUseCaseGareComplete:
             entry_fee=20.0,
             discipline="palla_8",
             distance=9,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="random",
             first_round_policy="random",
@@ -307,7 +307,7 @@ class TestUseCaseGareComplete:
             entry_fee=25.0,
             discipline="palla_8",
             distance=5,  # Best-of-5 per set
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",  # Will implement round-robin logic
             first_round_policy="random",
@@ -391,7 +391,7 @@ class TestUseCaseGareComplete:
                 entry_fee=15.0,
                 discipline="palla_9",
                 distance=5,
-                best_of=True,
+                is_race_to=True,
                 director_id=admin_user.id,
                 matchmaking_strategy="amalfi",
                 first_round_policy="classification" if gara_num > 1 else "random",
@@ -463,7 +463,7 @@ class TestUseCaseGareComplete:
             entry_fee=15.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -587,7 +587,7 @@ class TestUseCaseGareComplete:
             scheduled_at=match_proposal.scheduled_at,
             discipline=match_proposal.discipline,
             distance=match_proposal.distance,
-            best_of=match_proposal.best_of,
+            is_race_to=match_proposal.is_race_to,
             break_rule=match_proposal.break_rule,
             entry_fee=match_proposal.entry_fee,
             status=MatchStatus.IN_PROGRESS,  # Set to in_progress so we can report results
@@ -714,7 +714,7 @@ class TestUseCaseGareComplete:
             entry_fee=20.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",

@@ -136,7 +136,7 @@ class TestUseCaseIndividualMatches:
             scheduled_at=proposed_datetime,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             entry_fee=0.0,  # Free casual match
             description="Looking for a good 9-ball game this weekend",
         )
@@ -190,7 +190,7 @@ class TestUseCaseIndividualMatches:
                 scheduled_at=proposal.scheduled_at,
                 discipline=proposal.discipline,
                 distance=proposal.distance,
-                best_of=proposal.best_of,
+                is_race_to=proposal.is_race_to,
                 break_rule=proposal.break_rule,
                 entry_fee=proposal.entry_fee,
             )
@@ -349,7 +349,7 @@ class TestUseCaseIndividualMatches:
             location="Downtown Billiards",
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             entry_fee=5.0,  # Small entry fee
             max_participants=1,
             is_open_invitation=True,  # Open to community
@@ -427,7 +427,7 @@ class TestUseCaseIndividualMatches:
             ),
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             entry_fee=10.0,
             description="Director wants to play a casual 8-ball match",
         )
@@ -462,7 +462,7 @@ class TestUseCaseIndividualMatches:
                 scheduled_at=proposal.scheduled_at,
                 discipline=proposal.discipline,
                 distance=proposal.distance,
-                best_of=proposal.best_of,
+                is_race_to=proposal.is_race_to,
                 break_rule=proposal.break_rule,
                 entry_fee=proposal.entry_fee,
             )
@@ -593,7 +593,7 @@ class TestUseCaseIndividualMatches:
             ),
             discipline="palla_8",
             distance=6,
-            best_of=True,
+            is_race_to=True,
             entry_fee=10.0,
             description="Serious 8-ball competition",
         )
@@ -615,7 +615,7 @@ class TestUseCaseIndividualMatches:
             scheduled_at=proposal.scheduled_at,
             discipline=proposal.discipline,
             distance=proposal.distance,
-            best_of=proposal.best_of,
+            is_race_to=proposal.is_race_to,
             break_rule=proposal.break_rule,
             entry_fee=proposal.entry_fee,
         )
@@ -776,7 +776,7 @@ class TestUseCaseFrontendIntegration:
             ),
             discipline="palla_8",
             distance=3,
-            best_of=True,
+            is_race_to=True,
             entry_fee=5.0,
             description="Frontend test match proposal",
         )
@@ -813,7 +813,7 @@ class TestUseCaseFrontendIntegration:
             scheduled_at=proposal.scheduled_at,
             discipline=proposal.discipline,
             distance=proposal.distance,
-            best_of=proposal.best_of,
+            is_race_to=proposal.is_race_to,
             break_rule=proposal.break_rule,
             entry_fee=proposal.entry_fee,
         )

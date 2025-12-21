@@ -8,7 +8,8 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match
+                            Individuali</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Proposte</li>
                 </ol>
             </nav>
@@ -32,8 +33,8 @@
             <!-- Tabs for different proposal categories -->
             <ul class="nav nav-tabs" id="proposalTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="received-tab" data-bs-toggle="tab"
-                            data-bs-target="#received" type="button" role="tab">
+                    <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received"
+                        type="button" role="tab">
                         <i class="fas fa-inbox"></i> Ricevute
                         {% if received_proposals|length %}
                         <span class="badge bg-warning ms-1">{{ received_proposals|length }}</span>
@@ -41,8 +42,8 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab"
-                            data-bs-target="#sent" type="button" role="tab">
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button"
+                        role="tab">
                         <i class="fas fa-paper-plane"></i> Inviate
                         {% if sent_proposals|length %}
                         <span class="badge bg-info ms-1">{{ sent_proposals|length }}</span>
@@ -50,8 +51,8 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="open-tab" data-bs-toggle="tab"
-                            data-bs-target="#open" type="button" role="tab">
+                    <button class="nav-link" id="open-tab" data-bs-toggle="tab" data-bs-target="#open" type="button"
+                        role="tab">
                         <i class="fas fa-globe"></i> Community
                         {% if open_proposals|length %}
                         <span class="badge bg-success ms-1">{{ open_proposals|length }}</span>
@@ -65,11 +66,13 @@
                 <div class="tab-pane fade show active" id="received" role="tabpanel">
                     {% if received_proposals and received_proposals|length %}
                     {% for proposal in received_proposals %}
-                    <div class="card mb-3 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                    <div
+                        class="card mb-3 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>{{ proposal.proposer.username }}</strong> ti ha invitato
-                                <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }} ms-2">
+                                <span
+                                    class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }} ms-2">
                                     {{ proposal.status.value.title() }}
                                 </span>
                             </div>
@@ -81,10 +84,13 @@
                                     <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}<br>
-                                        <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
+                                        proposal.scheduled_at }}<br>
+                                        <i class="fas fa-gamepad"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
+                                        }} {{ proposal.distance }}
                                         {% if proposal.entry_fee %}
-                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
+                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{
+                                        "%.2f"|format(proposal.entry_fee) }}
                                         {% endif %}
                                     </p>
                                     {% if proposal.description %}
@@ -94,12 +100,15 @@
                                 <div class="col-md-4 text-end">
                                     {% if proposal.status.value == 'pending' %}
                                     <div class="d-grid gap-2">
-                                        <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                        <form method="POST"
+                                            action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}"
+                                            class="d-inline">
                                             <button type="submit" class="btn btn-success w-100">
                                                 <i class="fas fa-check"></i> Accetta
                                             </button>
                                         </form>
-                                        <button class="btn btn-outline-danger w-100" onclick="declineProposal({{ proposal.id }})">
+                                        <button class="btn btn-outline-danger w-100"
+                                            onclick="declineProposal({{ proposal.id }})">
                                             <i class="fas fa-times"></i> Rifiuta
                                         </button>
                                     </div>
@@ -118,7 +127,8 @@
                     <div class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                         <h4>Nessuna proposta ricevuta</h4>
-                        <p class="text-muted">Quando altri giocatori ti inviteranno, le loro proposte appariranno qui.</p>
+                        <p class="text-muted">Quando altri giocatori ti inviteranno, le loro proposte appariranno qui.
+                        </p>
                     </div>
                     {% endif %}
                 </div>
@@ -127,18 +137,21 @@
                 <div class="tab-pane fade" id="sent" role="tabpanel">
                     {% if sent_proposals and sent_proposals|length %}
                     {% for proposal in sent_proposals %}
-                    <div class="card mb-3 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                    <div
+                        class="card mb-3 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
                                 Hai invitato
                                 {% if proposal.proposal_type.value == 'direct' %}
-                                    {% for invitation in proposal.invitations %}
-                                    <strong>{{ invitation.invited_user.username }}</strong>{% if not loop.last %}, {% endif %}
-                                    {% endfor %}
+                                {% for invitation in proposal.invitations %}
+                                <strong>{{ invitation.invited_user.username }}</strong>{% if not loop.last %}, {% endif
+                                %}
+                                {% endfor %}
                                 {% else %}
-                                    <strong>la community</strong>
+                                <strong>la community</strong>
                                 {% endif %}
-                                <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }} ms-2">
+                                <span
+                                    class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }} ms-2">
                                     {{ proposal.status.value.title() }}
                                 </span>
                             </div>
@@ -150,10 +163,13 @@
                                     <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}<br>
-                                        <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
+                                        proposal.scheduled_at }}<br>
+                                        <i class="fas fa-gamepad"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
+                                        }} {{ proposal.distance }}
                                         {% if proposal.entry_fee %}
-                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
+                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{
+                                        "%.2f"|format(proposal.entry_fee) }}
                                         {% endif %}
                                     </p>
                                     {% if proposal.description %}
@@ -166,8 +182,10 @@
                                         <small class="text-muted">Risposte agli inviti:</small>
                                         <div class="mt-1">
                                             {% for invitation in proposal.invitations %}
-                                            <span class="badge bg-{{ 'success' if invitation.status.value == 'accepted' else 'danger' if invitation.status.value == 'declined' else 'secondary' }} me-1">
-                                                {{ invitation.invited_user.username }}: {{ invitation.status.value.title() }}
+                                            <span
+                                                class="badge bg-{{ 'success' if invitation.status.value == 'accepted' else 'danger' if invitation.status.value == 'declined' else 'secondary' }} me-1">
+                                                {{ invitation.invited_user.username }}: {{
+                                                invitation.status.value.title() }}
                                             </span>
                                             {% endfor %}
                                         </div>
@@ -176,9 +194,11 @@
                                 </div>
                                 <div class="col-md-4 text-end">
                                     {% if proposal.status.value == 'pending' %}
-                                    <form method="POST" action="{{ url_for('individual_match.cancel_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                    <form method="POST"
+                                        action="{{ url_for('individual_match.cancel_proposal', proposal_id=proposal.id) }}"
+                                        class="d-inline">
                                         <button type="submit" class="btn btn-outline-danger"
-                                                onclick="return confirm('Sei sicuro di voler annullare questa proposta?')">
+                                            onclick="return confirm('Sei sicuro di voler annullare questa proposta?')">
                                             <i class="fas fa-times"></i> Annulla
                                         </button>
                                     </form>
@@ -226,10 +246,13 @@
                                     <h5>{{ proposal.discipline.replace('_', ' ').title() }}</h5>
                                     <p class="mb-2">
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
-                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}<br>
-                                        <i class="fas fa-gamepad"></i> {{ proposal.distance }} {{ 'al meglio di' if proposal.best_of else 'esattamente' }}
+                                        <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
+                                        proposal.scheduled_at }}<br>
+                                        <i class="fas fa-gamepad"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
+                                        }} {{ proposal.distance }}
                                         {% if proposal.entry_fee %}
-                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{ "%.2f"|format(proposal.entry_fee) }}
+                                        <br><i class="fas fa-euro-sign"></i> Entry fee: €{{
+                                        "%.2f"|format(proposal.entry_fee) }}
                                         {% endif %}
                                     </p>
                                     {% if proposal.description %}
@@ -238,7 +261,9 @@
                                 </div>
                                 <div class="col-md-4 text-end">
                                     {% if proposal.status.value == 'pending' %}
-                                    <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                    <form method="POST"
+                                        action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}"
+                                        class="d-inline">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="fas fa-handshake"></i> Accetta Sfida
                                         </button>
@@ -314,22 +339,22 @@
 
 {% block scripts %}
 <script>
-function declineProposal(proposalId) {
-    if (confirm('Sei sicuro di voler rifiutare questa proposta?')) {
-        // In a real implementation, this would make an AJAX call to decline
-        alert('Funzionalità di rifiuto da implementare nel backend');
+    function declineProposal(proposalId) {
+        if (confirm('Sei sicuro di voler rifiutare questa proposta?')) {
+            // In a real implementation, this would make an AJAX call to decline
+            alert('Funzionalità di rifiuto da implementare nel backend');
+        }
     }
-}
 
-// Auto-refresh if there are pending proposals
-document.addEventListener('DOMContentLoaded', function() {
-    const pendingProposals = document.querySelectorAll('.badge:contains("Pending")').length;
-    if (pendingProposals > 0) {
-        // Refresh every 30 seconds if there are pending proposals
-        setTimeout(() => {
-            window.location.reload();
-        }, 30000);
-    }
-});
+    // Auto-refresh if there are pending proposals
+    document.addEventListener('DOMContentLoaded', function () {
+        const pendingProposals = document.querySelectorAll('.badge:contains("Pending")').length;
+        if (pendingProposals > 0) {
+            // Refresh every 30 seconds if there are pending proposals
+            setTimeout(() => {
+                window.location.reload();
+            }, 30000);
+        }
+    });
 </script>
 {% endblock %}

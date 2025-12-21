@@ -222,7 +222,7 @@ class TestUseCaseCampionatoWorkflow:
             entry_fee=25.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -259,7 +259,7 @@ class TestUseCaseCampionatoWorkflow:
             entry_fee=20.0,
             discipline="palla_8",
             distance=6,
-            best_of=True,
+            is_race_to=True,
             director_id=co_director_user.id,  # Co-director manages this one
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -301,7 +301,7 @@ class TestUseCaseCampionatoWorkflow:
             entry_fee=30.0,
             discipline="one_pocket",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,  # Main director returns
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -427,7 +427,7 @@ class TestUseCaseCampionatoWorkflow:
             entry_fee=15.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
         )
@@ -630,7 +630,7 @@ class TestUseCaseCampionatoVariants:
             entry_fee=20.0,
             discipline="palla_8",
             distance=6,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user_variants.id,
             matchmaking_strategy="amalfi",
         )
@@ -693,7 +693,7 @@ class TestUseCaseCampionatoVariants:
             entry_fee=15.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user_variants.id,
             matchmaking_strategy="amalfi",
         )
@@ -727,7 +727,7 @@ class TestUseCaseCampionatoVariants:
             entry_fee=15.0,
             discipline="palla_8",
             distance=6,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user_variants.id,
             matchmaking_strategy="amalfi",
         )

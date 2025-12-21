@@ -74,7 +74,7 @@ class TestUseCaseOneComprehensive:
             date=today + timedelta(days=1),
             discipline="9-ball",
             distance=5,
-            best_of=True,  # Use "best of 5" instead of "exactly 5"
+            is_race_to=True,  # Use "best of 5" instead of "exactly 5"
             campionato_id=None,  # standalone
             director_id=admin_user.id,
         )
@@ -238,7 +238,7 @@ class TestUseCaseOneComprehensive:
             entry_fee=15.0,
             matchmaking_strategy="amalfi",
             discipline="8_ball",
-            best_of=False,  # Use exactly format for this test
+            is_race_to=False,  # Use exactly format for this test
             director_id=director_user.id,
             first_round_policy="random",
             odd_number_policy="bye",
@@ -408,7 +408,7 @@ class TestUseCaseOneComprehensive:
             entry_fee=15.0,
             matchmaking_strategy="random",
             discipline="8_ball",
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             first_round_policy="random",
             odd_number_policy="bye",
@@ -564,7 +564,7 @@ class TestUseCaseOneComprehensive:
             entry_fee=15.0,
             matchmaking_strategy="amalfi",
             discipline="8_ball",
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             first_round_policy="random",
             odd_number_policy="bye",
@@ -718,7 +718,7 @@ class TestUseCaseOneComprehensive:
             entry_fee=15.0,
             matchmaking_strategy="random",
             discipline="8_ball",
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             first_round_policy="random",
             odd_number_policy="bye",
@@ -943,7 +943,7 @@ class TestUseCaseOneComprehensive:
             entry_fee=15.0,
             matchmaking_strategy="amalfi",
             discipline="8_ball",
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,  # Use admin as director for this test
             first_round_policy="random",
             odd_number_policy="bye",

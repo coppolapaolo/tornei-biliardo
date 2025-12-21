@@ -61,7 +61,7 @@ class TestGaraCreationEdgeCasesTDD:
                 date=tomorrow,
                 discipline="palla 9",
                 distance=5,
-                best_of=False,  # Exact number
+                is_race_to=False,  # Exact number
                 director_id=director.id,
                 matchmaking_strategy="amalfi",
                 odd_number_policy="trio",  # Should fail with exact number
@@ -99,7 +99,7 @@ class TestGaraCreationEdgeCasesTDD:
                 date=tomorrow,
                 discipline="palla 8",
                 distance=7,
-                best_of=True,
+                is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="random",
                 first_round_policy="rating",  # Should fail with random strategy
@@ -135,7 +135,7 @@ class TestGaraCreationEdgeCasesTDD:
                 date=tomorrow,
                 discipline="palla 10",
                 distance=5,
-                best_of=True,
+                is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="round_robin",
                 odd_number_policy="trio",  # Should fail with round_robin
@@ -172,7 +172,7 @@ class TestGaraCreationEdgeCasesTDD:
             date=gara_date,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             matchmaking_strategy="amalfi",
             rounds_count=3,
@@ -215,7 +215,7 @@ class TestGaraCreationEdgeCasesTDD:
                 date=yesterday,  # Yesterday should fail
                 discipline="palla 8",
                 distance=5,
-                best_of=True,
+                is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="amalfi",
                 rounds_count=3,
@@ -246,7 +246,7 @@ class TestGaraCreationEdgeCasesTDD:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
             matchmaking_strategy="amalfi",
             rounds_count=3,
@@ -356,7 +356,7 @@ class TestGaraCreationEdgeCasesTDD:
                 date=tomorrow,
                 discipline="palla 8",
                 distance=9,  # Greater than 7
-                best_of=True,
+                is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="amalfi",
                 odd_number_policy="trio",  # Should fail with distance > 7
@@ -391,7 +391,7 @@ class TestGaraCreationEdgeCasesTDD:
                 date=tomorrow,
                 discipline="palla 9",
                 distance=5,
-                best_of=True,
+                is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="direct_elimination",
                 odd_number_policy="trio",  # Should fail with elimination

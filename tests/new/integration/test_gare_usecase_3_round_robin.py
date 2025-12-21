@@ -97,7 +97,7 @@ class TestUseCaseRoundRobinMultiSet:
             entry_fee=30.0,
             discipline="palla_8",
             distance=5,  # Best-of-5 per set
-            best_of=True,
+            is_race_to=True,
             # Multi-set configuration: 2 sets best-of-5 each
             # Note: Multi-set support may need specific configuration
             director_id=admin_user.id,
@@ -349,7 +349,7 @@ class TestUseCaseRoundRobinVariants:
             entry_fee=20.0,
             discipline="straight_pool",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="round_robin",  # Use round-robin strategy
             first_round_policy="random",
@@ -453,7 +453,7 @@ class TestUseCaseRoundRobinVariants:
             date=date.today() + timedelta(days=1),
             discipline="palla_8",
             distance=3,
-            best_of=True,
+            is_race_to=True,
             max_participants=6,  # Max 6, but 8 will try to register
             director_id=director_user.id,
             matchmaking_strategy="round_robin",

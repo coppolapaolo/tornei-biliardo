@@ -44,7 +44,7 @@ class TestSpecificationsAlignmentFixed:
             entry_fee=15.0,
             discipline="palla_9",
             distance=9,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -55,7 +55,7 @@ class TestSpecificationsAlignmentFixed:
 
         assert gara.status == GaraStatus.SETUP.value
         assert gara.matchmaking_strategy == "amalfi"
-        assert gara.best_of is True
+        assert gara.is_race_to is True
 
         # Step 2: 8 players inscribe
         for player in players_8:
@@ -136,7 +136,7 @@ class TestSpecificationsAlignmentFixed:
             entry_fee=20.0,
             discipline="palla_8",
             distance=9,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="random",
             first_round_policy="random",
@@ -194,7 +194,7 @@ class TestSpecificationsAlignmentFixed:
             entry_fee=15.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             inscription_start=datetime.combine(
@@ -300,7 +300,7 @@ class TestSpecificationsAlignmentFixed:
             entry_fee=20.0,
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             time=datetime.now().time(),
@@ -342,7 +342,7 @@ class TestSpecificationsAlignmentFixed:
             entry_fee=15.0,
             discipline="palla_9",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             anti_rematch_enabled=True,
@@ -419,7 +419,7 @@ class TestSpecificationsAlignmentFixed:
             entry_fee=20.0,
             discipline="palla_8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             time=datetime.now().time(),

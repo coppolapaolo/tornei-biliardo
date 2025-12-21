@@ -158,7 +158,7 @@ class TestTiebreakerService:
                     player2_id=20,
                     campionato_id=100,
                     gara_id=200,
-                    best_of=5,
+                    is_race_to=5,
                 )
 
                 # Verify Tiebreaker was created with correct parameters

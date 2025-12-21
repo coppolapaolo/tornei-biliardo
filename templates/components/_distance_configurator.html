@@ -5,11 +5,11 @@ Progressive Disclosure UI for configuring match distance:
 - Multi-set (sets + racks per set)
 
 Parameters:
-- distance: Current rack distance value (required)
-- best_of: Boolean - best-of vs exact racks (required)
+- distance: Target score (racks to win the set)
+- is_race_to: Boolean - race-to vs exact racks (required)
 - is_multi_set: Boolean - enable multi-set mode (optional, default false)
 - match_distance: Number of sets (optional)
-- sets_best_of: Boolean - best-of vs exact sets (optional, default true)
+- is_race_to_sets: Boolean - race-to vs exact sets (optional, default true)
 - required: Boolean - make fields required (optional, default true)
 
 Usage (in template that includes this component):
@@ -17,16 +17,16 @@ Usage (in template that includes this component):
       include "components/_distance_configurator.html"
 
     - For edit form (passes gara values):
-      with distance=gara.distance, best_of=gara.best_of, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, sets_best_of=gara.sets_best_of
+      with distance=gara.distance, is_race_to=gara.is_race_to, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, is_race_to_sets=gara.is_race_to_sets
       include "components/_distance_configurator.html"
       endwith
 #}
 
-{% set distance_value = distance if distance is defined else 7 %}
-{% set best_of_value = best_of if best_of is defined else True %}
+{% set distance_value = distance if distance is defined else 4 %}
+{% set is_race_to_value = is_race_to if is_race_to is defined else True %}
 {% set is_multi_set_value = is_multi_set if is_multi_set is defined else False %}
-{% set match_distance_value = match_distance if match_distance is defined else 3 %}
-{% set sets_best_of_value = sets_best_of if sets_best_of is defined else True %}
+{% set match_distance_value = match_distance if match_distance is defined else 2 %}
+{% set is_race_to_sets_value = is_race_to_sets if is_race_to_sets is defined else True %}
 {% set is_required = required if required is defined else True %}
 
 <div class="card mb-3" id="distance-configuration">
@@ -51,7 +51,7 @@ Usage (in template that includes this component):
                            value="{{ distance_value }}"
                            onchange="updateDistancePreview()"
                            {% if is_required %}required{% endif %}>
-                    <small class="text-muted">Numero di rack da giocare in ogni set</small>
+                    <small class="text-muted">Target di rack per vincere il set (es. "Al 4")</small>
                 </div>
             </div>
 
@@ -64,13 +64,13 @@ Usage (in template that includes this component):
                                id="exact_number"
                                name="exact_number"
                                onchange="updateDistancePreview()"
-                               {% if not best_of_value %}checked{% endif %}>
+                               {% if not is_race_to_value %}checked{% endif %}>
                         <label class="form-check-label" for="exact_number">
                             Numero esatto di rack
                         </label>
                         <small class="form-text text-muted d-block">
-                            Se non selezionato: "al meglio di N rack"<br>
-                            Se selezionato: "esattamente N rack"
+                            Se non selezionato: "Al N" (si vince a N rack)<br>
+                            Se selezionato: "Esattamente N rack" (si giocano tutti)
                         </small>
                     </div>
                 </div>
@@ -129,15 +129,15 @@ Usage (in template that includes this component):
                         <div class="form-check">
                             <input class="form-check-input"
                                    type="checkbox"
-                                   id="sets_best_of"
-                                   name="sets_best_of"
+                                   id="is_race_to_sets"
+                                   name="is_race_to_sets"
                                    onchange="updateDistancePreview()"
-                                   {% if sets_best_of_value %}checked{% endif %}>
-                            <label class="form-check-label" for="sets_best_of">
-                                "Al meglio di N set"
+                                   {% if is_race_to_sets_value %}checked{% endif %}>
+                            <label class="form-check-label" for="is_race_to_sets">
+                                "Al N set"
                             </label>
                             <small class="form-text text-muted d-block">
-                                Se selezionato: primo a vincere (N+1)/2 set<br>
+                                Se selezionato: vince chi arriva a N set<br>
                                 Se non selezionato: giocare tutti gli N set
                             </small>
                         </div>
@@ -176,37 +176,23 @@ function toggleMultiSetOptions() {
 
 // Live Preview: Update distance string as user types
 function updateDistancePreview() {
-    const distance = parseInt(document.getElementById('distance').value) || 7;
+    const distance = parseInt(document.getElementById('distance').value) || 4;
     const exactNumber = document.getElementById('exact_number').checked;
     const isMultiSet = document.getElementById('is_multi_set').checked;
-    const matchDistance = parseInt(document.getElementById('match_distance').value) || 3;
-    const setsBestOf = document.getElementById('sets_best_of').checked;
+    const matchDistance = parseInt(document.getElementById('match_distance').value) || 2;
+    const isRaceToSets = document.getElementById('is_race_to_sets').checked;
 
     const previewText = document.getElementById('preview-text');
-
-    // Validate best-of must be odd
-    const racksOdd = distance % 2 === 1;
-    const setsOdd = matchDistance % 2 === 1;
-
-    if (!exactNumber && !racksOdd) {
-        previewText.innerHTML = '<span class="text-danger">⚠️ "Al meglio di" richiede numero dispari di rack!</span>';
-        return;
-    }
-
-    if (isMultiSet && setsBestOf && !setsOdd) {
-        previewText.innerHTML = '<span class="text-danger">⚠️ "Al meglio di" richiede numero dispari di set!</span>';
-        return;
-    }
 
     // Build preview string (mimics Distance.to_display_string())
     if (!isMultiSet) {
         // Single-set
-        const racksDesc = exactNumber ? `esattamente ${distance}` : `al meglio di ${distance}`;
+        const racksDesc = exactNumber ? `esattamente ${distance}` : `al ${distance}`;
         previewText.textContent = `${racksDesc.charAt(0).toUpperCase() + racksDesc.slice(1)} rack`;
     } else {
         // Multi-set
-        const setsDesc = setsBestOf ? `al meglio di ${matchDistance}` : `esattamente ${matchDistance}`;
-        const racksDesc = exactNumber ? `esattamente ${distance}` : `al meglio di ${distance}`;
+        const setsDesc = isRaceToSets ? `al ${matchDistance}` : `esattamente ${matchDistance}`;
+        const racksDesc = exactNumber ? `esattamente ${distance}` : `al ${distance}`;
 
         previewText.textContent = `${setsDesc.charAt(0).toUpperCase() + setsDesc.slice(1)} set, ogni set ${racksDesc} rack`;
     }
@@ -219,26 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Client-side validation
 function validateDistanceConfig() {
-    const distance = parseInt(document.getElementById('distance').value);
-    const exactNumber = document.getElementById('exact_number').checked;
-    const isMultiSet = document.getElementById('is_multi_set').checked;
-
-    // Validate best-of must be odd
-    if (!exactNumber && distance % 2 === 0) {
-        alert('Errore: "Al meglio di" richiede un numero dispari di rack!');
-        return false;
-    }
-
-    if (isMultiSet) {
-        const matchDistance = parseInt(document.getElementById('match_distance').value);
-        const setsBestOf = document.getElementById('sets_best_of').checked;
-
-        if (setsBestOf && matchDistance % 2 === 0) {
-            alert('Errore: "Al meglio di" richiede un numero dispari di set!');
-            return false;
-        }
-    }
-
+    // No specific odd-number validation needed for race-to
     return true;
 }
 </script>

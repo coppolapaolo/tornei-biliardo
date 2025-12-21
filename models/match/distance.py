@@ -4,27 +4,22 @@ This module provides the Distance abstraction that replaces the legacy
 distance/best_of pattern with a unified, type-safe value object.
 
 A Distance can be:
-1. Single-set: Only racks matter (e.g., "Best of 7 racks")
-2. Multi-set: Sets AND racks per set (e.g., "Best of 3 sets, each best of 5 racks")
+1. Single-set: Only racks matter (e.g., "Race to 4 racks" or "Exactly 4 racks")
+2. Multi-set: Sets AND racks per set (e.g., "Race to 2 sets, each race to 4 racks")
 
 Examples:
-    Single-set best-of:
-        Distance(racks=7, racks_best_of=True, is_multi_set=False)
-        → "Best of 7 racks" (first to 4 wins)
+    Single-set race-to:
+        Distance(racks=4, is_race_to_racks=True, is_multi_set=False)
+        → "Al 4 rack" (EN: "Race to 4 racks")
 
     Single-set exact:
-        Distance(racks=4, racks_best_of=False, is_multi_set=False)
+        Distance(racks=4, is_race_to_racks=False, is_multi_set=False)
         → "Exactly 4 racks" (play all 4, winner by count)
 
-    Multi-set best-of sets, best-of racks:
-        Distance(racks=5, racks_best_of=True, is_multi_set=True,
-                 sets=3, sets_best_of=True)
-        → "Best of 3 sets, each set best of 5 racks"
-
-    Multi-set exact sets, best-of racks:
-        Distance(racks=3, racks_best_of=True, is_multi_set=True,
-                 sets=4, sets_best_of=False)
-        → "Exactly 4 sets, each set best of 3 racks"
+    Multi-set race-to sets, race-to racks:
+        Distance(racks=4, is_race_to_racks=True, is_multi_set=True,
+                 sets=2, is_race_to_sets=True)
+        → "Race to 2 sets, each set race to 4 racks"
 """
 
 from dataclasses import dataclass
@@ -36,17 +31,17 @@ class Distance:
 
     Attributes:
         racks: Number of racks per set (or total if single-set)
-        racks_best_of: If True, "best of N racks". If False, "exactly N racks"
+        is_race_to_racks: If True, "race to N racks". If False, "exactly N racks"
         is_multi_set: If True, match has multiple sets
         sets: Number of sets (only relevant if is_multi_set=True)
-        sets_best_of: If True, "best of N sets". If False, "exactly N sets"
+        is_race_to_sets: If True, "race to N sets". If False, "exactly N sets"
     """
 
     racks: int
-    racks_best_of: bool = True
+    is_race_to_racks: bool = True
     is_multi_set: bool = False
     sets: int = 1
-    sets_best_of: bool = True
+    is_race_to_sets: bool = True
 
     def __post_init__(self) -> None:
         """Validate Distance configuration."""
@@ -56,71 +51,60 @@ class Distance:
             raise ValueError("sets must be positive")
         if not self.is_multi_set and self.sets != 1:
             raise ValueError("sets must be 1 for single-set matches")
-        if self.racks_best_of and self.racks % 2 == 0:
-            raise ValueError("best_of racks must be odd number")
-        if self.is_multi_set and self.sets_best_of and self.sets % 2 == 0:
-            raise ValueError("best_of sets must be odd number")
 
     def get_winning_racks(self) -> int:
         """Get number of racks needed to win ONE set.
 
         Returns:
-            For best-of: (racks // 2) + 1 (e.g., best of 7 → 4 to win)
+            For race-to: racks (e.g., race to 4 → 4 to win)
             For exact: racks (play all, winner by count)
         """
-        if self.racks_best_of:
-            return (self.racks // 2) + 1
-        else:
-            return self.racks
+        return self.racks
 
     def get_winning_sets(self) -> int:
         """Get number of sets needed to win the match.
 
         Returns:
             For single-set: Always 1
-            For multi-set best-of: (sets // 2) + 1
+            For multi-set race-to: sets
             For multi-set exact: sets (play all, winner by count)
         """
         if not self.is_multi_set:
             return 1
-        if self.sets_best_of:
-            return (self.sets // 2) + 1
-        else:
-            return self.sets
+        return self.sets
 
     def to_display_string(self) -> str:
         """Generate human-readable description.
 
         Returns:
             Examples:
-                "Best of 7 racks"
+                "Al 4 rack" (Race to)
                 "Exactly 4 racks"
-                "Best of 3 sets, each set best of 5 racks"
-                "Exactly 2 sets, each set exactly 3 racks"  # noqa
+                "Al 2 set, ogni set al 4 rack"
 
         """
         if not self.is_multi_set:
             # Single-set
             racks_desc = (
-                f"best of {self.racks}"
-                if self.racks_best_of
+                f"al {self.racks}"
+                if self.is_race_to_racks
                 else f"exactly {self.racks}"
             )
-            return f"{racks_desc.capitalize()} racks"
+            return f"{racks_desc.capitalize()} rack" if self.is_race_to_racks else f"{racks_desc.capitalize()} racks"
         else:
             # Multi-set
             sets_desc = (
-                f"best of {self.sets}"
-                if self.sets_best_of
+                f"al {self.sets}"
+                if self.is_race_to_sets
                 else f"exactly {self.sets}"
             )
             racks_desc = (
-                f"best of {self.racks}"
-                if self.racks_best_of
+                f"al {self.racks}"
+                if self.is_race_to_racks
                 else f"exactly {self.racks}"
             )
-            sets_part = f"{sets_desc.capitalize()} sets"
-            racks_part = f"each set {racks_desc} racks"
+            sets_part = f"{sets_desc.capitalize()} set" if self.is_race_to_sets else f"{sets_desc.capitalize()} sets"
+            racks_part = f"ogni set {racks_desc} rack"
             return f"{sets_part}, {racks_part}"
 
     @classmethod
@@ -128,17 +112,17 @@ class Distance:
         """Factory: Create single-set Distance from Gara model.
 
         Args:
-            gara: Gara model instance with distance and best_of fields
+            gara: Gara model instance with distance and is_race_to fields
 
         Returns:
             Distance object representing the gara's configuration
         """
         return cls(
             racks=gara.distance,
-            racks_best_of=gara.best_of,
-            is_multi_set=False,
-            sets=1,
-            sets_best_of=True
+            is_race_to_racks=getattr(gara, "is_race_to", getattr(gara, "best_of", True)),
+            is_multi_set=getattr(gara, "is_multi_set", False),
+            sets=getattr(gara, "match_distance", 1) if getattr(gara, "is_multi_set", False) else 1,
+            is_race_to_sets=getattr(gara, "is_race_to_sets", True)  # Fallback for now
         )
 
     @classmethod
@@ -160,10 +144,10 @@ class Distance:
             # Multi-set match
             return cls(
                 racks=match.gara.distance,
-                racks_best_of=match.gara.best_of,
+                is_race_to_racks=getattr(match.gara, "is_race_to", getattr(match.gara, "best_of", True)),
                 is_multi_set=True,
                 sets=match.match_distance,
-                sets_best_of=True  # Assume best-of for sets
+                is_race_to_sets=True  # Assume race-to for sets
             )
 
     @classmethod
@@ -171,15 +155,15 @@ class Distance:
         """Factory: Create single-set Distance from Set model.
 
         Args:
-            set_obj: Set model instance with distance and best_of fields
+            set_obj: Set model instance with distance and is_race_to fields
 
         Returns:
             Distance object representing rack configuration for this set
         """
         return cls(
             racks=set_obj.distance,
-            racks_best_of=set_obj.best_of,
+            is_race_to_racks=getattr(set_obj, "is_race_to", getattr(set_obj, "best_of", True)),
             is_multi_set=False,
             sets=1,
-            sets_best_of=True
+            is_race_to_sets=True
         )

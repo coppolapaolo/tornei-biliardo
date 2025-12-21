@@ -33,7 +33,7 @@ class TestClassificationServiceEdgeCases:
             date=date.today(),
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             status="playing",
             current_round=2,
             rounds_count=5,

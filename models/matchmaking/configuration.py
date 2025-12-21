@@ -65,7 +65,7 @@ class StrategyConfiguration:
         self,
         num_players: Optional[int] = None,
         distance: Optional[int] = None,
-        best_of: Optional[bool] = None,
+        is_race_to: Optional[bool] = None,
     ) -> List[str]:
         """Validate config consistency against strategy constraints.
 
@@ -85,8 +85,8 @@ class StrategyConfiguration:
         Args:
             num_players: Expected tournament player count for optimization
             distance: Tournament format distance (affects trio match complexity)
-            best_of: Whether match uses best-of or exact scoring
-                (trio requires best_of)
+            is_race_to: Whether match uses race-to or exact scoring
+                (trio requires race-to)
 
         Returns:
             List of validation error messages (empty if configuration is valid)
@@ -124,9 +124,9 @@ class StrategyConfiguration:
         if self.odd_number_policy == OddNumberPolicy.TRIO:
             if distance and distance > 7:
                 errors.append("Match a tre supportati solo fino a distanza 7")
-            if best_of is False:
+            if is_race_to is False:
                 errors.append(
-                    "Match a tre richiedono modalità 'al meglio di' (best_of=True)"
+                    "Match a tre richiedono modalità 'al N' (is_race_to=True)"
                 )
 
         # Ensure anti-rematch requirements are met for strategy integrity

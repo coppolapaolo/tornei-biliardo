@@ -143,7 +143,7 @@ class TestRouteDecorators:
 #         # Create mock gara
 #         mock_gara = MagicMock()
 #         mock_gara.id = 1
-#         mock_gara.best_of = True
+#         mock_gara.is_race_to = True
 #         mock_gara.get_winning_score.return_value = 5
 #         mock_gara.distance = 5
 #
@@ -267,7 +267,7 @@ class TestRouteDecorators:
 #         # Create mock gara
 #         mock_gara = MagicMock()
 #         mock_gara.id = 1
-#         mock_gara.best_of = True
+#         mock_gara.is_race_to = True
 #         mock_gara.get_winning_score.return_value = 5
 #         mock_gara.distance = 5
 #

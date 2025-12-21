@@ -36,11 +36,14 @@ class UserPermissionService:
 
     @staticmethod
     @transactional(domain="user")
-    def create_director_request(user_id: int) -> DirectorRequest:
+    def create_director_request(
+        user_id: int, notes: Optional[str] = None
+    ) -> DirectorRequest:
         """Create new director request with validation and business rule enforcement.
 
         Args:
             user_id: ID of user requesting director promotion
+            notes: Optional justification or notes from user
 
         Returns:
             DirectorRequest: Newly created request in pending status
@@ -70,7 +73,7 @@ class UserPermissionService:
 
         # Create new request
         director_request = DirectorRequest(
-            user_id=user_id, notes=None, status=DirectorRequestStatus.PENDING.value
+            user_id=user_id, notes=notes, status=DirectorRequestStatus.PENDING.value
         )
 
         db.session.add(director_request)
@@ -397,7 +400,9 @@ class UserPermissionService:
 
     @staticmethod
     @transactional(domain="user")
-    def request_director_promotion(user_id: int) -> DirectorRequest:
+    def request_director_promotion(
+        user_id: int, notes: Optional[str] = None
+    ) -> DirectorRequest:
         """Request director promotion (convenience alias).
 
         This is an alias for create_director_request() to provide alternative naming.
@@ -405,11 +410,12 @@ class UserPermissionService:
 
         Args:
             user_id: ID of user requesting promotion
+            notes: Optional justification or notes from user
 
         Returns:
             DirectorRequest: Newly created request
         """
-        return UserPermissionService.create_director_request(user_id)
+        return UserPermissionService.create_director_request(user_id, notes)
 
     @staticmethod
     @read_only(domain="user")

@@ -8,7 +8,8 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match
+                            Individuali</a></li>
                     <li class="breadcrumb-item active" aria-current="page">I Miei Match</li>
                 </ol>
             </nav>
@@ -56,8 +57,9 @@
                             <select class="form-select" id="opponentFilter">
                                 <option value="">Tutti gli avversari</option>
                                 {% for match in matches %}
-                                    {% set opponent = match.player1 if match.player2_id == current_user.id else match.player2 %}
-                                    <option value="{{ opponent.id }}">{{ opponent.username }}</option>
+                                {% set opponent = match.player1 if match.player2_id == current_user.id else
+                                match.player2 %}
+                                <option value="{{ opponent.id }}">{{ opponent.username }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -74,14 +76,14 @@
             <div class="row" id="matchList">
                 {% for match in matches %}
                 {% set opponent = match.player1 if match.player2_id == current_user.id else match.player2 %}
-                <div class="col-md-6 col-lg-4 mb-4 match-card"
-                     data-status="{{ match.status.value }}"
-                     data-discipline="{{ match.discipline }}"
-                     data-opponent="{{ opponent.id }}">
-                    <div class="card h-100 border-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
+                <div class="col-md-6 col-lg-4 mb-4 match-card" data-status="{{ match.status.value }}"
+                    data-discipline="{{ match.discipline }}" data-opponent="{{ opponent.id }}">
+                    <div
+                        class="card h-100 border-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">{{ match.discipline.replace('_', ' ').title() }}</h6>
-                            <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
+                            <span
+                                class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
                                 {{ match.status.value.title() }}
                             </span>
                         </div>
@@ -90,22 +92,26 @@
                             <div class="text-center mb-3">
                                 <div class="row">
                                     <div class="col-5">
-                                        <strong class="{% if match.status.value == 'completed' and match.winner_id == current_user.id %}text-success{% elif match.status.value == 'completed' %}text-danger{% endif %}">
+                                        <strong
+                                            class="{% if match.status.value == 'completed' and match.winner_id == current_user.id %}text-success{% elif match.status.value == 'completed' %}text-danger{% endif %}">
                                             {{ current_user.username }}
                                         </strong>
                                         <div class="display-6">
-                                            {{ match.player1_score if match.player1_id == current_user.id else match.player2_score or 0 }}
+                                            {{ match.player1_score if match.player1_id == current_user.id else
+                                            match.player2_score or 0 }}
                                         </div>
                                     </div>
                                     <div class="col-2">
                                         <small class="text-muted">VS</small>
                                     </div>
                                     <div class="col-5">
-                                        <strong class="{% if match.status.value == 'completed' and match.winner_id == opponent.id %}text-success{% elif match.status.value == 'completed' %}text-danger{% endif %}">
+                                        <strong
+                                            class="{% if match.status.value == 'completed' and match.winner_id == opponent.id %}text-success{% elif match.status.value == 'completed' %}text-danger{% endif %}">
                                             {{ opponent.username }}
                                         </strong>
                                         <div class="display-6">
-                                            {{ match.player2_score if match.player2_id == opponent.id else match.player1_score or 0 }}
+                                            {{ match.player2_score if match.player2_id == opponent.id else
+                                            match.player1_score or 0 }}
                                         </div>
                                     </div>
                                 </div>
@@ -117,12 +123,13 @@
                                 {% if match.scheduled_at %}
                                 <div><i class="fas fa-clock"></i> {{ match.scheduled_at|datetime_local }}</div>
                                 {% endif %}
-                                <div>{{ match.distance }} {{ 'al meglio di' if match.best_of else 'esattamente' }}</div>
+                                <div>{{ 'Al' if match.is_race_to else 'Esattamente' }} {{ match.distance }}</div>
                             </div>
 
                             <!-- Result -->
                             {% if match.status.value == 'completed' %}
-                            <div class="alert alert-{{ 'success' if match.winner_id == current_user.id else 'danger' }} text-center py-2 mb-3">
+                            <div
+                                class="alert alert-{{ 'success' if match.winner_id == current_user.id else 'danger' }} text-center py-2 mb-3">
                                 {% if match.winner_id == current_user.id %}
                                 <i class="fas fa-trophy"></i> Hai Vinto!
                                 {% else %}
@@ -134,15 +141,18 @@
                             <!-- Actions -->
                             <div class="text-center">
                                 {% if match.status.value == 'scheduled' %}
-                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
+                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+                                    class="btn btn-primary btn-sm">
                                     <i class="fas fa-play"></i> Inizia
                                 </a>
                                 {% elif match.status.value == 'playing' %}
-                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-success btn-sm">
+                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+                                    class="btn btn-success btn-sm">
                                     <i class="fas fa-gamepad"></i> Continua
                                 </a>
                                 {% else %}
-                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-outline-secondary btn-sm">
+                                <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+                                    class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-eye"></i> Dettagli
                                 </a>
                                 {% endif %}
@@ -178,7 +188,8 @@
                 <div class="card-body text-center py-5">
                     <i class="fas fa-gamepad fa-3x text-muted mb-3"></i>
                     <h4>Nessun match ancora</h4>
-                    <p class="text-muted">Inizia creando una proposta di match per giocare con altri membri della community!</p>
+                    <p class="text-muted">Inizia creando una proposta di match per giocare con altri membri della
+                        community!</p>
                     <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Crea la tua prima proposta
                     </a>
@@ -192,66 +203,66 @@
 
 {% block scripts %}
 <script>
-// Filter functionality
-function filterMatches() {
-    const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-    const disciplineFilter = document.getElementById('disciplineFilter').value.toLowerCase();
-    const opponentFilter = document.getElementById('opponentFilter').value;
+    // Filter functionality
+    function filterMatches() {
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+        const disciplineFilter = document.getElementById('disciplineFilter').value.toLowerCase();
+        const opponentFilter = document.getElementById('opponentFilter').value;
 
-    const matchCards = document.querySelectorAll('.match-card');
-    let visibleCount = 0;
+        const matchCards = document.querySelectorAll('.match-card');
+        let visibleCount = 0;
 
-    matchCards.forEach(card => {
-        const status = card.getAttribute('data-status');
-        const discipline = card.getAttribute('data-discipline');
-        const opponent = card.getAttribute('data-opponent');
+        matchCards.forEach(card => {
+            const status = card.getAttribute('data-status');
+            const discipline = card.getAttribute('data-discipline');
+            const opponent = card.getAttribute('data-opponent');
 
-        const statusMatch = !statusFilter || status === statusFilter;
-        const disciplineMatch = !disciplineFilter || discipline === disciplineFilter;
-        const opponentMatch = !opponentFilter || opponent === opponentFilter;
+            const statusMatch = !statusFilter || status === statusFilter;
+            const disciplineMatch = !disciplineFilter || discipline === disciplineFilter;
+            const opponentMatch = !opponentFilter || opponent === opponentFilter;
 
-        if (statusMatch && disciplineMatch && opponentMatch) {
-            card.style.display = 'block';
-            visibleCount++;
+            if (statusMatch && disciplineMatch && opponentMatch) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show/hide no results message
+        const noMatchesMessage = document.getElementById('noMatchesMessage');
+        if (visibleCount === 0 && matchCards.length > 0) {
+            noMatchesMessage.style.display = 'block';
         } else {
-            card.style.display = 'none';
+            noMatchesMessage.style.display = 'none';
         }
-    });
-
-    // Show/hide no results message
-    const noMatchesMessage = document.getElementById('noMatchesMessage');
-    if (visibleCount === 0 && matchCards.length > 0) {
-        noMatchesMessage.style.display = 'block';
-    } else {
-        noMatchesMessage.style.display = 'none';
     }
-}
 
-function clearFilters() {
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('disciplineFilter').value = '';
-    document.getElementById('opponentFilter').value = '';
-    filterMatches();
-}
+    function clearFilters() {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('disciplineFilter').value = '';
+        document.getElementById('opponentFilter').value = '';
+        filterMatches();
+    }
 
-// Add event listeners
-document.getElementById('statusFilter').addEventListener('change', filterMatches);
-document.getElementById('disciplineFilter').addEventListener('change', filterMatches);
-document.getElementById('opponentFilter').addEventListener('change', filterMatches);
+    // Add event listeners
+    document.getElementById('statusFilter').addEventListener('change', filterMatches);
+    document.getElementById('disciplineFilter').addEventListener('change', filterMatches);
+    document.getElementById('opponentFilter').addEventListener('change', filterMatches);
 
-// Remove duplicate opponents from filter
-document.addEventListener('DOMContentLoaded', function() {
-    const opponentSelect = document.getElementById('opponentFilter');
-    const seen = new Set();
-    const options = Array.from(opponentSelect.options);
+    // Remove duplicate opponents from filter
+    document.addEventListener('DOMContentLoaded', function () {
+        const opponentSelect = document.getElementById('opponentFilter');
+        const seen = new Set();
+        const options = Array.from(opponentSelect.options);
 
-    options.forEach(option => {
-        if (option.value && seen.has(option.value)) {
-            option.remove();
-        } else if (option.value) {
-            seen.add(option.value);
-        }
+        options.forEach(option => {
+            if (option.value && seen.has(option.value)) {
+                option.remove();
+            } else if (option.value) {
+                seen.add(option.value);
+            }
+        });
     });
-});
 </script>
 {% endblock %}

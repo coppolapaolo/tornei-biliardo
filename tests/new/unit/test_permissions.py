@@ -200,7 +200,7 @@ class TestPermissionChecker:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director1.id,
         )
 
@@ -278,7 +278,7 @@ class TestPermissionChecker:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         # Admin should be able to manage
@@ -331,7 +331,7 @@ class TestPermissionChecker:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 

@@ -38,7 +38,7 @@ class TestBaseMatchValidation:
         sample_match.player1_score = 5
         sample_match.player2_score = 3
         sample_match.distance = 5
-        sample_match.best_of = True
+        sample_match.is_race_to = True
         sample_match.status = MatchStatus.PLAYING.value
 
         # When: Checking if ready for validation
@@ -144,7 +144,7 @@ class TestBaseMatchRackScore:
         sample_match.player1_score = 5
         sample_match.player2_score = 3
         sample_match.distance = 5
-        sample_match.best_of = True
+        sample_match.is_race_to = True
 
         # When: Checking if complete
         is_complete = sample_match.rack_score.is_complete()
@@ -160,7 +160,7 @@ class TestBaseMatchDistanceConfig:
         """Should return correct Distance for single-set match."""
         # Given: A single-set match
         sample_match.distance = 5
-        sample_match.best_of = True
+        sample_match.is_race_to = True
         sample_match.is_multi_set = False
 
         # When: Getting distance config
@@ -168,7 +168,7 @@ class TestBaseMatchDistanceConfig:
 
         # Then: Should be single-set configuration
         assert distance.racks == 5
-        assert distance.racks_best_of is True
+        assert distance.is_race_to_racks is True
         assert distance.is_multi_set is False
 
 
@@ -187,7 +187,7 @@ def sample_match(db_session, sample_users):
         date=datetime.utcnow().date(),
         discipline="palla_8",
         distance=5,
-        best_of=True,
+        is_race_to=True,
         status=GaraStatus.INSCRIPTION.value,
         time=datetime.utcnow().time(),
     )

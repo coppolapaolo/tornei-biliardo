@@ -568,7 +568,7 @@ class MatchService:
 
         # Controlla se il punteggio giustifica ancora il winner_id
         should_clear_winner = False
-        if match.gara.best_of:
+        if match.gara.is_race_to:
             winning_score = match.gara.get_winning_score()
             if max(match.player1_score, match.player2_score) < winning_score:
                 should_clear_winner = True
@@ -804,7 +804,7 @@ class RackService:
 
         # Valida in base al tipo di match usando distance_config
         distance = match.gara.distance_config
-        if distance.racks_best_of:  # "al meglio di N"
+        if distance.is_race_to_racks:  # "al meglio di N"
             winning_racks = distance.get_winning_racks()
             if temp_p1_score > winning_racks or temp_p2_score > winning_racks:
                 raise ValueError(
@@ -897,7 +897,7 @@ class RackService:
         # Verifica che il risultato sia valido secondo le regole della gara
         total_racks = player1_score + player2_score
 
-        if match.gara.best_of:
+        if match.gara.is_race_to:
             # Al meglio di: uno dei due deve aver raggiunto la soglia
             winning_score = match.gara.get_winning_score()
             if max(player1_score, player2_score) < winning_score:
@@ -1023,7 +1023,7 @@ class RackService:
 
         # Controlla sempre se il punteggio giustifica ancora il winner_id
         should_clear_winner = False
-        if match.gara.best_of:
+        if match.gara.is_race_to:
             winning_score = match.gara.get_winning_score()
             if max(match.player1_score, match.player2_score) < winning_score:
                 should_clear_winner = True

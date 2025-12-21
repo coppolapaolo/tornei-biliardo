@@ -27,7 +27,7 @@ class TestAmalfiEngineComprehensive:
         self.mock_gara.id = 1
         self.mock_gara.min_participants = 3
         self.mock_gara.rounds_count = 5
-        self.mock_gara.best_of = True
+        self.mock_gara.is_race_to = True
         self.mock_gara.distance = 50
         self.mock_gara.withdraw_policy = "FORFEIT"
 

@@ -346,7 +346,7 @@ class AvailabilityService:
             description=message or "Richiesta di match basata su disponibilità",
             discipline="palla_8",  # Default
             distance=7,  # Default
-            best_of=True,
+            is_race_to=True,
             entry_fee=0.0,
         )
 

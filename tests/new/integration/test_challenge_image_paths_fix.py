@@ -76,7 +76,7 @@ class TestChallengeImagePathsFix:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=admin_user.id,
         )
 

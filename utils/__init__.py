@@ -460,7 +460,7 @@ def create_round_matches(gara, players_or_inscriptions, round_number):
         # Numero dispari: ultimo giocatore ha un bye
         bye_player = players[-1]
 
-        bye_score = gara.get_winning_score() if gara.best_of else gara.distance
+        bye_score = gara.get_winning_score() if gara.is_race_to else gara.distance
 
         match = Match(
             gara_id=gara.id,
@@ -605,7 +605,7 @@ def create_sample_campionato():
         entry_fee=15.0,
         discipline="palla 9",
         distance=7,
-        best_of=True,
+        is_race_to=True,
         status="setup",
     )
 
@@ -622,7 +622,7 @@ def create_sample_campionato():
         entry_fee=15.0,
         discipline="palla 8",
         distance=5,
-        best_of=False,
+        is_race_to=False,
         status="setup",
     )
 
@@ -639,7 +639,7 @@ def create_sample_campionato():
         entry_fee=20.0,
         discipline="palla 10",
         distance=9,
-        best_of=True,
+        is_race_to=True,
         status="setup",
     )
 
@@ -713,7 +713,7 @@ def create_round_matches_amalfi_compatible(gara, players_or_inscriptions, round_
 
     if len(players) % 2 == 1:
         bye_player = players[-1]
-        bye_score = gara.get_winning_score() if gara.best_of else gara.distance
+        bye_score = gara.get_winning_score() if gara.is_race_to else gara.distance
         match = Match(
             gara_id=gara.id,
             round_number=round_number,

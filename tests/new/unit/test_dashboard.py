@@ -60,7 +60,7 @@ class TestDashboardService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )  # gara not used
 
@@ -146,7 +146,7 @@ class TestDashboardService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -164,7 +164,7 @@ class TestDashboardService:
             entry_fee=20.0,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=other_director.id,
         )
 
@@ -268,7 +268,7 @@ class TestDashboardService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -326,7 +326,7 @@ class TestDashboardService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         # Standalone gara in 3 days (should come first)
@@ -343,7 +343,7 @@ class TestDashboardService:
             entry_fee=20.0,
             discipline="palla 8",
             distance=5,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -361,7 +361,7 @@ class TestDashboardService:
             entry_fee=25.0,
             discipline="palla 10",
             distance=9,
-            best_of=True,
+            is_race_to=True,
             director_id=director.id,
         )
 
@@ -411,7 +411,7 @@ class TestDashboardService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         # Get dashboard data to test item creation
@@ -486,7 +486,7 @@ class TestDashboardService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=main_director.id,
         )
 

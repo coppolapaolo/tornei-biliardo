@@ -146,7 +146,7 @@ class TestUseCasePlayerAvailability:
             ),  # Expires end of day
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             description="Match at downtown venue - saw you're available Mondays!",
         )
         db_session.add(proposal)
@@ -189,7 +189,7 @@ class TestUseCasePlayerAvailability:
             scheduled_at=proposal.scheduled_at,
             discipline=proposal.discipline,
             distance=proposal.distance,
-            best_of=proposal.best_of,
+            is_race_to=proposal.is_race_to,
             break_rule=proposal.break_rule,
             entry_fee=proposal.entry_fee,
         )
@@ -381,7 +381,7 @@ class TestUseCasePlayerAvailability:
             scheduled_at=match_proposal.scheduled_at,
             discipline=match_proposal.discipline,
             distance=match_proposal.distance,
-            best_of=match_proposal.best_of,
+            is_race_to=match_proposal.is_race_to,
             break_rule=match_proposal.break_rule,
             entry_fee=match_proposal.entry_fee,
         )

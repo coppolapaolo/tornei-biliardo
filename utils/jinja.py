@@ -157,8 +157,8 @@ def format_distance_short(gara_or_distance) -> Markup:
     else:
         distance = gara_or_distance
 
-    if hasattr(distance, 'racks') and hasattr(distance, 'racks_best_of'):
-        prefix = "BO" if distance.racks_best_of else "X"
+    if hasattr(distance, 'racks') and hasattr(distance, 'is_race_to_racks'):
+        prefix = "BO" if distance.is_race_to_racks else "X"
         return Markup(f"{prefix}{distance.racks}")
 
     return Markup("N/A")

@@ -125,7 +125,7 @@ class TestUseCaseAmalfiBestOfTournaments:
             entry_fee=15.0,
             discipline="palla_9",
             distance=9,
-            best_of=True,  # Best-of-9
+            is_race_to=True,  # Best-of-9
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -135,7 +135,7 @@ class TestUseCaseAmalfiBestOfTournaments:
 
         assert gara.status == GaraStatus.SETUP.value
         assert gara.matchmaking_strategy == "amalfi"
-        assert gara.best_of is True
+        assert gara.is_race_to is True
         assert gara.distance == 9
 
         # Step 2: All 8 players inscribe
@@ -293,7 +293,7 @@ class TestUseCaseAmalfiBestOfTournaments:
             entry_fee=20.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,  # Best-of-7
+            is_race_to=True,  # Best-of-7
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -537,7 +537,7 @@ class TestUseCaseAmalfiExactlyTournaments:
             entry_fee=10.0,
             discipline="palla_9",
             distance=5,
-            best_of=False,  # Exactly 5 racks
+            is_race_to=False,  # Exactly 5 racks
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -545,7 +545,7 @@ class TestUseCaseAmalfiExactlyTournaments:
             anti_rematch_enabled=True,
         )
 
-        assert gara.best_of is False
+        assert gara.is_race_to is False
         assert gara.distance == 5
 
         # Step 2: All players inscribe
@@ -749,7 +749,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
             entry_fee=25.0,
             discipline="palla_8",
             distance=8,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="classification",
@@ -852,7 +852,7 @@ class TestUseCaseAmalfiWaitlistExpiry:
             entry_fee=15.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",

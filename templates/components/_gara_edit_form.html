@@ -1,118 +1,122 @@
 <!-- Gara Edit Form Component -->
 <form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST">
-<div class="card">
-    <div class="card-header">
-        <h5><i class="fas fa-edit"></i> Modifica Informazioni Gara</h5>
-    </div>
-    <div class="card-body">
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-edit"></i> Modifica Informazioni Gara</h5>
+        </div>
+        <div class="card-body">
             <!-- Prima riga: Info base -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Nome {% if not gara.is_standalone %}(opzionale){% endif %}</label>
-                        <input type="text" class="form-control" name="name"
-                               value="{{ gara.name or '' }}" placeholder="es: Prima Gara, Semifinale..." {% if gara.is_standalone %}required{% endif %}>
+                        <label for="name" class="form-label">Nome {% if not gara.is_standalone %}(opzionale){% endif
+                            %}</label>
+                        <input type="text" class="form-control" name="name" value="{{ gara.name or '' }}"
+                            placeholder="es: Prima Gara, Semifinale..." {% if gara.is_standalone %}required{% endif %}>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="date" class="form-label">Data</label>
                         <input type="date" class="form-control" name="date"
-                               value="{{ gara.date.isoformat() if gara.date else '' }}" required>
+                            value="{{ gara.date.isoformat() if gara.date else '' }}" required>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="time" class="form-label">Ora</label>
                         <input type="time" class="form-control" name="time"
-                               value="{{ gara.time.strftime('%H:%M') if gara.time else '20:00' }}">
+                            value="{{ gara.time.strftime('%H:%M') if gara.time else '20:00' }}">
                     </div>
                 </div>
             </div>
+        </div>
     </div>
-</div>
 
-<div class="card mt-3">
-    <div class="card-body">
-        <h5 class="card-title">Strategia di Abbinamento</h5>
-        
-        <div class="mb-3">
-            <label for="matchmaking_strategy" class="form-label">Tipo di Competizione</label>
-            <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
-                {% for strategy_key, strategy_info in available_strategies.items() %}
-                    <option value="{{ strategy_key }}" 
-                            {% if strategy_key == (gara.matchmaking_strategy or 'amalfi') %}selected{% endif %}
-                            data-description="{{ strategy_info.description }}">
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Strategia di Abbinamento</h5>
+
+            <div class="mb-3">
+                <label for="matchmaking_strategy" class="form-label">Tipo di Competizione</label>
+                <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
+                    {% for strategy_key, strategy_info in available_strategies.items() %}
+                    <option value="{{ strategy_key }}" {% if strategy_key==(gara.matchmaking_strategy or 'amalfi' )
+                        %}selected{% endif %} data-description="{{ strategy_info.description }}">
                         {{ strategy_info.display_name }}
                     </option>
-                {% endfor %}
-            </select>
-            <small id="strategy_description" class="form-text text-muted"></small>
-        </div>
-        
-        <div class="mb-3" id="anti_rematch_section">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="anti_rematch_enabled" 
-                       name="anti_rematch_enabled" {% if gara.anti_rematch_enabled %}checked{% endif %}>
-                <label class="form-check-label" for="anti_rematch_enabled">
-                    Evita reincontri tra giocatori
-                </label>
-                <small class="form-text text-muted d-block">Dipende dal tipo di competizione selezionato</small>
+                    {% endfor %}
+                </select>
+                <small id="strategy_description" class="form-text text-muted"></small>
             </div>
-        </div>
-        
-        <div class="row" id="strategy_config_section">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
-                    <select class="form-select" id="first_round_policy" name="first_round_policy">
-                        <option value="random" {% if (gara.first_round_policy or 'random') == 'random' %}selected{% endif %}>Casuale</option>
-                        <option value="rating" {% if gara.first_round_policy == 'rating' %}selected{% endif %}>Basato su Rating</option>
-                        <option value="classification" {% if gara.first_round_policy == 'classification' %}selected{% endif %}>Basato su Classifica</option>
-                    </select>
+
+            <div class="mb-3" id="anti_rematch_section">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="anti_rematch_enabled"
+                        name="anti_rematch_enabled" {% if gara.anti_rematch_enabled %}checked{% endif %}>
+                    <label class="form-check-label" for="anti_rematch_enabled">
+                        Evita reincontri tra giocatori
+                    </label>
+                    <small class="form-text text-muted d-block">Dipende dal tipo di competizione selezionato</small>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="odd_number_policy" class="form-label">Gestione Giocatori Dispari</label>
-                    <select class="form-select" id="odd_number_policy" name="odd_number_policy">
-                        <option value="bye" {% if (gara.odd_number_policy or 'bye') == 'bye' %}selected{% endif %}>X (vinto a tavolino)</option>
-                        <option value="bye_with_challenge" {% if gara.odd_number_policy == 'bye_with_challenge' %}selected{% endif %}>X con Challenge</option>
-                        <option value="trio" {% if gara.odd_number_policy == 'trio' %}selected{% endif %}>Match a 3 Giocatori</option>
-                    </select>
-                    <small id="trio_warning" class="form-text text-warning" style="display: none;">
-                        Match a 3 disponibile solo fino a distanza 7
-                    </small>
+
+            <div class="row" id="strategy_config_section">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
+                        <select class="form-select" id="first_round_policy" name="first_round_policy">
+                            <option value="random" {% if (gara.first_round_policy or 'random' )=='random' %}selected{%
+                                endif %}>Casuale</option>
+                            <option value="rating" {% if gara.first_round_policy=='rating' %}selected{% endif %}>Basato
+                                su Rating</option>
+                            <option value="classification" {% if gara.first_round_policy=='classification' %}selected{%
+                                endif %}>Basato su Classifica</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="odd_number_policy" class="form-label">Gestione Giocatori Dispari</label>
+                        <select class="form-select" id="odd_number_policy" name="odd_number_policy">
+                            <option value="bye" {% if (gara.odd_number_policy or 'bye' )=='bye' %}selected{% endif %}>X
+                                (vinto a tavolino)</option>
+                            <option value="bye_with_challenge" {% if gara.odd_number_policy=='bye_with_challenge'
+                                %}selected{% endif %}>X con Challenge</option>
+                            <option value="trio" {% if gara.odd_number_policy=='trio' %}selected{% endif %}>Match a 3
+                                Giocatori</option>
+                        </select>
+                        <small id="trio_warning" class="form-text text-warning" style="display: none;">
+                            Match a 3 disponibile solo fino a distanza 7
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="card mt-3">
-    <div class="card-body">
-        <h5 class="card-title">Impostazioni di Gioco</h5>
-            
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Impostazioni di Gioco</h5>
+
             <!-- Seconda riga: Luogo e partecipanti -->
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="location" class="form-label">Luogo</label>
-                        <input type="text" class="form-control" name="location" 
-                               value="{{ gara.location or '' }}" 
-                               placeholder="es: Circolo Biliardo Centro" 
-                               list="venue-suggestions"
-                               autocomplete="off">
+                        <input type="text" class="form-control" name="location" value="{{ gara.location or '' }}"
+                            placeholder="es: Circolo Biliardo Centro" list="venue-suggestions" autocomplete="off">
                         <datalist id="venue-suggestions">
                             <!-- Venue verificate -->
                             {% if verified_venues %}
-                                {% for venue in verified_venues %}
-                                <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or 'Città non specificata' }}</option>
-                                {% endfor %}
+                            {% for venue in verified_venues %}
+                            <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or 'Città non specificata'
+                                }}</option>
+                            {% endfor %}
                             {% endif %}
                         </datalist>
                         <small class="text-muted">
-                            <i class="fas fa-info-circle"></i> 
+                            <i class="fas fa-info-circle"></i>
                             Seleziona da sale verificate o inserisci nuovo nome
                         </small>
                     </div>
@@ -120,44 +124,47 @@
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="number_of_tables" class="form-label">N. Tavoli</label>
-                        <input type="number" class="form-control" name="number_of_tables"
-                               placeholder="0" min="1" max="50">
+                        <input type="number" class="form-control" name="number_of_tables" placeholder="0" min="1"
+                            max="50">
                         <small class="text-muted">Solo per nuove sale</small>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="min_participants" class="form-label">Min Iscritti</label>
-                        <input type="number" class="form-control" name="min_participants" 
-                               min="2" max="32" value="{{ gara.min_participants }}" required>
+                        <input type="number" class="form-control" name="min_participants" min="2" max="32"
+                            value="{{ gara.min_participants }}" required>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="max_participants" class="form-label">Max Iscritti</label>
-                        <input type="number" class="form-control" name="max_participants" 
-                               min="2" max="64" value="{{ gara.max_participants or '' }}" placeholder="Illimitato">
+                        <input type="number" class="form-control" name="max_participants" min="2" max="64"
+                            value="{{ gara.max_participants or '' }}" placeholder="Illimitato">
                     </div>
                 </div>
                 <div class="col-md-3">
-                <div class="mb-3">
-                    <label class="form-label">Gestione ritiri</label>
-                    <select class="form-select" name="withdraw_policy" required>
-                    <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>Exclude (X/Trio)</option>
-                    <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>Forfeit (vittoria avversario)</option>
-                    </select>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Gestione ritiri</label>
+                        <select class="form-select" name="withdraw_policy" required>
+                            <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if
+                                gara.withdraw_policy==WithdrawPolicy.EXCLUDE.value else '' }}>Exclude (X/Trio)</option>
+                            <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if
+                                gara.withdraw_policy==WithdrawPolicy.FORFEIT.value else '' }}>Forfeit (vittoria
+                                avversario)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="entry_fee" class="form-label">Quota €</label>
-                        <input type="number" class="form-control" name="entry_fee" 
-                               min="0" step="0.50" value="{{ gara.entry_fee }}" required>
+                        <input type="number" class="form-control" name="entry_fee" min="0" step="0.50"
+                            value="{{ gara.entry_fee }}" required>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Terza riga: Game settings -->
             <div class="row">
                 <div class="col-md-3">
@@ -166,40 +173,42 @@
                         <select class="form-select" name="discipline" required>
                             <option value="">Seleziona disciplina...</option>
                             {% for value, label in discipline_choices %}
-                                <option value="{{ value }}"{{ ' selected' if gara.discipline == value else '' }}>{{ label }}</option>
+                            <option value="{{ value }}" {{ ' selected' if gara.discipline==value else '' }}>{{ label }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
             </div>
+        </div>
     </div>
-</div>
 
-<!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
-{% with distance=gara.distance, best_of=gara.best_of, is_multi_set=gara.is_multi_set, match_distance=gara.match_distance, sets_best_of=gara.sets_best_of %}
-{% include "components/_distance_configurator.html" %}
-{% endwith %}
+    <!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
+    {% with distance=gara.distance, is_race_to=gara.is_race_to, is_multi_set=gara.is_multi_set,
+    match_distance=gara.match_distance, is_race_to_sets=gara.is_race_to_sets %}
+    {% include "components/_distance_configurator.html" %}
+    {% endwith %}
 
-<div class="card mt-3">
-    <div class="card-body">
-        <h5 class="card-title">Impostazioni Torneo</h5>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Impostazioni Torneo</h5>
             <div class="row">
                 <div class="col-md-2">
                     <div class="mb-3">
                         <label for="rounds_count" class="form-label">Turni</label>
-                        <input type="number" class="form-control" name="rounds_count" 
-                               min="1" max="10" value="{{ gara.rounds_count }}" required>
+                        <input type="number" class="form-control" name="rounds_count" min="1" max="10"
+                            value="{{ gara.rounds_count }}" required>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Descrizione -->
             <div class="mb-3">
                 <label for="description" class="form-label">Descrizione (opzionale)</label>
-                <textarea class="form-control" name="description" rows="3" 
-                          placeholder="Descrizione della competizione...">{{ gara.description or '' }}</textarea>
+                <textarea class="form-control" name="description" rows="3"
+                    placeholder="Descrizione della competizione...">{{ gara.description or '' }}</textarea>
             </div>
-            
+
             <hr>
 
             <!-- Round Discipline Configuration - Only for Random Strategy -->
@@ -228,7 +237,8 @@
 
                         <div class="alert alert-info mt-3">
                             <i class="fas fa-info-circle"></i>
-                            <strong>Info:</strong> Se non specificato, ogni turno userà la disciplina principale della gara.
+                            <strong>Info:</strong> Se non specificato, ogni turno userà la disciplina principale della
+                            gara.
                             Le modifiche alle discipline per turno sono possibili solo durante la fase di setup.
                         </div>
                     </div>
@@ -240,44 +250,45 @@
                 <strong>Attenzione:</strong> Una volta che ci saranno iscrizioni a questa gara,
                 non sarà più possibile modificarla.
             </div>
-            
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" 
-                   class="btn btn-secondary">
+                <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Annulla
                 </a>
                 <button type="submit" class="btn btn-success">
                     <i class="fas fa-save"></i> Salva Modifiche
                 </button>
             </div>
+        </div>
     </div>
-</div>
 </form>
 
 {% if debug_info.debug_mode %}
-    <div class="mt-4">
-        <div class="alert alert-dark">
-            <h6><i class="fas fa-bug"></i> DEBUG - Edit Gara</h6>
-            <small>
-                Gara ID: {{ gara.id }}<br>
-                Can be modified: {{ gara.can_be_modified() }}<br>
-                Current values: Distance={{ gara.distance }}, Best_of={{ gara.best_of }}, Rounds={{ gara.rounds_count }}
-            </small>
-        </div>
+<div class="mt-4">
+    <div class="alert alert-dark">
+        <h6><i class="fas fa-bug"></i> DEBUG - Edit Gara</h6>
+        <small>
+            Gara ID: {{ gara.id }}<br>
+            Can be modified: {{ gara.can_be_modified() }}<br>
+            Current values: Distance={{ gara.distance }}, Is_Race_To={{ gara.is_race_to }}, Rounds={{ gara.rounds_count
+            }}
+        </small>
     </div>
+</div>
 {% endif %}
 
 <!-- JavaScript for Dynamic Round Discipline Configuration -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const strategySelect = document.getElementById('matchmaking_strategy');
-    const roundsCountInput = document.querySelector('input[name="rounds_count"]');
-    const disciplineSelect = document.querySelector('select[name="discipline"]');
-    const roundDisciplinesSection = document.getElementById('round_disciplines_section');
-    const roundsContainer = document.getElementById('rounds_discipline_container');
+    document.addEventListener('DOMContentLoaded', function () {
+        const strategySelect = document.getElementById('matchmaking_strategy');
+        const roundsCountInput = document.querySelector('input[name="rounds_count"]');
+        const disciplineSelect = document.querySelector('select[name="discipline"]');
+        const roundDisciplinesSection = document.getElementById('round_disciplines_section');
+        const roundsContainer = document.getElementById('rounds_discipline_container');
 
-    // Available disciplines (should match backend choices)
-    const disciplines = {{ discipline_choices | tojson }};
+        // Available disciplines (should match backend choices)
+        const disciplines = {{ discipline_choices | tojson
+    }};
 
     // Current round configurations (from backend)
     const currentRoundConfigs = {{ round_configurations | tojson if round_configurations else '{}' }};
@@ -323,20 +334,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Event listeners
     strategySelect.addEventListener('change', updateRoundDisciplinesVisibility);
-    roundsCountInput.addEventListener('change', function() {
+    roundsCountInput.addEventListener('change', function () {
         if (strategySelect.value === 'random') {
             generateRoundDisciplineInputs();
         }
     });
 
     // Quick actions
-    document.getElementById('reset_disciplines').addEventListener('click', function() {
+    document.getElementById('reset_disciplines').addEventListener('click', function () {
         document.querySelectorAll('.round-discipline-select').forEach(select => {
             select.value = '';
         });
     });
 
-    document.getElementById('copy_first_discipline').addEventListener('click', function() {
+    document.getElementById('copy_first_discipline').addEventListener('click', function () {
         const firstSelect = document.getElementById('round_1_discipline');
         if (firstSelect) {
             const firstValue = firstSelect.value;

@@ -135,7 +135,7 @@ def create_gara_standalone():
             discipline = request.form["discipline"]
             distance = int(request.form["distance"])
             exact_number = "exact_number" in request.form
-            best_of = not exact_number
+            is_race_to = not exact_number
             withdraw_policy = request.form.get(
                 "withdraw_policy", WithdrawPolicy.EXCLUDE.value
             )
@@ -144,7 +144,7 @@ def create_gara_standalone():
             is_multi_set = "is_multi_set" in request.form
             match_distance = request.form.get("match_distance")
             match_distance = int(match_distance) if match_distance else None
-            sets_best_of = "sets_best_of" in request.form
+            is_race_to_sets = "is_race_to_sets" in request.form
 
             # Strategy configuration
             matchmaking_strategy = request.form.get("matchmaking_strategy", "amalfi")
@@ -170,7 +170,7 @@ def create_gara_standalone():
                 )
 
                 # Valida la configurazione con la distanza
-                errors = strategy_config.validate(distance=distance)
+                errors = strategy_config.validate(distance=distance, is_race_to=is_race_to)
                 if errors:
                     flash(f"Configurazione non valida: {', '.join(errors)}", "error")
                     return redirect(url_for("admin.competition.create_gara_standalone"))
@@ -193,7 +193,7 @@ def create_gara_standalone():
                 entry_fee=entry_fee,
                 discipline=discipline,
                 distance=distance,
-                best_of=best_of,
+                is_race_to=is_race_to,
                 withdraw_policy=withdraw_policy,
                 director_id=current_user.id,  # L'admin che crea è il direttore
                 matchmaking_strategy=matchmaking_strategy,
@@ -203,7 +203,7 @@ def create_gara_standalone():
                 # Phase 6: Multi-set configuration
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
-                sets_best_of=sets_best_of,
+                is_race_to_sets=is_race_to_sets,
             )
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
@@ -342,7 +342,7 @@ def create_gara():
     discipline = request.form["discipline"]
     distance = int(request.form["distance"])
     exact_number = "exact_number" in request.form
-    best_of = not exact_number
+    is_race_to = not exact_number
 
     # Crea la gara usando il service layer
     withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
@@ -359,7 +359,7 @@ def create_gara():
         entry_fee=entry_fee,
         discipline=discipline,
         distance=distance,
-        best_of=best_of,
+        is_race_to=is_race_to,
         withdraw_policy=withdraw_policy,
     )
 
@@ -390,13 +390,13 @@ def edit_gara(gara_id):
             max_participants = int(max_participants) if max_participants else None
 
             exact_number = "exact_number" in request.form
-            best_of = not exact_number
+            is_race_to = not exact_number
 
             # Multi-set configuration (Phase 6: Frontend Integration)
             is_multi_set = "is_multi_set" in request.form
             match_distance = request.form.get("match_distance")
             match_distance = int(match_distance) if match_distance else None
-            sets_best_of = "sets_best_of" in request.form
+            is_race_to_sets = "is_race_to_sets" in request.form
 
             # Handle venue auto-creation for location
             location = request.form.get("location", "").strip()
@@ -433,7 +433,7 @@ def edit_gara(gara_id):
                 entry_fee=float(request.form.get("entry_fee", 0.0)),
                 discipline=request.form["discipline"],
                 distance=int(request.form["distance"]),
-                best_of=best_of,
+                is_race_to=is_race_to,
                 withdraw_policy=request.form.get(
                     "withdraw_policy", WithdrawPolicy.EXCLUDE.value
                 ),
@@ -445,7 +445,7 @@ def edit_gara(gara_id):
                 # Phase 6: Multi-set configuration
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
-                sets_best_of=sets_best_of,
+                is_race_to_sets=is_race_to_sets,
             )
 
             # Handle round discipline configuration (only for random strategy)
@@ -508,7 +508,7 @@ def edit_gara(gara_id):
         round_configurations[config.round_number] = {
             "discipline": config.discipline,
             "distance": config.distance,
-            "best_of": config.best_of,
+            "best_of": config.is_race_to,
             "notes": config.notes,
         }
 

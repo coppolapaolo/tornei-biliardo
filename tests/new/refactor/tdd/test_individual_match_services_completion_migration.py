@@ -250,7 +250,7 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
                 scheduled_at=proposal.scheduled_at,
                 discipline=proposal.discipline,
                 distance=proposal.distance,
-                best_of=proposal.best_of,
+                is_race_to=proposal.is_race_to,
                 break_rule=proposal.break_rule,
             )
             db.session.add(individual_match)

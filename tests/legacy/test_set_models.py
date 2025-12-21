@@ -16,12 +16,12 @@ class TestSetModel:
 
     def test_set_creation(self):
         """Test Set model creation."""
-        set_obj = Set(match_id=1, set_number=1, distance=5, best_of=True)
+        set_obj = Set(match_id=1, set_number=1, distance=5, is_race_to=True)
 
         assert set_obj.match_id == 1
         assert set_obj.set_number == 1
         assert set_obj.distance == 5
-        assert set_obj.best_of is True
+        assert set_obj.is_race_to is True
         # Initialize default values that are set in the database model
         set_obj.status = "pending"
         set_obj.player1_racks = 0
@@ -167,7 +167,7 @@ class TestSetModel:
             status="playing",
             match=mock_match,
             distance=5,  # Set the distance attribute
-            best_of=True,
+            is_race_to=True,
             player1_racks=0,
             player2_racks=0,
         )
@@ -196,7 +196,7 @@ class TestSetModel:
             set_obj.add_rack_result(winner_id=1)
 
     def test_check_set_completion_best_of(self):
-        """Test _check_set_completion method with best_of=True."""
+        """Test _check_set_completion method with is_race_to=True."""
         # Create mock match
         mock_match = MagicMock()
         mock_match.player1_id = 1
@@ -206,7 +206,7 @@ class TestSetModel:
             status="playing",
             match=mock_match,
             distance=3,
-            best_of=True,
+            is_race_to=True,
             player1_racks=3,
             player2_racks=1,
         )
@@ -219,7 +219,7 @@ class TestSetModel:
         set_obj._complete_set.assert_called_once_with(1)
 
     def test_check_set_completion_fixed_distance(self):
-        """Test _check_set_completion method with best_of=False."""
+        """Test _check_set_completion method with is_race_to=False."""
         # Create mock match
         mock_match = MagicMock()
         mock_match.player1_id = 1
@@ -229,7 +229,7 @@ class TestSetModel:
             status="playing",
             match=mock_match,
             distance=5,
-            best_of=False,
+            is_race_to=False,
             player1_racks=3,
             player2_racks=2,
         )
@@ -274,7 +274,7 @@ class TestSetModel:
         set_obj = Set(
             set_number=1,
             distance=5,
-            best_of=True,
+            is_race_to=True,
             discipline="palla_8",
             is_multi_discipline=False,
             player1_racks=3,

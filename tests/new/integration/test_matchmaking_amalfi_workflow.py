@@ -101,7 +101,7 @@ class TestAmalfiCompleteWorkflow:
             entry_fee=15.0,
             discipline="palla_9",
             distance=9,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy="exclude",
             director_id=creator.id,
             matchmaking_strategy="amalfi",
@@ -117,7 +117,7 @@ class TestAmalfiCompleteWorkflow:
         assert gara.max_participants == 10
         assert gara.discipline == "palla_9"
         assert gara.distance == 9
-        assert gara.best_of is True
+        assert gara.is_race_to is True
         assert gara.matchmaking_strategy == "amalfi"
         assert gara.first_round_policy == "random"
         assert gara.status == GaraStatus.SETUP.value
@@ -388,7 +388,7 @@ class TestAmalfiCompleteWorkflow:
             entry_fee=10.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -477,7 +477,7 @@ class TestAmalfiCompleteWorkflow:
             entry_fee=10.0,
             discipline="palla_9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",

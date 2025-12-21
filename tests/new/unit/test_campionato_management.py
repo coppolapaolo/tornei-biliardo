@@ -123,7 +123,7 @@ class TestCampionatoModel:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         # Still modifiable without inscriptions
@@ -175,7 +175,7 @@ class TestCampionatoModel:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         # Still deletable without inscriptions
@@ -297,7 +297,7 @@ class TestTournamentService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         _ = GaraService.create_gara(
@@ -313,7 +313,7 @@ class TestTournamentService:
             entry_fee=20.0,
             discipline="palla 8",
             distance=5,
-            best_of=False,
+            is_race_to=False,
         )
 
         # Get detail data
@@ -402,7 +402,7 @@ class TestTournamentService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         unique_id = str(uuid.uuid4())[:8]
@@ -502,7 +502,7 @@ class TestTournamentService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         unique_id = str(uuid.uuid4())[:8]

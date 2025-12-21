@@ -34,7 +34,7 @@ class TestGaraModel:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             status=GaraStatus.SETUP.value,
         )
@@ -52,7 +52,7 @@ class TestGaraModel:
         assert gara.entry_fee == 15.0
         assert gara.discipline == "palla 9"
         assert gara.distance == 7
-        assert gara.best_of is True
+        assert gara.is_race_to is True
         assert gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value
         assert gara.status == GaraStatus.SETUP.value
 
@@ -69,7 +69,7 @@ class TestGaraModel:
                 date=tomorrow,
                 discipline=discipline,
                 distance=7,
-                best_of=True,
+                is_race_to=True,
             )
             db_session.add(gara)
 
@@ -93,7 +93,7 @@ class TestGaraModel:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
         )
 
         # Exactly 7 racks
@@ -104,14 +104,14 @@ class TestGaraModel:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=False,
+            is_race_to=False,
         )
 
         db_session.add_all([best_of_gara, exact_gara])
         db_session.commit()
 
         # Test winning score calculation
-        assert best_of_gara.get_winning_score() == 4  # (7+1)/2 = 4
+        assert best_of_gara.get_winning_score() == 7  # Race-to-7
         assert exact_gara.get_winning_score() == 7  # Exactly 7
 
     def test_gara_withdraw_policies(self, db_session):
@@ -141,7 +141,7 @@ class TestGaraModel:
                 date=tomorrow,
                 discipline="palla 9",
                 distance=7,
-                best_of=True,
+                is_race_to=True,
                 withdraw_policy=policy.value,
                 director_id=director.id,  # Add director_id to fix validation
             )
@@ -174,7 +174,7 @@ class TestGaraModel:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             status=GaraStatus.SETUP.value,
             director_id=director.id,  # Add director_id to fix validation
         )
@@ -224,7 +224,7 @@ class TestGaraModel:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             status=GaraStatus.SETUP.value,
             director_id=director.id,  # Add director_id to fix validation
         )
@@ -263,7 +263,7 @@ class TestGaraModel:
             date=tomorrow,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             status=GaraStatus.SETUP.value,
         )
         db_session.add(gara)
@@ -313,7 +313,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -360,7 +360,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
         )
 
@@ -397,7 +397,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -417,7 +417,7 @@ class TestGaraService:
             entry_fee=20.0,
             discipline="palla 8",
             distance=5,
-            best_of=False,
+            is_race_to=False,
             withdraw_policy=WithdrawPolicy.FORFEIT.value,
         )
 
@@ -431,7 +431,7 @@ class TestGaraService:
         assert updated_gara.entry_fee == 20.0
         assert updated_gara.discipline == "palla 8"
         assert updated_gara.distance == 5
-        assert updated_gara.best_of is False
+        assert updated_gara.is_race_to is False
         assert updated_gara.withdraw_policy == WithdrawPolicy.FORFEIT.value
 
     def test_update_gara_with_inscriptions(self, db_session):
@@ -468,7 +468,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -514,7 +514,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -561,7 +561,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -602,7 +602,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -653,7 +653,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=main_director.id,
         )
@@ -719,7 +719,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )
@@ -772,7 +772,7 @@ class TestGaraService:
             entry_fee=15.0,
             discipline="palla 9",
             distance=7,
-            best_of=True,
+            is_race_to=True,
             withdraw_policy=WithdrawPolicy.EXCLUDE.value,
             director_id=director.id,
         )

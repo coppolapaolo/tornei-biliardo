@@ -8,7 +8,8 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match
+                            Individuali</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Crea Proposta</li>
                 </ol>
             </nav>
@@ -29,7 +30,8 @@
 
                                         <div class="mb-3">
                                             <label for="proposal_type" class="form-label">Tipo di Proposta</label>
-                                            <select class="form-select" id="proposal_type" name="proposal_type" required>
+                                            <select class="form-select" id="proposal_type" name="proposal_type"
+                                                required>
                                                 <option value="direct">Invito Diretto</option>
                                                 <option value="open">Invito Aperto alla Community</option>
                                             </select>
@@ -41,21 +43,22 @@
 
                                         <div class="mb-3">
                                             <label for="location" class="form-label">Luogo *</label>
-                                            <input type="text" class="form-control" id="location" name="location" required
-                                                   placeholder="Es: Bar Sport, Sala Biliardi Centro">
+                                            <input type="text" class="form-control" id="location" name="location"
+                                                required placeholder="Es: Bar Sport, Sala Biliardi Centro">
                                             <div class="form-text">Dove si svolgerà il match</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="scheduled_at" class="form-label">Data e Ora *</label>
-                                            <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required>
+                                            <input type="datetime-local" class="form-control" id="scheduled_at"
+                                                name="scheduled_at" required>
                                             <div class="form-text">Quando vorresti giocare</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="entry_fee" class="form-label">Entry Fee (€)</label>
                                             <input type="number" class="form-control" id="entry_fee" name="entry_fee"
-                                                   min="0" step="0.01" placeholder="0.00">
+                                                min="0" step="0.01" placeholder="0.00">
                                             <div class="form-text">Opzionale - costo per partecipare</div>
                                         </div>
                                     </div>
@@ -78,23 +81,23 @@
                                         <div class="mb-3">
                                             <label for="distance" class="form-label">Distanza *</label>
                                             <input type="number" class="form-control" id="distance" name="distance"
-                                                   min="1" max="25" value="5" required>
+                                                min="1" max="25" value="5" required>
                                             <div class="form-text">Numero di rack da giocare</div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="best_of" class="form-label">Formato *</label>
+                                            <label for="is_race_to" class="form-label">Formato *</label>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="best_of"
-                                                       id="best_of_true" value="true" checked>
-                                                <label class="form-check-label" for="best_of_true">
-                                                    Al meglio di (primo a vincere la maggioranza)
+                                                <input class="form-check-input" type="radio" name="is_race_to"
+                                                    id="is_race_to_true" value="true" checked>
+                                                <label class="form-check-label" for="is_race_to_true">
+                                                    Al (vince chi arriva a N rack)
                                                 </label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="best_of"
-                                                       id="best_of_false" value="false">
-                                                <label class="form-check-label" for="best_of_false">
+                                                <input class="form-check-input" type="radio" name="is_race_to"
+                                                    id="is_race_to_false" value="false">
+                                                <label class="form-check-label" for="is_race_to_false">
                                                     Esattamente (tutti i rack specificati)
                                                 </label>
                                             </div>
@@ -120,10 +123,11 @@
                                         <div class="row">
                                             <div class="col-md-8">
                                                 <input type="text" class="form-control" id="playerSearch"
-                                                       placeholder="Cerca giocatori per username...">
+                                                    placeholder="Cerca giocatori per username...">
                                             </div>
                                             <div class="col-md-4">
-                                                <button type="button" class="btn btn-outline-primary w-100" onclick="searchPlayers()">
+                                                <button type="button" class="btn btn-outline-primary w-100"
+                                                    onclick="searchPlayers()">
                                                     <i class="fas fa-search"></i> Cerca
                                                 </button>
                                             </div>
@@ -137,7 +141,7 @@
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Descrizione (opzionale)</label>
                                     <textarea class="form-control" id="description" name="description" rows="3"
-                                              placeholder="Aggiungi dettagli sul match, livello richiesto, note speciali..."></textarea>
+                                        placeholder="Aggiungi dettagli sul match, livello richiesto, note speciali..."></textarea>
                                 </div>
 
                                 <!-- Expiration -->
@@ -203,106 +207,105 @@
 
 {% block scripts %}
 <script>
-let selectedPlayerIds = [];
+    let selectedPlayerIds = [];
 
-// Show/hide player invitations based on proposal type
-document.getElementById('proposal_type').addEventListener('change', function() {
-    const playerInvitations = document.getElementById('playerInvitations');
-    if (this.value === 'direct') {
-        playerInvitations.style.display = 'block';
-    } else {
-        playerInvitations.style.display = 'none';
-        selectedPlayerIds = [];
-        updateSelectedPlayers();
-    }
-});
+    // Show/hide player invitations based on proposal type
+    document.getElementById('proposal_type').addEventListener('change', function () {
+        const playerInvitations = document.getElementById('playerInvitations');
+        if (this.value === 'direct') {
+            playerInvitations.style.display = 'block';
+        } else {
+            playerInvitations.style.display = 'none';
+            selectedPlayerIds = [];
+            updateSelectedPlayers();
+        }
+    });
 
-// Set minimum date to now
-document.addEventListener('DOMContentLoaded', function() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('scheduled_at').min = now.toISOString().slice(0, 16);
+    // Set minimum date to now
+    document.addEventListener('DOMContentLoaded', function () {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('scheduled_at').min = now.toISOString().slice(0, 16);
 
-    // Set default to 2 hours from now
-    const defaultTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    document.getElementById('scheduled_at').value = defaultTime.toISOString().slice(0, 16);
-});
+        // Set default to 2 hours from now
+        const defaultTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+        document.getElementById('scheduled_at').value = defaultTime.toISOString().slice(0, 16);
+    });
 
-// Update format explanation based on distance
-document.getElementById('distance').addEventListener('change', updateFormatExplanation);
-document.querySelectorAll('input[name="best_of"]').forEach(radio => {
-    radio.addEventListener('change', updateFormatExplanation);
-});
+    // Update format explanation based on distance
+    document.getElementById('distance').addEventListener('change', updateFormatExplanation);
+    document.querySelectorAll('input[name="is_race_to"]').forEach(radio => {
+        radio.addEventListener('change', updateFormatExplanation);
+    });
 
-function updateFormatExplanation() {
-    const distance = parseInt(document.getElementById('distance').value);
-    const bestOf = document.querySelector('input[name="best_of"]:checked').value === 'true';
+    function updateFormatExplanation() {
+        const distance = parseInt(document.getElementById('distance').value);
+        const isRaceTo = document.querySelector('input[name="is_race_to"]:checked').value === 'true';
 
-    const explanation = document.querySelector('label[for="best_of_true"]');
-    if (bestOf) {
-        const toWin = Math.ceil(distance / 2);
-        explanation.textContent = `Al meglio di (primo a ${toWin} vittorie su ${distance})`;
-    } else {
-        explanation.textContent = 'Al meglio di (primo a vincere la maggioranza)';
-    }
-}
-
-// Mock player search functionality
-function searchPlayers() {
-    const query = document.getElementById('playerSearch').value.trim();
-    const resultsDiv = document.getElementById('playerSearchResults');
-
-    if (!query) {
-        resultsDiv.innerHTML = '<small class="text-muted">Inserisci un username per cercare</small>';
-        return;
+        const explanation = document.querySelector('label[for="is_race_to_true"]');
+        if (isRaceTo) {
+            explanation.textContent = `Al ${distance} (chi arriva prima a ${distance} vince)`;
+        } else {
+            explanation.textContent = `Esattamente ${distance} rack (vincitore per somma punti)`;
+        }
     }
 
-    // This would be replaced with actual AJAX call to search players
-    resultsDiv.innerHTML = `
+    // Mock player search functionality
+    function searchPlayers() {
+        const query = document.getElementById('playerSearch').value.trim();
+        const resultsDiv = document.getElementById('playerSearchResults');
+
+        if (!query) {
+            resultsDiv.innerHTML = '<small class="text-muted">Inserisci un username per cercare</small>';
+            return;
+        }
+
+        // This would be replaced with actual AJAX call to search players
+        resultsDiv.innerHTML = `
         <div class="alert alert-info">
             <small>In un'implementazione reale, qui verrebbero mostrati i risultati della ricerca per "${query}".</small>
             <br><small>Per il momento, questa è solo un'interfaccia dimostrativa.</small>
         </div>
     `;
-}
-
-function updateSelectedPlayers() {
-    const selectedDiv = document.getElementById('selectedPlayers');
-    if (selectedPlayerIds.length === 0) {
-        selectedDiv.innerHTML = '';
-        return;
     }
 
-    selectedDiv.innerHTML = '<small class="text-muted">Giocatori selezionati:</small>';
-}
+    function updateSelectedPlayers() {
+        const selectedDiv = document.getElementById('selectedPlayers');
+        if (selectedPlayerIds.length === 0) {
+            selectedDiv.innerHTML = '';
+            return;
+        }
 
-// Form submission
-document.getElementById('proposalForm').addEventListener('submit', function(e) {
-    const proposalType = document.getElementById('proposal_type').value;
-
-    if (proposalType === 'direct' && selectedPlayerIds.length === 0) {
-        e.preventDefault();
-        alert('Devi selezionare almeno un giocatore per un invito diretto');
-        return;
+        selectedDiv.innerHTML = '<small class="text-muted">Giocatori selezionati:</small>';
     }
 
-    // Add selected players to form
-    if (proposalType === 'direct') {
-        selectedPlayerIds.forEach((playerId, index) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'invited_user_ids';
-            input.value = playerId;
-            this.appendChild(input);
-        });
-    }
+    // Form submission
+    document.getElementById('proposalForm').addEventListener('submit', function (e) {
+        const proposalType = document.getElementById('proposal_type').value;
 
-    return confirm('Sei sicuro di voler creare questa proposta di match?');
-});
+        if (proposalType === 'direct' && selectedPlayerIds.length === 0) {
+            e.preventDefault();
+            alert('Devi selezionare almeno un giocatore per un invito diretto');
+            return;
+        }
 
-// Initialize format explanation
-document.addEventListener('DOMContentLoaded', function() {
-    updateFormatExplanation();
-});
+        // Add selected players to form
+        if (proposalType === 'direct') {
+            selectedPlayerIds.forEach((playerId, index) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'invited_user_ids';
+                input.value = playerId;
+                this.appendChild(input);
+            });
+        }
+
+        return confirm('Sei sicuro di voler creare questa proposta di match?');
+    });
+
+    // Initialize format explanation
+    document.addEventListener('DOMContentLoaded', function () {
+        updateFormatExplanation();
+    });
 </script>
 {% endblock %}

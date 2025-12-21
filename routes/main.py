@@ -419,7 +419,7 @@ def debug_complete_current_round(gara_id):
             continue
 
         # Genera risultati random basati sulla modalità gara
-        if gara.best_of:
+        if gara.is_race_to:
             # Al meglio di N - il vincitore deve arrivare a get_winning_score()
             winning_score = gara.get_winning_score()
             loser_score = random.randint(0, winning_score - 1)
