@@ -121,8 +121,10 @@ gara.best_of = False  # Always False for Race to N
 if match.player1_score >= gara.distance:
     # Player 1 won (reached 5 racks first)
 
-# Maximum possible racks
-max_racks = (2 * gara.distance) - 1  # = 9 for race to 5
+# ✅ Use value objects for business logic
+from models.match.distance import Distance
+distance = Distance.from_gara(gara)
+winning_racks = distance.get_winning_racks()  # = 5 for race to 5
 
 # ❌ WRONG - Old "Best of" thinking
 gara.distance = 9  # This means "race to 9", not "best of 9"
@@ -231,21 +233,23 @@ matches = service.create_next_round()
 **IMPORTANT**: Recent refactoring introduced immutable value objects for Distance and Score.
 
 ```python
-from models.match.value_objects import Distance, Score
+from models.match.distance import Distance
+from models.match.score import RackScore
 
-# ✅ CORRECT - Use value objects for business logic
-distance = Distance(5)  # Race to 5
-max_racks = distance.max_racks  # 9 (calculated: 2*5-1)
-score = Score(player1_racks=3, player2_racks=2, distance=distance)
-is_finished = score.is_match_finished()  # False (neither reached 5)
+# ✅ CORRECT - Use value objects via factory methods
+distance = Distance.from_gara(gara)  # Create from Gara model
+winning_racks = distance.get_winning_racks()  # Racks needed to win
 
-# ✅ DISPLAY - Use format methods
-display = distance.format()  # "Al 5"
-short = distance.format_short()  # "5"
-score_display = score.format()  # "3-2"
+# ✅ CORRECT - Use via model properties
+distance_cfg = match.distance_config  # Property accessor
+rack_score = match.rack_score  # RackScore value object
+
+# ✅ DISPLAY - Use to_display_string() or Jinja filters
+display = distance.to_display_string()  # "Al 5 rack"
+# In templates: {{ match.distance_config|format_distance }}
 
 # ❌ WRONG - Don't use raw integers for business logic
-max_racks = (2 * 5) - 1  # Duplicates business logic, error-prone
+# (Note: max_racks calculation not needed in current business logic)
 ```
 
 ---
@@ -308,13 +312,13 @@ if gara.status == GaraStatus.PLAYING:
 
 #### 4. Distance Value Objects
 ```python
-# ✅ CORRECT - Use value objects
-from models.match.value_objects import Distance
-distance = Distance(gara.distance)
-max_racks = distance.max_racks
+# ✅ CORRECT - Use value objects via factory methods
+from models.match.distance import Distance
+distance = Distance.from_gara(gara)
+winning_racks = distance.get_winning_racks()
 
-# ❌ WRONG - Raw calculation
-max_racks = (2 * gara.distance) - 1  # Duplicates logic
+# ✅ CORRECT - Use via model properties
+distance_cfg = match.distance_config  # Available on Match models
 ```
 
 #### 5. Test Execution Path
@@ -415,12 +419,15 @@ def create_gara(data):
 
 ### 5. Not Using Value Objects
 ```python
-# ❌ WRONG - Raw calculation duplicates logic
-max_racks = (2 * gara.distance) - 1
+# ✅ CORRECT - Use value objects via factory methods
+from models.match.distance import Distance
+distance = Distance.from_gara(gara)
+winning_racks = distance.get_winning_racks()
+display_text = distance.to_display_string()  # "Al 5 rack"
 
-# ✅ CORRECT - Use value object
-distance = Distance(gara.distance)
-max_racks = distance.max_racks
+# ✅ CORRECT - Use via model properties (when available)
+distance_cfg = match.distance_config
+rack_score = match.rack_score
 ```
 
 ---
