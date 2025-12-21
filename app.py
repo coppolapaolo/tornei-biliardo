@@ -26,7 +26,7 @@ def create_app(config_name=None):
     # Crea app Flask
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    
+
     # Configura logging per debug
     if config_name == "development":
         logging.basicConfig(
@@ -34,7 +34,9 @@ def create_app(config_name=None):
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         # Abilita logging per i nostri moduli
-        logging.getLogger('models.match.table_assignment_service').setLevel(logging.INFO)
+        logging.getLogger(
+            'models.match.table_assignment_service'
+        ).setLevel(logging.INFO)
         logging.getLogger('routes.admin.match').setLevel(logging.INFO)
 
     # Inizializza estensioni
@@ -119,7 +121,13 @@ def create_app(config_name=None):
     register_status_filters(app)
 
     # Register formatting filters
-    from utils.jinja import format_distance, format_score, format_distance_short, gara_display_name, player_name_with_forfeit
+    from utils.jinja import (
+        format_distance,
+        format_score,
+        format_distance_short,
+        gara_display_name,
+        player_name_with_forfeit,
+    )
 
     app.jinja_env.filters["format_distance"] = format_distance
     app.jinja_env.filters["format_score"] = format_score
