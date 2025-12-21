@@ -26,7 +26,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     )
     round_number = db.Column(
         db.Integer, nullable=False
-    )  # 1, 2, 3. TODO: non sono sicuro che round_number sia una proprieta' di Match e che Match debba sapere qual e' il suo round. da verificare il modello
+    )  # 1, 2, 3. RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-003. Decision: Keep as integer field (YAGNI).
 
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -233,7 +233,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         self,
     ) -> (
         "Set"
-    ):  # TODO: non sono sicuro che la gestione dei set vada fatta in Match. da verificare la progettazione dell'Abstract data type
+    ):  # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-004. Decision: Match is aggregate root for Sets.
         """Start the next set in a multi-set match."""
         if not self.is_multi_set:
             raise ValueError("This is not a multi-set match")
@@ -471,7 +471,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     def _check_and_complete_gara_if_needed(
         self, match_obj
-    ):  # TODO: perche' qui si occupa della gara? un match, dal punto di vista astratto non dovrebbe nemmeno sapere cos'e' una gara.
+    ):  # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-001. Decision: Keep coupling for pragmatic reasons.
         """Controlla se tutti i match della gara sono completati e completa automaticamente la gara"""
         try:
             from models.competition.services import GaraService

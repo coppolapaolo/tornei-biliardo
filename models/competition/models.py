@@ -34,9 +34,8 @@ class Gara(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # FK nullable per supportare standalone competitions
-    # TODO: è giusto che gara sappia di campionato? oppure sarebbe piu'
-    # corretto che fosse modellata con una relazione e fosse campionato a
-    # sapere di gara?
+    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002.
+    # Decision: Keep FK in Gara (natural direction, efficient queries).
     campionato_id = db.Column(
         db.Integer, db.ForeignKey("campionato.id", ondelete="CASCADE"),
         nullable=True
@@ -45,8 +44,8 @@ class Gara(db.Model):
     # Director FK per standalone competitions
     director_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
 
-    # TODO: number è informazione relativa a Campionato e non a gara
-    # e dovrebbe essere modellata dentro campionato
+    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-005.
+    # Decision: Keep on Gara, add validation for standalone gare.
     number = db.Column(db.Integer, nullable=False)  # 1-10
     name = db.Column(db.String(100))
     date = db.Column(db.Date, nullable=False)
@@ -148,8 +147,8 @@ class Gara(db.Model):
         """Check if this is a standalone competition."""
         return self.campionato_id is None
 
-    # TODO: da rivedere se si cambia il modello ed e' Campionato l'unico a
-    # sapere di gara
+    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002.
+    # Decision: Keep bidirectional - Gara has FK, Campionato has property.
     def get_display_name(self):
         """Get display name including campionato/standalone info."""
         if self.is_standalone:
