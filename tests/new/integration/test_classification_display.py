@@ -60,8 +60,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.now()
-            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            gara.inscription_start = datetime.utcnow()
+            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status
@@ -300,8 +300,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before starting tournament
-            gara.inscription_start = datetime.now()
-            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            gara.inscription_start = datetime.utcnow()
+            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
             db.session.commit()
 
             # Start tournament but don't complete any matches
@@ -365,8 +365,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.now()
-            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            gara.inscription_start = datetime.utcnow()
+            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status
@@ -473,8 +473,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.now()
-            gara.inscription_end = datetime.now() + timedelta(hours=24)
+            gara.inscription_start = datetime.utcnow()
+            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status

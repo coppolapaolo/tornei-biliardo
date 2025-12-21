@@ -110,8 +110,8 @@ class TestUseCaseGuestAccess:
         )
 
         # Open inscriptions for second tournament
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=24)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=24)
         GaraService.open_inscriptions(
             gara_inscription.id, inscription_start, inscription_end
         )
@@ -143,8 +143,8 @@ class TestUseCaseGuestAccess:
         for player in players_8[:6]:
             InscriptionService.inscribe_user(player.id, gara_playing.id)
 
-        inscription_start_playing = datetime.now() - timedelta(hours=2)
-        inscription_end_playing = datetime.now() - timedelta(hours=1)
+        inscription_start_playing = datetime.utcnow() - timedelta(hours=2)
+        inscription_end_playing = datetime.utcnow() - timedelta(hours=1)
         GaraService.open_inscriptions(
             gara_playing.id, inscription_start_playing, inscription_end_playing
         )
@@ -237,8 +237,8 @@ class TestUseCaseGuestAccess:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start tournament
-        inscription_start = datetime.now() - timedelta(hours=2)
-        inscription_end = datetime.now() - timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=2)
+        inscription_end = datetime.utcnow() - timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -363,8 +363,8 @@ class TestUseCaseGuestAccess:
         for player in players_8[:6]:  # 6 players
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() - timedelta(minutes=30)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() - timedelta(minutes=30)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -564,8 +564,8 @@ class TestUseCaseGuestAPIAccess:
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() - timedelta(minutes=30)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() - timedelta(minutes=30)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

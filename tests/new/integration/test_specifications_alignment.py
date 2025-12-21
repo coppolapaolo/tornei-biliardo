@@ -50,7 +50,7 @@ class TestSpecificationsAlignmentFixed:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
         )
 
         assert gara.status == GaraStatus.SETUP.value
@@ -67,8 +67,8 @@ class TestSpecificationsAlignmentFixed:
         assert len(inscriptions) == 8
 
         # Step 3: Open inscriptions and start first round
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -142,7 +142,7 @@ class TestSpecificationsAlignmentFixed:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
         )
 
         assert gara.matchmaking_strategy == "random"
@@ -151,8 +151,8 @@ class TestSpecificationsAlignmentFixed:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -203,7 +203,7 @@ class TestSpecificationsAlignmentFixed:
             inscription_end=datetime.combine(
                 date.today() + timedelta(days=1), datetime.min.time()
             ),
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
         )
 
         # Make tournament visible
@@ -303,7 +303,7 @@ class TestSpecificationsAlignmentFixed:
             is_race_to=True,
             director_id=director_user.id,
             matchmaking_strategy="amalfi",
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
         )
 
         # Verify director owns tournament
@@ -346,15 +346,15 @@ class TestSpecificationsAlignmentFixed:
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             anti_rematch_enabled=True,
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
         )
 
         # Setup and start
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -422,12 +422,12 @@ class TestSpecificationsAlignmentFixed:
             is_race_to=True,
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
-            time=datetime.now().time(),
+            time=datetime.utcnow().time(),
         )
 
         # Open inscriptions
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=24)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=24)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # First 6 players inscribe (should be confirmed)

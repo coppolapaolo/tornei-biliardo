@@ -112,8 +112,8 @@ class TestUIFrontendBehaviors:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -217,8 +217,8 @@ class TestUIFrontendBehaviors:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -317,8 +317,8 @@ class TestUIFrontendBehaviors:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

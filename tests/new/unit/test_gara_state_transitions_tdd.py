@@ -100,8 +100,8 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -162,8 +162,8 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Complete full workflow to PLAYING state
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -255,8 +255,8 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Complete setup to PLAYING
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -328,8 +328,8 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -420,8 +420,8 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Set inscription dates
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -465,8 +465,8 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Transition should validate strategy configuration
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -508,8 +508,8 @@ class TestGaraStateTransitionsTDD:
         original_gara_id = gara.id
 
         # Set inscription dates and transition
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )

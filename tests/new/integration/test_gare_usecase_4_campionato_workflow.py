@@ -203,7 +203,7 @@ class TestUseCaseCampionatoWorkflow:
             entity_type="campionato",
             entity_id=campionato.id,
             assigned_by_id=admin_user.id,
-            assigned_at=datetime.now(),
+            assigned_at=datetime.utcnow(),
         )
         db_session.add(co_director_assignment)
         db_session.commit()
@@ -437,12 +437,12 @@ class TestUseCaseCampionatoWorkflow:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Open inscriptions with short window
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(minutes=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(minutes=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Simulate inscription expiry
-        gara.inscription_end = datetime.now() - timedelta(minutes=1)
+        gara.inscription_end = datetime.utcnow() - timedelta(minutes=1)
         db_session.add(gara)
         db_session.commit()
 
@@ -468,8 +468,8 @@ class TestUseCaseCampionatoWorkflow:
     def _complete_full_gara(self, gara: Gara, players: List[User], db_session) -> None:
         """Complete a full gara with all rounds."""
         # Open inscriptions and start
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -842,8 +842,8 @@ class TestUseCaseCampionatoVariants:
         self, gara: Gara, players: List[User], db_session
     ) -> None:
         """Complete a full gara with simplified logic."""
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

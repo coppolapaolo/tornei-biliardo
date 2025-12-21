@@ -44,8 +44,8 @@ class TestStateServiceTDD:
             distance=5,
             director_id=isolated_director_user.id,
             status=GaraStatus.SETUP.value,
-            inscription_start=datetime.now() + timedelta(minutes=10),
-            inscription_end=datetime.now() + timedelta(days=1),
+            inscription_start=datetime.utcnow() + timedelta(minutes=10),
+            inscription_end=datetime.utcnow() + timedelta(days=1),
         )
         db_session.add(gara)
         db_session.commit()

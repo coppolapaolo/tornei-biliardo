@@ -95,8 +95,8 @@ class TestAntiRematchBug:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Apri iscrizioni e avvia primo turno
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -285,8 +285,8 @@ class TestAntiRematchBug:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Avvia la gara
-        inscription_start = datetime.now()
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow()
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

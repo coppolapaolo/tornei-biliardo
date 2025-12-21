@@ -271,11 +271,11 @@ class TestUserWorkflowsComplete:
             proposer_id=player1.id,
             invited_player_id=player2.id,
             location=venue.name,
-            proposed_date=datetime.now() + timedelta(days=2),
+            proposed_date=datetime.utcnow() + timedelta(days=2),
             discipline="palla_8",
             distance=5,
             description="Match proposto da player workflow",
-            expires_at=datetime.now() + timedelta(days=1),
+            expires_at=datetime.utcnow() + timedelta(days=1),
         )
         db_session.commit()  # Ensure match proposal is saved
 
@@ -310,11 +310,11 @@ class TestUserWorkflowsComplete:
         open_proposal = IndividualMatchService.create_open_proposal(
             proposer_id=player1.id,
             location=venue.name,
-            scheduled_at=datetime.now() + timedelta(days=3),
+            scheduled_at=datetime.utcnow() + timedelta(days=3),
             discipline="palla_9",
             distance=7,
             description="Match aperto a tutti",
-            expires_at=datetime.now() + timedelta(hours=48),
+            expires_at=datetime.utcnow() + timedelta(hours=48),
         )
 
         # Players with venue availability should get notifications
@@ -341,8 +341,8 @@ class TestUserWorkflowsComplete:
         )
 
         # Open inscriptions
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(days=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(days=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Player 1 inscribes
@@ -468,8 +468,8 @@ class TestUserWorkflowsComplete:
         db_session.commit()
 
         # Open inscriptions
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(days=2)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(days=2)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Players inscribe
@@ -648,8 +648,8 @@ class TestUserWorkflowsComplete:
         )
 
         # Open inscriptions
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(days=2)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(days=2)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # First 3 players inscribe (confirmed)
@@ -701,11 +701,11 @@ class TestUserWorkflowsComplete:
             proposer_id=players[0].id,
             invited_player_id=players[1].id,
             location=guest_venues[0].name,
-            proposed_date=datetime.now() + timedelta(days=1),
+            proposed_date=datetime.utcnow() + timedelta(days=1),
             discipline="palla_9",
             distance=5,
             description="Notification test match",
-            expires_at=datetime.now() + timedelta(hours=24),
+            expires_at=datetime.utcnow() + timedelta(hours=24),
         )
 
         # Player should receive notification
@@ -805,8 +805,8 @@ class TestUserWorkflowsComplete:
                 InscriptionService.inscribe_user(player.id, gara.id)
 
             # Complete gara (simplified)
-            inscription_start = datetime.now() - timedelta(hours=1)
-            inscription_end = datetime.now() + timedelta(hours=1)
+            inscription_start = datetime.utcnow() - timedelta(hours=1)
+            inscription_end = datetime.utcnow() + timedelta(hours=1)
             GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
             GaraService.start_first_round(gara.id)
 

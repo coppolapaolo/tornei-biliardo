@@ -116,8 +116,8 @@ class TestUseCaseRoundRobinMultiSet:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Step 3: Start tournament
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -362,8 +362,8 @@ class TestUseCaseRoundRobinVariants:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start tournament
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=1)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -462,8 +462,8 @@ class TestUseCaseRoundRobinVariants:
         )
 
         # Open inscriptions
-        inscription_start = datetime.now() - timedelta(hours=1)
-        inscription_end = datetime.now() + timedelta(hours=2)
+        inscription_start = datetime.utcnow() - timedelta(hours=1)
+        inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # First 6 players inscribe (should be confirmed)

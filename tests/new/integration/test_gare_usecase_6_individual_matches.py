@@ -179,7 +179,7 @@ class TestUseCaseIndividualMatches:
             # Same session issue workaround as Use Case 7
             proposal.status = ProposalStatus.ACCEPTED
             proposal.accepted_by_id = player2.id
-            proposal.accepted_at = datetime.now()
+            proposal.accepted_at = datetime.utcnow()
 
             # Create the individual match manually
             individual_match = IndividualMatch(
@@ -198,9 +198,9 @@ class TestUseCaseIndividualMatches:
 
             # Update invitation statuses
             invitation1.status = InvitationStatus.ACCEPTED
-            invitation1.responded_at = datetime.now()
+            invitation1.responded_at = datetime.utcnow()
             invitation2.status = InvitationStatus.REJECTED
-            invitation2.responded_at = datetime.now()
+            invitation2.responded_at = datetime.utcnow()
 
         db_session.commit()
 
@@ -452,7 +452,7 @@ class TestUseCaseIndividualMatches:
             # Same session issue workaround as the main test
             proposal.status = ProposalStatus.ACCEPTED
             proposal.accepted_by_id = player1.id
-            proposal.accepted_at = datetime.now()
+            proposal.accepted_at = datetime.utcnow()
 
             individual_match = IndividualMatch(
                 proposal_id=proposal.id,
@@ -468,7 +468,7 @@ class TestUseCaseIndividualMatches:
             )
             db_session.add(individual_match)
             invitation.status = InvitationStatus.ACCEPTED
-            invitation.responded_at = datetime.now()
+            invitation.responded_at = datetime.utcnow()
 
         db_session.commit()
 
@@ -605,7 +605,7 @@ class TestUseCaseIndividualMatches:
         # Manual acceptance process
         proposal.status = ProposalStatus.ACCEPTED
         proposal.accepted_by_id = player2.id
-        proposal.accepted_at = datetime.now()
+        proposal.accepted_at = datetime.utcnow()
 
         match = IndividualMatch(
             proposal_id=proposal.id,
@@ -621,7 +621,7 @@ class TestUseCaseIndividualMatches:
         )
         db_session.add(match)
         invitation.status = InvitationStatus.ACCEPTED
-        invitation.responded_at = datetime.now()
+        invitation.responded_at = datetime.utcnow()
         db_session.commit()
 
         # Step 2: Players play first few racks normally
@@ -803,7 +803,7 @@ class TestUseCaseFrontendIntegration:
         invitation = cast(List[ProposalInvitation], proposal.invitations)[0]
         proposal.status = ProposalStatus.ACCEPTED
         proposal.accepted_by_id = player2.id
-        proposal.accepted_at = datetime.now()
+        proposal.accepted_at = datetime.utcnow()
 
         individual_match = IndividualMatch(
             proposal_id=proposal.id,
@@ -819,7 +819,7 @@ class TestUseCaseFrontendIntegration:
         )
         db_session.add(individual_match)
         invitation.status = InvitationStatus.ACCEPTED
-        invitation.responded_at = datetime.now()
+        invitation.responded_at = datetime.utcnow()
         db_session.commit()
 
         # Verify match was created

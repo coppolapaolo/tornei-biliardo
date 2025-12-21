@@ -38,13 +38,13 @@ class TestInscriptionServiceTransactionMigration:
                 number=1,  # Required field
                 name="Test Gara",
                 description="Test description",
-                date=datetime.now().date() + timedelta(days=7),
+                date=datetime.utcnow().date() + timedelta(days=7),
                 discipline="8ball",  # Required field
                 distance=3,  # Required field (number of racks)
                 max_participants=10,
                 min_participants=4,
-                inscription_start=datetime.now() - timedelta(hours=1),
-                inscription_end=datetime.now() + timedelta(hours=24),
+                inscription_start=datetime.utcnow() - timedelta(hours=1),
+                inscription_end=datetime.utcnow() + timedelta(hours=24),
                 status=GaraStatus.INSCRIPTION.value,
             )
             db.session.add(gara)
@@ -197,8 +197,8 @@ class TestInscriptionServiceTransactionMigration:
         """
         with app.app_context():
             # Arrange: new dates
-            new_start = datetime.now() + timedelta(hours=2)
-            new_end = datetime.now() + timedelta(hours=48)
+            new_start = datetime.utcnow() + timedelta(hours=2)
+            new_end = datetime.utcnow() + timedelta(hours=48)
 
             # Act: modify inscription dates
             updated_gara = InscriptionService.modify_inscription_dates(
