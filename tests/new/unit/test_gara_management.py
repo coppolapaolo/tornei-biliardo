@@ -81,15 +81,15 @@ class TestGaraModel:
         for gara, expected_discipline in zip(saved_gare, disciplines):
             assert gara.discipline == expected_discipline
 
-    def test_gara_best_of_vs_exact(self, db_session):
-        """Test best_of vs exact number scoring."""
+    def test_gara_race_to_vs_exact(self, db_session):
+        """Test race-to vs exact number scoring."""
         tomorrow = date.today() + timedelta(days=1)
 
-        # Best of 7 (first to 4 wins)
-        best_of_gara = Gara(
+        # Race to 7 (first to 7 wins)
+        race_to_gara = Gara(
             campionato_id=None,
             number=1,
-            name="Best of 7",
+            name="Race to 7",
             date=tomorrow,
             discipline="palla 9",
             distance=7,
@@ -107,11 +107,11 @@ class TestGaraModel:
             is_race_to=False,
         )
 
-        db_session.add_all([best_of_gara, exact_gara])
+        db_session.add_all([race_to_gara, exact_gara])
         db_session.commit()
 
         # Test winning score calculation
-        assert best_of_gara.get_winning_score() == 7  # Race-to-7
+        assert race_to_gara.get_winning_score() == 7  # Race-to-7 (first to 7)
         assert exact_gara.get_winning_score() == 7  # Exactly 7
 
     def test_gara_withdraw_policies(self, db_session):

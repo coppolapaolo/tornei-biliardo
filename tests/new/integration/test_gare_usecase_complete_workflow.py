@@ -26,12 +26,12 @@ from models.individual_match.services import IndividualMatchService
 class TestUseCaseGareComplete:
     """Test all 8 use cases from docs/usecases/gare.md with variants"""
 
-    def test_use_case_1_admin_amalfi_standalone_best_of_9(
+    def test_use_case_1_admin_amalfi_standalone_race_to_9(
         self, isolated_admin_user, isolated_players, db_session, client
     ):
         """
         Use Case 1: Admin creates standalone gara with Amalfi strategy
-        - 3 rounds, amalfi strategy, min 6, max 10, palla_9 best-of-9
+        - 3 rounds, amalfi strategy, min 6, max 10, palla_9 race-to-9 (Al 9)
         - Random first pairing, X for odd players
         - Spot shot rally challenge for tiebreakers
         - Test with 8 players (main variant)
@@ -47,14 +47,14 @@ class TestUseCaseGareComplete:
             name="Use Case 1 - Amalfi Standalone",
             date=date.today() + timedelta(days=1),
             location="Pool Hall UC1",
-            description="9-ball amalfi tournament best-of-9",
+            description="9-ball amalfi tournament race-to-9",
             rounds_count=3,
             min_participants=6,
             max_participants=10,
             entry_fee=15.0,
             discipline="palla_9",
             distance=9,
-            is_race_to=True,  # Best-of-9
+            is_race_to=True,  # Race-to-9 (first to 9 wins)
             director_id=admin_user.id,
             matchmaking_strategy="amalfi",
             first_round_policy="random",
@@ -98,7 +98,7 @@ class TestUseCaseGareComplete:
             # Complete matches with realistic results
             for i, match in enumerate(matches):
                 if not match.is_bye:
-                    self._complete_match_best_of(match, 5, 2 + (i % 3), db_session)
+                    self._complete_match_race_to(match, 5, 2 + (i % 3), db_session)
 
         # Step 6: Calculate final classification
         RoundClassification.calculate_classification_after_round(gara.id, 3)
@@ -241,7 +241,7 @@ class TestUseCaseGareComplete:
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         for match in round1_matches:
             if not match.is_bye:
-                self._complete_match_best_of(match, 5, 3, db_session)
+                self._complete_match_race_to(match, 5, 3, db_session)
 
         # Step 5: Players complete challenges (2 attempts each)
         for player in players_8:
@@ -274,7 +274,7 @@ class TestUseCaseGareComplete:
             ).all()
             for match in matches:
                 if not match.is_bye:
-                    self._complete_match_best_of(match, 5, 2, db_session)
+                    self._complete_match_race_to(match, 5, 2, db_session)
 
             RoundClassification.calculate_classification_after_round(gara.id, round_num)
 
@@ -425,7 +425,7 @@ class TestUseCaseGareComplete:
                 ).all()
                 for match in matches:
                     if not match.is_bye:
-                        self._complete_match_best_of(
+                        self._complete_match_race_to(
                             match, 3, 1 + (round_num % 2), db_session
                         )
 
@@ -505,7 +505,7 @@ class TestUseCaseGareComplete:
             before_data = response.data.decode("utf-8")
 
         # Complete match
-        self._complete_match_best_of(first_match, 3, 1, db_session)
+        self._complete_match_race_to(first_match, 3, 1, db_session)
 
         # After completing match - should see result
         response = client.get(f"/gara/{gara.id}")
@@ -748,7 +748,7 @@ class TestUseCaseGareComplete:
             ).all()
             for match in matches:
                 if not match.is_bye:
-                    self._complete_match_best_of(match, 3, 1, db_session)
+                    self._complete_match_race_to(match, 3, 1, db_session)
 
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
@@ -768,7 +768,7 @@ class TestUseCaseGareComplete:
         # Classification should revert to round 1 state
 
         # Step 4: Re-complete match with different result
-        self._complete_match_best_of(target_match, 3, 2, db_session)  # Different score
+        self._complete_match_race_to(target_match, 3, 2, db_session)  # Different score
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Step 5: Start round 3 - rounds 1-2 should lock
@@ -799,10 +799,10 @@ class TestUseCaseGareComplete:
 
     # Helper methods
 
-    def _complete_match_best_of(
+    def _complete_match_race_to(
         self, match: Match, winner_racks: int, loser_racks: int, db_session
     ) -> None:
-        """Complete match with best-of logic."""
+        """Complete match with race-to logic."""
         if match.is_bye:
             return
 
@@ -848,7 +848,7 @@ class TestUseCaseGareComplete:
             total_racks == match.match_distance
         ), f"Total racks {total_racks} != distance {match.match_distance}"
 
-        self._complete_match_best_of(match, winner_racks, loser_racks, db_session)
+        self._complete_match_race_to(match, winner_racks, loser_racks, db_session)
 
     def _complete_match_multi_set(
         self, match: Match, set_results: List[tuple], db_session
@@ -859,6 +859,6 @@ class TestUseCaseGareComplete:
         total_winner_racks = sum(result[0] for result in set_results)
         total_loser_racks = sum(result[1] for result in set_results)
 
-        self._complete_match_best_of(
+        self._complete_match_race_to(
             match, total_winner_racks, total_loser_racks, db_session
         )
