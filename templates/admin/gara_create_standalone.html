@@ -3,207 +3,361 @@
 {% block title %}Crea Gara Singola{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<style>
+    .wizard-step {
+        display: none;
+    }
+
+    .wizard-step.active {
+        display: block;
+    }
+
+    .wizard-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .wizard-progress::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 1;
+        transform: translateY(-50%);
+    }
+
+    .progress-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        height: 2px;
+        background-color: #0d6efd;
+        z-index: 2;
+        transform: translateY(-50%);
+        transition: width 0.3s ease;
+        width: 0%;
+    }
+
+    .progress-node {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 3;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .progress-node.active {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+
+    .progress-node.completed {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+
+    .summary-card {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+    }
+
+    @media (max-width: 576px) {
+        .wizard-progress {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-node {
+            width: 30px;
+            height: 30px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<div class="container mt-4 mb-5">
     <div class="row">
         <div class="col-md-8 mx-auto">
-            <h2>🎱 Crea Gara Singola</h2>
-            <p class="text-muted">Crea una competizione indipendente, non legata a nessun campionato.</p>
-            
-            <form method="POST" action="{{ url_for('admin.competition.create_gara_standalone') }}">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Informazioni Base</h5>
-                        
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nome Competizione</label>
-                            <input type="text" class="form-control" id="name" name="name" 
-                                   placeholder="es. Memorial Rossi 2025" required>
-                            <!-- Numero sempre 1 per gare standalone -->
-                            <input type="hidden" name="number" value="1">
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="date" class="form-label">Data</label>
+            <div class="d-flex align-items-center mb-4">
+                <span class="fs-2 me-3">🎱</span>
+                <div>
+                    <h2 class="mb-0">Crea Gara Singola</h2>
+                    <p class="text-muted mb-0">Procedura guidata per la creazione di una competizione indipendente.</p>
+                </div>
+            </div>
+
+            <!-- Wizard Progress -->
+            <div class="wizard-progress">
+                <div class="progress-line" id="progress-line"></div>
+                <div class="progress-node active" data-step="1">1</div>
+                <div class="progress-node" data-step="2">2</div>
+                <div class="progress-node" data-step="3">3</div>
+                <div class="progress-node" data-step="4">4</div>
+            </div>
+
+            <form id="gara-form" method="POST" action="{{ url_for('admin.competition.create_gara_standalone') }}">
+                <!-- STEP 1: DATI INFORMATIVI -->
+                <div class="wizard-step active" id="step-1">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4"><i class="fas fa-info-circle text-primary me-2"></i> 1.
+                                Informazioni Pubbliche</h5>
+                            <p class="text-muted small">Questi dati saranno visibili ai giocatori e servono a
+                                identificare la gara.</p>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome Competizione <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                    placeholder="es. Memorial Rossi 2025" required>
+                                <input type="hidden" name="number" value="1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="discipline" class="form-label">Disciplina <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="discipline" name="discipline" required>
+                                    <option value="">Seleziona disciplina...</option>
+                                    {% for value, label in discipline_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-7 mb-3">
+                                    <label for="date" class="form-label">Data <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="date" name="date" required>
                                 </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="mb-3">
-                                    <label for="time" class="form-label">Ora</label>
+                                <div class="col-sm-5 mb-3">
+                                    <label for="time" class="form-label">Ora Inizio</label>
                                     <input type="time" class="form-control" id="time" name="time" value="20:00">
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="location" class="form-label">Luogo</label>
-                                    <input type="text" class="form-control" id="location" name="location" 
-                                           placeholder="es. Circolo Biliardo Milano" 
-                                           list="venue-suggestions"
-                                           autocomplete="off">
-                                    <datalist id="venue-suggestions">
-                                        <!-- Venue verificate -->
-                                        {% if verified_venues %}
-                                            {% for venue in verified_venues %}
-                                            <option value="{{ venue.name }}" data-tables="{{ venue.number_of_tables or 0 }}">{{ venue.name }} - {{ venue.city or 'Città non specificata' }}</option>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </datalist>
-                                    <small class="text-muted">
-                                        <i class="fas fa-info-circle"></i> 
-                                        Seleziona da sale verificate o inserisci nuovo nome
-                                    </small>
+
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Luogo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    <input type="text" class="form-control" id="location" name="location"
+                                        placeholder="es. Circolo Biliardo Milano" list="venue-suggestions"
+                                        autocomplete="off">
+                                </div>
+                                <datalist id="venue-suggestions">
+                                    {% if verified_venues %}
+                                    {% for venue in verified_venues %}
+                                    <option value="{{ venue.name }}" data-tables="{{ venue.number_of_tables or 0 }}">
+                                        {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </datalist>
+                                <small class="text-muted">Seleziona una sala esistente o scrivine una nuova.</small>
+                            </div>
+
+                            <div class="mb-3" id="tables-container" style="display: none;">
+                                <label for="number_of_tables" class="form-label">Numero Tavoli (per nuova sala)</label>
+                                <input type="number" class="form-control" id="number_of_tables" name="number_of_tables"
+                                    placeholder="0" min="1" max="50">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="entry_fee" class="form-label">Quota Iscrizione (€)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    <input type="number" class="form-control" id="entry_fee" name="entry_fee" value="0"
+                                        min="0" step="0.50">
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <div class="mb-3">
-                                    <label for="number_of_tables" class="form-label">N. Tavoli</label>
-                                    <input type="number" class="form-control" id="number_of_tables" name="number_of_tables" 
-                                           placeholder="0" min="1" max="50">
-                                    <small class="text-muted">Solo per nuove sale</small>
-                                </div>
+
+                            <div class="mb-0">
+                                <label for="description" class="form-label">Note / Descrizione</label>
+                                <textarea class="form-control" id="description" name="description" rows="2"
+                                    placeholder="Altre info utili..."></textarea>
                             </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Descrizione</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"
-                                      placeholder="Descrizione della competizione..."></textarea>
                         </div>
                     </div>
                 </div>
-                
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Strategia di Abbinamento</h5>
-                        
-                        <div class="mb-3">
-                            <label for="matchmaking_strategy" class="form-label">Tipo di Competizione</label>
-                            <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
-                                {% for strategy_key, strategy_info in available_strategies.items() %}
-                                    <option value="{{ strategy_key }}" 
-                                            {% if strategy_key == 'amalfi' %}selected{% endif %}
-                                            data-description="{{ strategy_info.description }}">
+
+                <!-- STEP 2: STRUTTURA TORNEO -->
+                <div class="wizard-step" id="step-2">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4"><i class="fas fa-microchip text-primary me-2"></i> 2. Struttura
+                                del Torneo</h5>
+                            <p class="text-muted small">Configura la logica di abbinamento e il numero di turni.</p>
+
+                            <div class="mb-4">
+                                <label for="matchmaking_strategy" class="form-label">Algoritmo di Abbinamento <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy"
+                                    required>
+                                    {% for strategy_key, strategy_info in available_strategies.items() %}
+                                    <option value="{{ strategy_key }}" {% if strategy_key=='amalfi' %}selected{% endif
+                                        %} data-description="{{ strategy_info.description }}">
                                         {{ strategy_info.display_name }}
                                     </option>
-                                {% endfor %}
-                            </select>
-                            <small id="strategy_description" class="form-text text-muted"></small>
-                        </div>
-                        
-                        <div class="mb-3" id="anti_rematch_section">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="anti_rematch_enabled" 
-                                       name="anti_rematch_enabled" checked>
-                                <label class="form-check-label" for="anti_rematch_enabled">
-                                    Evita reincontri tra giocatori
-                                </label>
-                                <small class="form-text text-muted d-block">Dipende dal tipo di competizione selezionato</small>
+                                    {% endfor %}
+                                </select>
+                                <div class="alert alert-light border mt-2 py-2 px-3 small" id="strategy_description">
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="row" id="strategy_config_section">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
-                                    <select class="form-select" id="first_round_policy" name="first_round_policy">
-                                        <option value="random">Casuale</option>
-                                        <option value="rating">Basato su Rating</option>
-                                        <option value="classification">Basato su Classifica</option>
+
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label for="rounds_count" class="form-label">Numero di Turni <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="rounds_count" name="rounds_count"
+                                        value="3" min="1" max="10" required>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
+                                    <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">Escludi dal turno (X o Trio)
+                                        </option>
+                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}">Vincita a tavolino avversario
+                                        </option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="odd_number_policy" class="form-label">Gestione Giocatori Dispari</label>
-                                    <select class="form-select" id="odd_number_policy" name="odd_number_policy">
-                                        <option value="bye">X (vinto a tavolino)</option>
-                                        <option value="bye_with_challenge">X con Challenge</option>
-                                        <option value="trio">Match a 3 Giocatori</option>
-                                    </select>
-                                    <small id="trio_warning" class="form-text text-warning" style="display: none;">
-                                        Match a 3 disponibile solo fino a distanza 7
-                                    </small>
+
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label for="min_participants" class="form-label">Min Partecipanti <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="min_participants"
+                                        name="min_participants" value="4" min="2" required>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Impostazioni di Gioco</h5>
-
-                        <div class="mb-3">
-                            <label for="discipline" class="form-label">Disciplina</label>
-                            <select class="form-select" id="discipline" name="discipline" required>
-                                <option value="">Seleziona disciplina...</option>
-                                {% for value, label in discipline_choices %}
-                                    <option value="{{ value }}">{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
-                {% include "components/_distance_configurator.html" %}
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Impostazioni Torneo</h5>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="rounds_count" class="form-label">Numero Turni</label>
-                                    <input type="number" class="form-control" id="rounds_count" name="rounds_count" 
-                                           value="3" min="1" max="10" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="min_participants" class="form-label">Min Partecipanti</label>
-                                    <input type="number" class="form-control" id="min_participants" name="min_participants" 
-                                           value="4" min="2" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="col-sm-6 mb-3">
                                     <label for="max_participants" class="form-label">Max Partecipanti</label>
-                                    <input type="number" class="form-control" id="max_participants" name="max_participants" 
-                                           placeholder="Opzionale" min="2">
+                                    <input type="number" class="form-control" id="max_participants"
+                                        name="max_participants" placeholder="Nessun limite" min="2">
+                                </div>
+                            </div>
+
+                            <div class="card bg-light border-0 mb-3" id="advanced-matchmaking-config">
+                                <div class="card-body py-2">
+                                    <h6 class="text-uppercase small fw-bold text-muted mb-3">Configurazioni Avanzate
+                                    </h6>
+
+                                    <div class="mb-3" id="anti_rematch_section">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="anti_rematch_enabled"
+                                                name="anti_rematch_enabled" checked>
+                                            <label class="form-check-label" for="anti_rematch_enabled">
+                                                Evita reincontri tra gli stessi giocatori
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" id="strategy_config_section">
+                                        <div class="col-sm-6 mb-2">
+                                            <label for="first_round_policy" class="form-label small">Primo Turno</label>
+                                            <select class="form-select form-select-sm" id="first_round_policy"
+                                                name="first_round_policy">
+                                                <option value="random">Casuale</option>
+                                                <option value="rating">Rating</option>
+                                                <option value="classification">Classifica</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-6 mb-2">
+                                            <label for="odd_number_policy" class="form-label small">Se Giocatori
+                                                Dispari</label>
+                                            <select class="form-select form-select-sm" id="odd_number_policy"
+                                                name="odd_number_policy">
+                                                <option value="bye">Riposo (punto gratis)</option>
+                                                <option value="bye_with_challenge">Riposo con Challenge</option>
+                                                <option value="trio">Match a 3 (Trio)</option>
+                                            </select>
+                                            <small id="trio_warning" class="text-warning small" style="display: none;">
+                                                <i class="fas fa-exclamation-triangle"></i> Trio disponibile solo fino a
+                                                dist. 7
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Gestione Forfait</label>
-                            <select class="form-select" name="withdraw_policy" required>
-                                <option value="{{ WithdrawPolicy.EXCLUDE.value }}">Exclude (X/Trio)</option>
-                                <option value="{{ WithdrawPolicy.FORFEIT.value }}">Forfeit (vittoria avversario)</option>
-                            </select>
-                            </div>
-                        </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="entry_fee" class="form-label">Quota Iscrizione (€)</label>
-                            <input type="number" class="form-control" id="entry_fee" name="entry_fee" 
-                                   value="0" min="0" step="0.50">
+                    </div>
+                </div>
+
+                <!-- STEP 3: FORMATO MATCH -->
+                <div class="wizard-step" id="step-3">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4"><i class="fas fa-ruler text-primary me-2"></i> 3. Formato del
+                                Match</h5>
+                            <p class="text-muted small">Definisci il target di punteggio per ogni singola partita.</p>
+
+                            <!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
+                            {% include "components/_distance_configurator.html" %}
                         </div>
                     </div>
                 </div>
-                
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Crea Gara Singola
+
+                <!-- STEP 4: RIEPILOGO -->
+                <div class="wizard-step" id="step-4">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4"><i class="fas fa-check-circle text-primary me-2"></i> 4.
+                                Riepilogo e Conferma</h5>
+
+                            <div class="summary-card p-3 mb-4">
+                                <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <h6 class="text-muted small text-uppercase mb-1">Competizione</h6>
+                                        <div id="summary-name" class="fw-bold fs-5">-</div>
+                                        <div id="summary-discipline" class="text-muted">-</div>
+                                        <div id="summary-date" class="small">-</div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <h6 class="text-muted small text-uppercase mb-1">Struttura</h6>
+                                        <div id="summary-strategy" class="fw-bold">-</div>
+                                        <div id="summary-rounds" class="small">- Turni</div>
+                                        <div id="summary-fee" class="small">- Quota</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <h6 class="text-muted small text-uppercase mb-1">Formato Partite</h6>
+                                        <div id="summary-format" class="badge bg-info text-dark fs-6">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info border-0 bg-light">
+                                <i class="fas fa-lightbulb text-info me-2"></i>
+                                Puoi ancora tornare indietro per correggere eventuali errori prima di salvare
+                                definitivamente.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary btn-lg px-4" id="btn-prev"
+                        style="visibility: hidden;">
+                        <i class="fas fa-chevron-left me-2"></i> Indietro
                     </button>
-                    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
-                        Annulla
-                    </a>
+
+                    <button type="button" class="btn btn-primary btn-lg px-4" id="btn-next">
+                        Avanti <i class="fas fa-chevron-right ms-2"></i>
+                    </button>
+
+                    <button type="submit" class="btn btn-success btn-lg px-4" id="btn-submit" style="display: none;">
+                        <i class="fas fa-plus-circle me-2"></i> Crea Gara
+                    </button>
                 </div>
             </form>
         </div>
@@ -213,31 +367,143 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Strategy configuration management
-    const strategySelect = document.getElementById('matchmaking_strategy');
-    const firstRoundSelect = document.getElementById('first_round_policy');
-    const oddPolicySelect = document.getElementById('odd_number_policy');
-    const antiRematchCheck = document.getElementById('anti_rematch_enabled');
-    const roundsInput = document.getElementById('rounds_count');
-    const strategyDescription = document.getElementById('strategy_description');
-    const trioWarning = document.getElementById('trio_warning');
-    
-    // Distance input element (for trio warning)
-    const distanceInput = document.getElementById('distance');
-    
-    // Store strategy constraints
-    const strategyConstraints = {{ available_strategies | tojson }};
-    
+    document.addEventListener('DOMContentLoaded', function () {
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        // UI Elements
+        const form = document.getElementById('gara-form');
+        const steps = document.querySelectorAll('.wizard-step');
+        const nodes = document.querySelectorAll('.progress-node');
+        const progressLine = document.getElementById('progress-line');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnSubmit = document.getElementById('btn-submit');
+
+        // Field references for summary
+        const nameInput = document.getElementById('name');
+        const disciplineSelect = document.getElementById('discipline');
+        const dateInput = document.getElementById('date');
+        const timeInput = document.getElementById('time');
+        const strategySelect = document.getElementById('matchmaking_strategy');
+        const roundsInput = document.getElementById('rounds_count');
+        const feeInput = document.getElementById('entry_fee');
+
+        function updateWizard() {
+            // Update steps visibility
+            steps.forEach(step => {
+                step.classList.remove('active');
+                if (parseInt(step.id.split('-')[1]) === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update progress nodes
+            nodes.forEach(node => {
+                const step = parseInt(node.dataset.step);
+                node.classList.remove('active', 'completed');
+                if (step === currentStep) {
+                    node.classList.add('active');
+                } else if (step < currentStep) {
+                    node.classList.add('completed');
+                }
+            });
+
+            // Update progress line
+            const progressWidth = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            progressLine.style.width = `${progressWidth}%`;
+
+            // Update buttons visibility
+            btnPrev.style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+
+            if (currentStep === totalSteps) {
+                btnNext.style.display = 'none';
+                btnSubmit.style.display = 'inline-block';
+                updateSummary();
+            } else {
+                btnNext.style.display = 'inline-block';
+                btnSubmit.style.display = 'none';
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function validateStep(step) {
+            const stepContainer = document.getElementById(`step-${step}`);
+            const inputs = stepContainer.querySelectorAll('[required]');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!input.value) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            return isValid;
+        }
+
+        function updateSummary() {
+            document.getElementById('summary-name').textContent = nameInput.value || 'Nessun nome';
+            document.getElementById('summary-discipline').textContent = disciplineSelect.options[disciplineSelect.selectedIndex].text;
+            document.getElementById('summary-date').textContent = `${dateInput.value} ore ${timeInput.value}`;
+            document.getElementById('summary-strategy').textContent = strategySelect.options[strategySelect.selectedIndex].text;
+            document.getElementById('summary-rounds').textContent = `${roundsInput.value} Turni`;
+            document.getElementById('summary-fee').textContent = `Quota: €${feeInput.value || '0'}`;
+
+            // Get preview text from component
+            const previewText = document.getElementById('preview-text');
+            document.getElementById('summary-format').textContent = previewText ? previewText.textContent : '-';
+        }
+
+        btnNext.addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateWizard();
+                }
+            } else {
+                // Shake effect or feedback
+                const activeStep = document.querySelector('.wizard-step.active');
+                activeStep.animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 200 });
+            }
+        });
+
+        btnPrev.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizard();
+            }
+        });
+
+        // Strategy configuration logic (copied/adapted from original)
+        const strategyDescription = document.getElementById('strategy_description');
+        const trioWarning = document.getElementById('trio_warning');
+        const distanceInput = document.getElementById('distance');
+        const oddPolicySelect = document.getElementById('odd_number_policy');
+        const antiRematchCheck = document.getElementById('anti_rematch_enabled');
+        const antiRematchSection = document.getElementById('anti_rematch_section');
+        const firstRoundSelect = document.getElementById('first_round_policy');
+
+        // Store strategy constraints from template data
+        const strategyConstraints = {{ available_strategies | tojson
+    }};
+
     function updateStrategyUI() {
         const selectedStrategy = strategySelect.value;
         const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
-        
-        // Update description
+
         const selectedOption = strategySelect.options[strategySelect.selectedIndex];
         strategyDescription.textContent = selectedOption.dataset.description || '';
-        
-        // Update first round policy options
+
         const allowedFirstPolicies = constraints.first_round_policies || ['random'];
         Array.from(firstRoundSelect.options).forEach(option => {
             if (option.value) {
@@ -247,8 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
-        // Update odd number policy options
+
         const allowedOddPolicies = constraints.odd_policies || ['bye'];
         Array.from(oddPolicySelect.options).forEach(option => {
             if (option.value) {
@@ -258,94 +523,78 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
-        // Update anti-rematch checkbox
+
         if (constraints.anti_rematch === false) {
             antiRematchCheck.checked = false;
             antiRematchCheck.disabled = true;
+            antiRematchSection.style.display = 'none';
         } else {
             antiRematchCheck.disabled = false;
+            antiRematchSection.style.display = 'block';
             if (constraints.anti_rematch_required) {
                 antiRematchCheck.checked = true;
             }
         }
-        
-        // Update anti-rematch section visibility based on strategy
-        const antiRematchSection = document.getElementById('anti_rematch_section');
-        if (constraints.anti_rematch === false) {
-            antiRematchSection.style.display = 'none';
-        } else {
-            antiRematchSection.style.display = 'block';
-        }
-        
-        // Update rounds input based on fixed_rounds
+
         if (constraints.fixed_rounds) {
-            roundsInput.setAttribute('data-fixed', 'true');
-            // Il numero di turni verrà calcolato automaticamente in base agli iscritti
-            roundsInput.setAttribute('title', 'Numero turni calcolato automaticamente in base agli iscritti');
+            roundsInput.setAttribute('disabled', 'true');
+            roundsInput.setAttribute('title', 'Calcolato automaticamente');
         } else {
-            roundsInput.removeAttribute('data-fixed');
-            roundsInput.removeAttribute('title');
+            roundsInput.removeAttribute('disabled');
         }
-        
+
         updateTrioWarning();
     }
-    
+
     function updateTrioWarning() {
         const distance = parseInt(distanceInput.value) || 0;
         const oddPolicy = oddPolicySelect.value;
-        
+
         if (oddPolicy === 'trio' && distance > 7) {
             trioWarning.style.display = 'block';
-            oddPolicySelect.value = 'bye';
         } else {
             trioWarning.style.display = 'none';
         }
     }
-    
-    // Listen for strategy changes
+
     strategySelect.addEventListener('change', updateStrategyUI);
     oddPolicySelect.addEventListener('change', updateTrioWarning);
-    
-    // Initial update
-    updateStrategyUI();
-    
-    // Listen for distance changes (for trio warning only)
-    // Note: exact_number logic is now handled by _distance_configurator component
     distanceInput.addEventListener('input', updateTrioWarning);
-    distanceInput.addEventListener('change', updateTrioWarning);
 
-    // Preload number of tables when venue is selected
+    // Venue logic
     const locationInput = document.getElementById('location');
     const tablesInput = document.getElementById('number_of_tables');
+    const tablesContainer = document.getElementById('tables-container');
     const venueOptions = document.querySelectorAll('#venue-suggestions option');
-    
-    if (locationInput && tablesInput) {
-        locationInput.addEventListener('input', function() {
-            const selectedValue = this.value;
-            
-            // Find matching venue option
-            const matchingOption = Array.from(venueOptions).find(option => 
-                option.value === selectedValue
-            );
-            
-            if (matchingOption) {
-                // Preload tables count from verified venue
-                const tablesCount = matchingOption.getAttribute('data-tables');
-                if (tablesCount && tablesCount !== '0') {
-                    tablesInput.value = tablesCount;
-                    tablesInput.disabled = true; // Disable for existing venues
-                } else {
-                    tablesInput.value = '';
-                    tablesInput.disabled = false;
-                }
-            } else {
-                // New venue - enable manual input
-                tablesInput.value = '';
-                tablesInput.disabled = false;
-            }
-        });
+
+    function updateVenueTablesVisibility() {
+        const selectedValue = locationInput.value.trim();
+        if (!selectedValue) {
+            tablesContainer.style.display = 'none';
+            tablesInput.value = '';
+            return;
+        }
+
+        const matchingOption = Array.from(venueOptions).find(option =>
+            option.value.toLowerCase() === selectedValue.toLowerCase()
+        );
+
+        if (matchingOption) {
+            // Existing verified venue
+            tablesContainer.style.display = 'none';
+            tablesInput.value = ''; // Don't override existing venue tables
+        } else {
+            // New venue - show table input
+            tablesContainer.style.display = 'block';
+        }
     }
+
+    locationInput.addEventListener('input', updateVenueTablesVisibility);
+    locationInput.addEventListener('change', updateVenueTablesVisibility);
+
+    // Initial run
+    updateStrategyUI();
+    updateVenueTablesVisibility();
 });
 </script>
 {% endblock %}
