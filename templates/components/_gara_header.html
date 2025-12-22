@@ -1,7 +1,8 @@
 <!-- Gara Header Component -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1>{% if gara.campionato_id %}Gara {{ gara.number }}{% if gara.name %} - {{ gara.name }}{% endif %}{% else %}{{ gara.name or 'Gara Standalone' }}{% endif %}</h1>
+        <h1>{% if gara.campionato_id %}{{ _('Gara %(id)s', id=gara.number) }}{% if gara.name %} - {{ gara.name }}{%
+            endif %}{% else %}{{ gara.name or _('Gara Standalone') }}{% endif %}</h1>
         <p class="text-muted mb-0">
             {{ gara.date|date_local }} - {{ gara.discipline.replace('_', ' ') }} -
             {{ gara.distance_config|format_distance }}
@@ -9,24 +10,23 @@
         </p>
     </div>
     <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
-    {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated %}
         {% if gara.campionato_id %}
-            <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
+        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
             class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna al Campionato
-            </a>
+            <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
+        </a>
         {% else %}
-            <a href="{{ url_for('dashboard.dashboard') }}"
-            class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna alla Dashboard
-            </a>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
+        </a>
         {% endif %}
 
         {% if gara.can_be_modified() and current_user.can_manage_competition(gara.id) %}
-            <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-warning">
-            <i class="fas fa-edit"></i> Modifica Gara
-            </a>
+        <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> {{ _('Modifica Gara') }}
+        </a>
         {% endif %}
-    {% endif %}
+        {% endif %}
     </div>
 </div>

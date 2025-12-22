@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Match {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else 'Bye' }} - Gara {{ match.gara.name }}{% endblock %}
+{% block title %}{{ _('Match') }} {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
+match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }} - {{ _('Gara')
+}} {{
+match.gara.name }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -9,14 +12,15 @@
         <div>
             <h1>
                 <i class="fas fa-gamepad"></i>
-                {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else 'Bye' }}
+                {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
+                match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
             </h1>
         </div>
         <div>
             {# Unified back button - uses single adaptive gara_detail route #}
             <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
-               class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Torna alla Gara
+                class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> {{ _('Torna alla Gara') }}
             </a>
         </div>
     </div>
@@ -32,12 +36,12 @@
 
                     {# Admin/Director Controls - Advanced Interface #}
                     {% if user_can_manage %}
-                        {% include "components/_match_admin_controls.html" %}
+                    {% include "components/_match_admin_controls.html" %}
                     {% endif %}
 
                     {# Player Controls - Simplified Interface #}
                     {% if user_is_player and not user_can_manage %}
-                        {% include "components/_match_rack_input.html" %}
+                    {% include "components/_match_rack_input.html" %}
                     {% endif %}
 
 
@@ -59,24 +63,27 @@
             {% if available_challenges %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-star"></i> Challenge Disponibili</h5>
+                    <h5><i class="fas fa-star"></i> {{ _('Challenge Disponibili') }}</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small">Le challenge sono prove tecniche che puoi completare durante il match.</p>
+                    <p class="text-muted small">{{ _('Le challenge sono prove tecniche che puoi completare durante il
+                        match.') }}</p>
                     <div class="list-group">
                         {% for gara_challenge in available_challenges %}
                         <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}"
-                           class="list-group-item list-group-item-action">
+                            class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1">{{ gara_challenge.challenge.get_display_name() }}</h6>
                                 {% if current_user.is_authenticated and current_user.id in player_challenge_progress %}
-                                    {% set progress = player_challenge_progress[current_user.id] %}
-                                    {% set challenge_data = progress.get('challenges', [])|selectattr('gara_challenge.id', 'equalto', gara_challenge.id)|first %}
-                                    {% if challenge_data %}
-                                    <small class="text-success">
-                                        <i class="fas fa-check-circle"></i> {{ challenge_data.get('attempts_count', 0) }}/{{ gara_challenge.max_attempts }}
-                                    </small>
-                                    {% endif %}
+                                {% set progress = player_challenge_progress[current_user.id] %}
+                                {% set challenge_data = progress.get('challenges', [])|selectattr('gara_challenge.id',
+                                'equalto', gara_challenge.id)|first %}
+                                {% if challenge_data %}
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle"></i> {{ challenge_data.get('attempts_count', 0) }}/{{
+                                    gara_challenge.max_attempts }}
+                                </small>
+                                {% endif %}
                                 {% endif %}
                             </div>
                             <p class="mb-1 small text-muted">{{ gara_challenge.challenge.description|truncate(60) }}</p>
@@ -96,196 +103,196 @@
 
 {% block scripts %}
 <script>
-// NEW SIMPLIFIED UX - Add/Remove Racks with validation at end
-function addRack(winnerId) {
-    fetch(`/player/match/{{ match.id }}/racks/add`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `winner_id=${winnerId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Errore: ' + (data.error || 'Errore sconosciuto'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Errore durante l\'aggiunta del rack');
-    });
-}
+    // NEW SIMPLIFIED UX - Add/Remove Racks with validation at end
+    function addRack(winnerId) {
+        fetch(`/player/match/{{ match.id }}/racks/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `winner_id=${winnerId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Errore sconosciuto") }}'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ _("Errore durante l\'aggiunta del rack") }}');
+            });
+    }
 
-function removeRack(playerId) {
-    fetch(`/player/match/{{ match.id }}/racks/remove`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `player_id=${playerId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Errore: ' + (data.error || 'Impossibile rimuovere il rack'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Errore durante la rimozione del rack');
-    });
-}
+    function removeRack(playerId) {
+        fetch(`/player/match/{{ match.id }}/racks/remove`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `player_id=${playerId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile rimuovere il rack") }}'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ _("Errore durante la rimozione del rack") }}');
+            });
+    }
 
-function confirmResult() {
-    fetch(`/player/match/{{ match.id }}/confirm`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Redirect alla dashboard invece di ricaricare la pagina
-            window.location.href = '/dashboard';
-        } else {
-            alert('Errore: ' + (data.error || 'Impossibile confermare il risultato'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Errore durante la conferma');
-    });
-}
-
-function rejectResult() {
-    if (confirm('Sei sicuro di voler rifiutare il risultato? L\'ultimo rack verrà rimosso.')) {
-        fetch(`/player/match/{{ match.id }}/reject`, {
+    function confirmResult() {
+        fetch(`/player/match/{{ match.id }}/confirm`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Errore: ' + (data.error || 'Impossibile rifiutare il risultato'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Errore durante il rifiuto');
-        });
-    }
-}
-
-function forfeitMatch() {
-    if (confirm('Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.')) {
-        fetch(`/player/match/{{ match.id }}/forfeit`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message || 'Forfait dichiarato');
-                location.reload();
-            } else {
-                alert('Errore: ' + (data.error || 'Impossibile dichiarare forfait'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Errore durante la dichiarazione di forfait');
-        });
-    }
-}
-
-// Flag per prevenire chiamate multiple
-let isAddingRack = false;
-
-function addRackWin(winnerId) {
-    // Previeni chiamate multiple
-    if (isAddingRack) {
-        console.log('Richiesta già in corso, ignorata');
-        return;
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect alla dashboard invece di ricaricare la pagina
+                    window.location.href = '/dashboard';
+                } else {
+                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile confermare il risultato") }}'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ _("Errore durante la conferma") }}');
+            });
     }
 
-    isAddingRack = true;
+    function rejectResult() {
+        if (confirm('{{ _("Sei sicuro di voler rifiutare il risultato? L\'ultimo rack verrà rimosso.") }}')) {
+            fetch(`/player/match/{{ match.id }}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile rifiutare il risultato") }}'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('{{ _("Errore durante il rifiuto") }}');
+                });
+        }
+    }
 
-    // Disabilita i pulsanti durante la richiesta
-    const buttons = document.querySelectorAll('button[onclick^="addRackWin"]');
-    buttons.forEach(btn => btn.disabled = true);
+    function forfeitMatch() {
+        if (confirm('{{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.") }}')) {
+            fetch(`/player/match/{{ match.id }}/forfeit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message || '{{ _("Forfait dichiarato") }}');
+                        location.reload();
+                    } else {
+                        alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile dichiarare forfait") }}'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('{{ _("Errore durante la dichiarazione di forfait") }}');
+                });
+        }
+    }
 
-    // Determina l'URL corretto in base ai permessi utente
-    {% if current_user.is_admin %}
+    // Flag per prevenire chiamate multiple
+    let isAddingRack = false;
+
+    function addRackWin(winnerId) {
+        // Previeni chiamate multiple
+        if (isAddingRack) {
+            console.log('Richiesta già in corso, ignorata');
+            return;
+        }
+
+        isAddingRack = true;
+
+        // Disabilita i pulsanti durante la richiesta
+        const buttons = document.querySelectorAll('button[onclick^="addRackWin"]');
+        buttons.forEach(btn => btn.disabled = true);
+
+        // Determina l'URL corretto in base ai permessi utente
+        {% if current_user.is_admin %}
         const url = `/admin/match/{{ match.id }}/add_rack`;
-    {% elif current_user.is_director %}
+        {% elif current_user.is_director %}
         // Director usa l'endpoint admin se può gestire questa gara
         const url = `/admin/match/{{ match.id }}/add_rack`;
-    {% else %}
+        {% else %}
         const url = `/player/match/{{ match.id }}/add_rack`;
-    {% endif %}
+        {% endif %}
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `winner_id=${winnerId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Errore: ' + (data.error || 'Errore sconosciuto'));
-            buttons.forEach(btn => btn.disabled = false);
-            isAddingRack = false;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Errore durante l\'aggiornamento');
-        buttons.forEach(btn => btn.disabled = false);
-        isAddingRack = false;
-    });
-}
-
-// Funzioni Admin
-function confirmSetResult() {
-    return confirm('Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti verranno sostituiti.');
-}
-
-function resetMatch(matchId) {
-    if (confirm('Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.')) {
-        fetch(`/admin/match/${matchId}/reset`, {
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            }
+            },
+            body: `winner_id=${winnerId}`
         })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Errore durante il reset');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Errore durante il reset');
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Errore sconosciuto") }}'));
+                    buttons.forEach(btn => btn.disabled = false);
+                    isAddingRack = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ _("Errore durante l\'aggiornamento") }}');
+                buttons.forEach(btn => btn.disabled = false);
+                isAddingRack = false;
+            });
     }
-}
+
+    // Funzioni Admin
+    function confirmSetResult() {
+        return confirm('{{ _("Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti verranno sostituiti.") }}');
+    }
+
+    function resetMatch(matchId) {
+        if (confirm('{{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.") }}')) {
+            fetch(`/admin/match/${matchId}/reset`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('{{ _("Errore durante il reset") }}');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('{{ _("Errore durante il reset") }}');
+                });
+        }
+    }
 </script>
 {% endblock %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-22 21:46+0100\n"
+"POT-Creation-Date: 2025-12-22 21:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,6 +34,88 @@ msgstr ""
 
 #: models/dashboard/services.py:1043
 msgid "Vista Pubblica"
+msgstr ""
+
+#: utils/jinja.py:18 utils/jinja.py:41 utils/jinja.py:61 utils/jinja.py:89
+#: utils/jinja.py:99 utils/jinja.py:135 utils/jinja.py:153 utils/jinja.py:165
+#: utils/jinja.py:178
+msgid "N/A"
+msgstr ""
+
+#: templates/components/_gara_header.html:4 templates/gara_detail.html:7
+#: templates/gara_detail.html:9 utils/jinja.py:180
+#, python-format
+msgid "Gara %(id)s"
+msgstr ""
+
+#: utils/status_ui.py:75
+msgid "Iscrizioni Chiuse"
+msgstr ""
+
+#: utils/status_ui.py:79
+msgid "Pronta per Iniziare"
+msgstr ""
+
+#: utils/status_ui.py:81
+msgid "Turno Completato"
+msgstr ""
+
+#: utils/status_ui.py:84
+msgid "Gara Completata"
+msgstr ""
+
+#: utils/status_ui.py:87 utils/status_ui.py:116
+msgid "Setup"
+msgstr ""
+
+#: utils/status_ui.py:88 utils/status_ui.py:117
+msgid "Iscrizioni Aperte"
+msgstr ""
+
+#: templates/components/_match_result_row.html:39 utils/status_ui.py:89
+#: utils/status_ui.py:118 utils/status_ui.py:135
+msgid "In Corso"
+msgstr ""
+
+#: templates/components/_match_result_row.html:41 utils/status_ui.py:90
+msgid "Completata"
+msgstr ""
+
+#: utils/status_ui.py:119 utils/status_ui.py:136
+msgid "Completato"
+msgstr ""
+
+#: templates/components/_match_result_row.html:37 utils/status_ui.py:134
+#: utils/status_ui.py:169
+msgid "In Attesa"
+msgstr ""
+
+#: utils/status_ui.py:137
+msgid "Validato"
+msgstr ""
+
+#: utils/status_ui.py:152
+msgid "In Valutazione"
+msgstr ""
+
+#: utils/status_ui.py:153
+msgid "Approvata"
+msgstr ""
+
+#: utils/status_ui.py:154
+msgid "Respinta"
+msgstr ""
+
+#: utils/status_ui.py:170
+msgid "Confermato"
+msgstr ""
+
+#: utils/status_ui.py:171
+msgid "Rifiutato"
+msgstr ""
+
+#: utils/status_ui.py:214
+msgid "Sconosciuto"
 msgstr ""
 
 #: templates/base.html:231
@@ -96,6 +178,521 @@ msgstr ""
 msgid "Registrati"
 msgstr ""
 
+#: templates/gara_detail.html:5
+#, python-format
+msgid "Gestione Gara %(id)s - Admin"
+msgstr ""
+
+#: templates/components/_unified_cards.html:133
+#: templates/components/_unified_cards.html:160 templates/gara_detail.html:7
+msgid "Dettagli"
+msgstr ""
+
+#: templates/gara_detail.html:9
+msgid "Dettaglio Pubblico"
+msgstr ""
+
+#: templates/components/_gara_header.html:21 templates/gara_detail.html:115
+msgid "Torna alla Dashboard"
+msgstr ""
+
+#: templates/gara_detail.html:139
+msgid "Imposta Risultato Rapido"
+msgstr ""
+
+#: templates/gara_detail.html:147
+msgid "Modalità:"
+msgstr ""
+
+#: templates/gara_detail.html:150
+#, python-format
+msgid "(vince chi vince %(distance)s rack)"
+msgstr ""
+
+#: templates/gara_detail.html:152
+#, python-format
+msgid "(somma deve essere %(distance)s)"
+msgstr ""
+
+#: templates/components/_gara_matches.html:36
+#: templates/components/_gara_matches.html:62 templates/gara_detail.html:159
+msgid "Giocatore 1"
+msgstr ""
+
+#: templates/components/_gara_matches.html:38
+#: templates/components/_gara_matches.html:64 templates/gara_detail.html:164
+msgid "Giocatore 2"
+msgstr ""
+
+#: templates/gara_detail.html:173 templates/gara_detail.html:219
+msgid "Annulla"
+msgstr ""
+
+#: templates/gara_detail.html:175
+msgid "Imposta Risultato"
+msgstr ""
+
+#: templates/gara_detail.html:189
+msgid "Assegna Tavolo"
+msgstr ""
+
+#: templates/gara_detail.html:203
+msgid "Tavolo attuale:"
+msgstr ""
+
+#: templates/gara_detail.html:214
+msgid "Rimuovi Tavolo"
+msgstr ""
+
+#: templates/gara_detail.html:235
+msgid ""
+"Sei sicuro di voler avviare la gara? Tutti i turni verranno creati "
+"contemporaneamente e le iscrizioni chiuse definitivamente."
+msgstr ""
+
+#: templates/gara_detail.html:237
+msgid ""
+"Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse"
+" definitivamente."
+msgstr ""
+
+#: templates/gara_detail.html:250
+msgid ""
+"Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite "
+"del primo turno verranno eliminate e la gara tornerà allo stato di "
+"iscrizioni."
+msgstr ""
+
+#: templates/gara_detail.html:261 templates/gara_detail.html:280
+#: templates/gara_detail.html:326
+msgid "Errore durante la cancellazione:"
+msgstr ""
+
+#: templates/gara_detail.html:269
+msgid ""
+"Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le "
+"partite del turno verranno eliminate e si tornerà al turno precedente."
+msgstr ""
+
+#: templates/gara_detail.html:288
+#, python-brace-format
+msgid ""
+"Sei SICURO di voler eliminare la Gara {number}?\n"
+"\n"
+"Questa azione è IRREVERSIBILE!"
+msgstr ""
+
+#: templates/gara_detail.html:309
+#, python-brace-format
+msgid ""
+"Sei SICURO di voler cancellare la Gara {number}?\n"
+"\n"
+"Tutti i player iscritti riceveranno una notifica della cancellazione.\n"
+"Questa azione è IRREVERSIBILE!"
+msgstr ""
+
+#: templates/gara_detail.html:441
+msgid "Errore durante l'avvio del turno:"
+msgstr ""
+
+#: templates/gara_detail.html:448
+msgid "Errore di rete durante l'avvio del turno"
+msgstr ""
+
+#: templates/gara_detail.html:492 templates/gara_detail.html:702
+#: templates/match_detail.html:120 templates/match_detail.html:142
+#: templates/match_detail.html:164 templates/match_detail.html:186
+#: templates/match_detail.html:210 templates/match_detail.html:258
+msgid "Errore:"
+msgstr ""
+
+#: templates/gara_detail.html:498
+msgid "Errore di rete durante la creazione del turno"
+msgstr ""
+
+#: templates/gara_detail.html:504
+msgid ""
+"Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
+" setup."
+msgstr ""
+
+#: templates/gara_detail.html:544 templates/gara_detail.html:549
+msgid "Errore durante l'impostazione del risultato"
+msgstr ""
+
+#: templates/gara_detail.html:556
+msgid "Sei sicuro di voler resettare questa partita?"
+msgstr ""
+
+#: templates/gara_detail.html:567 templates/match_detail.html:288
+#: templates/match_detail.html:293
+msgid "Errore durante il reset"
+msgstr ""
+
+#: templates/gara_detail.html:633
+msgid "Click per scambiare con match occupante"
+msgstr ""
+
+#: templates/gara_detail.html:694
+msgid "La pagina verrà ricaricata per mostrare le modifiche."
+msgstr ""
+
+#: templates/gara_detail.html:707
+msgid "Errore durante l'assegnazione del tavolo"
+msgstr ""
+
+#: templates/match_detail.html:3
+msgid "Match"
+msgstr ""
+
+#: templates/components/_match_result_row.html:12
+#: templates/components/_match_result_row.html:35
+#: templates/components/_match_result_row.html:49
+#: templates/components/_match_result_row.html:55 templates/match_detail.html:4
+#: templates/match_detail.html:16
+msgid "Bye"
+msgstr ""
+
+#: templates/match_detail.html:4
+msgid "Gara"
+msgstr ""
+
+#: templates/match_detail.html:23
+msgid "Torna alla Gara"
+msgstr ""
+
+#: templates/match_detail.html:66
+msgid "Challenge Disponibili"
+msgstr ""
+
+#: templates/match_detail.html:69
+msgid ""
+"Le challenge sono prove tecniche che puoi completare durante il\n"
+"                        match."
+msgstr ""
+
+#: templates/match_detail.html:120 templates/match_detail.html:258
+msgid "Errore sconosciuto"
+msgstr ""
+
+#: templates/match_detail.html:125
+msgid "Errore durante l'aggiunta del rack"
+msgstr ""
+
+#: templates/match_detail.html:142
+msgid "Impossibile rimuovere il rack"
+msgstr ""
+
+#: templates/match_detail.html:147
+msgid "Errore durante la rimozione del rack"
+msgstr ""
+
+#: templates/match_detail.html:164
+msgid "Impossibile confermare il risultato"
+msgstr ""
+
+#: templates/match_detail.html:169
+msgid "Errore durante la conferma"
+msgstr ""
+
+#: templates/match_detail.html:174
+msgid "Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso."
+msgstr ""
+
+#: templates/match_detail.html:186
+msgid "Impossibile rifiutare il risultato"
+msgstr ""
+
+#: templates/match_detail.html:191
+msgid "Errore durante il rifiuto"
+msgstr ""
+
+#: templates/match_detail.html:197
+msgid ""
+"Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita "
+"dalla gara secondo la policy impostata."
+msgstr ""
+
+#: templates/match_detail.html:207
+msgid "Forfait dichiarato"
+msgstr ""
+
+#: templates/match_detail.html:210
+msgid "Impossibile dichiarare forfait"
+msgstr ""
+
+#: templates/match_detail.html:215
+msgid "Errore durante la dichiarazione di forfait"
+msgstr ""
+
+#: templates/match_detail.html:265
+msgid "Errore durante l'aggiornamento"
+msgstr ""
+
+#: templates/match_detail.html:273
+msgid ""
+"Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti "
+"verranno sostituiti."
+msgstr ""
+
+#: templates/match_detail.html:277
+msgid ""
+"Sei sicuro di voler resettare completamente questa partita? Tutti i "
+"risultati verranno cancellati."
+msgstr ""
+
+#: templates/components/_directors_management.html:7
+msgid "Direttori di gara"
+msgstr ""
+
+#: templates/components/_directors_management.html:17
+msgid "Rimuovi"
+msgstr ""
+
+#: templates/components/_directors_management.html:30
+msgid "Nessun direttore disponibile"
+msgstr ""
+
+#: templates/components/_directors_management.html:33
+msgid "Aggiungi co‑direttore"
+msgstr ""
+
+#: templates/components/_gara_header.html:5
+msgid "Gara Standalone"
+msgstr ""
+
+#: templates/components/_gara_header.html:17
+msgid "Torna al Campionato"
+msgstr ""
+
+#: templates/components/_gara_header.html:27
+msgid "Modifica Gara"
+msgstr ""
+
+#: templates/components/_gara_info.html:5
+msgid "Informazioni Gara"
+msgstr ""
+
+#: templates/components/_gara_info.html:10
+msgid "Data:"
+msgstr ""
+
+#: templates/components/_gara_info.html:12
+msgid "Turni:"
+msgstr ""
+
+#: templates/components/_gara_info.html:13
+msgid "Tipo torneo:"
+msgstr ""
+
+#: templates/components/_gara_info.html:17
+msgid "Luogo:"
+msgstr ""
+
+#: templates/components/_gara_info.html:19
+msgid "Partecipanti:"
+msgstr ""
+
+#: templates/components/_gara_info.html:19
+msgid "minimo"
+msgstr ""
+
+#: templates/components/_gara_info.html:20
+msgid "fino a"
+msgstr ""
+
+#: templates/components/_gara_info.html:20
+msgid ""
+"senza\n"
+"                    limite"
+msgstr ""
+
+#: templates/components/_gara_info.html:22
+#: templates/components/_unified_cards.html:86
+msgid "Quota:"
+msgstr ""
+
+#: templates/components/_gara_info.html:26
+#: templates/components/_unified_cards.html:88
+msgid "Gratuita"
+msgstr ""
+
+#: templates/components/_gara_info.html:28
+msgid "Iscritti:"
+msgstr ""
+
+#: templates/components/_gara_info.html:35
+#: templates/components/_round_management.html:27
+msgid "Anti-reincontro:"
+msgstr ""
+
+#: templates/components/_gara_info.html:37
+#: templates/components/_round_management.html:29
+msgid "Abilitato"
+msgstr ""
+
+#: templates/components/_gara_info.html:39
+#: templates/components/_round_management.html:31
+msgid "Disabilitato"
+msgstr ""
+
+#: templates/components/_gara_info.html:41
+msgid "Numero dispari:"
+msgstr ""
+
+#: templates/components/_gara_info.html:46
+msgid "Challenge:"
+msgstr ""
+
+#: templates/components/_gara_info.html:48
+msgid "attive"
+msgstr ""
+
+#: templates/components/_gara_info.html:50
+msgid "Nessuna"
+msgstr ""
+
+#: templates/components/_gara_info.html:54
+msgid "Organizzatori:"
+msgstr ""
+
+#: templates/components/_gara_info.html:73
+msgid "Descrizione:"
+msgstr ""
+
+#: templates/components/_gara_matches.html:5
+msgid "Partite"
+msgstr ""
+
+#: templates/components/_gara_matches.html:31
+#: templates/components/_gara_matches.html:57
+#, python-format
+msgid "Turno %(num)s"
+msgstr ""
+
+#: templates/components/_gara_matches.html:39
+#: templates/components/_gara_matches.html:65
+msgid "Risultato"
+msgstr ""
+
+#: templates/components/_gara_matches.html:40
+#: templates/components/_gara_matches.html:66
+msgid "Stato"
+msgstr ""
+
+#: templates/components/_gara_matches.html:41
+#: templates/components/_gara_matches.html:67
+msgid "Tavolo"
+msgstr ""
+
+#: templates/components/_gara_matches.html:42
+#: templates/components/_gara_matches.html:68
+msgid "Azioni"
+msgstr ""
+
+#: templates/components/_match_result_row.html:51
+#, python-format
+msgid "Tavolo %(id)s"
+msgstr ""
+
+#: templates/components/_match_result_row.html:57
+msgid "Assegna"
+msgstr ""
+
+#: templates/components/_match_result_row.html:70
+msgid "In attesa"
+msgstr ""
+
+#: templates/components/_match_result_row.html:100
+msgid "Bloccato"
+msgstr ""
+
+#: templates/components/_round_management.html:7
+msgid "Configurazione Discipline per Turni"
+msgstr ""
+
+#: templates/components/_round_management.html:14
+msgid "Informazioni Competizione"
+msgstr ""
+
+#: templates/components/_round_management.html:18
+msgid "Strategia:"
+msgstr ""
+
+#: templates/components/_round_management.html:20
+msgid "Turni Totali:"
+msgstr ""
+
+#: templates/components/_round_management.html:21
+msgid "Disciplina Default:"
+msgstr ""
+
+#: templates/components/_round_management.html:33
+msgid "Gestione Dispari:"
+msgstr ""
+
+#: templates/components/_round_management.html:35
+msgid "Distanza:"
+msgstr ""
+
+#: templates/components/_round_management.html:44
+msgid "Configurazione Discipline per Turno"
+msgstr ""
+
+#: templates/components/_round_management.html:46
+msgid "Puoi configurare una disciplina diversa per ciascun turno."
+msgstr ""
+
+#: templates/components/_round_management.html:47
+msgid "Se non specificata, verrà utilizzata la disciplina di default della gara."
+msgstr ""
+
+#: templates/components/_round_management.html:55
+#, python-format
+msgid "Turno %(num)s:"
+msgstr ""
+
+#: templates/components/_round_management.html:60
+msgid "(Default)"
+msgstr ""
+
+#: templates/components/_round_management.html:77
+msgid "Nota:"
+msgstr ""
+
+#: templates/components/_round_management.html:77
+msgid ""
+"Le configurazioni delle discipline vengono salvate e\n"
+"                        applicate automaticamente quando ogni turno viene"
+" avviato."
+msgstr ""
+
+#: templates/components/_round_management.html:79
+msgid "Puoi modificare queste impostazioni fino all'apertura delle iscrizioni."
+msgstr ""
+
+#: templates/components/_round_management.html:97
+msgid "Gestione Turni"
+msgstr ""
+
+#: templates/components/_round_management.html:103
+#, python-format
+msgid "Turno %(num)s completato!"
+msgstr ""
+
+#: templates/components/_round_management.html:104
+msgid "Tutti i match del turno corrente sono stati completati."
+msgstr ""
+
+#: templates/components/_round_management.html:113
+msgid "Avvia turno successivo"
+msgstr ""
+
+#: templates/components/_round_management.html:120
+#, python-format
+msgid "Questo avvierà il turno %(next)s di %(total)s."
+msgstr ""
+
 #: templates/components/_unified_cards.html:23
 msgid "gare"
 msgstr ""
@@ -116,14 +713,6 @@ msgstr ""
 msgid "Senza X"
 msgstr ""
 
-#: templates/components/_unified_cards.html:86
-msgid "Quota:"
-msgstr ""
-
-#: templates/components/_unified_cards.html:88
-msgid "Gratuita"
-msgstr ""
-
 #: templates/components/_unified_cards.html:107
 msgid "Massimo raggiunto"
 msgstr ""
@@ -134,11 +723,6 @@ msgstr ""
 
 #: templates/components/_unified_cards.html:114
 msgid "Scade:"
-msgstr ""
-
-#: templates/components/_unified_cards.html:133
-#: templates/components/_unified_cards.html:160
-msgid "Dettagli"
 msgstr ""
 
 #: templates/components/_unified_cards.html:186
@@ -204,84 +788,5 @@ msgid ""
 "Sei SICURO di voler eliminare il campionato \"{name}\"?\n"
 "\n"
 "Questa azione è IRREVERSIBILE!"
-msgstr ""
-
-#: utils/jinja.py:18 utils/jinja.py:41 utils/jinja.py:61 utils/jinja.py:89
-#: utils/jinja.py:99 utils/jinja.py:135 utils/jinja.py:153 utils/jinja.py:165
-#: utils/jinja.py:178
-msgid "N/A"
-msgstr ""
-
-#: utils/jinja.py:180
-#, python-format
-msgid "Gara %(id)s"
-msgstr ""
-
-#: utils/status_ui.py:75
-msgid "Iscrizioni Chiuse"
-msgstr ""
-
-#: utils/status_ui.py:79
-msgid "Pronta per Iniziare"
-msgstr ""
-
-#: utils/status_ui.py:81
-msgid "Turno Completato"
-msgstr ""
-
-#: utils/status_ui.py:84
-msgid "Gara Completata"
-msgstr ""
-
-#: utils/status_ui.py:87 utils/status_ui.py:116
-msgid "Setup"
-msgstr ""
-
-#: utils/status_ui.py:88 utils/status_ui.py:117
-msgid "Iscrizioni Aperte"
-msgstr ""
-
-#: utils/status_ui.py:89 utils/status_ui.py:118 utils/status_ui.py:135
-msgid "In Corso"
-msgstr ""
-
-#: utils/status_ui.py:90
-msgid "Completata"
-msgstr ""
-
-#: utils/status_ui.py:119 utils/status_ui.py:136
-msgid "Completato"
-msgstr ""
-
-#: utils/status_ui.py:134 utils/status_ui.py:169
-msgid "In Attesa"
-msgstr ""
-
-#: utils/status_ui.py:137
-msgid "Validato"
-msgstr ""
-
-#: utils/status_ui.py:152
-msgid "In Valutazione"
-msgstr ""
-
-#: utils/status_ui.py:153
-msgid "Approvata"
-msgstr ""
-
-#: utils/status_ui.py:154
-msgid "Respinta"
-msgstr ""
-
-#: utils/status_ui.py:170
-msgid "Confermato"
-msgstr ""
-
-#: utils/status_ui.py:171
-msgid "Rifiutato"
-msgstr ""
-
-#: utils/status_ui.py:214
-msgid "Sconosciuto"
 msgstr ""
 

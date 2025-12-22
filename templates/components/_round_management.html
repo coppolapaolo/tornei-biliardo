@@ -4,32 +4,35 @@
     <div class="card-header bg-info bg-opacity-10">
         <h5>
             <i class="fas fa-cogs"></i>
-            Configurazione Discipline per Turni - {{ gara.matchmaking_strategy.replace("_", " ").title() }}
+            {{ _('Configurazione Discipline per Turni') }} - {{ gara.matchmaking_strategy.replace("_", " ").title() }}
         </h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-12">
                 <div class="mb-3">
-                    <h6>Informazioni Competizione</h6>
+                    <h6>{{ _('Informazioni Competizione') }}</h6>
                     <div class="row">
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <strong>Strategia:</strong> {{ gara.matchmaking_strategy.replace("_", " ").title() }}<br>
-                                <strong>Turni Totali:</strong> {{ gara.rounds_count }}<br>
-                                <strong>Disciplina Default:</strong> {{ gara.discipline.replace("_", " ").title() }}<br>
+                                <strong>{{ _('Strategia:') }}</strong> {{ gara.matchmaking_strategy.replace("_", "
+                                ").title() }}<br>
+                                <strong>{{ _('Turni Totali:') }}</strong> {{ gara.rounds_count }}<br>
+                                <strong>{{ _('Disciplina Default:') }}</strong> {{ gara.discipline.replace("_", "
+                                ").title() }}<br>
                             </small>
                         </div>
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <strong>Anti-reincontro:</strong>
+                                <strong>{{ _('Anti-reincontro:') }}</strong>
                                 {% if gara.anti_rematch_enabled %}
-                                    <span class="text-success">Abilitato</span>
+                                <span class="text-success">{{ _('Abilitato') }}</span>
                                 {% else %}
-                                    <span class="text-secondary">Disabilitato</span>
+                                <span class="text-secondary">{{ _('Disabilitato') }}</span>
                                 {% endif %}<br>
-                                <strong>Gestione Dispari:</strong> {{ gara.odd_number_policy.replace("_", " ").title() }}<br>
-                                <strong>Distanza:</strong>
+                                <strong>{{ _('Gestione Dispari:') }}</strong> {{ gara.odd_number_policy.replace("_", "
+                                ").title() }}<br>
+                                <strong>{{ _('Distanza:') }}</strong>
                                 {{ gara.distance_config|format_distance }}
                             </small>
                         </div>
@@ -38,29 +41,32 @@
 
                 <!-- Configurazione Discipline per Turno -->
                 <div class="mb-3">
-                    <h6>Configurazione Discipline per Turno</h6>
+                    <h6>{{ _('Configurazione Discipline per Turno') }}</h6>
                     <p class="small text-muted mb-3">
-                        Puoi configurare una disciplina diversa per ciascun turno.
-                        Se non specificata, verrà utilizzata la disciplina di default della gara.
+                        {{ _('Puoi configurare una disciplina diversa per ciascun turno.') }}
+                        {{ _('Se non specificata, verrà utilizzata la disciplina di default della gara.') }}
                     </p>
 
                     <div class="row">
                         {% for round_num in range(1, gara.rounds_count + 1) %}
-                            <div class="col-md-6 col-lg-4 mb-3">
-                                <div class="card bg-light">
-                                    <div class="card-body p-2">
-                                        <label class="form-label small fw-bold">Turno {{ round_num }}:</label>
-                                        <select class="form-select form-select-sm" id="roundDiscipline{{ round_num }}" onchange="updateRoundDiscipline({{ round_num }})">
-                                            <option value="{{ gara.discipline }}">{{ gara.discipline.replace("_", " ").title() }} (Default)</option>
-                                            {% for value, label in discipline_choices %}
-                                                {% if value != gara.discipline %}
-                                                    <option value="{{ value }}">{{ label }}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <label class="form-label small fw-bold">{{ _('Turno %(num)s:', num=round_num)
+                                        }}</label>
+                                    <select class="form-select form-select-sm" id="roundDiscipline{{ round_num }}"
+                                        onchange="updateRoundDiscipline({{ round_num }})">
+                                        <option value="{{ gara.discipline }}">{{ gara.discipline.replace("_", "
+                                            ").title() }} {{ _('(Default)') }}</option>
+                                        {% for value, label in discipline_choices %}
+                                        {% if value != gara.discipline %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -68,8 +74,9 @@
                 <div class="alert alert-info p-2">
                     <small>
                         <i class="fas fa-info-circle"></i>
-                        <strong>Nota:</strong> Le configurazioni delle discipline vengono salvate e applicate automaticamente quando ogni turno viene avviato.
-                        Puoi modificare queste impostazioni fino all'apertura delle iscrizioni.
+                        <strong>{{ _('Nota:') }}</strong> {{ _('Le configurazioni delle discipline vengono salvate e
+                        applicate automaticamente quando ogni turno viene avviato.') }}
+                        {{ _("Puoi modificare queste impostazioni fino all'apertura delle iscrizioni.") }}
                     </small>
                 </div>
             </div>
@@ -79,40 +86,41 @@
 {% endif %}
 
 {# Round progression management for playing gare #}
-{% if gara.status == 'playing' and gara.current_round < gara.rounds_count %}
-    {# Check if current round is completed #}
-    {% set current_round_matches = all_matches | selectattr('round_number', 'equalto', gara.current_round) | list %}
-    {% set completed_matches = current_round_matches | selectattr('status', 'equalto', 'completed') | list %}
-
-    {% if current_round_matches | length > 0 and completed_matches | length == current_round_matches | length %}
-        <div class="card border-success">
-            <div class="card-header bg-success bg-opacity-10">
-                <h5>
-                    <i class="fas fa-play-circle"></i>
-                    Gestione Turni
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <strong>Turno {{ gara.current_round }} completato!</strong>
-                    Tutti i match del turno corrente sono stati completati.
-                </div>
-
-                <div class="d-grid">
-                    <form method="POST" action="{{ url_for('admin.competition.start_round_generic', gara_id=gara.id, round_number=gara.current_round + 1) }}" style="display: inline;">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="fas fa-forward"></i>
-                            Avvia turno successivo
-                        </button>
-                    </form>
-                </div>
-
-                <small class="text-muted mt-2 d-block">
-                    <i class="fas fa-info-circle"></i>
-                    Questo avvierà il turno {{ gara.current_round + 1 }} di {{ gara.rounds_count }}.
-                </small>
-            </div>
+{% if gara.status == 'playing' and gara.current_round < gara.rounds_count %} {# Check if current round is completed #}
+    {% set current_round_matches=all_matches | selectattr('round_number', 'equalto' , gara.current_round) | list %} {%
+    set completed_matches=current_round_matches | selectattr('status', 'equalto' , 'completed' ) | list %} {% if
+    current_round_matches | length> 0 and completed_matches | length == current_round_matches | length %}
+    <div class="card border-success">
+        <div class="card-header bg-success bg-opacity-10">
+            <h5>
+                <i class="fas fa-play-circle"></i>
+                {{ _('Gestione Turni') }}
+            </h5>
         </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <strong>{{ _('Turno %(num)s completato!', num=gara.current_round) }}</strong>
+                {{ _('Tutti i match del turno corrente sono stati completati.') }}
+            </div>
+
+            <div class="d-grid">
+                <form method="POST"
+                    action="{{ url_for('admin.competition.start_round_generic', gara_id=gara.id, round_number=gara.current_round + 1) }}"
+                    style="display: inline;">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-forward"></i>
+                        {{ _('Avvia turno successivo') }}
+                    </button>
+                </form>
+            </div>
+
+            <small class="text-muted mt-2 d-block">
+                <i class="fas fa-info-circle"></i>
+                {{ _('Questo avvierà il turno %(next)s di %(total)s.', next=gara.current_round + 1,
+                total=gara.rounds_count) }}
+            </small>
+        </div>
+    </div>
     {% endif %}
-{% endif %}
+    {% endif %}

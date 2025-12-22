@@ -2,11 +2,11 @@
 
 {% block title %}
 {% if user_can_manage %}
-Gestione Gara {{ gara.number }} - Admin
+{{ _('Gestione Gara %(id)s - Admin', id=gara.number) }}
 {% elif user_inscription %}
-{{ gara.name or ('Gara ' ~ gara.number) }} - Dettagli
+{{ gara.name or _('Gara %(id)s', id=gara.number) }} - {{ _('Dettagli') }}
 {% else %}
-{{ gara.name or ('Gara ' ~ gara.number) }} - Dettaglio Pubblico
+{{ gara.name or _('Gara %(id)s', id=gara.number) }} - {{ _('Dettaglio Pubblico') }}
 {% endif %}
 {% endblock %}
 
@@ -112,7 +112,7 @@ Gestione Gara {{ gara.number }} - Admin
 <div class="row">
   <div class="col-12 text-center">
     <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+      <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
     </a>
   </div>
 </div>
@@ -136,7 +136,7 @@ Gestione Gara {{ gara.number }} - Admin
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Imposta Risultato Rapido</h5>
+        <h5 class="modal-title">{{ _('Imposta Risultato Rapido') }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="quickResultForm" onsubmit="return submitQuickResult(event)">
@@ -144,24 +144,24 @@ Gestione Gara {{ gara.number }} - Admin
           <div class="alert alert-warning">
             <small>
               <i class="fas fa-info-circle"></i>
-              <strong>Modalità:</strong>
+              <strong>{{ _('Modalità:') }}</strong>
               {{ gara.distance_config|format_distance }}
               {% if gara.is_race_to %}
-              (vince chi vince {{ gara.distance }} rack)
+              {{ _('(vince chi vince %(distance)s rack)', distance=gara.distance) }}
               {% else %}
-              (somma deve essere {{ gara.distance }})
+              {{ _('(somma deve essere %(distance)s)', distance=gara.distance) }}
               {% endif %}
             </small>
           </div>
 
           <div class="row">
             <div class="col-6">
-              <label id="player1Label" class="form-label">Giocatore 1</label>
+              <label id="player1Label" class="form-label">{{ _('Giocatore 1') }}</label>
               <input type="number" class="form-control" id="quickPlayer1Score" min="0" max="{{ gara.distance }}"
                 required>
             </div>
             <div class="col-6">
-              <label id="player2Label" class="form-label">Giocatore 2</label>
+              <label id="player2Label" class="form-label">{{ _('Giocatore 2') }}</label>
               <input type="number" class="form-control" id="quickPlayer2Score" min="0" max="{{ gara.distance }}"
                 required>
             </div>
@@ -170,9 +170,9 @@ Gestione Gara {{ gara.number }} - Admin
           <input type="hidden" id="quickMatchId">
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
           <button type="submit" class="btn btn-warning">
-            <i class="fas fa-save"></i> Imposta Risultato
+            <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
           </button>
         </div>
       </form>
@@ -186,7 +186,7 @@ Gestione Gara {{ gara.number }} - Admin
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
-          <i class="fas fa-table"></i> Assegna Tavolo
+          <i class="fas fa-table"></i> {{ _('Assegna Tavolo') }}
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -200,7 +200,7 @@ Gestione Gara {{ gara.number }} - Admin
         <div id="currentTableInfo" class="mb-3" style="display: none;">
           <small class="text-muted">
             <i class="fas fa-info-circle"></i>
-            Tavolo attuale: <strong id="currentTableDisplay"></strong>
+            {{ _('Tavolo attuale:') }} <strong id="currentTableDisplay"></strong>
           </small>
         </div>
 
@@ -211,12 +211,12 @@ Gestione Gara {{ gara.number }} - Admin
 
         <!-- Rimuovi tavolo -->
         <button class="btn btn-outline-danger w-100" onclick="selectTableFromModal(null)">
-          <i class="fas fa-times-circle"></i> Rimuovi Tavolo
+          <i class="fas fa-times-circle"></i> {{ _('Rimuovi Tavolo') }}
         </button>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="fas fa-times"></i> Annulla
+          <i class="fas fa-times"></i> {{ _('Annulla') }}
         </button>
       </div>
     </div>
@@ -232,9 +232,9 @@ Gestione Gara {{ gara.number }} - Admin
   function startFirstRound(provaId, strategy) {
     let message;
     if (strategy === 'random') {
-      message = 'Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.';
+      message = '{{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") }}';
     } else {
-      message = 'Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.';
+      message = '{{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") }}';
     }
 
     if (confirm(message)) {
@@ -247,7 +247,7 @@ Gestione Gara {{ gara.number }} - Admin
   }
 
   function cancelFirstRound(provaId) {
-    if (confirm('Sei sicuro di voler cancellare l\'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.')) {
+    if (confirm('{{ _("Sei sicuro di voler cancellare l\'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") }}')) {
       fetch(`/admin/gara/${provaId}/cancel_first_round`, {
         method: 'POST',
         headers: {
@@ -258,7 +258,7 @@ Gestione Gara {{ gara.number }} - Admin
           location.reload();
         } else {
           response.text().then(text => {
-            alert('Errore durante la cancellazione: ' + text);
+            alert('{{ _("Errore durante la cancellazione:") }} ' + text);
           });
         }
       });
@@ -266,7 +266,7 @@ Gestione Gara {{ gara.number }} - Admin
   }
 
   function cancelCurrentRound(provaId) {
-    if (confirm('Sei sicuro di voler cancellare l\'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.')) {
+    if (confirm('{{ _("Sei sicuro di voler cancellare l\'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") }}')) {
       fetch(`/admin/gara/${provaId}/cancel_current_round`, {
         method: 'POST',
         headers: {
@@ -277,7 +277,7 @@ Gestione Gara {{ gara.number }} - Admin
           location.reload();
         } else {
           response.text().then(text => {
-            alert('Errore durante la cancellazione: ' + text);
+            alert('{{ _("Errore durante la cancellazione:") }} ' + text);
           });
         }
       });
@@ -285,7 +285,9 @@ Gestione Gara {{ gara.number }} - Admin
   }
 
   function deleteProva(provaId, provaNumber) {
-    if (confirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
+    let confirmMsg = '{{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") }}';
+    confirmMsg = confirmMsg.replace('{number}', provaNumber);
+    if (confirm(confirmMsg)) {
       fetch(`/admin/gara/${provaId}/delete`, {
         method: 'POST',
         headers: {
@@ -304,7 +306,9 @@ Gestione Gara {{ gara.number }} - Admin
   }
 
   function cancelProvaWithNotifications(provaId, provaNumber) {
-    if (confirm(`Sei SICURO di voler cancellare la Gara ${provaNumber}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!`)) {
+    let confirmMsg = '{{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") }}';
+    confirmMsg = confirmMsg.replace('{number}', provaNumber);
+    if (confirm(confirmMsg)) {
       fetch(`/admin/gara/${provaId}/cancel`, {
         method: 'POST',
         headers: {
@@ -319,7 +323,7 @@ Gestione Gara {{ gara.number }} - Admin
           {% endif %}
         } else {
           response.text().then(text => {
-            alert('Errore durante la cancellazione: ' + text);
+            alert('{{ _("Errore durante la cancellazione:") }} ' + text);
           });
         }
       });
@@ -434,14 +438,14 @@ Gestione Gara {{ gara.number }} - Admin
           location.reload();
         } else {
           response.text().then(text => {
-            alert('Errore durante l\'avvio del turno: ' + text);
+            alert('{{ _("Errore durante l\'avvio del turno:") }} ' + text);
             buttons.forEach(btn => btn.disabled = false);
           });
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Errore di rete durante l\'avvio del turno');
+        alert('{{ _("Errore di rete durante l\'avvio del turno") }}');
         buttons.forEach(btn => btn.disabled = false);
       });
   }
@@ -485,19 +489,19 @@ Gestione Gara {{ gara.number }} - Admin
             location.reload();
           }
         } else {
-          alert(`Errore: ${data.error}`);
+          alert('{{ _("Errore:") }} ' + data.error);
           buttons.forEach(btn => btn.disabled = false);
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Errore di rete durante la creazione del turno');
+        alert('{{ _("Errore di rete durante la creazione del turno") }}');
         buttons.forEach(btn => btn.disabled = false);
       });
   }
 
   function closeInscriptions(provaId) {
-    if (confirm('Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.')) {
+    if (confirm('{{ _("Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.") }}')) {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/admin/gara/${provaId}/close_inscriptions`;
@@ -537,19 +541,19 @@ Gestione Gara {{ gara.number }} - Admin
           bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
           location.reload();
         } else {
-          alert('Errore durante l\'impostazione del risultato');
+          alert('{{ _("Errore durante l\'impostazione del risultato") }}');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Errore durante l\'impostazione del risultato');
+        alert('{{ _("Errore durante l\'impostazione del risultato") }}');
       });
 
     return false;
   }
 
   function resetMatchQuick(matchId) {
-    if (confirm('Sei sicuro di voler resettare questa partita?')) {
+    if (confirm('{{ _("Sei sicuro di voler resettare questa partita?") }}')) {
       fetch(`/admin/match/${matchId}/reset`, {
         method: 'POST',
         headers: {
@@ -560,7 +564,7 @@ Gestione Gara {{ gara.number }} - Admin
           if (response.ok) {
             location.reload();
           } else {
-            alert('Errore durante il reset');
+            alert('{{ _("Errore durante il reset") }}');
           }
         });
     }
@@ -626,7 +630,7 @@ Gestione Gara {{ gara.number }} - Admin
                 <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
                 <div class="table-name">${tableName}</div>
             `;
-        button.title = 'Click per scambiare con match occupante';
+        button.title = '{{ _("Click per scambiare con match occupante") }}';
         button.onclick = () => selectTableFromModal(tableName);
       } else {
         // Tavolo disponibile
@@ -687,7 +691,7 @@ Gestione Gara {{ gara.number }} - Admin
           // Se c'è stato uno swap, mostra notifica più dettagliata
           if (data.swapped_match_id) {
             console.log('Swap detected, swapped_match_id:', data.swapped_match_id);
-            alert(data.message + '\n\nLa pagina verrà ricaricata per mostrare le modifiche.');
+            alert(data.message + '\n\n{{ _("La pagina verrà ricaricata per mostrare le modifiche.") }}');
           }
 
           // Ricarica la pagina per aggiornare la visualizzazione
@@ -695,12 +699,12 @@ Gestione Gara {{ gara.number }} - Admin
           location.reload();
         } else {
           console.error('Error from server:', data.message);
-          alert('Errore: ' + data.message);
+          alert('{{ _("Errore:") }} ' + data.message);
         }
       })
       .catch(error => {
         console.error('Network error:', error);
-        alert('Errore durante l\'assegnazione del tavolo');
+        alert('{{ _("Errore durante l\'assegnazione del tavolo") }}');
       });
   }
 </script>

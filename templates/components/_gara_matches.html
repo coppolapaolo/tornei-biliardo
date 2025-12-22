@@ -2,7 +2,7 @@
 {% if matches %}
 <div class="card">
     <div class="card-header">
-        <h5><i class="fas fa-gamepad"></i> Partite</h5>
+        <h5><i class="fas fa-gamepad"></i> {{ _('Partite') }}</h5>
     </div>
     <div class="card-body">
         {# Collect rounds by status first #}
@@ -10,70 +10,71 @@
         {% set completed_rounds = [] %}
 
         {% for round_num in range(1, gara.rounds_count + 1) %}
-            {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
-            {% if round_matches %}
-                {% set has_playing = round_matches | selectattr("status", "equalto", "playing") | list | length > 0 %}
-                {% set has_pending = round_matches | selectattr("status", "equalto", "pending") | list | length > 0 %}
-                {% set all_completed = round_matches | selectattr("status", "equalto", "completed") | list | length == round_matches | length %}
+        {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
+        {% if round_matches %}
+        {% set has_playing = round_matches | selectattr("status", "equalto", "playing") | list | length > 0 %}
+        {% set has_pending = round_matches | selectattr("status", "equalto", "pending") | list | length > 0 %}
+        {% set all_completed = round_matches | selectattr("status", "equalto", "completed") | list | length ==
+        round_matches | length %}
 
-                {% if has_playing or has_pending %}
-                    {% set _ = active_rounds.append(round_num) %}
-                {% elif all_completed %}
-                    {% set _ = completed_rounds.append(round_num) %}
-                {% endif %}
-            {% endif %}
+        {% if has_playing or has_pending %}
+        {% set _ = active_rounds.append(round_num) %}
+        {% elif all_completed %}
+        {% set _ = completed_rounds.append(round_num) %}
+        {% endif %}
+        {% endif %}
         {% endfor %}
 
         {# Display active rounds first #}
         {% for round_num in active_rounds %}
-            {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
-            <h6 class="mt-3 mb-2">Turno {{ round_num }}</h6>
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Giocatore 1</th>
-                            <th>vs</th>
-                            <th>Giocatore 2</th>
-                            <th>Risultato</th>
-                            <th>Stato</th>
-                            <th>Tavolo</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for match in round_matches %}
-                            {% include "components/_match_result_row.html" %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
+        <h6 class="mt-3 mb-2">{{ _('Turno %(num)s', num=round_num) }}</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>{{ _('Giocatore 1') }}</th>
+                        <th>vs</th>
+                        <th>{{ _('Giocatore 2') }}</th>
+                        <th>{{ _('Risultato') }}</th>
+                        <th>{{ _('Stato') }}</th>
+                        <th>{{ _('Tavolo') }}</th>
+                        <th>{{ _('Azioni') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in round_matches %}
+                    {% include "components/_match_result_row.html" %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endfor %}
 
         {# Then display completed rounds #}
         {% for round_num in completed_rounds %}
-            {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
-            <h6 class="mt-3 mb-2">Turno {{ round_num }}</h6>
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Giocatore 1</th>
-                            <th>vs</th>
-                            <th>Giocatore 2</th>
-                            <th>Risultato</th>
-                            <th>Stato</th>
-                            <th>Tavolo</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for match in round_matches %}
-                            {% include "components/_match_result_row.html" %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        {% set round_matches = matches | selectattr("round_number", "equalto", round_num) | list %}
+        <h6 class="mt-3 mb-2">{{ _('Turno %(num)s', num=round_num) }}</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>{{ _('Giocatore 1') }}</th>
+                        <th>vs</th>
+                        <th>{{ _('Giocatore 2') }}</th>
+                        <th>{{ _('Risultato') }}</th>
+                        <th>{{ _('Stato') }}</th>
+                        <th>{{ _('Tavolo') }}</th>
+                        <th>{{ _('Azioni') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in round_matches %}
+                    {% include "components/_match_result_row.html" %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endfor %}
     </div>
 </div>
