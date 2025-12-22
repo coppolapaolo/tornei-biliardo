@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List, Optional, Iterable, Tuple
 from datetime import date as date_cls
+from flask_babel import gettext as _
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
@@ -719,7 +720,7 @@ class DashboardService:
         )
 
         return DashboardVM(
-            title="Dashboard Amministratore",
+            title=_("Dashboard Amministratore"),
             campionati=campionati,
             unified_items=unified_items,
             selected_campionato=None,
@@ -858,7 +859,7 @@ class DashboardService:
         )
 
         return DashboardVM(
-            title="Dashboard Direttore",
+            title=_("Dashboard Direttore"),
             campionati=campionati,
             unified_items=unified_items,
             selected_campionato=selected,
@@ -973,7 +974,7 @@ class DashboardService:
         )
 
         return DashboardVM(
-            title="Dashboard Giocatore",
+            title=_("Dashboard Giocatore"),
             campionati=campionati,
             unified_items=unified_items,
             selected_campionato=selected,
@@ -1039,7 +1040,7 @@ class DashboardService:
         )
 
         return DashboardVM(
-            title="Vista Pubblica",
+            title=_("Vista Pubblica"),
             campionati=campionati,
             unified_items=unified_items,
             selected_campionato=None,

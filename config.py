@@ -31,6 +31,10 @@ class Config:
     VENUE_UPLOAD_FOLDER = "venues"
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+    
+    # I18n settings
+    BABEL_DEFAULT_LOCALE = "it"
+    BABEL_TRANSLATION_DIRECTORIES = "translations"
 
 
 class DevelopmentConfig(Config):

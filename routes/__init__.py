@@ -8,6 +8,7 @@ def register_blueprints(app):
     from .admin import admin_bp
     from .player import player_bp
     from .dashboard import dashboard_bp
+    from .i18n import i18n_bp
 
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
@@ -20,6 +21,7 @@ def register_blueprints(app):
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(player_bp, url_prefix="/player")
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(i18n_bp)
 
     # Registrazione blueprints extended domains
     app.register_blueprint(challenge_bp, url_prefix="/challenges")

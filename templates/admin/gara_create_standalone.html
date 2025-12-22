@@ -368,6 +368,7 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // ANTIGRAVITY FIX: Ensuring clean script scope and syntax
         let currentStep = 1;
         const totalSteps = 4;
 
@@ -494,107 +495,107 @@
         const firstRoundSelect = document.getElementById('first_round_policy');
 
         // Store strategy constraints from template data
-        const strategyConstraints = {{ available_strategies | tojson
-    }};
+        // Wrap in string to satisfy IDE's Javascript parser
+        const strategyConstraints = JSON.parse('{{ available_strategies | tojson | safe }}');
 
-    function updateStrategyUI() {
-        const selectedStrategy = strategySelect.value;
-        const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
+        function updateStrategyUI() {
+            const selectedStrategy = strategySelect.value;
+            const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
 
-        const selectedOption = strategySelect.options[strategySelect.selectedIndex];
-        strategyDescription.textContent = selectedOption.dataset.description || '';
+            const selectedOption = strategySelect.options[strategySelect.selectedIndex];
+            strategyDescription.textContent = selectedOption.dataset.description || '';
 
-        const allowedFirstPolicies = constraints.first_round_policies || ['random'];
-        Array.from(firstRoundSelect.options).forEach(option => {
-            if (option.value) {
-                option.disabled = !allowedFirstPolicies.includes(option.value);
-                if (option.disabled && option.selected) {
-                    firstRoundSelect.value = allowedFirstPolicies[0];
+            const allowedFirstPolicies = constraints.first_round_policies || ['random'];
+            Array.from(firstRoundSelect.options).forEach(option => {
+                if (option.value) {
+                    option.disabled = !allowedFirstPolicies.includes(option.value);
+                    if (option.disabled && option.selected) {
+                        firstRoundSelect.value = allowedFirstPolicies[0];
+                    }
+                }
+            });
+
+            const allowedOddPolicies = constraints.odd_policies || ['bye'];
+            Array.from(oddPolicySelect.options).forEach(option => {
+                if (option.value) {
+                    option.disabled = !allowedOddPolicies.includes(option.value);
+                    if (option.disabled && option.selected) {
+                        oddPolicySelect.value = allowedOddPolicies[0];
+                    }
+                }
+            });
+
+            if (constraints.anti_rematch === false) {
+                antiRematchCheck.checked = false;
+                antiRematchCheck.disabled = true;
+                antiRematchSection.style.display = 'none';
+            } else {
+                antiRematchCheck.disabled = false;
+                antiRematchSection.style.display = 'block';
+                if (constraints.anti_rematch_required) {
+                    antiRematchCheck.checked = true;
                 }
             }
-        });
 
-        const allowedOddPolicies = constraints.odd_policies || ['bye'];
-        Array.from(oddPolicySelect.options).forEach(option => {
-            if (option.value) {
-                option.disabled = !allowedOddPolicies.includes(option.value);
-                if (option.disabled && option.selected) {
-                    oddPolicySelect.value = allowedOddPolicies[0];
-                }
+            if (constraints.fixed_rounds) {
+                roundsInput.setAttribute('disabled', 'true');
+                roundsInput.setAttribute('title', 'Calcolato automaticamente');
+            } else {
+                roundsInput.removeAttribute('disabled');
             }
-        });
 
-        if (constraints.anti_rematch === false) {
-            antiRematchCheck.checked = false;
-            antiRematchCheck.disabled = true;
-            antiRematchSection.style.display = 'none';
-        } else {
-            antiRematchCheck.disabled = false;
-            antiRematchSection.style.display = 'block';
-            if (constraints.anti_rematch_required) {
-                antiRematchCheck.checked = true;
+            updateTrioWarning();
+        }
+
+        function updateTrioWarning() {
+            const distance = parseInt(distanceInput.value) || 0;
+            const oddPolicy = oddPolicySelect.value;
+
+            if (oddPolicy === 'trio' && distance > 7) {
+                trioWarning.style.display = 'block';
+            } else {
+                trioWarning.style.display = 'none';
             }
         }
 
-        if (constraints.fixed_rounds) {
-            roundsInput.setAttribute('disabled', 'true');
-            roundsInput.setAttribute('title', 'Calcolato automaticamente');
-        } else {
-            roundsInput.removeAttribute('disabled');
+        strategySelect.addEventListener('change', updateStrategyUI);
+        oddPolicySelect.addEventListener('change', updateTrioWarning);
+        distanceInput.addEventListener('input', updateTrioWarning);
+
+        // Venue logic
+        const locationInput = document.getElementById('location');
+        const tablesInput = document.getElementById('number_of_tables');
+        const tablesContainer = document.getElementById('tables-container');
+        const venueOptions = document.querySelectorAll('#venue-suggestions option');
+
+        function updateVenueTablesVisibility() {
+            const selectedValue = locationInput.value.trim();
+            if (!selectedValue) {
+                tablesContainer.style.display = 'none';
+                tablesInput.value = '';
+                return;
+            }
+
+            const matchingOption = Array.from(venueOptions).find(option =>
+                option.value.toLowerCase() === selectedValue.toLowerCase()
+            );
+
+            if (matchingOption) {
+                // Existing verified venue
+                tablesContainer.style.display = 'none';
+                tablesInput.value = ''; // Don't override existing venue tables
+            } else {
+                // New venue - show table input
+                tablesContainer.style.display = 'block';
+            }
         }
 
-        updateTrioWarning();
-    }
+        locationInput.addEventListener('input', updateVenueTablesVisibility);
+        locationInput.addEventListener('change', updateVenueTablesVisibility);
 
-    function updateTrioWarning() {
-        const distance = parseInt(distanceInput.value) || 0;
-        const oddPolicy = oddPolicySelect.value;
-
-        if (oddPolicy === 'trio' && distance > 7) {
-            trioWarning.style.display = 'block';
-        } else {
-            trioWarning.style.display = 'none';
-        }
-    }
-
-    strategySelect.addEventListener('change', updateStrategyUI);
-    oddPolicySelect.addEventListener('change', updateTrioWarning);
-    distanceInput.addEventListener('input', updateTrioWarning);
-
-    // Venue logic
-    const locationInput = document.getElementById('location');
-    const tablesInput = document.getElementById('number_of_tables');
-    const tablesContainer = document.getElementById('tables-container');
-    const venueOptions = document.querySelectorAll('#venue-suggestions option');
-
-    function updateVenueTablesVisibility() {
-        const selectedValue = locationInput.value.trim();
-        if (!selectedValue) {
-            tablesContainer.style.display = 'none';
-            tablesInput.value = '';
-            return;
-        }
-
-        const matchingOption = Array.from(venueOptions).find(option =>
-            option.value.toLowerCase() === selectedValue.toLowerCase()
-        );
-
-        if (matchingOption) {
-            // Existing verified venue
-            tablesContainer.style.display = 'none';
-            tablesInput.value = ''; // Don't override existing venue tables
-        } else {
-            // New venue - show table input
-            tablesContainer.style.display = 'block';
-        }
-    }
-
-    locationInput.addEventListener('input', updateVenueTablesVisibility);
-    locationInput.addEventListener('change', updateVenueTablesVisibility);
-
-    // Initial run
-    updateStrategyUI();
-    updateVenueTablesVisibility();
-});
+        // Initial run
+        updateStrategyUI();
+        updateVenueTablesVisibility();
+    });
 </script>
 {% endblock %}

@@ -1,6 +1,7 @@
 # utils/jinja.py — aggiunta di un helper per render accattivante
 from markupsafe import Markup, escape
 from datetime import datetime, date, time, timedelta
+from flask_babel import gettext as _
 
 
 def display_user_handle(user) -> Markup:
@@ -14,7 +15,7 @@ def display_user_handle(user) -> Markup:
 def format_date_local(value) -> Markup:
     """Formatta una data in formato italiano (dd/mm/yyyy)."""
     if not value:
-        return Markup("N/A")
+        return Markup(_("N/A"))
 
     # Formatta direttamente in Python con formato italiano
     if isinstance(value, datetime):
@@ -37,7 +38,7 @@ def format_datetime_local(value) -> Markup:
     consider using pytz or JavaScript-based conversion.
     """
     if not value:
-        return Markup("N/A")
+        return Markup(_("N/A"))
 
     if isinstance(value, datetime):
         # Database stores as UTC, convert to Italian time (UTC+2)
@@ -57,7 +58,7 @@ def format_datetime_local(value) -> Markup:
 def format_time_local(value) -> Markup:
     """Formatta un orario per la visualizzazione locale."""
     if not value:
-        return Markup("N/A")
+        return Markup(_("N/A"))
 
     # Se è un oggetto time, convertilo in stringa
     if isinstance(value, time):
@@ -85,7 +86,7 @@ def format_distance(distance_obj) -> Markup:
         → "Best of 3 sets, each set best of 5 racks"
     """
     if not distance_obj:
-        return Markup("N/A")
+        return Markup(_("N/A"))
 
     # Se ha una property distance_config, usala
     if hasattr(distance_obj, 'distance_config'):
@@ -95,7 +96,7 @@ def format_distance(distance_obj) -> Markup:
     if hasattr(distance_obj, 'to_display_string'):
         return Markup(escape(distance_obj.to_display_string()))
 
-    return Markup("N/A")
+    return Markup(_("N/A"))
 
 
 def format_score(score_obj) -> Markup:
@@ -131,7 +132,7 @@ def format_score(score_obj) -> Markup:
     if hasattr(score_obj, 'to_display_string'):
         return Markup(escape(score_obj.to_display_string()))
 
-    return Markup("N/A")
+    return Markup(_("N/A"))
 
 
 def format_distance_short(gara_or_distance) -> Markup:
@@ -149,7 +150,7 @@ def format_distance_short(gara_or_distance) -> Markup:
         → "X4" (Exactly 4)
     """
     if not gara_or_distance:
-        return Markup("N/A")
+        return Markup(_("N/A"))
 
     # Ottieni Distance object
     if hasattr(gara_or_distance, 'distance_config'):
@@ -161,7 +162,7 @@ def format_distance_short(gara_or_distance) -> Markup:
         prefix = "BO" if distance.is_race_to_racks else "X"
         return Markup(f"{prefix}{distance.racks}")
 
-    return Markup("N/A")
+    return Markup(_("N/A"))
 
 
 def gara_display_name(gara) -> Markup:
@@ -174,9 +175,9 @@ def gara_display_name(gara) -> Markup:
         Markup: Formatted gara name with details
     """
     if not gara:
-        return Markup("N/A")
+        return Markup(_("N/A"))
 
-    name = gara.name or f"Gara {gara.id}"
+    name = gara.name or _("Gara %(id)s") % {'id': gara.id}
     return Markup(escape(name))
 
 

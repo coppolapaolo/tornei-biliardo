@@ -1,5 +1,6 @@
 # app.py - Clean application factory pattern
-from flask import Flask, request
+from flask import Flask, request, session
+from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
 import logging
@@ -48,6 +49,19 @@ def create_app(config_name=None):
     login_manager = LoginManager()
     login_manager.init_app(app)
     setattr(login_manager, "login_view", "auth.login")
+    
+    # Setup Babel
+    def get_locale():
+        # 1. Try language from session
+        if "language" in session:
+            return session["language"]
+        # 2. Try language from user profile (if logged in)
+        if current_user.is_authenticated and hasattr(current_user, "language") and current_user.language:
+            return current_user.language
+        # 3. Best match from request headers
+        return request.accept_languages.best_match(["it", "en"])
+
+    babel = Babel(app, locale_selector=get_locale)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -111,6 +125,7 @@ def create_app(config_name=None):
             "is_director": current_user.is_authenticated and current_user.is_director,
             "is_admin": current_user.is_authenticated and current_user.is_admin,
             "unread_notifications_count": unread_count,
+            "get_locale": get_locale,
         }
 
     # Context processor per enum

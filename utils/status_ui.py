@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Tuple
 
 from markupsafe import Markup, escape
+from flask_babel import gettext as _
 
 # Enum centralizzati (string-based, DB invariato)
 from models.status_enum import (
@@ -71,22 +72,22 @@ class StatusPresenter:
             # Derived/UI
             ProvaDerivedStatus.INSCRIPTION_CLOSED.value: (
                 "bg-secondary",
-                "Iscrizioni Chiuse",
+                _("Iscrizioni Chiuse"),
             ),
             ProvaDerivedStatus.READY_TO_START.value: (
                 "bg-primary",
-                "Pronta per Iniziare",
+                _("Pronta per Iniziare"),
             ),
-            ProvaDerivedStatus.ROUND_COMPLETED.value: ("bg-info", "Turno Completato"),
+            ProvaDerivedStatus.ROUND_COMPLETED.value: ("bg-info", _("Turno Completato")),
             ProvaDerivedStatus.TOURNAMENT_COMPLETED.value: (
                 "bg-dark",
-                "Gara Completata",
+                _("Gara Completata"),
             ),
             # Persistiti
-            GaraStatus.SETUP.value: ("bg-warning", "Setup"),
-            GaraStatus.INSCRIPTION.value: ("bg-info", "Iscrizioni Aperte"),
-            GaraStatus.PLAYING.value: ("bg-success", "In Corso"),
-            GaraStatus.COMPLETED.value: ("bg-dark", "Completata"),
+            GaraStatus.SETUP.value: ("bg-warning", _("Setup")),
+            GaraStatus.INSCRIPTION.value: ("bg-info", _("Iscrizioni Aperte")),
+            GaraStatus.PLAYING.value: ("bg-success", _("In Corso")),
+            GaraStatus.COMPLETED.value: ("bg-dark", _("Completata")),
         }
         return mapping.get(s, ("bg-secondary", "Sconosciuto"))
 
@@ -112,10 +113,10 @@ class StatusPresenter:
                 s = TournamentStatus.SETUP.value
 
         mapping: Dict[str, Tuple[str, str]] = {
-            TournamentStatus.SETUP.value: ("bg-warning", "Setup"),
-            TournamentStatus.REGISTRATION_OPEN.value: ("bg-info", "Iscrizioni Aperte"),
-            TournamentStatus.IN_PROGRESS.value: ("bg-primary", "In Corso"),
-            TournamentStatus.COMPLETED.value: ("bg-success", "Completato"),
+            TournamentStatus.SETUP.value: ("bg-warning", _("Setup")),
+            TournamentStatus.REGISTRATION_OPEN.value: ("bg-info", _("Iscrizioni Aperte")),
+            TournamentStatus.IN_PROGRESS.value: ("bg-primary", _("In Corso")),
+            TournamentStatus.COMPLETED.value: ("bg-success", _("Completato")),
         }
         return mapping.get(
             s or TournamentStatus.SETUP.value, ("bg-secondary", "Sconosciuto")
@@ -130,10 +131,10 @@ class StatusPresenter:
         elif hasattr(o, "status"):
             s = getattr(o, "status")
         mapping: Dict[str, Tuple[str, str]] = {
-            MatchStatus.PENDING.value: ("bg-secondary", "In Attesa"),
-            MatchStatus.PLAYING.value: ("bg-primary", "In Corso"),
-            MatchStatus.COMPLETED.value: ("bg-success", "Completato"),
-            MatchStatus.VALIDATED.value: ("bg-dark", "Validato"),
+            MatchStatus.PENDING.value: ("bg-secondary", _("In Attesa")),
+            MatchStatus.PLAYING.value: ("bg-primary", _("In Corso")),
+            MatchStatus.COMPLETED.value: ("bg-success", _("Completato")),
+            MatchStatus.VALIDATED.value: ("bg-dark", _("Validato")),
         }
         return mapping.get(
             s or MatchStatus.PENDING.value, ("bg-secondary", "Sconosciuto")
@@ -148,9 +149,9 @@ class StatusPresenter:
         elif hasattr(o, "status"):
             s = getattr(o, "status")
         mapping: Dict[str, Tuple[str, str]] = {
-            DirectorRequestStatus.PENDING.value: ("bg-warning", "In Valutazione"),
-            DirectorRequestStatus.APPROVED.value: ("bg-success", "Approvata"),
-            DirectorRequestStatus.REJECTED.value: ("bg-danger", "Respinta"),
+            DirectorRequestStatus.PENDING.value: ("bg-warning", _("In Valutazione")),
+            DirectorRequestStatus.APPROVED.value: ("bg-success", _("Approvata")),
+            DirectorRequestStatus.REJECTED.value: ("bg-danger", _("Respinta")),
         }
         return mapping.get(
             s or DirectorRequestStatus.PENDING.value, ("bg-secondary", "Sconosciuto")
@@ -165,9 +166,9 @@ class StatusPresenter:
         elif hasattr(o, "confirmation_status"):
             s = getattr(o, "confirmation_status")
         mapping: Dict[str, Tuple[str, str]] = {
-            PlayoffConfirmationStatus.PENDING.value: ("bg-secondary", "In Attesa"),
-            PlayoffConfirmationStatus.CONFIRMED.value: ("bg-success", "Confermato"),
-            PlayoffConfirmationStatus.DECLINED.value: ("bg-danger", "Rifiutato"),
+            PlayoffConfirmationStatus.PENDING.value: ("bg-secondary", _("In Attesa")),
+            PlayoffConfirmationStatus.CONFIRMED.value: ("bg-success", _("Confermato")),
+            PlayoffConfirmationStatus.DECLINED.value: ("bg-danger", _("Rifiutato")),
         }
         return mapping.get(
             s or PlayoffConfirmationStatus.PENDING.value,
@@ -210,7 +211,7 @@ def _present(obj: Any, kind: Optional[str]) -> Tuple[str, str]:
         return StatusPresenter.director_request(obj)
     if k == "playoff_confirmation":
         return StatusPresenter.playoff_confirmation(obj)
-    return ("bg-secondary", "Sconosciuto")
+    return ("bg-secondary", _("Sconosciuto"))
 
 
 def _badge_html(css_class: str, text: str) -> Markup:
