@@ -3,33 +3,33 @@
 
 <div class="card">
     <div class="card-header">
-        <h5><i class="fas fa-user-check"></i> La Tua Iscrizione</h5>
+        <h5><i class="fas fa-user-check"></i> {{ _('La Tua Iscrizione') }}</h5>
     </div>
     <div class="card-body">
         {% if user_inscription %}
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> Sei iscritto a questa gara
-                {% if user_inscription.is_waitlist %}
-                    <br><small><i class="fas fa-clock"></i> In lista d'attesa</small>
-                {% endif %}
-            </div>
-
-            <p><strong>Data iscrizione:</strong><br>
-                {{ user_inscription.inscription_date|datetime_local if user_inscription.inscription_date else 'N/D' }}
-            </p>
-
-            {% if user_inscription.initial_order %}
-                <p><strong>Ordine sorteggio:</strong> {{ user_inscription.initial_order }}</p>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> {{ _('Sei iscritto a questa gara') }}
+            {% if user_inscription.is_waitlist %}
+            <br><small><i class="fas fa-clock"></i> {{ _('In lista d\'attesa') }}</small>
             {% endif %}
+        </div>
 
-            {% if user_inscription.is_waitlist and user_inscription.waitlist_position %}
-                <p><strong>Posizione lista d'attesa:</strong> #{{ user_inscription.waitlist_position }}</p>
-            {% endif %}
+        <p><strong>{{ _('Data iscrizione:') }}</strong><br>
+            {{ user_inscription.inscription_date|datetime_local if user_inscription.inscription_date else _('N/D') }}
+        </p>
+
+        {% if user_inscription.initial_order %}
+        <p><strong>{{ _('Ordine sorteggio:') }}</strong> {{ user_inscription.initial_order }}</p>
+        {% endif %}
+
+        {% if user_inscription.is_waitlist and user_inscription.waitlist_position %}
+        <p><strong>{{ _('Posizione lista d\'attesa:') }}</strong> #{{ user_inscription.waitlist_position }}</p>
+        {% endif %}
         {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Stai visualizzando questa gara come ospite
-                <br><small>Non sei iscritto ma puoi vedere i risultati e la classifica</small>
-            </div>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> {{ _('Stai visualizzando questa gara come ospite') }}
+            <br><small>{{ _('Non sei iscritto ma puoi vedere i risultati e la classifica') }}</small>
+        </div>
         {% endif %}
     </div>
 </div>

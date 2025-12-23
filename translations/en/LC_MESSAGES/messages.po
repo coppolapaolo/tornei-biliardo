@@ -51,27 +51,27 @@ msgstr "Race %(id)s"
 
 #: utils/status_ui.py:75
 msgid "Iscrizioni Chiuse"
-msgstr ""
+msgstr "Registrations Closed"
 
 #: utils/status_ui.py:79
 msgid "Pronta per Iniziare"
-msgstr ""
+msgstr "Ready to Start"
 
 #: utils/status_ui.py:81
 msgid "Turno Completato"
-msgstr ""
+msgstr "Round Completed"
 
 #: utils/status_ui.py:84
 msgid "Gara Completata"
-msgstr ""
+msgstr "Race Completed"
 
 #: utils/status_ui.py:87 utils/status_ui.py:116
 msgid "Setup"
-msgstr ""
+msgstr "Setup"
 
 #: utils/status_ui.py:88 utils/status_ui.py:117
 msgid "Iscrizioni Aperte"
-msgstr ""
+msgstr "Open Registrations"
 
 #: templates/components/_match_result_row.html:39 utils/status_ui.py:89
 #: utils/status_ui.py:118 utils/status_ui.py:135
@@ -93,19 +93,19 @@ msgstr "Pending"
 
 #: utils/status_ui.py:137
 msgid "Validato"
-msgstr ""
+msgstr "Validated"
 
 #: utils/status_ui.py:152
 msgid "In Valutazione"
-msgstr ""
+msgstr "Under Review"
 
 #: utils/status_ui.py:153
 msgid "Approvata"
-msgstr ""
+msgstr "Approved"
 
 #: utils/status_ui.py:154
 msgid "Respinta"
-msgstr ""
+msgstr "Rejected"
 
 #: utils/status_ui.py:170
 msgid "Confermato"
@@ -794,9 +794,184 @@ msgstr ""
 msgid "Crea Match"
 msgstr ""
 
-#: templates/dashboard/admin.html:15
-msgid "Sei sicuro di voler cambiare lo stato del campionato?"
-msgstr ""
+#: templates/components/_gara_management.html:10
+msgid "Gestisci Challenge"
+msgstr "Manage Challenges"
+
+#: templates/components/_gara_management.html:12
+msgid "Aggiungi Challenge"
+msgstr "Add Challenge"
+
+#: templates/components/_gara_management.html:24
+msgid "Avvia Gara"
+msgstr "Start Race"
+
+#: templates/components/_gara_management.html:26
+msgid "Avvia Primo Turno"
+msgstr "Start First Round"
+
+#: templates/components/_gara_management.html:39
+msgid "Gestione"
+msgstr "Management"
+
+#: templates/components/_gara_management.html:49
+msgid "Apri Iscrizioni"
+msgstr "Open Registrations"
+
+#: templates/components/_gara_management.html:63
+msgid "Chiudi Iscrizioni"
+msgstr "Close Registrations"
+
+#: templates/components/_gara_management.html:68
+#: templates/components/_gara_management.html:95
+#, python-format
+msgid "Servono %(min)d iscritti (%(current)d attuali)"
+msgstr "Need %(min)d registered (%(current)d current)"
+
+#: templates/components/_gara_management.html:75
+msgid "Scade:"
+msgstr "Expires:"
+
+#: templates/components/_gara_management.html:85
+msgid "Iscrizioni scadute!"
+msgstr "Registrations expired!"
+
+#: templates/components/_gara_management.html:90
+#: templates/components/_gara_management.html:92
+msgid "Estendi Iscrizioni"
+msgstr "Extend Registrations"
+
+#: templates/components/_gara_management.html:103
+msgid "Iscrizioni iniziano:"
+msgstr "Registrations start:"
+
+#: templates/components/_gara_management.html:117
+#, python-format
+msgid "Turno %(current)d/%(total)d completato"
+msgstr "Round %(current)d/%(total)d completed"
+
+#: templates/components/_gara_management.html:121
+#, python-format
+msgid "Turno %(current)d/%(total)d in corso"
+msgstr "Round %(current)d/%(total)d in progress"
+
+#: templates/components/_gara_management.html:129
+msgid "Annulla Avvio Primo Turno"
+msgstr "Cancel First Round Start"
+
+#: templates/components/_gara_management.html:132
+#: templates/components/_gara_management.html:139
+msgid "Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati"
+msgstr "You can cancel the start because no results have been entered yet"
+
+#: templates/components/_gara_management.html:136
+#, python-format
+msgid "Annulla Avvio Turno %(num)s"
+msgstr "Cancel Round %(num)s Start"
+
+#: templates/components/_gara_inscriptions.html:5
+msgid "Iscritti"
+msgstr "Registered"
+
+#: templates/components/_gara_inscriptions.html:9
+msgid "in lista d'attesa"
+msgstr "in waitlist"
+
+#: templates/components/_gara_inscriptions.html:19
+msgid "Iscritti Attivi"
+msgstr "Active Registered"
+
+#: templates/components/_gara_inscriptions.html:26
+#, python-format
+msgid "Iscritto il %(date)s"
+msgstr "Registered on %(date)s"
+
+#: templates/components/_gara_inscriptions.html:31
+#, python-format
+msgid "Sei sicuro di voler disiscrivere %(username)s? L'utente riceverà una notifica."
+msgstr "Are you sure you want to uninscribe %(username)s? The user will receive a notification."
+
+#: templates/components/_gara_inscriptions.html:32
+msgid "Disiscrive utente"
+msgstr "Uninscribe user"
+
+#: templates/components/_gara_inscriptions.html:44
+msgid "Lista d'Attesa"
+msgstr "Waitlist"
+
+#: templates/components/_gara_inscriptions.html:51
+#, python-format
+msgid "In lista dal %(date)s"
+msgstr "In list since %(date)s"
+
+#: templates/components/_gara_inscriptions.html:57
+#, python-format
+msgid "Sei sicuro di voler rimuovere %(username)s dalla lista d'attesa?"
+msgstr "Are you sure you want to remove %(username)s from the waitlist?"
+
+#: templates/components/_gara_inscriptions.html:58
+msgid "Rimuove dalla lista d'attesa"
+msgstr "Remove from waitlist"
+
+#: templates/components/_gara_inscriptions.html:67
+msgid "Nessun iscritto"
+msgstr "No registered players"
+
+#: templates/components/_gara_inscriptions.html:72
+msgid "Limite massimo raggiunto"
+msgstr "Maximum limit reached"
+
+#: templates/components/_guest_info.html:6
+msgid "Visualizzazione Pubblica"
+msgstr "Public View"
+
+#: templates/components/_guest_info.html:10
+msgid "Stai visualizzando questa gara come ospite"
+msgstr "You are viewing this race as a guest"
+
+#: templates/components/_guest_info.html:11
+msgid "Puoi vedere i risultati e la classifica ma non partecipare"
+msgstr "You can see results and classification but not participate"
+
+#: templates/components/_guest_info.html:13
+msgid "Turno corrente:"
+msgstr "Current round:"
+
+#: templates/components/_guest_info.html:14
+msgid "Stato:"
+msgstr "Status:"
+
+#: templates/components/_player_inscription_info.html:6
+msgid "La Tua Iscrizione"
+msgstr "Your Registration"
+
+#: templates/components/_player_inscription_info.html:11
+msgid "Sei iscritto a questa gara"
+msgstr "You are registered for this race"
+
+#: templates/components/_player_inscription_info.html:13
+msgid "In lista d'attesa"
+msgstr "In waitlist"
+
+#: templates/components/_player_inscription_info.html:17
+msgid "Data iscrizione:"
+msgstr "Registration date:"
+
+#: templates/components/_player_inscription_info.html:18
+msgid "N/D"
+msgstr "N/A"
+
+#: templates/components/_player_inscription_info.html:22
+msgid "Ordine sorteggio:"
+msgstr "Draw order:"
+
+#: templates/components/_player_inscription_info.html:26
+msgid "Posizione lista d'attesa:"
+msgstr "Waitlist position:"
+
+#: templates/components/_player_inscription_info.html:31
+msgid "Non sei iscritto ma puoi vedere i risultati e la classifica"
+msgstr "You are not registered but can see results and classification"
 
 #: templates/dashboard/admin.html:23
 #, python-brace-format
