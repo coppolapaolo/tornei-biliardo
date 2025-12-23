@@ -29,20 +29,23 @@ class AdvancedRoundManager:
 
     @staticmethod
     def get_round_lock_status(gara_id: int, round_number: int) -> RoundLockStatus:
-        """Determine the lock status of a specific round."""
+        """Determine the lock status of a specific round.
+        
+        Business Rule: Match modification is allowed ONLY for the current active round
+        and only if the tournament is in 'playing' state.
+        This ensures that:
+        1. Past rounds are locked to maintain historical integrity.
+        2. Future rounds (pre-generated in Random strategy) are locked until they become 'current'.
+        3. Match results can only be entered when the tournament is active.
+        """
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        # Check if any subsequent round has matches (regardless of current_round)
-        subsequent_matches = Match.query.filter(
-            Match.gara_id == gara_id, Match.round_number > round_number
-        ).first()
+        if gara.status == GaraStatus.PLAYING.value and round_number == gara.current_round:
+            return RoundLockStatus.UNLOCKED
 
-        if subsequent_matches:
-            return RoundLockStatus.LOCKED
-
-        return RoundLockStatus.UNLOCKED
+        return RoundLockStatus.LOCKED
 
     @staticmethod
     def can_modify_match(match_id: int) -> Tuple[bool, str]:
