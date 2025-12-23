@@ -165,11 +165,6 @@ class Discipline(_StrEnum):
     STRAIGHT_POOL = "straight_pool"
     BANK_POOL = "bank_pool"
     ROTATION = "rotation"
-    
-class WithdrawPolicy(_StrEnum):
-    """Policy for handling player withdrawals/forfeits."""
-    FORFEIT = "Forfeit"
-    EXCLUDE = "Exclude"
 
     @property
     def display_name(self) -> str:
@@ -200,6 +195,12 @@ class WithdrawPolicy(_StrEnum):
             cls.ONE_POCKET,
             cls.STRAIGHT_POOL,
         ]
+
+
+class WithdrawPolicy(_StrEnum):
+    """Policy for handling player withdrawals/forfeits."""
+    FORFEIT = "Forfeit"
+    EXCLUDE = "Exclude"
 
 
 def choices(enum_cls: Type[E]) -> Tuple[str, ...]:
