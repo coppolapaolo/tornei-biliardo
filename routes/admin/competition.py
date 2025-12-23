@@ -862,20 +862,37 @@ def gara_detail(gara_id):
 @gara_manager_required
 def open_inscriptions(gara_id):
     """Apri iscrizioni per una gara"""
-    # Ottieni le date UTC dal JavaScript
-    inscription_start = datetime.strptime(
-        request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
-    )
-    inscription_end = datetime.strptime(
-        request.form["inscription_end_utc"], "%Y-%m-%dT%H:%M:%S"
-    )
-
-    # Usa il service layer invece del direct database access
     try:
+        # Tenta di ottenere le date UTC dal JavaScript
+        # Se mancano (es. JS non ha girato o errore client), prova i campi normali
+        start_key = "inscription_start_utc" if "inscription_start_utc" in request.form else "inscription_start"
+        end_key = "inscription_end_utc" if "inscription_end_utc" in request.form else "inscription_end"
+        
+        start_str = request.form.get(start_key)
+        end_str = request.form.get(end_key)
+        
+        if not start_str or not end_str:
+            flash("Date di inizio o fine iscrizioni mancanti", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Tenta di parsare con diversi formati (ISO con T o spazio)
+        def parse_date(date_str):
+            for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M"):
+                try:
+                    return datetime.strptime(date_str, fmt)
+                except ValueError:
+                    continue
+            raise ValueError(f"Formato data non valido: {date_str}")
+
+        inscription_start = parse_date(start_str)
+        inscription_end = parse_date(end_str)
+
         GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
         flash("Iscrizioni aperte!")
     except ValueError as ve:
-        flash(str(ve), "error")
+        flash(f"Errore: {str(ve)}", "error")
+    except Exception as e:
+        flash(f"Errore imprevisto: {str(e)}", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 

@@ -362,12 +362,30 @@
     const inscriptionStartInput = document.getElementById('inscription_start');
     const inscriptionEndInput = document.getElementById('inscription_end');
 
-    if (inscriptionStartInput && inscriptionEndInput) {
-      const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    function populateInscriptionDates() {
+      if (inscriptionStartInput && inscriptionEndInput) {
+        const now = new Date();
+        // Gara date and time are in ISO format (YYYY-MM-DD and HH:MM:SS)
+        // We assume they are in local time or consistent with the server
+        const garaDateStr = '{{ gara.date.isoformat() }}';
+        const garaTimeStr = '{{ gara.time.isoformat() if gara.time else "20:00:00" }}';
+        const garaStart = new Date(`${garaDateStr}T${garaTimeStr}`);
 
-      inscriptionStartInput.value = dateToLocalString(now);
-      inscriptionEndInput.value = dateToLocalString(tomorrow);
+        // End is 30 minutes before gara start
+        const endTime = new Date(garaStart.getTime() - 30 * 60 * 1000);
+
+        inscriptionStartInput.value = dateToLocalString(now);
+        inscriptionEndInput.value = dateToLocalString(endTime);
+      }
+    }
+
+    // Initial population
+    populateInscriptionDates();
+
+    // Re-populate when modal is shown to have a fresh "now"
+    const openInscriptionsModal = document.getElementById('openInscriptionsModal');
+    if (openInscriptionsModal) {
+      openInscriptionsModal.addEventListener('shown.bs.modal', populateInscriptionDates);
     }
 
     const modifyStartInput = document.getElementById('modify_inscription_start');
