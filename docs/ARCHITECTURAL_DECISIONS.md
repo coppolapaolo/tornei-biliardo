@@ -417,6 +417,38 @@ class Gara:
 
 ---
 
+## ADR-006: Strategia di Internazionalizzazione
+
+**Location**: `app.py`, `babel.cfg`, `translations/`
+
+**Date**: 2025-12-23
+
+**Status**: Implemented
+
+### Context
+
+La piattaforma necessita di supporto multilingue per raggiungere una comunità più ampia.
+
+### Decision: **FLASK-BABEL CON GETTEXT** ✅
+
+**Rationale**:
+
+1. **Standard Consolidato**: Gettext è lo standard de-facto per i18n
+2. **Integrazione Flask**: Flask-Babel si integra nativamente
+3. **Tooling Maturo**: pybabel CLI per gestione cataloghi
+4. **Rilevamento Automatico**: Supporto Accept-Language header
+
+### Convenzione JavaScript
+
+Per stringhe in JavaScript nelle templates Jinja2, usare `'{{ _("...") }}'` per:
+- Semplicità e leggibilità
+- Compatibilità con IDE e linting
+- Escaping automatico per HTML
+
+**Status**: RESOLVED ✅
+
+---
+
 ## Summary of Decisions
 
 | ADR | Question | Decision | Rationale |
@@ -426,6 +458,7 @@ class Gara:
 | 003 | Round as entity | Keep as int ✅ | YAGNI, simple, sufficient |
 | 004 | Set management in Match | Keep ✅ | DDD Aggregate pattern |
 | 005 | Gara number field | Keep ✅ | Practical, add validation |
+| 006 | Internazionalizzazione | Flask-Babel ✅ | Standard, maturo, integrato |
 
 ## General Principles Applied
 
@@ -445,5 +478,5 @@ These decisions should be revisited if:
 - ❌ Performance problems arise from current design
 - ❌ Domain complexity increases substantially
 
-**Last Reviewed**: 2025-12-21
+**Last Reviewed**: 2025-12-23
 **Next Review**: When requirements change or new use cases emerge

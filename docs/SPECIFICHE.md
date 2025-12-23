@@ -211,6 +211,14 @@ Creare una nuova gara significa definire:
 
 Quando un utente crea una nuova gara in un campionato, tutti i valori vengono precompilati. Ad esempio il numero di gara è incrementale, la data viene precompilata con quella di oggi per la prima gara o con quella di una settimana più avanti rispetto all'ultima gara aggiunta al campionato, gli altri valori vengono precompilati con i valori delle gare precedenti o con valori di default per la prima gara. 
 
+## Internazionalizzazione
+
+La piattaforma supporta più lingue:
+- **Italiano** (lingua predefinita)
+- **Inglese** (completo)
+
+La lingua viene rilevata automaticamente dalle impostazioni del browser dell'utente.
+
 ## Scelte architetturali
 
 ### Privacy

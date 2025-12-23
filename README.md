@@ -112,6 +112,40 @@ python app.py
 
 ---
 
+## 🌍 Internazionalizzazione (i18n)
+
+La piattaforma supporta **multiple lingue**:
+
+| Lingua | Codice | Status |
+|--------|--------|--------|
+| 🇮🇹 Italiano | `it` | Default |
+| 🇬🇧 English | `en` | Completo |
+
+### Gestione Traduzioni
+
+```bash
+# Estrarre nuove stringhe
+pybabel extract -F babel.cfg -o messages.pot .
+
+# Aggiornare cataloghi esistenti
+pybabel update -i messages.pot -d translations
+
+# Compilare traduzioni
+pybabel compile -d translations
+```
+
+### Aggiungere una Nuova Lingua
+
+```bash
+# Inizializzare una nuova lingua (es. Spagnolo)
+pybabel init -i messages.pot -d translations -l es
+
+# Compilare dopo aver tradotto
+pybabel compile -d translations
+```
+
+---
+
 ## 🎮 Casi d'Uso Community
 
 ### 👥 **Per Community Members**
