@@ -105,3 +105,61 @@ class TestRandomGaraLocking:
             for match in matches_r1:
                 can_modify, _ = AdvancedRoundManager.can_modify_match(match.id)
                 assert not can_modify, "Past round 1 should be locked"
+
+    def test_cancel_first_round_startup_deletes_all_pregenerated_matches(
+        self, isolated_admin_user, isolated_players, db_session
+    ):
+        """
+        Verify that cancelling first round startup in a Random tournament
+        deletes matches from ALL rounds, not just round 1.
+        """
+        admin_user = isolated_admin_user
+        players_6 = isolated_players[:6]
+
+        # 1. Create Random gara with 3 rounds
+        gara = GaraService.create_gara(
+            number=2,
+            name="Random Cancellation Test",
+            date=date.today() + timedelta(days=1),
+            discipline="palla_9",
+            distance=5,
+            is_race_to=True,
+            director_id=admin_user.id,
+            matchmaking_strategy="random",
+            rounds_count=3,
+            min_participants=6
+        )
+
+        # 2. Inscribe 6 players
+        for player in players_6:
+            InscriptionService.inscribe_user(player.id, gara.id)
+
+        # 3. Open inscriptions
+        GaraService.open_inscriptions(
+            gara.id, 
+            datetime.utcnow() - timedelta(hours=1), 
+            datetime.utcnow() + timedelta(hours=1)
+        )
+        db_session.commit()
+
+        # 4. Start first round (pre-generates all rounds)
+        GaraService.start_first_round(gara.id)
+        db_session.commit()
+        
+        # Verify matches exist for all rounds
+        for round_num in range(1, 4):
+            count = Match.query.filter_by(gara_id=gara.id, round_number=round_num).count()
+            assert count > 0, f"Expected matches for round {round_num}"
+
+        # 5. Cancel first round startup
+        GaraService.cancel_first_round_startup(gara.id)
+        db_session.commit()
+        db_session.expire_all()
+        db_session.refresh(gara)
+
+        # 6. Verify status and no matches
+        assert gara.status == GaraStatus.INSCRIPTION.value
+        assert gara.current_round == 0
+        
+        total_matches = Match.query.filter_by(gara_id=gara.id).count()
+        assert total_matches == 0, "All matches should have been deleted"

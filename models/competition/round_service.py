@@ -211,9 +211,10 @@ class RoundService:
                 "Impossibile cancellare il primo turno: ci sono già dei risultati inseriti"
             )
 
-        # Cancella tutti i match del primo turno
+        # Cancella TUTTI i match della gara
+        # Questo è necessario specialmente per la strategia 'random' che pre-genera tutto
         matches = (
-            db.session.query(Match).filter_by(gara_id=gara_id, round_number=1).all()
+            db.session.query(Match).filter_by(gara_id=gara_id).all()
         )
 
         # Prima cancella i TrioMatch associati
