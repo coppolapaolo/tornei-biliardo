@@ -144,6 +144,14 @@ class Gara(db.Model):
             .all()
         )
 
+    @property
+    def venue(self):
+        """Get the associated BilliardHall by location name."""
+        if not self.location:
+            return None
+        from models.location.models import BilliardHall
+        return BilliardHall.query.filter_by(name=self.location).first()
+
     # Property per identificare se è standalone
     # TODO: se la modellazione cambia e la relazione viene spostata in
     # Campionato, forse anche questa non e' piu' una proprieta' di gara,
