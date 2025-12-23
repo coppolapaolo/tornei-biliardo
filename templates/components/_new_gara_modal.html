@@ -73,7 +73,7 @@
                             <div class="mb-3">
                                 <label for="min_participants" class="form-label">Min Iscritti</label>
                                 <input type="number" class="form-control" name="min_participants"
-                                    id="create_min_participants" min="2" max="32" value="2" required>
+                                    id="create_min_participants" min="2" max="32" value="6" required>
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -143,6 +143,15 @@
                                         Da precedente
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
+                                <select class="form-control" name="withdraw_policy" id="withdraw_policy" required>
+                                    <option value="Forfeit" selected>Vincita a tavolino avversario</option>
+                                    <option value="Exclude">Escludi dal turno (X o Trio)</option>
+                                </select>
                             </div>
                         </div>
                     </div>

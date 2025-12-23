@@ -42,6 +42,12 @@ from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
 from models.location.models import BilliardHall
 from models.location.services import LocationService
+from models.competition.constants import (
+    DEFAULT_MIN_PARTICIPANTS,
+    DEFAULT_ROUNDS_COUNT,
+    DEFAULT_ENTRY_FEE,
+    DEFAULT_WITHDRAW_POLICY,
+)
 
 # Competition management blueprint
 competition_bp = Blueprint("competition", __name__)
@@ -125,11 +131,11 @@ def create_gara_standalone():
             # Handle venue auto-creation
             location = _handle_venue_creation(location, number_of_tables)
             description = request.form.get("description", "").strip()
-            rounds_count = int(request.form.get("rounds_count", 3))
-            min_participants = int(request.form.get("min_participants", 2))
+            rounds_count = int(request.form.get("rounds_count", DEFAULT_ROUNDS_COUNT))
+            min_participants = int(request.form.get("min_participants", DEFAULT_MIN_PARTICIPANTS))
             max_participants = request.form.get("max_participants")
             max_participants = int(max_participants) if max_participants else None
-            entry_fee = float(request.form.get("entry_fee", 0.0))
+            entry_fee = float(request.form.get("entry_fee", DEFAULT_ENTRY_FEE))
 
             # Game settings
             discipline = request.form["discipline"]
@@ -137,7 +143,7 @@ def create_gara_standalone():
             exact_number = "exact_number" in request.form
             is_race_to = not exact_number
             withdraw_policy = request.form.get(
-                "withdraw_policy", WithdrawPolicy.EXCLUDE.value
+                "withdraw_policy", DEFAULT_WITHDRAW_POLICY
             )
 
             # Multi-set configuration (Phase 6: Frontend Integration)
@@ -332,20 +338,18 @@ def create_gara():
     # Handle venue auto-creation
     location = _handle_venue_creation(location, number_of_tables)
     description = request.form.get("description", "")
-    rounds_count = int(request.form.get("rounds_count", 3))
-    min_participants = int(request.form.get("min_participants", 2))
+    rounds_count = int(request.form.get("rounds_count", DEFAULT_ROUNDS_COUNT))
+    min_participants = int(request.form.get("min_participants", DEFAULT_MIN_PARTICIPANTS))
     max_participants = request.form.get("max_participants")
     max_participants = int(max_participants) if max_participants else None
-    entry_fee = float(request.form.get("entry_fee", 0.0))
+    entry_fee = float(request.form.get("entry_fee", DEFAULT_ENTRY_FEE))
 
     # Game settings
     discipline = request.form["discipline"]
     distance = int(request.form["distance"])
     exact_number = "exact_number" in request.form
     is_race_to = not exact_number
-
-    # Crea la gara usando il service layer
-    withdraw_policy = request.form.get("withdraw_policy", WithdrawPolicy.EXCLUDE.value)
+    withdraw_policy = request.form.get("withdraw_policy", DEFAULT_WITHDRAW_POLICY)
     GaraService.create_gara(
         campionato_id=campionato_id,
         number=number,

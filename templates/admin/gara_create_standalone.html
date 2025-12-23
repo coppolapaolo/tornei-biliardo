@@ -225,9 +225,10 @@
                                 <div class="col-sm-6 mb-3">
                                     <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
                                     <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
-                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">Escludi dal turno (X o Trio)
+                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>Vincita a tavolino
+                                            avversario
                                         </option>
-                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}">Vincita a tavolino avversario
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">Escludi dal turno (X o Trio)
                                         </option>
                                     </select>
                                 </div>
@@ -238,7 +239,7 @@
                                     <label for="min_participants" class="form-label">Min Partecipanti <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="min_participants"
-                                        name="min_participants" value="4" min="2" required>
+                                        name="min_participants" value="6" min="2" required>
                                 </div>
                                 <div class="col-sm-6 mb-3">
                                     <label for="max_participants" class="form-label">Max Partecipanti</label>
@@ -321,12 +322,23 @@
                                         <div id="summary-name" class="fw-bold fs-5">-</div>
                                         <div id="summary-discipline" class="text-muted">-</div>
                                         <div id="summary-date" class="small">-</div>
+                                        <div id="summary-location" class="small text-muted">-</div>
                                     </div>
                                     <div class="col-sm-6 mb-3">
                                         <h6 class="text-muted small text-uppercase mb-1">Struttura</h6>
                                         <div id="summary-strategy" class="fw-bold">-</div>
                                         <div id="summary-rounds" class="small">- Turni</div>
+                                        <div id="summary-participants" class="small">- Partecipanti</div>
+                                        <div id="summary-withdraw" class="small">- Forfait</div>
                                         <div id="summary-fee" class="small">- Quota</div>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <h6 class="text-muted small text-uppercase mb-1">Politiche Abbinamento</h6>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span id="summary-anti-rematch" class="badge bg-secondary">-</span>
+                                            <span id="summary-first-round" class="badge bg-secondary">- Seeding</span>
+                                            <span id="summary-odd-policy" class="badge bg-secondary">- Dispari</span>
+                                        </div>
                                     </div>
                                     <div class="col-12">
                                         <h6 class="text-muted small text-uppercase mb-1">Formato Partite</h6>
@@ -451,9 +463,29 @@
             document.getElementById('summary-name').textContent = nameInput.value || 'Nessun nome';
             document.getElementById('summary-discipline').textContent = disciplineSelect.options[disciplineSelect.selectedIndex].text;
             document.getElementById('summary-date').textContent = `${dateInput.value} ore ${timeInput.value}`;
+            document.getElementById('summary-location').textContent = locationInput.value || 'Luogo non specificato';
+
             document.getElementById('summary-strategy').textContent = strategySelect.options[strategySelect.selectedIndex].text;
             document.getElementById('summary-rounds').textContent = `${roundsInput.value} Turni`;
+
+            const minPart = document.getElementById('min_participants').value;
+            const maxPart = document.getElementById('max_participants').value || 'Illimitati';
+            document.getElementById('summary-participants').textContent = `Min: ${minPart}, Max: ${maxPart}`;
+
+            const withdrawSelect = document.getElementById('withdraw_policy');
+            document.getElementById('summary-withdraw').textContent = `Forfait: ${withdrawSelect.options[withdrawSelect.selectedIndex].text}`;
+
             document.getElementById('summary-fee').textContent = `Quota: €${feeInput.value || '0'}`;
+
+            // Advanced settings
+            const antiRematch = document.getElementById('anti_rematch_enabled').checked ? 'Anti-rematch ON' : 'Anti-rematch OFF';
+            document.getElementById('summary-anti-rematch').textContent = antiRematch;
+
+            const firstRound = document.getElementById('first_round_policy');
+            document.getElementById('summary-first-round').textContent = `Seeding: ${firstRound.options[firstRound.selectedIndex].text}`;
+
+            const oddPolicy = document.getElementById('odd_number_policy');
+            document.getElementById('summary-odd-policy').textContent = `Dispari: ${oddPolicy.options[oddPolicy.selectedIndex].text}`;
 
             // Get preview text from component
             const previewText = document.getElementById('preview-text');

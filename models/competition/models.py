@@ -14,16 +14,19 @@ from models.matchmaking.configuration import (
     FirstRoundPolicy,
     OddNumberPolicy,
 )
+from models.status_enum import WithdrawPolicy
+from models.competition.constants import (
+    DEFAULT_MIN_PARTICIPANTS,
+    DEFAULT_ROUNDS_COUNT,
+    DEFAULT_ENTRY_FEE,
+    DEFAULT_WITHDRAW_POLICY,
+)
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     pass
 
 
-class WithdrawPolicy(str, Enum):
-    # mantiene negli abbinamenti, assegna vittoria massima agli avversari
-    FORFEIT = "Forfeit"
-    EXCLUDE = "Exclude"  # default: tratta come X
 
 
 class Gara(db.Model):
@@ -55,11 +58,15 @@ class Gara(db.Model):
     location = db.Column(db.String(200))  # Luogo della gara
     description = db.Column(db.Text)  # Descrizione opzionale
     rounds_count = db.Column(
-        db.Integer, nullable=False, default=3
+        db.Integer, nullable=False, default=DEFAULT_ROUNDS_COUNT
     )  # Numero di turni per questa gara
-    min_participants = db.Column(db.Integer, default=6)  # Minimo iscritti
+    min_participants = db.Column(
+        db.Integer, default=DEFAULT_MIN_PARTICIPANTS
+    )  # Minimo iscritti
     max_participants = db.Column(db.Integer)  # Massimo iscritti (opzionale)
-    entry_fee = db.Column(db.Float, default=0.0)  # Quota di partecipazione
+    entry_fee = db.Column(
+        db.Float, default=DEFAULT_ENTRY_FEE
+    )  # Quota di partecipazione
 
     # Game settings
     discipline = db.Column(db.String(50), nullable=False)  # palla 8, 9, 10
@@ -85,7 +92,7 @@ class Gara(db.Model):
     current_round = db.Column(db.Integer, default=0)  # 0=non iniziata, 1,2,3=turni
 
     withdraw_policy = db.Column(
-        db.String(10), nullable=False, default=WithdrawPolicy.EXCLUDE.value
+        db.String(10), nullable=False, default=DEFAULT_WITHDRAW_POLICY
     )
 
     # Matchmaking strategy configuration

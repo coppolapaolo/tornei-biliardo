@@ -25,6 +25,7 @@ __all__ = [
     "VenueManagerRequestStatus",
     "PlayoffConfirmationStatus",
     "Discipline",
+    "WithdrawPolicy",
     "EntityType",
     "choices",
     "parse_enum",
@@ -164,6 +165,11 @@ class Discipline(_StrEnum):
     STRAIGHT_POOL = "straight_pool"
     BANK_POOL = "bank_pool"
     ROTATION = "rotation"
+    
+class WithdrawPolicy(_StrEnum):
+    """Policy for handling player withdrawals/forfeits."""
+    FORFEIT = "Forfeit"
+    EXCLUDE = "Exclude"
 
     @property
     def display_name(self) -> str:
