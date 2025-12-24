@@ -10,9 +10,10 @@ This file provides an **overview** of the models architecture. For **detailed do
 - **[models/competition/CLAUDE.md](competition/CLAUDE.md)**: Gara, Inscription, all competition services (8 files, ~2,947 lines)
 - **[models/matchmaking/CLAUDE.md](matchmaking/CLAUDE.md)**: All matchmaking strategies and algorithms (14 files, ~3,372 lines)
 - **[models/match/CLAUDE.md](match/CLAUDE.md)**: Match, Set, Rack models and services (7 files, ~2,716 lines)
-- **[models/user/CLAUDE.md](user/CLAUDE.md)**: User, roles, permissions, services (10 files, ~3,653 lines) ⭐ NEW
-- **[models/notification/CLAUDE.md](notification/CLAUDE.md)**: Notification factory and delivery (4 files, ~1,231 lines) ⭐ NEW
-- **[models/individual_match/CLAUDE.md](individual_match/CLAUDE.md)**: Match proposals, availability system (4 files, ~2,057 lines) ⭐ NEW
+- **[models/user/CLAUDE.md](user/CLAUDE.md)**: User, roles, permissions, services (10 files, ~3,653 lines)
+- **[models/notification/CLAUDE.md](notification/CLAUDE.md)**: Notification factory and delivery (4 files, ~1,231 lines)
+- **[models/individual_match/CLAUDE.md](individual_match/CLAUDE.md)**: Match proposals, availability system (4 files, ~2,057 lines)
+- **[models/gamification/CLAUDE.md](gamification/CLAUDE.md)**: XP, levels, achievements, streaks, quests (11 files, ~2,500 lines) ⭐ NEW
 
 ### 📋 Domain Quick Index (For Future Documentation)
 
@@ -27,6 +28,9 @@ This file provides an **overview** of the models architecture. For **detailed do
 - **match/** (7 files, 2,716 lines): Match, Set, Rack, TrioMatch, scoring services
 - **campionato/** (3 files, 1,076 lines): Campionato (tournament container), playoff configuration
 - **classification/** (3 files, 937 lines): Classification, RoundClassification, PlayerEncounter
+
+**Gamification & Engagement:**
+- **gamification/** (11 files, 2,500 lines): XP, levels, achievements, streaks, quests, leaderboards
 
 **Supporting Features:**
 - **challenge/** (5 files, 1,697 lines): Challenge, ChallengeAttempt, X-replacement system

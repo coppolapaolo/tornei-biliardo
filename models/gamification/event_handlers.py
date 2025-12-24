@@ -27,6 +27,7 @@ from models.events.competition_events import (
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
+from models.gamification.quest_service import QuestService
 from models.gamification.xp_config import XP_RATES
 from models.gamification.models import XPTransactionType, StreakType
 
@@ -136,6 +137,35 @@ class GamificationEventHandlers:
                             f"Error recording streak for user {player_id}: {streak_error}"
                         )
 
+            # Update quest progress for both players
+            # "matches_played": Any match completed
+            # "matches_won": Match won (winner only)
+            for player_id in [event.player1_id, event.player2_id]:
+                if player_id:
+                    try:
+                        QuestService.record_activity_for_quests(
+                            user_id=player_id,
+                            activity_type="matches_played",
+                            activity_count=1
+                        )
+                    except Exception as quest_error:
+                        logger.warning(
+                            f"Error updating quest progress for user {player_id}: {quest_error}"
+                        )
+
+            # Winner gets "matches_won" quest progress
+            if event.winner_id:
+                try:
+                    QuestService.record_activity_for_quests(
+                        user_id=event.winner_id,
+                        activity_type="matches_won",
+                        activity_count=1
+                    )
+                except Exception as quest_error:
+                    logger.warning(
+                        f"Error updating matches_won quest for user {event.winner_id}: {quest_error}"
+                    )
+
         except Exception as e:
             logger.error(f"Error handling match completed event for XP: {e}", exc_info=True)
 
@@ -182,6 +212,18 @@ class GamificationEventHandlers:
             except Exception as streak_error:
                 logger.warning(
                     f"Error recording streak for user {event.user_id}: {streak_error}"
+                )
+
+            # Update quest progress for tournament registration
+            try:
+                QuestService.record_activity_for_quests(
+                    user_id=event.user_id,
+                    activity_type="tournaments_registered",
+                    activity_count=1
+                )
+            except Exception as quest_error:
+                logger.warning(
+                    f"Error updating quest progress for user {event.user_id}: {quest_error}"
                 )
 
         except Exception as e:
@@ -275,6 +317,20 @@ class GamificationEventHandlers:
                     user_id = standing.get("user_id")
                     if user_id:
                         AchievementService.check_and_award_achievement(user_id, "podium_finish")
+
+            # Update quest progress for all participants
+            # "tournaments_completed": Finished a tournament
+            for participant_id in participant_ids:
+                try:
+                    QuestService.record_activity_for_quests(
+                        user_id=participant_id,
+                        activity_type="tournaments_completed",
+                        activity_count=1
+                    )
+                except Exception as quest_error:
+                    logger.warning(
+                        f"Error updating quest progress for user {participant_id}: {quest_error}"
+                    )
 
         except Exception as e:
             logger.error(f"Error handling competition completed event for XP: {e}", exc_info=True)
