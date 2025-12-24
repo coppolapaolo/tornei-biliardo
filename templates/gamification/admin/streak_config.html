@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-fire"></i> {{ _('Configurazione Streak') }}</h2>
+    <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> {{ _('Torna alla Config') }}
+    </a>
+  </div>
+
+  <!-- General Streak Config -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-sliders"></i> {{ _('Configurazione Generale') }}</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        {% for config in streak_config %}
+        <div class="col-md-6">
+          <form action="{{ url_for('gamification.admin_update_streak_config') }}" method="POST" class="card p-3 mb-3">
+            <input type="hidden" name="key" value="{{ config.key }}">
+            <h6>{{ config.description }}</h6>
+            <div class="input-group">
+              <input type="number" name="value" value="{{ config.value }}"
+                     class="form-control" min="0" required>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check"></i> {{ _('Salva') }}
+              </button>
+            </div>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Streak Milestones -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-award"></i> {{ _('Streak Milestones') }}</h5>
+      <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+        <i class="bi bi-plus"></i> {{ _('Aggiungi Milestone') }}
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle"></i>
+        {{ _('I milestone definiscono i reward quando un utente raggiunge una certa streak. I milestone ricorrenti si applicano ogni volta che la streak è un multiplo delle settimane.') }}
+      </div>
+
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th style="width: 100px;">{{ _('Settimane') }}</th>
+            <th>{{ _('Freeze Token') }}</th>
+            <th>{{ _('XP Multiplier') }}</th>
+            <th style="width: 100px;">{{ _('Ricorrente') }}</th>
+            <th style="width: 80px;">{{ _('Attivo') }}</th>
+            <th style="width: 150px;">{{ _('Azioni') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for milestone in milestones %}
+          <tr{% if not milestone.is_active %} class="table-secondary"{% endif %}>
+            <td>
+              <span class="badge bg-warning text-dark fs-6">
+                <i class="bi bi-fire"></i> {{ milestone.weeks }}w
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-info fs-6">{{ milestone.freeze_tokens }} <i class="bi bi-snow"></i></span>
+            </td>
+            <td>x{{ milestone.xp_bonus_multiplier }}</td>
+            <td>
+              {% if milestone.is_recurring %}
+              <span class="badge bg-primary"><i class="bi bi-arrow-repeat"></i> {{ _('Si') }}</span>
+              {% else %}
+              <span class="badge bg-secondary">{{ _('No') }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if milestone.is_active %}
+              <span class="badge bg-success"><i class="bi bi-check"></i></span>
+              {% else %}
+              <span class="badge bg-secondary"><i class="bi bi-x"></i></span>
+              {% endif %}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                      data-bs-target="#editMilestoneModal{{ milestone.id }}">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <form action="{{ url_for('gamification.admin_delete_streak_milestone', milestone_id=milestone.id) }}"
+                    method="POST" class="d-inline"
+                    onsubmit="return confirm('{{ _('Eliminare questo milestone?') }}')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+
+          <!-- Edit Modal for each milestone -->
+          <div class="modal fade" id="editMilestoneModal{{ milestone.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form action="{{ url_for('gamification.admin_edit_streak_milestone', milestone_id=milestone.id) }}" method="POST">
+                  <div class="modal-header">
+                    <h5 class="modal-title">{{ _('Modifica Milestone') }} {{ milestone.weeks }}w</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('Settimane') }}</label>
+                      <input type="text" class="form-control" value="{{ milestone.weeks }}" disabled>
+                      <small class="text-muted">{{ _('Le settimane non possono essere modificate') }}</small>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('Freeze Token') }} *</label>
+                      <input type="number" name="freeze_tokens" class="form-control"
+                             value="{{ milestone.freeze_tokens }}" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('XP Bonus Multiplier') }} *</label>
+                      <input type="number" name="xp_bonus_multiplier" class="form-control"
+                             value="{{ milestone.xp_bonus_multiplier }}" min="1" required>
+                      <small class="text-muted">{{ _('XP bonus = streak_bonus * settimane * multiplier') }}</small>
+                    </div>
+                    <div class="form-check mb-3">
+                      <input type="checkbox" name="is_recurring" class="form-check-input" id="recurring{{ milestone.id }}"
+                             {% if milestone.is_recurring %}checked{% endif %}>
+                      <label class="form-check-label" for="recurring{{ milestone.id }}">{{ _('Ricorrente') }}</label>
+                      <small class="d-block text-muted">{{ _('Si applica ogni volta che la streak è un multiplo') }}</small>
+                    </div>
+                    <div class="form-check">
+                      <input type="checkbox" name="is_active" class="form-check-input" id="active{{ milestone.id }}"
+                             {% if milestone.is_active %}checked{% endif %}>
+                      <label class="form-check-label" for="active{{ milestone.id }}">{{ _('Attivo') }}</label>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ _('Salva') }}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if not milestones %}
+      <p class="text-muted text-center py-4">{{ _('Nessun milestone configurato') }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Milestone Preview -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-eye"></i> {{ _('Anteprima Reward per Streak') }}</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead>
+            <tr class="table-light">
+              <th>{{ _('Settimane') }}</th>
+              <th>{{ _('Freeze Guadagnati') }}</th>
+              <th>{{ _('XP Bonus') }}</th>
+              <th>{{ _('Tipo') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for week in [4, 8, 12, 16, 20, 24, 48, 52] %}
+            <tr>
+              <td>{{ week }} {{ _('settimane') }}</td>
+              <td>
+                {% set freeze = 0 %}
+                {% for m in milestones if m.is_active %}
+                  {% if m.weeks == week %}
+                    {% set freeze = freeze + m.freeze_tokens %}
+                  {% elif m.is_recurring and week % m.weeks == 0 %}
+                    {% set freeze = freeze + m.freeze_tokens %}
+                  {% endif %}
+                {% endfor %}
+                {% if freeze > 0 %}
+                <span class="badge bg-info">{{ freeze }} <i class="bi bi-snow"></i></span>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% set xp = 0 %}
+                {% set streak_bonus = streak_config|selectattr('key', 'equalto', 'xp_streak_bonus')|map(attribute='value')|first|default(30) %}
+                {% for m in milestones if m.is_active %}
+                  {% if m.weeks == week %}
+                    {% set xp = xp + (streak_bonus * week * m.xp_bonus_multiplier) %}
+                  {% elif m.is_recurring and week % m.weeks == 0 %}
+                    {% set xp = xp + (streak_bonus * week * m.xp_bonus_multiplier) %}
+                  {% endif %}
+                {% endfor %}
+                {% if xp > 0 %}
+                <span class="badge bg-success">+{{ xp }} XP</span>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% set is_milestone = false %}
+                {% for m in milestones if m.is_active %}
+                  {% if m.weeks == week %}
+                    {% set is_milestone = true %}
+                    <span class="badge bg-warning text-dark">{{ _('Milestone') }}</span>
+                  {% elif m.is_recurring and week % m.weeks == 0 %}
+                    {% set is_milestone = true %}
+                    <span class="badge bg-primary">{{ _('Ricorrente') }}</span>
+                  {% endif %}
+                {% endfor %}
+                {% if not is_milestone %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Milestone Modal -->
+<div class="modal fade" id="addMilestoneModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ url_for('gamification.admin_add_streak_milestone') }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ _('Aggiungi Nuovo Milestone') }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">{{ _('Settimane') }} *</label>
+            <input type="number" name="weeks" class="form-control" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ _('Freeze Token') }} *</label>
+            <input type="number" name="freeze_tokens" class="form-control" value="1" min="0" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ _('XP Bonus Multiplier') }} *</label>
+            <input type="number" name="xp_bonus_multiplier" class="form-control" value="1" min="1" required>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="is_recurring" class="form-check-input" id="newRecurring">
+            <label class="form-check-label" for="newRecurring">{{ _('Ricorrente') }}</label>
+            <small class="d-block text-muted">{{ _('Reward si applica ogni volta che streak raggiunge un multiplo') }}</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+          <button type="submit" class="btn btn-success">{{ _('Aggiungi') }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

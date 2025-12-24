@@ -23,14 +23,7 @@ from models.gamification.models import (
     XPTransaction,
     XPTransactionType,
 )
-from models.gamification.xp_config import (
-    get_xp_for_level,
-    get_xp_for_next_level,
-    get_level_from_total_xp,
-    get_next_unlock,
-    is_feature_unlocked,
-    LEVEL_UNLOCKS,
-)
+from models.gamification.config_service import GamificationConfigService as ConfigService
 from models.gamification.events import XPGainedEvent, LevelUpEvent
 from models.events.base import EventBus
 
@@ -92,6 +85,13 @@ class LevelService:
             if leveled_up:
                 print(f"User reached level {user_level.current_level}!")
         """
+        # Skip gamification for admin users
+        from models.user.models import User
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            logger.debug(f"Skipping XP award for admin user {user_id}")
+            return None, False  # type: ignore
+
         # Get or create UserLevel
         user_level = db.session.get(UserLevel, user_id)
         if user_level is None:
@@ -110,23 +110,26 @@ class LevelService:
         did_level_up = False
         unlocks: List[Dict[str, str]] = []
         
+        # Get level unlocks dict for checking
+        level_unlocks = ConfigService.get_all_level_unlocks_dict()
+
         while True:
-            xp_needed = get_xp_for_next_level(user_level.current_level)
-            
+            xp_needed = ConfigService.get_xp_for_next_level(user_level.current_level)
+
             if user_level.current_xp >= xp_needed:
                 # Level up!
                 user_level.current_level += 1
                 user_level.current_xp -= xp_needed
                 did_level_up = True
-                
+
                 # Update highest level if surpassed
                 if user_level.current_level > user_level.highest_level_reached:
                     user_level.highest_level_reached = user_level.current_level
-                
+
                 # Check for unlocks at this level
-                if user_level.current_level in LEVEL_UNLOCKS:
-                    unlocks.append(LEVEL_UNLOCKS[user_level.current_level])
-                
+                if user_level.current_level in level_unlocks:
+                    unlocks.append(level_unlocks[user_level.current_level])
+
                 logger.info(
                     f"User {user_id} leveled up to {user_level.current_level} "
                     f"(total XP: {user_level.total_xp})"
@@ -218,28 +221,28 @@ class LevelService:
             # }
         """
         user_level = db.session.get(UserLevel, user_id)
-        
+
         if user_level is None:
             # User has no XP yet - return defaults
             return {
                 "current_level": 1,
                 "current_xp": 0,
                 "total_xp": 0,
-                "xp_for_next_level": get_xp_for_next_level(1),
+                "xp_for_next_level": ConfigService.get_xp_for_next_level(1),
                 "progress_percentage": 0.0,
-                "next_unlock": get_next_unlock(1)
+                "next_unlock": ConfigService.get_next_unlock(1)
             }
-        
-        xp_for_next = get_xp_for_next_level(user_level.current_level)
+
+        xp_for_next = ConfigService.get_xp_for_next_level(user_level.current_level)
         progress_percentage = (user_level.current_xp / xp_for_next * 100) if xp_for_next > 0 else 0.0
-        
+
         return {
             "current_level": user_level.current_level,
             "current_xp": user_level.current_xp,
             "total_xp": user_level.total_xp,
             "xp_for_next_level": xp_for_next,
             "progress_percentage": round(progress_percentage, 1),
-            "next_unlock": get_next_unlock(user_level.current_level)
+            "next_unlock": ConfigService.get_next_unlock(user_level.current_level)
         }
 
     @staticmethod
@@ -265,12 +268,12 @@ class LevelService:
                 # Allow tournament creation
         """
         user_level = db.session.get(UserLevel, user_id)
-        
+
         if user_level is None:
             # No level record = level 1
-            return is_feature_unlocked(1, feature)
-        
-        return is_feature_unlocked(user_level.current_level, feature)
+            return ConfigService.is_feature_unlocked(1, feature)
+
+        return ConfigService.is_feature_unlocked(user_level.current_level, feature)
 
     @staticmethod
     def get_user_level_stats(user_id: int) -> Dict[str, Any]:

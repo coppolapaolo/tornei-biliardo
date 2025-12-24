@@ -64,6 +64,15 @@ class UserPermissionService:
         if user.role in [UserRole.DIRECTOR.value, UserRole.ADMIN.value]:
             raise ValueError("User is already director or admin")
 
+        # Check if user has the "Aspirante Direttore" achievement prerequisite
+        from models.gamification.achievement_service import AchievementService
+
+        if not AchievementService.has_achievement(user_id, "aspiring_director"):
+            raise ValueError(
+                "Devi sbloccare l'achievement 'Aspirante Direttore' per richiedere questo ruolo. "
+                "Partecipa ad almeno 10 gare o completa un campionato intero."
+            )
+
         # Check for existing pending request
         existing_request = DirectorRequest.query.filter_by(
             user_id=user_id, status=DirectorRequestStatus.PENDING.value
@@ -217,8 +226,9 @@ class UserPermissionService:
         Business Logic:
             - Returns False if user not found
             - Returns False if user is already director or admin
+            - Returns False if user doesn't have 'Aspirante Direttore' achievement
             - Returns False if user has pending request
-            - Returns True only if user is regular player without pending request
+            - Returns True only if user is regular player with achievement and no pending request
         """
         user = db.session.get(User, user_id)
         if not user:
@@ -226,6 +236,12 @@ class UserPermissionService:
 
         # Users with elevated roles cannot request further promotion
         if user.role in [UserRole.DIRECTOR.value, UserRole.ADMIN.value]:
+            return False
+
+        # Check if user has the required achievement
+        from models.gamification.achievement_service import AchievementService
+
+        if not AchievementService.has_achievement(user_id, "aspiring_director"):
             return False
 
         # Users with pending requests cannot submit additional requests

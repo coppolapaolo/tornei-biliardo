@@ -304,7 +304,16 @@ class GamificationEventHandlers:
             # Check tournament completion achievements
             for participant_id in participant_ids:
                 # Everyone who completes gets checked (they all finished the tournament)
-                pass  # Completion tracked separately
+                # Check "Aspirante Direttore" achievement (director eligibility)
+                # This requires 10+ completed gare OR 1+ complete campionato
+                try:
+                    AchievementService.check_and_award_achievement(
+                        participant_id, "aspiring_director"
+                    )
+                except Exception as ach_error:
+                    logger.warning(
+                        f"Error checking aspiring_director achievement for user {participant_id}: {ach_error}"
+                    )
 
             # Check winner achievement
             if event.winner_id:

@@ -300,6 +300,27 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
             return match.player2_score
         return 0
 
+    # ───────────────────
+    # Gamification helpers
+    # ───────────────────
+    def has_unlocked_achievement(self, achievement_slug: str) -> bool:
+        """Check if user has unlocked a specific achievement.
+
+        Args:
+            achievement_slug: Slug of the achievement to check
+
+        Returns:
+            True if achievement is unlocked, False otherwise
+
+        Usage:
+            {% if current_user.has_unlocked_achievement('aspiring_director') %}
+                <!-- Show director request button -->
+            {% endif %}
+        """
+        from models.gamification.achievement_service import AchievementService
+
+        return AchievementService.has_achievement(self.id, achievement_slug)
+
     # debug ─────────────────────────────────────────────────────────────────────
     def __repr__(self) -> str:  # pragma: no cover
         return f"<User {self.username} ({self.role})>"

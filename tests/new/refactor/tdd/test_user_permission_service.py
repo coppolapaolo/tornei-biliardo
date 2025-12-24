@@ -21,6 +21,50 @@ from models.user.role_enum import UserRole
 from models.status_enum import DirectorRequestStatus
 
 
+def grant_aspiring_director_achievement(user_id: int) -> None:
+    """Helper function to grant the 'aspiring_director' achievement to a user.
+
+    This is required for director request functionality since Task 3 added
+    the achievement prerequisite for director requests.
+    """
+    from models.gamification.models import Achievement, UserAchievement
+    from models.gamification.models import AchievementCategory, AchievementDifficulty
+
+    # Create or get the achievement
+    achievement = Achievement.query.filter_by(slug="aspiring_director").first()
+    if not achievement:
+        achievement = Achievement(
+            slug="aspiring_director",
+            name="Aspirante Direttore",
+            description="Test achievement for director eligibility",
+            category=AchievementCategory.MILESTONE,
+            difficulty=AchievementDifficulty.UNCOMMON,
+            requirements='{"type": "director_eligibility", "min_gare": 10, "min_campionati_completi": 1}',
+            is_progressive=False,
+            xp_reward=200,
+        )
+        db.session.add(achievement)
+        db.session.flush()
+
+    # Check if already unlocked
+    existing = UserAchievement.query.filter_by(
+        user_id=user_id, achievement_id=achievement.id
+    ).first()
+    if existing:
+        if not existing.is_unlocked:
+            existing.is_unlocked = True
+        return
+
+    # Unlock the achievement for the user
+    user_achievement = UserAchievement(
+        user_id=user_id,
+        achievement_id=achievement.id,
+        is_unlocked=True,
+    )
+    db.session.add(user_achievement)
+    db.session.flush()
+
+
 class TestUserPermissionServiceTDD:
     """TDD tests for UserPermissionService role and permission management."""
 
@@ -331,6 +375,9 @@ class TestUserPermissionServiceTDD:
             db.session.add(player)
             db.session.commit()
 
+            # Grant the required achievement
+            grant_aspiring_director_achievement(player.id)
+
             # Act: request director promotion
             director_request = UserPermissionService.request_director_promotion(
                 user_id=player.id
@@ -406,6 +453,9 @@ class TestUserPermissionServiceTDD:
             db.session.add(player)
             db.session.commit()
 
+            # Grant the required achievement
+            grant_aspiring_director_achievement(player.id)
+
             # Create first request
             first_request = UserPermissionService.request_director_promotion(
                 user_id=player.id
@@ -444,6 +494,10 @@ class TestUserPermissionServiceTDD:
 
             db.session.add_all([player1, player2])
             db.session.commit()
+
+            # Grant the required achievement to both
+            grant_aspiring_director_achievement(player1.id)
+            grant_aspiring_director_achievement(player2.id)
 
             request1 = UserPermissionService.request_director_promotion(
                 user_id=player1.id
@@ -488,6 +542,9 @@ class TestUserPermissionServiceTDD:
 
             db.session.add_all([player, admin])
             db.session.commit()
+
+            # Grant the required achievement
+            grant_aspiring_director_achievement(player.id)
 
             # Create pending request
             pending_request = UserPermissionService.request_director_promotion(
@@ -542,6 +599,9 @@ class TestUserPermissionServiceTDD:
             db.session.add_all([player, admin])
             db.session.commit()
 
+            # Grant the required achievement
+            grant_aspiring_director_achievement(player.id)
+
             # Create pending request
             pending_request = UserPermissionService.request_director_promotion(
                 user_id=player.id
@@ -588,6 +648,9 @@ class TestUserPermissionServiceTDD:
             admin.set_password("secure123")
             db.session.add_all([player, admin])
             db.session.commit()
+
+            # Grant the required achievement
+            grant_aspiring_director_achievement(player.id)
 
             # Create pending request
             pending_request = UserPermissionService.request_director_promotion(
@@ -864,6 +927,7 @@ class TestDirectorRequestServiceTDD:
             # - Only admins can demote directors
             # - Only players can request director promotion
             # - Only one admin user allowed in system
+            # - Player must have 'aspiring_director' achievement to request promotion
 
             # Create test users to verify these rules are enforced
             player = User(username="rules_player", email="rules@example.com", role=UserRole.PLAYER.value)
@@ -871,7 +935,10 @@ class TestDirectorRequestServiceTDD:
             db.session.add(player)
             db.session.commit()
 
-            # Verify promotion request succeeds for player
+            # Grant the required achievement
+            grant_aspiring_director_achievement(player.id)
+
+            # Verify promotion request succeeds for player with achievement
             request = UserPermissionService.request_director_promotion(
                 user_id=player.id
             )

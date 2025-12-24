@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-graph-up-arrow"></i> {{ _('Configurazione XP Rates') }}</h2>
+    <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> {{ _('Torna alla Config') }}
+    </a>
+  </div>
+
+  <!-- Info Box -->
+  <div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i>
+    {{ _('Modifica i valori XP assegnati per ogni tipo di attività. Le modifiche hanno effetto immediato.') }}
+  </div>
+
+  <!-- XP Rates Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{{ _('XP per Attività') }}</h5>
+    </div>
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{{ _('Attività') }}</th>
+            <th>{{ _('Descrizione') }}</th>
+            <th style="width: 150px;">{{ _('Valore XP') }}</th>
+            <th style="width: 100px;">{{ _('Azioni') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for config in configs %}
+          <tr>
+            <td>
+              <strong>{{ config.key|replace('xp_', '')|replace('_', ' ')|title }}</strong>
+              <br>
+              <code class="small text-muted">{{ config.key }}</code>
+            </td>
+            <td>{{ config.description or '-' }}</td>
+            <td>
+              <form action="{{ url_for('gamification.admin_update_xp_config') }}" method="POST" class="d-flex gap-2">
+                <input type="hidden" name="key" value="{{ config.key }}">
+                <input type="number" name="value" value="{{ config.value }}"
+                       class="form-control form-control-sm" min="0" style="width: 80px;">
+              </form>
+            </td>
+            <td>
+              <form action="{{ url_for('gamification.admin_update_xp_config') }}" method="POST" class="d-inline">
+                <input type="hidden" name="key" value="{{ config.key }}">
+                <input type="hidden" name="value" value="{{ config.value }}" class="xp-value-input">
+                <button type="submit" class="btn btn-sm btn-primary save-btn" disabled>
+                  <i class="bi bi-check"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- XP Formula Explanation -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-calculator"></i> {{ _('Esempi Calcolo XP') }}</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h6>{{ _('Match Completato') }}</h6>
+          <p class="text-muted">
+            {{ _('Vincitore: ') }}<strong>{{ configs|selectattr('key', 'equalto', 'xp_match_win')|map(attribute='value')|first|default(50) }} XP</strong><br>
+            {{ _('Perdente: ') }}<strong>{{ configs|selectattr('key', 'equalto', 'xp_match_loss')|map(attribute='value')|first|default(20) }} XP</strong>
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h6>{{ _('Torneo Completo (vincitore)') }}</h6>
+          <p class="text-muted">
+            {{ _('Iscrizione: ') }}{{ configs|selectattr('key', 'equalto', 'xp_tournament_inscription')|map(attribute='value')|first|default(25) }} XP +<br>
+            {{ _('Completamento: ') }}{{ configs|selectattr('key', 'equalto', 'xp_tournament_completion')|map(attribute='value')|first|default(100) }} XP +<br>
+            {{ _('Vittoria: ') }}{{ configs|selectattr('key', 'equalto', 'xp_tournament_win')|map(attribute='value')|first|default(500) }} XP =<br>
+            <strong>
+              {% set total = (configs|selectattr('key', 'equalto', 'xp_tournament_inscription')|map(attribute='value')|first|default(25)) +
+                            (configs|selectattr('key', 'equalto', 'xp_tournament_completion')|map(attribute='value')|first|default(100)) +
+                            (configs|selectattr('key', 'equalto', 'xp_tournament_win')|map(attribute='value')|first|default(500)) %}
+              {{ total }} XP {{ _('totali') }}
+            </strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Enable save button when value changes
+document.querySelectorAll('input[name="value"]').forEach(input => {
+  const originalValue = input.value;
+  const row = input.closest('tr');
+  const saveBtn = row.querySelector('.save-btn');
+  const hiddenInput = row.querySelector('.xp-value-input');
+
+  input.addEventListener('input', function() {
+    const changed = this.value !== originalValue;
+    saveBtn.disabled = !changed;
+    if (changed) {
+      saveBtn.classList.remove('btn-primary');
+      saveBtn.classList.add('btn-success');
+    } else {
+      saveBtn.classList.add('btn-primary');
+      saveBtn.classList.remove('btn-success');
+    }
+    hiddenInput.value = this.value;
+  });
+});
+</script>
+{% endblock %}

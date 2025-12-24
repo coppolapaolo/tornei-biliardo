@@ -140,6 +140,35 @@ class TestDirectorRequestService:
             f"player_{unique_id}", f"player_{unique_id}@test.com", "pass123", "player"
         )
 
+        # Grant the required "Aspirante Direttore" achievement
+        from models.gamification.models import Achievement, UserAchievement
+        from models.gamification.models import AchievementCategory, AchievementDifficulty
+
+        # Create or get the achievement
+        achievement = Achievement.query.filter_by(slug="aspiring_director").first()
+        if not achievement:
+            achievement = Achievement(
+                slug="aspiring_director",
+                name="Aspirante Direttore",
+                description="Test achievement for director eligibility",
+                category=AchievementCategory.MILESTONE,
+                difficulty=AchievementDifficulty.UNCOMMON,
+                requirements='{"type": "director_eligibility", "min_gare": 10, "min_campionati_completi": 1}',
+                is_progressive=False,
+                xp_reward=200,
+            )
+            db_session.add(achievement)
+            db_session.flush()
+
+        # Unlock the achievement for the user
+        user_achievement = UserAchievement(
+            user_id=user.id,
+            achievement_id=achievement.id,
+            is_unlocked=True,
+        )
+        db_session.add(user_achievement)
+        db_session.commit()
+
         # Create director request
         result = UserService.request_director_promotion(
             user.id, "I want to organize tournaments"

@@ -87,6 +87,13 @@ class AchievementService:
                 achievement_slug="first_blood"
             )
         """
+        # Skip gamification for admin users
+        from models.user.models import User
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            logger.debug(f"Skipping achievement check for admin user {user_id}")
+            return None, False
+
         # Get achievement
         achievement = Achievement.query.filter_by(slug=achievement_slug).first()
         
@@ -277,10 +284,185 @@ class AchievementService:
             if current_progress is not None:
                 return current_progress >= required_count
             return False
-        
+
+        elif requirement_type == "director_eligibility":
+            # Check if user has enough experience to become a director
+            # Requirements: 10+ gare participations OR 1+ complete campionato
+            min_gare = requirements.get("min_gare", 10)
+            min_campionati = requirements.get("min_campionati_completi", 1)
+
+            return AchievementService._check_director_eligibility(
+                user_id=user_id,
+                min_gare=min_gare,
+                min_campionati=min_campionati
+            )
+
+        elif requirement_type == "category_reached":
+            # Check if user has reached a specific player category
+            required_category = requirements.get("category", "B")
+            # Would need player category tracking - placeholder for now
+            return False
+
+        elif requirement_type == "strategies_tried":
+            # Check if user has played with multiple matchmaking strategies
+            required_count = requirements.get("count", 5)
+            if current_progress is not None:
+                return current_progress >= required_count
+            return False
+
+        elif requirement_type == "perfect_challenges":
+            # Check perfect score on challenges
+            required_count = requirements.get("count", 5)
+            if current_progress is not None:
+                return current_progress >= required_count
+            return False
+
+        elif requirement_type == "match_proposals_created":
+            # Social: match proposals created
+            required_count = requirements.get("count", 5)
+            if current_progress is not None:
+                return current_progress >= required_count
+            return False
+
+        elif requirement_type == "match_proposals_accepted":
+            # Social: invitations accepted
+            required_count = requirements.get("count", 10)
+            if current_progress is not None:
+                return current_progress >= required_count
+            return False
+
         else:
             logger.warning(f"Unknown requirement type: {requirement_type}")
             return False
+
+    @staticmethod
+    def _check_director_eligibility(
+        user_id: int,
+        min_gare: int = 10,
+        min_campionati: int = 1
+    ) -> bool:
+        """
+        Check if user has enough experience for director eligibility achievement.
+
+        Requirements (OR logic):
+        - Participated in min_gare completed gare
+        - Participated in ALL gare of at least min_campionati campionati
+
+        Args:
+            user_id: User ID to check
+            min_gare: Minimum completed gare participations
+            min_campionati: Minimum complete campionati
+
+        Returns:
+            True if either condition is met
+        """
+        from models.competition.models import Inscription, Gara
+        from models.campionato.models import Campionato
+        from models.status_enum import GaraStatus
+        from sqlalchemy import func
+
+        # Count gare where user participated (inscription not withdrawn)
+        # in gare that are completed
+        gare_count = (
+            db.session.query(Inscription)
+            .join(Gara, Inscription.gara_id == Gara.id)
+            .filter(
+                Inscription.user_id == user_id,
+                Inscription.is_withdrawn == False,  # noqa: E712
+                Gara.status == GaraStatus.COMPLETED.value
+            )
+            .count()
+        )
+
+        if gare_count >= min_gare:
+            logger.debug(
+                f"User {user_id} eligible for director: {gare_count} gare >= {min_gare}"
+            )
+            return True
+
+        # Check complete campionati (user participated in ALL gare of a campionato)
+        # Get campionati where user has at least one inscription
+        user_campionati = (
+            db.session.query(Campionato.id)
+            .join(Gara, Gara.campionato_id == Campionato.id)
+            .join(Inscription, Inscription.gara_id == Gara.id)
+            .filter(
+                Inscription.user_id == user_id,
+                Inscription.is_withdrawn == False,  # noqa: E712
+                Campionato.is_deleted == False  # noqa: E712
+            )
+            .distinct()
+            .all()
+        )
+
+        complete_campionati_count = 0
+
+        for (campionato_id,) in user_campionati:
+            # Count total completed gare in this campionato
+            total_gare = (
+                db.session.query(func.count(Gara.id))
+                .filter(
+                    Gara.campionato_id == campionato_id,
+                    Gara.status == GaraStatus.COMPLETED.value
+                )
+                .scalar()
+            ) or 0
+
+            if total_gare == 0:
+                continue  # Campionato has no completed gare yet
+
+            # Count gare where user participated in this campionato
+            user_gare = (
+                db.session.query(func.count(Inscription.id))
+                .join(Gara, Inscription.gara_id == Gara.id)
+                .filter(
+                    Gara.campionato_id == campionato_id,
+                    Gara.status == GaraStatus.COMPLETED.value,
+                    Inscription.user_id == user_id,
+                    Inscription.is_withdrawn == False  # noqa: E712
+                )
+                .scalar()
+            ) or 0
+
+            if user_gare >= total_gare:
+                complete_campionati_count += 1
+                if complete_campionati_count >= min_campionati:
+                    logger.debug(
+                        f"User {user_id} eligible for director: "
+                        f"{complete_campionati_count} complete campionati >= {min_campionati}"
+                    )
+                    return True
+
+        logger.debug(
+            f"User {user_id} not eligible for director: "
+            f"{gare_count} gare (need {min_gare}), "
+            f"{complete_campionati_count} campionati (need {min_campionati})"
+        )
+        return False
+
+    @staticmethod
+    def has_achievement(user_id: int, achievement_slug: str) -> bool:
+        """
+        Check if user has unlocked a specific achievement.
+
+        Args:
+            user_id: User ID
+            achievement_slug: Achievement slug to check
+
+        Returns:
+            True if achievement is unlocked
+        """
+        achievement = Achievement.query.filter_by(slug=achievement_slug).first()
+        if not achievement:
+            return False
+
+        user_achievement = UserAchievement.query.filter_by(
+            user_id=user_id,
+            achievement_id=achievement.id,
+            is_unlocked=True
+        ).first()
+
+        return user_achievement is not None
 
     @staticmethod
     def get_user_achievements(

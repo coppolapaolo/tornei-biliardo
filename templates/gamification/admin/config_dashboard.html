@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-gear"></i> {{ _('Configurazione Gamification') }}</h2>
+    <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
+    </a>
+  </div>
+
+  <!-- Configuration Sections Navigation -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ _('Sezioni Configurazione') }}</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <a href="{{ url_for('gamification.admin_xp_config') }}" class="btn btn-outline-primary w-100 py-3">
+                <i class="bi bi-graph-up-arrow fs-3 d-block mb-2"></i>
+                {{ _('XP Rates') }}
+                <small class="d-block text-muted">{{ _('Configura XP per attività') }}</small>
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{{ url_for('gamification.admin_level_curve_config') }}" class="btn btn-outline-success w-100 py-3">
+                <i class="bi bi-bar-chart-steps fs-3 d-block mb-2"></i>
+                {{ _('Livelli & Unlock') }}
+                <small class="d-block text-muted">{{ _('Curva XP e feature unlock') }}</small>
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{{ url_for('gamification.admin_streak_config') }}" class="btn btn-outline-warning w-100 py-3">
+                <i class="bi bi-fire fs-3 d-block mb-2"></i>
+                {{ _('Streak & Milestone') }}
+                <small class="d-block text-muted">{{ _('Reward per streak') }}</small>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Overview -->
+  <div class="row">
+    <!-- XP Rates Summary -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> {{ _('XP Rates') }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <tbody>
+              {% for config in xp_rates %}
+              <tr>
+                <td><small>{{ config.key|replace('xp_', '')|replace('_', ' ')|title }}</small></td>
+                <td class="text-end"><strong>{{ config.value }} XP</strong></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <a href="{{ url_for('gamification.admin_xp_config') }}" class="btn btn-sm btn-primary w-100">
+            <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Unlocks Summary -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0"><i class="bi bi-unlock"></i> {{ _('Level Unlocks') }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <tbody>
+              {% for unlock in level_unlocks %}
+              <tr{% if not unlock.is_active %} class="text-muted"{% endif %}>
+                <td><span class="badge bg-secondary">Lv. {{ unlock.level }}</span></td>
+                <td><small>{{ unlock.feature_name }}</small></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <a href="{{ url_for('gamification.admin_level_curve_config') }}" class="btn btn-sm btn-success w-100">
+            <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Streak Milestones Summary -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0"><i class="bi bi-fire"></i> {{ _('Streak Milestones') }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <tbody>
+              {% for milestone in streak_milestones %}
+              <tr{% if not milestone.is_active %} class="text-muted"{% endif %}>
+                <td><span class="badge bg-warning text-dark">{{ milestone.weeks }}w</span></td>
+                <td><small>{{ milestone.freeze_tokens }} freeze</small></td>
+                <td>
+                  {% if milestone.is_recurring %}
+                  <span class="badge bg-info" title="{{ _('Ricorrente') }}"><i class="bi bi-arrow-repeat"></i></span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <a href="{{ url_for('gamification.admin_streak_config') }}" class="btn btn-sm btn-warning w-100">
+            <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Curve Parameters -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-bar-chart"></i> {{ _('Parametri Curva Livelli') }}</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for config in level_params %}
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center">
+                <h6 class="text-muted">{{ config.description }}</h6>
+                <h2 class="text-primary">{{ config.value }}{% if 'power' in config.key %} ({{ (config.value / 100)|round(2) }}){% endif %}</h2>
+              </div>
+            </div>
+            {% endfor %}
+            {% for config in streak_config %}
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center">
+                <h6 class="text-muted">{{ config.description }}</h6>
+                <h2 class="text-primary">{{ config.value }}</h2>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

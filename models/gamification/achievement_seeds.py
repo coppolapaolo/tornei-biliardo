@@ -310,6 +310,21 @@ PREDEFINED_ACHIEVEMENTS = [
     },
 
     # ========================================
+    # Director Eligibility Achievement
+    # ========================================
+    {
+        "slug": "aspiring_director",
+        "name": "Aspirante Direttore",
+        "description": "Hai dimostrato esperienza sufficiente per dirigere gare (10 gare o 1 campionato completo)",
+        "category": AchievementCategory.MILESTONE,
+        "difficulty": AchievementDifficulty.UNCOMMON,
+        "requirements": '{"type": "director_eligibility", "min_gare": 10, "min_campionati_completi": 1}',
+        "is_progressive": False,
+        "xp_reward": 200,
+        "is_hidden": False,
+    },
+
+    # ========================================
     # Milestone Achievements
     # ========================================
     {

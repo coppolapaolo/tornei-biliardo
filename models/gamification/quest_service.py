@@ -384,6 +384,13 @@ class QuestService:
                 if completed:
                     print(f"Completed quest: {quest.name}")
         """
+        # Skip gamification for admin users
+        from models.user.models import User
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            logger.debug(f"Skipping quest progress for admin user {user_id}")
+            return []
+
         results = []
 
         # Find active quests that match this activity type

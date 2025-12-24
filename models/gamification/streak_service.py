@@ -172,6 +172,13 @@ class StreakService:
             if result["action"] == "incremented":
                 print(f"Streak now {result['current_streak']} weeks!")
         """
+        # Skip gamification for admin users
+        from models.user.models import User
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            logger.debug(f"Skipping streak record for admin user {user_id}")
+            return None, {"action": "skipped", "reason": "admin_user"}  # type: ignore
+
         current_week, current_year = StreakService.get_current_iso_week(activity_date)
 
         # Get or create streak tracker

@@ -47,6 +47,12 @@ from .models import (
     QuestParticipation,
 )
 
+from .config_models import (
+    GamificationConfig,
+    LevelUnlock,
+    StreakMilestone,
+)
+
 __all__ = [
     # Models
     "UserLevel",
@@ -64,4 +70,8 @@ __all__ = [
     "QuestType",
     "QuestStatus",
     "QuestParticipation",
+    # Config Models
+    "GamificationConfig",
+    "LevelUnlock",
+    "StreakMilestone",
 ]

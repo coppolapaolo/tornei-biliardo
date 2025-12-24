@@ -160,3 +160,19 @@ def demote_director(user_id):
         flash(str(e), "error")
 
     return redirect(url_for("admin.user.user_detail", user_id=user_id))
+
+
+@user_bp.route("/user/<int:user_id>/promote_director", methods=["POST"])
+@admin_required
+def promote_director(user_id):
+    """Promuove un utente a direttore di gara (senza richiesta)"""
+    from models.user.permission_service import UserPermissionService
+    from flask_login import current_user
+
+    try:
+        UserPermissionService.promote_to_director(user_id, current_user.id)
+        flash("Utente promosso a direttore di gara.")
+    except ValueError as e:
+        flash(str(e), "error")
+
+    return redirect(url_for("admin.user.user_detail", user_id=user_id))

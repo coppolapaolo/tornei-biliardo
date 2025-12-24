@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bar-chart-steps"></i> {{ _('Configurazione Livelli') }}</h2>
+    <a href="{{ url_for('gamification.admin_config_dashboard') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> {{ _('Torna alla Config') }}
+    </a>
+  </div>
+
+  <!-- Level Curve Parameters -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-sliders"></i> {{ _('Parametri Curva Livelli') }}</h5>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle"></i>
+        {{ _('Formula XP per livello: XP = base_xp * (livello ^ power)') }}
+      </div>
+
+      <div class="row">
+        {% for config in level_params %}
+        <div class="col-md-6">
+          <form action="{{ url_for('gamification.admin_update_level_curve') }}" method="POST" class="card p-3 mb-3">
+            <input type="hidden" name="key" value="{{ config.key }}">
+            <h6>{{ config.description }}</h6>
+            <div class="input-group">
+              <input type="number" name="value" value="{{ config.value }}"
+                     class="form-control" min="1" required>
+              {% if 'power' in config.key %}
+              <span class="input-group-text">= {{ (config.value / 100)|round(2) }}</span>
+              {% endif %}
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check"></i> {{ _('Salva') }}
+              </button>
+            </div>
+            <small class="text-muted mt-1">
+              {% if 'power' in config.key %}
+              {{ _('Valore diviso per 100 (es. 150 = 1.5)') }}
+              {% else %}
+              {{ _('XP base richiesta per il primo livello') }}
+              {% endif %}
+            </small>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Level Preview Table -->
+      <div class="mt-4">
+        <h6>{{ _('Anteprima XP per Livello') }}</h6>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead>
+              <tr>
+                {% for level in range(1, 11) %}
+                <th class="text-center">Lv. {{ level }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {% set base = level_params|selectattr('key', 'equalto', 'level_base_xp')|map(attribute='value')|first|default(100) %}
+                {% set power = (level_params|selectattr('key', 'equalto', 'level_power')|map(attribute='value')|first|default(150)) / 100 %}
+                {% for level in range(1, 11) %}
+                <td class="text-center">
+                  {{ (base * (level ** power))|int }} XP
+                </td>
+                {% endfor %}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Unlocks -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-unlock"></i> {{ _('Feature Unlock per Livello') }}</h5>
+      <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addUnlockModal">
+        <i class="bi bi-plus"></i> {{ _('Aggiungi Unlock') }}
+      </button>
+    </div>
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th style="width: 80px;">{{ _('Livello') }}</th>
+            <th>{{ _('Codice Feature') }}</th>
+            <th>{{ _('Nome Feature') }}</th>
+            <th>{{ _('Descrizione') }}</th>
+            <th style="width: 80px;">{{ _('Attivo') }}</th>
+            <th style="width: 150px;">{{ _('Azioni') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for unlock in level_unlocks %}
+          <tr{% if not unlock.is_active %} class="table-secondary"{% endif %}>
+            <td><span class="badge bg-primary fs-6">{{ unlock.level }}</span></td>
+            <td><code>{{ unlock.feature_code }}</code></td>
+            <td>{{ unlock.feature_name }}</td>
+            <td>{{ unlock.description or '-' }}</td>
+            <td>
+              {% if unlock.is_active %}
+              <span class="badge bg-success"><i class="bi bi-check"></i></span>
+              {% else %}
+              <span class="badge bg-secondary"><i class="bi bi-x"></i></span>
+              {% endif %}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                      data-bs-target="#editUnlockModal{{ unlock.id }}">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <form action="{{ url_for('gamification.admin_delete_level_unlock', unlock_id=unlock.id) }}"
+                    method="POST" class="d-inline"
+                    onsubmit="return confirm('{{ _('Eliminare questo unlock?') }}')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+
+          <!-- Edit Modal for each unlock -->
+          <div class="modal fade" id="editUnlockModal{{ unlock.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form action="{{ url_for('gamification.admin_edit_level_unlock', unlock_id=unlock.id) }}" method="POST">
+                  <div class="modal-header">
+                    <h5 class="modal-title">{{ _('Modifica Unlock Lv.') }} {{ unlock.level }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('Livello') }}</label>
+                      <input type="text" class="form-control" value="{{ unlock.level }}" disabled>
+                      <small class="text-muted">{{ _('Il livello non può essere modificato') }}</small>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('Codice Feature') }}</label>
+                      <input type="text" class="form-control" value="{{ unlock.feature_code }}" disabled>
+                      <small class="text-muted">{{ _('Il codice non può essere modificato') }}</small>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('Nome Feature') }} *</label>
+                      <input type="text" name="feature_name" class="form-control"
+                             value="{{ unlock.feature_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">{{ _('Descrizione') }}</label>
+                      <textarea name="description" class="form-control" rows="2">{{ unlock.description or '' }}</textarea>
+                    </div>
+                    <div class="form-check">
+                      <input type="checkbox" name="is_active" class="form-check-input" id="active{{ unlock.id }}"
+                             {% if unlock.is_active %}checked{% endif %}>
+                      <label class="form-check-label" for="active{{ unlock.id }}">{{ _('Attivo') }}</label>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ _('Salva') }}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Unlock Modal -->
+<div class="modal fade" id="addUnlockModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ url_for('gamification.admin_add_level_unlock') }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ _('Aggiungi Nuovo Level Unlock') }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">{{ _('Livello') }} *</label>
+            <input type="number" name="level" class="form-control" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ _('Codice Feature') }} *</label>
+            <input type="text" name="feature_code" class="form-control" required
+                   placeholder="es. tournament_creation">
+            <small class="text-muted">{{ _('Identificativo univoco (snake_case)') }}</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ _('Nome Feature') }} *</label>
+            <input type="text" name="feature_name" class="form-control" required
+                   placeholder="es. Creazione Tornei">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ _('Descrizione') }}</label>
+            <textarea name="description" class="form-control" rows="2"
+                      placeholder="es. Puoi creare tornei standalone"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+          <button type="submit" class="btn btn-success">{{ _('Aggiungi') }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

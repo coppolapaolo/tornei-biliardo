@@ -22,6 +22,15 @@
                 {% endif %}
             {% else %}
                 <span class="badge bg-primary">Giocatore</span>
+                {% if current_user.is_admin %}
+                <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
+                      style="display: inline; margin-left: 10px;"
+                      onsubmit="return confirm('Promuovere {{ user.username }} a Direttore di Gara?')">
+                    <button type="submit" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-user-plus"></i> Promuovi a Direttore
+                    </button>
+                </form>
+                {% endif %}
             {% endif %}
         </p>
         <p><strong>Registrato:</strong> {{ user.created_at|datetime_local }}</p>
