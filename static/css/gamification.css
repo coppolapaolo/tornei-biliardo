@@ -1,0 +1,489 @@
+/**
+ * Gamification Animations CSS
+ *
+ * Provides visual feedback for:
+ * - XP gain notifications
+ * - Level up celebrations
+ * - Achievement unlocks
+ * - Streak milestones
+ */
+
+/* ========================================
+   Toast Notifications Container
+   ======================================== */
+
+.gamification-toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+/* ========================================
+   Base Toast Styles
+   ======================================== */
+
+.gamification-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(99, 102, 241, 0.2);
+    pointer-events: auto;
+    min-width: 300px;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    /* Entry animation */
+    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.gamification-toast.hiding {
+    animation: toastSlideOut 0.4s ease-in forwards;
+}
+
+@keyframes toastSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+    }
+}
+
+/* ========================================
+   XP Gain Toast
+   ======================================== */
+
+.gamification-toast.xp-gain {
+    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+    border-left: 4px solid #4ade80;
+}
+
+.gamification-toast.xp-gain .toast-icon {
+    font-size: 28px;
+    animation: xpBounce 0.6s ease-out;
+}
+
+@keyframes xpBounce {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.3); }
+    50% { transform: scale(0.9); }
+    75% { transform: scale(1.1); }
+}
+
+.xp-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4ade80;
+    animation: xpCountUp 0.8s ease-out;
+}
+
+@keyframes xpCountUp {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   Level Up Toast
+   ======================================== */
+
+.gamification-toast.level-up {
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #4c1d95 100%);
+    background-size: 200% 200%;
+    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+               levelUpGlow 2s ease-in-out infinite;
+    border: 2px solid #a78bfa;
+    box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4),
+                0 0 30px rgba(167, 139, 250, 0.3);
+}
+
+@keyframes levelUpGlow {
+    0%, 100% {
+        background-position: 0% 50%;
+        box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4),
+                    0 0 30px rgba(167, 139, 250, 0.3);
+    }
+    50% {
+        background-position: 100% 50%;
+        box-shadow: 0 10px 40px rgba(124, 58, 237, 0.6),
+                    0 0 50px rgba(167, 139, 250, 0.5);
+    }
+}
+
+.gamification-toast.level-up .toast-icon {
+    font-size: 36px;
+    animation: levelUpStar 1s ease-out;
+}
+
+@keyframes levelUpStar {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.4) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.level-number {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: levelPulse 0.5s ease-out;
+}
+
+@keyframes levelPulse {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ========================================
+   Achievement Unlock Toast
+   ======================================== */
+
+.gamification-toast.achievement {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+    border-left: 4px solid #fbbf24;
+}
+
+.gamification-toast.achievement.rare {
+    background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%);
+    border: 2px solid #60a5fa;
+}
+
+.gamification-toast.achievement.epic {
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+    border: 2px solid #a78bfa;
+}
+
+.gamification-toast.achievement.legendary {
+    background: linear-gradient(135deg, #78350f 0%, #f59e0b 50%, #78350f 100%);
+    background-size: 200% 200%;
+    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+               legendaryShine 3s ease-in-out infinite;
+    border: 2px solid #fbbf24;
+}
+
+@keyframes legendaryShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.gamification-toast.achievement .toast-icon {
+    font-size: 32px;
+    animation: achievementUnlock 0.8s ease-out;
+}
+
+@keyframes achievementUnlock {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.3) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.achievement-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+}
+
+/* ========================================
+   Streak Milestone Toast
+   ======================================== */
+
+.gamification-toast.streak {
+    background: linear-gradient(135deg, #7c2d12 0%, #ea580c 100%);
+    border-left: 4px solid #fb923c;
+}
+
+.gamification-toast.streak .toast-icon {
+    font-size: 32px;
+    animation: fireFlicker 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes fireFlicker {
+    0% { transform: scale(1) rotate(-3deg); }
+    100% { transform: scale(1.1) rotate(3deg); }
+}
+
+.streak-count {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+.streak-freeze {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    font-size: 14px;
+    color: #93c5fd;
+    animation: freezeGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes freezeGlow {
+    0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+    100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+}
+
+/* ========================================
+   Toast Content Layout
+   ======================================== */
+
+.toast-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.toast-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.toast-message {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.toast-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ========================================
+   Confetti Canvas
+   ======================================== */
+
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+/* ========================================
+   XP Counter Animation (in dashboard)
+   ======================================== */
+
+.xp-counter {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.xp-counter.counting {
+    animation: counterPop 0.4s ease-out;
+}
+
+@keyframes counterPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); color: #4ade80; }
+    100% { transform: scale(1); }
+}
+
+/* ========================================
+   Progress Bar Enhancements
+   ======================================== */
+
+.xp-progress-bar {
+    position: relative;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.xp-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+    border-radius: 12px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.xp-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    animation: progressShine 2s ease-in-out infinite;
+}
+
+@keyframes progressShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+/* ========================================
+   Achievement Card Hover Effects
+   ======================================== */
+
+.achievement-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.achievement-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-card.locked {
+    filter: grayscale(80%);
+    opacity: 0.6;
+}
+
+.achievement-card.locked:hover {
+    filter: grayscale(60%);
+    opacity: 0.8;
+}
+
+.achievement-card.unlocked {
+    animation: achievementCardGlow 3s ease-in-out infinite;
+}
+
+@keyframes achievementCardGlow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2); }
+    50% { box-shadow: 0 4px 25px rgba(251, 191, 36, 0.4); }
+}
+
+/* ========================================
+   Streak Fire Animation
+   ======================================== */
+
+.streak-fire {
+    display: inline-block;
+    animation: fireWobble 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes fireWobble {
+    0% { transform: rotate(-5deg) scale(1); }
+    100% { transform: rotate(5deg) scale(1.05); }
+}
+
+.streak-fire.hot {
+    animation: fireWobble 0.2s ease-in-out infinite alternate,
+               fireGlow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes fireGlow {
+    0% { filter: drop-shadow(0 0 5px #f97316); }
+    100% { filter: drop-shadow(0 0 15px #fb923c); }
+}
+
+/* ========================================
+   Level Badge Styles
+   ======================================== */
+
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+}
+
+.level-badge.milestone {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    animation: milestonePulse 2s ease-in-out infinite;
+}
+
+@keyframes milestonePulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(251, 191, 36, 0.7),
+                    0 0 40px rgba(251, 191, 36, 0.3);
+    }
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 768px) {
+    .gamification-toast-container {
+        right: 10px;
+        left: 10px;
+    }
+
+    .gamification-toast {
+        min-width: auto;
+        max-width: none;
+    }
+}

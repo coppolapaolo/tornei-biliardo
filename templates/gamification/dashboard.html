@@ -19,26 +19,25 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="display-4 text-primary fw-bold me-3">{{ progress.current_level }}</div>
+                        <div class="level-badge me-3">{{ progress.current_level }}</div>
                         <div>
                             <div class="h6 mb-0">{{ _('Livello') }}</div>
-                            <small class="text-muted">{{ progress.total_xp }} XP totali</small>
+                            <small class="text-muted">
+                                <span class="xp-counter" data-xp="{{ progress.total_xp }}">{{ progress.total_xp }}</span> XP totali
+                            </small>
                         </div>
                     </div>
 
-                    <!-- XP Progress Bar -->
+                    <!-- XP Progress Bar with Animation -->
                     <div class="mb-2">
                         <div class="d-flex justify-content-between mb-1">
                             <small>{{ progress.current_xp }} / {{ progress.xp_for_next_level }} XP</small>
                             <small>{{ progress.progress_percentage|round(1) }}%</small>
                         </div>
-                        <div class="progress" style="height: 20px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                 role="progressbar"
-                                 style="width: {{ progress.progress_percentage }}%"
-                                 aria-valuenow="{{ progress.progress_percentage }}"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100">
+                        <div class="xp-progress-bar">
+                            <div class="xp-progress-fill"
+                                 data-percentage="{{ progress.progress_percentage }}"
+                                 style="width: 0%;">
                             </div>
                         </div>
                     </div>
@@ -87,6 +86,7 @@
                                 <small class="text-muted">{{ _('Record') }}: {{ streak_info.longest_streak }} {{ _('settimane') }}</small>
                             </div>
                             <div class="text-end">
+                                <span class="streak-fire {% if streak_info.current_streak >= 5 %}hot{% endif %}">🔥</span>
                                 <span class="badge bg-warning text-dark fs-5">{{ streak_info.current_streak }}</span>
                                 <br>
                                 <small class="text-muted">{{ _('settimane') }}</small>
