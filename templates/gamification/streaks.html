@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
+                    <li class="breadcrumb-item active">{{ _('Streak') }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-0"><i class="fas fa-fire me-2 text-warning"></i>{{ page_title }}</h1>
+            <p class="text-muted">{{ _('Mantieni le tue attivita settimanali per guadagnare bonus XP') }}</p>
+        </div>
+    </div>
+
+    <!-- Primary Streak Highlight -->
+    {% if primary_streak %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient border-0" style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);">
+                <div class="card-body text-white text-center py-5">
+                    <div class="display-1 fw-bold mb-2">
+                        <i class="fas fa-fire me-3"></i>{{ primary_streak.current_streak }}
+                    </div>
+                    <h3>{{ _('Settimane consecutive di attivita') }}</h3>
+                    <p class="mb-0 opacity-75">
+                        {{ _('Record personale') }}: {{ primary_streak.longest_streak }} {{ _('settimane') }}
+                    </p>
+
+                    {% if primary_streak.freeze_count > 0 %}
+                    <div class="mt-3">
+                        <span class="badge bg-light text-dark fs-6">
+                            <i class="fas fa-snowflake me-1"></i>{{ primary_streak.freeze_count }} {{ _('freeze disponibili') }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Streaks -->
+    <div class="row g-4">
+        {% for streak_type, streak_info in streaks.items() %}
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        {% if streak_type == 'weekly_activity' %}
+                        <i class="fas fa-calendar-check text-warning me-2"></i>{{ _('Attivita Settimanale') }}
+                        {% elif streak_type == 'weekly_match' %}
+                        <i class="fas fa-table-tennis text-info me-2"></i>{{ _('Partite Settimanali') }}
+                        {% elif streak_type == 'weekly_tournament' %}
+                        <i class="fas fa-trophy text-success me-2"></i>{{ _('Tornei Settimanali') }}
+                        {% elif streak_type == 'weekly_drill' %}
+                        <i class="fas fa-bullseye text-danger me-2"></i>{{ _('Challenge Settimanali') }}
+                        {% else %}
+                        <i class="fas fa-fire me-2"></i>{{ streak_type }}
+                        {% endif %}
+                    </h5>
+                    {% if streak_info.is_at_risk %}
+                    <span class="badge bg-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>{{ _('A rischio!') }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="display-5 fw-bold text-primary">{{ streak_info.current_streak }}</div>
+                            <small class="text-muted">{{ _('Streak Attuale') }}</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-5 fw-bold text-secondary">{{ streak_info.longest_streak }}</div>
+                            <small class="text-muted">{{ _('Record') }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Milestones Progress -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">{{ _('Traguardi') }}</small>
+                        <div class="d-flex justify-content-between">
+                            <div class="text-center flex-fill">
+                                <i class="fas fa-medal fa-lg {% if streak_info.milestones_reached.get('4_weeks') %}text-warning{% else %}text-muted{% endif %}"></i>
+                                <br><small>4 {{ _('sett.') }}</small>
+                            </div>
+                            <div class="text-center flex-fill">
+                                <i class="fas fa-award fa-lg {% if streak_info.milestones_reached.get('12_weeks') %}text-info{% else %}text-muted{% endif %}"></i>
+                                <br><small>12 {{ _('sett.') }}</small>
+                            </div>
+                            <div class="text-center flex-fill">
+                                <i class="fas fa-crown fa-lg {% if streak_info.milestones_reached.get('52_weeks') %}text-success{% else %}text-muted{% endif %}"></i>
+                                <br><small>52 {{ _('sett.') }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next Milestone -->
+                    {% if streak_info.next_milestone %}
+                    <div class="alert alert-light mb-0 py-2">
+                        <small>
+                            <i class="fas fa-flag me-1"></i>
+                            {{ _('Prossimo traguardo') }}: <strong>{{ streak_info.next_milestone }} {{ _('settimane') }}</strong>
+                            ({{ streak_info.next_milestone - streak_info.current_streak }} {{ _('da raggiungere') }})
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-snowflake me-1"></i>{{ streak_info.freeze_count }} {{ _('freeze') }}
+                        </small>
+                        {% if streak_info.is_at_risk and streak_info.freeze_count > 0 %}
+                        <button class="btn btn-sm btn-outline-info" disabled>
+                            <i class="fas fa-snowflake me-1"></i>{{ _('Usa Freeze') }}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not streaks %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>{{ _('Inizia a giocare per costruire le tue streak settimanali!') }}
+    </div>
+    {% endif %}
+
+    <!-- Info Card -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle me-2"></i>{{ _('Come funzionano le Streak') }}</h6>
+                    <ul class="mb-0 small">
+                        <li>{{ _('Ogni settimana che giochi almeno una partita, la tua streak aumenta') }}</li>
+                        <li>{{ _('Raggiungi 4 settimane consecutive per sbloccare un freeze') }}</li>
+                        <li>{{ _('I freeze ti permettono di saltare una settimana senza perdere la streak') }}</li>
+                        <li>{{ _('Traguardi: 4 settimane (+1 freeze), 12 settimane (+1 freeze), 52 settimane (+1 freeze)') }}</li>
+                        <li>{{ _('Massimo 3 freeze accumulabili') }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

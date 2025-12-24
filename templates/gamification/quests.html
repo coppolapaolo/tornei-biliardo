@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
+                    <li class="breadcrumb-item active">{{ _('Quest') }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-0"><i class="fas fa-tasks me-2 text-info"></i>{{ page_title }}</h1>
+            <p class="text-muted">{{ _('Completa le quest per guadagnare XP bonus') }}</p>
+        </div>
+    </div>
+
+    <!-- Active Quests -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-play-circle me-2"></i>{{ _('Quest Attive') }}</h5>
+        </div>
+        <div class="card-body">
+            {% if active_quests %}
+            <div class="row g-3">
+                {% for quest_info in active_quests %}
+                {% set quest = quest_info.quest %}
+                {% set participation = quest_info.participation %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-info">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="badge
+                                    {% if quest.quest_type.value == 'weekly' %}bg-info
+                                    {% elif quest.quest_type.value == 'monthly' %}bg-primary
+                                    {% else %}bg-warning text-dark{% endif %}">
+                                    {% if quest.quest_type.value == 'weekly' %}
+                                    <i class="fas fa-calendar-week me-1"></i>{{ _('Settimanale') }}
+                                    {% elif quest.quest_type.value == 'monthly' %}
+                                    <i class="fas fa-calendar-alt me-1"></i>{{ _('Mensile') }}
+                                    {% else %}
+                                    <i class="fas fa-star me-1"></i>{{ _('Speciale') }}
+                                    {% endif %}
+                                </span>
+                                {% if quest_info.is_completed %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>{{ _('Completata') }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ quest.name }}</h5>
+                            <p class="card-text text-muted small">{{ quest.description }}</p>
+
+                            {% if quest_info.is_participating %}
+                            <!-- Progress Bar -->
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>{{ _('Progresso') }}</small>
+                                    <small>{{ participation.current_progress }}/{{ participation.target_progress }}</small>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar
+                                        {% if quest_info.is_completed %}bg-success{% else %}bg-info{% endif %}"
+                                         role="progressbar"
+                                         style="width: {{ quest_info.progress_percentage }}%">
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light py-2 mb-2">
+                                <small><i class="fas fa-info-circle me-1"></i>{{ _('Partecipa automaticamente giocando!') }}</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Time Remaining -->
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ _('Scade') }}: {{ quest.end_date|datetime_local }}
+                            </small>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-gift me-1"></i>+{{ quest.xp_reward }} XP
+                                </span>
+                                <small class="text-muted">
+                                    {{ quest.participant_count }} {{ _('partecipanti') }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-tasks fa-3x mb-3"></i>
+                <p class="mb-0">{{ _('Nessuna quest attiva al momento. Torna presto!') }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Upcoming Quests -->
+    {% if upcoming_quests %}
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-hourglass-start me-2"></i>{{ _('Quest in Arrivo') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for quest in upcoming_quests %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-secondary bg-light">
+                        <div class="card-body">
+                            <span class="badge bg-secondary mb-2">
+                                {% if quest.quest_type.value == 'weekly' %}{{ _('Settimanale') }}
+                                {% elif quest.quest_type.value == 'monthly' %}{{ _('Mensile') }}
+                                {% else %}{{ _('Speciale') }}{% endif %}
+                            </span>
+                            <h6 class="card-title">{{ quest.name }}</h6>
+                            <p class="card-text text-muted small">{{ quest.description|truncate(80) }}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ _('Inizia') }}: {{ quest.start_date|datetime_local }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Completed Quests -->
+    {% if completed_quests %}
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>{{ _('Quest Completate') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Quest') }}</th>
+                            <th>{{ _('Tipo') }}</th>
+                            <th>{{ _('Completata') }}</th>
+                            <th class="text-end">{{ _('XP Guadagnati') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quest_info in completed_quests[:10] %}
+                        {% set quest = quest_info.quest %}
+                        {% set participation = quest_info.participation %}
+                        <tr>
+                            <td>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                {{ quest.name }}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if quest.quest_type.value == 'weekly' %}bg-info
+                                    {% elif quest.quest_type.value == 'monthly' %}bg-primary
+                                    {% else %}bg-warning text-dark{% endif %}">
+                                    {{ quest.quest_type.value|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if participation and participation.completed_at %}
+                                {{ participation.completed_at|datetime_local }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <span class="badge bg-success">
+                                    +{{ participation.xp_awarded if participation else quest.xp_reward }} XP
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

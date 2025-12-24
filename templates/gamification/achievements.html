@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
+                    <li class="breadcrumb-item active">{{ _('Achievement') }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-0"><i class="fas fa-medal me-2"></i>{{ page_title }}</h1>
+            <p class="text-muted">{{ _('Tutti i tuoi achievement e progressi') }}</p>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <div class="display-5 fw-bold">{{ summary.total_unlocked }}</div>
+                    <small>{{ _('Sbloccati') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-secondary text-white">
+                <div class="card-body">
+                    <div class="display-5 fw-bold">{{ summary.total_achievements }}</div>
+                    <small>{{ _('Totali') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <div class="display-5 fw-bold">{{ summary.completion_percentage|round(1) }}%</div>
+                    <small>{{ _('Completamento') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-dark">
+                <div class="card-body">
+                    <div class="display-5 fw-bold">
+                        {{ summary.by_difficulty.get('LEGENDARY', {}).get('unlocked', 0) }}
+                    </div>
+                    <small>{{ _('Leggendari') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements by Category -->
+    {% for category, achievements in achievements_by_category.items() %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                {% if category == 'match' %}
+                <i class="fas fa-table-tennis text-primary me-2"></i>{{ _('Partite') }}
+                {% elif category == 'tournament' %}
+                <i class="fas fa-trophy text-warning me-2"></i>{{ _('Tornei') }}
+                {% elif category == 'social' %}
+                <i class="fas fa-users text-info me-2"></i>{{ _('Social') }}
+                {% elif category == 'skill' %}
+                <i class="fas fa-star text-success me-2"></i>{{ _('Abilita') }}
+                {% elif category == 'consistency' %}
+                <i class="fas fa-calendar-check text-danger me-2"></i>{{ _('Costanza') }}
+                {% elif category == 'exploration' %}
+                <i class="fas fa-compass text-secondary me-2"></i>{{ _('Esplorazione') }}
+                {% elif category == 'milestone' %}
+                <i class="fas fa-flag-checkered text-dark me-2"></i>{{ _('Traguardi') }}
+                {% else %}
+                <i class="fas fa-award me-2"></i>{{ category|capitalize }}
+                {% endif %}
+                <span class="badge bg-secondary ms-2">
+                    {{ achievements|selectattr('is_unlocked')|list|length }}/{{ achievements|length }}
+                </span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for ua in achievements %}
+                {% set achievement = ua.achievement %}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card h-100 {% if ua.is_unlocked %}border-success{% else %}border-secondary{% endif %}">
+                        <div class="card-body text-center">
+                            <!-- Icon -->
+                            <div class="mb-2 position-relative">
+                                {% if achievement.is_hidden and not ua.is_unlocked %}
+                                <i class="fas fa-question fa-3x text-muted"></i>
+                                {% elif achievement.icon_path %}
+                                <img src="{{ achievement.icon_path }}"
+                                     alt="{{ achievement.name }}"
+                                     style="width: 64px; height: 64px;"
+                                     class="{% if not ua.is_unlocked %}opacity-50{% endif %}">
+                                {% else %}
+                                <i class="fas fa-trophy fa-3x {% if ua.is_unlocked %}text-warning{% else %}text-muted{% endif %}"></i>
+                                {% endif %}
+
+                                <!-- Difficulty Badge -->
+                                <span class="position-absolute top-0 end-0 badge
+                                    {% if achievement.difficulty.value == 'legendary' %}bg-warning text-dark
+                                    {% elif achievement.difficulty.value == 'epic' %}bg-purple
+                                    {% elif achievement.difficulty.value == 'rare' %}bg-info
+                                    {% elif achievement.difficulty.value == 'uncommon' %}bg-success
+                                    {% else %}bg-secondary{% endif %}">
+                                    {% if achievement.difficulty.value == 'legendary' %}
+                                    <i class="fas fa-gem"></i>
+                                    {% elif achievement.difficulty.value == 'epic' %}
+                                    <i class="fas fa-star"></i>
+                                    {% elif achievement.difficulty.value == 'rare' %}
+                                    <i class="fas fa-certificate"></i>
+                                    {% else %}
+                                    <i class="fas fa-circle"></i>
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Title -->
+                            <h6 class="card-title mb-1">
+                                {% if achievement.is_hidden and not ua.is_unlocked %}
+                                {{ _('Achievement Nascosto') }}
+                                {% else %}
+                                {{ achievement.name }}
+                                {% endif %}
+                            </h6>
+
+                            <!-- Description -->
+                            <p class="card-text small text-muted mb-2">
+                                {% if achievement.is_hidden and not ua.is_unlocked %}
+                                ???
+                                {% else %}
+                                {{ achievement.description|truncate(60) }}
+                                {% endif %}
+                            </p>
+
+                            <!-- Progress (for progressive achievements) -->
+                            {% if achievement.is_progressive and not ua.is_unlocked %}
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-info"
+                                     role="progressbar"
+                                     style="width: {{ ua.progress_percentage }}%">
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ ua.current_progress }} / {{ ua.progress_percentage|round(0)|int }}%</small>
+                            {% endif %}
+
+                            <!-- Unlock status -->
+                            {% if ua.is_unlocked %}
+                            <div class="text-success small">
+                                <i class="fas fa-check-circle me-1"></i>
+                                {{ ua.unlocked_at|datetime_local if ua.unlocked_at else _('Sbloccato') }}
+                            </div>
+                            {% endif %}
+
+                            <!-- XP Reward -->
+                            <div class="mt-2">
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-star text-warning me-1"></i>+{{ achievement.xp_reward }} XP
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not achievements_by_category %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>{{ _('Nessun achievement disponibile al momento.') }}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+</style>
+{% endblock %}

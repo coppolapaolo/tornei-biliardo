@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
+                    <li class="breadcrumb-item active">{{ _('Classifiche') }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>{{ page_title }}</h1>
+            <p class="text-muted">{{ _('I migliori giocatori della community') }}</p>
+        </div>
+    </div>
+
+    <!-- Leaderboard Tabs -->
+    <ul class="nav nav-tabs mb-4" id="leaderboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'xp' %}active{% endif %}"
+                    id="xp-tab" data-bs-toggle="tab" data-bs-target="#xp"
+                    type="button" role="tab" aria-controls="xp" aria-selected="{% if active_tab == 'xp' %}true{% else %}false{% endif %}">
+                <i class="fas fa-star text-warning me-1"></i>{{ _('XP Totali') }}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'level' %}active{% endif %}"
+                    id="level-tab" data-bs-toggle="tab" data-bs-target="#level"
+                    type="button" role="tab" aria-controls="level" aria-selected="{% if active_tab == 'level' %}true{% else %}false{% endif %}">
+                <i class="fas fa-level-up-alt text-primary me-1"></i>{{ _('Livello') }}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'streak' %}active{% endif %}"
+                    id="streak-tab" data-bs-toggle="tab" data-bs-target="#streak"
+                    type="button" role="tab" aria-controls="streak" aria-selected="{% if active_tab == 'streak' %}true{% else %}false{% endif %}">
+                <i class="fas fa-fire text-danger me-1"></i>{{ _('Streak') }}
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="leaderboardTabsContent">
+        <!-- XP Leaderboard -->
+        <div class="tab-pane fade {% if active_tab == 'xp' %}show active{% endif %}" id="xp" role="tabpanel" aria-labelledby="xp-tab">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>{{ _('Classifica XP Totali') }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if xp_leaderboard %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;" class="text-center">#</th>
+                                    <th>{{ _('Giocatore') }}</th>
+                                    <th class="text-center">{{ _('Livello') }}</th>
+                                    <th class="text-end">{{ _('XP Totali') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in xp_leaderboard %}
+                                <tr class="{% if current_user.is_authenticated and entry.user_id == current_user.id %}table-primary{% endif %}">
+                                    <td class="text-center">
+                                        {% if loop.index == 1 %}
+                                        <i class="fas fa-trophy text-warning fs-5"></i>
+                                        {% elif loop.index == 2 %}
+                                        <i class="fas fa-medal text-secondary fs-5"></i>
+                                        {% elif loop.index == 3 %}
+                                        <i class="fas fa-award text-danger fs-5"></i>
+                                        {% else %}
+                                        <span class="text-muted">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ entry.user.username if entry.user else _('Utente') }}</strong>
+                                        {% if current_user.is_authenticated and entry.user_id == current_user.id %}
+                                        <span class="badge bg-primary ms-1">{{ _('Tu') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">Lv. {{ entry.current_level }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="text-warning">{{ entry.total_xp|default(0)|int }}</strong> XP
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <p class="mb-0">{{ _('Nessun giocatore in classifica ancora.') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Leaderboard -->
+        <div class="tab-pane fade {% if active_tab == 'level' %}show active{% endif %}" id="level" role="tabpanel" aria-labelledby="level-tab">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-level-up-alt me-2"></i>{{ _('Classifica per Livello') }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if level_leaderboard %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;" class="text-center">#</th>
+                                    <th>{{ _('Giocatore') }}</th>
+                                    <th class="text-center">{{ _('Livello') }}</th>
+                                    <th class="text-end">{{ _('XP nel Livello') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in level_leaderboard %}
+                                <tr class="{% if current_user.is_authenticated and entry.user_id == current_user.id %}table-primary{% endif %}">
+                                    <td class="text-center">
+                                        {% if loop.index == 1 %}
+                                        <i class="fas fa-crown text-warning fs-5"></i>
+                                        {% elif loop.index == 2 %}
+                                        <i class="fas fa-medal text-secondary fs-5"></i>
+                                        {% elif loop.index == 3 %}
+                                        <i class="fas fa-award text-danger fs-5"></i>
+                                        {% else %}
+                                        <span class="text-muted">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ entry.user.username if entry.user else _('Utente') }}</strong>
+                                        {% if current_user.is_authenticated and entry.user_id == current_user.id %}
+                                        <span class="badge bg-primary ms-1">{{ _('Tu') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6">{{ entry.current_level }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        {{ entry.current_xp|default(0)|int }} XP
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <p class="mb-0">{{ _('Nessun giocatore in classifica ancora.') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Streak Leaderboard -->
+        <div class="tab-pane fade {% if active_tab == 'streak' %}show active{% endif %}" id="streak" role="tabpanel" aria-labelledby="streak-tab">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>{{ _('Classifica Streak') }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if streak_leaderboard %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;" class="text-center">#</th>
+                                    <th>{{ _('Giocatore') }}</th>
+                                    <th class="text-center">{{ _('Streak Attuale') }}</th>
+                                    <th class="text-end">{{ _('Record') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in streak_leaderboard %}
+                                <tr class="{% if current_user.is_authenticated and entry.user_id == current_user.id %}table-danger{% endif %}">
+                                    <td class="text-center">
+                                        {% if loop.index == 1 %}
+                                        <i class="fas fa-fire text-danger fs-4"></i>
+                                        {% elif loop.index == 2 %}
+                                        <i class="fas fa-fire text-orange fs-5"></i>
+                                        {% elif loop.index == 3 %}
+                                        <i class="fas fa-fire text-warning fs-5"></i>
+                                        {% else %}
+                                        <span class="text-muted">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ entry.user.username if entry.user else _('Utente') }}</strong>
+                                        {% if current_user.is_authenticated and entry.user_id == current_user.id %}
+                                        <span class="badge bg-danger ms-1">{{ _('Tu') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger fs-6">
+                                            <i class="fas fa-fire me-1"></i>{{ entry.current_streak }}
+                                        </span>
+                                        {{ _('settimane') }}
+                                    </td>
+                                    <td class="text-end text-muted">
+                                        {{ entry.longest_streak }} {{ _('settimane') }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-fire-alt fa-3x mb-3"></i>
+                        <p class="mb-0">{{ _('Nessuna streak attiva ancora. Inizia a giocare!') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.text-orange {
+    color: #fd7e14 !important;
+}
+</style>
+{% endblock %}

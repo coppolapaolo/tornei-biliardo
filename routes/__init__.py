@@ -15,6 +15,9 @@ def register_blueprints(app):
     from .individual_match import individual_match_bp
     from .rating import rating_bp
 
+    # Import gamification blueprint (Phase 4)
+    from .gamification import gamification_bp
+
     # Registrazione blueprints core
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -27,3 +30,6 @@ def register_blueprints(app):
     app.register_blueprint(challenge_bp, url_prefix="/challenges")
     app.register_blueprint(individual_match_bp, url_prefix="/match")
     app.register_blueprint(rating_bp, url_prefix="/rating")
+
+    # Registrazione gamification blueprint
+    app.register_blueprint(gamification_bp)

@@ -3,11 +3,15 @@ Gamification Routes - Dashboard and API Endpoints
 
 Public routes:
 - /gamification/dashboard - User's gamification dashboard with XP, level, achievements
-- /gamification/leaderboards - Leaderboards (future)
-- /gamification/achievements - Achievement showcase (future)
+- /gamification/leaderboards - XP, level, and streak leaderboards
+- /gamification/achievements - Achievement showcase
+
+User routes:
+- /gamification/quests - Active and completed quests
+- /gamification/streaks - Streak tracking
 
 Admin routes:
-- /gamification/admin/quests/create - Create weekly/monthly quests (future)
+- /gamification/admin/quests - Quest management (future)
 
 All routes respect user authentication and permissions.
 """
@@ -17,6 +21,14 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
 from models.gamification.level_service import LevelService
+from models.gamification.achievement_service import AchievementService
+from models.gamification.streak_service import StreakService
+from models.gamification.quest_service import QuestService
+from models.gamification.models import (
+    UserLevel, Achievement, UserAchievement, StreakTracker,
+    AchievementCategory, AchievementDifficulty, StreakType,
+    LeaderboardType, Quest, QuestStatus
+)
 
 # Create blueprint
 gamification_bp = Blueprint("gamification", __name__, url_prefix="/gamification")
@@ -26,27 +38,46 @@ gamification_bp = Blueprint("gamification", __name__, url_prefix="/gamification"
 @login_required
 def dashboard():
     """
-    Gamification dashboard showing user's XP, level, and progress.
-    
+    Gamification dashboard showing user's complete gamification profile.
+
     Displays:
     - Current level and XP progress bar
-    - Total XP earned
-    - Next feature unlock
-    - XP breakdown by source (future)
-    - Recent level ups (future)
-    - Achievement showcase (future)
-    - Current streaks (future)
+    - Total XP earned and next unlock
+    - Recent achievements (last 5 unlocked)
+    - Current streaks
+    - Active quests with progress
     """
     # Get user's level progress
     progress = LevelService.get_level_progress(current_user.id)
-    
+
     # Get detailed stats
     stats = LevelService.get_user_level_stats(current_user.id)
-    
+
+    # Get recent achievements (last 5 unlocked)
+    all_unlocked = AchievementService.get_user_achievements(
+        current_user.id,
+        unlocked_only=True
+    )
+    # Sort by unlock date and take last 5
+    recent_achievements = sorted(
+        all_unlocked,
+        key=lambda x: x.get("unlocked_at") or "",
+        reverse=True
+    )[:5]
+
+    # Get current streaks
+    streaks = StreakService.get_all_streaks(current_user.id)
+
+    # Get active quests with user's progress
+    active_quests = QuestService.get_user_quests(current_user.id, active_only=True)
+
     return render_template(
         "gamification/dashboard.html",
         progress=progress,
         stats=stats,
+        recent_achievements=recent_achievements,
+        streaks=streaks,
+        active_quests=active_quests,
         page_title=_("Dashboard Gamification")
     )
 
@@ -119,16 +150,38 @@ def api_user_stats():
 @login_required
 def achievements():
     """
-    Achievement showcase (FASE 2).
-    
+    Achievement showcase displaying all achievements by category.
+
     Displays:
-    - Unlocked achievements with progress
-    - Locked achievements (with requirements)
-    - Achievement categories
-    - Rarity badges
+    - Unlocked achievements with unlock date
+    - Locked achievements with progress (for progressive)
+    - Hidden achievements (shown as ???)
+    - Achievement categories and rarity
     """
+    # Get all user achievements grouped by category
+    user_achievements = AchievementService.get_user_achievements(
+        current_user.id,
+        unlocked_only=False
+    )
+
+    # Get achievement stats (total, unlocked, by category)
+    summary = AchievementService.get_achievement_stats(current_user.id)
+
+    # Group by category for display
+    achievements_by_category = {}
+    for ua in user_achievements:
+        achievement = ua.get("achievement")
+        category = achievement.category.value if achievement else "other"
+        if category not in achievements_by_category:
+            achievements_by_category[category] = []
+        achievements_by_category[category].append(ua)
+
     return render_template(
         "gamification/achievements.html",
+        achievements_by_category=achievements_by_category,
+        summary=summary,
+        categories=AchievementCategory,
+        difficulties=AchievementDifficulty,
         page_title=_("I Tuoi Achievement")
     )
 
@@ -136,18 +189,41 @@ def achievements():
 @gamification_bp.route("/leaderboards")
 def leaderboards():
     """
-    Leaderboards (FASE 4).
-    
-    Public route - no login required for viewing.
-    
+    Leaderboards - public route, no login required.
+
     Displays:
-    - XP leaderboards (all-time, weekly, monthly)
-    - Level leaderboards
-    - Streak leaderboards
-    - Win rate leaderboards
+    - XP leaderboard (all-time top 20)
+    - Level leaderboard (highest levels)
+    - Streak leaderboard (longest current streaks)
     """
+    # Get leaderboard type from query param (default: xp)
+    leaderboard_type = request.args.get("type", "xp")
+    limit = min(int(request.args.get("limit", 20)), 100)
+
+    # Get XP leaderboard (all-time)
+    xp_leaderboard = UserLevel.query.order_by(
+        UserLevel.total_xp.desc()
+    ).limit(limit).all()
+
+    # Get level leaderboard
+    level_leaderboard = UserLevel.query.order_by(
+        UserLevel.current_level.desc(),
+        UserLevel.total_xp.desc()
+    ).limit(limit).all()
+
+    # Get streak leaderboard (weekly activity streaks)
+    streak_leaderboard = StreakTracker.query.filter_by(
+        streak_type=StreakType.WEEKLY_ACTIVITY
+    ).order_by(
+        StreakTracker.current_streak.desc()
+    ).limit(limit).all()
+
     return render_template(
         "gamification/leaderboards.html",
+        xp_leaderboard=xp_leaderboard,
+        level_leaderboard=level_leaderboard,
+        streak_leaderboard=streak_leaderboard,
+        active_tab=leaderboard_type,
         page_title=_("Classifiche")
     )
 
@@ -156,14 +232,97 @@ def leaderboards():
 @login_required
 def quests():
     """
-    Quest system (FASE 5).
-    
+    Quest system showing user's quest progress.
+
     Displays:
-    - Active quests with progress
-    - Completed quests
-    - Upcoming quests
+    - Active quests with progress bars
+    - Completed quests history
+    - Upcoming quests preview
     """
+    # Get active quests with user's progress
+    active_quests = QuestService.get_user_quests(current_user.id, active_only=True)
+
+    # Get user's completed quests
+    all_quests = QuestService.get_user_quests(current_user.id, include_completed=True)
+    completed_quests = [q for q in all_quests if q.get("is_completed")]
+
+    # Get upcoming quests (status = UPCOMING)
+    upcoming_quests = Quest.query.filter_by(status=QuestStatus.UPCOMING).all()
+
     return render_template(
         "gamification/quests.html",
+        active_quests=active_quests,
+        completed_quests=completed_quests,
+        upcoming_quests=upcoming_quests,
         page_title=_("Quest Settimanali/Mensili")
     )
+
+
+@gamification_bp.route("/streaks")
+@login_required
+def streaks():
+    """
+    Detailed streak view for user.
+
+    Displays:
+    - All streak types with current/longest values
+    - Freeze availability
+    - Milestone progress
+    """
+    # Get all user streaks
+    user_streaks = StreakService.get_all_streaks(current_user.id)
+
+    # Milestones are included in each streak info
+    # Get the primary activity streak for milestone display
+    primary_streak = user_streaks.get("weekly_activity", {})
+
+    return render_template(
+        "gamification/streaks.html",
+        streaks=user_streaks,
+        primary_streak=primary_streak,
+        streak_types=StreakType,
+        page_title=_("Le Tue Streak")
+    )
+
+
+# ============================================
+# API Endpoints
+# ============================================
+
+@gamification_bp.route("/api/achievements")
+@login_required
+def api_achievements():
+    """API endpoint for user's achievements."""
+    achievements = AchievementService.get_user_achievements(
+        current_user.id,
+        unlocked_only=request.args.get("unlocked_only", "false").lower() == "true"
+    )
+    return jsonify(achievements)
+
+
+@gamification_bp.route("/api/streaks")
+@login_required
+def api_streaks():
+    """API endpoint for user's streaks."""
+    streaks = StreakService.get_all_streaks(current_user.id)
+    return jsonify(streaks)
+
+
+@gamification_bp.route("/api/quests")
+@login_required
+def api_quests():
+    """API endpoint for active quests with user progress."""
+    quests = QuestService.get_user_quests(current_user.id, active_only=True)
+    # Convert to serializable format
+    result = []
+    for q in quests:
+        quest = q.get("quest")
+        result.append({
+            "id": quest.id if quest else None,
+            "name": quest.name if quest else None,
+            "description": quest.description if quest else None,
+            "is_participating": q.get("is_participating"),
+            "is_completed": q.get("is_completed"),
+            "progress_percentage": q.get("progress_percentage")
+        })
+    return jsonify(result)
