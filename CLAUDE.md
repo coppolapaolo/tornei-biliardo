@@ -2,29 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🚀 Quick Reference
+## Quick Reference
 
 ### Essential Commands
 ```bash
-# ALWAYS activate virtual environment first (Mac)
+# Activate virtual environment first (Mac)
 source venv/bin/activate
 
 # Start development server
 python app.py
 
 # Run all tests (ALWAYS use -n auto for parallel execution)
-PYTHONPATH=. pytest tests/new/ -n auto
-
-# Type check (MANDATORY before commits)
-pyright
-
-# Format code
-black . && flake8
-```
-
-### Common Test Commands
-```bash
-# Run all tests (fast parallel execution)
 PYTHONPATH=. pytest tests/new/ -n auto
 
 # Run specific test types
@@ -37,28 +25,18 @@ PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -n auto
 # Debug single test (no parallel, with output)
 PYTHONPATH=. pytest tests/new/unit/test_file.py::test_name -v -s
 
-# Run with verbose output and stop on first failure
-PYTHONPATH=. pytest tests/new/unit/ -v -x --tb=short
+# Type check (MANDATORY before commits)
+pyright
+
+# Format code
+black . && flake8
 ```
 
 ### Key Files & Locations
-- **Application Entry**: [app.py](app.py) - Flask factory pattern
-- **Configuration**: [config.py](config.py) - Environment-based config
+- **Application Entry**: `app.py` - Flask factory pattern
+- **Configuration**: `config.py` - Environment-based config
 - **Database**: `instance/billiard_campionato.db` (SQLite dev)
-- **Documentation**: [models/CLAUDE.md](models/CLAUDE.md), [routes/CLAUDE.md](routes/CLAUDE.md), [tests/CLAUDE.md](tests/CLAUDE.md)
-
-### Development Setup
-```bash
-# Setup virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt requirements-dev.txt
-
-# Run application
-python app.py
-```
+- **Domain Documentation**: `models/CLAUDE.md`, `routes/CLAUDE.md`, `tests/CLAUDE.md`
 
 ---
 
@@ -71,103 +49,44 @@ Flask-based **community platform for American Pool enthusiasts** focused on tour
 - Individual match proposals and community meetups
 - Flexible matchmaking strategies (Amalfi, Round-Robin, Elimination, Random)
 - Player statistics and challenge system
+- Gamification system (XP, levels, achievements, streaks, quests)
 - Guest access for public tournament viewing
 
 ---
 
-## ⏰ Critical: Timezone & Datetime Handling
+## Critical Conventions
 
-**IMPORTANT**: The application uses **UTC-based datetime convention** throughout.
-
-### Rules
-- **Backend**: Always use `datetime.utcnow()` - NEVER `datetime.now()`
-- **Frontend**: Use `|datetime_local` filter to display UTC → Italian time (UTC+2)
-- **JavaScript**: Convert local input to UTC before sending to backend
+### 1. Timezone Handling
+The application uses **UTC-based datetime convention** throughout.
 
 ```python
 # ✅ CORRECT
+from datetime import datetime
 now = datetime.utcnow()
-user.created_at = datetime.utcnow()
 
 # ❌ WRONG
 now = datetime.now()
 ```
 
----
+- **Frontend**: Use `|datetime_local` filter to display UTC → Italian time (UTC+2)
 
-## 🎯 Critical Terminology: "Race to N" (Al N)
+### 2. "Race to N" Terminology (NOT "Best of N")
+The application uses **"Race to N"** terminology (Italian: "Al N").
 
-**IMPORTANT**: The application uses "Race to N" terminology (Italian: "Al N"), NOT "Best of N".
+- **"Race to 5"** = First player to WIN 5 racks wins
+- **Maximum racks** = (2 × distance) - 1 = 9 racks for race to 5
+- **Database field**: `distance` = winning score threshold
 
-### Race to N Definition
-- **"Race to 5"** means: First player to WIN 5 racks wins the match
-- A match with race to 5 can end 5-0, 5-1, 5-2, 5-3, or 5-4
-- **Maximum racks possible** = (2 × distance) - 1 = 9 racks for race to 5
-
-### Migration Context
-The codebase recently migrated from "Best of N" to "Race to N" terminology:
-- **Old terminology**: "Best of 9" (play up to 9 racks, most wins)
-- **New terminology**: "Race to 5" (first to 5 racks wins)
-- **Database field**: `distance` field represents the winning score threshold
-- **Legacy field**: `best_of` boolean still exists but should always be False for new matches
-
-### Code Examples
 ```python
-# ✅ CORRECT - Race to N
-gara.distance = 5  # First to 5 racks wins
+# ✅ CORRECT
+gara.distance = 5  # Race to 5 (first to 5 racks wins)
 gara.best_of = False  # Always False for Race to N
 
-# Match winning condition
-if match.player1_score >= gara.distance:
-    # Player 1 won (reached 5 racks first)
-
-# ✅ Use value objects for business logic
-from models.match.distance import Distance
-distance = Distance.from_gara(gara)
-winning_racks = distance.get_winning_racks()  # = 5 for race to 5
-
-# ❌ WRONG - Old "Best of" thinking
+# ❌ WRONG
 gara.distance = 9  # This means "race to 9", not "best of 9"
 ```
 
-### Display Formatting
-Use the `format_distance` and `format_distance_short` Jinja filters:
-```jinja
-{{ gara.distance|format_distance }}  {# Outputs: "Al 5" #}
-{{ gara.distance|format_distance_short }}  {# Outputs: "5" #}
-```
-
----
-
-## Architecture
-
-### Application Structure
-- **Flask Application Factory Pattern**: `create_app()` in `app.py`
-- **Domain-Driven Design**: Organized by business domains (competition, matchmaking, rating, etc.)
-- **Service Layer Pattern**: Business logic with `@transactional` decorator
-- **Strategy Pattern**: Configurable matchmaking algorithms
-- **Value Object Pattern**: Distance and Score are immutable value objects (recent refactoring)
-
-### Key Components
-
-#### Models (`models/`)
-- **User Domain** (`user/`): User, DirectorAssignment, promotion workflows
-- **Competition Domain** (`competition/`): Gara, Inscription, RoundManager
-- **Match Domain** (`match/`): Match, Set, Rack, multi-set support
-- **Matchmaking Domain** (`matchmaking/`): Strategy pattern with Amalfi, Round-Robin, etc.
-- **Notification** (`notification/`): Event-driven notification system
-
-#### Database
-- **Development**: SQLite (`billiard_campionato.db`) in `instance/` folder
-- **Production**: PostgreSQL support via DATABASE_URL
-- **ORM**: SQLAlchemy with Flask-SQLAlchemy
-- **Soft Delete**: Automatic filtering via session event listener (see below)
-
----
-
-## Critical Patterns & Examples
-
-### Transaction Management Pattern
+### 3. Transaction Management
 All service methods that modify database state MUST use `@transactional`:
 
 ```python
@@ -181,29 +100,98 @@ class GaraService:
         return gara  # Commit happens automatically
 ```
 
-### Soft Delete Pattern (CRITICAL)
-**IMPORTANT**: User model has soft delete with automatic filtering enabled.
+### 4. Soft Delete (User Model)
+User model has soft delete with automatic session-level filtering.
 
 ```python
-# ✅ AUTOMATIC FILTERING - Most queries filter soft-deleted users automatically
-users = User.query.all()  # Excludes is_deleted=True automatically
+# Automatic filtering - excludes is_deleted=True
+users = User.query.all()
 
-# ✅ EXPLICIT FILTERING - When automatic filtering doesn't apply
-active_users = User.query.filter_by(is_deleted=False).all()
-
-# ⚠️ INCLUDE DELETED - Use with_deleted() to see soft-deleted records
+# Include deleted records
 all_users = User.query.with_deleted().all()
 
-# ✅ SOFT DELETE - Use anonymize() method
-user.anonymize()  # Sets is_deleted=True, encrypts PII, preserves FK integrity
+# ✅ CORRECT - Soft delete preserves relationships
+user.anonymize()
 
 # ❌ WRONG - Never hard delete User records
-db.session.delete(user)  # This breaks foreign key relationships
+db.session.delete(user)  # Breaks foreign key relationships
 ```
 
-**Implementation**: Soft delete filtering is implemented via SQLAlchemy session event listener in `models/user/soft_delete_filter.py`. The filter is registered globally in `app.py`.
+### 5. Enum Comparisons
+```python
+# ✅ CORRECT - Use .value
+if gara.status == GaraStatus.PLAYING.value:
 
-### Event System Pattern
+# ❌ WRONG - Compares to enum object
+if gara.status == GaraStatus.PLAYING:
+```
+
+### 6. Value Objects (Distance & Score)
+Use immutable value objects for distance and score business logic:
+
+```python
+from models.match.distance import Distance
+
+# Via factory method
+distance = Distance.from_gara(gara)
+winning_racks = distance.get_winning_racks()
+
+# Via model property
+distance_cfg = match.distance_config
+```
+
+### 7. Translated Strings in JavaScript (CRITICAL)
+When embedding translated strings in JavaScript, **ALWAYS use `|tojson`** filter. This prevents syntax errors from apostrophes and special characters in Italian text.
+
+```javascript
+// ❌ WRONG - Apostrophe in "l'avvio" breaks JS string
+alert('{{ _("Errore durante l'avvio del turno") }}');
+// Generates: alert('Errore durante l'avvio del turno');  // SYNTAX ERROR!
+
+// ✅ CORRECT - |tojson escapes and adds proper quotes
+alert({{ _("Errore durante l'avvio del turno")|tojson }});
+// Generates: alert("Errore durante l'avvio del turno");  // Works!
+
+// For concatenation with variables:
+alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
+```
+
+**Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript strings and cause silent failures that block ALL JavaScript on the page.
+
+---
+
+## Architecture
+
+### Application Structure
+- **Flask Application Factory Pattern**: `create_app()` in `app.py`
+- **Domain-Driven Design**: Organized by business domains
+- **Service Layer Pattern**: Business logic with `@transactional` decorator
+- **Strategy Pattern**: Configurable matchmaking algorithms
+- **Event-Driven Architecture**: Domain events for loose coupling
+
+### Key Domains (`models/`)
+
+| Domain | Purpose | Key Files |
+|--------|---------|-----------|
+| **user/** | Users, roles, permissions | User, DirectorAssignment, VenueManagement |
+| **competition/** | Gara, Inscription, round management | Gara, GaraService |
+| **match/** | Match, Set, Rack, scoring | Match, multi-set support |
+| **matchmaking/** | Pairing strategies | Amalfi, Round-Robin, Elimination, Random |
+| **gamification/** | XP, levels, achievements, streaks | LevelService, StreakService |
+| **notification/** | Event-driven notifications | NotificationFactory |
+| **individual_match/** | Casual match proposals | MatchProposal, PlayerAvailability |
+| **events/** | Domain event system | DomainEvent, EventBus |
+
+### Database
+- **Development**: SQLite (`instance/billiard_campionato.db`)
+- **Production**: PostgreSQL via DATABASE_URL
+- **ORM**: SQLAlchemy with Flask-SQLAlchemy
+
+---
+
+## Common Patterns
+
+### Event System
 ```python
 from models.events.base import DomainEvent, EventType
 
@@ -213,14 +201,9 @@ DomainEvent.emit(
     entity_id=inscription.id,
     actor_id=user_id
 )
-
-# Listen for events
-@event_handler(EventType.INSCRIPTION_CREATED)
-def handle_inscription_created(event: DomainEvent) -> None:
-    NotificationFactory.create_notification(...)
 ```
 
-### Strategy Pattern (Matchmaking)
+### Matchmaking Strategies
 ```python
 from models.matchmaking.service import MatchmakingService
 from models.matchmaking.config import MatchmakingStrategy
@@ -229,55 +212,7 @@ service = MatchmakingService(gara_id=gara.id, strategy=MatchmakingStrategy.AMALF
 matches = service.create_next_round()
 ```
 
-### Value Object Pattern (Distance & Score)
-**IMPORTANT**: Recent refactoring introduced immutable value objects for Distance and Score.
-
-```python
-from models.match.distance import Distance
-from models.match.score import RackScore
-
-# ✅ CORRECT - Use value objects via factory methods
-distance = Distance.from_gara(gara)  # Create from Gara model
-winning_racks = distance.get_winning_racks()  # Racks needed to win
-
-# ✅ CORRECT - Use via model properties
-distance_cfg = match.distance_config  # Property accessor
-rack_score = match.rack_score  # RackScore value object
-
-# ✅ DISPLAY - Use to_display_string() or Jinja filters
-display = distance.to_display_string()  # "Al 5 rack"
-# In templates: {{ match.distance_config|format_distance }}
-
-# ❌ WRONG - Don't use raw integers for business logic
-# (Note: max_racks calculation not needed in current business logic)
-```
-
----
-
-## Development Guidelines
-
-### Type Safety (MANDATORY)
-- Run `pyright` before every commit - maintain 0 errors
-- Use proper type hints for all functions
-- Import models explicitly for type inference
-
-### Testing Requirements
-- All new features MUST have tests in `tests/new/`
-- **CRITICAL**: Use `PYTHONPATH=. pytest tests/new/ -n auto`
-- Test isolation: use `db_session.get()` not `refresh()`
-- Legacy tests (`tests/legacy/`) are not maintained
-
-### Code Quality Checklist
-```bash
-# Before every commit:
-black . && flake8
-pyright
-PYTHONPATH=. pytest tests/new/ -n auto
-```
-
-### Important Gotchas
-
-#### 1. Race to N vs Multi-Set
+### Multi-Set Matches
 ```python
 # Single match - distance = winning racks threshold
 gara.distance = 5  # Race to 5 racks
@@ -288,147 +223,41 @@ match.match_distance = 3  # First to win 3 sets
 set.distance = 5  # Each set is race to 5 racks
 ```
 
-#### 2. Soft Delete Awareness
-```python
-# ✅ Automatic filtering (most cases)
-user = User.query.get(user_id)  # Returns None if soft-deleted
-
-# ✅ Check is_active for Flask-Login
-if user.is_active:  # False if is_deleted=True
-    # User is active
-
-# ⚠️ Use with_deleted() to bypass filter
-all_users = User.query.with_deleted().all()
-```
-
-#### 3. Enum Comparisons
-```python
-# ✅ CORRECT - Use .value
-if gara.status == GaraStatus.PLAYING.value:
-
-# ❌ WRONG - Compares to enum object
-if gara.status == GaraStatus.PLAYING:
-```
-
-#### 4. Distance Value Objects
-```python
-# ✅ CORRECT - Use value objects via factory methods
-from models.match.distance import Distance
-distance = Distance.from_gara(gara)
-winning_racks = distance.get_winning_racks()
-
-# ✅ CORRECT - Use via model properties
-distance_cfg = match.distance_config  # Available on Match models
-```
-
-#### 5. Test Execution Path
-```bash
-# ✅ CORRECT - Set PYTHONPATH
-PYTHONPATH=. pytest tests/new/ -n auto
-
-# ❌ WRONG - Import errors
-pytest tests/new/  # Missing PYTHONPATH
-```
-
 ---
 
-## Testing Commands
+## Development Guidelines
 
+### Type Safety (MANDATORY)
+- Run `pyright` before every commit - maintain 0 errors
+- Use proper type hints for all functions
+
+### Code Quality Checklist
 ```bash
-# Run all tests (RECOMMENDED - fast parallel execution)
+# Before every commit:
+black . && flake8
+pyright
 PYTHONPATH=. pytest tests/new/ -n auto
-
-# Run specific test types
-PYTHONPATH=. pytest tests/new/unit/ -n auto
-PYTHONPATH=. pytest tests/new/integration/ -n auto
-
-# Run single test file
-PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -n auto
-
-# Debug single test (without parallel)
-PYTHONPATH=. pytest tests/new/unit/test_file.py::test_name -v -s
-
-# Run with coverage
-PYTHONPATH=. pytest tests/new/ -n auto --cov=models --cov=routes
-
-# Run specific test pattern
-PYTHONPATH=. pytest tests/new/ -k "amalfi" -v -n auto
 ```
 
----
-
-## Development Notes
-
-- **Type Safety**: Project maintains 0 pyright errors
-- **Transaction Management**: All services use `@transactional` decorator
-- **Testing**: Use `-n auto` for parallel execution (user requirement)
-- **Architecture principle**: Clean, elegant solutions without over-engineering
-- **Terminology**: "Race to N" (Al N), not "Best of N"
-- **Soft Delete**: Automatic filtering via session listener for User model
-- **Value Objects**: Distance and Score are immutable value objects
-- Codebase uses Italian comments in many places
-- Application usually running - no need to restart for most changes
-- **All 8 use cases fully implemented** with comprehensive integration tests
+### Testing Requirements
+- All new features MUST have tests in `tests/new/`
+- Test isolation: use `db_session.get()` not `refresh()`
+- Legacy tests (`tests/legacy/`) are not maintained
+- **CRITICAL**: Always use `PYTHONPATH=. pytest tests/new/ -n auto`
 
 ---
 
 ## Common Mistakes to Avoid
 
-### 1. Wrong Distance Terminology
-```python
-# ❌ WRONG
-gara.distance = 9  # Thinking "best of 9"
-
-# ✅ CORRECT
-gara.distance = 5  # Race to 5 (max 9 racks)
-```
-
-### 2. Hard Deleting Users
-```python
-# ❌ WRONG - Breaks foreign keys
-db.session.delete(user)
-
-# ✅ CORRECT - Soft delete preserves relationships
-user.anonymize()
-```
-
-### 3. Missing PYTHONPATH
-```bash
-# ❌ WRONG - Import errors
-pytest tests/new/
-
-# ✅ CORRECT
-PYTHONPATH=. pytest tests/new/ -n auto
-```
-
-### 4. Forgetting @transactional
-```python
-# ❌ WRONG - Manual commit error-prone
-def create_gara(data):
-    gara = Gara(**data)
-    db.session.add(gara)
-    db.session.commit()  # Manual commit
-
-# ✅ CORRECT - Automatic transaction management
-@transactional
-def create_gara(data):
-    gara = Gara(**data)
-    db.session.add(gara)
-    return gara  # Commit happens automatically
-```
-
-### 5. Not Using Value Objects
-```python
-# ✅ CORRECT - Use value objects via factory methods
-from models.match.distance import Distance
-distance = Distance.from_gara(gara)
-winning_racks = distance.get_winning_racks()
-display_text = distance.to_display_string()  # "Al 5 rack"
-
-# ✅ CORRECT - Use via model properties (when available)
-distance_cfg = match.distance_config
-rack_score = match.rack_score
-```
+| Mistake | Correct Approach |
+|---------|------------------|
+| `datetime.now()` | `datetime.utcnow()` |
+| `gara.distance = 9` (thinking best of 9) | `gara.distance = 5` (race to 5) |
+| `db.session.delete(user)` | `user.anonymize()` |
+| `gara.status == GaraStatus.PLAYING` | `gara.status == GaraStatus.PLAYING.value` |
+| `pytest tests/new/` | `PYTHONPATH=. pytest tests/new/ -n auto` |
+| Manual `db.session.commit()` | Use `@transactional` decorator |
+| `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
 
 ---
 
@@ -437,5 +266,15 @@ rack_score = match.rack_score
 - **[models/CLAUDE.md](models/CLAUDE.md)**: Complete model reference with all fields and methods
 - **[routes/CLAUDE.md](routes/CLAUDE.md)**: Route handlers and API endpoints
 - **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy and test organization
+- **[models/gamification/CLAUDE.md](models/gamification/CLAUDE.md)**: Gamification system (XP, achievements, streaks)
 - **[docs/SPECIFICHE.md](docs/SPECIFICHE.md)**: Complete platform requirements (Italian)
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
+
+---
+
+## Development Notes
+
+- Codebase uses Italian comments in many places
+- Application usually running - no need to restart for most changes
+- All 8 tournament use cases fully implemented with comprehensive integration tests
+- Gamification system is event-driven and decoupled from core domains

@@ -232,9 +232,9 @@
   function startFirstRound(provaId, strategy) {
     let message;
     if (strategy === 'random') {
-      message = '{{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") }}';
+      message = {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.")|tojson }};
     } else {
-      message = '{{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") }}';
+      message = {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.")|tojson }};
     }
 
     if (confirm(message)) {
@@ -247,7 +247,7 @@
   }
 
   function cancelFirstRound(provaId) {
-    if (confirm('{{ _("Sei sicuro di voler cancellare l\'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") }}')) {
+    if (confirm({{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.")|tojson }})) {
       fetch(`/admin/gara/${provaId}/cancel_first_round`, {
         method: 'POST',
         headers: {
@@ -258,7 +258,7 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert('{{ _("Errore durante la cancellazione:") }} ' + text);
+            alert({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -266,7 +266,7 @@
   }
 
   function cancelCurrentRound(provaId) {
-    if (confirm('{{ _("Sei sicuro di voler cancellare l\'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") }}')) {
+    if (confirm({{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.")|tojson }})) {
       fetch(`/admin/gara/${provaId}/cancel_current_round`, {
         method: 'POST',
         headers: {
@@ -277,7 +277,7 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert('{{ _("Errore durante la cancellazione:") }} ' + text);
+            alert({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -285,7 +285,7 @@
   }
 
   function deleteProva(provaId, provaNumber) {
-    let confirmMsg = '{{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") }}';
+    let confirmMsg = {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!")|tojson }};
     confirmMsg = confirmMsg.replace('{number}', provaNumber);
     if (confirm(confirmMsg)) {
       fetch(`/admin/gara/${provaId}/delete`, {
@@ -306,7 +306,7 @@
   }
 
   function cancelProvaWithNotifications(provaId, provaNumber) {
-    let confirmMsg = '{{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") }}';
+    let confirmMsg = {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!")|tojson }};
     confirmMsg = confirmMsg.replace('{number}', provaNumber);
     if (confirm(confirmMsg)) {
       fetch(`/admin/gara/${provaId}/cancel`, {
@@ -323,7 +323,7 @@
           {% endif %}
         } else {
           response.text().then(text => {
-            alert('{{ _("Errore durante la cancellazione:") }} ' + text);
+            alert({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -395,11 +395,17 @@
       {% if gara.inscription_start %}
       const currentStart = new Date('{{ gara.inscription_start.isoformat() }}Z');
       modifyStartInput.value = dateToLocalString(currentStart);
+      {% else %}
+      modifyStartInput.value = dateToLocalString(new Date());
       {% endif %}
 
       {% if gara.inscription_end %}
       const currentEnd = new Date('{{ gara.inscription_end.isoformat() }}Z');
       modifyEndInput.value = dateToLocalString(currentEnd);
+      {% else %}
+      const garaDateTime = new Date('{{ gara.date.isoformat() }}T{{ gara.time.isoformat() if gara.time else "20:00:00" }}');
+      garaDateTime.setMinutes(garaDateTime.getMinutes() - 30);
+      modifyEndInput.value = dateToLocalString(garaDateTime);
       {% endif %}
     }
 
@@ -456,14 +462,14 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert('{{ _("Errore durante l\'avvio del turno:") }} ' + text);
+            alert({{ _("Errore durante l'avvio del turno:")|tojson }} + ' ' + text);
             buttons.forEach(btn => btn.disabled = false);
           });
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('{{ _("Errore di rete durante l\'avvio del turno") }}');
+        alert({{ _("Errore di rete durante l'avvio del turno")|tojson }});
         buttons.forEach(btn => btn.disabled = false);
       });
   }
@@ -507,19 +513,19 @@
             location.reload();
           }
         } else {
-          alert('{{ _("Errore:") }} ' + data.error);
+          alert({{ _("Errore:")|tojson }} + ' ' + data.error);
           buttons.forEach(btn => btn.disabled = false);
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('{{ _("Errore di rete durante la creazione del turno") }}');
+        alert({{ _("Errore di rete durante la creazione del turno")|tojson }});
         buttons.forEach(btn => btn.disabled = false);
       });
   }
 
   function closeInscriptions(provaId) {
-    if (confirm('{{ _("Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.") }}')) {
+    if (confirm({{ _("Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.")|tojson }})) {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/admin/gara/${provaId}/close_inscriptions`;
@@ -559,19 +565,19 @@
           bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
           location.reload();
         } else {
-          alert('{{ _("Errore durante l\'impostazione del risultato") }}');
+          alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('{{ _("Errore durante l\'impostazione del risultato") }}');
+        alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
       });
 
     return false;
   }
 
   function resetMatchQuick(matchId) {
-    if (confirm('{{ _("Sei sicuro di voler resettare questa partita?") }}')) {
+    if (confirm({{ _("Sei sicuro di voler resettare questa partita?")|tojson }})) {
       fetch(`/admin/match/${matchId}/reset`, {
         method: 'POST',
         headers: {
@@ -582,7 +588,7 @@
           if (response.ok) {
             location.reload();
           } else {
-            alert('{{ _("Errore durante il reset") }}');
+            alert({{ _("Errore durante il reset")|tojson }});
           }
         });
     }
@@ -648,7 +654,7 @@
                 <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
                 <div class="table-name">${tableName}</div>
             `;
-        button.title = '{{ _("Click per scambiare con match occupante") }}';
+        button.title = {{ _("Click per scambiare con match occupante")|tojson }};
         button.onclick = () => selectTableFromModal(tableName);
       } else {
         // Tavolo disponibile
@@ -717,12 +723,12 @@
           location.reload();
         } else {
           console.error('Error from server:', data.message);
-          alert('{{ _("Errore:") }} ' + data.message);
+          alert({{ _("Errore:")|tojson }} + ' ' + data.message);
         }
       })
       .catch(error => {
         console.error('Network error:', error);
-        alert('{{ _("Errore durante l\'assegnazione del tavolo") }}');
+        alert({{ _("Errore durante l'assegnazione del tavolo")|tojson }});
       });
   }
 </script>
