@@ -74,6 +74,77 @@
 }
 
 /* ========================================
+   Mascot Icon Styles (Chalky)
+   ======================================== */
+
+.mascot-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    flex-shrink: 0;
+    animation: mascotBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes mascotBounce {
+    0% {
+        transform: scale(0) rotate(-15deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(5deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Wiggle animation for streak mascot */
+.gamification-toast.streak .mascot-icon {
+    animation: mascotBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+               mascotWiggle 0.3s ease-in-out 0.6s infinite alternate;
+}
+
+@keyframes mascotWiggle {
+    0% { transform: rotate(-3deg); }
+    100% { transform: rotate(3deg); }
+}
+
+/* Level up mascot special animation */
+.gamification-toast.level-up .mascot-icon {
+    animation: mascotCelebrate 1s ease-out;
+}
+
+@keyframes mascotCelebrate {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.3) rotate(10deg);
+    }
+    75% {
+        transform: scale(0.9) rotate(-5deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Legendary mascot glow effect */
+.gamification-toast.achievement.legendary .mascot-icon {
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.8));
+    animation: mascotBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+               mascotGlow 1.5s ease-in-out 0.6s infinite alternate;
+}
+
+@keyframes mascotGlow {
+    0% { filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5)); }
+    100% { filter: drop-shadow(0 0 20px rgba(251, 191, 36, 1)); }
+}
+
+/* ========================================
    XP Gain Toast
    ======================================== */
 
@@ -82,6 +153,7 @@
     border-left: 4px solid #4ade80;
 }
 
+/* Legacy toast-icon support (can be removed if not needed) */
 .gamification-toast.xp-gain .toast-icon {
     font-size: 28px;
     animation: xpBounce 0.6s ease-out;

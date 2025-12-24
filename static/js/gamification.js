@@ -5,8 +5,25 @@
  * - Toast notifications for XP, levels, achievements, streaks
  * - Confetti effects for celebrations
  * - XP counter animations
- * - Sound effects (optional)
+ * - Mascot "Chalky" integration
  */
+
+// ========================================
+//   Mascot Image Paths
+// ========================================
+
+const MASCOT_IMAGES = {
+    xp: '/static/img/chalk1.png',           // Thumbs up - XP gained
+    levelup: '/static/img/chalk2.png',      // Celebration - Level up
+    achievement: '/static/img/chalk3.png',  // Trophy - Achievement unlocked
+    streak: '/static/img/chalk4.png',       // Fire - Streak active
+    sad: '/static/img/chalk5.png',          // Sad - Streak lost
+    encourage: '/static/img/chalk6.png',    // Encouraging - Try again
+    quest: '/static/img/chalk7.png',        // Curious - New quest
+    surprised: '/static/img/chalk8.png',    // Surprised - Rare achievement
+    welcome: '/static/img/chalk9.png',      // Waving - Welcome/Login
+    legendary: '/static/img/chalk10.png'    // Crown - Legendary achievement
+};
 
 // ========================================
 //   Toast Notification System
@@ -38,7 +55,7 @@ class GamificationToast {
      */
     showXPGain(amount, reason = '') {
         const toast = this.createToast('xp-gain', {
-            icon: '⚡',
+            mascotImage: MASCOT_IMAGES.xp,
             title: 'XP GUADAGNATI',
             contentType: 'xp',
             contentValue: amount,
@@ -57,7 +74,7 @@ class GamificationToast {
         this.triggerConfetti('level');
 
         const toast = this.createToast('level-up', {
-            icon: '⭐',
+            mascotImage: MASCOT_IMAGES.levelup,
             title: 'LEVEL UP!',
             contentType: 'level',
             contentValue: newLevel,
@@ -71,7 +88,7 @@ class GamificationToast {
      * @param {string} name - Achievement name
      * @param {string} description - Achievement description
      * @param {string} rarity - common, rare, epic, legendary
-     * @param {string} icon - Achievement icon
+     * @param {string} icon - Achievement icon (unused, kept for API compatibility)
      */
     showAchievement(name, description, rarity = 'common', icon = '🏆') {
         // Trigger confetti for rare+ achievements
@@ -79,9 +96,17 @@ class GamificationToast {
             this.triggerConfetti(rarity);
         }
 
+        // Select mascot based on rarity
+        let mascotImage = MASCOT_IMAGES.achievement;
+        if (rarity === 'legendary') {
+            mascotImage = MASCOT_IMAGES.legendary;
+        } else if (rarity === 'epic' || rarity === 'rare') {
+            mascotImage = MASCOT_IMAGES.surprised;
+        }
+
         const rarityClass = rarity !== 'common' ? rarity : '';
         const toast = this.createToast(`achievement ${rarityClass}`, {
-            icon: icon,
+            mascotImage: mascotImage,
             title: 'ACHIEVEMENT SBLOCCATO!',
             contentType: 'achievement',
             contentValue: name,
@@ -98,7 +123,7 @@ class GamificationToast {
      */
     showStreak(streakCount, streakType = 'weekly', hasFreeze = false) {
         const toast = this.createToast('streak', {
-            icon: '🔥',
+            mascotImage: MASCOT_IMAGES.streak,
             title: 'STREAK!',
             contentType: 'streak',
             contentValue: streakCount,
@@ -109,17 +134,64 @@ class GamificationToast {
     }
 
     /**
+     * Show streak lost notification
+     * @param {string} message - Encouragement message
+     */
+    showStreakLost(message = 'Non mollare, riprova!') {
+        const toast = this.createToast('streak-lost', {
+            mascotImage: MASCOT_IMAGES.sad,
+            title: 'STREAK PERSA',
+            contentType: 'text',
+            contentValue: message,
+            subtitle: ''
+        });
+        this.queueToast(toast, 4000);
+    }
+
+    /**
+     * Show quest notification
+     * @param {string} questName - Quest name
+     * @param {string} description - Quest description
+     */
+    showQuest(questName, description = '') {
+        const toast = this.createToast('quest', {
+            mascotImage: MASCOT_IMAGES.quest,
+            title: 'NUOVA QUEST!',
+            contentType: 'text',
+            contentValue: questName,
+            subtitle: description
+        });
+        this.queueToast(toast, 4000);
+    }
+
+    /**
+     * Show welcome notification
+     * @param {string} username - User's name
+     */
+    showWelcome(username = '') {
+        const toast = this.createToast('welcome', {
+            mascotImage: MASCOT_IMAGES.welcome,
+            title: 'BENTORNATO!',
+            contentType: 'text',
+            contentValue: username ? `Ciao ${username}!` : 'Ciao!',
+            subtitle: 'Pronto per giocare?'
+        });
+        this.queueToast(toast, 3000);
+    }
+
+    /**
      * Create a toast element using safe DOM methods
      */
-    createToast(type, { icon, title, contentType, contentValue, subtitle, hasFreeze }) {
+    createToast(type, { mascotImage, title, contentType, contentValue, subtitle, hasFreeze }) {
         const toast = document.createElement('div');
         toast.className = `gamification-toast ${type}`;
 
-        // Create icon span
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'toast-icon';
-        iconSpan.textContent = icon;
-        toast.appendChild(iconSpan);
+        // Create mascot image
+        const mascotImg = document.createElement('img');
+        mascotImg.src = mascotImage;
+        mascotImg.alt = 'Chalky';
+        mascotImg.className = 'mascot-icon';
+        toast.appendChild(mascotImg);
 
         // Create content container
         const contentDiv = document.createElement('div');
@@ -163,8 +235,11 @@ class GamificationToast {
                 messageDiv.appendChild(streakSpan);
                 break;
 
+            case 'text':
             default:
-                messageDiv.textContent = contentValue;
+                const textSpan = document.createElement('span');
+                textSpan.textContent = contentValue;
+                messageDiv.appendChild(textSpan);
         }
 
         contentDiv.appendChild(messageDiv);
@@ -533,35 +608,57 @@ function showGamificationEvent(type, data) {
         case 'streak':
             gamificationToast.showStreak(data.count, data.type, data.hasFreeze);
             break;
+        case 'streak_lost':
+            gamificationToast.showStreakLost(data.message);
+            break;
+        case 'quest':
+            gamificationToast.showQuest(data.name, data.description);
+            break;
+        case 'welcome':
+            gamificationToast.showWelcome(data.username);
+            break;
     }
 }
 
 /**
- * Demo function to test all effects
+ * Demo function to test all effects with Chalky mascot
  * Call from browser console: testGamificationEffects()
  */
 function testGamificationEffects() {
-    console.log('Testing gamification effects...');
+    console.log('Testing gamification effects with Chalky mascot...');
+
+    // Test welcome
+    setTimeout(() => {
+        showGamificationEvent('welcome', { username: 'Giocatore' });
+    }, 500);
 
     // Test XP gain
     setTimeout(() => {
         showGamificationEvent('xp', { amount: 50, reason: 'Vittoria partita' });
-    }, 500);
+    }, 4000);
 
     // Test level up
     setTimeout(() => {
         showGamificationEvent('levelup', { level: 5, title: 'Giocatore Esperto' });
-    }, 4000);
+    }, 8000);
 
-    // Test achievement (rare)
+    // Test achievement (common)
     setTimeout(() => {
         showGamificationEvent('achievement', {
             name: 'Prima Vittoria',
             description: 'Hai vinto la tua prima partita!',
-            rarity: 'rare',
-            icon: '🏆'
+            rarity: 'common'
         });
-    }, 10000);
+    }, 14000);
+
+    // Test achievement (rare) - shows surprised Chalky
+    setTimeout(() => {
+        showGamificationEvent('achievement', {
+            name: 'Campione Locale',
+            description: 'Hai vinto 10 partite consecutive!',
+            rarity: 'rare'
+        });
+    }, 20000);
 
     // Test streak
     setTimeout(() => {
@@ -570,19 +667,33 @@ function testGamificationEffects() {
             type: 'weekly',
             hasFreeze: true
         });
-    }, 16000);
+    }, 26000);
 
-    // Test legendary achievement
+    // Test quest
+    setTimeout(() => {
+        showGamificationEvent('quest', {
+            name: 'Sfida Settimanale',
+            description: 'Gioca 3 partite questa settimana'
+        });
+    }, 31000);
+
+    // Test streak lost
+    setTimeout(() => {
+        showGamificationEvent('streak_lost', {
+            message: 'Non mollare, riprova!'
+        });
+    }, 36000);
+
+    // Test legendary achievement - shows king Chalky
     setTimeout(() => {
         showGamificationEvent('achievement', {
             name: 'Leggenda del Biliardo',
             description: 'Hai raggiunto 1000 vittorie!',
-            rarity: 'legendary',
-            icon: '👑'
+            rarity: 'legendary'
         });
-    }, 21000);
+    }, 41000);
 
-    console.log('Effects will appear in sequence over 25 seconds');
+    console.log('Chalky will appear in 9 different poses over 45 seconds!');
 }
 
 // Export for module systems if needed
