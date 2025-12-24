@@ -542,6 +542,9 @@ let gamificationToast = null;
 document.addEventListener('DOMContentLoaded', function() {
     gamificationToast = new GamificationToast();
 
+    // Expose to window for console access
+    window.gamificationToast = gamificationToast;
+
     // Initialize confetti canvas
     ConfettiEffect.init();
 
@@ -695,6 +698,10 @@ function testGamificationEffects() {
 
     console.log('Chalky will appear in 9 different poses over 45 seconds!');
 }
+
+// Expose test function to window for console access
+window.testGamificationEffects = testGamificationEffects;
+window.showGamificationEvent = showGamificationEvent;
 
 // Export for module systems if needed
 if (typeof module !== 'undefined' && module.exports) {

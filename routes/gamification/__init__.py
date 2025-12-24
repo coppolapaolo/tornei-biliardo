@@ -36,6 +36,12 @@ from models.gamification.models import (
 gamification_bp = Blueprint("gamification", __name__, url_prefix="/gamification")
 
 
+@gamification_bp.route("/test")
+def test_gamification():
+    """Test page for gamification mascot integration - no login required."""
+    return render_template("test_gamification.html")
+
+
 @gamification_bp.route("/dashboard")
 @login_required
 def dashboard():

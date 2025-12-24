@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Test Gamification Effects{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Test Gamification Mascot Integration</h1>
+            <p class="lead">Click the button below to test all Chalky mascot animations</p>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Automated Test</h5>
+                    <p class="card-text">This will show all 9 mascot poses over 45 seconds:</p>
+                    <button class="btn btn-primary btn-lg" onclick="window.testGamificationEffects()">
+                        Run Full Test
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Individual Tests</h5>
+                    <p class="card-text">Test individual mascot poses:</p>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <button class="btn btn-success w-100" onclick="window.showGamificationEvent('welcome', {username: 'Giocatore'})">
+                                Welcome (Chalky Waving)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-success w-100" onclick="window.showGamificationEvent('xp', {amount: 50, reason: 'Vittoria partita'})">
+                                XP Gain (Chalky Thumbs Up)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-success w-100" onclick="window.showGamificationEvent('levelup', {level: 5, title: 'Giocatore Esperto'})">
+                                Level Up (Chalky Celebration)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-success w-100" onclick="window.showGamificationEvent('achievement', {name: 'Prima Vittoria', description: 'Hai vinto!', rarity: 'common'})">
+                                Achievement (Chalky Trophy)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-warning w-100" onclick="window.showGamificationEvent('achievement', {name: 'Campione Locale', description: '10 vittorie!', rarity: 'rare'})">
+                                Rare Achievement (Chalky Surprised)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-warning w-100" onclick="window.showGamificationEvent('streak', {count: 5, type: 'weekly', hasFreeze: true})">
+                                Streak (Chalky Fire)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-info w-100" onclick="window.showGamificationEvent('quest', {name: 'Sfida Settimanale', description: 'Gioca 3 partite'})">
+                                Quest (Chalky Curious)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-secondary w-100" onclick="window.showGamificationEvent('streak_lost', {message: 'Non mollare!'})">
+                                Streak Lost (Chalky Sad)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-warning w-100" onclick="window.gamificationToast.showQuest('Test', 'Encourage')">
+                                Encourage (Chalky Encouraging)
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-danger w-100" onclick="window.showGamificationEvent('achievement', {name: 'Leggenda', description: '1000 vittorie!', rarity: 'legendary'})">
+                                Legendary (Chalky Crown)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mascot Images Status</h5>
+                    <p>All 10 Chalky mascot images should be visible below:</p>
+                    <div class="row g-3">
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk1.png') }}" alt="Chalk 1" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk1.png<br>Thumbs Up (XP)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk2.png') }}" alt="Chalk 2" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk2.png<br>Celebration (Level Up)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk3.png') }}" alt="Chalk 3" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk3.png<br>Trophy (Achievement)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk4.png') }}" alt="Chalk 4" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk4.png<br>Fire (Streak)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk5.png') }}" alt="Chalk 5" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk5.png<br>Sad (Streak Lost)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk6.png') }}" alt="Chalk 6" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk6.png<br>Encouraging</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk7.png') }}" alt="Chalk 7" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk7.png<br>Curious (Quest)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk8.png') }}" alt="Chalk 8" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk8.png<br>Surprised (Rare)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk9.png') }}" alt="Chalk 9" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk9.png<br>Waving (Welcome)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename='img/chalk10.png') }}" alt="Chalk 10" style="width: 80px; height: 80px; object-fit: contain;">
+                                <p class="small">chalk10.png<br>Crown (Legendary)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <h5>Console Access</h5>
+                <p>You can also test from the browser console:</p>
+                <code>window.testGamificationEffects()</code><br>
+                <code>window.showGamificationEvent('xp', {amount: 100, reason: 'Test'})</code>
+            </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
