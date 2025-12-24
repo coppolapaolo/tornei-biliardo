@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-trophy"></i> {{ _('Gestione Achievement') }}</h2>
+    <div>
+      <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
+      </a>
+      <a href="{{ url_for('gamification.admin_create_achievement') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> {{ _('Nuovo Achievement') }}
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{{ _('Achievement') }}</th>
+            <th>{{ _('Codice') }}</th>
+            <th>{{ _('Categoria') }}</th>
+            <th>{{ _('Difficoltà') }}</th>
+            <th>{{ _('XP') }}</th>
+            <th>{{ _('Sbloccato da') }}</th>
+            <th>{{ _('Nascosto') }}</th>
+            <th>{{ _('Azioni') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in achievements %}
+          {% set ach = item.achievement %}
+          <tr>
+            <td>
+              <i class="bi bi-{{ ach.icon }}"></i>
+              <strong>{{ ach.name }}</strong>
+              <br><small class="text-muted">{{ ach.description[:40] }}...</small>
+            </td>
+            <td><code>{{ ach.code }}</code></td>
+            <td>
+              <span class="badge bg-info">{{ ach.category.value }}</span>
+            </td>
+            <td>
+              {% if ach.difficulty.value == 'bronze' %}
+                <span class="badge" style="background-color: #cd7f32;">Bronze</span>
+              {% elif ach.difficulty.value == 'silver' %}
+                <span class="badge" style="background-color: #c0c0c0; color: #333;">Silver</span>
+              {% elif ach.difficulty.value == 'gold' %}
+                <span class="badge" style="background-color: #ffd700; color: #333;">Gold</span>
+              {% elif ach.difficulty.value == 'platinum' %}
+                <span class="badge" style="background-color: #e5e4e2; color: #333;">Platinum</span>
+              {% elif ach.difficulty.value == 'diamond' %}
+                <span class="badge" style="background-color: #b9f2ff; color: #333;">Diamond</span>
+              {% endif %}
+            </td>
+            <td><span class="badge bg-warning text-dark">{{ ach.xp_reward }}</span></td>
+            <td>
+              <span class="badge bg-success">{{ item.unlock_count }}</span>
+            </td>
+            <td>
+              {% if ach.is_hidden %}
+                <span class="badge bg-dark"><i class="bi bi-eye-slash"></i></span>
+              {% else %}
+                <span class="badge bg-light text-dark"><i class="bi bi-eye"></i></span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('gamification.admin_toggle_achievement_hidden', achievement_id=ach.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-outline-secondary btn-sm" title="{{ _('Toggle nascosto') }}">
+                  <i class="bi bi-eye{{ '-slash' if not ach.is_hidden else '' }}"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              {{ _('Nessun achievement disponibile') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

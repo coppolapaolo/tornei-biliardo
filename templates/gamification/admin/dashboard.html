@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-controller"></i> {{ _('Admin Gamification') }}</h2>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">{{ _('XP Totale Distribuito') }}</h5>
+          <h2 class="display-6">{{ "{:,}".format(total_xp) }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">{{ _('Quest Attive') }}</h5>
+          <h2 class="display-6">{{ active_quests }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">{{ _('Achievement Totali') }}</h5>
+          <h2 class="display-6">{{ total_achievements }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <h5 class="card-title">{{ _('Achievement Sbloccati') }}</h5>
+          <h2 class="display-6">{{ total_unlocks }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Navigation -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ _('Gestione') }}</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <a href="{{ url_for('gamification.admin_quests') }}" class="btn btn-outline-primary w-100 py-3">
+                <i class="bi bi-journal-check fs-3 d-block mb-2"></i>
+                {{ _('Quest') }}
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{{ url_for('gamification.admin_achievements') }}" class="btn btn-outline-success w-100 py-3">
+                <i class="bi bi-trophy fs-3 d-block mb-2"></i>
+                {{ _('Achievement') }}
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{{ url_for('gamification.admin_xp_management') }}" class="btn btn-outline-info w-100 py-3">
+                <i class="bi bi-graph-up-arrow fs-3 d-block mb-2"></i>
+                {{ _('XP & Livelli') }}
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{{ url_for('gamification.admin_streaks') }}" class="btn btn-outline-warning w-100 py-3">
+                <i class="bi bi-fire fs-3 d-block mb-2"></i>
+                {{ _('Streak') }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Distribution -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ _('Distribuzione Livelli') }}</h5>
+        </div>
+        <div class="card-body">
+          {% if level_stats %}
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>{{ _('Livello') }}</th>
+                <th>{{ _('Utenti') }}</th>
+                <th>{{ _('Distribuzione') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set total_users = level_stats|sum(attribute='count') %}
+              {% for level, count in level_stats %}
+              <tr>
+                <td><span class="badge bg-primary">Lv. {{ level }}</span></td>
+                <td>{{ count }}</td>
+                <td>
+                  <div class="progress" style="height: 20px;">
+                    {% set percentage = (count / total_users * 100) if total_users > 0 else 0 %}
+                    <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%">
+                      {{ "%.1f"|format(percentage) }}%
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">{{ _('Nessun dato disponibile') }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Top XP Users -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ _('Top 10 Utenti XP') }}</h5>
+        </div>
+        <div class="card-body">
+          {% if top_users %}
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{ _('Utente') }}</th>
+                <th>{{ _('Livello') }}</th>
+                <th>{{ _('XP Totale') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user_level in top_users %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ user_level.user.username if user_level.user else 'N/A' }}</td>
+                <td><span class="badge bg-success">{{ user_level.current_level }}</span></td>
+                <td>{{ "{:,}".format(user_level.total_xp) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">{{ _('Nessun utente con XP') }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

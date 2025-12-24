@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="bi bi-journal-plus"></i>
+            {{ _('Crea Nuova Quest') if not quest else _('Modifica Quest') }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            <div class="mb-3">
+              <label for="name" class="form-label">{{ _('Nome Quest') }} *</label>
+              <input type="text" class="form-control" id="name" name="name" required
+                     value="{{ quest.name if quest else '' }}"
+                     placeholder="{{ _('Es: Sfida Settimanale Match') }}">
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">{{ _('Descrizione') }}</label>
+              <textarea class="form-control" id="description" name="description" rows="3"
+                        placeholder="{{ _('Descrizione della quest e come completarla') }}">{{ quest.description if quest else '' }}</textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="quest_type" class="form-label">{{ _('Tipo Quest') }}</label>
+                <select class="form-select" id="quest_type" name="quest_type">
+                  <option value="weekly" {{ 'selected' if not quest or quest.quest_type.value == 'weekly' else '' }}>
+                    {{ _('Settimanale') }}
+                  </option>
+                  <option value="monthly" {{ 'selected' if quest and quest.quest_type.value == 'monthly' else '' }}>
+                    {{ _('Mensile') }}
+                  </option>
+                  <option value="special_event" {{ 'selected' if quest and quest.quest_type.value == 'special_event' else '' }}>
+                    {{ _('Evento Speciale') }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="xp_reward" class="form-label">{{ _('Ricompensa XP') }}</label>
+                <input type="number" class="form-control" id="xp_reward" name="xp_reward"
+                       min="10" step="10" value="{{ quest.xp_reward if quest else 100 }}">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="requirement_type" class="form-label">{{ _('Tipo Requisito') }}</label>
+                <select class="form-select" id="requirement_type" name="requirement_type">
+                  <option value="matches_played">{{ _('Match Giocati') }}</option>
+                  <option value="matches_won">{{ _('Match Vinti') }}</option>
+                  <option value="tournaments_registered">{{ _('Iscrizioni Tornei') }}</option>
+                  <option value="tournaments_completed">{{ _('Tornei Completati') }}</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="requirement_target" class="form-label">{{ _('Obiettivo') }}</label>
+                <input type="number" class="form-control" id="requirement_target" name="requirement_target"
+                       min="1" value="{{ quest.requirements.target if quest and quest.requirements else 10 }}">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="start_date" class="form-label">{{ _('Data Inizio') }}</label>
+                <input type="datetime-local" class="form-control" id="start_date" name="start_date"
+                       value="{{ quest.start_date.strftime('%Y-%m-%dT%H:%M') if quest else '' }}">
+                <small class="text-muted">{{ _('Lascia vuoto per iniziare subito') }}</small>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="end_date" class="form-label">{{ _('Data Fine') }}</label>
+                <input type="datetime-local" class="form-control" id="end_date" name="end_date"
+                       value="{{ quest.end_date.strftime('%Y-%m-%dT%H:%M') if quest else '' }}">
+                <small class="text-muted">{{ _('Lascia vuoto per durata standard') }}</small>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('gamification.admin_quests') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg"></i> {{ _('Annulla') }}
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> {{ _('Salva Quest') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

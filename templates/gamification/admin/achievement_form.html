@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="bi bi-trophy"></i>
+            {{ _('Crea Nuovo Achievement') if not achievement else _('Modifica Achievement') }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="code" class="form-label">{{ _('Codice') }} *</label>
+                <input type="text" class="form-control" id="code" name="code" required
+                       pattern="[a-z_]+" placeholder="first_blood"
+                       value="{{ achievement.code if achievement else '' }}">
+                <small class="text-muted">{{ _('Solo lettere minuscole e underscore') }}</small>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">{{ _('Nome') }} *</label>
+                <input type="text" class="form-control" id="name" name="name" required
+                       placeholder="{{ _('First Blood') }}"
+                       value="{{ achievement.name if achievement else '' }}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">{{ _('Descrizione') }}</label>
+              <textarea class="form-control" id="description" name="description" rows="2"
+                        placeholder="{{ _('Vinci la tua prima partita') }}">{{ achievement.description if achievement else '' }}</textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="category" class="form-label">{{ _('Categoria') }}</label>
+                <select class="form-select" id="category" name="category">
+                  {% for cat in categories %}
+                  <option value="{{ cat.name.lower() }}" {{ 'selected' if achievement and achievement.category == cat else '' }}>
+                    {{ cat.value }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="difficulty" class="form-label">{{ _('Difficoltà') }}</label>
+                <select class="form-select" id="difficulty" name="difficulty">
+                  {% for diff in difficulties %}
+                  <option value="{{ diff.name.lower() }}" {{ 'selected' if achievement and achievement.difficulty == diff else '' }}>
+                    {{ diff.value }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="icon" class="form-label">{{ _('Icona') }}</label>
+                <input type="text" class="form-control" id="icon" name="icon"
+                       placeholder="trophy" value="{{ achievement.icon if achievement else 'trophy' }}">
+                <small class="text-muted">{{ _('Nome icona Bootstrap') }}</small>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="xp_reward" class="form-label">{{ _('Ricompensa XP') }}</label>
+                <input type="number" class="form-control" id="xp_reward" name="xp_reward"
+                       min="0" step="10" value="{{ achievement.xp_reward if achievement else 50 }}">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="requirement_type" class="form-label">{{ _('Tipo Requisito') }}</label>
+                <select class="form-select" id="requirement_type" name="requirement_type">
+                  <option value="instant" {{ 'selected' if not achievement or achievement.requirement_type == 'instant' else '' }}>
+                    {{ _('Istantaneo') }}
+                  </option>
+                  <option value="progress" {{ 'selected' if achievement and achievement.requirement_type == 'progress' else '' }}>
+                    {{ _('Progressivo') }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="requirement_value" class="form-label">{{ _('Valore Obiettivo') }}</label>
+                <input type="number" class="form-control" id="requirement_value" name="requirement_value"
+                       min="1" value="{{ achievement.requirement_value if achievement else 1 }}">
+                <small class="text-muted">{{ _('Per progressivi') }}</small>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="is_hidden" name="is_hidden"
+                       {{ 'checked' if achievement and achievement.is_hidden else '' }}>
+                <label class="form-check-label" for="is_hidden">
+                  {{ _('Achievement nascosto') }}
+                </label>
+                <small class="text-muted d-block">{{ _('Gli achievement nascosti non vengono mostrati finché non sbloccati') }}</small>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('gamification.admin_achievements') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg"></i> {{ _('Annulla') }}
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> {{ _('Salva Achievement') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

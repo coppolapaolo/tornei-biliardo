@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-fire"></i> {{ _('Gestione Streak') }}</h2>
+    <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
+    </a>
+  </div>
+
+  <div class="row">
+    <!-- Streak Statistics -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-bar-chart"></i> {{ _('Statistiche Streak') }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>{{ _('Tipo') }}</th>
+                <th>{{ _('Media') }}</th>
+                <th>{{ _('Max') }}</th>
+                <th>{{ _('Freeze Totali') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for stat in streak_stats %}
+              <tr>
+                <td>
+                  <span class="badge bg-info">{{ stat.streak_type.value }}</span>
+                </td>
+                <td>{{ "%.1f"|format(stat.avg_streak or 0) }}</td>
+                <td><span class="badge bg-success">{{ stat.max_streak or 0 }}</span></td>
+                <td>{{ stat.total_freezes or 0 }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted">
+                  {{ _('Nessun dato disponibile') }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Grant Freeze Form -->
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="bi bi-snow"></i> {{ _('Concedi Freeze') }}</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('gamification.admin_grant_freeze') }}">
+            <div class="mb-3">
+              <label for="user_id" class="form-label">{{ _('Utente') }} *</label>
+              <input type="number" class="form-control" id="user_id" name="user_id"
+                     placeholder="{{ _('ID Utente') }}" required>
+              <small class="text-muted">{{ _('Inserisci ID utente') }}</small>
+            </div>
+            <div class="mb-3">
+              <label for="streak_type" class="form-label">{{ _('Tipo Streak') }}</label>
+              <select class="form-select" id="streak_type" name="streak_type">
+                {% for st in streak_types %}
+                <option value="{{ st.name }}">{{ st.value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="freeze_count" class="form-label">{{ _('Numero Freeze') }}</label>
+              <input type="number" class="form-control" id="freeze_count" name="freeze_count"
+                     min="1" max="10" value="1">
+            </div>
+            <button type="submit" class="btn btn-info w-100">
+              <i class="bi bi-send"></i> {{ _('Concedi Freeze') }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Streakers -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-trophy"></i> {{ _('Top Streaker (Attività Settimanale)') }}</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm table-hover">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{ _('Utente') }}</th>
+                <th>{{ _('Streak Attuale') }}</th>
+                <th>{{ _('Record') }}</th>
+                <th>{{ _('Freeze') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tracker in top_streakers %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ tracker.user.username if tracker.user else 'N/A' }}</td>
+                <td>
+                  <span class="badge bg-warning text-dark">
+                    <i class="bi bi-fire"></i> {{ tracker.current_streak }}
+                  </span>
+                </td>
+                <td>{{ tracker.longest_streak }}</td>
+                <td>
+                  <span class="badge bg-info">
+                    <i class="bi bi-snow"></i> {{ tracker.freeze_count }}
+                  </span>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                  {{ _('Nessun dato disponibile') }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

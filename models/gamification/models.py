@@ -36,6 +36,7 @@ class XPTransactionType(Enum):
     ACHIEVEMENT_UNLOCK = "achievement_unlock"
     CHALLENGE_COMPLETION = "challenge_completion"
     ADMIN_ADJUSTMENT = "admin_adjustment"
+    ADMIN_GRANT = "admin_grant"  # Bonus XP granted by admin
 
 
 class AchievementCategory(Enum):

@@ -506,6 +506,36 @@ if result["milestone_reached"]:
 
 ---
 
+## Admin Routes (`routes/gamification/__init__.py`)
+
+Admin routes for gamification management (requires admin role):
+
+### Dashboard
+- `GET /gamification/admin` - Admin gamification dashboard with stats
+
+### Quest Management
+- `GET /gamification/admin/quests` - List all quests
+- `GET/POST /gamification/admin/quests/create` - Create new quest
+- `POST /gamification/admin/quests/<id>/activate` - Activate quest
+- `POST /gamification/admin/quests/<id>/expire` - Expire quest
+- `POST /gamification/admin/quests/<id>/delete` - Delete quest (no participants)
+
+### Achievement Management
+- `GET /gamification/admin/achievements` - List achievements with unlock stats
+- `GET/POST /gamification/admin/achievements/create` - Create new achievement
+- `POST /gamification/admin/achievements/<id>/toggle_hidden` - Toggle hidden status
+
+### XP & Level Management
+- `GET /gamification/admin/xp` - XP management dashboard
+- `POST /gamification/admin/xp/grant` - Grant XP to user (ADMIN_GRANT type)
+- `POST /gamification/admin/xp/reset/<user_id>` - Reset user level to 1
+
+### Streak Management
+- `GET /gamification/admin/streaks` - Streak statistics
+- `POST /gamification/admin/streaks/grant_freeze` - Grant freeze tokens
+
+---
+
 ## File Structure
 
 ```
@@ -523,6 +553,24 @@ models/gamification/
 ├── events.py                # Gamification domain events
 ├── event_handlers.py        # Handlers for domain events
 └── notification_handlers.py # Notification integration
+
+routes/gamification/
+└── __init__.py              # User and admin routes
+
+templates/gamification/
+├── dashboard.html           # User dashboard
+├── achievements.html        # User achievements
+├── leaderboards.html        # Public leaderboards
+├── quests.html              # User quests
+├── streaks.html             # User streaks
+└── admin/
+    ├── dashboard.html       # Admin overview
+    ├── quests.html          # Quest management
+    ├── quest_form.html      # Quest creation form
+    ├── achievements.html    # Achievement management
+    ├── achievement_form.html# Achievement creation form
+    ├── xp_management.html   # XP & level tools
+    └── streaks.html         # Streak management
 ```
 
 ---

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-journal-check"></i> {{ _('Gestione Quest') }}</h2>
+    <div>
+      <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
+      </a>
+      <a href="{{ url_for('gamification.admin_create_quest') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> {{ _('Nuova Quest') }}
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{{ _('Nome') }}</th>
+            <th>{{ _('Tipo') }}</th>
+            <th>{{ _('Stato') }}</th>
+            <th>{{ _('Periodo') }}</th>
+            <th>{{ _('Partecipanti') }}</th>
+            <th>{{ _('Completati') }}</th>
+            <th>{{ _('XP Reward') }}</th>
+            <th>{{ _('Azioni') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for quest in quests %}
+          <tr>
+            <td>
+              <strong>{{ quest.name }}</strong>
+              <br><small class="text-muted">{{ quest.description[:50] }}...</small>
+            </td>
+            <td>
+              <span class="badge bg-secondary">{{ quest.quest_type.value }}</span>
+            </td>
+            <td>
+              {% if quest.status == quest_statuses.ACTIVE %}
+                <span class="badge bg-success">{{ _('Attiva') }}</span>
+              {% elif quest.status == quest_statuses.UPCOMING %}
+                <span class="badge bg-info">{{ _('In arrivo') }}</span>
+              {% elif quest.status == quest_statuses.EXPIRED %}
+                <span class="badge bg-secondary">{{ _('Scaduta') }}</span>
+              {% elif quest.status == quest_statuses.COMPLETED %}
+                <span class="badge bg-primary">{{ _('Completata') }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <small>
+                {{ quest.start_date.strftime('%d/%m/%Y') }} -
+                {{ quest.end_date.strftime('%d/%m/%Y') }}
+              </small>
+            </td>
+            <td><span class="badge bg-info">{{ quest.participant_count }}</span></td>
+            <td><span class="badge bg-success">{{ quest.completion_count }}</span></td>
+            <td><span class="badge bg-warning text-dark">{{ quest.xp_reward }} XP</span></td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                {% if quest.status != quest_statuses.ACTIVE %}
+                <form method="POST" action="{{ url_for('gamification.admin_activate_quest', quest_id=quest.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-outline-success" title="{{ _('Attiva') }}">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </form>
+                {% endif %}
+                {% if quest.status == quest_statuses.ACTIVE %}
+                <form method="POST" action="{{ url_for('gamification.admin_expire_quest', quest_id=quest.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-outline-warning" title="{{ _('Termina') }}">
+                    <i class="bi bi-stop-fill"></i>
+                  </button>
+                </form>
+                {% endif %}
+                {% if quest.participant_count == 0 %}
+                <form method="POST" action="{{ url_for('gamification.admin_delete_quest', quest_id=quest.id) }}" style="display:inline;"
+                      onsubmit="return confirm('{{ _('Sei sicuro di voler eliminare questa quest?') }}');">
+                  <button type="submit" class="btn btn-outline-danger" title="{{ _('Elimina') }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              {{ _('Nessuna quest disponibile') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
