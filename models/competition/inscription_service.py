@@ -101,6 +101,25 @@ class InscriptionService:
             waitlist_position=waitlist_position,
         )
         db.session.add(ins)
+
+        # Emit InscriptionCreatedEvent for gamification
+        from models.events.competition_events import InscriptionCreatedEvent
+        from models.events.base import EventBus
+
+        gara_name = gara.name or f"Gara {gara.number}"
+        inscription_status = "waitlist" if is_waitlist else "confirmed"
+
+        event = InscriptionCreatedEvent(
+            inscription_id=ins.id if ins.id else 0,  # May be None before flush
+            gara_id=gara_id,
+            gara_name=gara_name,
+            user_id=user_id,
+            username=user.username,
+            inscription_status=inscription_status,
+            waitlist_position=waitlist_position
+        )
+        EventBus.publish(event)
+
         # Transaction managed by @transactional decorator
         return ins
 

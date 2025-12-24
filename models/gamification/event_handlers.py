@@ -153,22 +153,30 @@ class GamificationEventHandlers:
     def handle_competition_completed_for_xp(event: CompetitionCompletedEvent) -> None:
         """
         Award XP for tournament completion with bonuses.
-        
+
         XP Awards:
         - All participants: 100 XP (TOURNAMENT_COMPLETION)
         - Top 3 (podium): +200 XP (TOURNAMENT_PODIUM)
         - Winner: +500 XP (TOURNAMENT_WIN)
-        
+
         Total for winner: 100 + 500 = 600 XP
         Total for 2nd/3rd: 100 + 200 = 300 XP
         Total for other participants: 100 XP
-        
+
         Args:
-            event: CompetitionCompletedEvent with gara_id, participant_ids, winner_id, final_standings
+            event: CompetitionCompletedEvent with gara_id, winner_id, final_standings
         """
         try:
+            # Extract participant IDs from final_standings
+            participant_ids = []
+            if event.final_standings:
+                participant_ids = [
+                    s.get("user_id") for s in event.final_standings
+                    if s.get("user_id") is not None
+                ]
+
             # Award all participants completion XP
-            for participant_id in event.participant_ids:
+            for participant_id in participant_ids:
                 LevelService.award_xp(
                     user_id=participant_id,
                     xp_amount=XP_RATES[XPTransactionType.TOURNAMENT_COMPLETION],
@@ -176,10 +184,10 @@ class GamificationEventHandlers:
                     reason=f"Completed tournament {event.gara_id}",
                     related_entities={"gara_id": event.gara_id}
                 )
-            
+
             logger.info(
                 f"Awarded {XP_RATES[XPTransactionType.TOURNAMENT_COMPLETION]} XP "
-                f"to {len(event.participant_ids)} participants for tournament {event.gara_id} completion"
+                f"to {len(participant_ids)} participants for tournament {event.gara_id} completion"
             )
 
             # Bonus for winner
@@ -214,7 +222,7 @@ class GamificationEventHandlers:
                 logger.info(f"Awarded podium bonuses to {len(podium)} players")
 
             # Check tournament completion achievements
-            for participant_id in event.participant_ids:
+            for participant_id in participant_ids:
                 # Everyone who completes gets checked (they all finished the tournament)
                 pass  # Completion tracked separately
 

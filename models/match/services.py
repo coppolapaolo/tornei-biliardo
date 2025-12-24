@@ -122,6 +122,33 @@ class MatchService:
         from models.match.table_assignment_service import TableAssignmentService
         TableAssignmentService.free_table_and_reassign(match.id)
 
+        # Emit MatchCompletedEvent for gamification (skip bye matches)
+        if not match.is_bye and match.player1_id and match.player2_id:
+            from models.events.match_events import MatchCompletedEvent
+            from models.events.base import EventBus
+
+            # Get player names
+            player1_name = match.player1.username if match.player1 else "Player 1"
+            player2_name = match.player2.username if match.player2 else "Player 2"
+            winner_name = None
+            if match.winner_id:
+                winner_name = match.winner.username if match.winner else None
+
+            # Build score string
+            score = f"{match.player1_score}-{match.player2_score}"
+
+            event = MatchCompletedEvent(
+                match_id=match.id,
+                player1_id=match.player1_id,
+                player1_name=player1_name,
+                player2_id=match.player2_id,
+                player2_name=player2_name,
+                winner_id=match.winner_id,
+                winner_name=winner_name,
+                score=score
+            )
+            EventBus.publish(event)
+
         return match
 
     @staticmethod

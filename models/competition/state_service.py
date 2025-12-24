@@ -91,4 +91,62 @@ class StateService:
 
         gara.status = GaraStatus.COMPLETED.value
         db.session.add(gara)
+
+        # Emit CompetitionCompletedEvent for gamification
+        from models.events.competition_events import CompetitionCompletedEvent
+        from models.events.base import EventBus
+        from models.classification.models import RoundClassification
+        from models.competition.models import Inscription
+
+        # Get winner from final round classification
+        winner_id = None
+        winner_name = None
+        final_standings = None
+
+        final_round_class = (
+            RoundClassification.query
+            .filter_by(gara_id=gara.id, round_number=gara.current_round)
+            .order_by(RoundClassification.position.asc())
+            .all()
+        )
+
+        if final_round_class:
+            # First position is the winner
+            winner_classification = final_round_class[0]
+            winner_id = winner_classification.user_id
+            if winner_classification.user:
+                winner_name = winner_classification.user.username
+
+            # Build final standings
+            final_standings = [
+                {
+                    "position": rc.position,
+                    "user_id": rc.user_id,
+                    "username": rc.user.username if rc.user else None,
+                    "matches_won": rc.matches_won,
+                    "rack_difference": rc.rack_difference
+                }
+                for rc in final_round_class
+            ]
+
+        # Count participants
+        total_participants = Inscription.query.filter_by(
+            gara_id=gara.id,
+            is_withdrawn=False,
+            is_waitlist=False
+        ).count()
+
+        gara_name = gara.name or f"Gara {gara.number}"
+
+        event = CompetitionCompletedEvent(
+            gara_id=gara.id,
+            name=gara_name,
+            winner_id=winner_id,
+            winner_name=winner_name,
+            final_standings=final_standings,
+            total_participants=total_participants,
+            total_rounds=gara.current_round
+        )
+        EventBus.publish(event)
+
         return gara

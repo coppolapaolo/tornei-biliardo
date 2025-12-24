@@ -167,6 +167,10 @@ def create_app(config_name=None):
 
     register_blueprints(app)
 
+    # Register gamification event handlers
+    # This imports the module which auto-registers handlers with EventBus
+    from models.gamification import event_handlers  # noqa: F401
+
     # Inizializzazione database per applicazione normale (non testing)
     if not app.config.get("TESTING", False):
         with app.app_context():
