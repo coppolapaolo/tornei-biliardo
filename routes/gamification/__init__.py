@@ -584,39 +584,45 @@ def admin_achievements():
 @admin_required
 def admin_create_achievement():
     """Create a new achievement."""
+    import json
+
     if request.method == "POST":
         try:
-            code = request.form.get("code", "").strip().lower().replace(" ", "_")
+            slug = request.form.get("slug", "").strip().lower().replace(" ", "_")
             name = request.form.get("name", "").strip()
             description = request.form.get("description", "").strip()
-            category = request.form.get("category", "beginner")
-            difficulty = request.form.get("difficulty", "bronze")
-            icon = request.form.get("icon", "trophy").strip()
+            category = request.form.get("category", "match")
+            difficulty = request.form.get("difficulty", "common")
+            icon_path = request.form.get("icon_path", "").strip() or None
             xp_reward = int(request.form.get("xp_reward", 50))
             is_hidden = request.form.get("is_hidden") == "on"
-            requirement_type = request.form.get("requirement_type", "instant")
+            is_progressive = request.form.get("is_progressive") == "on"
+            requirement_type = request.form.get("requirement_type", "match_wins")
             requirement_value = int(request.form.get("requirement_value", 1))
 
-            if not code or not name:
-                flash(_("Codice e nome sono obbligatori"), "error")
+            if not slug or not name:
+                flash(_("Slug e nome sono obbligatori"), "error")
                 return redirect(url_for("gamification.admin_create_achievement"))
 
-            # Check unique code
-            if Achievement.query.filter_by(code=code).first():
-                flash(_("Un achievement con questo codice esiste già"), "error")
+            # Check unique slug
+            if Achievement.query.filter_by(slug=slug).first():
+                flash(_("Un achievement con questo slug esiste già"), "error")
                 return redirect(url_for("gamification.admin_create_achievement"))
+
+            # Build requirements JSON
+            requirements = json.dumps({"type": requirement_type, "count": requirement_value})
 
             achievement = Achievement(
-                code=code,
+                slug=slug,
                 name=name,
                 description=description,
                 category=AchievementCategory[category.upper()],
                 difficulty=AchievementDifficulty[difficulty.upper()],
-                icon=icon,
+                icon_path=icon_path,
                 xp_reward=xp_reward,
                 is_hidden=is_hidden,
-                requirement_type=requirement_type,
-                requirement_value=requirement_value
+                is_progressive=is_progressive,
+                requirements=requirements
             )
             db.session.add(achievement)
             db.session.commit()

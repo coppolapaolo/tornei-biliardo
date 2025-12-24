@@ -170,12 +170,20 @@ def create_app(config_name=None):
     # Register gamification event handlers
     # This imports the module which auto-registers handlers with EventBus
     from models.gamification import event_handlers  # noqa: F401
+    # Register gamification notification handlers
+    # Creates notifications for level ups, achievements, streaks, quests
+    from models.gamification import notification_handlers  # noqa: F401
 
     # Inizializzazione database per applicazione normale (non testing)
     if not app.config.get("TESTING", False):
         with app.app_context():
             db.create_all()
             create_admin_if_not_exists()
+            # Seed gamification achievements (idempotent)
+            from models.gamification.achievement_seeds import seed_achievements
+            created, skipped = seed_achievements(db.session)
+            if created > 0:
+                app.logger.info(f"Gamification: seeded {created} achievements")
 
     return app
 

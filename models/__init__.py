@@ -105,6 +105,24 @@ from .tiebreaker.models import (
     SpotShotResult,
 )
 
+# PHASE 4: Gamification domain
+from .gamification.models import (
+    UserLevel,
+    XPTransaction,
+    Achievement,
+    UserAchievement,
+    StreakTracker,
+    Quest,
+    QuestParticipation,
+    XPTransactionType,
+    AchievementCategory,
+    AchievementDifficulty,
+    StreakType,
+    QuestType,
+    QuestStatus,
+    LeaderboardType,
+)
+
 # PHASE 3.2: Cross-domain orchestration
 from .orchestration import DomainOrchestrator, OperationResult, OperationType
 
@@ -202,6 +220,21 @@ __all__ = [
     "TiebreakerType",
     "TiebreakerStatus",
     "SpotShotResult",
+    # Gamification domain models (Phase 4)
+    "UserLevel",
+    "XPTransaction",
+    "Achievement",
+    "UserAchievement",
+    "StreakTracker",
+    "Quest",
+    "QuestParticipation",
+    "XPTransactionType",
+    "AchievementCategory",
+    "AchievementDifficulty",
+    "StreakType",
+    "QuestType",
+    "QuestStatus",
+    "LeaderboardType",
     # Cross-domain orchestration (Phase 3.2)
     "DomainOrchestrator",
     "OperationResult",

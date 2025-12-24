@@ -33,11 +33,15 @@
           {% set ach = item.achievement %}
           <tr>
             <td>
-              <i class="bi bi-{{ ach.icon }}"></i>
+              {% if ach.icon_path %}
+                <img src="{{ ach.icon_path }}" alt="" style="width: 24px; height: 24px;">
+              {% else %}
+                <i class="bi bi-trophy"></i>
+              {% endif %}
               <strong>{{ ach.name }}</strong>
               <br><small class="text-muted">{{ ach.description[:40] }}...</small>
             </td>
-            <td><code>{{ ach.code }}</code></td>
+            <td><code>{{ ach.slug }}</code></td>
             <td>
               <span class="badge bg-info">{{ ach.category.value }}</span>
             </td>
