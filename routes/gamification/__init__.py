@@ -381,7 +381,7 @@ def admin_dashboard():
     # Get level distribution
     level_stats = db.session.query(
         UserLevel.current_level,
-        func.count(UserLevel.id).label("count")
+        func.count(UserLevel.user_id).label("count")
     ).group_by(UserLevel.current_level).order_by(UserLevel.current_level).all()
 
     # Get total XP distributed
