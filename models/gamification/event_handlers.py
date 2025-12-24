@@ -1,16 +1,17 @@
 """
-Gamification Event Handlers - Automatic XP Awards
+Gamification Event Handlers - Automatic XP Awards and Streak Tracking
 
 Event handlers that listen to domain events and award XP automatically.
 This decouples gamification from other domains - no direct dependencies.
 
 Handlers for:
-- Match completion (winner/loser XP)
-- Tournament inscription (participation XP)
+- Match completion (winner/loser XP + weekly match streak)
+- Tournament inscription (participation XP + weekly tournament streak)
 - Tournament completion (completion + podium + winner bonuses)
-- Challenge (drill) completion (training XP)
+- Challenge (drill) completion (training XP + weekly drill streak)
 
 All handlers use LevelService.award_xp() which emits LevelUpEvent if applicable.
+Streak tracking uses StreakService.record_activity() for weekly streaks.
 """
 
 from __future__ import annotations
@@ -25,8 +26,9 @@ from models.events.competition_events import (
 )
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
+from models.gamification.streak_service import StreakService
 from models.gamification.xp_config import XP_RATES
-from models.gamification.models import XPTransactionType
+from models.gamification.models import XPTransactionType, StreakType
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +117,25 @@ class GamificationEventHandlers:
             AchievementService.check_and_award_achievement(event.winner_id, "century_club", progress_increment=1)
             AchievementService.check_and_award_achievement(event.winner_id, "match_marathon", progress_increment=1)
 
+            # Record weekly streaks for both players
+            # WEEKLY_MATCH: At least 1 match per week
+            # WEEKLY_ACTIVITY: Any activity per week
+            for player_id in [event.player1_id, event.player2_id]:
+                if player_id:
+                    try:
+                        StreakService.record_activity(
+                            user_id=player_id,
+                            streak_type=StreakType.WEEKLY_MATCH
+                        )
+                        StreakService.record_activity(
+                            user_id=player_id,
+                            streak_type=StreakType.WEEKLY_ACTIVITY
+                        )
+                    except Exception as streak_error:
+                        logger.warning(
+                            f"Error recording streak for user {player_id}: {streak_error}"
+                        )
+
         except Exception as e:
             logger.error(f"Error handling match completed event for XP: {e}", exc_info=True)
 
@@ -145,6 +166,23 @@ class GamificationEventHandlers:
             # Check tournament participation achievements
             AchievementService.check_and_award_achievement(event.user_id, "tournament_debut")
             AchievementService.check_and_award_achievement(event.user_id, "tournament_regular", progress_increment=1)
+
+            # Record weekly streaks
+            # WEEKLY_TOURNAMENT: At least 1 tournament registration per week
+            # WEEKLY_ACTIVITY: Any activity per week
+            try:
+                StreakService.record_activity(
+                    user_id=event.user_id,
+                    streak_type=StreakType.WEEKLY_TOURNAMENT
+                )
+                StreakService.record_activity(
+                    user_id=event.user_id,
+                    streak_type=StreakType.WEEKLY_ACTIVITY
+                )
+            except Exception as streak_error:
+                logger.warning(
+                    f"Error recording streak for user {event.user_id}: {streak_error}"
+                )
 
         except Exception as e:
             logger.error(f"Error handling inscription event for XP: {e}", exc_info=True)
