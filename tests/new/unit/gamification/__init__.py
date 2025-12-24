@@ -1,0 +1,1 @@
+"""Gamification domain unit tests."""

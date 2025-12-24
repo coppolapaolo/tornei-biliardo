@@ -45,6 +45,14 @@ class NotificationType(Enum):
     ACCOUNT_UPDATE = "account_update"  # Account-related updates
     ADMIN_ACTION_REQUIRED = "admin_action_required"  # Action required by admin
 
+    # Gamification
+    ACHIEVEMENT_UNLOCKED = "achievement_unlocked"  # Achievement earned
+    LEVEL_UP = "level_up"  # Level up with unlocks
+    STREAK_WARNING = "streak_warning"  # Streak about to break
+    STREAK_MILESTONE = "streak_milestone"  # Reached 4/12/52 week milestone
+    QUEST_COMPLETED = "quest_completed"  # Quest finished
+    QUEST_NEW = "quest_new"  # New quest available
+
 
 class NotificationPriority(Enum):
     """Notification priority levels."""
