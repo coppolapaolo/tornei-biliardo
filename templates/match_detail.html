@@ -117,12 +117,12 @@ match.gara.name }}{% endblock %}
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Errore sconosciuto") }}'));
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('{{ _("Errore durante l\'aggiunta del rack") }}');
+                alert({{ _("Errore durante l'aggiunta del rack")|tojson }});
             });
     }
 
@@ -139,12 +139,12 @@ match.gara.name }}{% endblock %}
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile rimuovere il rack") }}'));
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")|tojson }}));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('{{ _("Errore durante la rimozione del rack") }}');
+                alert({{ _("Errore durante la rimozione del rack")|tojson }});
             });
     }
 
@@ -161,17 +161,17 @@ match.gara.name }}{% endblock %}
                     // Redirect alla dashboard invece di ricaricare la pagina
                     window.location.href = '/dashboard';
                 } else {
-                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile confermare il risultato") }}'));
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile confermare il risultato")|tojson }}));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('{{ _("Errore durante la conferma") }}');
+                alert({{ _("Errore durante la conferma")|tojson }});
             });
     }
 
     function rejectResult() {
-        if (confirm('{{ _("Sei sicuro di voler rifiutare il risultato? L\'ultimo rack verrà rimosso.") }}')) {
+        if (confirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")|tojson }})) {
             fetch(`/player/match/{{ match.id }}/reject`, {
                 method: 'POST',
                 headers: {
@@ -183,18 +183,18 @@ match.gara.name }}{% endblock %}
                     if (data.success) {
                         location.reload();
                     } else {
-                        alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile rifiutare il risultato") }}'));
+                        alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rifiutare il risultato")|tojson }}));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('{{ _("Errore durante il rifiuto") }}');
+                    alert({{ _("Errore durante il rifiuto")|tojson }});
                 });
         }
     }
 
     function forfeitMatch() {
-        if (confirm('{{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.") }}')) {
+        if (confirm({{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.")|tojson }})) {
             fetch(`/player/match/{{ match.id }}/forfeit`, {
                 method: 'POST',
                 headers: {
@@ -204,15 +204,15 @@ match.gara.name }}{% endblock %}
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.message || '{{ _("Forfait dichiarato") }}');
+                        alert(data.message || {{ _("Forfait dichiarato")|tojson }});
                         location.reload();
                     } else {
-                        alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Impossibile dichiarare forfait") }}'));
+                        alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile dichiarare forfait")|tojson }}));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('{{ _("Errore durante la dichiarazione di forfait") }}');
+                    alert({{ _("Errore durante la dichiarazione di forfait")|tojson }});
                 });
         }
     }
@@ -255,14 +255,14 @@ match.gara.name }}{% endblock %}
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert('{{ _("Errore:") }} ' + (data.error || '{{ _("Errore sconosciuto") }}'));
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
                     buttons.forEach(btn => btn.disabled = false);
                     isAddingRack = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('{{ _("Errore durante l\'aggiornamento") }}');
+                alert({{ _("Errore durante l'aggiornamento")|tojson }});
                 buttons.forEach(btn => btn.disabled = false);
                 isAddingRack = false;
             });
@@ -270,11 +270,11 @@ match.gara.name }}{% endblock %}
 
     // Funzioni Admin
     function confirmSetResult() {
-        return confirm('{{ _("Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti verranno sostituiti.") }}');
+        return confirm({{ _("Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti verranno sostituiti.")|tojson }});
     }
 
     function resetMatch(matchId) {
-        if (confirm('{{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.") }}')) {
+        if (confirm({{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.")|tojson }})) {
             fetch(`/admin/match/${matchId}/reset`, {
                 method: 'POST',
                 headers: {
@@ -285,12 +285,12 @@ match.gara.name }}{% endblock %}
                     if (response.ok) {
                         location.reload();
                     } else {
-                        alert('{{ _("Errore durante il reset") }}');
+                        alert({{ _("Errore durante il reset")|tojson }});
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('{{ _("Errore durante il reset") }}');
+                    alert({{ _("Errore durante il reset")|tojson }});
                 });
         }
     }
