@@ -111,14 +111,16 @@
                 {% endif %}
 
                 {% elif gara.status == 'playing' %}
+                {# Fix: Show at least 1 when gara is playing but current_round is 0 (edge case) #}
+                {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
                 {% if gara.get_real_status() == 'round_completed' %}
                 <div class="alert alert-success p-2">
-                    <small><strong>{{ _('Turno %(current)d/%(total)d completato', current=gara.current_round,
+                    <small><strong>{{ _('Turno %(current)d/%(total)d completato', current=display_round,
                             total=gara.rounds_count) }}</strong></small>
                 </div>
                 {% else %}
                 <div class="alert alert-info p-2">
-                    <small><strong>{{ _('Turno %(current)d/%(total)d in corso', current=gara.current_round,
+                    <small><strong>{{ _('Turno %(current)d/%(total)d in corso', current=display_round,
                             total=gara.rounds_count) }}</strong></small>
                 </div>
                 {% endif %}

@@ -182,6 +182,84 @@ def set_match_result_direct(match_id):
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
 
+@match_bp.route("/<int:match_id>/validate", methods=["POST"])
+@login_required
+@match_manager_required
+def validate_match(match_id):
+    """Valida risultato match e completa la partita (admin/director).
+
+    Questa azione:
+    - Imposta validated_by_admin = True
+    - Completa il match (status = completed)
+    - Libera il tavolo e lo assegna alla prima partita in attesa
+    """
+    try:
+        match = db.session.get(Match, match_id)
+        if not match:
+            return jsonify({"success": False, "error": "Match non trovato"}), 404
+
+        # Verifica che il match abbia un vincitore
+        if not match.winner_id:
+            return jsonify({
+                "success": False,
+                "error": "Il match non ha ancora un vincitore"
+            }), 400
+
+        # Verifica che il match non sia già completato
+        from models.status_enum import MatchStatus
+        if match.status == MatchStatus.COMPLETED.value:
+            return jsonify({
+                "success": False,
+                "error": "Il match è già stato completato"
+            }), 400
+
+        # Imposta validazione admin
+        match.validated_by_admin = True
+
+        # Completa il match
+        from models.match.services import MatchService
+        MatchService.to_completed(match_id)
+
+        # Riassegna il tavolo alle partite in attesa
+        old_table = match.table_assignment
+        if old_table:
+            from models.match.table_assignment_service import TableAssignmentService
+            # IMPORTANTE: Rimuovi il tavolo dal match originale per evitare
+            # che SQLAlchemy lo ripristini al commit
+            match.table_assignment = None
+
+            # Trova e assegna il tavolo al primo match in attesa
+            waiting_match = TableAssignmentService.release_and_reassign_table(match_id)
+
+            # Se c'è un match in attesa, transizionalo a PLAYING
+            if waiting_match and waiting_match.status != "playing":
+                try:
+                    MatchService.to_playing(waiting_match.id)
+                except Exception:
+                    pass  # Table assignment è comunque stato fatto
+
+        # Aggiorna progressione round
+        from models.competition.services import GaraService
+        if match.gara_id:
+            GaraService.update_round_progression(match.gara_id)
+
+        db.session.commit()
+
+        flash("Risultato validato e partita completata!")
+        return jsonify({
+            "success": True,
+            "message": "Risultato validato con successo",
+            "match_completed": True
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "error": f"Errore durante la validazione: {str(e)}"
+        }), 500
+
+
 @match_bp.route("/<int:match_id>/reset", methods=["POST"])
 @login_required
 @match_manager_required

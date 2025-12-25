@@ -616,6 +616,7 @@ class MatchService:
         Confirm match result by a player (new UX).
 
         Uses BaseMatchMixin.confirm_result() method.
+        When both players confirm, the match is completed and table is reassigned.
 
         Args:
             match_id: ID of the match
@@ -636,7 +637,16 @@ class MatchService:
         if not match.is_ready_for_validation():
             raise ValueError("Match is not ready for validation")
 
-        match.confirm_result(user_id)
+        # confirm_result returns True if match is now completed (both confirmed)
+        is_completed = match.confirm_result(user_id)
+
+        # Se il match è completato, libera e riassegna il tavolo
+        if is_completed and match.table_assignment:
+            from models.match.table_assignment_service import TableAssignmentService
+            TableAssignmentService.release_and_reassign_table(match.id)
+            # Sincronizza l'oggetto match locale
+            match.table_assignment = None
+
         return match
 
     @staticmethod
@@ -917,36 +927,40 @@ class RackService:
         if match.is_bye:
             raise ValueError("Non puoi modificare una partita bye!")
 
-        # Validazione punteggi
+        # Validazione punteggi - solo controlli base per admin/director
         if player1_score < 0 or player2_score < 0:
             raise ValueError("I punteggi non possono essere negativi!")
 
-        # Verifica che il risultato sia valido secondo le regole della gara
-        total_racks = player1_score + player2_score
+        # Verifica che i punteggi non superino il massimo
+        max_score = match.gara.distance
+        if player1_score > max_score or player2_score > max_score:
+            raise ValueError(
+                f"I punteggi non possono superare {max_score}!"
+            )
+
+        # Determina se c'è un vincitore (risultato completo)
+        winning_score = match.gara.get_winning_score()
+        is_complete_result = False
+        winner_id = None
 
         if match.gara.is_race_to:
-            # Al meglio di: uno dei due deve aver raggiunto la soglia
-            winning_score = match.gara.get_winning_score()
-            if max(player1_score, player2_score) < winning_score:
-                raise ValueError(
-                    f'Nel "al meglio di {match.gara.distance}", uno dei '
-                    f"giocatori deve raggiungere {winning_score} punti!"
-                )
+            # Race to N: vincitore quando uno raggiunge N
+            if player1_score >= winning_score:
+                winner_id = match.player1_id
+                is_complete_result = True
+            elif player2_score >= winning_score:
+                winner_id = match.player2_id
+                is_complete_result = True
         else:
-            # Esatto numero: la somma deve essere esattamente la distanza
-            if total_racks != match.gara.distance:
-                raise ValueError(
-                    f'Nel "{match.gara.distance} rack esatti", '
-                    f"la somma deve essere esattamente {match.gara.distance}!"
-                )
-
-        # Determina il vincitore
-        if player1_score > player2_score:
-            winner_id = match.player1_id
-        elif player2_score > player1_score:
-            winner_id = match.player2_id
-        else:
-            raise ValueError("Non può esserci un pareggio!")
+            # Esatto numero: vincitore è chi ha più punti quando somma = distance
+            total_racks = player1_score + player2_score
+            if total_racks == match.gara.distance:
+                is_complete_result = True
+                if player1_score > player2_score:
+                    winner_id = match.player1_id
+                elif player2_score > player1_score:
+                    winner_id = match.player2_id
+                # Se pareggio in exact mode, nessun vincitore
 
         # Elimina tutti i rack esistenti per questa partita
         existing_racks = Rack.query.filter_by(match_id=match_id).all()
@@ -962,25 +976,45 @@ class RackService:
         # Crea rack per player1
         for i in range(player1_score):
             RackService.add_rack_result(
-                match_id, rack_number, match.player1_id, 1, validated_by_admin=True
+                match_id, rack_number, match.player1_id, 1,
+                validated_by_admin=True, bypass_validation=True
             )
             rack_number += 1
 
         # Crea rack per player2
         for i in range(player2_score):
             RackService.add_rack_result(
-                match_id, rack_number, match.player2_id, 1, validated_by_admin=True
+                match_id, rack_number, match.player2_id, 1,
+                validated_by_admin=True, bypass_validation=True
             )
             rack_number += 1
 
         # Aggiorna il match
         match.player1_score = player1_score
         match.player2_score = player2_score
-        match.winner_id = winner_id
+        match.winner_id = winner_id  # None se risultato parziale
 
-        # Solo transizione a completed se non è già completed
-        if match.status != MatchStatus.COMPLETED.value:
-            MatchService.to_completed(match.id)
+        # Transizione a completed solo se c'è un vincitore (risultato completo)
+        if is_complete_result and winner_id:
+            # Admin/Director ha impostato un risultato completo → automaticamente validato
+            match.validated_by_admin = True
+            if match.status != MatchStatus.COMPLETED.value:
+                MatchService.to_completed(match.id)
+
+            # Libera e riassegna il tavolo
+            if match.table_assignment:
+                from models.match.table_assignment_service import TableAssignmentService
+                # NON impostare match.table_assignment = None qui!
+                # release_and_reassign_table lo farà internamente
+                waiting_match = TableAssignmentService.release_and_reassign_table(match.id)
+                # Sincronizza l'oggetto match locale con le modifiche fatte dal service
+                match.table_assignment = None
+        else:
+            # Risultato parziale: mantieni in PLAYING
+            match.validated_by_admin = False
+            if match.status == MatchStatus.COMPLETED.value:
+                # Se era completed, torna a playing (admin sta modificando)
+                match.status = MatchStatus.PLAYING.value
 
     @staticmethod
     @transactional(domain="match")

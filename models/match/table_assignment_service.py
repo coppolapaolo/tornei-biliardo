@@ -176,6 +176,64 @@ class TableAssignmentService:
 
     @staticmethod
     @transactional(domain="match")
+    def release_and_reassign_table(match_id: int) -> Optional[Match]:
+        """Release table from completed match and reassign to first waiting match.
+
+        This method:
+        1. Removes the table from the completed match
+        2. Finds the first pending match in the same round without a table
+        3. Assigns the freed table to the waiting match
+        4. Transitions the waiting match to PLAYING status
+
+        Args:
+            match_id: ID of the completed match
+
+        Returns:
+            The match that received the freed table (now PLAYING), or None if no waiting match
+        """
+        from models.match.services import MatchService
+
+        completed_match = db.session.get(Match, match_id)
+        if not completed_match:
+            raise ValueError(f"Match {match_id} not found")
+
+        if completed_match.status != MatchStatus.COMPLETED.value:
+            raise ValueError("Can only release tables from completed matches")
+
+        if not completed_match.table_assignment:
+            return None  # No table to release
+
+        freed_table = completed_match.table_assignment
+
+        # Remove table from completed match
+        completed_match.table_assignment = None
+        db.session.add(completed_match)
+
+        # Find first pending match in SAME round without table (exclude bye matches)
+        waiting_match = (
+            Match.query.filter_by(
+                gara_id=completed_match.gara_id,
+                round_number=completed_match.round_number,
+                table_assignment=None,
+                status=MatchStatus.PENDING.value,
+            )
+            .filter(Match.is_bye == False)  # noqa: E712
+            .order_by(Match.id)
+            .first()
+        )
+
+        if waiting_match:
+            # Assign freed table to waiting match and set to PLAYING
+            waiting_match.table_assignment = freed_table
+            waiting_match.status = MatchStatus.PLAYING.value
+            db.session.add(waiting_match)
+
+            return waiting_match
+
+        return None
+
+    @staticmethod
+    @transactional(domain="match")
     def reassign_table(
         match_id: int, new_table: Optional[str]
     ) -> Tuple[bool, str, Optional[int]]:

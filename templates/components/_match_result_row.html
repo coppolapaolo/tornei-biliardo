@@ -46,7 +46,10 @@
         {% endif %}
     </td>
     <td>
-        {% if user_can_manage and available_tables %}
+        {% if match.status == 'completed' %}
+        {# Partite completate: nessun tavolo (già liberato) #}
+        <span class="text-muted">-</span>
+        {% elif user_can_manage and available_tables %}
         {# Admin/Director view: Badge cliccabile per apertura modal #}
         {% if match.table_assignment %}
         <span class="badge bg-primary cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
@@ -88,10 +91,19 @@
             </button>
             {% endif %}
 
-            <!-- Vai al Dettaglio -->
+            <!-- Vai al Dettaglio (solo se non completato) -->
+            {% if match.status != 'completed' %}
             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-outline-primary">
                 <i class="fas fa-edit"></i>
             </a>
+            {% endif %}
+
+            <!-- Valida Risultato (only when winner exists but not yet validated/completed) -->
+            {% if match.winner_id and not match.validated_by_admin and match.status != 'completed' %}
+            <button class="btn btn-outline-success" onclick="validateMatchQuick({{ match.id }})" title="{{ _('Valida Risultato') }}">
+                <i class="fas fa-check-circle"></i>
+            </button>
+            {% endif %}
 
             <!-- Reset Match -->
             {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}

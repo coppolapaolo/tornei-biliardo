@@ -30,7 +30,7 @@ class AdvancedRoundManager:
     @staticmethod
     def get_round_lock_status(gara_id: int, round_number: int) -> RoundLockStatus:
         """Determine the lock status of a specific round.
-        
+
         Business Rule: Match modification is allowed ONLY for the current active round
         and only if the tournament is in 'playing' state.
         This ensures that:
@@ -42,8 +42,23 @@ class AdvancedRoundManager:
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        if gara.status == GaraStatus.PLAYING.value and round_number == gara.current_round:
-            return RoundLockStatus.UNLOCKED
+        if gara.status == GaraStatus.PLAYING.value:
+            # Handle edge case: current_round=0 but gara is playing
+            # This can happen due to timing issues during round startup
+            # In this case, treat round 1 as the current round ONLY if there are
+            # no matches in subsequent rounds (which would indicate round locking)
+            effective_current_round = gara.current_round
+            if effective_current_round == 0:
+                # Check if there are matches in round > 1
+                has_subsequent_rounds = Match.query.filter(
+                    Match.gara_id == gara_id,
+                    Match.round_number > 1
+                ).first() is not None
+                if not has_subsequent_rounds:
+                    effective_current_round = 1
+
+            if round_number == effective_current_round:
+                return RoundLockStatus.UNLOCKED
 
         return RoundLockStatus.LOCKED
 

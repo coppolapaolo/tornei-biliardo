@@ -149,7 +149,7 @@
               {% if gara.is_race_to %}
               {{ _('(vince chi vince %(distance)s rack)', distance=gara.distance) }}
               {% else %}
-              {{ _('(somma deve essere %(distance)s)', distance=gara.distance) }}
+              {{ _('(somma rack = %(distance)s)', distance=gara.distance) }}
               {% endif %}
             </small>
           </div>
@@ -590,6 +590,29 @@
           } else {
             alert({{ _("Errore durante il reset")|tojson }});
           }
+        });
+    }
+  }
+
+  function validateMatchQuick(matchId) {
+    if (confirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")|tojson }})) {
+      fetch(`/admin/match/${matchId}/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile validare il risultato")|tojson }}));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert({{ _("Errore durante la validazione")|tojson }});
         });
     }
   }
