@@ -279,7 +279,9 @@ class AmalfiStrategy(BaseStrategy):
         coppie = []
         n = max_turni
         t = turno
-        salto_iniziale = n - t
+        # Salto = turni mancanti (incluso il turno corrente)
+        # Es: turno 2 di 3 → salto = 3-2+1 = 2 → 1° vs 3°
+        salto_iniziale = n - t + 1
 
         # Normalizza per algoritmo uniforme: aggiungi BYE_PLAYER_ID se dispari
         gara_id = classifica[0].gara_id if classifica else None
@@ -298,17 +300,15 @@ class AmalfiStrategy(BaseStrategy):
                 continue
 
             abbinati.add(players[p1])  # marca subito p1
-            p2 = (p1 + 1) % len(players)
-            salto = salto_iniziale
+            # Calcola direttamente la posizione target: p1 + salto
+            p2 = (p1 + salto_iniziale) % len(players)
 
             # Continua a cercare finché una delle condizioni è vera:
             # 1. p2 è già abbinato
-            # 2. Non hai ancora fatto abbastanza salti (salto > 0)
-            # 3. I due giocatori hanno già giocato insieme (anti-rematch)
-            # 4. p1 ha già avuto un bye e p2 è BYE_PLAYER_ID (max 1 bye per giocatore)
+            # 2. I due giocatori hanno già giocato insieme (anti-rematch)
+            # 3. p1 ha già avuto un bye e p2 è BYE_PLAYER_ID (max 1 bye per giocatore)
             while (
                 players[p2] in abbinati
-                or salto > 0
                 or (
                     players[p2] != self.BYE_PLAYER_ID
                     and gara_id
@@ -319,9 +319,6 @@ class AmalfiStrategy(BaseStrategy):
                     and players[p1] in players_with_bye
                 )
             ):
-                # Se p2 non è abbinato, decrementa il salto
-                if players[p2] not in abbinati:
-                    salto -= 1
                 p2 = (p2 + 1) % len(players)
 
             # Crea il pairing tra p1 e p2

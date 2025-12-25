@@ -199,3 +199,97 @@ class TestAmalfiAlgorithmImplementation:
         # All pairings should have correct round number
         for pairing in pairings:
             assert pairing.round_number == 3
+
+    def test_amalfi_round2_of_3_produces_correct_pairings(self, strategy):
+        """Turno 2 di 3 deve abbinare 1° vs 3°, 2° vs 4°, 5° vs 7°, 6° vs 8°.
+
+        Con 3 turni totali, nel turno 2 mancano 2 turni (incluso il corrente).
+        Salto = 2, quindi:
+        - Giocatore in posizione 1 va con posizione 1+2=3
+        - Giocatore in posizione 2 va con posizione 2+2=4
+        - etc.
+        """
+        player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
+        classifications = self.create_mock_classification(player_ids)
+
+        with patch.object(strategy, '_have_already_played', return_value=False):
+            pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=3)
+
+        # Salto = 2 → 1° vs 3°, 2° vs 4°, 5° vs 7°, 6° vs 8°
+        expected_pairs = [(1, 3), (2, 4), (5, 7), (6, 8)]
+        actual_pairs = [tuple(sorted(p.players)) for p in pairings if not p.is_bye]
+
+        assert sorted(actual_pairs) == sorted(expected_pairs), (
+            f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
+        )
+
+    def test_amalfi_round3_of_3_produces_consecutive_pairings(self, strategy):
+        """Turno finale (3 di 3) deve abbinare 1° vs 2°, 3° vs 4°, etc.
+
+        Nel turno finale manca solo 1 turno, quindi salto = 1.
+        I giocatori vengono abbinati con il successivo in classifica.
+        """
+        player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
+        classifications = self.create_mock_classification(player_ids)
+
+        with patch.object(strategy, '_have_already_played', return_value=False):
+            pairings = strategy._amalfi_pairing(classifications, turno=3, max_turni=3)
+
+        # Salto = 1 → 1° vs 2°, 3° vs 4°, 5° vs 6°, 7° vs 8°
+        expected_pairs = [(1, 2), (3, 4), (5, 6), (7, 8)]
+        actual_pairs = [tuple(sorted(p.players)) for p in pairings if not p.is_bye]
+
+        assert sorted(actual_pairs) == sorted(expected_pairs), (
+            f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
+        )
+
+    def test_amalfi_round1_of_3_produces_wide_spread_pairings(self, strategy):
+        """Turno 1 di 3 deve abbinare 1° vs 4°, 2° vs 5°, 3° vs 6°, 7° vs 8°.
+
+        Nel primo turno mancano 3 turni, quindi salto = 3.
+        I giocatori vengono abbinati saltando 3 posizioni.
+        L'ultimo giocatore (8°) viene abbinato con il 7° perché non ci sono
+        più giocatori dopo di lui.
+        """
+        player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
+        classifications = self.create_mock_classification(player_ids)
+
+        with patch.object(strategy, '_have_already_played', return_value=False):
+            pairings = strategy._amalfi_pairing(classifications, turno=1, max_turni=3)
+
+        # Salto = 3 → 1° vs 4°, 2° vs 5°, 3° vs 6°, 7° vs 8° (ciclico)
+        expected_pairs = [(1, 4), (2, 5), (3, 6), (7, 8)]
+        actual_pairs = [tuple(sorted(p.players)) for p in pairings if not p.is_bye]
+
+        assert sorted(actual_pairs) == sorted(expected_pairs), (
+            f"Expected {sorted(expected_pairs)}, got {sorted(actual_pairs)}"
+        )
+
+    def test_amalfi_with_rematch_finds_alternative(self, strategy):
+        """Se l'abbinamento target è un rematch, trova il prossimo disponibile.
+
+        Scenario: Nel turno 2, player1 (1°) dovrebbe giocare con player3 (3°),
+        ma hanno già giocato. L'algoritmo deve trovare player4 (4°).
+        """
+        player_ids = [1, 2, 3, 4, 5, 6, 7, 8]
+        classifications = self.create_mock_classification(player_ids)
+
+        # Player 1 e 3 hanno già giocato
+        def mock_have_played(p1, p2, gara_id):
+            pair = tuple(sorted([p1, p2]))
+            return pair == (1, 3)
+
+        with patch.object(strategy, '_have_already_played', side_effect=mock_have_played):
+            pairings = strategy._amalfi_pairing(classifications, turno=2, max_turni=3)
+
+        # Player 1 deve essere abbinato con qualcuno diverso da 3
+        player1_pairing = None
+        for p in pairings:
+            if 1 in p.players and not p.is_bye:
+                player1_pairing = p
+                break
+
+        assert player1_pairing is not None, "Player 1 should be paired"
+        assert 3 not in player1_pairing.players, (
+            "Player 1 should not be paired with player 3 (rematch)"
+        )
