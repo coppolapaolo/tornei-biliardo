@@ -33,32 +33,42 @@ class AdvancedRoundManager:
 
         Business Rule: Match modification is allowed ONLY for the current active round
         and only if the tournament is in 'playing' state.
+
+        Definition of "current active round":
+        - The HIGHEST round number that has matches created
+        - NOT the last fully completed round (that's a different concept)
+
         This ensures that:
-        1. Past rounds are locked to maintain historical integrity.
-        2. Future rounds (pre-generated in Random strategy) are locked until they become 'current'.
+        1. Past rounds (< current) are locked to maintain historical integrity.
+        2. Future rounds (> current, pre-generated in Random strategy) are locked.
         3. Match results can only be entered when the tournament is active.
         """
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        if gara.status == GaraStatus.PLAYING.value:
-            # Handle edge case: current_round=0 but gara is playing
-            # This can happen due to timing issues during round startup
-            # In this case, treat round 1 as the current round ONLY if there are
-            # no matches in subsequent rounds (which would indicate round locking)
-            effective_current_round = gara.current_round
-            if effective_current_round == 0:
-                # Check if there are matches in round > 1
-                has_subsequent_rounds = Match.query.filter(
-                    Match.gara_id == gara_id,
-                    Match.round_number > 1
-                ).first() is not None
-                if not has_subsequent_rounds:
-                    effective_current_round = 1
+        if gara.status != GaraStatus.PLAYING.value:
+            return RoundLockStatus.LOCKED
 
-            if round_number == effective_current_round:
-                return RoundLockStatus.UNLOCKED
+        # Find the highest round that has matches (the actual active round)
+        highest_round_with_matches = (
+            db.session.query(db.func.max(Match.round_number))
+            .filter(Match.gara_id == gara_id)
+            .scalar()
+        ) or 0
+
+        # The active round is the highest round with matches
+        # This is what should be unlocked
+        active_round = highest_round_with_matches
+
+        # Fallback: if gara.current_round is higher (shouldn't happen normally),
+        # use it instead
+        if gara.current_round > active_round:
+            active_round = gara.current_round
+
+        # Unlock only the active round
+        if round_number == active_round:
+            return RoundLockStatus.UNLOCKED
 
         return RoundLockStatus.LOCKED
 
@@ -383,72 +393,30 @@ class AdvancedRoundManager:
     def _update_round_progression_after_reset(
         gara_id: int, affected_round: int
     ) -> None:
-        """Update round progression after match resets."""
+        """Update round progression after match resets.
+
+        Important: current_round should represent the HIGHEST round with matches
+        (the active round), NOT the last fully completed round.
+
+        This function:
+        1. Does NOT delete subsequent rounds (they may have been started intentionally)
+        2. Sets current_round to the highest round that has matches
+        """
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return
 
-        # Check if the affected round still has all matches completed
-        round_matches = Match.query.filter_by(
-            gara_id=gara_id, round_number=affected_round
-        ).all()
+        # Find the highest round that has matches
+        # This is the "active round" - the one being played
+        highest_round_with_matches = (
+            db.session.query(db.func.max(Match.round_number))
+            .filter(Match.gara_id == gara_id)
+            .scalar()
+        ) or 0
 
-        if not round_matches:
-            return
-
-        completed_matches = [
-            m for m in round_matches if m.status == MatchStatus.COMPLETED.value
-        ]
-
-        # If not all matches in the affected round are completed,
-        # and this was the current round, we might need to adjust the gara status
-        if (
-            len(completed_matches) < len(round_matches)
-            and affected_round == gara.current_round
-        ):
-            # Check if subsequent rounds exist and delete them if they have no results
-            subsequent_rounds = (
-                db.session.query(Match.round_number)
-                .filter(Match.gara_id == gara_id, Match.round_number > affected_round)
-                .distinct()
-                .all()
-            )
-
-            for (subsequent_round,) in subsequent_rounds:
-                subsequent_matches = Match.query.filter_by(
-                    gara_id=gara_id, round_number=subsequent_round
-                ).all()
-
-                # If subsequent round has no completed matches, it can be safely removed
-                subsequent_completed = [
-                    m
-                    for m in subsequent_matches
-                    if m.status == MatchStatus.COMPLETED.value
-                ]
-
-                if not subsequent_completed:
-                    # Remove this round
-                    for match in subsequent_matches:
-                        db.session.delete(match)
-
-                    RoundClassification.query.filter_by(
-                        gara_id=gara_id, round_number=subsequent_round
-                    ).delete()
-
-        # Update gara current round based on what actually has completed matches
-        max_completed_round = 0
-        for round_num in range(1, gara.rounds_count + 1):
-            round_matches = Match.query.filter_by(
-                gara_id=gara_id, round_number=round_num
-            ).all()
-
-            if round_matches:
-                completed = [
-                    m for m in round_matches if m.status == MatchStatus.COMPLETED.value
-                ]
-                if len(completed) == len(round_matches):
-                    max_completed_round = round_num
-                else:
-                    break
-
-        gara.current_round = max_completed_round
+        # Set current_round to the highest round with matches
+        # This ensures the active round stays unlocked for modifications
+        if highest_round_with_matches > 0:
+            gara.current_round = highest_round_with_matches
+        # Note: We do NOT automatically delete subsequent rounds.
+        # If a director started round 2, it should stay even if round 1 is modified.
