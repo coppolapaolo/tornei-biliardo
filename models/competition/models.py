@@ -180,15 +180,18 @@ class Gara(db.Model):
                 for m in matches_list
                 if hasattr(m, "round_number") and m.round_number == self.current_round
             ]
-            all_matches_finished = all(
-                m.status == MatchStatus.COMPLETED.value
-                for m in current_round_matches
-            )
-            if all_matches_finished:
-                if self.current_round < self.rounds_count:
-                    return ProvaDerivedStatus.ROUND_COMPLETED.value
-                else:
-                    return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
+            # Important: Only consider round completed if there ARE matches
+            # in the current round. Empty list means round not started yet.
+            if current_round_matches:
+                all_matches_finished = all(
+                    m.status == MatchStatus.COMPLETED.value
+                    for m in current_round_matches
+                )
+                if all_matches_finished:
+                    if self.current_round < self.rounds_count:
+                        return ProvaDerivedStatus.ROUND_COMPLETED.value
+                    else:
+                        return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
         elif self.status == GaraStatus.INSCRIPTION.value:
             if self.inscription_end and datetime.utcnow() > self.inscription_end:
                 return ProvaDerivedStatus.INSCRIPTION_CLOSED.value
@@ -227,7 +230,8 @@ class Gara(db.Model):
             for m in matches_list
             if hasattr(m, "round_number") and m.round_number == self.current_round
         ]
-        return all(
+        # Must have matches in current round AND all must be completed
+        return bool(current_round_matches) and all(
             m.status == MatchStatus.COMPLETED.value for m in current_round_matches
         )
 

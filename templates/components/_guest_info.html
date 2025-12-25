@@ -10,7 +10,9 @@
             <i class="fas fa-info-circle"></i> {{ _('Stai visualizzando questa gara come ospite') }}
             <br><small>{{ _('Puoi vedere i risultati e la classifica ma non partecipare') }}</small>
         </div>
-        <p><strong>{{ _('Turno corrente:') }}</strong> {{ gara.current_round }} / {{ gara.rounds_count }}</p>
+        {# Show at least 1 when gara is playing but current_round is 0 (edge case) #}
+        {% set display_round = gara.current_round if gara.current_round > 0 else (1 if gara.status == 'playing' else 0) %}
+        <p><strong>{{ _('Turno corrente:') }}</strong> {{ display_round }} / {{ gara.rounds_count }}</p>
         <p><strong>{{ _('Stato:') }}</strong>
             <span class="badge {{ gara.get_status_badge_info()['class'] }}">
                 {{ _(gara.get_status_badge_info()['text']) }}

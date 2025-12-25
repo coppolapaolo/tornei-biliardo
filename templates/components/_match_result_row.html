@@ -1,8 +1,12 @@
 {# templates/components/_match_result_row.html #}
+{# Crown shows only when: loser confirmed OR admin/director validated the result #}
+{% set result_validated = match.validated_by_admin if match.validated_by_admin is defined else false %}
+{% set p1_wins_validated = match.winner_id == match.player1_id and (match.player2_confirmed or result_validated) %}
+{% set p2_wins_validated = match.winner_id == match.player2_id and (match.player1_confirmed or result_validated) %}
 <tr>
     <td>
         <strong>{{ match.player1.username }}</strong>
-        {% if match.winner_id == match.player1_id %}
+        {% if p1_wins_validated %}
         <i class="fas fa-crown text-warning ms-1"></i>
         {% endif %}
     </td>
@@ -12,7 +16,7 @@
         <em class="text-muted">{{ _('Bye') }}</em>
         {% else %}
         <strong>{{ match.player2.username }}</strong>
-        {% if match.winner_id == match.player2_id %}
+        {% if p2_wins_validated %}
         <i class="fas fa-crown text-warning ms-1"></i>
         {% endif %}
         {% endif %}
@@ -72,6 +76,7 @@
         {% endif %}
         {% endif %}
     </td>
+    {% if user_can_manage %}
     <td>
         {% if not match.is_bye and match_can_modify.get(match.id, True) %}
         <div class="btn-group btn-group-sm" role="group">
@@ -101,4 +106,5 @@
         </span>
         {% endif %}
     </td>
+    {% endif %}
 </tr>

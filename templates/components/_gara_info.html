@@ -50,21 +50,33 @@
                     <span class="text-muted">{{ _('Nessuna') }}</span>
                     {% endif %}
                     {% endif %}
+                    {# Collect non-admin directors to display #}
+                    {% set organizers = [] %}
+                    {% if gara.is_standalone %}
+                        {% if gara.director and gara.director.role != 'admin' %}
+                            {% set _ = organizers.append({'user': gara.director, 'primary': true}) %}
+                        {% endif %}
+                        {% for director in gara.directors %}
+                            {% if director.role != 'admin' %}
+                                {% set _ = organizers.append({'user': director, 'primary': false}) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% if gara.campionato and gara.campionato.directors %}
+                            {% for director in gara.campionato.directors %}
+                                {% if director.role != 'admin' %}
+                                    {% set _ = organizers.append({'user': director, 'primary': true}) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                    {# Only show organizers section if there are non-admin directors #}
+                    {% if organizers %}
                     <br>
                     <strong>{{ _('Organizzatori:') }}</strong>
-                    {% if gara.is_standalone %}
-                    {% if gara.director %}
-                    <span class="badge bg-primary">{{ gara.director.username }}</span>
-                    {% endif %}
-                    {% for director in gara.directors %}
-                    <span class="badge bg-secondary ms-1">{{ director.username }}</span>
+                    {% for org in organizers %}
+                    <span class="badge {{ 'bg-primary' if org.primary else 'bg-secondary' }}{% if not loop.first %} ms-1{% endif %}">{{ org.user.username }}</span>
                     {% endfor %}
-                    {% else %}
-                    {% if gara.campionato and gara.campionato.directors %}
-                    {% for director in gara.campionato.directors %}
-                    <span class="badge bg-primary">{{ director.username }}</span>
-                    {% endfor %}
-                    {% endif %}
                     {% endif %}
                 </div>
             </div>
