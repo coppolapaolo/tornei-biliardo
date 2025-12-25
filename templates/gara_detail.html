@@ -60,8 +60,8 @@
     {# Admin/Director con permessi: mostra tutte le partite #}
     {% include "components/_gara_matches.html" %}
     {% elif user_inscription %}
-    {# Player iscritto (senza permessi di gestione): mostra solo le sue partite #}
-    {% include "components/_player_personal_matches.html" %}
+    {# Player iscritto: mostra tutte le partite (come guest) ma con azioni per le sue #}
+    {% include "components/_gara_matches.html" %}
     {% else %}
     {# Guest: mostra tutte le partite (read-only) #}
     {% include "components/_gara_matches.html" %}
@@ -103,17 +103,6 @@
     {# Altri: challenge read-only #}
     {% include "components/_public_challenges.html" %}
     {% endif %}
-  </div>
-</div>
-{% endif %}
-
-{# Back to Dashboard (tutti gli utenti autenticati) #}
-{% if current_user.is_authenticated and not user_can_manage %}
-<div class="row">
-  <div class="col-12 text-center">
-    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
-    </a>
   </div>
 </div>
 {% endif %}

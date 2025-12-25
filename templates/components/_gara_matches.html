@@ -1,6 +1,6 @@
 {# templates/components/_gara_matches.html #}
-{# Use matches if available, otherwise fall back to all_matches (for guest view) #}
-{% set display_matches = matches if matches else all_matches %}
+{# Use all_matches when available (for player/guest view), otherwise matches (for admin view) #}
+{% set display_matches = all_matches if all_matches else matches %}
 {% if display_matches %}
 <div class="card">
     <div class="card-header">

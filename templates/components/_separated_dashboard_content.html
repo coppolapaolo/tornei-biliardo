@@ -255,7 +255,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <small class="text-warning fw-bold">
                     <i class="fas fa-play-circle me-1"></i>
-                    Turno {{ item.entity.current_round|default(1) }}
+                    Turno {{ [item.entity.current_round, 1]|max }}
                     {% if item.entity.total_rounds %}/ {{ item.entity.total_rounds }}{% endif %}
                   </small>
                   <small class="text-muted">
