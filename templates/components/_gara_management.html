@@ -114,10 +114,17 @@
                 {# Fix: Show at least 1 when gara is playing but current_round is 0 (edge case) #}
                 {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
                 {% if gara.get_real_status() == 'round_completed' %}
-                <div class="alert alert-success p-2">
+                <div class="alert alert-success p-2 mb-2">
                     <small><strong>{{ _('Turno %(current)d/%(total)d completato', current=display_round,
                             total=gara.rounds_count) }}</strong></small>
                 </div>
+
+                {# Button to start next round - only if not the last round #}
+                {% if gara.current_round < gara.rounds_count %}
+                <button class="btn btn-success w-100 mb-2" onclick="startRound({{ gara.current_round + 1 }})">
+                    <i class="fas fa-forward"></i> {{ _('Avvia Turno %(num)s', num=gara.current_round + 1) }}
+                </button>
+                {% endif %}
                 {% else %}
                 <div class="alert alert-info p-2">
                     <small><strong>{{ _('Turno %(current)d/%(total)d in corso', current=display_round,

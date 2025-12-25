@@ -259,11 +259,13 @@ class GaraService:
             raise ValueError("Non ci sono partite del turno corrente da cancellare")
 
         # Controlla che non ci siano risultati inseriti (neanche parziali)
+        # Note: match.status == PLAYING just means a table was assigned,
+        # not that results have been entered. Only check actual scores.
         for match in current_round_matches:
             if (
                 match.player1_score > 0
                 or match.player2_score > 0
-                or match.status != MatchStatus.PENDING.value
+                or match.winner_id is not None
             ):
                 raise ValueError(
                     "Impossibile cancellare l'avvio: sono già stati inseriti "

@@ -632,7 +632,7 @@ def gara_detail(gara_id):
             .order_by(Match.round_number, Match.id)
             .all()
         )
-        all_matches = None  # Non serve per admin
+        all_matches = matches  # Needed for _round_management.html round completion check
         
     elif user_inscription:
         # PLAYER VIEW: Solo le sue partite
@@ -1302,6 +1302,10 @@ def start_round_generic(gara_id, round_number):
         db.session.add(gara)
         # Changes will be committed by transaction decorator
 
+        # Assign tables to new round matches
+        from models.match.table_assignment_service import TableAssignmentService
+        tables_assigned = TableAssignmentService.assign_tables_to_round(gara_id, round_number)
+
         # Messaggio di successo
         strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
         message = f"Turno {round_number} avviato con strategia {strategy_name}!"
@@ -1321,6 +1325,8 @@ def start_round_generic(gara_id, round_number):
             details.append(f"Partite vs X: {n_bye}")
         if n_trio:
             details.append(f"Trii: {n_trio}")
+        if tables_assigned:
+            details.append(f"Tavoli assegnati: {tables_assigned}")
 
         return jsonify(
             {
