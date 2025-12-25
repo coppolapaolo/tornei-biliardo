@@ -153,33 +153,37 @@ class TransactionManager:
         transaction_id = self.generate_transaction_id()
         context = TransactionContext(transaction_id, isolation_level, read_only)
 
-        # Check if we're in a nested transaction
-        is_nested = self.current_transaction is not None
+        # Check if we're in a nested transaction managed by TransactionManager
+        is_true_nested = self.current_transaction is not None
+        # Track if we created a savepoint due to autobegin (pseudo-nested)
+        is_pseudo_nested = False
         parent_context = self.current_transaction
 
-        logger.debug(f"Starting transaction {transaction_id} (nested: {is_nested})")
+        logger.debug(
+            f"Starting transaction {transaction_id} (true_nested: {is_true_nested})"
+        )
 
         try:
-            if is_nested:
-                # Create savepoint for nested transaction
+            if is_true_nested:
+                # Create savepoint for truly nested transaction
                 savepoint_name = savepoint_name or f"sp_{transaction_id}"
                 db.session.begin_nested()
                 context.add_savepoint(savepoint_name)
                 logger.debug(f"Created savepoint {savepoint_name}")
             else:
-                # Check if there's already an active transaction
+                # Check if there's already an active transaction (e.g., autobegin)
                 if db.session.is_active:
-                    # We're in an existing transaction (e.g., test transaction)
-                    # Create a savepoint instead of starting a new transaction
+                    # Session has autobegin - create savepoint but remember to
+                    # commit parent transaction at the end
                     savepoint_name = savepoint_name or f"sp_{transaction_id}"
                     try:
                         db.session.begin_nested()
                         context.add_savepoint(savepoint_name)
                         logger.debug(
                             f"Created savepoint {savepoint_name} within "
-                            "existing transaction"
+                            "autobegin transaction"
                         )
-                        is_nested = True  # Treat as nested for commit/rollback logic
+                        is_pseudo_nested = True  # Need to commit parent at end
                     except Exception as e:
                         logger.warning(
                             f"Failed to create savepoint, proceeding without "
@@ -224,10 +228,8 @@ class TransactionManager:
             yield context
 
             # Commit the transaction/savepoint
-            if is_nested:
-                # For nested transactions (savepoints), we need to explicitly release
-                # the savepoint
-                # This ensures the changes are preserved within the parent transaction
+            if is_true_nested:
+                # For truly nested transactions, just release the savepoint
                 try:
                     db.session.commit()  # This releases the savepoint in SQLAlchemy
                     logger.debug(
@@ -237,7 +239,6 @@ class TransactionManager:
                     logger.warning(
                         f"Failed to release nested transaction {transaction_id}: {e}"
                     )
-                    # If we can't release the savepoint, we should rollback to it
                     try:
                         db.session.rollback()
                         logger.warning(
@@ -248,6 +249,26 @@ class TransactionManager:
                         logger.error(
                             f"Failed to rollback to savepoint {transaction_id}: "
                             f"{rollback_error}"
+                        )
+            elif is_pseudo_nested:
+                # For pseudo-nested (autobegin), release savepoint AND commit parent
+                try:
+                    db.session.commit()  # Release savepoint and commit transaction
+                    logger.debug(
+                        f"Pseudo-nested transaction {transaction_id} committed "
+                        "(savepoint released + parent committed)"
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to commit pseudo-nested transaction "
+                        f"{transaction_id}: {e}"
+                    )
+                    try:
+                        db.session.rollback()
+                    except Exception as rollback_error:
+                        logger.error(
+                            f"Failed to rollback pseudo-nested transaction "
+                            f"{transaction_id}: {rollback_error}"
                         )
             else:
                 try:
@@ -265,10 +286,11 @@ class TransactionManager:
             context.rollback_reason = str(e)
 
             try:
-                if is_nested:
-                    db.session.rollback()  # Rollback to savepoint
+                if is_true_nested or is_pseudo_nested:
+                    db.session.rollback()  # Rollback to savepoint (and parent for pseudo)
                     logger.warning(
-                        f"Nested transaction {transaction_id} rolled back: {str(e)}"
+                        f"{'Nested' if is_true_nested else 'Pseudo-nested'} "
+                        f"transaction {transaction_id} rolled back: {str(e)}"
                     )
                 else:
                     db.session.rollback()
