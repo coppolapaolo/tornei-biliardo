@@ -120,7 +120,7 @@ class MatchService:
 
         # Libera automaticamente il tavolo e assegnalo al prossimo match in attesa
         from models.match.table_assignment_service import TableAssignmentService
-        TableAssignmentService.free_table_and_reassign(match.id)
+        TableAssignmentService.release_and_reassign_table(match.id)
 
         # Emit MatchCompletedEvent for gamification (skip bye matches)
         if not match.is_bye and match.player1_id and match.player2_id:

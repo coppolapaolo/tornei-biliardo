@@ -443,6 +443,37 @@ class Gara(db.Model):
             [i for i in self.inscriptions if i.is_waitlist and not i.is_withdrawn]
         )
 
+    def get_podium(self):
+        """
+        Restituisce il podio (top 3) della classifica finale.
+
+        Returns:
+            List[dict]: Lista di dizionari con 'position', 'user', 'username'
+                        per i primi 3 classificati. Lista vuota se la gara
+                        non è completata o non ha classifiche.
+        """
+        if self.status != GaraStatus.COMPLETED.value:
+            return []
+
+        try:
+            from models.classification.services import RoundClassificationService
+
+            standings = RoundClassificationService.get_round_standings(
+                self.id, self.rounds_count
+            )
+            podium = []
+            for rc in standings[:3]:
+                podium.append(
+                    {
+                        "position": rc.position,
+                        "user": rc.user,
+                        "username": rc.user.username if rc.user else "?",
+                    }
+                )
+            return podium
+        except Exception:
+            return []
+
     def is_full(self):
         """Verifica se la gara ha raggiunto il numero massimo di partecipanti"""
         if not self.max_participants:

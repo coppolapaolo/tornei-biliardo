@@ -273,6 +273,44 @@
     }
   }
 
+  function terminateGara(garaId) {
+    if (confirm({{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.")|tojson }})) {
+      fetch(`/admin/gara/${garaId}/terminate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      }).then(response => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          response.text().then(text => {
+            alert({{ _("Errore durante la terminazione:")|tojson }} + ' ' + text);
+          });
+        }
+      });
+    }
+  }
+
+  function resetLastRound(garaId, roundNumber) {
+    if (confirm({{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!")|tojson }})) {
+      fetch(`/admin/gara/${garaId}/round/${roundNumber}/bulk_reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      }).then(response => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          response.text().then(text => {
+            alert({{ _("Errore durante il reset:")|tojson }} + ' ' + text);
+          });
+        }
+      });
+    }
+  }
+
   function deleteProva(provaId, provaNumber) {
     let confirmMsg = {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!")|tojson }};
     confirmMsg = confirmMsg.replace('{number}', provaNumber);

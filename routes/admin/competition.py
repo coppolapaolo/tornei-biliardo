@@ -1042,6 +1042,32 @@ def cancel_current_round(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
+@competition_bp.route("/<int:gara_id>/terminate", methods=["POST"])
+@login_required
+@gara_manager_required
+def terminate_gara(gara_id):
+    """Termina esplicitamente la gara dopo che tutti i turni sono completati"""
+    gara = Gara.query.get_or_404(gara_id)
+
+    # Verifica che la gara sia in stato "campionato_completed" (tutti i turni finiti)
+    if gara.status != GaraStatus.PLAYING.value:
+        flash("La gara non è in corso!", "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    real_status = gara.get_real_status()
+    if real_status != "campionato_completed":
+        flash("Non tutti i turni sono ancora completati!", "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    try:
+        GaraService.complete(gara_id)
+        flash("Gara terminata con successo! I risultati sono ora definitivi.", "success")
+    except Exception as e:
+        flash(f"Errore durante la terminazione della gara: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
 # ============ SISTEMA AMALFI ============
 
 

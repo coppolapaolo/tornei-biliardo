@@ -472,37 +472,20 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     def _check_and_complete_gara_if_needed(
         self, match_obj
     ):  # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-001. Decision: Keep coupling for pragmatic reasons.
-        """Controlla se tutti i match della gara sono completati e completa automaticamente la gara"""
-        try:
-            from models.competition.services import GaraService
-            from models.competition.models import Gara
-            from models.status_enum import GaraStatus
+        """
+        Verifica se tutti i match della gara sono completati.
 
-            if not match_obj.gara_id:
-                return
-
-            gara = db.session.get(Gara, match_obj.gara_id)
-            if not gara or gara.status != GaraStatus.PLAYING.value:
-                return
-
-            # Controlla se tutti i match della gara sono completati
-            all_matches = db.session.query(Match).filter_by(gara_id=gara.id).all()
-            completed_matches = [m for m in all_matches if m.status == "completed"]
-
-            # Se tutti i match sono completati e abbiamo finito tutti i round, completa la gara
-            if (
-                len(completed_matches) == len(all_matches)
-                and gara.current_round >= gara.rounds_count
-            ):
-
-                GaraService.complete(gara.id)
-                print(
-                    f"Gara {gara.id} automaticamente completata dopo il completamento dell'ultimo match"
-                )
-
-        except Exception as e:
-            # Log l'errore ma non bloccare il completamento del match
-            print(f"Errore nel completamento automatico della gara: {e}")
+        NOTA: Non completa automaticamente la gara. Il direttore/admin deve
+        esplicitamente terminare la gara usando il pulsante "Termina gara"
+        nella UI. Questo permette di:
+        - Resettare l'ultimo turno se necessario
+        - Verificare i risultati prima della chiusura definitiva
+        - Gestire eventuali contestazioni
+        """
+        # Metodo mantenuto per compatibilità ma non esegue più l'auto-completamento
+        # La gara passa in stato "campionato_completed" (derivato) quando tutti i match
+        # sono completati, ma rimane in status "playing" fino a terminazione esplicita
+        pass
 
     def _remove_last_rack(self, user_id: int) -> None:
         """

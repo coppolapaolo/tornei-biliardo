@@ -390,7 +390,7 @@ def debug_fill_gara(gara_id):
 
 @main_bp.route("/debug/complete_current_round/<int:gara_id>")
 def debug_complete_current_round(gara_id):
-    """Completa tutti i match in corso del turno attuale con risultati random - SOLO in modalità debug"""
+    """Completa tutti i match del turno attuale con risultati random - SOLO in modalità debug"""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
@@ -400,20 +400,31 @@ def debug_complete_current_round(gara_id):
 
     gara = Gara.query.get_or_404(gara_id)
 
-    # Trova tutti i match in corso (status = 'pending')
-    pending_matches = Match.query.filter_by(
-        gara_id=gara_id, status=MatchStatus.PENDING.value
-    ).all()
+    if gara.current_round == 0:
+        flash("La gara non è ancora iniziata!", "warning")
+        return redirect(
+            request.referrer
+            or url_for("admin.competition.gara_detail", gara_id=gara_id)
+        )
 
-    if not pending_matches:
-        flash("Nessun match in corso da completare!", "info")
+    # Trova tutti i match non completati del turno attuale (PENDING o PLAYING)
+    incomplete_matches = (
+        Match.query.filter_by(gara_id=gara_id, round_number=gara.current_round)
+        .filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])
+        )
+        .all()
+    )
+
+    if not incomplete_matches:
+        flash("Nessun match da completare nel turno attuale!", "info")
         return redirect(
             request.referrer
             or url_for("admin.competition.gara_detail", gara_id=gara_id)
         )
 
     completed_count = 0
-    for match in pending_matches:
+    for match in incomplete_matches:
         # Skip se è un bye match (già completato)
         if match.is_bye:
             continue

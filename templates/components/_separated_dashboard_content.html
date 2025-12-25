@@ -250,7 +250,48 @@
               </div>
               
               {# Info specifiche per stato gara #}
-              {% if item.entity.get_real_status() == GaraStatus.PLAYING.value %}
+              {% if item.entity.status == GaraStatus.COMPLETED.value %}
+                {# Gara completata - mostra podio #}
+                {% set podium = item.entity.get_podium() %}
+                {% if podium %}
+                <div class="podium-display">
+                  <div class="d-flex justify-content-center align-items-end gap-2 mb-1">
+                    {# Secondo posto #}
+                    {% if podium|length >= 2 %}
+                    <div class="text-center" style="order: 1;">
+                      <div class="bg-secondary bg-opacity-25 rounded px-2 py-1">
+                        <small class="d-block text-muted">🥈</small>
+                        <small class="fw-bold text-truncate d-block" style="max-width: 70px;">{{ podium[1].username }}</small>
+                      </div>
+                    </div>
+                    {% endif %}
+                    {# Primo posto #}
+                    {% if podium|length >= 1 %}
+                    <div class="text-center" style="order: 0;">
+                      <div class="bg-warning bg-opacity-25 rounded px-2 py-1">
+                        <small class="d-block">🥇</small>
+                        <small class="fw-bold text-truncate d-block" style="max-width: 70px;">{{ podium[0].username }}</small>
+                      </div>
+                    </div>
+                    {% endif %}
+                    {# Terzo posto #}
+                    {% if podium|length >= 3 %}
+                    <div class="text-center" style="order: 2;">
+                      <div class="bg-warning bg-opacity-10 rounded px-2 py-1">
+                        <small class="d-block text-muted">🥉</small>
+                        <small class="fw-bold text-truncate d-block" style="max-width: 70px;">{{ podium[2].username }}</small>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% else %}
+                <small class="text-muted">
+                  <i class="fas fa-trophy me-1"></i>
+                  Gara completata
+                </small>
+                {% endif %}
+              {% elif item.entity.get_real_status() == GaraStatus.PLAYING.value %}
                 {# Gara in corso - mostra info turno #}
                 <div class="d-flex justify-content-between align-items-center">
                   <small class="text-warning fw-bold">

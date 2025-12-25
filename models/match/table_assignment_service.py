@@ -133,49 +133,6 @@ class TableAssignmentService:
 
     @staticmethod
     @transactional(domain="match")
-    def free_table_and_reassign(match_id: int) -> Optional[Match]:
-        """Free table from completed match and reassign to next waiting match.
-
-        When a match completes, its table becomes available for the next
-        pending match in the SAME round without a table.
-
-        Args:
-            match_id: ID of the completed match
-
-        Returns:
-            The match that received the freed table, or None if no match waiting
-        """
-        completed_match = db.session.get(Match, match_id)
-        if not completed_match:
-            raise ValueError(f"Match {match_id} not found")
-
-        if completed_match.status != MatchStatus.COMPLETED.value:
-            raise ValueError("Can only free tables from completed matches")
-
-        if not completed_match.table_assignment:
-            return None  # No table to free
-
-        freed_table = completed_match.table_assignment
-
-        # Find next waiting match from SAME round without table
-        waiting_match = (
-            Match.query.filter_by(
-                gara_id=completed_match.gara_id,
-                round_number=completed_match.round_number,
-                table_assignment=None,
-            )
-            .order_by(Match.id)
-            .first()
-        )
-
-        if waiting_match:
-            waiting_match.table_assignment = freed_table
-            return waiting_match
-
-        return None
-
-    @staticmethod
-    @transactional(domain="match")
     def release_and_reassign_table(match_id: int) -> Optional[Match]:
         """Release table from completed match and reassign to first waiting match.
 

@@ -113,7 +113,27 @@
                 {% elif gara.status == 'playing' %}
                 {# Fix: Show at least 1 when gara is playing but current_round is 0 (edge case) #}
                 {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
-                {% if gara.get_real_status() == 'round_completed' %}
+                {% if gara.get_real_status() == 'campionato_completed' %}
+                {# All rounds completed - show terminate button #}
+                <div class="alert alert-success p-2 mb-2">
+                    <small><strong>{{ _('Tutti i %(total)d turni completati!', total=gara.rounds_count) }}</strong></small>
+                </div>
+
+                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }})">
+                    <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
+                </button>
+                <small class="text-muted d-block text-center mb-2">
+                    <i class="fas fa-info-circle"></i> {{ _('Conferma la conclusione della gara e blocca le modifiche') }}
+                </small>
+
+                {# Allow resetting the last round before termination #}
+                <button class="btn btn-warning w-100 mb-2" onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }})">
+                    <i class="fas fa-undo"></i> {{ _('Reset Ultimo Turno') }}
+                </button>
+                <small class="text-muted d-block text-center mb-2">
+                    <i class="fas fa-exclamation-triangle"></i> {{ _('Azzera i risultati del turno %(num)s per correzioni', num=gara.current_round) }}
+                </small>
+                {% elif gara.get_real_status() == 'round_completed' %}
                 <div class="alert alert-success p-2 mb-2">
                     <small><strong>{{ _('Turno %(current)d/%(total)d completato', current=display_round,
                             total=gara.rounds_count) }}</strong></small>

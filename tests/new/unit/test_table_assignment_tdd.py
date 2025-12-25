@@ -142,16 +142,16 @@ class TestTableAssignmentTDD:
         db_session.refresh(match)
         assert match.status == MatchStatus.PENDING.value
 
-    def test_free_table_when_match_completes(
+    def test_release_table_when_match_completes(
         self, db_session, gara_with_venue, matches_without_tables
     ):
         """
-        TEST 3: When a match completes, its table should be freed
+        TEST 3: When a match completes, its table should be released and reassigned
 
         Given: A match with table assignment
-        When: Match is completed
-        Then: Table assignment should be marked as available
-              And next waiting match should get the table
+        When: Match is completed and table is released
+        Then: Completed match should have no table (released)
+              And next PENDING match should get the table and become PLAYING
         """
         # Assign tables first
         TableAssignmentService.assign_tables_to_round(
@@ -170,19 +170,20 @@ class TestTableAssignmentTDD:
         first_match.winner_id = first_match.player1_id
         db_session.commit()
 
-        # Act - Free the table and reassign to waiting match
-        TableAssignmentService.free_table_and_reassign(first_match.id)
+        # Act - Release the table and reassign to waiting match
+        TableAssignmentService.release_and_reassign_table(first_match.id)
 
         # Assert
         db_session.refresh(first_match)
-        waiting_match = matches[3]  # First match without table
+        waiting_match = matches[3]  # First match without table (was PENDING)
         db_session.refresh(waiting_match)
 
-        # Completed match keeps its table for record
-        assert first_match.table_assignment == "Tavolo A"
+        # Completed match should no longer have the table (released)
+        assert first_match.table_assignment is None
 
-        # Waiting match should now have the freed table
+        # Waiting match should now have the freed table and be PLAYING
         assert waiting_match.table_assignment == "Tavolo A"
+        assert waiting_match.status == MatchStatus.PLAYING.value
 
     def test_no_table_assignment_if_venue_not_found(self, db_session, players):
         """
@@ -228,11 +229,12 @@ class TestTableAssignmentTDD:
         self, db_session, gara_with_venue, players
     ):
         """
-        TEST 5: When freeing a table, only assign to matches from the same round
+        TEST 5: When releasing a table, only assign to matches from the same round
 
         Given: Completed match in round 1, pending match in round 2
-        When: Table is freed
+        When: Table is released
         Then: Table should not be assigned to round 2 match
+              And completed match should have no table
         """
         # Round 1 match with table
         match_r1 = Match(
@@ -259,11 +261,15 @@ class TestTableAssignmentTDD:
         db_session.commit()
 
         # Act
-        TableAssignmentService.free_table_and_reassign(match_r1.id)
+        TableAssignmentService.release_and_reassign_table(match_r1.id)
 
         # Assert - Round 2 match should not get the table
         db_session.refresh(match_r2)
         assert match_r2.table_assignment is None
+
+        # Completed match should have table released
+        db_session.refresh(match_r1)
+        assert match_r1.table_assignment is None
 
     def test_get_available_tables_count(self, db_session, venue_with_tables):
         """
