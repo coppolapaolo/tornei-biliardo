@@ -316,6 +316,7 @@ class TestAmalfiCompleteWorkflow:
                 reported_by_id=winner_id,  # Self-reporting for test
                 confirmed_by_player=True,  # Auto-confirm for test
                 validated_by_admin=True,  # Auto-validate for test
+                bypass_validation=True,  # Test helper bypass
             )
             rack_number += 1
 

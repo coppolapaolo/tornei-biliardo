@@ -210,6 +210,7 @@ class TestUseCaseMatchModification:
                 confirmed_by_player=True,
                 validated_by_admin=True,
                 admin_note="Correction: match was actually 5-4, not 5-2",
+                bypass_validation=True,  # Admin correction bypass
             )
 
         # Step 4: Recalculate classification after match modification
@@ -389,6 +390,7 @@ class TestUseCaseMatchModification:
                 confirmed_by_player=True,
                 validated_by_admin=True,
                 admin_note="Admin correction: player 2 should get additional point",
+                bypass_validation=True,  # Admin correction bypass
             )
 
             # Step 5: Verify cascading effects
@@ -654,6 +656,7 @@ class TestUseCaseMatchModification:
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
                 validated_by_admin=True,
+                bypass_validation=True,  # Test helper bypass
             )
 
         # Add racks for loser
@@ -665,6 +668,7 @@ class TestUseCaseMatchModification:
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
                 validated_by_admin=True,
+                bypass_validation=True,  # Test helper bypass
             )
 
         MatchService.to_completed(match.id)
@@ -809,6 +813,7 @@ class TestUseCaseAdvancedMatchManagement:
                 reported_by_id=winner_id,
                 confirmed_by_player=True,
                 validated_by_admin=True,
+                bypass_validation=True,  # Test helper bypass
             )
 
         for rack_num in range(winner_racks + 1, winner_racks + loser_racks + 1):
@@ -819,6 +824,7 @@ class TestUseCaseAdvancedMatchManagement:
                 reported_by_id=loser_id,
                 confirmed_by_player=True,
                 validated_by_admin=True,
+                bypass_validation=True,  # Test helper bypass
             )
 
         MatchService.to_completed(match.id)
