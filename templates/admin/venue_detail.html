@@ -271,8 +271,10 @@
                 {% if photos %}
                     {% for photo in photos %}
                         {% set photo_path = photo.replace("Foto: ", "") %}
-                        <img src="{{ url_for('static', filename=photo_path) }}" 
-                             alt="Foto {{ venue.name }}" 
+                        {# Remove static/ prefix since it's already in the path #}
+                        {% set clean_path = photo_path.replace("static/", "", 1) if photo_path.startswith("static/") else photo_path %}
+                        <img src="{{ url_for('static', filename=clean_path) }}"
+                             alt="Foto {{ venue.name }}"
                              class="venue-photo mb-2">
                     {% endfor %}
                 {% else %}
