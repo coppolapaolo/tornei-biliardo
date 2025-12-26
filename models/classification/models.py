@@ -163,15 +163,29 @@ class RoundClassification(db.Model): # TODO: round classification puo' avere div
                     }
 
                 # Update stats based on match result
+                # FIX: Handle ties correctly - neither player wins
                 if match.player1_score > match.player2_score:
                     player_stats[match.player1_id]["matches_won"] += 1
-                else:
+                elif match.player2_score > match.player1_score:
                     player_stats[match.player2_id]["matches_won"] += 1
+                # else: tie - neither player gets a win
 
-                player_stats[match.player1_id]["rack_won"] += match.player1_score
-                player_stats[match.player1_id]["rack_lost"] += match.player2_score
-                player_stats[match.player2_id]["rack_won"] += match.player2_score
-                player_stats[match.player2_id]["rack_lost"] += match.player1_score
+                # Calculate rack stats
+                # FIX: Handle multi-set matches by summing racks from all sets
+                if match.is_multi_set:
+                    # Multi-set: player1_score/player2_score are SETS won, not racks
+                    # We need to sum racks from all sets
+                    for set_obj in match.sets:
+                        player_stats[match.player1_id]["rack_won"] += set_obj.player1_racks
+                        player_stats[match.player1_id]["rack_lost"] += set_obj.player2_racks
+                        player_stats[match.player2_id]["rack_won"] += set_obj.player2_racks
+                        player_stats[match.player2_id]["rack_lost"] += set_obj.player1_racks
+                else:
+                    # Single-set: player1_score/player2_score are racks won
+                    player_stats[match.player1_id]["rack_won"] += match.player1_score
+                    player_stats[match.player1_id]["rack_lost"] += match.player2_score
+                    player_stats[match.player2_id]["rack_won"] += match.player2_score
+                    player_stats[match.player2_id]["rack_lost"] += match.player1_score
 
         # Calculate rack difference
         for player_id, stats in player_stats.items():

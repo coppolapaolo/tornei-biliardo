@@ -250,11 +250,15 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         # Create new set
         from .set_models import Set
 
+        # Get distance from previous set or default
+        distance = getattr(current_set, "distance", 5) if current_set else 5
+
+        # Multi-set matches always use race-to mode to guarantee a winner
         new_set = Set(
             match_id=self.id,
             set_number=self.current_set_number,
-            distance=getattr(current_set, "distance", 5) if current_set else 5,
-            is_race_to=getattr(current_set, "is_race_to", True) if current_set else True,
+            distance=distance,
+            is_race_to=True,  # Always race-to for multi-set to prevent ties
         )
 
         from ..base import db

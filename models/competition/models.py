@@ -109,6 +109,20 @@ class Gara(db.Model):
         db.Boolean, default=True
     )  # Evita reincontri tra giocatori
 
+    # Tiebreaker configuration (spareggio fine gara)
+    tiebreaker_enabled = db.Column(
+        db.Boolean, default=True
+    )  # Se True, spareggio per pari merito nel podio
+    tiebreaker_until_position = db.Column(
+        db.Integer, default=3
+    )  # Spareggio fino a questa posizione (es. 3 = podio)
+    tiebreaker_mode = db.Column(
+        db.String(20), default="playoff_match"
+    )  # "playoff_match" (partita secca) | "challenge" (drill dalla banca dati)
+    tiebreaker_challenge_id = db.Column(
+        db.Integer, db.ForeignKey("challenge.id", ondelete="SET NULL"), nullable=True
+    )  # FK a Challenge se mode = "challenge"
+
     # Relazioni
     inscriptions = db.relationship(
         "Inscription",
@@ -126,6 +140,9 @@ class Gara(db.Model):
     )
     director = db.relationship(
         "User", foreign_keys=[director_id], backref="standalone_garas"
+    )
+    tiebreaker_challenge = db.relationship(
+        "Challenge", foreign_keys=[tiebreaker_challenge_id]
     )
 
     # Co-directors relationship (similar to campionati)

@@ -881,31 +881,40 @@ class RackService:
         # Se il match è finito, comportamento diverso per admin vs player
         if match.rack_score.is_complete():
             final_winner_id = match.rack_score.get_winner()
+
+            # FIX: Handle ties correctly - don't assign arbitrary winner
             if final_winner_id is None:
-                # Tie - usa punteggio grezzo
-                final_winner_id = (
-                    match.player1_id
-                    if match.player1_score > match.player2_score
-                    else match.player2_id
-                )
+                # True tie (exact mode with even racks) - no winner
+                # Complete the match without a winner
+                if validated_by_admin:
+                    # Admin: complete match as tie
+                    from models.match.services import MatchService
+                    match.winner_id = None  # Explicit: no winner
+                    MatchService.to_completed(match.id)
+                else:
+                    # Player: mark as completed but leave for admin review
+                    match.winner_id = None  # Explicit: no winner
+                    match.status = MatchStatus.COMPLETED.value
+                    db.session.add(match)
+                    match.reset_confirmations()
             else:
-                # Converti player number (1,2) a player_id
+                # Convert player number (1,2) to player_id
                 final_winner_id = (
                     match.player1_id if final_winner_id == 1
                     else match.player2_id
                 )
 
-            if validated_by_admin:
-                # Admin: completa automaticamente il match
-                from models.match.services import MatchResultService
-                MatchResultService.submit_result(match.id, final_winner_id)
-            else:
-                # Player: imposta solo il vincitore, lascia il match in "playing" per la conferma
-                match.winner_id = final_winner_id
-                db.session.add(match)
+                if validated_by_admin:
+                    # Admin: completa automaticamente il match
+                    from models.match.services import MatchResultService
+                    MatchResultService.submit_result(match.id, final_winner_id)
+                else:
+                    # Player: imposta solo il vincitore, lascia il match in "playing" per la conferma
+                    match.winner_id = final_winner_id
+                    db.session.add(match)
 
-                # Reset delle conferme quando il risultato cambia
-                match.reset_confirmations()
+                    # Reset delle conferme quando il risultato cambia
+                    match.reset_confirmations()
 
         return {
             "success": True,
@@ -992,10 +1001,11 @@ class RackService:
         # Aggiorna il match
         match.player1_score = player1_score
         match.player2_score = player2_score
-        match.winner_id = winner_id  # None se risultato parziale
+        match.winner_id = winner_id  # None se pareggio o risultato parziale
 
-        # Transizione a completed solo se c'è un vincitore (risultato completo)
-        if is_complete_result and winner_id:
+        # FIX: Transizione a completed se il risultato è completo (con o senza vincitore)
+        # Un pareggio in exact mode è un risultato completo, solo che winner_id è None
+        if is_complete_result:
             # Admin/Director ha impostato un risultato completo → automaticamente validato
             match.validated_by_admin = True
             if match.status != MatchStatus.COMPLETED.value:
