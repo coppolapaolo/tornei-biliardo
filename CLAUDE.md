@@ -57,9 +57,9 @@ python migrations/runner.py
 - Reloads PythonAnywhere web app on push to main
 - Git pull and migrations must be run manually or via scheduled task
 
-**PythonAnywhere Scheduled Task** (optional):
-- Setup: Tasks → Add → `cd /home/paolocoppola/mysite && python scripts/auto_deploy.py`
-- Runs git pull, migrations, and reloads the app automatically
+**PythonAnywhere Scheduled Task** (optional, daily on free tier):
+- Setup: Tasks → set time → `cd /home/paolocoppola/mysite && python scripts/auto_deploy.py`
+- Runs git pull, migrations, and reloads the app once per day
 
 ---
 
