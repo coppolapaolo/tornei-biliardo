@@ -61,68 +61,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Pull code on PythonAnywhere
-        env:
-          PA_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
-        run: |
-          # Get existing console or create new one
-          echo "Checking for existing consoles..."
-          CONSOLES=$(curl -s -H "Authorization: Token $PA_API_TOKEN" \
-            "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/")
-
-          CONSOLE_ID=$(echo "$CONSOLES" | python3 -c "
-          import sys, json
-          try:
-              data = json.load(sys.stdin)
-              # Find a bash console
-              for c in data if isinstance(data, list) else []:
-                  if c.get('executable', '').endswith('bash'):
-                      print(c.get('id', ''))
-                      break
-          except: pass
-          " 2>/dev/null)
-
-          if [ -z "$CONSOLE_ID" ]; then
-            echo "No existing bash console, creating new one..."
-            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-              -H "Authorization: Token $PA_API_TOKEN" \
-              -H "Content-Type: application/x-www-form-urlencoded" \
-              -d "executable=bash&working_directory=${{ env.PROJECT_PATH }}" \
-              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/")
-
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-
-            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-              CONSOLE_ID=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || echo "")
-            else
-              echo "Could not create console (limit reached?). Response: $BODY"
-            fi
-          else
-            echo "Using existing console: $CONSOLE_ID"
-          fi
-
-          if [ -n "$CONSOLE_ID" ]; then
-            # Start/wake up the console first (required by PythonAnywhere API)
-            echo "Starting console $CONSOLE_ID..."
-            curl -s -X POST \
-              -H "Authorization: Token $PA_API_TOKEN" \
-              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/start/"
-
-            sleep 3
-
-            # Send git pull + migrations command
-            SEND_RESULT=$(curl -s -X POST \
-              -H "Authorization: Token $PA_API_TOKEN" \
-              -d "input=cd ${{ env.PROJECT_PATH }} && git pull origin main && python migrations/runner.py\n" \
-              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/send_input/")
-
-            echo "Send result: $SEND_RESULT"
-            echo "Git pull and migrations initiated in console $CONSOLE_ID"
-            sleep 20
-          else
-            echo "Warning: No console available, skipping git pull. Will reload anyway."
-          fi
+      # Note: Git pull and migrations must be done manually or via scheduled task
+      # PythonAnywhere console API requires browser session, doesn't work from CI
+      # See scripts/auto_deploy.py for scheduled task setup
 
       - name: Reload web app
         env:

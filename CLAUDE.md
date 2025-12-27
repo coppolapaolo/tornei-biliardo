@@ -38,6 +38,29 @@ black . && flake8
 - **Database**: `instance/billiard_campionato.db` (SQLite dev)
 - **Domain Documentation**: `models/CLAUDE.md`, `routes/CLAUDE.md`, `tests/CLAUDE.md`
 
+### CI/CD & Deployment
+```bash
+# Run migrations (with tracking)
+python migrations/runner.py              # Run pending migrations
+python migrations/runner.py --status     # Show migration status
+python migrations/runner.py --mark-all-applied  # Init existing DB
+
+# Deploy to PythonAnywhere (manual)
+cd /home/paolocoppola/mysite
+git pull origin main
+python migrations/runner.py
+# Web app auto-reloads on push via GitHub Actions
+```
+
+**GitHub Actions** (`.github/workflows/ci.yml`):
+- Runs unit tests and pyright on every push/PR
+- Reloads PythonAnywhere web app on push to main
+- Git pull and migrations must be run manually or via scheduled task
+
+**PythonAnywhere Scheduled Task** (optional):
+- Setup: Tasks → Add → `cd /home/paolocoppola/mysite && python scripts/auto_deploy.py`
+- Runs git pull, migrations, and reloads the app automatically
+
 ---
 
 ## Project Overview
