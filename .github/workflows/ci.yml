@@ -68,6 +68,7 @@ jobs:
           # Create a temporary console to run git pull
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Token $PA_API_TOKEN" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
             -d "executable=bash&working_directory=${{ env.PROJECT_PATH }}" \
             "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/")
 
