@@ -55,7 +55,9 @@ def db_session(app):
     db.session.remove()
 
     # Get all tables and truncate them
-    with app.app_context():
+    # Use test_request_context instead of app_context to provide
+    # session access for Flask-Babel translations
+    with app.test_request_context():
         # Drop and recreate all tables to ensure complete isolation
         db.drop_all()
         db.create_all()

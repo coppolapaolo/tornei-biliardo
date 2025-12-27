@@ -100,13 +100,17 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Set inscription dates and start inscriptions
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
-        gara = StateService.to_inscription(gara)
+        # Refresh gara to get updated status
+        db_session.refresh(gara)
+        assert gara.status == GaraStatus.INSCRIPTION.value
 
         # Add only 3 players (less than minimum of 6)
         for i in range(3):
@@ -162,13 +166,17 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Complete full workflow to PLAYING state
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
-        gara = StateService.to_inscription(gara)
+        # Refresh gara to get updated status
+        db_session.refresh(gara)
+        assert gara.status == GaraStatus.INSCRIPTION.value
 
         # Add sufficient players
         players = []
@@ -255,13 +263,17 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Complete setup to PLAYING
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
-        gara = StateService.to_inscription(gara)
+        # Refresh gara to get updated status
+        db_session.refresh(gara)
+        assert gara.status == GaraStatus.INSCRIPTION.value
 
         # Add players
         for i in range(4):
@@ -279,6 +291,9 @@ class TestGaraStateTransitionsTDD:
             db_session.add(inscription)
 
         db_session.commit()
+
+        # Refresh gara before start_playing to get updated relationships
+        db_session.refresh(gara)
 
         # Start first round
         gara = StateService.start_playing(gara)
@@ -328,13 +343,16 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Set inscription dates and start inscriptions
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
-        gara = StateService.to_inscription(gara)
+        # Refresh gara to get updated status
+        db_session.refresh(gara)
 
         # Verify in INSCRIPTION state
         assert gara.status == GaraStatus.INSCRIPTION.value
@@ -420,16 +438,19 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Set inscription dates
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
-        # First transition should succeed
-        StateService.to_inscription(gara)
+        # Refresh gara to get updated status
+        db_session.refresh(gara)
+        assert gara.status == GaraStatus.INSCRIPTION.value
 
-        # Second concurrent transition should fail (already in INSCRIPTION state)
+        # Concurrent transition should fail (already in INSCRIPTION state)
         with pytest.raises(InvalidTransitionError, match="Transizione non ammessa"):
             StateService.to_inscription(gara)
 
@@ -465,14 +486,16 @@ class TestGaraStateTransitionsTDD:
         )
 
         # Transition should validate strategy configuration
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
-        # Should succeed with valid configuration
-        gara = StateService.to_inscription(gara)
+        # Refresh gara to get updated status - should succeed with valid configuration
+        db_session.refresh(gara)
         assert gara.status == GaraStatus.INSCRIPTION.value
 
     def test_state_persistence_across_transactions(self, db_session):
@@ -508,13 +531,13 @@ class TestGaraStateTransitionsTDD:
         original_gara_id = gara.id
 
         # Set inscription dates and transition
+        # modify_inscription_dates automatically transitions to INSCRIPTION
+        # when current time is within the inscription period
         inscription_start = datetime.utcnow()
         inscription_end = datetime.utcnow() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
-
-        StateService.to_inscription(gara)
 
         # Commit and clear session to ensure persistence
         db_session.commit()
