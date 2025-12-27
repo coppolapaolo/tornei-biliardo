@@ -251,7 +251,7 @@ class AvailabilityService:
 
         # Count successful notifications
         stats = NotificationFactory.get_notification_stats(notifications)
-        notifications_sent = stats["successful"]
+        notifications_sent = int(stats["successful"])
 
         return notifications_sent
 

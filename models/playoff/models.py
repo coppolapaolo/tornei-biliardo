@@ -223,7 +223,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
 
         return True
 
-    @transactional
+    @transactional()
     def generate_qualifications(self) -> List["PlayoffQualification"]:
         """Generate playoff qualifications based on criteria."""
         qualified_players = self.evaluate_qualifications()

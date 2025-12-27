@@ -261,16 +261,6 @@ class InvitationStatus(Enum):
     CANCELLED = "cancelled"
 
 
-class InvitationStatus(Enum):
-    """Status of individual invitations within a proposal."""
-
-    PENDING = "pending"
-    ACCEPTED = "accepted"
-    REJECTED = "rejected"
-    EXPIRED = "expired"
-    CANCELLED = "cancelled"
-
-
 class ProposalInvitation(BaseModel, TimestampMixin):
     """Individual invitation within a direct match proposal."""
 

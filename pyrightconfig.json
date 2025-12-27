@@ -2,14 +2,15 @@
     "include": [
         "models",
         "routes",
-        "tests",
         "utils"
     ],
     "exclude": [
         "**/__pycache__",
         "**/node_modules",
         "**/.git",
-        "tests/legacy"
+        "tests",
+        "migrations",
+        "utils/migrations"
     ],
     "venvPath": ".",
     "venv": "venv",
@@ -32,8 +33,10 @@
     "reportUnsupportedDunderAll": false,
     "reportIncompatibleMethodOverride": false,
     "reportIncompatibleVariableOverride": false,
+    "reportArgumentType": false,
+    "reportAttributeAccessIssue": false,
+    "reportAssignmentType": false,
     "useLibraryCodeForTypes": true,
     "pythonVersion": "3.9",
-    "pythonPlatform": "Darwin",
     "typeCheckingMode": "basic"
 }

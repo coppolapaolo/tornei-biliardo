@@ -207,7 +207,7 @@ class GaraChallengeClassification(BaseModel):
     )
 
     @classmethod
-    @transactional
+    @transactional()
     def calculate_for_gara(cls, gara_id: int) -> List["GaraChallengeClassification"]:
         """Calculate and update challenge classification for a gara."""
         from models.user.models import User

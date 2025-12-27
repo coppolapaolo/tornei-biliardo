@@ -202,6 +202,7 @@ def accept_match_proposal(proposal_id):
         ProposalInvitation,
         InvitationStatus,
         ProposalStatus,
+        IndividualMatch,
     )
     from models import db
     from datetime import datetime
@@ -269,6 +270,7 @@ def reject_match_proposal(proposal_id):
         ProposalInvitation,
         InvitationStatus,
         ProposalStatus,
+        IndividualMatch,
     )
     from models import db
     from datetime import datetime
@@ -302,6 +304,10 @@ def reject_match_proposal(proposal_id):
                 proposal.accepted_by_id = None
                 proposal.accepted_at = None
 
+                # Delete any existing match created from this proposal
+                existing_match = IndividualMatch.query.filter_by(
+                    proposal_id=proposal_id
+                ).first()
                 if existing_match and existing_match.status == MatchStatus.SCHEDULED.value:
                     db.session.delete(existing_match)
 
