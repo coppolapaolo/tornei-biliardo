@@ -9,7 +9,7 @@ on:
 env:
   PYTHONANYWHERE_USERNAME: paolocoppola
   PYTHONANYWHERE_DOMAIN: paolocoppola.pythonanywhere.com
-  PROJECT_PATH: /home/paolocoppola/tornei-biliardo
+  PROJECT_PATH: /home/paolocoppola/mysite
 
 jobs:
   test:
@@ -103,12 +103,21 @@ jobs:
           fi
 
           if [ -n "$CONSOLE_ID" ]; then
-            # Send git pull + migrations command
+            # Start/wake up the console first (required by PythonAnywhere API)
+            echo "Starting console $CONSOLE_ID..."
             curl -s -X POST \
               -H "Authorization: Token $PA_API_TOKEN" \
-              -d "input=cd ${{ env.PROJECT_PATH }} && git pull origin main && python migrations/runner.py\n" \
-              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/send_input/"
+              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/start/"
 
+            sleep 3
+
+            # Send git pull + migrations command
+            SEND_RESULT=$(curl -s -X POST \
+              -H "Authorization: Token $PA_API_TOKEN" \
+              -d "input=cd ${{ env.PROJECT_PATH }} && git pull origin main && python migrations/runner.py\n" \
+              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/send_input/")
+
+            echo "Send result: $SEND_RESULT"
             echo "Git pull and migrations initiated in console $CONSOLE_ID"
             sleep 20
           else
