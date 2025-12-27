@@ -66,23 +66,34 @@ jobs:
           PA_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
         run: |
           # Create a temporary console to run git pull
-          CONSOLE_ID=$(curl -s -X POST \
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Token $PA_API_TOKEN" \
             -d "executable=bash&working_directory=${{ env.PROJECT_PATH }}" \
-            "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/" \
-            | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))")
+            "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/")
 
-          if [ -n "$CONSOLE_ID" ]; then
-            # Send git pull command
-            curl -s -X POST \
-              -H "Authorization: Token $PA_API_TOKEN" \
-              -d "input=git pull origin main && exit\n" \
-              "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/send_input/"
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
 
-            echo "Git pull initiated in console $CONSOLE_ID"
-            sleep 10
+          echo "HTTP Status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "Error creating console. Response: $BODY"
+            echo "Warning: Skipping git pull, will reload anyway"
           else
-            echo "Warning: Could not create console, skipping git pull"
+            CONSOLE_ID=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || echo "")
+
+            if [ -n "$CONSOLE_ID" ]; then
+              # Send git pull command
+              curl -s -X POST \
+                -H "Authorization: Token $PA_API_TOKEN" \
+                -d "input=git pull origin main && exit\n" \
+                "https://www.pythonanywhere.com/api/v0/user/${{ env.PYTHONANYWHERE_USERNAME }}/consoles/$CONSOLE_ID/send_input/"
+
+              echo "Git pull initiated in console $CONSOLE_ID"
+              sleep 10
+            else
+              echo "Warning: Could not parse console ID from: $BODY"
+            fi
           fi
 
       - name: Reload web app
