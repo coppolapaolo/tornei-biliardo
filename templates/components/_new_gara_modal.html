@@ -63,10 +63,10 @@
                         </div>
                         <div class="col-md-2">
                             <div class="mb-3">
-                                <label for="number_of_tables" class="form-label">N. Tavoli</label>
-                                <input type="number" class="form-control" name="number_of_tables"
-                                    id="create_number_of_tables" placeholder="0" min="1" max="50">
-                                <small class="text-muted">Solo per nuove sale</small>
+                                <label for="available_tables" class="form-label">Tavoli</label>
+                                <input type="text" class="form-control" name="available_tables"
+                                    id="create_available_tables" placeholder="es: 3 o 2,3,5">
+                                <small class="text-muted">Numero o elenco</small>
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -184,7 +184,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         // Preload number of tables when venue is selected
         const locationInput = document.getElementById('create_location');
-        const tablesInput = document.getElementById('create_number_of_tables');
+        const tablesInput = document.getElementById('create_available_tables');
         const venueOptions = document.querySelectorAll('#venue-suggestions option');
 
         if (locationInput && tablesInput) {
@@ -197,19 +197,12 @@
                 );
 
                 if (matchingOption) {
-                    // Preload tables count from verified venue
+                    // Preload tables count from verified venue as default
                     const tablesCount = matchingOption.getAttribute('data-tables');
                     if (tablesCount && tablesCount !== '0') {
                         tablesInput.value = tablesCount;
-                        tablesInput.disabled = true; // Disable for existing venues
-                    } else {
-                        tablesInput.value = '';
-                        tablesInput.disabled = false;
+                        // Don't disable - user can override with specific tables
                     }
-                } else {
-                    // New venue - enable manual input
-                    tablesInput.value = '';
-                    tablesInput.disabled = false;
                 }
             });
         }

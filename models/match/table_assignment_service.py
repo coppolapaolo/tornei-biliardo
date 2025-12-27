@@ -47,6 +47,9 @@ class TableAssignmentService:
     def get_table_names(location: str) -> List[str]:
         """Get list of table names for a venue.
 
+        DEPRECATED: Use get_table_names_for_gara() instead, which respects
+        gara-specific table configuration.
+
         Args:
             location: Name of the billiard hall
 
@@ -57,6 +60,28 @@ class TableAssignmentService:
         if not venue:
             return []
         return venue.get_table_names()
+
+    @staticmethod
+    def get_table_names_for_gara(gara_id: int) -> List[str]:
+        """Get list of table names for a specific gara.
+
+        Uses gara.get_available_tables() which handles the priority:
+        1. gara.available_tables if set
+        2. venue.get_table_names() if venue exists
+        3. Empty list
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            List of table names available for this gara
+        """
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return []
+        return gara.get_available_tables()
 
     @staticmethod
     @transactional(domain="match")
@@ -77,11 +102,12 @@ class TableAssignmentService:
         from models.match.services import MatchService
 
         gara = db.session.get(Gara, gara_id)
-        if not gara or not gara.location:
+        if not gara:
             return 0
 
-        # Get available table names
-        table_names = TableAssignmentService.get_table_names(gara.location)
+        # Get available table names (uses gara.available_tables if set,
+        # otherwise falls back to venue's tables)
+        table_names = gara.get_available_tables()
         if not table_names:
             return 0
 

@@ -54,11 +54,17 @@ competition_bp = Blueprint("competition", __name__)
 
 
 def _handle_venue_creation(
-    location: str, number_of_tables: Optional[int] = None
+    location: str, tables_input: Optional[str] = None
 ) -> str:
     """
     Handle venue creation/validation for competitions.
     If location doesn't match existing venues, create as disabled and non-verified.
+
+    Args:
+        location: Name of the venue
+        tables_input: Either a single number ("5") or comma-separated list ("2,3,5")
+                     If single number, creates venue with that many tables.
+
     Returns the location string to use.
     """
     if not location or not location.strip():
@@ -72,28 +78,33 @@ def _handle_venue_creation(
     if existing_venue:
         return location
 
-    # Create new disabled, non-verified venue
-    if number_of_tables and number_of_tables > 0:
-        try:
-            # Create via LocationService first
-            new_venue = LocationService.create_billiard_hall(
-                name=location,
-                added_by_id=current_user.id,
-                number_of_tables=number_of_tables,
-            )
+    # New venue - try to create it if we have table info
+    if tables_input and tables_input.strip():
+        # Parse the input to determine number of tables for venue
+        parsed_tables = Gara.parse_tables_input(tables_input)
+        if parsed_tables:
+            # Use the count of tables for the venue
+            number_of_tables = len(parsed_tables)
+            try:
+                # Create via LocationService first
+                new_venue = LocationService.create_billiard_hall(
+                    name=location,
+                    added_by_id=current_user.id,
+                    number_of_tables=number_of_tables,
+                )
 
-            # Then modify to set as disabled and non-verified
-            new_venue.is_active = False
-            new_venue.verified = False
+                # Then modify to set as disabled and non-verified
+                new_venue.is_active = False
+                new_venue.verified = False
 
-            flash(
-                f"Nuovo luogo '{location}' aggiunto come disattivato. "
-                f"Sarà verificato dall'admin.",
-                "info",
-            )
-        except Exception as e:
-            # If creation fails, continue with original location
-            flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
+                flash(
+                    f"Nuovo luogo '{location}' aggiunto come disattivato. "
+                    f"Sarà verificato dall'admin.",
+                    "info",
+                )
+            except Exception as e:
+                # If creation fails, continue with original location
+                flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
     else:
         flash(
             f"Impossibile creare '{location}': specificare il numero di tavoli.",
@@ -125,11 +136,14 @@ def create_gara_standalone():
 
             # Campi opzionali
             location = request.form.get("location", "").strip()
-            number_of_tables = request.form.get("number_of_tables")
-            number_of_tables = int(number_of_tables) if number_of_tables else None
+            tables_input = request.form.get("available_tables", "").strip()
 
             # Handle venue auto-creation
-            location = _handle_venue_creation(location, number_of_tables)
+            location = _handle_venue_creation(location, tables_input)
+
+            # Parse tables for gara-specific configuration
+            available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
+
             description = request.form.get("description", "").strip()
             rounds_count = int(request.form.get("rounds_count", DEFAULT_ROUNDS_COUNT))
             min_participants = int(request.form.get("min_participants", DEFAULT_MIN_PARTICIPANTS))
@@ -211,6 +225,10 @@ def create_gara_standalone():
                 match_distance=match_distance,
                 is_race_to_sets=is_race_to_sets,
             )
+
+            # Set gara-specific available tables
+            if available_tables:
+                gara.set_available_tables(available_tables)
 
             flash(f"Gara singola '{name}' creata con successo!", "success")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
@@ -332,11 +350,14 @@ def create_gara():
 
     # Nuovi campi
     location = request.form.get("location", "").strip()
-    number_of_tables = request.form.get("number_of_tables")
-    number_of_tables = int(number_of_tables) if number_of_tables else None
+    tables_input = request.form.get("available_tables", "").strip()
 
     # Handle venue auto-creation
-    location = _handle_venue_creation(location, number_of_tables)
+    location = _handle_venue_creation(location, tables_input)
+
+    # Parse tables for gara-specific configuration
+    available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
+
     description = request.form.get("description", "")
     rounds_count = int(request.form.get("rounds_count", DEFAULT_ROUNDS_COUNT))
     min_participants = int(request.form.get("min_participants", DEFAULT_MIN_PARTICIPANTS))
@@ -350,7 +371,7 @@ def create_gara():
     exact_number = "exact_number" in request.form
     is_race_to = not exact_number
     withdraw_policy = request.form.get("withdraw_policy", DEFAULT_WITHDRAW_POLICY)
-    GaraService.create_gara(
+    gara = GaraService.create_gara(
         campionato_id=campionato_id,
         number=number,
         name=name,
@@ -366,6 +387,10 @@ def create_gara():
         is_race_to=is_race_to,
         withdraw_policy=withdraw_policy,
     )
+
+    # Set gara-specific available tables
+    if available_tables:
+        gara.set_available_tables(available_tables)
 
     flash(f"Gara {number} creata con successo!")
     return redirect(
@@ -404,10 +429,12 @@ def edit_gara(gara_id):
 
             # Handle venue auto-creation for location
             location = request.form.get("location", "").strip()
-            number_of_tables = request.form.get("number_of_tables")
-            number_of_tables = int(number_of_tables) if number_of_tables else None
+            tables_input = request.form.get("available_tables", "").strip()
 
-            location = _handle_venue_creation(location, number_of_tables)
+            location = _handle_venue_creation(location, tables_input)
+
+            # Parse tables for gara-specific configuration
+            available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
 
             # Estratti i parametri di configurazione matchmaking
             matchmaking_strategy = request.form.get(
@@ -451,6 +478,10 @@ def edit_gara(gara_id):
                 match_distance=match_distance,
                 is_race_to_sets=is_race_to_sets,
             )
+
+            # Set gara-specific available tables
+            if available_tables:
+                gara.set_available_tables(available_tables)
 
             # Handle round discipline configuration (only for random strategy)
             if matchmaking_strategy == "random":

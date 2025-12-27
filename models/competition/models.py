@@ -21,7 +21,8 @@ from models.competition.constants import (
     DEFAULT_ENTRY_FEE,
     DEFAULT_WITHDRAW_POLICY,
 )
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
+import json
 
 if TYPE_CHECKING:
     pass
@@ -56,6 +57,9 @@ class Gara(db.Model):
 
     # NUOVI CAMPI
     location = db.Column(db.String(200))  # Luogo della gara
+    # Available tables for this gara - JSON list: '["2", "3", "5"]'
+    # If set, overrides venue's tables. If None, uses venue's tables.
+    available_tables = db.Column(db.Text, nullable=True)
     description = db.Column(db.Text)  # Descrizione opzionale
     rounds_count = db.Column(
         db.Integer, nullable=False, default=DEFAULT_ROUNDS_COUNT
@@ -168,6 +172,74 @@ class Gara(db.Model):
             return None
         from models.location.models import BilliardHall
         return BilliardHall.query.filter_by(name=self.location).first()
+
+    @staticmethod
+    def parse_tables_input(input_str: str) -> List[str]:
+        """Parse user input to list of table names.
+
+        Handles:
+        - Multiple spaces around commas
+        - Alphanumeric table names (letters, numbers, words)
+        - Single integer interpreted as count (1-N)
+
+        Examples:
+        - "2,3,5" → ["2", "3", "5"]
+        - "2, 3, 5" → ["2", "3", "5"]
+        - "2,  a,      7  , 1" → ["2", "a", "7", "1"]
+        - "Sala A, Sala B" → ["Sala A", "Sala B"]
+        - "5" → ["1", "2", "3", "4", "5"]  (single integer = count)
+        - "" → []
+        """
+        if not input_str or not input_str.strip():
+            return []
+
+        input_str = input_str.strip()
+
+        # Check if it's a single integer (interpreted as count)
+        if input_str.isdigit():
+            count = int(input_str)
+            if count > 0:
+                return [str(i) for i in range(1, count + 1)]
+            return []
+
+        # Otherwise, split by comma and strip each element
+        tables = [t.strip() for t in input_str.split(",")]
+        # Filter out empty strings
+        return [t for t in tables if t]
+
+    def get_available_tables(self) -> List[str]:
+        """Return available table names for this gara.
+
+        Priority:
+        1. gara.available_tables if set (parsed from JSON)
+        2. venue.get_table_names() if venue exists
+        3. Empty list
+        """
+        # Priority 1: gara-specific tables
+        if self.available_tables:
+            try:
+                return json.loads(self.available_tables)
+            except (json.JSONDecodeError, TypeError):
+                return []
+
+        # Priority 2: venue tables
+        venue = self.venue
+        if venue:
+            return venue.get_table_names()
+
+        # Priority 3: no tables
+        return []
+
+    def set_available_tables(self, tables: List[str]) -> None:
+        """Set available tables from a list.
+
+        Args:
+            tables: List of table names, or empty list for None
+        """
+        if tables:
+            self.available_tables = json.dumps(tables)
+        else:
+            self.available_tables = None
 
     # Property per identificare se è standalone
     # TODO: se la modellazione cambia e la relazione viene spostata in

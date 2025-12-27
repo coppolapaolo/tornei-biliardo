@@ -123,11 +123,11 @@
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="number_of_tables" class="form-label">N. Tavoli</label>
-                        <input type="number" class="form-control" name="number_of_tables"
-                            value="{{ gara.venue.number_of_tables if gara.venue else '' }}" placeholder="0" min="1"
-                            max="50">
-                        <small class="text-muted">Solo per nuove sale</small>
+                        <label for="available_tables" class="form-label">Tavoli</label>
+                        <input type="text" class="form-control" name="available_tables"
+                            value="{% if gara.available_tables %}{{ gara.get_available_tables()|join(', ') }}{% elif gara.venue and gara.venue.number_of_tables %}{{ gara.venue.number_of_tables }}{% endif %}"
+                            placeholder="es: 3 o 2,3,5">
+                        <small class="text-muted">Numero o elenco separato da virgole</small>
                     </div>
                 </div>
                 <div class="col-md-2">

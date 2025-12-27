@@ -167,10 +167,11 @@
                                 <small class="text-muted">Seleziona una sala esistente o scrivine una nuova.</small>
                             </div>
 
-                            <div class="mb-3" id="tables-container" style="display: none;">
-                                <label for="number_of_tables" class="form-label">Numero Tavoli (per nuova sala)</label>
-                                <input type="number" class="form-control" id="number_of_tables" name="number_of_tables"
-                                    placeholder="0" min="1" max="50">
+                            <div class="mb-3">
+                                <label for="available_tables" class="form-label">Tavoli Disponibili</label>
+                                <input type="text" class="form-control" id="available_tables" name="available_tables"
+                                    placeholder="es: 3 oppure 2,3,5">
+                                <small class="text-muted">Numero di tavoli oppure elenco specifico separato da virgole</small>
                             </div>
 
                             <div class="mb-3">
@@ -594,17 +595,14 @@
         oddPolicySelect.addEventListener('change', updateTrioWarning);
         distanceInput.addEventListener('input', updateTrioWarning);
 
-        // Venue logic
+        // Venue logic - prefill tables from verified venues
         const locationInput = document.getElementById('location');
-        const tablesInput = document.getElementById('number_of_tables');
-        const tablesContainer = document.getElementById('tables-container');
+        const tablesInput = document.getElementById('available_tables');
         const venueOptions = document.querySelectorAll('#venue-suggestions option');
 
-        function updateVenueTablesVisibility() {
+        function prefillVenueTables() {
             const selectedValue = locationInput.value.trim();
             if (!selectedValue) {
-                tablesContainer.style.display = 'none';
-                tablesInput.value = '';
                 return;
             }
 
@@ -613,21 +611,19 @@
             );
 
             if (matchingOption) {
-                // Existing verified venue
-                tablesContainer.style.display = 'none';
-                tablesInput.value = ''; // Don't override existing venue tables
-            } else {
-                // New venue - show table input
-                tablesContainer.style.display = 'block';
+                // Existing verified venue - prefill with venue's table count
+                const tablesCount = matchingOption.getAttribute('data-tables');
+                if (tablesCount && tablesCount !== '0' && !tablesInput.value) {
+                    tablesInput.value = tablesCount;
+                }
             }
         }
 
-        locationInput.addEventListener('input', updateVenueTablesVisibility);
-        locationInput.addEventListener('change', updateVenueTablesVisibility);
+        locationInput.addEventListener('input', prefillVenueTables);
+        locationInput.addEventListener('change', prefillVenueTables);
 
         // Initial run
         updateStrategyUI();
-        updateVenueTablesVisibility();
     });
 </script>
 {% endblock %}
