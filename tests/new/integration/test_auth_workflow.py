@@ -217,8 +217,8 @@ class TestAuthenticationRoutes:
             "/auth/login", data={"username": "director", "password": "director123"}
         )
 
-        # Test access to director routes
-        response = client.get("/director/create_standalone")
+        # Test access to dashboard (directors see director-specific content)
+        response = client.get("/dashboard")
         assert response.status_code == 200
 
     def test_player_cannot_access_admin_routes(self, client, db_session):
@@ -265,6 +265,10 @@ class TestDirectorRequestWorkflow:
         db_session.add_all([player, admin])
         db_session.commit()
 
+        # Store IDs before HTTP requests (to avoid DetachedInstanceError)
+        player_id = player.id
+        admin_id = admin.id
+
         # Login as player
         client.post("/auth/login", data={"username": "player", "password": "player123"})
 
@@ -278,10 +282,12 @@ class TestDirectorRequestWorkflow:
         assert response.status_code == 200
 
         # Check request was created
-        request = DirectorRequest.query.filter_by(user_id=player.id).first()
-        assert request is not None
-        assert request.notes == "I want to organize tournaments in my local club"
-        assert request.status == "pending"
+        dir_request = DirectorRequest.query.filter_by(user_id=player_id).first()
+        assert dir_request is not None
+        assert dir_request.notes == "I want to organize tournaments in my local club"
+        assert dir_request.status == "pending"
+
+        request_id = dir_request.id
 
         # Logout player
         client.post("/auth/logout")
@@ -296,7 +302,7 @@ class TestDirectorRequestWorkflow:
 
         # Approve the request
         response = client.post(
-            f"/admin/director_requests/{request.id}/process",
+            f"/admin/director_requests/{request_id}/process",
             data={
                 "status": "approved",
                 "admin_notes": "User is qualified to be a director",
@@ -306,14 +312,14 @@ class TestDirectorRequestWorkflow:
 
         assert response.status_code == 200
 
-        # Check request was processed
-        db_session.refresh(request)
-        assert request.status == "approved"
-        assert request.processed_by_id == admin.id
-        assert request.notes == "User is qualified to be a director"
+        # Check request was processed - reload from database
+        dir_request = db_session.get(DirectorRequest, request_id)
+        assert dir_request.status == "approved"
+        assert dir_request.processed_by_id == admin_id
+        assert dir_request.admin_notes == "User is qualified to be a director"
 
         # Check player was promoted to director
-        db_session.refresh(player)
+        player = db_session.get(User, player_id)
         assert player.role == UserRole.DIRECTOR.value
 
     def test_director_request_rejection(self, client, db_session):

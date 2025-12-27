@@ -54,9 +54,8 @@ def db_session(app):
     # Clear all existing data before each test
     db.session.remove()
 
-    # Get all tables and truncate them
-    # Use test_request_context instead of app_context to provide
-    # session access for Flask-Babel translations
+    # Use test_request_context for setup (drop/create tables)
+    # This provides session access for Flask-Babel translations during setup
     with app.test_request_context():
         # Drop and recreate all tables to ensure complete isolation
         db.drop_all()

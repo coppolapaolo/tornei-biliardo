@@ -140,7 +140,7 @@ def _reset_database_core() -> Dict[str, object]:
 
         # Apertura iscrizioni + 8 iscritti su La Garetta
         GaraService.to_inscription(
-            gara_garetta.id, datetime.now(), datetime.now() + timedelta(days=3)
+            gara_garetta.id, datetime.utcnow(), datetime.utcnow() + timedelta(days=3)
         )
         for u in players[:8]:
             InscriptionService.inscribe_user(u.id, gara_garetta.id)
