@@ -125,6 +125,9 @@ class GamificationConfigService:
         Returns:
             List of LevelUnlock objects. Falls back to default values
             if database is not populated.
+
+        Note: Objects are detached from session to allow safe caching.
+        All attributes are pre-loaded before caching.
         """
         from models.gamification.config_models import DEFAULT_LEVEL_UNLOCKS
 
@@ -141,6 +144,18 @@ class GamificationConfigService:
             if not unlocks:
                 # Create mock objects for fallback
                 unlocks = cls._create_default_level_unlocks()
+            else:
+                # Pre-load all attributes while still in session context
+                # to prevent DetachedInstanceError when accessed later
+                for unlock in unlocks:
+                    _ = unlock.level
+                    _ = unlock.feature_code
+                    _ = unlock.feature_name
+                    _ = unlock.description
+                    _ = unlock.is_active
+                # Expunge from session to make them safe for caching
+                for unlock in unlocks:
+                    db.session.expunge(unlock)
             with cls._cache_lock:
                 cls._cache[cache_key] = unlocks
             return unlocks
@@ -233,6 +248,8 @@ class GamificationConfigService:
 
         Returns:
             List of StreakMilestone objects
+
+        Note: Objects are detached from session to allow safe caching.
         """
         cache_key = "_streak_milestones"
         with cls._cache_lock:
@@ -243,6 +260,18 @@ class GamificationConfigService:
             milestones = StreakMilestone.query.filter_by(is_active=True).order_by(
                 StreakMilestone.weeks
             ).all()
+            if milestones:
+                # Pre-load all attributes while still in session context
+                # to prevent DetachedInstanceError when accessed later
+                for milestone in milestones:
+                    _ = milestone.weeks
+                    _ = milestone.freeze_tokens
+                    _ = milestone.xp_bonus
+                    _ = milestone.badge_name
+                    _ = milestone.is_active
+                # Expunge from session to make them safe for caching
+                for milestone in milestones:
+                    db.session.expunge(milestone)
             with cls._cache_lock:
                 cls._cache[cache_key] = milestones
             return milestones
