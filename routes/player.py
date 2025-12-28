@@ -1910,3 +1910,73 @@ def export_profile_csv(user_id):
             )
         },
     )
+
+
+# =============================================================================
+# Player History - Storico Completo
+# =============================================================================
+
+
+@player_bp.route("/history")
+@login_required
+@player_only
+def history():
+    """Storico completo del giocatore con filtri avanzati.
+
+    Accessible to players and directors (blocked for pure admins).
+    Supports three tabs: matches, gare, campionati.
+    """
+    from models.player.history_service import PlayerHistoryService, HistoryFilters
+
+    # Get active tab (default: matches)
+    tab = request.args.get("tab", "matches")
+    if tab not in ("matches", "gare", "campionati"):
+        tab = "matches"
+
+    # Parse filters from request
+    filters = HistoryFilters.from_request(request.args)
+    page = request.args.get("page", 1, type=int)
+
+    # Initialize data containers
+    match_pagination = None
+    match_stats = None
+    gara_pagination = None
+    gara_stats = None
+    campionato_pagination = None
+
+    # Fetch data based on active tab
+    if tab == "matches":
+        match_pagination, match_stats = PlayerHistoryService.get_match_history(
+            user_id=current_user.id,
+            filters=filters,
+            page=page,
+            per_page=20,
+        )
+    elif tab == "gare":
+        gara_pagination, gara_stats = PlayerHistoryService.get_gara_history(
+            user_id=current_user.id,
+            filters=filters,
+            page=page,
+            per_page=20,
+        )
+    elif tab == "campionati":
+        campionato_pagination = PlayerHistoryService.get_campionato_history(
+            user_id=current_user.id,
+            page=page,
+            per_page=20,
+        )
+
+    # Get filter options for dropdowns
+    filter_options = PlayerHistoryService.get_filter_options(current_user.id)
+
+    return render_template(
+        "player/history.html",
+        active_tab=tab,
+        match_pagination=match_pagination,
+        match_stats=match_stats,
+        gara_pagination=gara_pagination,
+        gara_stats=gara_stats,
+        campionato_pagination=campionato_pagination,
+        filters=filters,
+        filter_options=filter_options,
+    )

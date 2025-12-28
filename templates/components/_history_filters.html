@@ -1,0 +1,150 @@
+<!-- templates/components/_history_filters.html - Filtri storico riusabili -->
+{% set filter_type = filter_type|default('matches') %}
+
+<div class="card mb-4">
+    <div class="card-header" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+         style="cursor: pointer;" aria-expanded="true" aria-controls="filterCollapse">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-filter"></i> {{ _("Filtri") }}
+            </h5>
+            <i class="fas fa-chevron-down" id="filterIcon"></i>
+        </div>
+    </div>
+    <div id="filterCollapse" class="collapse show">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('player.history') }}">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <div class="row g-3">
+                    <!-- Discipline -->
+                    <div class="col-md-3">
+                        <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
+                        <select name="discipline" id="discipline" class="form-select">
+                            <option value="">{{ _("Tutte") }}</option>
+                            {% for value, label in filter_options.disciplines %}
+                            <option value="{{ value }}"
+                                    {{ 'selected' if filters.discipline == value else '' }}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Venue (with autocomplete) -->
+                    <div class="col-md-3">
+                        <label for="venue" class="form-label">{{ _("Sala") }}</label>
+                        <input type="text" name="venue" id="venue" class="form-control"
+                               list="venue-list" value="{{ filters.venue or '' }}"
+                               placeholder="{{ _('Cerca sala...') }}">
+                        <datalist id="venue-list">
+                            {% for venue in filter_options.venues %}
+                            <option value="{{ venue }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    {% if filter_type == 'matches' %}
+                    <!-- Opponent (only for matches) -->
+                    <div class="col-md-3">
+                        <label for="opponent_id" class="form-label">{{ _("Avversario") }}</label>
+                        <select name="opponent_id" id="opponent_id" class="form-select">
+                            <option value="">{{ _("Tutti") }}</option>
+                            {% for opponent in filter_options.opponents %}
+                            <option value="{{ opponent.id }}"
+                                    {{ 'selected' if filters.opponent_id == opponent.id else '' }}>
+                                {{ opponent.username }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Result (only for matches) -->
+                    <div class="col-md-3">
+                        <label for="result" class="form-label">{{ _("Risultato") }}</label>
+                        <select name="result" id="result" class="form-select">
+                            <option value="">{{ _("Tutti") }}</option>
+                            <option value="won" {{ 'selected' if filters.result == 'won' else '' }}>
+                                {{ _("Vittorie") }}
+                            </option>
+                            <option value="lost" {{ 'selected' if filters.result == 'lost' else '' }}>
+                                {{ _("Sconfitte") }}
+                            </option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if filter_type == 'gare' %}
+                    <!-- Show completed only (for gare) -->
+                    <div class="col-md-3">
+                        <label for="completed_only" class="form-label">{{ _("Stato") }}</label>
+                        <select name="completed_only" id="completed_only" class="form-select">
+                            <option value="true" {{ 'selected' if filters.completed_only else '' }}>
+                                {{ _("Solo completate") }}
+                            </option>
+                            <option value="false" {{ 'selected' if not filters.completed_only else '' }}>
+                                {{ _("Tutte") }}
+                            </option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <!-- Date From -->
+                    <div class="col-md-2">
+                        <label for="date_from" class="form-label">{{ _("Da") }}</label>
+                        <input type="date" name="date_from" id="date_from" class="form-control"
+                               value="{{ filters.date_from.isoformat() if filters.date_from else '' }}">
+                    </div>
+
+                    <!-- Date To -->
+                    <div class="col-md-2">
+                        <label for="date_to" class="form-label">{{ _("A") }}</label>
+                        <input type="date" name="date_to" id="date_to" class="form-control"
+                               value="{{ filters.date_to.isoformat() if filters.date_to else '' }}">
+                    </div>
+
+                    <!-- Campionato -->
+                    <div class="col-md-3">
+                        <label for="campionato_id" class="form-label">{{ _("Campionato") }}</label>
+                        <select name="campionato_id" id="campionato_id" class="form-select">
+                            <option value="">{{ _("Tutti") }}</option>
+                            {% for camp in filter_options.campionati %}
+                            <option value="{{ camp.id }}"
+                                    {{ 'selected' if filters.campionato_id == camp.id else '' }}>
+                                {{ camp.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> {{ _("Filtra") }}
+                        </button>
+                        <a href="{{ url_for('player.history', tab=active_tab) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> {{ _("Reset") }}
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var filterCollapse = document.getElementById('filterCollapse');
+    var filterIcon = document.getElementById('filterIcon');
+
+    if (filterCollapse && filterIcon) {
+        filterCollapse.addEventListener('show.bs.collapse', function () {
+            filterIcon.classList.remove('fa-chevron-right');
+            filterIcon.classList.add('fa-chevron-down');
+        });
+        filterCollapse.addEventListener('hide.bs.collapse', function () {
+            filterIcon.classList.remove('fa-chevron-down');
+            filterIcon.classList.add('fa-chevron-right');
+        });
+    }
+});
+</script>

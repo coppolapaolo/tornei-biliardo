@@ -1,0 +1,157 @@
+<!-- templates/components/_history_matches_tab.html - Tab partite storico -->
+
+<!-- Filters -->
+{% set filter_type = 'matches' %}
+{% include "components/_history_filters.html" %}
+
+<!-- Stats Summary -->
+{% if match_stats %}
+<div class="row mb-4">
+    <div class="col-6 col-md-2">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ match_stats.total_matches }}</h4>
+                <small>{{ _("Partite") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ match_stats.won_matches }}</h4>
+                <small>{{ _("Vittorie") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ match_stats.lost_matches }}</h4>
+                <small>{{ _("Sconfitte") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ match_stats.win_percentage }}%</h4>
+                <small>{{ _("Win Rate") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ match_stats.total_racks_won }}</h4>
+                <small>{{ _("Rack Vinti") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card bg-secondary text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ match_stats.total_racks_lost }}</h4>
+                <small>{{ _("Rack Persi") }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Results List -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i>
+                {{ _("Partite") }}
+                {% if match_pagination %}({{ match_pagination.total }}){% endif %}
+            </h5>
+            {% if match_pagination and match_pagination.total > 0 %}
+            <a href="{{ url_for('player.export_profile_csv', user_id=current_user.id) }}"
+               class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-download"></i> {{ _("Esporta CSV") }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        {% if match_pagination and match_pagination.items %}
+            {% for match in match_pagination.items %}
+                {% set is_player1 = match.player1_id == current_user.id %}
+                {% set opponent = match.player2 if is_player1 else match.player1 %}
+                {% set my_score = match.player1_score if is_player1 else match.player2_score %}
+                {% set opp_score = match.player2_score if is_player1 else match.player1_score %}
+                {% set is_winner = match.winner_id == current_user.id %}
+
+                <div class="card mb-2 {{ 'border-success' if is_winner else 'border-danger' }}">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <!-- Date and Competition -->
+                            <div class="col-md-3">
+                                <div class="fw-bold">
+                                    {{ match.gara.date|date_local if match.gara.date else '-' }}
+                                </div>
+                                <small class="text-muted">
+                                    {% if match.gara.campionato %}
+                                        {{ match.gara.campionato.name }} - {{ match.gara.name or ('Gara ' ~ match.gara.number) }}
+                                    {% else %}
+                                        {{ match.gara.name or 'Gara Singola' }}
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            <!-- Opponent -->
+                            <div class="col-md-2">
+                                <span class="text-muted">vs</span>
+                                <strong>{{ opponent.username if opponent else 'Bye' }}</strong>
+                            </div>
+
+                            <!-- Score -->
+                            <div class="col-md-2 text-center">
+                                <span class="badge {{ 'bg-success' if is_winner else 'bg-danger' }} fs-6">
+                                    {{ my_score }} - {{ opp_score }}
+                                </span>
+                            </div>
+
+                            <!-- Discipline -->
+                            <div class="col-md-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-trophy me-1"></i>
+                                    {{ (match.discipline or match.gara.discipline)|replace('_', ' ')|title }}
+                                </small>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="col-md-2">
+                                <small class="text-muted">
+                                    {% if match.gara.location %}
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    {{ match.gara.location|truncate(20) }}
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            <!-- Action -->
+                            <div class="col-md-1 text-end">
+                                <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
+                                   class="btn btn-sm btn-outline-primary" title="{{ _('Dettagli') }}">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% set pagination = match_pagination %}
+            {% include "components/_history_pagination.html" %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                {{ _("Nessuna partita trovata con i filtri selezionati.") }}
+            </div>
+        {% endif %}
+    </div>
+</div>

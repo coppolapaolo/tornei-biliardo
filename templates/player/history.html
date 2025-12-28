@@ -1,0 +1,66 @@
+<!-- templates/player/history.html - Storico completo del giocatore -->
+{% extends "base.html" %}
+
+{% block title %}{{ _("Storico") }} - {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="fas fa-history"></i> {{ _("Storico") }}</h1>
+        <p class="text-muted mb-0">{{ _("Tutte le tue partite, gare e campionati") }}</p>
+    </div>
+    <div>
+        <a href="{{ url_for('player.profile') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-user"></i> {{ _("Profilo") }}
+        </a>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-tachometer-alt"></i> {{ _("Dashboard") }}
+        </a>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {{ 'active' if active_tab == 'matches' else '' }}"
+           href="{{ url_for('player.history', tab='matches') }}"
+           role="tab">
+            <i class="fas fa-table-tennis"></i> {{ _("Partite") }}
+            {% if match_stats %}
+            <span class="badge bg-secondary ms-1">{{ match_stats.total_matches }}</span>
+            {% endif %}
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {{ 'active' if active_tab == 'gare' else '' }}"
+           href="{{ url_for('player.history', tab='gare') }}"
+           role="tab">
+            <i class="fas fa-trophy"></i> {{ _("Gare") }}
+            {% if gara_stats %}
+            <span class="badge bg-secondary ms-1">{{ gara_stats.total_gare }}</span>
+            {% endif %}
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {{ 'active' if active_tab == 'campionati' else '' }}"
+           href="{{ url_for('player.history', tab='campionati') }}"
+           role="tab">
+            <i class="fas fa-medal"></i> {{ _("Campionati") }}
+            {% if campionato_pagination %}
+            <span class="badge bg-secondary ms-1">{{ campionato_pagination.total }}</span>
+            {% endif %}
+        </a>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content">
+    {% if active_tab == 'matches' %}
+        {% include "components/_history_matches_tab.html" %}
+    {% elif active_tab == 'gare' %}
+        {% include "components/_history_gare_tab.html" %}
+    {% elif active_tab == 'campionati' %}
+        {% include "components/_history_campionati_tab.html" %}
+    {% endif %}
+</div>
+{% endblock %}

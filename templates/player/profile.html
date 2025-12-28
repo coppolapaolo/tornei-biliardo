@@ -11,10 +11,13 @@
     </div>
     <div>
         <a href="{{ url_for('player.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+            <i class="fas fa-arrow-left"></i> {{ _("Torna alla Dashboard") }}
+        </a>
+        <a href="{{ url_for('player.history') }}" class="btn btn-outline-primary">
+            <i class="fas fa-history"></i> {{ _("Storico Completo") }}
         </a>
         <a href="{{ url_for('player.delete_account') }}" class="btn btn-outline-danger">
-            <i class="fas fa-trash"></i> Elimina Account
+            <i class="fas fa-trash"></i> {{ _("Elimina Account") }}
         </a>
     </div>
 </div>

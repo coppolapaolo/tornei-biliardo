@@ -1,0 +1,137 @@
+<!-- templates/components/_history_gare_tab.html - Tab gare storico -->
+
+<!-- Filters -->
+{% set filter_type = 'gare' %}
+{% include "components/_history_filters.html" %}
+
+<!-- Stats Summary -->
+{% if gara_stats %}
+<div class="row mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ gara_stats.total_gare }}</h4>
+                <small>{{ _("Gare") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ gara_stats.first_places }}</h4>
+                <small>{{ _("Primi Posti") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ gara_stats.podiums }}</h4>
+                <small>{{ _("Podi") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center py-2">
+                <h4 class="mb-0">{{ gara_stats.total_matches_played }}</h4>
+                <small>{{ _("Partite Vinte") }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Results List -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i>
+            {{ _("Gare") }}
+            {% if gara_pagination %}({{ gara_pagination.total }}){% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if gara_pagination and gara_pagination.items %}
+            <div class="row">
+                {% for gara in gara_pagination.items %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header {{ 'bg-success bg-opacity-10' if gara.status == 'completed' else 'bg-warning bg-opacity-10' }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>
+                                        {% if gara.campionato %}
+                                            {{ gara.campionato.name }} - Gara {{ gara.number }}
+                                        {% else %}
+                                            {{ gara.name or 'Gara Singola' }}
+                                        {% endif %}
+                                    </strong>
+                                    <span class="badge {{ 'bg-success' if gara.status == 'completed' else 'bg-warning' }}">
+                                        {{ gara.status|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar text-muted me-2"></i>
+                                    {{ gara.date|date_local if gara.date else '-' }}
+                                </p>
+                                {% if gara.location %}
+                                <p class="mb-2">
+                                    <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                    {{ gara.location }}
+                                </p>
+                                {% endif %}
+                                <p class="mb-2">
+                                    <i class="fas fa-trophy text-muted me-2"></i>
+                                    {{ gara.discipline|replace('_', ' ')|title }} - {{ _("Al") }} {{ gara.distance }}
+                                </p>
+
+                                <!-- User's position in this gara -->
+                                {% if gara.status == 'completed' %}
+                                    {% set user_final_position = None %}
+                                    {% for rc in gara.round_classifications %}
+                                        {% if rc.user_id == current_user.id and rc.round_number == gara.current_round %}
+                                            {% set user_final_position = rc.position %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if user_final_position %}
+                                    <p class="mb-0">
+                                        <strong>
+                                            {% if user_final_position == 1 %}
+                                                <span class="text-warning"><i class="fas fa-medal"></i> 1° Posto</span>
+                                            {% elif user_final_position == 2 %}
+                                                <span class="text-secondary"><i class="fas fa-medal"></i> 2° Posto</span>
+                                            {% elif user_final_position == 3 %}
+                                                <span class="text-danger"><i class="fas fa-medal"></i> 3° Posto</span>
+                                            {% else %}
+                                                <span class="text-muted"><i class="fas fa-hashtag"></i> {{ user_final_position }}° Posto</span>
+                                            {% endif %}
+                                        </strong>
+                                    </p>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
+                                   class="btn btn-sm btn-outline-primary w-100">
+                                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% set pagination = gara_pagination %}
+            {% include "components/_history_pagination.html" %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                {{ _("Nessuna gara trovata con i filtri selezionati.") }}
+            </div>
+        {% endif %}
+    </div>
+</div>

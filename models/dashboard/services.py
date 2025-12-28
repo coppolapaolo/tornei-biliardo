@@ -548,12 +548,12 @@ class DashboardService:
             .all()
         )
 
-        # Partite attive (in corso + recenti completate)
+        # Partite attive (solo in attesa e in corso, NO completate - quelle vanno nello storico)
         my_upcoming = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value, MatchStatus.COMPLETED.value]),  # type: ignore[attr-defined]
+                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
                 or_(
                     TournamentMatch.player1_id == user_id,
                     TournamentMatch.player2_id == user_id,
@@ -562,7 +562,7 @@ class DashboardService:
             .order_by(
                 TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
             )
-            .limit(10)  # Limita per non mostrare troppe partite vecchie
+            .limit(10)
             .all()
         )
 
@@ -788,13 +788,13 @@ class DashboardService:
         # sezioni player-like per campionato selezionato
         player_sections = DashboardService._build_player_sections(user_id, selected)
 
-        # Per i director, mostriamo TUTTI i match correnti (come per i player)
-        # Non solo quelli del campionato selezionato
+        # Per i director, mostriamo solo match ATTIVI (in attesa o in corso)
+        # Le partite completate sono nello storico (/player/history)
         all_current_matches = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value, MatchStatus.COMPLETED.value]),  # type: ignore[attr-defined]
+                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
                 or_(
                     TournamentMatch.player1_id == user_id,
                     TournamentMatch.player2_id == user_id,
@@ -938,12 +938,13 @@ class DashboardService:
 
         player_sections = DashboardService._build_player_sections(user_id, selected)
 
-        # Per i player, mostriamo TUTTI i match correnti, non solo quelli del campionato selezionato
+        # Per i player, mostriamo solo match ATTIVI (in attesa o in corso)
+        # Le partite completate sono nello storico (/player/history)
         all_current_matches = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
-                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value, MatchStatus.COMPLETED.value]),  # type: ignore[attr-defined]
+                TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
                 or_(
                     TournamentMatch.player1_id == user_id,
                     TournamentMatch.player2_id == user_id,

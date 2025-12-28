@@ -1,0 +1,120 @@
+<!-- templates/components/_history_campionati_tab.html - Tab campionati storico -->
+
+<!-- No filters for campionati (simpler view) -->
+
+<!-- Results List -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i>
+            {{ _("Campionati") }}
+            {% if campionato_pagination %}({{ campionato_pagination.total }}){% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if campionato_pagination and campionato_pagination.items %}
+            <div class="row">
+                {% for campionato in campionato_pagination.items %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header {{ 'bg-success bg-opacity-10' if not campionato.is_active else 'bg-primary bg-opacity-10' }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>{{ campionato.name }}</strong>
+                                    <span class="badge {{ 'bg-success' if campionato.is_active else 'bg-secondary' }}">
+                                        {{ _("Attivo") if campionato.is_active else _("Concluso") }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2">
+                                    <i class="fas fa-chess text-muted me-2"></i>
+                                    {{ campionato.campionato_type|title }}
+                                </p>
+
+                                <!-- Count gare in this campionato -->
+                                {% set gare_count = campionato.gare|length %}
+                                <p class="mb-2">
+                                    <i class="fas fa-trophy text-muted me-2"></i>
+                                    {{ gare_count }} {{ _("gare") }}
+                                </p>
+
+                                <!-- User's participation info -->
+                                {% set user_gare_count = 0 %}
+                                {% for gara in campionato.gare %}
+                                    {% for insc in gara.inscriptions %}
+                                        {% if insc.user_id == current_user.id and not insc.is_withdrawn %}
+                                            {% set user_gare_count = user_gare_count + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+
+                                <p class="mb-2">
+                                    <i class="fas fa-user-check text-muted me-2"></i>
+                                    {{ _("Partecipato a") }} {{ user_gare_count }} {{ _("gare") }}
+                                </p>
+
+                                <!-- User's classification if available -->
+                                {% set user_classification = None %}
+                                {% for cls in campionato.classifications %}
+                                    {% if cls.user_id == current_user.id %}
+                                        {% set user_classification = cls %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if user_classification %}
+                                <p class="mb-0">
+                                    <strong>
+                                        {% if user_classification.position == 1 %}
+                                            <span class="text-warning"><i class="fas fa-medal"></i> 1° Classifica Generale</span>
+                                        {% elif user_classification.position == 2 %}
+                                            <span class="text-secondary"><i class="fas fa-medal"></i> 2° Classifica Generale</span>
+                                        {% elif user_classification.position == 3 %}
+                                            <span class="text-danger"><i class="fas fa-medal"></i> 3° Classifica Generale</span>
+                                        {% else %}
+                                            <span class="text-muted"><i class="fas fa-hashtag"></i> {{ user_classification.position }}° Classifica Generale</span>
+                                        {% endif %}
+                                    </strong>
+                                </p>
+                                {% endif %}
+
+                                <!-- Badges for special features -->
+                                <div class="mt-2">
+                                    {% if campionato.without_x %}
+                                    <span class="badge bg-info me-1" title="{{ _('Senza X') }}">
+                                        <i class="fas fa-ban"></i> Senza X
+                                    </span>
+                                    {% endif %}
+                                    {% if campionato.final_playoffs %}
+                                    <span class="badge bg-warning text-dark me-1" title="{{ _('Playoff') }}">
+                                        <i class="fas fa-sitemap"></i> Playoff
+                                    </span>
+                                    {% endif %}
+                                    {% if campionato.challenge_mode %}
+                                    <span class="badge bg-success me-1" title="{{ _('Challenge') }}">
+                                        <i class="fas fa-star"></i> Challenge
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}"
+                                   class="btn btn-sm btn-outline-primary w-100">
+                                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% set pagination = campionato_pagination %}
+            {% include "components/_history_pagination.html" %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                {{ _("Non hai ancora partecipato a nessun campionato.") }}
+            </div>
+        {% endif %}
+    </div>
+</div>
