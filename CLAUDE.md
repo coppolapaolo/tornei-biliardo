@@ -30,6 +30,11 @@ pyright
 
 # Format code
 black . && flake8
+
+# Internationalization (i18n)
+pybabel extract -F babel.cfg -o messages.pot .  # Extract new strings
+pybabel update -i messages.pot -d translations  # Update catalogs
+pybabel compile -d translations                 # Compile translations
 ```
 
 ### Key Files & Locations
