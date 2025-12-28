@@ -2,7 +2,7 @@
 <!-- Statistiche Generali -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5><i class="fas fa-chart-bar"></i> Le mie Statistiche</h5>
+        <h5><i class="fas fa-chart-bar"></i> {% if is_own_profile %}{{ _("Le mie Statistiche") }}{% else %}{{ _("Statistiche") }}{% endif %}</h5>
     </div>
     <div class="card-body">
         <div class="row">

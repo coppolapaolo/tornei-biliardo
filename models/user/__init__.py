@@ -30,6 +30,13 @@ from .services import (
     VenueManagementService,
 )
 from .venue_manager_service import VenueManagerService
+from .privacy_models import (
+    UserPrivacySetting,
+    HiddenMatch,
+    HiddenInscription,
+    HiddenCampionato,
+)
+from .privacy_service import PrivacyService
 
 # Export all public classes and functions
 __all__ = [
@@ -39,6 +46,11 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
+    # Privacy models
+    "UserPrivacySetting",
+    "HiddenMatch",
+    "HiddenInscription",
+    "HiddenCampionato",
     # Permissions
     "PermissionChecker",
     "RoleRequirement",
@@ -48,6 +60,7 @@ __all__ = [
     "UserStatsService",
     "VenueManagerService",
     "VenueManagementService",
+    "PrivacyService",
 ]
 
 # Domain version and metadata
@@ -69,6 +82,10 @@ def get_user_models():
         "DirectorRequest": DirectorRequest,
         "VenueManagerRequest": VenueManagerRequest,
         "VenueManagement": VenueManagement,
+        "UserPrivacySetting": UserPrivacySetting,
+        "HiddenMatch": HiddenMatch,
+        "HiddenInscription": HiddenInscription,
+        "HiddenCampionato": HiddenCampionato,
     }
 
 
@@ -85,6 +102,7 @@ def get_user_services():
         "UserStatsService": UserStatsService,
         "VenueManagerService": VenueManagerService,
         "VenueManagementService": VenueManagementService,
+        "PrivacyService": PrivacyService,
     }
 
 

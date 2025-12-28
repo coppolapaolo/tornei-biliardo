@@ -367,6 +367,15 @@ class NotificationEventHandlers:
                 f"della {entity_label} '{event.entity_name}'"
             )
 
+            # Determine action URL based on entity type
+            # Co-directors have admin access, so link to admin routes
+            if event.entity_type == "gara":
+                action_url = f"/admin/gara/{event.entity_id}"
+                action_text = "Gestisci Gara"
+            else:
+                action_url = f"/admin/campionato/{event.entity_id}"
+                action_text = "Gestisci Campionato"
+
             NotificationService.create_notification(
                 user_id=event.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
@@ -378,7 +387,9 @@ class NotificationEventHandlers:
                     "entity_id": event.entity_id,
                     "entity_name": event.entity_name,
                     "assigned_by_id": event.assigned_by_id
-                }
+                },
+                action_url=action_url,
+                action_text=action_text
             )
             logger.info(
                 f"Sent director assignment added notification "
@@ -405,6 +416,15 @@ class NotificationEventHandlers:
                 f"della {entity_label} '{event.entity_name}'"
             )
 
+            # Determine action URL based on entity type
+            # Link to public view since user no longer has admin access
+            if event.entity_type == "gara":
+                action_url = f"/gara/{event.entity_id}"
+                action_text = "Visualizza Gara"
+            else:
+                action_url = f"/campionato/{event.entity_id}"
+                action_text = "Visualizza Campionato"
+
             NotificationService.create_notification(
                 user_id=event.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
@@ -416,7 +436,9 @@ class NotificationEventHandlers:
                     "entity_id": event.entity_id,
                     "entity_name": event.entity_name,
                     "removed_by_id": event.removed_by_id
-                }
+                },
+                action_url=action_url,
+                action_text=action_text
             )
             logger.info(
                 f"Sent director assignment removed notification "

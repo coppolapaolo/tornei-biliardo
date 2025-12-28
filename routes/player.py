@@ -6,6 +6,7 @@ from flask.helpers import redirect, url_for, flash  # helper ufficiali Flask
 from flask.json import jsonify  # funzione ufficiale Flask
 from werkzeug.exceptions import abort  # più specifico e stabile
 from flask_login import login_required, current_user, logout_user
+from flask_babel import _
 
 from datetime import datetime
 from typing import cast
@@ -784,6 +785,11 @@ def profile():
         "provas_played": completed_provas,
     }
 
+    # Privacy context for template consistency (own profile always has full access)
+    from models.user.privacy_service import PrivacyService
+
+    privacy = PrivacyService.get_privacy_settings(current_user.id)
+
     return render_template(
         "player/profile.html",
         user=current_user,
@@ -793,25 +799,37 @@ def profile():
         stats=stats,
         challenge_stats=challenge_stats,
         challenge_history=challenge_history,
+        # Privacy context for template
+        privacy=privacy,
+        is_admin=current_user.is_admin,
+        is_own_profile=True,
     )
 
 
 @player_bp.route("/profile/<int:user_id>")
 def view_profile(user_id):
-    """View another player's public profile"""
+    """View another player's public profile with privacy controls."""
     from models.user.models import User
     from models.competition.models import Gara, Inscription
     from models.match.models import Match
     from models.status_enum import MatchStatus
     from models.campionato.models import Campionato
     from models.challenge.models import Challenge, ChallengeAttempt
+    from models.user.privacy_service import PrivacyService
 
     user = db.session.get(User, user_id)
     if user is None:
         abort(404)
 
-    # Public profile data (limited compared to personal profile)
-    # Inscriptions
+    # Privacy context
+    viewer_id = current_user.id if current_user.is_authenticated else None
+    is_admin = current_user.is_authenticated and current_user.is_admin
+    is_own_profile = viewer_id == user_id
+
+    # Get privacy settings
+    privacy = PrivacyService.get_privacy_settings(user_id)
+
+    # Inscriptions (always loaded for statistics)
     inscriptions = (
         Inscription.query.filter_by(user_id=user.id)
         .join(Gara)
@@ -821,7 +839,7 @@ def view_profile(user_id):
     )
 
     # Matches played
-    matches = (
+    all_matches = (
         Match.query.filter(
             db.or_(Match.player1_id == user.id, Match.player2_id == user.id)
         )
@@ -835,37 +853,45 @@ def view_profile(user_id):
         .all()
     )
 
-    # Public statistics
-    total_matches = len([m for m in matches if m.status == MatchStatus.COMPLETED.value])
-    won_matches = len(
-        [
-            m
-            for m in matches
-            if m.status == MatchStatus.COMPLETED.value and m.winner_id == user.id
-        ]
+    # Filter matches based on privacy (hidden matches)
+    matches = PrivacyService.filter_visible_matches(
+        user_id=user_id,
+        viewer_id=viewer_id,
+        matches=all_matches,
+        is_admin=is_admin,
     )
+
+    # Public statistics (calculated from visible matches only for non-owners)
+    completed_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value]
+    total_matches = len(completed_matches)
+    won_matches = len([m for m in completed_matches if m.winner_id == user.id])
     win_percentage = (won_matches / total_matches * 100) if total_matches > 0 else 0
 
-    # Recent matches (last 10)
-    recent_matches = [m for m in matches if m.status == MatchStatus.COMPLETED.value][
-        :10
-    ]
+    # Recent matches (last 10 visible)
+    recent_matches = completed_matches[:10]
 
     # Completed tournaments count
+    visible_inscriptions = PrivacyService.filter_visible_inscriptions(
+        user_id=user_id,
+        viewer_id=viewer_id,
+        inscriptions=inscriptions,
+        is_admin=is_admin,
+    )
+
     completed_tournaments = set(
         [
             insc.gara.campionato_id
-            for insc in inscriptions
+            for insc in visible_inscriptions
             if insc.gara.campionato_id is not None and insc.gara.status == "completed"
         ]
     )
 
     completed_provas = len(
-        [insc for insc in inscriptions if insc.gara.status == "completed"]
+        [insc for insc in visible_inscriptions if insc.gara.status == "completed"]
     )
 
     stats = {
-        "total_inscriptions": len(inscriptions),
+        "total_inscriptions": len(visible_inscriptions),
         "total_matches": total_matches,
         "won_matches": won_matches,
         "lost_matches": total_matches - won_matches,
@@ -904,12 +930,16 @@ def view_profile(user_id):
     return render_template(
         "player/profile.html",
         user=user,
-        inscriptions=inscriptions,
+        inscriptions=visible_inscriptions,
         matches=recent_matches,
         stats=stats,
         challenge_stats=challenge_stats,
         challenge_history=challenge_attempts,
         classifications=[],
+        # Privacy context for template
+        privacy=privacy,
+        is_admin=is_admin,
+        is_own_profile=is_own_profile,
     )
 
 
@@ -974,6 +1004,111 @@ def request_director():
         flash(f"Errore inaspettato: {str(e)}", "error")
 
     return redirect(url_for("player.profile"))
+
+
+@player_bp.route("/privacy-settings", methods=["GET", "POST"])
+@login_required
+@player_only
+def privacy_settings():
+    """Gestione impostazioni privacy del profilo."""
+    from models.user.privacy_service import PrivacyService
+
+    if request.method == "POST":
+        PrivacyService.update_privacy_settings(
+            user_id=current_user.id,
+            show_email="show_email" in request.form,
+            show_phone="show_phone" in request.form,
+            show_statistics="show_statistics" in request.form,
+            show_recent_matches="show_recent_matches" in request.form,
+            show_classifications="show_classifications" in request.form,
+            show_challenge_stats="show_challenge_stats" in request.form,
+        )
+        flash(_("Impostazioni privacy aggiornate con successo."), "success")
+        return redirect(url_for("player.privacy_settings"))
+
+    settings = PrivacyService.get_privacy_settings(current_user.id)
+    return render_template("player/privacy_settings.html", settings=settings)
+
+
+# ========== Hide/Show AJAX Routes ==========
+
+
+@player_bp.route("/hide/match/<int:match_id>", methods=["POST"])
+@login_required
+@player_only
+def hide_match(match_id):
+    """Hide a match from public profile (AJAX)."""
+    from models.user.privacy_service import PrivacyService
+
+    try:
+        PrivacyService.hide_match(current_user.id, match_id)
+        return jsonify({"success": True, "message": _("Match nascosto")})
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@player_bp.route("/show/match/<int:match_id>", methods=["POST"])
+@login_required
+@player_only
+def show_match(match_id):
+    """Show a previously hidden match (AJAX)."""
+    from models.user.privacy_service import PrivacyService
+
+    if PrivacyService.show_match(current_user.id, match_id):
+        return jsonify({"success": True, "message": _("Match visibile")})
+    return jsonify({"success": False, "error": _("Match non era nascosto")}), 400
+
+
+@player_bp.route("/hide/inscription/<int:inscription_id>", methods=["POST"])
+@login_required
+@player_only
+def hide_inscription(inscription_id):
+    """Hide an inscription from public profile (AJAX)."""
+    from models.user.privacy_service import PrivacyService
+
+    try:
+        PrivacyService.hide_inscription(current_user.id, inscription_id)
+        return jsonify({"success": True, "message": _("Gara nascosta")})
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@player_bp.route("/show/inscription/<int:inscription_id>", methods=["POST"])
+@login_required
+@player_only
+def show_inscription(inscription_id):
+    """Show a previously hidden inscription (AJAX)."""
+    from models.user.privacy_service import PrivacyService
+
+    if PrivacyService.show_inscription(current_user.id, inscription_id):
+        return jsonify({"success": True, "message": _("Gara visibile")})
+    return jsonify({"success": False, "error": _("Gara non era nascosta")}), 400
+
+
+@player_bp.route("/hide/campionato/<int:campionato_id>", methods=["POST"])
+@login_required
+@player_only
+def hide_campionato(campionato_id):
+    """Hide a campionato from public profile (AJAX)."""
+    from models.user.privacy_service import PrivacyService
+
+    try:
+        PrivacyService.hide_campionato(current_user.id, campionato_id)
+        return jsonify({"success": True, "message": _("Campionato nascosto")})
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@player_bp.route("/show/campionato/<int:campionato_id>", methods=["POST"])
+@login_required
+@player_only
+def show_campionato(campionato_id):
+    """Show a previously hidden campionato (AJAX)."""
+    from models.user.privacy_service import PrivacyService
+
+    if PrivacyService.show_campionato(current_user.id, campionato_id):
+        return jsonify({"success": True, "message": _("Campionato visibile")})
+    return jsonify({"success": False, "error": _("Campionato non era nascosto")}), 400
 
 
 @player_bp.route("/notifications")

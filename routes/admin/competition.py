@@ -693,24 +693,23 @@ def gara_detail(gara_id):
         )
 
     # Carica dati admin solo se può gestire
-    inscriptions = None
     users = None
     can_manage_directors = False
     show_admin_management = False
     show_director_management = False
     match_can_modify = {}
 
-    if user_can_manage:
-        # Director management context
-        from models.user.models import User, DirectorAssignment
+    # Carica iscrizioni per TUTTI gli utenti (visibili nel template)
+    from models.user.models import User, DirectorAssignment
 
-        # Ottieni iscrizioni ordinate alfabeticamente per username
-        inscriptions = (
-            Inscription.query.filter_by(gara_id=gara_id)
-            .join(User, Inscription.user_id == User.id)
-            .order_by(User.username)
-            .all()
-        )
+    inscriptions = (
+        Inscription.query.filter_by(gara_id=gara_id)
+        .join(User, Inscription.user_id == User.id)
+        .order_by(User.username)
+        .all()
+    )
+
+    if user_can_manage:
 
         # Get already assigned directors for this gara
         assigned_director_ids = (

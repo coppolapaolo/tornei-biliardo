@@ -102,9 +102,12 @@
                     </small>
                 </div>
                 <div class="ms-3">
-                    {% if notification.action_url and notification.status.value != 'read' %}
-                    <a href="{{ notification.action_url }}" class="btn btn-primary btn-sm"
-                       onclick="event.preventDefault(); markAsReadAndNavigate({{ notification.id }}, '{{ notification.action_url }}');">
+                    {% if notification.action_url %}
+                    <a href="{{ notification.action_url }}"
+                       class="btn btn-{% if notification.status.value != 'read' %}primary{% else %}outline-primary{% endif %} btn-sm"
+                       {% if notification.status.value != 'read' %}
+                       onclick="event.preventDefault(); markAsReadAndNavigate({{ notification.id }}, '{{ notification.action_url }}');"
+                       {% endif %}>
                         <i class="fas fa-external-link-alt"></i> {{ notification.action_text or 'Vai' }}
                     </a>
                     {% elif notification.status.value != 'read' %}

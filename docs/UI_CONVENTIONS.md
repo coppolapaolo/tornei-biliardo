@@ -74,6 +74,15 @@ Le icone sono fornite da [Font Awesome 6 Free](https://fontawesome.com/icons). Q
 | **Aggiungi** | ➕ | `fa-plus` | Azione aggiungi |
 | **Indietro** | ⬅️ | `fa-arrow-left` | Navigazione indietro |
 
+### Privacy e Visibilità
+
+| Concetto | Icona | Classe FA | Note |
+|----------|:-----:|-----------|------|
+| **Privacy/Sicurezza** | 🔒 | `fa-lock` | Impostazioni privacy, protezione dati |
+| **Nascondi** | 👁️‍🗨️ | `fa-eye-slash` | Rende elemento non visibile ad altri |
+| **Mostra** | 👁️ | `fa-eye` | Rende elemento visibile (unhide) |
+| **Profilo privato** | 🔒 | `fa-user-lock` | Indica profilo con restrizioni privacy |
+
 ---
 
 ## Colori e Stati
@@ -274,6 +283,35 @@ Le icone sono fornite da [Font Awesome 6 Free](https://fontawesome.com/icons). Q
 </div>
 ```
 
+### Pattern Profilo Utente
+
+Layout condiviso per profilo proprio e profilo pubblico:
+
+```html
+<div class="row">
+    <div class="col-md-8">
+        <!-- Statistiche, partite, classifiche -->
+        {% if is_own_profile or is_admin or privacy.show_statistics %}
+            {% include "components/_player_statistics.html" %}
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        <!-- Info personali (solo owner) o card pubblica -->
+        {% if is_own_profile %}
+            {% include "components/_player_personal_info.html" %}
+        {% else %}
+            <!-- Card info pubblica con filtri privacy -->
+        {% endif %}
+    </div>
+</div>
+```
+
+**Convenzioni profilo:**
+- Contenuto sinistro: dati di gioco (statistiche, partite, classifiche)
+- Sidebar destra: info personali + iscrizioni attive
+- Titoli context-aware: "Le mie Statistiche" vs "Statistiche"
+- Admin bypassa tutti i filtri privacy
+
 ### Spacing Convenzioni
 
 | Uso | Classe | Note |
@@ -339,6 +377,26 @@ Le icone sono fornite da [Font Awesome 6 Free](https://fontawesome.com/icons). Q
 <div class="invalid-feedback">Errore</div>
 ```
 
+### Toggle Switch (Privacy Settings)
+
+Per impostazioni ON/OFF usare Bootstrap form-switch:
+
+```html
+<div class="form-check form-switch mb-2">
+    <input class="form-check-input" type="checkbox" id="show_email"
+           name="show_email" {% if settings.show_email %}checked{% endif %}>
+    <label class="form-check-label" for="show_email">
+        <i class="fas fa-envelope me-1 text-muted"></i> Mostra Email
+    </label>
+</div>
+```
+
+**Convenzioni toggle:**
+- Icona a sinistra del label (`me-1`)
+- Icona in `text-muted` per non distogliere attenzione
+- `mb-2` tra toggle consecutivi
+- Label descrive cosa succede quando è ON (es. "Mostra Email" non "Nascondi Email")
+
 ---
 
 ## Responsive Breakpoints
@@ -370,6 +428,10 @@ Le icone sono fornite da [Font Awesome 6 Free](https://fontawesome.com/icons). Q
 | 2025-12-28 | `fa-shield-halved` per partite | Lo scudo diviso evoca due contendenti in un duello 1v1. Sostituisce `fa-gamepad` e `fa-table-tennis` per uniformità |
 | 2025-12-28 | `fa-8-ball` per discipline | Specifico per il biliardo, rappresenta le discipline di gioco |
 | 2025-12-28 | `fa-bullseye` per gare | Evoca precisione e competizione |
+| 2025-12-28 | Icone privacy: `fa-lock`, `fa-eye-slash`, `fa-user-lock` | Sistema privacy profilo utente. Usato `fa-lock` invece di `fa-shield-alt` per evitare confusione con `fa-shield-halved` (partite) |
+| 2025-12-28 | Form switch per toggle privacy | Bootstrap `form-switch` per impostazioni ON/OFF - feedback visivo immediato |
+| 2025-12-28 | Layout profilo context-aware | Stesso template per profilo proprio e pubblico con condizionali `is_own_profile` |
+| 2025-12-28 | Titoli context-aware nei componenti | "Le mie Statistiche" vs "Statistiche" in base a chi visualizza |
 
 ---
 

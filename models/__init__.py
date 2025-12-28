@@ -34,6 +34,13 @@ from .user.models import (
     VenueManagerRequest,
     VenueManagement,
 )
+from .user.privacy_models import (
+    UserPrivacySetting,
+    HiddenMatch,
+    HiddenInscription,
+    HiddenCampionato,
+)
+from .user.privacy_service import PrivacyService
 
 # PHASE 2 SPRINT 1 COMPLETE: All domains separated
 from .campionato.models import Campionato
@@ -140,6 +147,12 @@ __all__ = [
     "DirectorRequest",
     "VenueManagerRequest",
     "VenueManagement",
+    # User privacy models
+    "UserPrivacySetting",
+    "HiddenMatch",
+    "HiddenInscription",
+    "HiddenCampionato",
+    "PrivacyService",
     # Campionato domain models (Phase 2 Sprint 1)
     "Campionato",
     # Competition domain models (Phase 2 Sprint 1)

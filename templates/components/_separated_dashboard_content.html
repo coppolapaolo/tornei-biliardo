@@ -241,7 +241,8 @@
                   </small>
                 {% endif %}
                 
-                {% if item.entity.inscription_end %}
+                {# Mostra scadenza solo se le iscrizioni sono ancora aperte #}
+                {% if item.entity.inscription_end and item.entity.get_real_status() == GaraStatus.INSCRIPTION.value %}
                   <small class="text-warning d-block mt-1">
                     <i class="fas fa-clock"></i>
                     Scade: {{ item.entity.inscription_end|datetime_local }}
