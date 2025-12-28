@@ -1,251 +1,174 @@
-# Templates Directory - Community Platform UI
+# CLAUDE.md
 
-This directory contains Jinja2 templates for the American Pool community platform, organized to support both tournament features and broader community engagement.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Architecture Overview
+## Templates Directory - Jinja2 Templates
 
-Templates follow a component-based architecture with Bootstrap 5 styling and responsive design principles.
+Flask/Jinja2 templates for the American Pool community platform using Bootstrap 5.
 
-## Template Organization
+---
 
-### Base Templates
+## Critical Conventions
 
-#### `base.html` - Master Layout
-**Purpose**: Main application layout and structure
-- Navigation bar with role-based menus
-- Bootstrap 5 integration
-- Flash message handling
-- JavaScript and CSS includes
-- Responsive mobile layout
-- User authentication state display
+### Translated Strings in JavaScript (CRITICAL)
 
-### Core Application Pages
+When embedding translated strings in JavaScript, **ALWAYS use `|tojson`** filter. This prevents syntax errors from apostrophes in Italian text.
 
-#### `index.html` - Home Page
-**Purpose**: Application landing page
-- Public tournament listings
-- Guest access functionality
-- Recent activity overview
+```javascript
+// ❌ WRONG - Apostrophe in "l'avvio" breaks JS string
+alert('{{ _("Errore durante l'avvio del turno") }}');
+// Generates: alert('Errore durante l'avvio del turno');  // SYNTAX ERROR!
 
-#### `login.html` - Authentication
-**Purpose**: User login interface
-- Login form with validation
-- Registration link
-- Password reset option
+// ✅ CORRECT - |tojson escapes and adds proper quotes
+alert({{ _("Errore durante l'avvio del turno")|tojson }});
+// Generates: alert("Errore durante l'avvio del turno");  // Works!
 
-#### `register.html` - User Registration
-**Purpose**: New user account creation
-- Registration form with validation
-- Role selection (player default)
-- Terms and conditions
+// For concatenation with variables:
+alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
+```
 
-#### `reset.html` - Password Reset
-**Purpose**: Password recovery functionality
-- Reset request form
-- Email verification flow
+**Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript and cause silent failures.
 
-### Domain-Specific Templates
+### No Python Imports in Templates
 
-#### Admin Templates (`admin/`)
-Administrative interface templates:
+You cannot import Python modules in Jinja2 templates:
 
-- **Competition Management**:
-  - `campionato_list.html`: Tournament listing and management
-  - `campionato_detail.html`: Detailed tournament view
-  - `gara_detail.html`: Competition round management
-  - `match_management.html`: Match administration
+```jinja2
+{# ❌ WRONG - This will cause TemplateNotFound error #}
+{% from "models/classification" import RoundClassification %}
 
-- **User Management**:
-  - `user_list.html`: User administration
-  - `director_requests.html`: Director promotion requests
-  - `venue_management.html`: Location and venue control
+{# ✅ CORRECT - Data must be passed from route/view #}
+{% for rc in gara.round_classifications %}
+```
 
-- **System Administration**:
-  - `admin_dashboard.html`: Administrative overview
-  - `system_stats.html`: System-wide statistics
+### Format Characters in i18n Strings
 
-#### Player Templates (`player/`)
-Community member interface templates:
+Avoid `%` in translated strings as it's interpreted as a Python format specifier:
 
-- **Community Profile**:
-  - `profile.html`: Member profile, preferences, and social settings
-  - `statistics.html`: Personal statistics and community standing
-  - `dashboard.html`: Community activity overview and social dashboard
+```jinja2
+{# ❌ WRONG - % causes ValueError #}
+{{ _("% Vittorie") }}
 
-- **Social Match System**:
-  - `match_proposals.html`: Community match invitation system
-  - `create_match_proposal.html`: Social match proposal creation
-  - `individual_matches.html`: Casual game history and social matches
+{# ✅ CORRECT - Use alternative text #}
+{{ _("Win Rate") }}
+{{ _("Perc. Vinte") }}
+```
 
-- **Community Participation**:
-  - `competitions.html`: Available tournaments and community events
-  - `registration.html`: Event registration and community engagement
-  - `my_competitions.html`: Personal tournament and event history
+---
 
-#### Dashboard Templates (`dashboard/`)
-Role-specific dashboard components:
-- `admin_dashboard.html`: Administrative overview
-- `director_dashboard.html`: Director-specific tools
-- `player_dashboard.html`: Player personal dashboard
+## Template Structure
 
-#### Public Templates (`public/`)
-Guest-accessible templates:
-- `public_competitions.html`: Public competition listings
-- `public_statistics.html`: General tournament statistics
+### Hierarchy
+- **`base.html`**: Master layout (navbar, scripts, styles)
+- **`admin/`**: Admin and director interfaces
+- **`player/`**: Player-facing pages
+- **`public/`**: Guest-accessible pages
+- **`components/`**: Reusable includes (prefixed with `_`)
 
-### Component Templates (`components/`)
+### Creating New Pages
 
-Reusable UI components using Bootstrap 5:
+```jinja2
+{% extends "base.html" %}
 
-#### Administrative Components
-- `_admin_campionato_cards.html`: Tournament management cards
-- `_admin_dashboard_content.html`: Admin dashboard widgets
-- `_admin_new_campionato_modal.html`: Tournament creation modal
-- `_admin_empty_state.html`: Empty state messaging
+{% block title %}Page Title{% endblock %}
 
-#### Competition Components
-- `_campionato_cards.html`: Tournament display cards
-- `_campionato_details_info.html`: Tournament information
-- `_campionato_general_classification.html`: Tournament rankings
-- `_campionato_garas.html`: Tournament rounds listing
-- `_available_garas.html`: Available competitions for registration
-- `_available_proofs.html`: Available standalone competitions
+{% block content %}
+<div class="container">
+    {# Include reusable components #}
+    {% include "components/_some_component.html" %}
+</div>
+{% endblock %}
+```
 
-#### Match Components
-- `_match_cards.html`: Match display cards
-- `_match_detail_card.html`: Detailed match information
-- `_match_results_table.html`: Match results display
-- `_rack_scoring_component.html`: Rack-level scoring interface
+### Component Naming
+- Reusable components: `_component_name.html` (underscore prefix)
+- Full pages: `page_name.html` (no prefix)
 
-#### Matchmaking System Components
-- `_amalfi_system.html`: Matchmaking strategy interface
-- `_amalfi_algorithm_info.html`: Strategy explanation and selection
-- `_strategy_selector.html`: Dynamic strategy selection component
-- `_pairing_preview.html`: Universal pairing preview for all strategies
+---
 
-#### User Interface Components
-- `_user_card.html`: User profile display
-- `_user_statistics.html`: User statistics widget
-- `_notification_list.html`: Notification display
-- `_role_badge.html`: User role indicators
+## Common Patterns
 
-#### Navigation and Layout
-- `_navbar.html`: Main navigation bar
-- `_sidebar.html`: Sidebar navigation
-- `_breadcrumb.html`: Breadcrumb navigation
-- `_pagination.html`: Pagination controls
+### Status Badge Display
 
-#### Forms and Modals
-- `_form_errors.html`: Form validation error display
-- `_confirmation_modal.html`: Action confirmation dialogs
-- `_loading_spinner.html`: Loading state indicators
+```jinja2
+{% if gara.status == 'completed' %}
+    <span class="badge bg-success">{{ _("Completata") }}</span>
+{% elif gara.status == 'playing' %}
+    <span class="badge bg-warning">{{ _("In Corso") }}</span>
+{% endif %}
+```
 
-#### Status and Feedback
-- `_status_badges.html`: Status indicator badges
-- `_flash_messages.html`: Flash message display
-- `_empty_state.html`: Empty state messaging
-- `_error_page.html`: Error page layout
+### Conditional Content by Role
 
-## UI Design Principles
+```jinja2
+{% if current_user.is_admin %}
+    {# Admin-only content #}
+{% elif current_user.is_director %}
+    {# Director content #}
+{% endif %}
+```
 
-### Bootstrap 5 Integration
-- Responsive grid system
-- Component-based styling
-- Consistent spacing and typography
-- Mobile-first design approach
+### Safe Relationship Access
 
-### Accessibility
-- Semantic HTML structure
-- ARIA labels and descriptions
-- Keyboard navigation support
-- Color contrast compliance
+```jinja2
+{# Check relationship exists before accessing #}
+{% if gara.campionato %}
+    {{ gara.campionato.name }}
+{% else %}
+    {{ gara.name or 'Gara Singola' }}
+{% endif %}
+```
 
-### User Experience
-- Intuitive navigation patterns
-- Clear visual hierarchy
-- Consistent interaction patterns
-- Responsive design for all devices
+### Date/Time Display
 
-## Template Features
+```jinja2
+{# Use custom filters for localized display #}
+{{ gara.date|date_local }}
+{{ match.created_at|datetime_local }}
+```
 
-### Role-Based Display
-Templates adapt content based on community member roles:
-- **Guest**: Public community information and tournament listings
-- **Player**: Personal data, social features, and community participation
-- **Director**: Tournament organization and community leadership tools
-- **Admin**: Full platform administration and community moderation
+### Pagination Include
 
-### Dynamic Content
-- Real-time community activity updates
-- Social interaction features
-- AJAX-powered match coordination
-- Live tournament standings and community leaderboards
-- Community member presence and availability
+```jinja2
+{% set pagination = some_pagination_object %}
+{% include "components/_pagination.html" %}
+```
 
-### Form Handling
-- Client-side validation
-- Server-side error display
-- Progressive enhancement
-- Accessibility compliance
+---
 
-## JavaScript Integration
+## JavaScript in Templates
 
-### Frontend Libraries
-- Bootstrap 5 JavaScript components
-- jQuery for DOM manipulation
-- Chart.js for statistics visualization
-- Custom JavaScript for matchmaking strategy handling
-- Strategy-specific UI components
+### AJAX with Flask Routes
 
-### AJAX Functionality
-- Dynamic content updates
-- Form submissions without page reload
-- Real-time match scoring
-- Live competition updates
-- Strategy preview and selection
-- Dynamic pairing generation for all strategies
+```javascript
+fetch('{{ url_for("some.route", id=item.id) }}', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'
+    },
+    body: JSON.stringify(data)
+});
+```
 
-## Internationalization
+### Passing Python Data to JS
 
-### Language Support
-- Italian primary language
-- English fallback for technical terms
-- Consistent terminology throughout application
-- Cultural context consideration
+```javascript
+// For simple values
+const garaId = {{ gara.id }};
 
-### Content Localization
-- Date and time formatting
-- Number formatting
-- Currency display (where applicable)
-- Regional competition rules
+// For strings (use tojson!)
+const message = {{ _("Some message")|tojson }};
 
-## Development Guidelines
+// For objects/arrays
+const config = {{ some_dict|tojson }};
+```
 
-### Template Creation
-1. Extend from `base.html` for full pages
-2. Use component includes for reusable elements
-3. Follow Bootstrap 5 conventions
-4. Implement proper accessibility features
-5. Test responsive design across devices
+---
 
-### Component Design
-1. Keep components focused and reusable
-2. Use proper parameter passing
-3. Implement error state handling
-4. Include loading states where appropriate
-5. Follow consistent naming conventions
+## i18n Guidelines
 
-### Best Practices
-- Semantic HTML structure
-- Proper form validation
-- Accessibility compliance
-- Mobile-responsive design
-- Progressive enhancement
-- SEO-friendly markup
-
-### Testing Considerations
-- Cross-browser compatibility
-- Mobile device testing
-- Accessibility validation
-- Performance optimization
-- User experience testing
+- Wrap all user-visible strings: `{{ _("Text") }}`
+- Use named placeholders: `{{ _("Hello %(name)s", name=user.username) }}`
+- Run `pybabel extract/update/compile` after adding strings
+- Italian is the primary language; English is fallback

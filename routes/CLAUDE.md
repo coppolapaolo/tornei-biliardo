@@ -1,252 +1,241 @@
-# Routes Directory - Community Platform API
+# CLAUDE.md
 
-This directory contains Flask route handlers for the American Pool community platform, organized by domain and community member roles.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Architecture Overview
+## Routes Directory - Flask Route Handlers
 
-Routes are organized using a RESTful approach with domain-based separation and role-based access control.
+Flask blueprints for the American Pool community platform with role-based access control.
 
-## Route Organization
+---
 
-### Core Route Files
+## Blueprint Organization
 
-#### `auth.py` - Authentication & Authorization
-**Purpose**: User authentication and session management
-- Login/logout functionality
-- Session validation
-- Role-based access control decorators
+| Blueprint | Prefix | Purpose |
+|-----------|--------|---------|
+| `auth` | `/auth` | Login, logout, registration |
+| `main` | `/` | Public pages, guest access |
+| `dashboard` | `/dashboard` | Role-based dashboards |
+| `player` | `/player` | Player profile, history, proposals |
+| `admin.campionato` | `/admin/campionato` | Tournament management |
+| `admin.competition` | `/admin/gara` | Gara management |
+| `admin.match` | `/admin/match` | Match administration |
+| `admin.user` | `/admin/user` | User management |
+| `admin.venue` | `/admin/venue` | Venue management |
+| `challenge` | `/challenge` | Challenge system |
+| `individual_match` | `/match` | Casual matches |
 
-#### `main.py` - Public & General Routes
-**Purpose**: Public-facing and general application routes
-- Home page and public views
-- Guest access functionality
-- General information pages
-- Public competition listings
+---
 
-#### `dashboard.py` - User Dashboard
-**Purpose**: Personalized user interface
-- Role-specific dashboard views
-- User statistics and overview
-- Quick actions and navigation
+## Permission Decorators
 
-### Domain-Specific Routes
+### Usage
 
-#### `player.py` - Community Member Features
-**Purpose**: Community member functionality and social features
-- Member profile management and social preferences
-- Personal statistics and community standing
-- Match proposals and community meetup organization
-- Social match requests and networking
-- Personal competition and casual game history
-- Location preferences and availability for community games
+```python
+from flask_login import login_required
+from utils import admin_required, director_required, player_only
 
-**Community Features**:
-- Social match proposal workflow
-- Community member discovery
-- Personal data privacy management
-- Tournament and casual game registration
-- Community engagement dashboard
+@player_bp.route("/profile")
+@login_required          # Must be logged in
+def profile():
+    pass
 
-#### `challenge.py` - Challenge System
-**Purpose**: Skill challenges and attempts
-- Challenge creation and management
-- Challenge attempts tracking
-- Challenge favorites system
-- Skill assessment workflows
+@admin_bp.route("/users")
+@login_required
+@admin_required          # Must be admin
+def user_list():
+    pass
 
-#### `individual_match.py` - Community Matches
-**Purpose**: Community-driven casual match management
-- Social match execution and coordination
-- Detailed scoring for skill development
-- Community match result sharing
-- Social gaming history and statistics
+@competition_bp.route("/create")
+@login_required
+@director_required       # Admin OR director
+def create_gara():
+    pass
 
-#### `rating.py` - Rating System
-**Purpose**: Player rating and handicap management
-- Rating calculations
-- Handicap rule management
-- Category assignments
-- Rating history tracking
+@player_bp.route("/history")
+@login_required
+@player_only             # Blocks admins, allows directors+players
+def history():
+    pass
+```
 
-#### `director.py` - Director Functions
-**Purpose**: Tournament director capabilities
-- Competition creation permissions
-- Director-specific tools
-- Enhanced tournament management
+### Permission Hierarchy
 
-### Administrative Routes (`admin/`)
+```
+admin_required    → Only admin users
+director_required → Admin OR director users
+player_only       → Director OR player (blocks admin-only users)
+login_required    → Any authenticated user
+```
 
-Administrative functionality is organized into specialized modules:
+---
 
-#### `admin/campionato.py` - Tournament Management
-**Purpose**: Multi-round tournament administration
-- Campionato creation and configuration
-- Round scheduling and management
-- Tournament-wide statistics
-- Multi-competition coordination
+## Request/Response Patterns
 
-#### `admin/competition.py` - Competition Management
-**Purpose**: Individual competition (Gara) administration
-- Competition creation and setup
-- Player registration management
-- Round execution and monitoring
-- Match assignment and results
-- Amalfi algorithm integration
-- Competition completion workflows
+### AJAX vs Page Requests
 
-**Key Features**:
-- Matchmaking strategy preview system (all strategies supported)
-- Idempotent round creation
-- Inscription management with waitlist support
-- Competition cancellation with participant notifications
-- Multi-strategy support (Amalfi, Round-Robin, Elimination, Random)
+```python
+from flask import request, jsonify, render_template
 
-#### `admin/match.py` - Match Administration
-**Purpose**: Match-level administrative controls
-- Match result validation
-- Rack scoring management
-- Match status modifications
-- Administrative overrides
+@bp.route("/some-action", methods=["POST"])
+@login_required
+def some_action():
+    # Check if AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        try:
+            # Do work
+            return jsonify({"success": True, "message": "Done"})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 400
+    else:
+        # Regular form submission
+        flash(_("Azione completata"), "success")
+        return redirect(url_for("some.route"))
+```
 
-#### `admin/user.py` - User Administration
-**Purpose**: User account and permission management
-- User creation and modification
-- Role assignments (player → director → admin)
-- Director request approvals
-- Account deactivation/reactivation
+### Service Layer Integration
 
-#### `admin/venue.py` - Venue Management
-**Purpose**: Location and venue administration
-- Billiard hall management
-- Venue manager assignments
-- Location-based permissions
-- Venue request approvals
+```python
+from models.competition.services import GaraService
 
-#### Administrative Dashboard
-**Purpose**: System overview and administration (handled in general `dashboard.py`)
-- Role-based dashboard routing (Admin/Director/Player)
-- System-wide statistics and administrative quick actions
-- User management overview and competition monitoring
+@bp.route("/gara/<int:gara_id>/start-round", methods=["POST"])
+@login_required
+@director_required
+def start_round(gara_id):
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        abort(404)
 
-## Request Handling Patterns
+    # Permission check
+    if not current_user.can_manage_competition(gara_id):
+        abort(403)
 
-### Authentication & Authorization
-- `@login_required`: Ensures user authentication
-- `@admin_required`: Restricts to admin users
-- `@director_required`: Allows directors and admins
-- Role validation in route handlers
+    # Use service layer (handles @transactional)
+    service = GaraService()
+    result = service.start_next_round(gara_id)
 
-### Data Validation
-- Form validation using Flask-WTF
-- JSON payload validation
-- Business rule validation
-- Error handling with user-friendly messages
+    if result.success:
+        flash(_("Turno avviato"), "success")
+    else:
+        flash(result.error, "danger")
 
-### Response Patterns
-- JSON responses for AJAX requests
-- Template rendering for page requests
-- Flash messages for user feedback
-- Proper HTTP status codes
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+```
 
-### Error Handling
-- Try-catch blocks for database operations
-- Graceful degradation for failures
-- User-friendly error messages
-- Logging for debugging
+---
 
-## Matchmaking Strategy Integration
+## Common Patterns
 
-### Strategy Selection
-Routes support dynamic strategy selection:
-- **Strategy Configuration**: Admin/Director selects from available strategies
-- **Preview Mode**: All strategies support pairing preview without database persistence
-- **Runtime Switching**: Strategy can be changed between rounds (with validation)
-- **Custom Policies**: Each strategy supports configurable policies for edge cases
+### Entity Permission Check
 
-### Strategy-Specific Endpoints
-- **Amalfi**: Anti-rematch pairing with classification-based matching
-- **Round-Robin**: Complete tournament generation with scheduling
-- **Elimination**: Bracket generation and advancement logic
-- **Random**: Balanced random pairing with conflict avoidance
+```python
+@bp.route("/gara/<int:gara_id>/edit")
+@login_required
+@director_required
+def edit_gara(gara_id):
+    gara = db.session.get(Gara, gara_id)
+    if not gara:
+        abort(404)
 
-## Key Route Functionalities
+    # Check user can manage this specific entity
+    if not current_user.can_manage_competition(gara_id):
+        flash(_("Non hai i permessi"), "danger")
+        return redirect(url_for("dashboard.index"))
 
-### Community Activities
+    # ... rest of handler
+```
 
-#### Tournament Workflow
-1. **Creation**: Community leaders create tournaments with strategy selection
-2. **Configuration**: Set format, venue, dates, and community rules
-3. **Registration**: Community members register with optional entry fees
-4. **Execution**: Selected strategy creates fair pairings for all skill levels
-5. **Community Engagement**: Real-time tracking and social interaction
-6. **Completion**: Results sharing and community recognition
+### Flash Messages with i18n
 
-#### Casual Match Flow
-1. **Proposal**: Members propose matches to individuals or community
-2. **Discovery**: Location-based match finding and community connections
-3. **Coordination**: Social scheduling and venue coordination
-4. **Execution**: Casual gameplay with optional scoring
-5. **Social Sharing**: Results and experience sharing within community
+```python
+from flask_babel import _
 
-### Match Management
-1. **Assignment**: Automatic via Amalfi or manual
-2. **Execution**: Real-time scoring
-3. **Validation**: Result confirmation
-4. **Statistics**: Performance tracking
+flash(_("Operazione completata con successo"), "success")
+flash(_("Errore: %(error)s", error=str(e)), "danger")
+flash(_("Attenzione: dati mancanti"), "warning")
+```
 
-### User Management
-1. **Registration**: Account creation
-2. **Profile**: Personal information management
-3. **Roles**: Permission escalation requests
-4. **Activity**: Competition participation tracking
+### Pagination
 
-## Security Considerations
+```python
+@bp.route("/matches")
+@login_required
+def match_list():
+    page = request.args.get("page", 1, type=int)
+    per_page = 20
 
-### Data Protection
-- Personal data encryption/decryption
-- Role-based access restrictions
-- Input sanitization and validation
-- CSRF protection
+    pagination = Match.query.filter_by(
+        player1_id=current_user.id
+    ).paginate(page=page, per_page=per_page, error_out=False)
 
-### Permission Levels
-- **Guest**: Public view access only
-- **Player**: Personal data and competition participation
-- **Director**: Competition creation and management
-- **Admin**: Full system access and user management
+    return render_template(
+        "player/matches.html",
+        pagination=pagination,
+        matches=pagination.items
+    )
+```
 
-## API Design
+---
 
-### RESTful Conventions
-- GET: Data retrieval
-- POST: Resource creation
-- PUT/PATCH: Resource updates
-- DELETE: Resource removal
+## Admin Routes Structure
 
-### Response Formats
-- HTML templates for page views
-- JSON for AJAX requests
-- Appropriate status codes
-- Consistent error message format
+Admin routes are nested blueprints under `/admin`:
 
-## Development Guidelines
+```python
+# routes/admin/__init__.py
+from flask import Blueprint
 
-### Route Creation
-1. Choose appropriate domain file
-2. Use descriptive route names
-3. Implement proper authentication
-4. Add comprehensive error handling
-5. Include logging for debugging
+admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-### Security Best Practices
-- Always validate user permissions
-- Sanitize all input data
-- Use proper error handling
-- Log security-relevant events
-- Implement rate limiting where needed
+# Sub-blueprints
+from .campionato import campionato_bp
+from .competition import competition_bp
+from .match import match_bp
 
-### Testing Considerations
-- Create test cases for all routes
-- Test authentication and authorization
-- Validate error handling
-- Check edge cases and boundary conditions
-- Test with different user roles
+admin_bp.register_blueprint(campionato_bp)
+admin_bp.register_blueprint(competition_bp)
+admin_bp.register_blueprint(match_bp)
+```
+
+### URL Generation
+
+```python
+# For nested admin routes
+url_for("admin.competition.gara_detail", gara_id=1)
+# → /admin/gara/1
+
+url_for("admin.campionato.detail", campionato_id=1)
+# → /admin/campionato/1
+```
+
+---
+
+## Gotchas
+
+### Always Use db.session.get() for Primary Keys
+
+```python
+# ✅ Correct - uses get() for PK lookup
+gara = db.session.get(Gara, gara_id)
+
+# ❌ Deprecated - filter_by for PK
+gara = Gara.query.filter_by(id=gara_id).first()
+```
+
+### Check Soft-Deleted Users
+
+```python
+# User model has soft delete
+user = db.session.get(User, user_id)
+if user and user.is_deleted:
+    abort(404)  # Treat as not found
+```
+
+### Handle Standalone Gara
+
+```python
+# Gara can be standalone (no campionato)
+if gara.campionato_id:
+    return redirect(url_for("admin.campionato.detail", campionato_id=gara.campionato_id))
+else:
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
+```
