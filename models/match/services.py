@@ -78,160 +78,32 @@ class MatchService:
 
     # -----------------------------
     # STATE MACHINE FACADE
+    # Delegates to MatchStateService
     # -----------------------------
     @staticmethod
     @transactional(domain="match")
     def to_playing(match_id: int) -> Match:
-        """pending/completed → playing
-        (riapertura consentita in flussi admin o dopo rimozione rack)"""
-        match = db.session.get(Match, match_id)
-        if not match:
-            raise ValueError(f"Match {match_id} non trovato")
-        if (match.status or MatchStatus.PENDING.value) not in (
-            MatchStatus.PENDING.value,
-            MatchStatus.COMPLETED.value,
-        ):
-            raise InvalidTransitionError(
-                f"Transizione non ammessa: {match.status!r} → playing"
-            )
-        match.status = MatchStatus.PLAYING.value
-        db.session.add(match)
-        return match
+        """pending/completed → playing (delegates to MatchStateService)."""
+        from .state_service import MatchStateService
+
+        return MatchStateService.to_playing(match_id)
 
     @staticmethod
     @transactional(domain="match")
     def to_completed(match_id: int) -> Match:
-        """playing → completed (consente anche pending →
-        completed per amministratore)."""
-        match = db.session.get(Match, match_id)
-        if not match:
-            raise ValueError(f"Match {match_id} non trovato")
-        if match.status not in (MatchStatus.PLAYING.value, MatchStatus.PENDING.value):
-            raise InvalidTransitionError(
-                f"Transizione non ammessa: {match.status!r} → completed"
-            )
-        match.status = MatchStatus.COMPLETED.value
-        db.session.add(match)
+        """playing → completed (delegates to MatchStateService)."""
+        from .state_service import MatchStateService
 
-        # Registra automaticamente l'encounter per anti-rematch logic
-        # Usa il metodo esistente che gestisce correttamente bye e match normali
-        from models.classification.services import PlayerEncounterService
-        PlayerEncounterService.record_match_encounters(match)
-
-        # Libera automaticamente il tavolo e assegnalo al prossimo match in attesa
-        from models.match.table_assignment_service import TableAssignmentService
-        TableAssignmentService.release_and_reassign_table(match.id)
-
-        # Emit MatchCompletedEvent for gamification (skip bye matches)
-        if not match.is_bye and match.player1_id and match.player2_id:
-            from models.events.match_events import MatchCompletedEvent
-            from models.events.base import EventBus
-
-            # Get player names
-            player1_name = match.player1.username if match.player1 else "Player 1"
-            player2_name = match.player2.username if match.player2 else "Player 2"
-            winner_name = None
-            if match.winner_id:
-                winner_name = match.winner.username if match.winner else None
-
-            # Build score string
-            score = f"{match.player1_score}-{match.player2_score}"
-
-            event = MatchCompletedEvent(
-                match_id=match.id,
-                player1_id=match.player1_id,
-                player1_name=player1_name,
-                player2_id=match.player2_id,
-                player2_name=player2_name,
-                winner_id=match.winner_id,
-                winner_name=winner_name,
-                score=score
-            )
-            EventBus.publish(event)
-
-        return match
+        return MatchStateService.to_completed(match_id)
 
     @staticmethod
     def reset_to_pending(
         match_id: int, clear_validation: bool = True
     ) -> "OperationResult":
-        """DEPRECATED: Use RackService.reset_match_complete() instead.
+        """DEPRECATED: Use RackService.reset_match_complete() instead."""
+        from .state_service import MatchStateService
 
-        This method is deprecated as of October 2025 and will be removed
-        in a future version. Use reset_match_complete() which provides:
-        - Intelligent state management based on table_assignment
-        - No duplication of rack deletion logic
-        - Cleaner architecture
-
-        Legacy behavior:
-        - Resets match to PENDING (always, ignoring table_assignment)
-        - Removes all racks (duplicates caller's work)
-        - Clears validation flags
-
-        NOTE: This method is intentionally NOT decorated with @transactional
-        because it implements custom transaction management with explicit
-        rollback handling and OperationResult error reporting pattern.
-        """
-        import warnings
-        warnings.warn(
-            "reset_to_pending() is deprecated. Use RackService.reset_match_complete() instead.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        from ..orchestration.service import OperationResult, OperationType
-        from .models import Rack
-
-        try:
-            match = db.session.get(Match, match_id)
-            if not match:
-                return OperationResult.failure_result(
-                    operation_type=OperationType.RESULT_PROCESSING,
-                    errors=[f"Match {match_id} non trovato"],
-                    execution_time_ms=0,
-                    affected_domains=["match"],
-                )
-
-            old_status = match.status
-
-            # Clear all racks
-            existing_racks = Rack.query.filter_by(match_id=match_id).all()
-            for rack in existing_racks:
-                db.session.delete(rack)
-
-            # Reset match scores
-            match.player1_score = 0
-            match.player2_score = 0
-            match.winner_id = None
-            match.status = MatchStatus.PENDING.value
-
-            if clear_validation and hasattr(match, "validated_by_admin"):
-                try:
-                    match.validated_by_admin = False
-                except Exception:
-                    pass
-            db.session.add(match)
-            db.session.commit()
-
-            return OperationResult.success_result(
-                operation_type=OperationType.RESULT_PROCESSING,
-                data={
-                    "match_id": match_id,
-                    "old_status": old_status,
-                    "new_status": match.status,
-                    "validation_cleared": clear_validation,
-                },
-                execution_time_ms=0,
-                affected_domains=["match"],
-            )
-
-        except Exception as e:
-            db.session.rollback()
-            return OperationResult.failure_result(
-                operation_type=OperationType.RESULT_PROCESSING,
-                errors=[f"Errore nel reset match: {str(e)}"],
-                execution_time_ms=0,
-                affected_domains=["match"],
-            )
+        return MatchStateService.reset_to_pending(match_id, clear_validation)
 
     @staticmethod
     def add_rack_to_completed_match(
@@ -478,136 +350,27 @@ class MatchService:
             )
 
     # ---------------------------------------
-    # NEW SIMPLIFIED UX - Rack Management
+    # SIMPLIFIED UX - Delegates to ScoringService
     # ---------------------------------------
     @staticmethod
     @transactional(domain="match")
     def add_rack_for_player(
         match_id: int, user_id: int, winner_id: int
     ) -> Rack:
-        """
-        Add a rack won by specified player (new simplified UX).
+        """Add a rack won by specified player (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
 
-        Similar to IndividualMatchService.add_rack_for_player but for
-        tournament matches.
-
-        Args:
-            match_id: ID of the match
-            user_id: ID of user adding the rack
-            winner_id: ID of the player who won the rack
-
-        Returns:
-            The created Rack object
-
-        Raises:
-            ValueError: If user/winner invalid or match not found
-        """
-        from sqlalchemy import func
-
-        match = db.session.get(Match, match_id)
-        if match is None:
-            from flask import abort
-
-            abort(404)
-
-        # Verify winner is valid
-        if winner_id not in (match.player1_id, match.player2_id):
-            raise ValueError("Invalid winner ID")
-
-        # Get next rack number
-        max_rack = (
-            db.session.query(func.max(Rack.rack_number))
-            .filter_by(match_id=match_id, is_deleted=False)
-            .scalar()
-        )
-        rack_number = (max_rack or 0) + 1
-
-        # Create rack record with log info
-        rack = Rack(
-            match_id=match_id,
-            rack_number=rack_number,
-            winner_id=winner_id,
-            added_by_id=user_id,
-            added_at=datetime.utcnow(),
-        )
-
-        db.session.add(rack)
-
-        # Update match scores
-        if winner_id == match.player1_id:
-            match.player1_score += 1
-        else:
-            match.player2_score += 1
-
-        # Reset confirmations when score changes
-        match.reset_confirmations()
-
-        # Transizione soft: se il match è pending, portalo a playing
-        if match.status == MatchStatus.PENDING.value:
-            match.status = MatchStatus.PLAYING.value
-
-        return rack
+        return ScoringService.add_rack_for_player(match_id, user_id, winner_id)
 
     @staticmethod
     @transactional(domain="match")
     def remove_rack_for_player(
         match_id: int, user_id: int, player_id: int
     ) -> None:
-        """
-        Remove last rack won by specified player (new simplified UX).
+        """Remove last rack won by specified player (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
 
-        Args:
-            match_id: ID of the match
-            user_id: ID of user removing the rack
-            player_id: ID of player whose rack to remove
-
-        Raises:
-            ValueError: If no rack to remove or invalid parameters
-        """
-        match = db.session.get(Match, match_id)
-        if match is None:
-            from flask import abort
-
-            abort(404)
-
-        # Find last non-deleted rack won by the specified player
-        last_rack = (
-            Rack.query.filter_by(
-                match_id=match_id, winner_id=player_id, is_deleted=False
-            )
-            .order_by(Rack.rack_number.desc())
-            .first()
-        )
-
-        if not last_rack:
-            raise ValueError("No rack to remove for this player")
-
-        # Soft delete the rack with log info
-        last_rack.is_deleted = True
-        last_rack.removed_by_id = user_id
-        last_rack.removed_at = datetime.utcnow()
-
-        # Update match scores
-        if player_id == match.player1_id:
-            match.player1_score = max(0, match.player1_score - 1)
-        else:
-            match.player2_score = max(0, match.player2_score - 1)
-
-        # Controlla se il punteggio giustifica ancora il winner_id
-        should_clear_winner = False
-        if match.gara.is_race_to:
-            winning_score = match.gara.get_winning_score()
-            if max(match.player1_score, match.player2_score) < winning_score:
-                should_clear_winner = True
-        else:  # esatto numero
-            if (match.player1_score + match.player2_score) < match.gara.distance:
-                should_clear_winner = True
-
-        if should_clear_winner:
-            match.winner_id = None
-
-        # Reset confirmations when score changes
-        match.reset_confirmations()
+        return ScoringService.remove_rack_for_player(match_id, user_id, player_id)
 
     @staticmethod
     @transactional(domain="match")
@@ -682,79 +445,10 @@ class MatchService:
     @staticmethod
     @transactional(domain="match")
     def forfeit_match(match_id: int, user_id: int) -> Match:
-        """
-        Forfeit match - user loses automatically, opponent gets maximum score.
+        """Forfeit match (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
 
-        Also handles gara-level forfait policy (FORFEIT vs EXCLUDE).
-
-        Args:
-            match_id: ID of the match
-            user_id: ID of player forfeiting
-
-        Returns:
-            The updated Match object
-
-        Raises:
-            ValueError: If user not in match or match already completed
-        """
-        match = db.session.get(Match, match_id)
-        if match is None:
-            from flask import abort
-            abort(404)
-
-        # Check if user is a player in this match
-        if user_id not in [match.player1_id, match.player2_id]:
-            raise ValueError("User is not a player in this match")
-
-        # Prevent forfeit on bye matches (automatic wins)
-        if match.is_bye:
-            raise ValueError("Cannot forfeit a bye match - it's an automatic win")
-
-        # Check if match can be forfeited
-        if match.status == MatchStatus.COMPLETED.value:
-            raise ValueError("Cannot forfeit a completed match")
-
-        # Determine winner (the other player)
-        if user_id == match.player1_id:
-            winner_id = match.player2_id
-            forfeit_player = 1
-        else:
-            winner_id = match.player1_id
-            forfeit_player = 2
-
-        # Get Distance object for proper scoring calculation
-        distance = match.distance_config
-
-        # Calculate maximum score for winner
-        if match.is_multi_set:
-            # Multi-set: winner gets winning sets
-            winning_score = distance.get_winning_sets()
-        else:
-            # Single-set: winner gets winning racks
-            winning_score = distance.get_winning_racks()
-
-        # Set scores
-        if forfeit_player == 1:
-            match.player1_score = 0
-            match.player2_score = winning_score
-        else:
-            match.player1_score = winning_score
-            match.player2_score = 0
-
-        # Set winner
-        match.winner_id = winner_id
-
-        # Use existing to_completed method for proper state transition and PlayerEncounter handling
-        match = MatchService.to_completed(match_id)
-
-        # Handle gara-level forfait policy
-        from models.competition.withdraw_policy_service import WithdrawPolicyService
-        WithdrawPolicyService.handle_forfeit(
-            gara_id=match.gara_id,
-            user_id=user_id
-        )
-
-        return match
+        return ScoringService.forfeit_match(match_id, user_id)
 
 
 class RackService:
@@ -815,216 +509,24 @@ class RackService:
         reported_by_id: int = 1,
         validated_by_admin: bool = True,
     ) -> dict:
-        """Aggiunge rack e aggiorna automaticamente il punteggio del match.
+        """Add rack with score update (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
 
-        Returns:
-            Dict con stato aggiornato del match
-        """
-        match = db.session.get(Match, match_id)
-        if not match:
-            raise ValueError(f"Match {match_id} non trovato")
-
-        # Verifica che il match non sia già finito usando RackScore
-        if match.rack_score.is_complete():
-            raise ValueError(
-                "Il match è già finito, non è possibile aggiungere altri punti"
-            )
-
-        # Simula aggiunta del nuovo rack per validare
-        temp_p1_score = match.player1_score
-        temp_p2_score = match.player2_score
-
-        if winner_id == match.player1_id:
-            temp_p1_score += 1
-        else:
-            temp_p2_score += 1
-
-        # Valida in base al tipo di match usando distance_config
-        distance = match.gara.distance_config
-        if distance.is_race_to_racks:  # "al meglio di N"
-            winning_racks = distance.get_winning_racks()
-            if temp_p1_score > winning_racks or temp_p2_score > winning_racks:
-                raise ValueError(
-                    f"Match già completato - limite raggiunto per "
-                    f"'{distance.to_display_string()}'"
-                )
-        else:  # "esattamente N"
-            total_racks = temp_p1_score + temp_p2_score
-            if total_racks > distance.racks:
-                raise ValueError(
-                    f"Non è possibile superare il limite di {distance.racks} "
-                    f"rack totali per questo match"
-                )
-
-        # Trova il prossimo numero rack
-        last_rack = (
-            Rack.query.filter_by(match_id=match_id)
-            .order_by(Rack.rack_number.desc())
-            .first()
+        return ScoringService.add_rack_with_score_update(
+            match_id, winner_id, reported_by_id, validated_by_admin
         )
-        next_rack_number = (last_rack.rack_number + 1) if last_rack else 1
-
-        # Crea il rack
-        # NOTA: add_rack_result già aggiorna automaticamente il punteggio del match
-        # quindi NON dobbiamo aggiornare player1_score/player2_score qui
-        RackService.add_rack_result(
-            match_id=match.id,
-            rack_number=next_rack_number,
-            winner_id=winner_id,
-            reported_by_id=reported_by_id,
-            validated_by_admin=validated_by_admin,
-        )
-
-        # Ricarica il match per ottenere i punteggi aggiornati da add_rack_result
-        db.session.refresh(match)
-
-        # Se il match è finito, comportamento diverso per admin vs player
-        if match.rack_score.is_complete():
-            final_winner_id = match.rack_score.get_winner()
-
-            # FIX: Handle ties correctly - don't assign arbitrary winner
-            if final_winner_id is None:
-                # True tie (exact mode with even racks) - no winner
-                # Complete the match without a winner
-                if validated_by_admin:
-                    # Admin: complete match as tie
-                    from models.match.services import MatchService
-                    match.winner_id = None  # Explicit: no winner
-                    MatchService.to_completed(match.id)
-                else:
-                    # Player: mark as completed but leave for admin review
-                    match.winner_id = None  # Explicit: no winner
-                    match.status = MatchStatus.COMPLETED.value
-                    db.session.add(match)
-                    match.reset_confirmations()
-            else:
-                # Convert player number (1,2) to player_id
-                final_winner_id = (
-                    match.player1_id if final_winner_id == 1
-                    else match.player2_id
-                )
-
-                if validated_by_admin:
-                    # Admin: completa automaticamente il match
-                    from models.match.services import MatchResultService
-                    MatchResultService.submit_result(match.id, final_winner_id)
-                else:
-                    # Player: imposta solo il vincitore, lascia il match in "playing" per la conferma
-                    match.winner_id = final_winner_id
-                    db.session.add(match)
-
-                    # Reset delle conferme quando il risultato cambia
-                    match.reset_confirmations()
-
-        return {
-            "success": True,
-            "player1_score": match.player1_score,
-            "player2_score": match.player2_score,
-            "status": match.status,
-        }
 
     @staticmethod
     @transactional(domain="match")
     def set_match_result_direct(
         match_id: int, player1_score: int, player2_score: int
     ) -> None:
-        """Imposta risultato completo di una partita sostituendo tutti i rack."""
-        match = db.session.get(Match, match_id)
-        if not match:
-            raise ValueError(f"Match {match_id} non trovato")
+        """Set match result directly (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
 
-        if match.is_bye:
-            raise ValueError("Non puoi modificare una partita bye!")
-
-        # Validazione punteggi - solo controlli base per admin/director
-        if player1_score < 0 or player2_score < 0:
-            raise ValueError("I punteggi non possono essere negativi!")
-
-        # Verifica che i punteggi non superino il massimo
-        max_score = match.gara.distance
-        if player1_score > max_score or player2_score > max_score:
-            raise ValueError(
-                f"I punteggi non possono superare {max_score}!"
-            )
-
-        # Determina se c'è un vincitore (risultato completo)
-        winning_score = match.gara.get_winning_score()
-        is_complete_result = False
-        winner_id = None
-
-        if match.gara.is_race_to:
-            # Race to N: vincitore quando uno raggiunge N
-            if player1_score >= winning_score:
-                winner_id = match.player1_id
-                is_complete_result = True
-            elif player2_score >= winning_score:
-                winner_id = match.player2_id
-                is_complete_result = True
-        else:
-            # Esatto numero: vincitore è chi ha più punti quando somma = distance
-            total_racks = player1_score + player2_score
-            if total_racks == match.gara.distance:
-                is_complete_result = True
-                if player1_score > player2_score:
-                    winner_id = match.player1_id
-                elif player2_score > player1_score:
-                    winner_id = match.player2_id
-                # Se pareggio in exact mode, nessun vincitore
-
-        # Elimina tutti i rack esistenti per questa partita
-        existing_racks = Rack.query.filter_by(match_id=match_id).all()
-        for rack in existing_racks:
-            db.session.delete(rack)
-
-        if match.status != MatchStatus.PLAYING.value:
-            MatchService.to_playing(match.id)
-
-        # Crea i nuovi rack basati sul risultato
-        rack_number = 1
-
-        # Crea rack per player1
-        for i in range(player1_score):
-            RackService.add_rack_result(
-                match_id, rack_number, match.player1_id, 1,
-                validated_by_admin=True, bypass_validation=True
-            )
-            rack_number += 1
-
-        # Crea rack per player2
-        for i in range(player2_score):
-            RackService.add_rack_result(
-                match_id, rack_number, match.player2_id, 1,
-                validated_by_admin=True, bypass_validation=True
-            )
-            rack_number += 1
-
-        # Aggiorna il match
-        match.player1_score = player1_score
-        match.player2_score = player2_score
-        match.winner_id = winner_id  # None se pareggio o risultato parziale
-
-        # FIX: Transizione a completed se il risultato è completo (con o senza vincitore)
-        # Un pareggio in exact mode è un risultato completo, solo che winner_id è None
-        if is_complete_result:
-            # Admin/Director ha impostato un risultato completo → automaticamente validato
-            match.validated_by_admin = True
-            if match.status != MatchStatus.COMPLETED.value:
-                MatchService.to_completed(match.id)
-
-            # Libera e riassegna il tavolo
-            if match.table_assignment:
-                from models.match.table_assignment_service import TableAssignmentService
-                # NON impostare match.table_assignment = None qui!
-                # release_and_reassign_table lo farà internamente
-                waiting_match = TableAssignmentService.release_and_reassign_table(match.id)
-                # Sincronizza l'oggetto match locale con le modifiche fatte dal service
-                match.table_assignment = None
-        else:
-            # Risultato parziale: mantieni in PLAYING
-            match.validated_by_admin = False
-            if match.status == MatchStatus.COMPLETED.value:
-                # Se era completed, torna a playing (admin sta modificando)
-                match.status = MatchStatus.PLAYING.value
+        return ScoringService.set_match_result_direct(
+            match_id, player1_score, player2_score
+        )
 
     @staticmethod
     @transactional(domain="match")

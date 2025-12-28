@@ -1,0 +1,249 @@
+"""
+MatchStateService - State machine for Match lifecycle.
+
+Extracted from MatchService to follow Single Responsibility Principle.
+Handles all state transitions: pending → playing → completed.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from models.orchestration.service import OperationResult
+
+from models.base import db
+from models.status_enum import MatchStatus
+from models.transaction.manager import transactional
+from models.exceptions import InvalidTransitionError
+from .models import Match, Rack
+
+
+class MatchStateService:
+    """Service for managing Match state transitions.
+
+    State Machine:
+        pending ──→ playing ──→ completed
+          ↑           ↓
+          └───────────┘ (admin reset)
+    """
+
+    # -----------------------------
+    # STATE TRANSITIONS
+    # -----------------------------
+
+    @staticmethod
+    @transactional(domain="match")
+    def to_playing(match_id: int) -> Match:
+        """Transition pending/completed → playing.
+
+        Reopening is allowed in admin flows or after rack removal.
+
+        Args:
+            match_id: ID of the match to transition
+
+        Returns:
+            The updated Match object
+
+        Raises:
+            ValueError: If match not found
+            InvalidTransitionError: If transition not allowed from current state
+        """
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} non trovato")
+
+        if (match.status or MatchStatus.PENDING.value) not in (
+            MatchStatus.PENDING.value,
+            MatchStatus.COMPLETED.value,
+        ):
+            raise InvalidTransitionError(
+                f"Transizione non ammessa: {match.status!r} → playing"
+            )
+
+        match.status = MatchStatus.PLAYING.value
+        db.session.add(match)
+        return match
+
+    @staticmethod
+    @transactional(domain="match")
+    def to_completed(match_id: int) -> Match:
+        """Transition playing/pending → completed.
+
+        Side effects:
+        - Records PlayerEncounter for anti-rematch logic
+        - Releases and reassigns table
+        - Emits MatchCompletedEvent for gamification
+
+        Args:
+            match_id: ID of the match to complete
+
+        Returns:
+            The updated Match object
+
+        Raises:
+            ValueError: If match not found
+            InvalidTransitionError: If transition not allowed from current state
+        """
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} non trovato")
+
+        if match.status not in (MatchStatus.PLAYING.value, MatchStatus.PENDING.value):
+            raise InvalidTransitionError(
+                f"Transizione non ammessa: {match.status!r} → completed"
+            )
+
+        match.status = MatchStatus.COMPLETED.value
+        db.session.add(match)
+
+        # Post-completion side effects
+        MatchStateService._record_encounter(match)
+        MatchStateService._release_table(match)
+        MatchStateService._emit_completion_event(match)
+
+        return match
+
+    # -----------------------------
+    # DEPRECATED METHODS
+    # -----------------------------
+
+    @staticmethod
+    def reset_to_pending(
+        match_id: int, clear_validation: bool = True
+    ) -> "OperationResult":
+        """DEPRECATED: Use RackService.reset_match_complete() instead.
+
+        This method is deprecated as of October 2025 and will be removed
+        in a future version. Use reset_match_complete() which provides:
+        - Intelligent state management based on table_assignment
+        - No duplication of rack deletion logic
+        - Cleaner architecture
+
+        Legacy behavior:
+        - Resets match to PENDING (always, ignoring table_assignment)
+        - Removes all racks (duplicates caller's work)
+        - Clears validation flags
+
+        NOTE: This method is intentionally NOT decorated with @transactional
+        because it implements custom transaction management with explicit
+        rollback handling and OperationResult error reporting pattern.
+        """
+        import warnings
+
+        warnings.warn(
+            "reset_to_pending() is deprecated. Use RackService.reset_match_complete() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        from ..orchestration.service import OperationResult, OperationType
+
+        try:
+            match = db.session.get(Match, match_id)
+            if not match:
+                return OperationResult.failure_result(
+                    operation_type=OperationType.RESULT_PROCESSING,
+                    errors=[f"Match {match_id} non trovato"],
+                    execution_time_ms=0,
+                    affected_domains=["match"],
+                )
+
+            old_status = match.status
+
+            # Clear all racks
+            existing_racks = Rack.query.filter_by(match_id=match_id).all()
+            for rack in existing_racks:
+                db.session.delete(rack)
+
+            # Reset match scores
+            match.player1_score = 0
+            match.player2_score = 0
+            match.winner_id = None
+            match.status = MatchStatus.PENDING.value
+
+            if clear_validation and hasattr(match, "validated_by_admin"):
+                try:
+                    match.validated_by_admin = False
+                except Exception:
+                    pass
+            db.session.add(match)
+            db.session.commit()
+
+            return OperationResult.success_result(
+                operation_type=OperationType.RESULT_PROCESSING,
+                data={
+                    "match_id": match_id,
+                    "old_status": old_status,
+                    "new_status": match.status,
+                    "validation_cleared": clear_validation,
+                },
+                execution_time_ms=0,
+                affected_domains=["match"],
+            )
+
+        except Exception as e:
+            db.session.rollback()
+            return OperationResult.failure_result(
+                operation_type=OperationType.RESULT_PROCESSING,
+                errors=[f"Errore nel reset match: {str(e)}"],
+                execution_time_ms=0,
+                affected_domains=["match"],
+            )
+
+    # -----------------------------
+    # HELPER METHODS (Internal)
+    # -----------------------------
+
+    @staticmethod
+    def _record_encounter(match: Match) -> None:
+        """Record PlayerEncounter for anti-rematch logic.
+
+        Uses PlayerEncounterService which handles bye matches correctly.
+        """
+        from models.classification.services import PlayerEncounterService
+
+        PlayerEncounterService.record_match_encounters(match)
+
+    @staticmethod
+    def _release_table(match: Match) -> None:
+        """Release table and reassign to next waiting match."""
+        from models.match.table_assignment_service import TableAssignmentService
+
+        TableAssignmentService.release_and_reassign_table(match.id)
+
+    @staticmethod
+    def _emit_completion_event(match: Match) -> None:
+        """Emit MatchCompletedEvent for gamification.
+
+        Skips bye matches and matches without both players.
+        """
+        if match.is_bye or not match.player1_id or not match.player2_id:
+            return
+
+        from models.events.match_events import MatchCompletedEvent
+        from models.events.base import EventBus
+
+        # Get player names
+        player1_name = match.player1.username if match.player1 else "Player 1"
+        player2_name = match.player2.username if match.player2 else "Player 2"
+        winner_name = None
+        if match.winner_id:
+            winner_name = match.winner.username if match.winner else None
+
+        # Build score string
+        score = f"{match.player1_score}-{match.player2_score}"
+
+        event = MatchCompletedEvent(
+            match_id=match.id,
+            player1_id=match.player1_id,
+            player1_name=player1_name,
+            player2_id=match.player2_id,
+            player2_name=player2_name,
+            winner_id=match.winner_id,
+            winner_name=winner_name,
+            score=score,
+        )
+        EventBus.publish(event)
+
+
+__all__ = ["MatchStateService"]

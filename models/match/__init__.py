@@ -20,6 +20,8 @@ from .multi_discipline_service import MultiDisciplineService
 from .distance import Distance
 from .score import RackScore, MatchScore
 from .table_assignment_service import TableAssignmentService
+from .state_service import MatchStateService
+from .scoring_service import ScoringService
 
 # Export all public classes and functions
 __all__ = [
@@ -38,6 +40,8 @@ __all__ = [
     # Services
     "MultiDisciplineService",
     "TableAssignmentService",
+    "MatchStateService",
+    "ScoringService",
 ]
 
 # Domain version and metadata
