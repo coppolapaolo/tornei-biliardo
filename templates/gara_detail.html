@@ -69,8 +69,8 @@
   </div>
 
   <div class="col-md-4">
-    {# Iscrizioni (solo admin/director) #}
-    {% if user_can_manage %}
+    {# Iscrizioni (solo admin/director e solo se le iscrizioni sono aperte o c'e' qualcuno) #}
+    {% if user_can_manage and gara.status != 'setup' %}
     {% include "components/_gara_inscriptions.html" %}
 
     <!-- Challenge Classification for Random Strategy -->
@@ -368,17 +368,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    const disciplineSelectors = document.querySelectorAll('[id^="roundDiscipline"]');
-    disciplineSelectors.forEach(selector => {
-      const roundNumber = selector.id.replace('roundDiscipline', '');
-      const storedDiscipline = localStorage.getItem(`roundDiscipline_{{ gara.id }}_${roundNumber}`);
-
-      if (storedDiscipline && storedDiscipline !== '{{ gara.discipline }}') {
-        selector.value = storedDiscipline;
-        selector.parentElement.classList.add('border', 'border-warning', 'rounded', 'p-1');
-      }
-    });
-
     const timezoneSpans = document.querySelectorAll('#user-timezone, #modify-user-timezone');
     timezoneSpans.forEach(span => {
       if (span) {
@@ -501,27 +490,42 @@
       });
   }
 
-  function updateRoundDiscipline(roundNumber) {
-    const selectElement = document.getElementById(`roundDiscipline${roundNumber}`);
-    const selectedValue = selectElement.value;
-
-    localStorage.setItem(`roundDiscipline_{{ gara.id }}_${roundNumber}`, selectedValue);
-
-    if (selectedValue !== '{{ gara.discipline }}') {
-      selectElement.parentElement.classList.add('border', 'border-warning', 'rounded', 'p-1');
-    } else {
-      selectElement.parentElement.classList.remove('border', 'border-warning', 'rounded', 'p-1');
-    }
-  }
-
   function startRound(roundNumber) {
     const buttons = document.querySelectorAll('button[onclick*="startRound"]');
     buttons.forEach(btn => btn.disabled = true);
 
-    const selectedDiscipline = localStorage.getItem(`roundDiscipline_{{ gara.id }}_${roundNumber}`) || '{{ gara.discipline }}';
+    // Try to load full config from new format first
+    const storedConfig = localStorage.getItem(`roundConfig_{{ gara.id }}_${roundNumber}`);
+    let config;
+
+    if (storedConfig) {
+      try {
+        config = JSON.parse(storedConfig);
+      } catch (e) {
+        console.error('Error parsing round config:', e);
+        config = null;
+      }
+    }
+
+    // Fall back to defaults if no stored config
+    if (!config) {
+      config = {
+        discipline: '{{ gara.discipline }}',
+        distance: {{ gara.distance }},
+        exactNumber: {{ 'true' if not gara.is_race_to else 'false' }},
+        isMultiSet: {{ 'true' if gara.is_multi_set else 'false' }},
+        matchDistance: {{ gara.match_distance or 2 }},
+        isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }}
+      };
+    }
 
     const formData = new URLSearchParams();
-    formData.append('discipline', selectedDiscipline);
+    formData.append('discipline', config.discipline);
+    formData.append('distance', config.distance);
+    formData.append('exact_number', config.exactNumber ? '1' : '');
+    formData.append('is_multi_set', config.isMultiSet ? '1' : '');
+    formData.append('match_distance', config.matchDistance);
+    formData.append('is_race_to_sets', config.isRaceToSets ? '1' : '');
 
     fetch(`/admin/gara/{{ gara.id }}/start_round/${roundNumber}`, {
       method: 'POST',

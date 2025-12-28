@@ -4,7 +4,7 @@
     <div class="card-header bg-info bg-opacity-10">
         <h5>
             <i class="fas fa-cogs"></i>
-            {{ _('Configurazione Discipline per Turni') }} - {{ gara.matchmaking_strategy.replace("_", " ").title() }}
+            {{ _('Configurazione Turni') }}
         </h5>
     </div>
     <div class="card-body">
@@ -15,11 +15,10 @@
                     <div class="row">
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <strong>{{ _('Strategia:') }}</strong> {{ gara.matchmaking_strategy.replace("_", "
-                                ").title() }}<br>
+                                <strong>{{ _('Strategia:') }}</strong> {{ gara.matchmaking_strategy.replace("_", " ").title() }}<br>
                                 <strong>{{ _('Turni Totali:') }}</strong> {{ gara.rounds_count }}<br>
-                                <strong>{{ _('Disciplina Default:') }}</strong> {{ gara.discipline.replace("_", "
-                                ").title() }}<br>
+                                <strong>{{ _('Disciplina Default:') }}</strong> {{ gara.discipline.replace("_", " ").title() }}<br>
+                                <strong>{{ _('Distanza Default:') }}</strong> {{ gara.distance_config|format_distance }}
                             </small>
                         </div>
                         <div class="col-md-6">
@@ -30,40 +29,111 @@
                                 {% else %}
                                 <span class="text-secondary">{{ _('Disabilitato') }}</span>
                                 {% endif %}<br>
-                                <strong>{{ _('Gestione Dispari:') }}</strong> {{ gara.odd_number_policy.replace("_", "
-                                ").title() }}<br>
-                                <strong>{{ _('Distanza:') }}</strong>
-                                {{ gara.distance_config|format_distance }}
+                                <strong>{{ _('Gestione Dispari:') }}</strong> {{ gara.odd_number_policy.replace("_", " ").title() }}
                             </small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Configurazione Discipline per Turno -->
+                <!-- Configurazione per Turno -->
                 <div class="mb-3">
-                    <h6>{{ _('Configurazione Discipline per Turno') }}</h6>
+                    <h6>{{ _('Configurazione per Turno') }}</h6>
                     <p class="small text-muted mb-3">
-                        {{ _('Puoi configurare una disciplina diversa per ciascun turno.') }}
-                        {{ _('Se non specificata, verrà utilizzata la disciplina di default della gara.') }}
+                        {{ _('Puoi configurare disciplina e distanza diverse per ciascun turno.') }}
+                        {{ _('Se non specificata, verrà utilizzata la configurazione di default della gara.') }}
                     </p>
 
                     <div class="row">
                         {% for round_num in range(1, gara.rounds_count + 1) %}
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card bg-light">
+                        <div class="col-lg-6 col-xl-4 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-header py-2">
+                                    <strong>{{ _('Turno %(num)s', num=round_num) }}</strong>
+                                    <span class="badge bg-secondary float-end" id="roundPreview{{ round_num }}">{{ gara.distance_config|format_distance }}</span>
+                                </div>
                                 <div class="card-body p-2">
-                                    <label class="form-label small fw-bold">{{ _('Turno %(num)s:', num=round_num)
-                                        }}</label>
-                                    <select class="form-select form-select-sm" id="roundDiscipline{{ round_num }}"
-                                        onchange="updateRoundDiscipline({{ round_num }})">
-                                        <option value="{{ gara.discipline }}">{{ gara.discipline.replace("_", "
-                                            ").title() }} {{ _('(Default)') }}</option>
-                                        {% for value, label in discipline_choices %}
-                                        {% if value != gara.discipline %}
-                                        <option value="{{ value }}">{{ label }}</option>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </select>
+                                    <!-- Disciplina -->
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted mb-1">{{ _('Disciplina:') }}</label>
+                                        <select class="form-select form-select-sm" id="roundDiscipline{{ round_num }}"
+                                            onchange="updateRoundConfig({{ round_num }})">
+                                            <option value="{{ gara.discipline }}">{{ gara.discipline.replace("_", " ").title() }} {{ _('(Default)') }}</option>
+                                            {% for value, label in discipline_choices %}
+                                            {% if value != gara.discipline %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <!-- Distanza (Rack per Set) -->
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">{{ _('Rack:') }}</label>
+                                            <input type="number" class="form-control form-control-sm"
+                                                id="roundDistance{{ round_num }}"
+                                                min="1" max="15" value="{{ gara.distance }}"
+                                                onchange="updateRoundConfig({{ round_num }})">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">&nbsp;</label>
+                                            <div class="form-check mt-1">
+                                                <input class="form-check-input" type="checkbox"
+                                                    id="roundExactNumber{{ round_num }}"
+                                                    onchange="updateRoundConfig({{ round_num }})"
+                                                    {% if not gara.is_race_to %}checked{% endif %}>
+                                                <label class="form-check-label small" for="roundExactNumber{{ round_num }}">
+                                                    {{ _('Esatto') }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Multi-Set Toggle -->
+                                    <div class="mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                id="roundIsMultiSet{{ round_num }}"
+                                                onchange="toggleRoundMultiSet({{ round_num }})"
+                                                {% if gara.is_multi_set %}checked{% endif %}>
+                                            <label class="form-check-label small" for="roundIsMultiSet{{ round_num }}">
+                                                {{ _('Multi-Set') }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Multi-Set Options (hidden by default) -->
+                                    <div id="roundMultiSetConfig{{ round_num }}" style="display: {% if gara.is_multi_set %}block{% else %}none{% endif %};">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <label class="form-label small text-muted mb-1">{{ _('Set:') }}</label>
+                                                <input type="number" class="form-control form-control-sm"
+                                                    id="roundMatchDistance{{ round_num }}"
+                                                    min="1" max="9" value="{{ gara.match_distance or 2 }}"
+                                                    onchange="updateRoundConfig({{ round_num }})">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label small text-muted mb-1">&nbsp;</label>
+                                                <div class="form-check mt-1">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        id="roundIsRaceToSets{{ round_num }}"
+                                                        onchange="updateRoundConfig({{ round_num }})"
+                                                        {% if gara.is_race_to_sets is not defined or gara.is_race_to_sets %}checked{% endif %}>
+                                                    <label class="form-check-label small" for="roundIsRaceToSets{{ round_num }}">
+                                                        {{ _('Al N') }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reset to Default Button -->
+                                    <div class="text-end mt-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1"
+                                            onclick="resetRoundToDefault({{ round_num }})" title="{{ _('Ripristina default') }}">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -74,8 +144,7 @@
                 <div class="alert alert-info p-2">
                     <small>
                         <i class="fas fa-info-circle"></i>
-                        <strong>{{ _('Nota:') }}</strong> {{ _('Le configurazioni delle discipline vengono salvate e
-                        applicate automaticamente quando ogni turno viene avviato.') }}
+                        <strong>{{ _('Nota:') }}</strong> {{ _('Le configurazioni vengono salvate e applicate automaticamente quando ogni turno viene avviato.') }}
                         {{ _("Puoi modificare queste impostazioni fino all'apertura delle iscrizioni.") }}
                     </small>
                 </div>
@@ -83,4 +152,162 @@
         </div>
     </div>
 </div>
+
+<script>
+// Default values from gara
+const garaDefaults_{{ gara.id }} = {
+    discipline: '{{ gara.discipline }}',
+    distance: {{ gara.distance }},
+    isRaceTo: {{ 'true' if gara.is_race_to else 'false' }},
+    isMultiSet: {{ 'true' if gara.is_multi_set else 'false' }},
+    matchDistance: {{ gara.match_distance or 2 }},
+    isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }}
+};
+
+function toggleRoundMultiSet(roundNumber) {
+    const isMultiSet = document.getElementById(`roundIsMultiSet${roundNumber}`).checked;
+    const config = document.getElementById(`roundMultiSetConfig${roundNumber}`);
+    config.style.display = isMultiSet ? 'block' : 'none';
+    updateRoundConfig(roundNumber);
+}
+
+function updateRoundConfig(roundNumber) {
+    const garaId = {{ gara.id }};
+    const defaults = garaDefaults_{{ gara.id }};
+
+    // Get current values
+    const discipline = document.getElementById(`roundDiscipline${roundNumber}`).value;
+    const distance = parseInt(document.getElementById(`roundDistance${roundNumber}`).value) || defaults.distance;
+    const exactNumber = document.getElementById(`roundExactNumber${roundNumber}`).checked;
+    const isMultiSet = document.getElementById(`roundIsMultiSet${roundNumber}`).checked;
+    const matchDistance = parseInt(document.getElementById(`roundMatchDistance${roundNumber}`).value) || defaults.matchDistance;
+    const isRaceToSets = document.getElementById(`roundIsRaceToSets${roundNumber}`).checked;
+
+    // Save to localStorage
+    const config = {
+        discipline: discipline,
+        distance: distance,
+        exactNumber: exactNumber,
+        isMultiSet: isMultiSet,
+        matchDistance: matchDistance,
+        isRaceToSets: isRaceToSets
+    };
+    localStorage.setItem(`roundConfig_${garaId}_${roundNumber}`, JSON.stringify(config));
+
+    // Update preview badge
+    updateRoundPreview(roundNumber, config);
+
+    // Highlight if different from default
+    highlightIfChanged(roundNumber, config, defaults);
+}
+
+function updateRoundPreview(roundNumber, config) {
+    const preview = document.getElementById(`roundPreview${roundNumber}`);
+    let text;
+
+    if (!config.isMultiSet) {
+        // Single-set
+        text = config.exactNumber ? `${config.distance} rack esatti` : `Al ${config.distance}`;
+    } else {
+        // Multi-set
+        const setsDesc = config.isRaceToSets ? `Al ${config.matchDistance}` : `${config.matchDistance}`;
+        const racksDesc = config.exactNumber ? `${config.distance} esatti` : `al ${config.distance}`;
+        text = `${setsDesc} set, ${racksDesc}`;
+    }
+
+    preview.textContent = text;
+}
+
+function highlightIfChanged(roundNumber, config, defaults) {
+    const card = document.getElementById(`roundDiscipline${roundNumber}`).closest('.card');
+
+    const isChanged = (
+        config.discipline !== defaults.discipline ||
+        config.distance !== defaults.distance ||
+        config.exactNumber !== !defaults.isRaceTo ||
+        config.isMultiSet !== defaults.isMultiSet ||
+        (config.isMultiSet && (
+            config.matchDistance !== defaults.matchDistance ||
+            config.isRaceToSets !== defaults.isRaceToSets
+        ))
+    );
+
+    if (isChanged) {
+        card.classList.remove('bg-light');
+        card.classList.add('bg-warning', 'bg-opacity-25');
+    } else {
+        card.classList.remove('bg-warning', 'bg-opacity-25');
+        card.classList.add('bg-light');
+    }
+}
+
+function resetRoundToDefault(roundNumber) {
+    const garaId = {{ gara.id }};
+    const defaults = garaDefaults_{{ gara.id }};
+
+    // Reset form values
+    document.getElementById(`roundDiscipline${roundNumber}`).value = defaults.discipline;
+    document.getElementById(`roundDistance${roundNumber}`).value = defaults.distance;
+    document.getElementById(`roundExactNumber${roundNumber}`).checked = !defaults.isRaceTo;
+    document.getElementById(`roundIsMultiSet${roundNumber}`).checked = defaults.isMultiSet;
+    document.getElementById(`roundMatchDistance${roundNumber}`).value = defaults.matchDistance;
+    document.getElementById(`roundIsRaceToSets${roundNumber}`).checked = defaults.isRaceToSets;
+
+    // Update multi-set visibility
+    document.getElementById(`roundMultiSetConfig${roundNumber}`).style.display = defaults.isMultiSet ? 'block' : 'none';
+
+    // Remove from localStorage
+    localStorage.removeItem(`roundConfig_${garaId}_${roundNumber}`);
+
+    // Update UI
+    updateRoundConfig(roundNumber);
+}
+
+function loadStoredRoundConfigs() {
+    const garaId = {{ gara.id }};
+    const defaults = garaDefaults_{{ gara.id }};
+
+    {% for round_num in range(1, gara.rounds_count + 1) %}
+    (function() {
+        const roundNumber = {{ round_num }};
+        const stored = localStorage.getItem(`roundConfig_${garaId}_${roundNumber}`);
+
+        if (stored) {
+            try {
+                const config = JSON.parse(stored);
+
+                document.getElementById(`roundDiscipline${roundNumber}`).value = config.discipline || defaults.discipline;
+                document.getElementById(`roundDistance${roundNumber}`).value = config.distance || defaults.distance;
+                document.getElementById(`roundExactNumber${roundNumber}`).checked = config.exactNumber !== undefined ? config.exactNumber : !defaults.isRaceTo;
+                document.getElementById(`roundIsMultiSet${roundNumber}`).checked = config.isMultiSet !== undefined ? config.isMultiSet : defaults.isMultiSet;
+                document.getElementById(`roundMatchDistance${roundNumber}`).value = config.matchDistance || defaults.matchDistance;
+                document.getElementById(`roundIsRaceToSets${roundNumber}`).checked = config.isRaceToSets !== undefined ? config.isRaceToSets : defaults.isRaceToSets;
+
+                // Update multi-set visibility
+                document.getElementById(`roundMultiSetConfig${roundNumber}`).style.display = config.isMultiSet ? 'block' : 'none';
+
+                // Update preview and highlighting
+                updateRoundPreview(roundNumber, config);
+                highlightIfChanged(roundNumber, config, defaults);
+            } catch (e) {
+                console.error('Error loading round config:', e);
+            }
+        } else {
+            // Initialize preview with defaults
+            updateRoundPreview(roundNumber, {
+                discipline: defaults.discipline,
+                distance: defaults.distance,
+                exactNumber: !defaults.isRaceTo,
+                isMultiSet: defaults.isMultiSet,
+                matchDistance: defaults.matchDistance,
+                isRaceToSets: defaults.isRaceToSets
+            });
+        }
+    })();
+    {% endfor %}
+}
+
+// Load stored configs on page load
+document.addEventListener('DOMContentLoaded', loadStoredRoundConfigs);
+</script>
 {% endif %}
