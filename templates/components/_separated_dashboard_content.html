@@ -4,7 +4,7 @@
 {# Sezione 0: Partite Attive (priorità massima) #}
 {% if not current_user.is_admin and vm.current_matches %}
 <div class="mb-4">
-  <h4><i class="fas fa-gamepad text-danger"></i> Le Tue Partite</h4>
+  <h4><i class="fas fa-shield-halved text-danger"></i> Le Tue Partite</h4>
   <div class="row">
     {% for match in vm.current_matches %}
       <div class="col-md-6 col-lg-4 mb-3">

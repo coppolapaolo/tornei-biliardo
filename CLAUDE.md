@@ -297,6 +297,8 @@ PYTHONPATH=. pytest tests/new/ -n auto
 - **[models/gamification/CLAUDE.md](models/gamification/CLAUDE.md)**: Gamification system (XP, achievements, streaks)
 - **[docs/SPECIFICHE.md](docs/SPECIFICHE.md)**: Complete platform requirements (Italian)
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
+- **[docs/UI_CONVENTIONS.md](docs/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
+- **[docs/decisions/](docs/decisions/)**: Architecture Decision Records (ADR)
 
 ---
 

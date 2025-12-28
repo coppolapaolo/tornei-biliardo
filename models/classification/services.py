@@ -2,15 +2,16 @@
 Module: models/classification/services.py
 Purpose: Business logic services for classification domain with caching and optimization
 Data Structures: ClassificationService, RoundClassificationService,
+                GaraClassificationService, StrategyBasedClassificationService,
                 PlayerEncounterService
 Dependencies: models.classification.models, models.base.db
-Enhanced: Phase 3.4 - Performance Optimization
+Enhanced: Phase 3.4 - Performance Optimization, Phase 5 - Strategy Pattern Refactor
 """
 
 from typing import List, Tuple, Optional, Dict, Any
 from sqlalchemy.orm import joinedload
 from models.base import db
-from .models import Classification, RoundClassification, PlayerEncounter
+from .models import Classification, RoundClassification, GaraClassification, PlayerEncounter
 from models.competition.models import Inscription
 from models.user.models import User
 from ..caching import cached, cache_invalidate, cache_manager
@@ -22,6 +23,12 @@ from ..scoring.strategies import (
     EloRatingScoringPolicy,
 )
 from ..transaction import transactional
+
+# Strategy pattern imports
+from .strategies.base import ClassificationResult, ClassificationScope, PlayerScore
+from .registry import get_classification_registry
+from .score_aggregator import ScoreAggregator
+from .tiebreaker_resolver import TiebreakerResolver
 
 
 class ClassificationService:
@@ -515,8 +522,322 @@ def visible_user_ids_for_gara(gara_id: int) -> set[int]:
     return active - deleted
 
 
+class StrategyBasedClassificationService:
+    """Unified classification service using strategy pattern.
+
+    This is the new recommended service for classification calculations.
+    Uses pluggable strategies for different ranking criteria.
+    """
+
+    def __init__(self) -> None:
+        self._registry = get_classification_registry()
+        self._aggregator = ScoreAggregator()
+        self._tiebreaker = TiebreakerResolver()
+
+    def get_strategy_for_gara(self, gara) -> Any:
+        """Get appropriate round strategy based on gara's matchmaking strategy.
+
+        Args:
+            gara: Gara model instance
+
+        Returns:
+            ClassificationStrategy for this gara type
+        """
+        strategy_map = {
+            "amalfi": "amalfi_round",
+            "random": "random_round",
+            "round_robin": "round_robin_round",
+        }
+        strategy_name = strategy_map.get(gara.matchmaking_strategy, "amalfi_round")
+        return self._registry.get(strategy_name)
+
+    def get_gara_final_strategy(self, gara) -> Any:
+        """Get strategy for final gara classification.
+
+        Args:
+            gara: Gara model instance
+
+        Returns:
+            ClassificationStrategy for gara final ranking
+        """
+        strategy_map = {
+            "amalfi": "amalfi_gara",
+            "random": "random_gara",
+        }
+        strategy_name = strategy_map.get(gara.matchmaking_strategy, "amalfi_gara")
+        return self._registry.get(strategy_name)
+
+    @transactional(domain="classification")
+    def calculate_round_classification(
+        self,
+        gara_id: int,
+        round_number: int,
+    ) -> ClassificationResult:
+        """Calculate classification after a round using strategy pattern.
+
+        Args:
+            gara_id: ID of the gara
+            round_number: Round number to calculate
+
+        Returns:
+            ClassificationResult with ordered entries
+        """
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} not found")
+
+        # Get appropriate strategy
+        strategy = self.get_strategy_for_gara(gara)
+
+        # Aggregate scores from matches
+        scores = self._aggregator.aggregate_round_scores(gara_id, round_number)
+
+        # Get previous classification if exists
+        previous = None
+        if round_number > 1:
+            previous = self._load_previous_classification(gara_id, round_number - 1)
+
+        # Calculate using strategy
+        result = strategy.calculate(
+            scores=scores,
+            previous_classification=previous,
+            context={"gara_id": gara_id, "round_number": round_number},
+        )
+
+        # Persist result to database
+        self._save_round_classification(gara_id, round_number, result)
+
+        return result
+
+    @transactional(domain="classification")
+    def calculate_gara_classification(
+        self,
+        gara_id: int,
+        spot_shot_results: Optional[Dict[int, int]] = None,
+    ) -> ClassificationResult:
+        """Calculate final gara classification with tiebreaker resolution.
+
+        Args:
+            gara_id: ID of the gara
+            spot_shot_results: Optional spot shot rally results for tiebreaking
+
+        Returns:
+            ClassificationResult with resolved positions
+        """
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} not found")
+
+        # Get final round classification
+        final_round = gara.current_round or 1
+        previous = self._load_previous_classification(gara_id, final_round)
+
+        if previous is None:
+            # Calculate final round first
+            previous = self.calculate_round_classification(gara_id, final_round)
+
+        # Get gara-level strategy
+        strategy = self.get_gara_final_strategy(gara)
+
+        # Calculate final classification
+        result = strategy.calculate(
+            scores=[],  # Gara strategy uses previous classification
+            previous_classification=previous,
+            context={
+                "gara_id": gara_id,
+                "spot_shot_results": spot_shot_results,
+            },
+        )
+
+        # Persist final gara classification
+        self._save_gara_classification(gara_id, result)
+
+        return result
+
+    def _load_previous_classification(
+        self,
+        gara_id: int,
+        round_number: int,
+    ) -> Optional[ClassificationResult]:
+        """Load previous round classification from database.
+
+        Args:
+            gara_id: ID of the gara
+            round_number: Round number to load
+
+        Returns:
+            ClassificationResult or None if not found
+        """
+        from .strategies.base import ClassificationEntry
+
+        round_classifications = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=round_number)
+            .order_by(RoundClassification.position)
+            .all()
+        )
+
+        if not round_classifications:
+            return None
+
+        entries = []
+        for rc in round_classifications:
+            score = PlayerScore(
+                player_id=rc.user_id,
+                matches_won=rc.matches_won,
+                rack_difference=rc.rack_difference,
+                previous_position=rc.previous_position,
+            )
+            entries.append(
+                ClassificationEntry(
+                    player_id=rc.user_id,
+                    position=rc.position,
+                    score=score,
+                    tied_with=(),
+                    tiebreaker_resolved=True,
+                )
+            )
+
+        return ClassificationResult(
+            entries=tuple(entries),
+            scope=ClassificationScope.ROUND,
+            has_ties=False,
+            metadata={"round_number": round_number, "gara_id": gara_id},
+        )
+
+    def _save_round_classification(
+        self,
+        gara_id: int,
+        round_number: int,
+        result: ClassificationResult,
+    ) -> None:
+        """Save round classification to database.
+
+        Args:
+            gara_id: ID of the gara
+            round_number: Round number
+            result: ClassificationResult to save
+        """
+        # Delete existing classifications for this round
+        db.session.query(RoundClassification).filter_by(
+            gara_id=gara_id, round_number=round_number
+        ).delete()
+
+        # Create new classifications
+        for entry in result.entries:
+            classification = RoundClassification(
+                gara_id=gara_id,
+                round_number=round_number,
+                user_id=entry.player_id,
+                position=entry.position,
+                matches_won=entry.score.matches_won,
+                rack_difference=entry.score.rack_difference,
+                previous_position=entry.score.previous_position,
+            )
+            db.session.add(classification)
+
+    def _save_gara_classification(
+        self,
+        gara_id: int,
+        result: ClassificationResult,
+    ) -> None:
+        """Save final gara classification to database.
+
+        Args:
+            gara_id: ID of the gara
+            result: ClassificationResult to save
+        """
+        # Delete existing classifications for this gara
+        db.session.query(GaraClassification).filter_by(gara_id=gara_id).delete()
+
+        # Create new classifications
+        for entry in result.entries:
+            classification = GaraClassification(
+                gara_id=gara_id,
+                user_id=entry.player_id,
+                position=entry.position,
+                matches_won=entry.score.matches_won,
+                matches_lost=entry.score.matches_lost,
+                racks_won=entry.score.racks_won,
+                racks_lost=entry.score.racks_lost,
+                rack_difference=entry.score.rack_difference,
+                spot_shot_wins=entry.score.spot_shot_wins,
+                tied_with_player_ids=list(entry.tied_with) if entry.tied_with else None,
+                tiebreaker_resolved=entry.tiebreaker_resolved,
+            )
+            db.session.add(classification)
+
+
+class GaraClassificationService:
+    """Service for managing final gara classifications."""
+
+    @staticmethod
+    @cached(ttl_seconds=900, tags=["classification", "gara"], key_generator="gara")
+    def get_gara_standings(gara_id: int) -> List[GaraClassification]:
+        """Get final gara standings with caching.
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            List of GaraClassification objects ordered by position
+        """
+        return (
+            db.session.query(GaraClassification)
+            .filter_by(gara_id=gara_id)
+            .options(joinedload(getattr(GaraClassification, "user")))
+            .order_by(GaraClassification.position)
+            .all()
+        )
+
+    @staticmethod
+    @cached(ttl_seconds=600, tags=["classification", "user", "gara"])
+    def get_player_gara_result(
+        gara_id: int, user_id: int
+    ) -> Optional[GaraClassification]:
+        """Get a specific player's final result in a gara.
+
+        Args:
+            gara_id: ID of the gara
+            user_id: ID of the player
+
+        Returns:
+            GaraClassification or None if not found
+        """
+        return (
+            db.session.query(GaraClassification)
+            .filter_by(gara_id=gara_id, user_id=user_id)
+            .first()
+        )
+
+    @staticmethod
+    def get_podium(gara_id: int) -> List[GaraClassification]:
+        """Get top 3 finishers for a gara.
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            List of top 3 GaraClassification objects
+        """
+        return (
+            db.session.query(GaraClassification)
+            .filter_by(gara_id=gara_id)
+            .filter(GaraClassification.position <= 3)
+            .options(joinedload(getattr(GaraClassification, "user")))
+            .order_by(GaraClassification.position)
+            .all()
+        )
+
+
 __all__ = [
     "ClassificationService",
     "RoundClassificationService",
+    "GaraClassificationService",
+    "StrategyBasedClassificationService",
     "PlayerEncounterService",
 ]

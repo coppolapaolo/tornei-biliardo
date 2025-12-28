@@ -5,7 +5,7 @@
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="mb-0"><i class="fas fa-gamepad me-2"></i>{{ page_title }}</h1>
+            <h1 class="mb-0"><i class="fas fa-star me-2"></i>{{ page_title }}</h1>
             <p class="text-muted">{{ _('Monitora i tuoi progressi e obiettivi') }}</p>
         </div>
     </div>
@@ -75,7 +75,7 @@
                                     {% if streak_type == 'weekly_activity' %}
                                     <i class="fas fa-calendar-check text-warning me-1"></i>{{ _('Attivita Settimanale') }}
                                     {% elif streak_type == 'weekly_match' %}
-                                    <i class="fas fa-table-tennis me-1 text-info"></i>{{ _('Partite Settimanali') }}
+                                    <i class="fas fa-shield-halved me-1 text-info"></i>{{ _('Partite Settimanali') }}
                                     {% elif streak_type == 'weekly_tournament' %}
                                     <i class="fas fa-trophy text-success me-1"></i>{{ _('Tornei Settimanali') }}
                                     {% else %}

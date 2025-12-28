@@ -1033,6 +1033,10 @@ class RackService:
 
         Il match viene riportato allo stato appropriato in base all'assegnazione
         del tavolo: PLAYING se ha un tavolo, PENDING altrimenti.
+
+        IMPORTANT: Also deletes the PlayerEncounter record to maintain
+        anti-rematch consistency. This ensures that when a match is reset,
+        the players can be paired again in future rounds.
         """
         match = db.session.get(Match, match_id)
         if not match:
@@ -1045,6 +1049,16 @@ class RackService:
         existing_racks = Rack.query.filter_by(match_id=match_id).all()
         for rack in existing_racks:
             db.session.delete(rack)
+
+        # Delete PlayerEncounter to maintain anti-rematch consistency
+        # This ensures players can be paired again after match reset
+        if match.player2_id:  # Only for non-bye matches
+            from models.classification.models import PlayerEncounter
+            PlayerEncounter.delete_encounter(
+                gara_id=match.gara_id,
+                player1_id=match.player1_id,
+                player2_id=match.player2_id
+            )
 
         # Reset match scores
         match.player1_score = 0

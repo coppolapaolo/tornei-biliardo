@@ -1,11 +1,16 @@
 """
 Module: models/classification/models.py
 Purpose: Classification domain models
-(Classification, RoundClassification, PlayerEncounter)
-Data Structures: Classification, RoundClassification, PlayerEncounter
+(Classification, RoundClassification, GaraClassification, PlayerEncounter)
+Data Structures: Classification, RoundClassification, GaraClassification, PlayerEncounter
 Dependencies: models.base.db, datetime
+
+Phase 5 Refactor Notes:
+- GaraClassification added for final gara rankings
+- Strategy pattern implemented in strategies/ subdirectory
+- StrategyBasedClassificationService is the new recommended API
+- Legacy static methods preserved for backward compatibility
 """
-# TODO: questo va rivisto. Manca la classifica di gara e poi possono esserci varie altre classifiche, ad esempio quella di una o piu' challenge in una gara. Una classifica prende una serie di punteggi oppure una classifica precedente e una serie di punteggi e ha una logica di ordinamento e restituisce quell'ordinamento. la classifica delle gare amalfi, ad esempio, prende la classifica dell'ultimo turno e, se ci sono pari merito, prende i risultati dello spot shot rally e ordina i pari merito secondo quei risultati. la classifica delle gare random si comporta allo stesso modo. la classifica dei campionati amalfi prende tutti i match giocati e ordina per (match vinti, differenza rack vinti-persi, spot shot rally vinti). la classifica dei campionati random, invece ordina per (totale rack vinti, spot shot rally vinti). Altri campionati possono dare dei punteggi fissi alle posizioni ottenute nelle classifiche delle singole gare (Es. 1000pt al primo, 800 al secondo, 500 al terzo e quarto, ecc.) e la classifica finale del campionato puo' essere data dalla somma dei punti delle migliori n-1 gare. La struttura di classifica deve permettere di definire tutte queste varianti
 
 from datetime import datetime
 from models.base import db, TimestampMixin
@@ -48,12 +53,17 @@ class Classification(db.Model, TimestampMixin):
         return f"<Classification {self.user_id} -> {self.position}>"
 
 
-class RoundClassification(db.Model): # TODO: round classification puo' avere diverse logiche di combinare i match di un round. non vale solo per Amalfi, ma per tutte le gare con piu' round. Esistono diversi round classification che implementano diverse logiche di ordinamento. Amalfi, di solito usa (match vint, differenza rack, ordine classifica turno precedente). Random di solito usa (numero rack vinti). Ma potrebbe essere diverso e ce ne potrebbero essere molti altri.
+class RoundClassification(db.Model):
     """
-    Dynamic classification after each round for Amalfi algorithm.
+    Dynamic classification after each round.
 
-    Tracks player standings after each round of play, enabling the Amalfi
-    pairing system to create balanced matches based on current performance.
+    Tracks player standings after each round of play, enabling pairing
+    systems (Amalfi, Random, etc.) to create balanced matches based on
+    current performance.
+
+    Note: Different classification strategies are implemented in
+    models/classification/strategies/. Use StrategyBasedClassificationService
+    for new code instead of the static method on this class.
     """
 
     __tablename__ = "round_classification"
@@ -97,6 +107,10 @@ class RoundClassification(db.Model): # TODO: round classification puo' avere div
     def calculate_classification_after_round(gara_id, round_number):
         """
         Calculate classification after a specific round.
+
+        .. deprecated::
+            Use StrategyBasedClassificationService.calculate_round_classification()
+            instead. This method is preserved for backward compatibility.
 
         This method aggregates match results up to the specified round
         and creates/updates RoundClassification entries for all players.
@@ -284,6 +298,64 @@ class RoundClassification(db.Model): # TODO: round classification puo' avere div
         )
 
 
+class GaraClassification(db.Model, TimestampMixin):
+    """
+    Final gara classification.
+
+    Tracks the final standings of players in a gara after all rounds
+    are completed, including tiebreaker resolution. This is the official
+    result used for:
+    - Prize positions
+    - Campionato points (if part of a campionato)
+    - Historical records
+    """
+
+    __tablename__ = "gara_classification"
+
+    id = db.Column(db.Integer, primary_key=True)
+    gara_id = db.Column(
+        db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    # Final position (1-based)
+    position = db.Column(db.Integer, nullable=False)
+
+    # Statistics
+    matches_won = db.Column(db.Integer, default=0)
+    matches_lost = db.Column(db.Integer, default=0)
+    racks_won = db.Column(db.Integer, default=0)
+    racks_lost = db.Column(db.Integer, default=0)
+    rack_difference = db.Column(db.Integer, default=0)
+
+    # Tiebreaker resolution
+    tied_with_player_ids = db.Column(db.JSON, nullable=True)  # IDs of originally tied players
+    tiebreaker_resolved = db.Column(db.Boolean, default=True)
+    spot_shot_wins = db.Column(db.Integer, default=0)
+
+    # Points for campionato (if applicable)
+    campionato_points = db.Column(db.Integer, default=0)
+
+    # Relations
+    gara = db.relationship(
+        "Gara",
+        backref=backref(
+            "final_classifications",
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
+    )
+    user = db.relationship("User", back_populates="gara_classifications")
+
+    # Constraint: one entry per player per gara
+    __table_args__ = (
+        db.UniqueConstraint("gara_id", "user_id", name="unique_gara_classification"),
+    )
+
+    def __repr__(self):
+        return f"<GaraClassification {self.user_id} -> {self.position} (Gara {self.gara_id})>"
+
+
 class PlayerEncounter(db.Model):
     """
     Player encounter tracking for anti-reincontro logic.
@@ -391,6 +463,56 @@ class PlayerEncounter(db.Model):
         db.session.add(encounter)
         # Transaction managed by @transactional decorator
         return encounter
+
+    @staticmethod
+    @transactional(domain="classification")
+    def delete_encounter(gara_id: int, player1_id: int, player2_id: int) -> bool:
+        """
+        Delete the encounter record between two players.
+
+        Used when a match is reset to clear stale anti-rematch data.
+
+        Args:
+            gara_id: ID of the gara
+            player1_id: ID of first player
+            player2_id: ID of second player
+
+        Returns:
+            True if deleted, False if not found
+        """
+        # Ensure consistent ordering
+        p1, p2 = min(player1_id, player2_id), max(player1_id, player2_id)
+
+        deleted = (
+            db.session.query(PlayerEncounter)
+            .filter_by(gara_id=gara_id, player1_id=p1, player2_id=p2)
+            .delete()
+        )
+
+        return deleted > 0
+
+    @staticmethod
+    @transactional(domain="classification")
+    def delete_round_encounters(gara_id: int, round_number: int) -> int:
+        """
+        Delete all encounter records for a specific round.
+
+        Used when a round is cancelled to clear stale anti-rematch data.
+
+        Args:
+            gara_id: ID of the gara
+            round_number: Round number to delete encounters for
+
+        Returns:
+            Number of encounters deleted
+        """
+        deleted = (
+            db.session.query(PlayerEncounter)
+            .filter_by(gara_id=gara_id, round_number=round_number)
+            .delete()
+        )
+
+        return deleted
 
     def __repr__(self):
         return (

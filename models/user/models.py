@@ -67,6 +67,9 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     round_classifications = db.relationship(
         "RoundClassification", back_populates="user", lazy=True
     )
+    gara_classifications = db.relationship(
+        "GaraClassification", back_populates="user", lazy=True
+    )
 
     # Player encounter relationships
     player1_encounters = db.relationship(

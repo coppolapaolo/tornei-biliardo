@@ -86,7 +86,7 @@
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
                                         proposal.scheduled_at }}<br>
-                                        <i class="fas fa-gamepad"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
+                                        <i class="fas fa-shield-halved"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
                                         }} {{ proposal.distance }}
                                         {% if proposal.entry_fee %}
                                         <br><i class="fas fa-euro-sign"></i> Entry fee: €{{
@@ -165,7 +165,7 @@
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
                                         proposal.scheduled_at }}<br>
-                                        <i class="fas fa-gamepad"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
+                                        <i class="fas fa-shield-halved"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
                                         }} {{ proposal.distance }}
                                         {% if proposal.entry_fee %}
                                         <br><i class="fas fa-euro-sign"></i> Entry fee: €{{
@@ -248,7 +248,7 @@
                                         <i class="fas fa-map-marker-alt"></i> {{ proposal.location }}<br>
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if
                                         proposal.scheduled_at }}<br>
-                                        <i class="fas fa-gamepad"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
+                                        <i class="fas fa-shield-halved"></i> {{ 'Al' if proposal.is_race_to else 'Esattamente'
                                         }} {{ proposal.distance }}
                                         {% if proposal.entry_fee %}
                                         <br><i class="fas fa-euro-sign"></i> Entry fee: €{{

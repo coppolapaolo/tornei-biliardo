@@ -214,6 +214,11 @@ class AdvancedRoundManager:
                 gara_id=gara_id, round_number=round_number
             ).delete()
 
+            # Delete PlayerEncounters for this round to maintain anti-rematch consistency
+            # This ensures players can be paired again after round cancellation
+            from models.classification.models import PlayerEncounter
+            PlayerEncounter.delete_round_encounters(gara_id, round_number)
+
             # Update gara current round if we cancelled the current round
             if round_number == gara.current_round:
                 gara.current_round = max(0, round_number - 1)

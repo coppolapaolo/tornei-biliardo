@@ -11,7 +11,7 @@ match.gara.name }}{% endblock %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>
-                <i class="fas fa-gamepad"></i>
+                <i class="fas fa-shield-halved"></i>
                 {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
                 match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
             </h1>

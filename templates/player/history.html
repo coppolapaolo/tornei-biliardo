@@ -24,7 +24,7 @@
     <li class="nav-item" role="presentation">
         <a class="nav-link {{ 'active' if active_tab == 'matches' else '' }}"
             href="{{ url_for('player.history', tab='matches') }}" role="tab">
-            <i class="fas fa-table-tennis"></i> {{ _("Partite") }}
+            <i class="fas fa-shield-halved"></i> {{ _("Partite") }}
             {% if match_stats %}
             <span class="badge bg-secondary ms-1">{{ match_stats.total_matches }}</span>
             {% endif %}
