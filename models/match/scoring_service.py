@@ -424,13 +424,28 @@ class ScoringService:
     def _validate_score_limits(
         match: Match, player1_score: int, player2_score: int
     ) -> None:
-        """Validate score limits for direct result setting."""
+        """Validate score limits for direct result setting.
+
+        For "race to n" matches, validates that both players cannot have
+        the winning score simultaneously (logically impossible - match
+        ends when first player reaches winning score).
+        """
         if player1_score < 0 or player2_score < 0:
             raise ValueError("I punteggi non possono essere negativi!")
 
         max_score = match.gara.distance
         if player1_score > max_score or player2_score > max_score:
             raise ValueError(f"I punteggi non possono superare {max_score}!")
+
+        # In "race to n" matches, both players cannot have winning score
+        # (match ends when first player reaches it)
+        if match.gara.is_race_to:
+            winning_score = match.gara.get_winning_score()
+            if player1_score >= winning_score and player2_score >= winning_score:
+                raise ValueError(
+                    f"In un match 'al {winning_score}', entrambi i giocatori "
+                    f"non possono avere {winning_score} o più punti!"
+                )
 
     @staticmethod
     def _calculate_result(

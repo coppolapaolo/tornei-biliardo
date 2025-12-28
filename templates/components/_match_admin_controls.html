@@ -8,7 +8,9 @@
         {% if match.status != 'completed' and not match.is_bye %}
         <!-- Form Risultato Diretto -->
         <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
-            class="mb-3" onsubmit="return confirmSetResult()">
+            class="mb-3" onsubmit="return validateScoreForm(this)"
+            data-is-race-to="{{ 'true' if match.gara.is_race_to else 'false' }}"
+            data-winning-score="{{ match.gara.get_winning_score() }}">
             <h6>{{ _('Imposta Risultato') }}</h6>
             <div class="row">
                 <div class="col-4">
@@ -57,3 +59,24 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+/**
+ * Validates score form before submission.
+ * For "race to n" matches, prevents both players from having the winning score.
+ */
+function validateScoreForm(form) {
+    const isRaceTo = form.dataset.isRaceTo === 'true';
+    const winningScore = parseInt(form.dataset.winningScore, 10);
+    const p1Score = parseInt(form.querySelector('[name="player1_score"]').value, 10);
+    const p2Score = parseInt(form.querySelector('[name="player2_score"]').value, 10);
+
+    // For "race to n": both players cannot have winning score or higher
+    if (isRaceTo && p1Score >= winningScore && p2Score >= winningScore) {
+        alert({{ _("In un match 'al N', entrambi i giocatori non possono avere il punteggio vincente!")|tojson }});
+        return false;
+    }
+
+    return confirm({{ _("Confermi di voler impostare questo risultato?")|tojson }});
+}
+</script>
