@@ -1,4 +1,4 @@
-# 0001 Bug Fix: Anti-Rematch Encounter Cleanup
+# ADR-002 Bug Fix: Anti-Rematch Encounter Cleanup
 
 **Data**: 2025-12-28
 **Stato**: Accepted

@@ -1,4 +1,4 @@
-# 0002 Sistema Privacy Profilo Utente
+# ADR-003 Sistema Privacy Profilo Utente
 
 **Data**: 2025-12-28
 **Stato**: Accepted
