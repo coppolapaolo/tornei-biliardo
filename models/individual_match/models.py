@@ -72,7 +72,7 @@ class MatchProposal(BaseModel, TimestampMixin):
     )  # Race-to vs exact racks
     break_rule = db.Column(
         db.String(20), nullable=True, default="alternate"
-    )  # TODO: verificare impatto funzionamento app
+    )  # Break rule: alternate, winner, loser
     description = db.Column(db.Text, nullable=True)
     entry_fee = db.Column(db.Numeric(10, 2), nullable=True, default=0)
 
@@ -365,9 +365,8 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
     # Results
     started_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
-    # TODO: lo score, se la distanza diventa un oggetto complesso con i set,
-    # diventa anch'esso un oggetto complesso? Questo vale in generale,
-    # non solo per i match individuali
+    # Scores: racks won (single-set) or sets won (multi-set)
+    # See distance_config property for winning threshold logic
     player1_score = db.Column(db.Integer, nullable=False, default=0)
     player2_score = db.Column(db.Integer, nullable=False, default=0)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)

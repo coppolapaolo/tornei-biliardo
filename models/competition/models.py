@@ -242,10 +242,7 @@ class Gara(db.Model):
             self.available_tables = None
 
     # Property per identificare se è standalone
-    # TODO: se la modellazione cambia e la relazione viene spostata in
-    # Campionato, forse anche questa non e' piu' una proprieta' di gara,
-    # ma un servizio legato al campionato? Qual e' il modo migliore di
-    # modellare questa cosa?
+    # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002 - keep bidirectional
     @property
     def is_standalone(self):
         """Check if this is a standalone competition."""
@@ -509,7 +506,6 @@ class Gara(db.Model):
         )
         return rack_score.is_complete()
 
-    # TODO: verificare che siano tutte le info e non manchino cose
     def copy_settings_from(self, source_gara):
         """Copia le impostazioni da un'altra gara"""
         self.discipline = source_gara.discipline

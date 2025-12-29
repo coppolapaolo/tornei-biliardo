@@ -77,10 +77,8 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     player2_handicap = db.Column(
         db.Integer, default=0
     )  # Starting advantage for player2
-    handicap_rule_id = (
-        db.Column(  # TODO: da controllare se e come e' definito. non mi e' chiaro
-            db.Integer, db.ForeignKey("handicap_rule.id"), nullable=True
-        )
+    handicap_rule_id = db.Column(
+        db.Integer, db.ForeignKey("handicap_rule.id"), nullable=True
     )
     handicap_explanation = db.Column(db.String(255), nullable=True)
 
@@ -353,11 +351,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
                 "winner_id": self.winner_id,
             }
 
-    def needs_tiebreaker(
-        self,
-    ) -> (
-        bool
-    ):  # TODO: controllare il modello. forse sarebbe meglio astrarre queste cose in una classe Score che gestisce i rack del match e una classe Distance. da verificare e da discutere
+    def needs_tiebreaker(self) -> bool:
         """Check if match needs a tiebreaker (tied scores)."""
         if self.status != "completed":
             return False
