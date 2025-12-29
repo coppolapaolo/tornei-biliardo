@@ -57,6 +57,8 @@ class PrivacyService:
         """Update privacy settings for user.
 
         Only updates fields that are explicitly passed (not None).
+        When user shares gaming data publicly for the first time,
+        awards the 'open_player' achievement.
 
         Args:
             user_id: User ID to update settings for
@@ -80,6 +82,23 @@ class PrivacyService:
         if show_challenge_stats is not None:
             settings.show_challenge_stats = show_challenge_stats
 
+        # Check if user is now sharing any gaming data (for achievement)
+        # Gaming data fields (excluding personal contact info)
+        is_sharing_gaming_data = any([
+            settings.show_statistics,
+            settings.show_recent_matches,
+            settings.show_classifications,
+            settings.show_challenge_stats,
+        ])
+
+        if is_sharing_gaming_data:
+            # Award "open_player" achievement if not already unlocked
+            from models.gamification.achievement_service import AchievementService
+            AchievementService.check_and_award_achievement(
+                user_id=user_id,
+                achievement_slug="open_player"
+            )
+
         return settings
 
     @staticmethod
@@ -91,7 +110,7 @@ class PrivacyService:
         Rules:
         - User can always see their own data
         - Others respect privacy settings
-        - No settings = default to visible (backward compatibility)
+        - No settings = default to private (GDPR compliance - opt-in required)
 
         Args:
             viewer_user_id: ID of user viewing (None for anonymous/guest)
@@ -108,9 +127,9 @@ class PrivacyService:
         # Get privacy settings
         settings = UserPrivacySetting.query.filter_by(user_id=target_user_id).first()
 
-        # No settings = default to visible (backward compatibility)
+        # No settings = default to private (GDPR compliance - opt-in required)
         if not settings:
-            return True
+            return False
 
         field_map = {
             "email": settings.show_email,
@@ -121,7 +140,7 @@ class PrivacyService:
             "challenge_stats": settings.show_challenge_stats,
         }
 
-        return field_map.get(field, True)
+        return field_map.get(field, False)
 
     # ========== Hidden Match Methods ==========
 

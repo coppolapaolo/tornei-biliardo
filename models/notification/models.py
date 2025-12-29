@@ -112,6 +112,11 @@ class Notification(BaseModel, TimestampMixin):
     delivery_attempts = db.Column(db.Integer, nullable=False, default=0)
     last_attempt_at = db.Column(db.DateTime, nullable=True)
 
+    # i18n support: store template key + params instead of pre-translated strings
+    # This enables proper language switching at display time
+    template_key = db.Column(db.String(100), nullable=True)  # e.g., "achievement.unlocked"
+    template_params = db.Column(db.Text, nullable=True)  # JSON params for template
+
     # Relationships
     user = db.relationship("User", foreign_keys=[user_id])
 
@@ -169,6 +174,82 @@ class Notification(BaseModel, TimestampMixin):
             and not self.is_expired()
             and self.delivery_attempts < 3
         )
+
+    def get_template_params(self) -> Dict[str, Any]:
+        """Parse template params from JSON."""
+        if not self.template_params:
+            return {}
+        try:
+            return json.loads(self.template_params)
+        except (json.JSONDecodeError, TypeError):
+            return {}
+
+    def set_template_params(self, params: Dict[str, Any]) -> None:
+        """Set template params as JSON."""
+        self.template_params = json.dumps(params) if params else None
+
+    def get_translated_content(self) -> Dict[str, str]:
+        """Get translated notification content based on current locale.
+
+        If template_key is set, translates the template at display time.
+        Otherwise, falls back to static title/message fields.
+
+        Handles special param keys that need translation:
+        - difficulty_key -> difficulty (via DIFFICULTY_LABELS)
+        - type_key -> type (via STREAK_TYPE_LABELS or QUEST_TYPE_LABELS)
+
+        Returns:
+            Dict with 'title', 'message', 'action_text' keys
+        """
+        if self.template_key:
+            from flask_babel import gettext as _
+            from models.notification.templates import (
+                NOTIFICATION_TEMPLATES,
+                DIFFICULTY_LABELS,
+                STREAK_TYPE_LABELS,
+                QUEST_TYPE_LABELS,
+            )
+
+            template = NOTIFICATION_TEMPLATES.get(self.template_key, {})
+            params = self.get_template_params().copy()  # Copy to avoid mutating original
+
+            # Translate special keys that need runtime translation
+            if "difficulty_key" in params:
+                difficulty_key = params.pop("difficulty_key")
+                # DIFFICULTY_LABELS values are lazy_gettext, convert to string for current locale
+                params["difficulty"] = str(DIFFICULTY_LABELS.get(difficulty_key, difficulty_key))
+
+            if "type_key" in params:
+                type_key = params.pop("type_key")
+                # Try streak types first, then quest types
+                label = STREAK_TYPE_LABELS.get(type_key) or QUEST_TYPE_LABELS.get(type_key, type_key)
+                params["type"] = str(label)
+
+            # Translate template strings and substitute params
+            title_template = template.get("title", self.title or "")
+            message_template = template.get("message", self.message or "")
+            action_template = template.get("action_text", self.action_text or "")
+
+            try:
+                return {
+                    "title": _(title_template) % params if params else _(title_template),
+                    "message": _(message_template) % params if params else _(message_template),
+                    "action_text": _(action_template) % params if params and action_template else _(action_template) if action_template else "",
+                }
+            except (KeyError, TypeError):
+                # Fallback if param substitution fails
+                return {
+                    "title": _(title_template),
+                    "message": _(message_template),
+                    "action_text": _(action_template) if action_template else "",
+                }
+
+        # Fallback to static fields (backward compatibility)
+        return {
+            "title": self.title or "",
+            "message": self.message or "",
+            "action_text": self.action_text or "",
+        }
 
     def __repr__(self) -> str:
         return f"<Notification {self.user_id}: {self.notification_type.value}>"

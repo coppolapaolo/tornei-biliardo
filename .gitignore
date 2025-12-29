@@ -79,6 +79,7 @@ Thumbs.db
 # Flask
 instance/
 .env
+.envrc
 
 # PythonAnywhere specific
 .bash_history

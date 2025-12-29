@@ -19,8 +19,8 @@ class UserPrivacySetting(BaseModel):
     """User privacy preferences for profile visibility.
 
     Controls which data categories are visible to other users
-    on the public profile. All settings default to True (visible)
-    for backward compatibility.
+    on the public profile. All settings default to False (private)
+    for GDPR compliance - users must opt-in to share data.
     """
 
     __tablename__ = "user_privacy_setting"
@@ -33,13 +33,13 @@ class UserPrivacySetting(BaseModel):
         unique=True,  # One-to-one relationship
     )
 
-    # Privacy toggles - all default to visible for backward compatibility
-    show_email = db.Column(db.Boolean, nullable=False, default=True)
-    show_phone = db.Column(db.Boolean, nullable=False, default=True)
-    show_statistics = db.Column(db.Boolean, nullable=False, default=True)
-    show_recent_matches = db.Column(db.Boolean, nullable=False, default=True)
-    show_classifications = db.Column(db.Boolean, nullable=False, default=True)
-    show_challenge_stats = db.Column(db.Boolean, nullable=False, default=True)
+    # Privacy toggles - all default to private for GDPR compliance (opt-in)
+    show_email = db.Column(db.Boolean, nullable=False, default=False)
+    show_phone = db.Column(db.Boolean, nullable=False, default=False)
+    show_statistics = db.Column(db.Boolean, nullable=False, default=False)
+    show_recent_matches = db.Column(db.Boolean, nullable=False, default=False)
+    show_classifications = db.Column(db.Boolean, nullable=False, default=False)
+    show_challenge_stats = db.Column(db.Boolean, nullable=False, default=False)
 
     # Relationship
     user = db.relationship(

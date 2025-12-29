@@ -118,17 +118,18 @@ class TestPrivacyServiceSettings:
     """Tests for privacy settings CRUD operations."""
 
     def test_get_privacy_settings_creates_default_when_missing(self, db_session, test_player):
-        """Should create default settings with all fields visible."""
+        """Should create default settings with all fields private (GDPR compliance)."""
         settings = PrivacyService.get_privacy_settings(test_player.id)
 
         assert settings is not None
         assert settings.user_id == test_player.id
-        assert settings.show_email is True
-        assert settings.show_phone is True
-        assert settings.show_statistics is True
-        assert settings.show_recent_matches is True
-        assert settings.show_classifications is True
-        assert settings.show_challenge_stats is True
+        # All defaults are False for GDPR compliance (opt-in required)
+        assert settings.show_email is False
+        assert settings.show_phone is False
+        assert settings.show_statistics is False
+        assert settings.show_recent_matches is False
+        assert settings.show_classifications is False
+        assert settings.show_challenge_stats is False
 
     def test_get_privacy_settings_returns_existing(self, db_session, test_player):
         """Should return existing settings without creating new ones."""
@@ -159,25 +160,83 @@ class TestPrivacyServiceSettings:
 
         updated = PrivacyService.update_privacy_settings(
             user_id=test_player.id,
-            show_email=False,
-            show_statistics=False,
+            show_email=True,  # Enable sharing (opt-in)
+            show_statistics=True,  # Enable sharing (opt-in)
         )
 
-        assert updated.show_email is False
-        assert updated.show_statistics is False
-        # Other fields should remain at default
-        assert updated.show_phone is True
-        assert updated.show_recent_matches is True
+        assert updated.show_email is True
+        assert updated.show_statistics is True
+        # Other fields should remain at default (False for GDPR)
+        assert updated.show_phone is False
+        assert updated.show_recent_matches is False
 
     def test_update_privacy_settings_creates_if_missing(self, db_session, test_player):
         """Should create settings if they don't exist on update."""
         updated = PrivacyService.update_privacy_settings(
             user_id=test_player.id,
-            show_email=False,
+            show_email=True,  # Enable sharing (opt-in)
         )
 
         assert updated is not None
-        assert updated.show_email is False
+        assert updated.show_email is True
+
+    def test_update_privacy_settings_awards_open_player_achievement(self, db_session, test_player):
+        """Should award 'open_player' achievement when user shares gaming data."""
+        from models.gamification.models import Achievement, UserAchievement
+        from models.gamification.achievement_seeds import seed_achievements
+
+        # Seed achievements to ensure 'open_player' exists
+        seed_achievements(db_session)
+
+        # Initially no achievement
+        achievement = Achievement.query.filter_by(slug="open_player").first()
+        assert achievement is not None, "open_player achievement should exist in seeds"
+
+        user_achievement = UserAchievement.query.filter_by(
+            user_id=test_player.id,
+            achievement_id=achievement.id
+        ).first()
+        assert user_achievement is None, "User should not have achievement initially"
+
+        # Share gaming data (statistics)
+        PrivacyService.update_privacy_settings(
+            user_id=test_player.id,
+            show_statistics=True,
+        )
+
+        # Achievement should be awarded
+        user_achievement = UserAchievement.query.filter_by(
+            user_id=test_player.id,
+            achievement_id=achievement.id
+        ).first()
+        assert user_achievement is not None, "User should have open_player achievement"
+        assert user_achievement.is_unlocked is True
+
+    def test_update_privacy_settings_no_achievement_for_contact_info_only(
+        self, db_session, test_player
+    ):
+        """Should NOT award achievement when only sharing contact info (not gaming data)."""
+        from models.gamification.models import Achievement, UserAchievement
+        from models.gamification.achievement_seeds import seed_achievements
+
+        # Seed achievements
+        seed_achievements(db_session)
+
+        # Share only contact info (not gaming data)
+        PrivacyService.update_privacy_settings(
+            user_id=test_player.id,
+            show_email=True,
+            show_phone=True,
+        )
+
+        # Achievement should NOT be awarded (only contact info, not gaming data)
+        achievement = Achievement.query.filter_by(slug="open_player").first()
+        user_achievement = UserAchievement.query.filter_by(
+            user_id=test_player.id,
+            achievement_id=achievement.id
+        ).first()
+        # Either no record, or not unlocked
+        assert user_achievement is None or user_achievement.is_unlocked is False
 
 
 class TestPrivacyServiceHideMatch:

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-28 14:11+0100\n"
+"POT-Creation-Date: 2025-12-29 10:44+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -37,146 +37,184 @@ msgstr "Player Dashboard"
 msgid "Vista Pubblica"
 msgstr ""
 
-#: models/gamification/notification_handlers.py:89
+#: models/gamification/notification_handlers.py:96
 #, fuzzy
 msgid "Hai sbloccato: "
-msgstr "Locked"
+msgstr "You unlocked: "
 
-#: models/gamification/notification_handlers.py:91
+#: models/gamification/notification_handlers.py:98
 #, python-format
 msgid "Livello %(level)d Raggiunto!"
-msgstr ""
+msgstr "Level %(level)d Reached!"
 
-#: models/gamification/notification_handlers.py:93
+#: models/gamification/notification_handlers.py:100
 #, python-format
 msgid "Congratulazioni! Hai raggiunto il livello %(level)d!%(unlocks)s"
-msgstr ""
+msgstr "Congratulations! You reached level %(level)d!%(unlocks)s"
 
-#: models/gamification/notification_handlers.py:111
+#: models/gamification/notification_handlers.py:124
 msgid "Visualizza Progressi"
-msgstr ""
+msgstr "View Progress"
 
-#: models/gamification/notification_handlers.py:134
-msgid "Comune"
-msgstr ""
-
-#: models/gamification/notification_handlers.py:135
-msgid "Non Comune"
-msgstr ""
-
-#: models/gamification/notification_handlers.py:136
-msgid "Raro"
-msgstr ""
-
-#: models/gamification/notification_handlers.py:137
-msgid "Epico"
-msgstr ""
-
-#: models/gamification/notification_handlers.py:138
-msgid "Leggendario"
-msgstr ""
-
-#: models/gamification/notification_handlers.py:141
+#: models/gamification/notification_handlers.py:155
 msgid "Achievement Sbloccato!"
-msgstr ""
+msgstr "Achievement Unlocked!"
 
-#: models/gamification/notification_handlers.py:143
+#: models/gamification/notification_handlers.py:157
 #, python-format
 msgid "Hai ottenuto '%(name)s' (%(difficulty)s)! +%(xp)d XP"
-msgstr ""
+msgstr "You earned '%(name)s' (%(difficulty)s)! +%(xp)d XP"
 
-#: models/gamification/notification_handlers.py:163
+#: models/gamification/notification_handlers.py:184
 msgid "Visualizza Achievement"
-msgstr ""
+msgstr "View Achievement"
 
-#: models/gamification/notification_handlers.py:188
-#, fuzzy
-msgid "attività"
-msgstr "active"
-
-#: models/gamification/notification_handlers.py:189
-#, fuzzy
-msgid "partite"
-msgstr "Matches"
-
-#: models/gamification/notification_handlers.py:190
-#, fuzzy
-msgid "tornei"
-msgstr "Rounds:"
-
-#: models/gamification/notification_handlers.py:191
-msgid "allenamenti"
-msgstr ""
-
-#: models/gamification/notification_handlers.py:198
+#: models/gamification/notification_handlers.py:220
 #, python-format
 msgid "Hai guadagnato %(count)d freeze!"
-msgstr ""
+msgstr "You earned %(count)d freeze!"
 
-#: models/gamification/notification_handlers.py:202
+#: models/gamification/notification_handlers.py:224
 #, python-format
 msgid "Streak di %(weeks)d Settimane!"
-msgstr ""
+msgstr "%(weeks)d Week Streak!"
 
-#: models/gamification/notification_handlers.py:204
+#: models/gamification/notification_handlers.py:226
 #, python-format
 msgid ""
 "Incredibile! Hai mantenuto il tuo streak di %(type)s per %(weeks)d "
 "settimane consecutive!%(freeze)s +%(xp)d XP"
 msgstr ""
+"Incredible! You maintained your %(type)s streak for %(weeks)d consecutive"
+" weeks!%(freeze)s +%(xp)d XP"
 
-#: models/gamification/notification_handlers.py:225
+#: models/gamification/notification_handlers.py:255
 msgid "Visualizza Streak"
-msgstr ""
+msgstr "View Streak"
 
-#: models/gamification/notification_handlers.py:248
+#: models/gamification/notification_handlers.py:285
+msgid "Quest Completata!"
+msgstr "Quest Completed!"
+
+#: models/gamification/notification_handlers.py:287
+#, python-format
+msgid "Hai completato la quest %(type)s '%(name)s'! +%(xp)d XP"
+msgstr "You completed the %(type)s quest '%(name)s'! +%(xp)d XP"
+
+#: models/gamification/notification_handlers.py:314
+msgid "Visualizza Quests"
+msgstr "View Quests"
+
+#: models/notification/templates.py:149
+msgid "Livello Comune"
+msgstr "Common Level"
+
+#: models/notification/templates.py:150
+msgid "Livello Non Comune"
+msgstr "Uncommon Level"
+
+#: models/notification/templates.py:151
+msgid "Livello Raro"
+msgstr "Rare Level"
+
+#: models/notification/templates.py:152
+msgid "Livello Epico"
+msgstr "Epic Level"
+
+#: models/notification/templates.py:153
+msgid "Livello Leggendario"
+msgstr "Legendary Level"
+
+#: models/notification/templates.py:159
+msgid "attività"
+msgstr "activity"
+
+#: models/notification/templates.py:160
+msgid "partite"
+msgstr "matches"
+
+#: models/notification/templates.py:161
+msgid "tornei"
+msgstr "tournaments"
+
+#: models/notification/templates.py:162
+msgid "allenamenti"
+msgstr "drills"
+
+#: models/notification/templates.py:168
 #: templates/gamification/admin/quest_form.html:33
 #: templates/gamification/dashboard.html:179
 #: templates/gamification/quests.html:39 templates/gamification/quests.html:120
 msgid "Settimanale"
-msgstr ""
+msgstr "Weekly"
 
-#: models/gamification/notification_handlers.py:249
+#: models/notification/templates.py:169
 #: templates/gamification/admin/quest_form.html:36
 #: templates/gamification/dashboard.html:181
 #: templates/gamification/quests.html:41 templates/gamification/quests.html:121
 msgid "Mensile"
-msgstr ""
+msgstr "Monthly"
 
-#: models/gamification/notification_handlers.py:250
+#: models/notification/templates.py:170
 #: templates/gamification/admin/quest_form.html:39
 msgid "Evento Speciale"
-msgstr ""
+msgstr "Special Event"
 
-#: models/gamification/notification_handlers.py:253
-#, fuzzy
-msgid "Quest Completata!"
-msgstr "Completed"
+#: routes/player.py:1026
+msgid "Impostazioni privacy aggiornate con successo."
+msgstr "Privacy settings updated successfully."
 
-#: models/gamification/notification_handlers.py:255
-#, python-format
-msgid "Hai completato la quest %(type)s '%(name)s'! +%(xp)d XP"
-msgstr ""
+#: routes/player.py:1045
+msgid "Match nascosto"
+msgstr "Match hidden"
 
-#: models/gamification/notification_handlers.py:275
-msgid "Visualizza Quests"
-msgstr ""
+#: routes/player.py:1058
+msgid "Match visibile"
+msgstr "Match visible"
+
+#: routes/player.py:1059
+msgid "Match non era nascosto"
+msgstr "Match was not hidden"
+
+#: routes/player.py:1071
+msgid "Gara nascosta"
+msgstr "Tournament hidden"
+
+#: routes/player.py:1084
+msgid "Gara visibile"
+msgstr "Tournament visible"
+
+#: routes/player.py:1085
+msgid "Gara non era nascosta"
+msgstr "Tournament was not hidden"
+
+#: routes/player.py:1097
+msgid "Campionato nascosto"
+msgstr "Championship hidden"
+
+#: routes/player.py:1110
+msgid "Campionato visibile"
+msgstr "Championship visible"
+
+#: routes/player.py:1111
+msgid "Campionato non era nascosto"
+msgstr "Championship was not hidden"
 
 #: routes/gamification/__init__.py:63 routes/gamification/__init__.py:179
 #: routes/gamification/__init__.py:265 routes/gamification/__init__.py:300
 msgid "Gli amministratori non partecipano alla gamification."
-msgstr ""
+msgstr "Administrators do not participate in gamification."
 
 #: routes/gamification/__init__.py:97
-#, fuzzy
 msgid "Dashboard Gamification"
-msgstr "Player Dashboard"
+msgstr "Gamification Dashboard"
 
 #: routes/gamification/__init__.py:206
 msgid "I Tuoi Achievement"
 msgstr ""
 
 #: routes/gamification/__init__.py:248
+#: templates/components/_player_campionato_classifications.html:6
 #: templates/gamification/leaderboards.html:11
 #, fuzzy
 msgid "Classifiche"
@@ -418,7 +456,8 @@ msgstr ""
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: templates/base.html:349
+#: templates/base.html:349 templates/player/profile.html:6
+#: templates/player/profile.html:18
 msgid "Il mio Profilo"
 msgstr "My Profile"
 
@@ -430,7 +469,7 @@ msgstr ""
 msgid "Richieste Director"
 msgstr ""
 
-#: templates/base.html:378 templates/player/profile.html:20
+#: templates/base.html:378 templates/player/profile.html:34
 msgid "Elimina Account"
 msgstr ""
 
@@ -458,7 +497,7 @@ msgid "Gara %(id)s"
 msgstr "Race %(id)s"
 
 #: templates/components/_history_campionati_tab.html:102
-#: templates/components/_history_gare_tab.html:120
+#: templates/components/_history_gare_tab.html:119
 #: templates/components/_history_matches_tab.html:138
 #: templates/components/_unified_cards.html:167
 #: templates/components/_unified_cards.html:194 templates/gara_detail.html:7
@@ -504,11 +543,12 @@ msgstr "Player 2"
 #: templates/gamification/admin/streak_config.html:142
 #: templates/gamification/admin/streak_config.html:263
 #: templates/gara_detail.html:162 templates/gara_detail.html:208
+#: templates/player/privacy_settings.html:85
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/components/_match_admin_controls.html:12
-#: templates/components/_match_admin_controls.html:27
+#: templates/components/_match_admin_controls.html:14
+#: templates/components/_match_admin_controls.html:29
 #: templates/gara_detail.html:164
 msgid "Imposta Risultato"
 msgstr "Set Result"
@@ -816,7 +856,8 @@ msgstr "Standalone Race"
 msgid "Torna al Campionato"
 msgstr "Back to Championship"
 
-#: templates/components/_gara_header.html:21 templates/player/profile.html:14
+#: templates/components/_gara_header.html:21
+#: templates/player/notifications.html:262 templates/player/profile.html:28
 msgid "Torna alla Dashboard"
 msgstr "Back to Dashboard"
 
@@ -1099,7 +1140,7 @@ msgstr "Delete Race"
 #: templates/components/_gara_matches.html:7
 #: templates/components/_history_matches_tab.html:14
 #: templates/components/_history_matches_tab.html:67
-#: templates/gamification/achievements.html:63 templates/player/history.html:28
+#: templates/gamification/achievements.html:63 templates/player/history.html:27
 msgid "Partite"
 msgstr "Matches"
 
@@ -1160,7 +1201,7 @@ msgid "Stato:"
 msgstr "Status:"
 
 #: templates/components/_history_campionati_tab.html:10
-#: templates/player/history.html:48
+#: templates/player/history.html:45
 #, fuzzy
 msgid "Campionati"
 msgstr "Create Championship"
@@ -1280,7 +1321,7 @@ msgstr "Rejected"
 
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
-#: templates/player/history.html:38
+#: templates/player/history.html:36
 #, fuzzy
 msgid "Gare"
 msgstr "races"
@@ -1298,11 +1339,11 @@ msgstr ""
 msgid "Partite Vinte"
 msgstr "Matches"
 
-#: templates/components/_history_gare_tab.html:88
+#: templates/components/_history_gare_tab.html:87
 msgid "Al"
 msgstr ""
 
-#: templates/components/_history_gare_tab.html:134
+#: templates/components/_history_gare_tab.html:133
 msgid "Nessuna gara trovata con i filtri selezionati."
 msgstr ""
 
@@ -1355,30 +1396,41 @@ msgstr "Admin Dashboard"
 msgid "Controlli Direttore"
 msgstr "Director Dashboard"
 
-#: templates/components/_match_admin_controls.html:34
+#: templates/components/_match_admin_controls.html:36
 #, python-format
 msgid "vince chi raggiunge %(score)s punti (max %(max)s per giocatore)"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:36
+#: templates/components/_match_admin_controls.html:38
 #, fuzzy, python-format
 msgid "la somma dei rack deve essere %(distance)s"
 msgstr "(sum must be %(distance)s)"
 
-#: templates/components/_match_admin_controls.html:44
+#: templates/components/_match_admin_controls.html:46
 #: templates/components/_match_result_row.html:122
 #, fuzzy
 msgid "Valida Risultato"
 msgstr "Set Result"
 
-#: templates/components/_match_admin_controls.html:47
+#: templates/components/_match_admin_controls.html:49
 msgid "Valida il risultato per completare la partita e liberare il tavolo"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:55
+#: templates/components/_match_admin_controls.html:57
 #, fuzzy
 msgid "Reset Partita"
 msgstr "Rejected"
+
+#: templates/components/_match_admin_controls.html:76
+msgid ""
+"In un match 'al N', entrambi i giocatori non possono avere il punteggio "
+"vincente!"
+msgstr ""
+
+#: templates/components/_match_admin_controls.html:80
+#, fuzzy
+msgid "Confermi di voler impostare questo risultato?"
+msgstr "Are you sure you want to reset this match?"
 
 #: templates/components/_match_result_row.html:44
 #: templates/components/_match_result_row.html:47 utils/status_ui.py:134
@@ -1417,6 +1469,11 @@ msgstr "Pending"
 msgid "Bloccato"
 msgstr "Locked"
 
+#: templates/components/_player_campionato_classifications.html:6
+#, fuzzy
+msgid "Le mie Classifiche"
+msgstr "Notifications"
+
 #: templates/components/_player_inscription_info.html:6
 msgid "La Tua Iscrizione"
 msgstr "Your Registration"
@@ -1449,6 +1506,37 @@ msgstr "Waitlist position:"
 #: templates/components/_player_inscription_info.html:31
 msgid "Non sei iscritto ma puoi vedere i risultati e la classifica"
 msgstr "You are not registered but can see results and classification"
+
+#: templates/components/_player_personal_info.html:24
+#, fuzzy
+msgid "Modifica contatti"
+msgstr "Edit Race"
+
+#: templates/components/_player_personal_info.html:27
+msgid "Privacy"
+msgstr ""
+
+#: templates/components/_player_personal_info.html:30
+msgid "Cambia password"
+msgstr ""
+
+#: templates/components/_player_recent_matches.html:5
+msgid "Storico Partite Recenti"
+msgstr ""
+
+#: templates/components/_player_recent_matches.html:5
+#, fuzzy
+msgid "Partite Recenti"
+msgstr "Matches"
+
+#: templates/components/_player_statistics.html:5
+msgid "Le mie Statistiche"
+msgstr ""
+
+#: templates/components/_player_statistics.html:5
+#, fuzzy
+msgid "Statistiche"
+msgstr "active"
 
 #: templates/components/_round_management.html:7
 #, fuzzy
@@ -1533,6 +1621,7 @@ msgid "Ripristina default"
 msgstr ""
 
 #: templates/components/_round_management.html:147
+#: templates/player/privacy_settings.html:77
 msgid "Nota:"
 msgstr "Note:"
 
@@ -2297,6 +2386,7 @@ msgstr ""
 #: templates/gamification/admin/level_config.html:165
 #: templates/gamification/admin/streak_config.html:27
 #: templates/gamification/admin/streak_config.html:143
+#: templates/player/privacy_settings.html:82
 msgid "Salva"
 msgstr ""
 
@@ -2761,10 +2851,198 @@ msgstr ""
 msgid "Profilo"
 msgstr "My Profile"
 
-#: templates/player/profile.html:17
+#: templates/player/notifications.html:3 templates/player/notifications.html:7
+msgid "Le mie Notifiche"
+msgstr "My Notifications"
+
+#: templates/player/notifications.html:12
+msgid "Segna tutte come lette"
+msgstr "Mark all as read"
+
+#: templates/player/notifications.html:22
+msgid "Auto-cancellazione Notifiche"
+msgstr "Notification Auto-delete"
+
+#: templates/player/notifications.html:33
+msgid "Attiva auto-cancellazione"
+msgstr "Enable auto-delete"
+
+#: templates/player/notifications.html:44
+msgid "giorni"
+msgstr "days"
+
+#: templates/player/notifications.html:52
+msgid ""
+"Le notifiche lette verranno eliminate automaticamente dopo il numero di "
+"giorni specificato"
+msgstr ""
+"Read notifications will be automatically deleted after the specified "
+"number of days"
+
+#: templates/player/notifications.html:62
+msgid "Non hai notifiche."
+msgstr "You have no notifications."
+
+#: templates/player/notifications.html:69
+msgid "Seleziona tutte"
+msgstr "Select all"
+
+#: templates/player/notifications.html:72
+msgid "Elimina selezionate"
+msgstr "Delete selected"
+
+#: templates/player/notifications.html:88
+msgid "Nuova"
+msgstr "New"
+
+#: templates/player/notifications.html:91
+msgid "Importante"
+msgstr "Important"
+
+#: templates/player/notifications.html:93
+msgid "Urgente"
+msgstr "Urgent"
+
+#: templates/player/notifications.html:101
+msgid "Letta il"
+msgstr "Read on"
+
+#: templates/player/notifications.html:112
+msgid "Vai"
+msgstr "Go"
+
+#: templates/player/notifications.html:118
+msgid "Segna come letta"
+msgstr "Mark as read"
+
+#: templates/player/notifications.html:136
+msgid "Salvataggio..."
+msgstr "Saving..."
+
+#: templates/player/notifications.html:137
+msgid "Salvato"
+msgstr "Saved"
+
+#: templates/player/notifications.html:138
+msgid "Errore"
+msgstr "Error"
+
+#: templates/player/notifications.html:139
+#, python-format
+msgid "Sei sicuro di voler eliminare %(count)s notifiche?"
+msgstr "Are you sure you want to delete %(count)s notifications?"
+
+#: templates/player/privacy_settings.html:2
+#: templates/player/privacy_settings.html:9
+msgid "Impostazioni Privacy"
+msgstr ""
+
+#: templates/player/privacy_settings.html:10
+msgid "Controlla cosa gli altri utenti possono vedere sul tuo profilo pubblico."
+msgstr ""
+
+#: templates/player/privacy_settings.html:16
+#, fuzzy
+msgid "Informazioni Personali"
+msgstr "Race Information"
+
+#: templates/player/privacy_settings.html:17
+msgid "Scegli quali informazioni di contatto mostrare agli altri giocatori."
+msgstr ""
+
+#: templates/player/privacy_settings.html:23
+msgid "Mostra Email"
+msgstr ""
+
+#: templates/player/privacy_settings.html:31
+msgid "Mostra Telefono"
+msgstr ""
+
+#: templates/player/privacy_settings.html:39
+msgid "Dati di Gioco"
+msgstr ""
+
+#: templates/player/privacy_settings.html:40
+msgid "Scegli quali statistiche e attivita mostrare sul tuo profilo pubblico."
+msgstr ""
+
+#: templates/player/privacy_settings.html:46
+msgid "Mostra Statistiche (vittorie, partite, win rate)"
+msgstr ""
+
+#: templates/player/privacy_settings.html:54
+msgid "Mostra Partite Recenti"
+msgstr ""
+
+#: templates/player/privacy_settings.html:62
+#, fuzzy
+msgid "Mostra Classifiche Tornei"
+msgstr "Notifications"
+
+#: templates/player/privacy_settings.html:70
+#, fuzzy
+msgid "Mostra Statistiche Challenge"
+msgstr "Manage Challenges"
+
+#: templates/player/privacy_settings.html:77
+msgid ""
+"Il tuo nome utente e la partecipazione ai tornei sono sempre visibili "
+"quando sei iscritto a una gara."
+msgstr ""
+
+#: templates/player/profile.html:8 templates/player/profile.html:20
+#, fuzzy
+msgid "Profilo di"
+msgstr "My Profile"
+
+#: templates/player/profile.html:31
 #, fuzzy
 msgid "Storico Completo"
 msgstr "Round Completed"
+
+#: templates/player/profile.html:38
+msgid "Indietro"
+msgstr ""
+
+#: templates/player/profile.html:71
+#, fuzzy
+msgid "Profilo Privato"
+msgstr "My Profile"
+
+#: templates/player/profile.html:72
+msgid "L'utente ha scelto di mantenere privati i propri dati di gioco."
+msgstr ""
+
+#: templates/player/profile.html:86
+#, fuzzy
+msgid "Informazioni"
+msgstr "Race Information"
+
+#: templates/player/profile.html:89
+msgid "Username"
+msgstr ""
+
+#: templates/player/profile.html:91
+msgid "Email"
+msgstr ""
+
+#: templates/player/profile.html:94
+msgid "Telefono"
+msgstr ""
+
+#: templates/player/profile.html:94
+msgid "Non specificato"
+msgstr ""
+
+#: templates/player/profile.html:96
+#, fuzzy
+msgid "Registrato"
+msgstr "Register"
+
+#: templates/player/profile.html:97
+#, fuzzy
+msgid "Ruolo"
+msgstr "My Profile"
 
 #: utils/jinja.py:18 utils/jinja.py:41 utils/jinja.py:61 utils/jinja.py:89
 #: utils/jinja.py:99 utils/jinja.py:135 utils/jinja.py:153 utils/jinja.py:165
@@ -3143,5 +3421,32 @@ msgstr[1] ""
 #~ msgstr "This will start round %(next)s of %(total)s."
 
 #~ msgid "% Vittorie"
+#~ msgstr ""
+
+#~ msgid "Comune"
+#~ msgstr ""
+
+#~ msgid "Non Comune"
+#~ msgstr ""
+
+#~ msgid "Raro"
+#~ msgstr ""
+
+#~ msgid "Epico"
+#~ msgstr ""
+
+#~ msgid "Leggendario"
+#~ msgstr ""
+
+#~ msgid "attività"
+#~ msgstr "active"
+
+#~ msgid "partite"
+#~ msgstr "Matches"
+
+#~ msgid "tornei"
+#~ msgstr "Rounds:"
+
+#~ msgid "allenamenti"
 #~ msgstr ""
 

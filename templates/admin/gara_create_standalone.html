@@ -262,6 +262,10 @@
                                                 Evita reincontri tra gli stessi giocatori
                                             </label>
                                         </div>
+                                        <div id="anti_rematch_warning" class="alert alert-warning py-2 mt-2 small" style="display: none;">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span id="anti_rematch_warning_text"></span>
+                                        </div>
                                     </div>
 
                                     <div class="row" id="strategy_config_section">
@@ -457,6 +461,13 @@
                 }
             });
 
+            // Step 2: Also validate anti-rematch constraint
+            if (step === 2) {
+                if (!validateAntiRematchConstraint()) {
+                    isValid = false;
+                }
+            }
+
             return isValid;
         }
 
@@ -591,9 +602,42 @@
             }
         }
 
+        // Anti-rematch validation: with N players, max N-1 rounds possible
+        const maxParticipantsInput = document.getElementById('max_participants');
+        const antiRematchWarning = document.getElementById('anti_rematch_warning');
+        const antiRematchWarningText = document.getElementById('anti_rematch_warning_text');
+
+        function validateAntiRematchConstraint() {
+            const antiRematchEnabled = antiRematchCheck.checked;
+            const maxParticipants = parseInt(maxParticipantsInput.value);
+            const roundsCount = parseInt(roundsInput.value);
+
+            // Validation only applies when anti-rematch is enabled AND max_participants is set
+            if (antiRematchEnabled && !isNaN(maxParticipants) && maxParticipants > 0 && !isNaN(roundsCount)) {
+                const maxRounds = maxParticipants - 1;
+                if (roundsCount > maxRounds) {
+                    antiRematchWarning.style.display = 'block';
+                    antiRematchWarningText.textContent =
+                        `Con anti-rematch attivo e ${maxParticipants} partecipanti massimi, ` +
+                        `puoi avere al massimo ${maxRounds} turni ` +
+                        `(ogni giocatore può incontrare al massimo ${maxRounds} avversari unici)`;
+                    roundsInput.classList.add('is-invalid');
+                    return false;
+                }
+            }
+            antiRematchWarning.style.display = 'none';
+            roundsInput.classList.remove('is-invalid');
+            return true;
+        }
+
         strategySelect.addEventListener('change', updateStrategyUI);
         oddPolicySelect.addEventListener('change', updateTrioWarning);
         distanceInput.addEventListener('input', updateTrioWarning);
+
+        // Hook up anti-rematch validation to relevant fields
+        antiRematchCheck.addEventListener('change', validateAntiRematchConstraint);
+        maxParticipantsInput.addEventListener('input', validateAntiRematchConstraint);
+        roundsInput.addEventListener('input', validateAntiRematchConstraint);
 
         // Venue logic - prefill tables from verified venues
         const locationInput = document.getElementById('location');

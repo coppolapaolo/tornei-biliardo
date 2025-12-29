@@ -331,6 +331,22 @@ class AchievementService:
                 return current_progress >= required_count
             return False
 
+        elif requirement_type == "gaming_data_shared":
+            # Check if user has shared at least one gaming data type publicly
+            from models.user.privacy_models import UserPrivacySetting
+
+            settings = UserPrivacySetting.query.filter_by(user_id=user_id).first()
+            if not settings:
+                return False
+
+            # Gaming data fields (excluding personal contact info)
+            return any([
+                settings.show_statistics,
+                settings.show_recent_matches,
+                settings.show_classifications,
+                settings.show_challenge_stats,
+            ])
+
         else:
             logger.warning(f"Unknown requirement type: {requirement_type}")
             return False

@@ -36,8 +36,16 @@ class NotificationService:
         action_url: Optional[str] = None,
         action_text: Optional[str] = None,
         expires_at: Optional[datetime] = None,
+        template_key: Optional[str] = None,
+        template_params: Optional[Dict[str, Any]] = None,
     ) -> Optional[Notification]:
-        """Create a new notification if user preferences allow it."""
+        """Create a new notification if user preferences allow it.
+
+        Args:
+            template_key: Optional key to NOTIFICATION_TEMPLATES for i18n support.
+                         If provided, title/message will be translated at display time.
+            template_params: Optional params dict for template substitution.
+        """
 
         # Check user preferences
         if not NotificationPreference.is_notification_enabled(
@@ -61,10 +69,14 @@ class NotificationService:
             action_url=action_url,
             action_text=action_text,
             expires_at=expires_at,
+            template_key=template_key,
         )
 
         if related_entities:
             notification.set_related_entities(related_entities)
+
+        if template_params:
+            notification.set_template_params(template_params)
 
         db.session.add(notification)
 

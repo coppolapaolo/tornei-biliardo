@@ -147,6 +147,16 @@ PREDEFINED_ACHIEVEMENTS = [
     # Social Achievements
     # ========================================
     {
+        "slug": "open_player",
+        "name": "Giocatore Aperto",
+        "description": "Condividi almeno un dato di gioco pubblicamente (statistiche, partite, classifiche o challenge)",
+        "category": AchievementCategory.SOCIAL,
+        "difficulty": AchievementDifficulty.COMMON,
+        "requirements": '{"type": "gaming_data_shared"}',
+        "is_progressive": False,
+        "xp_reward": 25,
+    },
+    {
         "slug": "social_butterfly",
         "name": "Farfalla Sociale",
         "description": "Crea 5 proposte di partita",

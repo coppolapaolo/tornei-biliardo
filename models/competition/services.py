@@ -517,13 +517,33 @@ class GaraService:
 
         # rounds_count (opzionale): >= 1
         rounds_raw = data.get("rounds_count")
+        rounds_count: Optional[int] = None
         if rounds_raw not in (None, ""):
             try:
-                rounds = int(rounds_raw)
-                if rounds < 1:
+                rounds_count = int(rounds_raw)
+                if rounds_count < 1:
                     errors["rounds_count"] = "Il numero di turni deve essere almeno 1"
             except (TypeError, ValueError):
                 errors["rounds_count"] = "Numero di turni non valido"
+
+        # Anti-rematch constraint: with N players, max N-1 rounds possible
+        # This validation applies when:
+        # - anti_rematch_enabled is True
+        # - max_participants is set (known limit)
+        # - rounds_count is set
+        anti_rematch = data.get("anti_rematch_enabled", False)
+        if anti_rematch and max_p_raw not in (None, "") and rounds_count is not None:
+            try:
+                max_p_val = int(max_p_raw)
+                max_rounds = max_p_val - 1
+                if rounds_count > max_rounds:
+                    errors["rounds_count"] = (
+                        f"Con anti-rematch attivo e {max_p_val} partecipanti massimi, "
+                        f"puoi avere al massimo {max_rounds} turni "
+                        f"(ogni giocatore può incontrare al massimo {max_rounds} avversari unici)"
+                    )
+            except (TypeError, ValueError):
+                pass  # max_p validation already handled above
 
         return errors
 

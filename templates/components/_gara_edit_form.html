@@ -59,6 +59,10 @@
                     </label>
                     <small class="form-text text-muted d-block">Dipende dal tipo di competizione selezionato</small>
                 </div>
+                <div id="anti_rematch_warning" class="alert alert-warning py-2 mt-2 small" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="anti_rematch_warning_text"></span>
+                </div>
             </div>
 
             <div class="row" id="strategy_config_section">
@@ -278,7 +282,7 @@
 </div>
 {% endif %}
 
-<!-- JavaScript for Dynamic Round Discipline Configuration -->
+<!-- JavaScript for Dynamic Round Discipline Configuration and Anti-Rematch Validation -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const strategySelect = document.getElementById('matchmaking_strategy');
@@ -286,6 +290,60 @@
         const disciplineSelect = document.querySelector('select[name="discipline"]');
         const roundDisciplinesSection = document.getElementById('round_disciplines_section');
         const roundsContainer = document.getElementById('rounds_discipline_container');
+
+        // Anti-rematch validation elements
+        const antiRematchCheck = document.getElementById('anti_rematch_enabled');
+        const maxParticipantsInput = document.querySelector('input[name="max_participants"]');
+        const antiRematchWarning = document.getElementById('anti_rematch_warning');
+        const antiRematchWarningText = document.getElementById('anti_rematch_warning_text');
+        const form = document.querySelector('form');
+
+        // Anti-rematch validation: with N players, max N-1 rounds possible
+        function validateAntiRematchConstraint() {
+            const antiRematchEnabled = antiRematchCheck && antiRematchCheck.checked;
+            const maxParticipants = maxParticipantsInput ? parseInt(maxParticipantsInput.value) : NaN;
+            const roundsCount = roundsCountInput ? parseInt(roundsCountInput.value) : NaN;
+
+            // Validation only applies when anti-rematch is enabled AND max_participants is set
+            if (antiRematchEnabled && !isNaN(maxParticipants) && maxParticipants > 0 && !isNaN(roundsCount)) {
+                const maxRounds = maxParticipants - 1;
+                if (roundsCount > maxRounds) {
+                    if (antiRematchWarning && antiRematchWarningText) {
+                        antiRematchWarning.style.display = 'block';
+                        antiRematchWarningText.textContent =
+                            `Con anti-rematch attivo e ${maxParticipants} partecipanti massimi, ` +
+                            `puoi avere al massimo ${maxRounds} turni ` +
+                            `(ogni giocatore può incontrare al massimo ${maxRounds} avversari unici)`;
+                    }
+                    if (roundsCountInput) roundsCountInput.classList.add('is-invalid');
+                    return false;
+                }
+            }
+            if (antiRematchWarning) antiRematchWarning.style.display = 'none';
+            if (roundsCountInput) roundsCountInput.classList.remove('is-invalid');
+            return true;
+        }
+
+        // Hook up anti-rematch validation to relevant fields
+        if (antiRematchCheck) antiRematchCheck.addEventListener('change', validateAntiRematchConstraint);
+        if (maxParticipantsInput) maxParticipantsInput.addEventListener('input', validateAntiRematchConstraint);
+        if (roundsCountInput) roundsCountInput.addEventListener('input', validateAntiRematchConstraint);
+
+        // Prevent form submission if constraint is violated
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!validateAntiRematchConstraint()) {
+                    e.preventDefault();
+                    // Scroll to the warning
+                    if (antiRematchWarning) {
+                        antiRematchWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+
+        // Initial validation on page load
+        validateAntiRematchConstraint();
 
         // Available disciplines (should match backend choices)
         const disciplines = {{ discipline_choices | tojson

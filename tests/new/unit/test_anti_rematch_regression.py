@@ -450,7 +450,6 @@ class TestAntiRematchRegression:
             f"Rematches: {rematches}"
         )
 
-    @pytest.mark.xfail(reason="Validation not yet implemented - documenting future improvement")
     def test_anti_rematch_validation_rounds_vs_players(
         self, isolated_director_user, db_session
     ):
@@ -467,71 +466,97 @@ class TestAntiRematchRegression:
         - 6 players, 3 rounds: OK (3 < 6-1=5)
         - 4 players, 5 rounds: INVALID (5 > 4-1=3)
 
-        This should be validated when creating/updating gara.
+        This is validated by validate_gara_data() in GaraService.
         """
-        from models.user.models import User
+        # Test the validation function directly
+        # Invalid case: 4 max players, 5 rounds, anti-rematch enabled
+        invalid_data = {
+            "name": "Invalid Config",
+            "discipline": "palla_9",
+            "distance": 5,
+            "rounds_count": 5,
+            "max_participants": 4,
+            "anti_rematch_enabled": True,
+        }
+        errors = GaraService.validate_gara_data(invalid_data)
 
-        # Create 4 test players
-        players = []
-        for i in range(4):
-            user = User(
-                username=f"validation_test_{i}",
-                email=f"validation_{i}@test.com",
-                password_hash="test123",
+        # Should have an error for rounds_count
+        assert "rounds_count" in errors, (
+            f"Expected validation error for rounds_count with 4 players "
+            f"and 5 rounds (max is 3), but got errors: {errors}"
+        )
+        assert "anti-rematch" in errors["rounds_count"].lower() or "turni" in errors["rounds_count"].lower(), (
+            f"Expected error message to mention anti-rematch constraint, got: {errors['rounds_count']}"
+        )
+
+    def test_anti_rematch_validation_valid_configuration(
+        self, isolated_director_user, db_session
+    ):
+        """
+        Validation test: Valid anti-rematch configuration should pass.
+
+        8 players, 3 rounds: OK (3 < 8-1=7)
+        """
+        valid_data = {
+            "name": "Valid Config",
+            "discipline": "palla_9",
+            "distance": 5,
+            "rounds_count": 3,
+            "max_participants": 8,
+            "anti_rematch_enabled": True,
+        }
+        errors = GaraService.validate_gara_data(valid_data)
+
+        # Should NOT have an error for rounds_count
+        assert "rounds_count" not in errors, (
+            f"Unexpected validation error for valid config (8 players, 3 rounds): {errors}"
+        )
+
+    def test_anti_rematch_validation_no_max_participants(
+        self, isolated_director_user, db_session
+    ):
+        """
+        Validation test: Without max_participants, no constraint applies.
+
+        If max_participants is not set, we can't validate the constraint
+        because we don't know how many players will join.
+        """
+        data_without_max = {
+            "name": "No Max Config",
+            "discipline": "palla_9",
+            "distance": 5,
+            "rounds_count": 10,  # High number but no max_participants
+            "anti_rematch_enabled": True,
+            # max_participants not set
+        }
+        errors = GaraService.validate_gara_data(data_without_max)
+
+        # Should NOT have an anti-rematch error (can't validate without max)
+        if "rounds_count" in errors:
+            assert "anti-rematch" not in errors["rounds_count"].lower(), (
+                f"Should not validate anti-rematch without max_participants: {errors}"
             )
-            db.session.add(user)
-            players.append(user)
-        db.session.flush()
 
-        # Try to create gara with impossible anti-rematch config
-        # 4 players, 5 rounds - impossible because max = 4-1 = 3 rounds
-        tomorrow = date.today() + timedelta(days=1)
+    def test_anti_rematch_validation_disabled(
+        self, isolated_director_user, db_session
+    ):
+        """
+        Validation test: With anti-rematch disabled, no constraint applies.
+        """
+        data_no_anti_rematch = {
+            "name": "No Anti-Rematch Config",
+            "discipline": "palla_9",
+            "distance": 5,
+            "rounds_count": 10,  # More than max_participants - 1
+            "max_participants": 4,
+            "anti_rematch_enabled": False,  # Disabled
+        }
+        errors = GaraService.validate_gara_data(data_no_anti_rematch)
 
-        # This should either:
-        # 1. Raise ValueError during creation
-        # 2. Return validation error from validate_strategy_configuration()
-
-        try:
-            gara = GaraService.create_gara(
-                campionato_id=None,
-                number=1,
-                name="Invalid Anti-Rematch Config",
-                date=tomorrow,
-                location="Test Location",
-                description="Should fail validation",
-                rounds_count=5,  # Too many rounds for 4 players!
-                min_participants=4,
-                max_participants=4,
-                entry_fee=10.0,
-                discipline="palla_9",
-                distance=5,
-                is_race_to=True,
-                director_id=isolated_director_user.id,
-                matchmaking_strategy="amalfi",
-                first_round_policy="random",
-                odd_number_policy="bye",
-                anti_rematch_enabled=True,
-            )
-
-            # If we get here, creation succeeded - check validation
-            # Register all 4 players
-            for player in players:
-                InscriptionService.inscribe_user(player.id, gara.id)
-
-            # Get validation errors
-            errors = gara.validate_strategy_configuration()
-
-            # There SHOULD be an error about anti-rematch being impossible
-            # with this player/round combination
-            assert "anti_rematch" in str(errors).lower() or len(errors) > 0, (
-                f"Expected validation error for anti-rematch with 4 players "
-                f"and 5 rounds (max is 3), but got no errors: {errors}"
-            )
-
-        except ValueError as e:
-            # If creation fails with ValueError, that's also acceptable
-            assert "anti_rematch" in str(e).lower() or "turni" in str(e).lower(), (
-                f"Expected anti-rematch/rounds validation error, got: {e}"
+        # Should NOT have an anti-rematch error
+        if "rounds_count" in errors:
+            assert "anti-rematch" not in errors["rounds_count"].lower(), (
+                f"Should not validate anti-rematch when disabled: {errors}"
             )
 
     def test_encounter_cleanup_on_match_reset(

@@ -29,6 +29,29 @@ alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
 
 **Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript and cause silent failures.
 
+### Python-style Placeholders in JS Strings (CRITICAL)
+
+**NEVER use `%(name)s` placeholders** in translated strings that JavaScript will interpolate. Flask-Babel tries to substitute them at render time → `KeyError`.
+
+```javascript
+// ❌ WRONG - Flask-Babel tries to substitute %(count)s → KeyError
+const i18n = {
+    confirmDelete: {{ _("Elimina %(count)s elementi?")|tojson }}
+};
+const msg = i18n.confirmDelete.replace('%(count)s', count);
+
+// ✅ CORRECT - Use JS-style placeholder, not translated
+const i18n = {
+    confirmDeleteTemplate: "Elimina {count} elementi?"
+};
+const msg = i18n.confirmDeleteTemplate.replace('{count}', count);
+
+// ✅ ALTERNATIVE - Pass value at render time (if known)
+const msg = {{ _("Elimina %(count)s elementi?", count=items|length)|tojson }};
+```
+
+**Rule**: If JavaScript does the interpolation, don't use `%(...)s` in `_()`.
+
 ### No Python Imports in Templates
 
 You cannot import Python modules in Jinja2 templates:
