@@ -110,9 +110,9 @@ class TestGaraModel:
         db_session.add_all([race_to_gara, exact_gara])
         db_session.commit()
 
-        # Test winning score calculation
-        assert race_to_gara.get_winning_score() == 7  # Race-to-7 (first to 7)
-        assert exact_gara.get_winning_score() == 7  # Exactly 7
+        # Test winning score calculation via distance_config value object
+        assert race_to_gara.distance_config.get_winning_racks() == 7  # Race-to-7 (first to 7)
+        assert exact_gara.distance_config.get_winning_racks() == 7  # Exactly 7
 
     def test_gara_withdraw_policies(self, db_session):
         """Test different withdraw policies."""

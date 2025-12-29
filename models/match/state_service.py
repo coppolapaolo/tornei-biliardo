@@ -7,11 +7,6 @@ Handles all state transitions: pending → playing → completed.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from models.orchestration.service import OperationResult
-
 from models.base import db
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
@@ -103,92 +98,6 @@ class MatchStateService:
         MatchStateService._emit_completion_event(match)
 
         return match
-
-    # -----------------------------
-    # DEPRECATED METHODS
-    # -----------------------------
-
-    @staticmethod
-    def reset_to_pending(
-        match_id: int, clear_validation: bool = True
-    ) -> "OperationResult":
-        """DEPRECATED: Use RackService.reset_match_complete() instead.
-
-        This method is deprecated as of October 2025 and will be removed
-        in a future version. Use reset_match_complete() which provides:
-        - Intelligent state management based on table_assignment
-        - No duplication of rack deletion logic
-        - Cleaner architecture
-
-        Legacy behavior:
-        - Resets match to PENDING (always, ignoring table_assignment)
-        - Removes all racks (duplicates caller's work)
-        - Clears validation flags
-
-        NOTE: This method is intentionally NOT decorated with @transactional
-        because it implements custom transaction management with explicit
-        rollback handling and OperationResult error reporting pattern.
-        """
-        import warnings
-
-        warnings.warn(
-            "reset_to_pending() is deprecated. Use RackService.reset_match_complete() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        from ..orchestration.service import OperationResult, OperationType
-
-        try:
-            match = db.session.get(Match, match_id)
-            if not match:
-                return OperationResult.failure_result(
-                    operation_type=OperationType.RESULT_PROCESSING,
-                    errors=[f"Match {match_id} non trovato"],
-                    execution_time_ms=0,
-                    affected_domains=["match"],
-                )
-
-            old_status = match.status
-
-            # Clear all racks
-            existing_racks = Rack.query.filter_by(match_id=match_id).all()
-            for rack in existing_racks:
-                db.session.delete(rack)
-
-            # Reset match scores
-            match.player1_score = 0
-            match.player2_score = 0
-            match.winner_id = None
-            match.status = MatchStatus.PENDING.value
-
-            if clear_validation and hasattr(match, "validated_by_admin"):
-                try:
-                    match.validated_by_admin = False
-                except Exception:
-                    pass
-            db.session.add(match)
-            db.session.commit()
-
-            return OperationResult.success_result(
-                operation_type=OperationType.RESULT_PROCESSING,
-                data={
-                    "match_id": match_id,
-                    "old_status": old_status,
-                    "new_status": match.status,
-                    "validation_cleared": clear_validation,
-                },
-                execution_time_ms=0,
-                affected_domains=["match"],
-            )
-
-        except Exception as e:
-            db.session.rollback()
-            return OperationResult.failure_result(
-                operation_type=OperationType.RESULT_PROCESSING,
-                errors=[f"Errore nel reset match: {str(e)}"],
-                execution_time_ms=0,
-                affected_domains=["match"],
-            )
 
     # -----------------------------
     # HELPER METHODS (Internal)

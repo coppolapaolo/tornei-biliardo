@@ -97,15 +97,6 @@ class MatchService:
         return MatchStateService.to_completed(match_id)
 
     @staticmethod
-    def reset_to_pending(
-        match_id: int, clear_validation: bool = True
-    ) -> "OperationResult":
-        """DEPRECATED: Use RackService.reset_match_complete() instead."""
-        from .state_service import MatchStateService
-
-        return MatchStateService.reset_to_pending(match_id, clear_validation)
-
-    @staticmethod
     def add_rack_to_completed_match(
         match_id: int,
         rack_number: int,

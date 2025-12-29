@@ -476,36 +476,6 @@ class Gara(db.Model):
                 is_race_to_sets=self.is_race_to_sets if self.is_race_to_sets is not None else True
             )
 
-    def get_winning_score(self):
-        """Restituisce il punteggio per vincere.
-
-        DEPRECATED: Use distance_config.get_winning_racks() instead.
-        Maintained for backward compatibility.
-        """
-        return self.distance_config.get_winning_racks()
-
-    def is_match_finished(self, score1, score2):
-        """Verifica se una partita è finita.
-
-        DEPRECATED: Use RackScore.is_complete() instead.
-        Maintained for backward compatibility.
-
-        Args:
-            score1: Player 1 rack count
-            score2: Player 2 rack count
-
-        Returns:
-            bool: True if match is complete
-        """
-        from models.match.score import RackScore
-
-        rack_score = RackScore(
-            distance=self.distance_config,
-            player1_racks=score1,
-            player2_racks=score2
-        )
-        return rack_score.is_complete()
-
     def copy_settings_from(self, source_gara):
         """Copia le impostazioni da un'altra gara"""
         self.discipline = source_gara.discipline

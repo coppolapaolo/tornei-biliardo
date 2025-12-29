@@ -35,7 +35,7 @@ class RefactorProgressDetector:
 
         # Methods to exclude from specific files
         excluded_methods = {
-            "models/match/services.py": ["reset_to_pending"],  # Custom OperationResult pattern
+            # Deprecated methods removed in Sprint 6
         }
 
         # Exclude directories from analysis
