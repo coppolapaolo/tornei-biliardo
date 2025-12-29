@@ -240,7 +240,7 @@ class TableAssignmentService:
             - removed_match_id: ID of match whose table is removed, or None
         """
         from models.competition.round_manager import AdvancedRoundManager
-        from models.match.services import MatchService
+        from models.match.services import MatchService, RackService
 
         match = db.session.get(Match, match_id)
         if not match:
@@ -256,7 +256,7 @@ class TableAssignmentService:
         # Case 1: Remove table assignment
         if new_table is None:
             match.table_assignment = None
-            MatchService.reset_to_pending(match.id)
+            RackService.reset_match_complete(match.id)
             db.session.add(match)
             return True, f"Tavolo '{old_table}' rimosso dal match", None
 
@@ -289,7 +289,7 @@ class TableAssignmentService:
                 swapped = True
             else:
                 occupying_match.table_assignment = None
-                MatchService.reset_to_pending(occupying_match.id)
+                RackService.reset_match_complete(occupying_match.id)
 
             match.table_assignment = new_table
             if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
