@@ -6,24 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Essential Commands
 ```bash
-# Activate virtual environment first (Mac)
-source venv/bin/activate
-
 # Start development server
 python app.py
 
 # Run all tests (ALWAYS use -n auto for parallel execution)
-PYTHONPATH=. pytest tests/new/ -n auto
+pytest tests/new/ -n auto
 
 # Run specific test types
-PYTHONPATH=. pytest tests/new/unit/ -n auto
-PYTHONPATH=. pytest tests/new/integration/ -n auto
+pytest tests/new/unit/ -n auto
+pytest tests/new/integration/ -n auto
 
 # Run single test file
-PYTHONPATH=. pytest tests/new/unit/test_specific.py -v -n auto
+pytest tests/new/unit/test_specific.py -v -n auto
 
 # Debug single test (no parallel, with output)
-PYTHONPATH=. pytest tests/new/unit/test_file.py::test_name -v -s
+pytest tests/new/unit/test_file.py::test_name -v -s
 
 # Type check (MANDATORY before commits)
 pyright
@@ -186,6 +183,28 @@ alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
 
 **Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript strings and cause silent failures that block ALL JavaScript on the page.
 
+#### Python-style Placeholders in JS Strings (AVOID)
+**NEVER use `%(name)s` placeholders** in translated strings that will be interpolated by JavaScript. Flask-Babel attempts to substitute these at render time, causing `KeyError` if no value is provided.
+
+```javascript
+// ❌ WRONG - Flask-Babel tries to substitute %(count)s → KeyError
+const i18n = {
+    confirmDelete: {{ _("Elimina %(count)s elementi?")|tojson }}
+};
+const msg = i18n.confirmDelete.replace('%(count)s', count);
+
+// ✅ CORRECT - Use JS-style placeholder, bypass Flask-Babel for this string
+const i18n = {
+    confirmDeleteTemplate: "Elimina {count} elementi?"  // Not translated, or use ngettext
+};
+const msg = i18n.confirmDeleteTemplate.replace('{count}', count);
+
+// ✅ ALTERNATIVE - Pass the value at render time (if value is known)
+const msg = {{ _("Elimina %(count)s elementi?", count=items|length)|tojson }};
+```
+
+**Rule**: If JavaScript will do the interpolation, don't use `%(...)s` placeholders in `_()`.
+
 ---
 
 ## Architecture
@@ -264,14 +283,14 @@ set.distance = 5  # Each set is race to 5 racks
 # Before every commit:
 black . && flake8
 pyright
-PYTHONPATH=. pytest tests/new/ -n auto
+pytest tests/new/ -n auto
 ```
 
 ### Testing Requirements
 - All new features MUST have tests in `tests/new/`
 - Test isolation: use `db_session.get()` not `refresh()`
 - Legacy tests (`tests/legacy/`) are not maintained
-- **CRITICAL**: Always use `PYTHONPATH=. pytest tests/new/ -n auto`
+- Always use `-n auto` for parallel execution
 
 ---
 
@@ -283,9 +302,10 @@ PYTHONPATH=. pytest tests/new/ -n auto
 | `gara.distance = 9` (thinking best of 9) | `gara.distance = 5` (race to 5) |
 | `db.session.delete(user)` | `user.anonymize()` |
 | `gara.status == GaraStatus.PLAYING` | `gara.status == GaraStatus.PLAYING.value` |
-| `pytest tests/new/` | `PYTHONPATH=. pytest tests/new/ -n auto` |
+| `pytest tests/new/` (no parallel) | `pytest tests/new/ -n auto` |
 | Manual `db.session.commit()` | Use `@transactional` decorator |
 | `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
+| `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |
 
 ---
 
