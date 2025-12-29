@@ -16,7 +16,6 @@ BEFORE: 1,442 lines in monolithic file
 AFTER: 6 domain-specific files averaging ~240 lines each
 
 This compatibility layer imports the new blueprint structure.
-The original file has been backed up to routes/admin_backup.py
 """
 
 # Import the new blueprint structure
