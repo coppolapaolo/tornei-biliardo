@@ -1,0 +1,239 @@
+# routes/admin/competition/inscriptions.py
+"""Inscription management routes for competitions."""
+
+from flask import (
+    request,
+    redirect,
+    url_for,
+    flash,
+)
+from flask_login import login_required, current_user
+from datetime import datetime
+from models.transaction.manager import transactional
+
+from models import (
+    db,
+    Gara,
+)
+from models.status_enum import GaraStatus
+from models.competition.services import GaraService
+from models.competition.state_service import StateService
+from utils import gara_manager_required
+
+from . import competition_bp
+
+
+@competition_bp.route("/<int:gara_id>/open_inscriptions", methods=["POST"])
+@login_required
+@gara_manager_required
+def open_inscriptions(gara_id):
+    """Apri iscrizioni per una gara"""
+    try:
+        # Tenta di ottenere le date UTC dal JavaScript
+        # Se mancano (es. JS non ha girato o errore client), prova i campi normali
+        start_key = "inscription_start_utc" if "inscription_start_utc" in request.form else "inscription_start"
+        end_key = "inscription_end_utc" if "inscription_end_utc" in request.form else "inscription_end"
+
+        start_str = request.form.get(start_key)
+        end_str = request.form.get(end_key)
+
+        if not start_str or not end_str:
+            flash("Date di inizio o fine iscrizioni mancanti", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Tenta di parsare con diversi formati (ISO con T o spazio)
+        def parse_date(date_str):
+            for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M"):
+                try:
+                    return datetime.strptime(date_str, fmt)
+                except ValueError:
+                    continue
+            raise ValueError(f"Formato data non valido: {date_str}")
+
+        inscription_start = parse_date(start_str)
+        inscription_end = parse_date(end_str)
+
+        GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
+        flash("Iscrizioni aperte!")
+    except ValueError as ve:
+        flash(f"Errore: {str(ve)}", "error")
+    except Exception as e:
+        flash(f"Errore imprevisto: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/modify_inscription_dates", methods=["POST"])
+@login_required
+@gara_manager_required
+def modify_inscription_dates(gara_id):
+    """Modifica date di iscrizione per una gara"""
+    inscription_start = datetime.strptime(
+        request.form["inscription_start_utc"], "%Y-%m-%dT%H:%M:%S"
+    )
+    inscription_end = datetime.strptime(
+        request.form["inscription_end_utc"], "%Y-%m-%dT%H:%M:%S"
+    )
+
+    # Usa il service layer invece del direct database access
+    try:
+        GaraService.modify_inscription_dates(
+            gara_id, inscription_start, inscription_end
+        )
+        flash("Date di iscrizione aggiornate con successo!")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/close_inscriptions", methods=["POST"])
+@transactional(domain="competition")
+@login_required
+@gara_manager_required
+def close_inscriptions(gara_id):
+    """Chiude le iscrizioni e torna la gara allo stato setup se non ci sono iscritti"""
+    print(f"[DEBUG] close_inscriptions called for gara_id={gara_id}")
+    try:
+        gara = db.session.get(Gara, gara_id)
+        status = gara.status if gara else "N/A"
+        print(f"[DEBUG] Gara found: {gara is not None}, status: {status}")
+        if not gara:
+            print("[DEBUG] Gara not found")
+            flash("Gara non trovata.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Verifica che la gara sia in stato inscription
+        print(
+            f"[DEBUG] Checking status: {gara.status} == {GaraStatus.INSCRIPTION.value}"
+        )
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            print(f"[DEBUG] Gara not in INSCRIPTION state, current: {gara.status}")
+            flash("La gara non è in stato di iscrizione.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Verifica che non ci siano iscrizioni attive
+        active_count = gara.get_active_inscriptions_count()
+        print(f"[DEBUG] Active inscriptions count: {active_count}")
+        if active_count > 0:
+            print(f"[DEBUG] Cannot close: {active_count} active inscriptions")
+            flash(
+                "Non è possibile chiudere le iscrizioni quando ci sono già "
+                "degli iscritti.",
+                "error",
+            )
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Usa il service layer per tornare allo stato setup
+        print("[DEBUG] Calling StateService.reopen_setup")
+        StateService.reopen_setup(gara)
+        print("[DEBUG] StateService.reopen_setup completed successfully")
+        flash(
+            "Iscrizioni chiuse con successo! La gara è tornata allo stato di setup.",
+            "success",
+        )
+
+    except Exception as e:
+        print(f"[DEBUG] Exception occurred: {type(e).__name__}: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        flash(f"Errore durante la chiusura delle iscrizioni: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/admin_uninscribe/<int:user_id>", methods=["POST"])
+@login_required
+@gara_manager_required
+def admin_uninscribe_user(gara_id, user_id):
+    """Disiscrive un utente dalla gara (solo admin/direttori)."""
+    from models.competition.inscription_service import InscriptionService
+    from models.user.models import User
+    from models.competition.models import Gara
+
+    try:
+        # Verifica che l'utente esista
+        user = db.session.get(User, user_id)
+        if not user:
+            flash("Utente non trovato.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Verifica che la gara esista
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            flash("Gara non trovata.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Verifica che la gara sia ancora in fase di iscrizioni
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            flash(
+                "Non è possibile disiscrivere utenti quando il primo turno "
+                "è già iniziato.",
+                "error",
+            )
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Esegui la disiscrizione
+        success = InscriptionService.admin_uninscribe_user(
+            user_id, gara_id, current_user.id
+        )
+
+        if success:
+            flash(f"Utente {user.username} discritto con successo.", "success")
+        else:
+            flash("Errore: utente non iscritto a questa gara.", "error")
+
+    except Exception as e:
+        flash(f"Errore durante la disiscrizione: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# DIRECTOR MANAGEMENT
+# ────────────────────────────────────────────────────────────────────────────────
+
+
+@competition_bp.route("/<int:gara_id>/add_director", methods=["POST"])
+@login_required
+@gara_manager_required
+def add_director(gara_id):
+    """Aggiunge un co‑direttore alla gara"""
+    new_director_id = int(request.form["user_id"])
+
+    try:
+        success = GaraService.add_director(
+            gara_id=gara_id,
+            user_id=new_director_id,
+            assigned_by_id=current_user.id,
+        )
+
+        if success:
+            flash("Direttore aggiunto con successo.")
+        else:
+            flash("Utente già presente come direttore.", "warning")
+
+    except ValueError as e:
+        flash(str(e), "error")
+    except Exception as e:
+        flash(f"Errore durante l'aggiunta del direttore: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/remove_director", methods=["POST"])
+@login_required
+@gara_manager_required
+def remove_director(gara_id):
+    """Rimuove un co‑direttore dalla gara"""
+    director_id = int(request.form["user_id"])
+
+    success = GaraService.remove_director(gara_id=gara_id, user_id=director_id)
+
+    if success:
+        flash("Direttore rimosso con successo.")
+    else:
+        flash("Errore: direttore non trovato.", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
