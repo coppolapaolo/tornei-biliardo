@@ -30,11 +30,11 @@ This architectural duality creates several problems:
 
 ### Current State Analysis
 
-**Amalfi Engine (`amalfi/engine.py`)**:
-- ~747 lines of complex algorithm code
-- Direct database integration with side effects
-- Monolithic design combining algorithm, persistence, and validation
-- Inconsistent preview vs execution APIs
+**Amalfi Engine** (migrated to `models/matchmaking/strategies/amalfi.py` as of 2025-12):
+- ~500 lines of specification-compliant algorithm code
+- Integrated with Strategy pattern via `MatchmakingService`
+- Clean separation following Strategy pattern interface
+- Consistent API through unified adapter
 
 **Strategy Pattern Foundation**:
 - Well-designed `PairingStrategy` interface with `BaseStrategy` template
@@ -281,37 +281,31 @@ This refactoring establishes a solid architectural foundation for the tournament
 
 ### Directory Structure Decision
 
-**Issue**: During implementation, we considered moving `amalfi/` directory to `models/matchmaking/strategies/amalfi/` for better architectural alignment.
+**Issue**: During implementation, we considered moving `amalfi/` directory to `models/matchmaking/strategies/` for better architectural alignment.
 
 **Attempted**: Directory reorganization to place Amalfi engine within the matchmaking strategy directory structure.
 
-**Result**: The move created cascading import path issues and test mocking complexity that affected system stability.
+**Result (Initial)**: The move created cascading import path issues and test mocking complexity that affected system stability. We initially decided to keep `amalfi/` at project root.
 
-**Final Decision**: **Keep `amalfi/` at project root level for now**
-
-**Rationale**:
-- **Stability First**: Existing system has multiple integration points with `amalfi/` at root
-- **Import Complexity**: Moving created circular dependency risks and import resolution issues  
-- **Test Mocking**: Mock patching became significantly more complex with nested structure
-- **Risk vs Benefit**: Directory location is cosmetic; functional unification is achieved through adapter pattern
-- **Future Path**: Directory can be moved later as a separate, focused refactoring once all integrations use the unified adapter
+**Final Resolution (2025-12)**: The migration was successfully completed. The `amalfi/` directory has been fully migrated to `models/matchmaking/strategies/amalfi.py`.
 
 **Current Architecture**:
 ```
 project_root/
-├── amalfi/                           # Original location (maintained)
-│   └── engine.py                     # Legacy Amalfi implementation
 ├── models/matchmaking/strategies/
-│   ├── amalfi_unified_adapter.py     # Strategy pattern adapter
-│   └── base.py                       # Strategy interface
+│   ├── amalfi.py                     # Migrated Amalfi implementation (specification-compliant)
+│   ├── base.py                       # Strategy interface
+│   ├── elimination.py                # Elimination bracket strategy
+│   ├── random_strategy.py            # Random pairing strategy
+│   └── round_robin.py                # Round-robin strategy
 ```
 
-This hybrid approach achieves the primary goal (Strategy pattern unification) while maintaining system stability. The directory structure can be optimized in a future refactoring phase when the adapter pattern is the exclusive integration method.
+**Migration Completed**: The adapter pattern is now the exclusive integration method. All references to the legacy `amalfi/` directory have been updated.
 
 ---
 
 **Decision Date**: 2025-01-12
-**Updated**: 2025-09-28 (Testing strategy revision)
+**Updated**: 2025-12-29 (Migration to models/matchmaking/strategies/ completed)
 **Authors**: Development Team
 **Reviewers**: Technical Architecture Committee
 **Status**: Accepted and Implemented - Testing Strategy Updated
