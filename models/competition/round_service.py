@@ -161,10 +161,90 @@ class RoundService:
             gara = StateService.start_playing(gara)
 
         else:
-            # Per altre strategie: crea solo il primo turno
-            from utils import create_round_matches  # Import locale
+            # Per altre strategie: crea solo il primo turno usando MatchmakingService
+            from models.matchmaking.bootstrap import get_registry
+            from models.match.models import Match
 
-            create_round_matches(gara, inscriptions, 1)
+            registry = get_registry()
+
+            # Mappatura nome strategia: enum -> registry
+            strategy_mapping = {
+                "amalfi": "amalfi",
+                "advanced_amalfi": "amalfi",  # Alias per compatibilità
+                "round_robin": "round_robin",
+                "direct_elimination": "direct_elimination",
+                "double_knockout": "double_knockout",
+            }
+
+            strategy_name = gara.matchmaking_strategy or "amalfi"
+            registry_name = strategy_mapping.get(strategy_name, strategy_name)
+            strategy = registry.get(registry_name)
+            if not strategy:
+                raise ValueError(f"Strategia {registry_name} non trovata nel registry")
+
+            # Genera gli abbinamenti per il primo turno
+            pairings = strategy.create_round(gara, 1)
+
+            # Get discipline configuration for round 1
+            from models.competition.round_configuration import RoundConfiguration
+
+            round_config = RoundConfiguration.get_for_gara_round(gara_id, 1)
+            round_discipline = round_config.discipline if round_config else None
+
+            # Crea i match nel database
+            for pairing in pairings:
+                if len(pairing.players) == 1 and pairing.is_bye:
+                    # Match con X - assegnalo come completato con punteggio pieno
+                    bye_score = gara.distance_config.get_winning_racks()
+                    match = Match(
+                        gara_id=gara_id,
+                        round_number=1,
+                        player1_id=pairing.players[0],
+                        player2_id=None,
+                        is_bye=True,
+                        player1_score=bye_score,
+                        winner_id=pairing.players[0],
+                        status="completed",
+                        discipline=round_discipline,
+                        match_distance=gara.distance,
+                    )
+                    db.session.add(match)
+                elif len(pairing.players) == 2 and not pairing.is_bye:
+                    # Match normale
+                    match = Match(
+                        gara_id=gara_id,
+                        round_number=1,
+                        player1_id=pairing.players[0],
+                        player2_id=pairing.players[1],
+                        is_bye=False,
+                        discipline=round_discipline,
+                        match_distance=gara.distance,
+                    )
+                    db.session.add(match)
+                elif len(pairing.players) == 3:
+                    # Match trio
+                    from models.match.models import TrioMatch
+
+                    match = Match(
+                        gara_id=gara_id,
+                        round_number=1,
+                        player1_id=pairing.players[0],
+                        player2_id=pairing.players[1],
+                        is_bye=False,
+                        is_trio=True,
+                        discipline=round_discipline,
+                        match_distance=gara.distance,
+                    )
+                    db.session.add(match)
+
+                    # Crea il record TrioMatch con tutti e tre i giocatori
+                    trio_match = TrioMatch(
+                        match=match,
+                        player1_id=pairing.players[0],
+                        player2_id=pairing.players[1],
+                        player3_id=pairing.players[2],
+                    )
+                    db.session.add(trio_match)
 
             gara.current_round = 1
             from models.competition.state_service import StateService

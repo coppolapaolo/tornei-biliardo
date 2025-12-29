@@ -12,6 +12,24 @@ Sub-modules:
     - utils.permissions: Permission decorators (circular import workarounds isolated here)
     - utils.reset_data: Database reset utilities
     - utils.database_utils: Database statistics utilities
+
+CIRCULAR IMPORT WORKAROUNDS (14 local imports)
+----------------------------------------------
+This package uses local imports inside functions to avoid circular dependencies.
+This is the RECOMMENDED Flask pattern for this situation.
+
+Why local imports are necessary:
+1. Permission decorators need to query models at RUNTIME (Model.query, db.session.get)
+2. TYPE_CHECKING cannot be used because imports are for runtime, not type hints
+
+Distribution:
+- utils.permissions: 11 local imports (permission checks need model queries)
+- utils.__init__: 3 local imports (bootstrap functions)
+
+The remaining local imports are intentional and represent the minimum necessary
+to break the circular dependency while keeping related code together.
+
+See also: ADR-XXX (planned) for detailed architecture decision.
 """
 
 from functools import wraps
@@ -50,112 +68,6 @@ from .permissions import (
     # Helper class
     UserPermissions,
 )
-
-# --------------------------------------------------------------------------
-# Funzioni di dominio campionati / match
-# --------------------------------------------------------------------------
-
-
-def create_round_matches(gara, players_or_inscriptions, round_number):
-    """Crea gli abbinamenti per un turno (logica standard)."""
-    from models import (
-        Inscription,
-        Match,
-        db,
-    )  # Local import to avoid circular dependency
-
-    if isinstance(players_or_inscriptions[0], Inscription):
-        players = [insc.user for insc in players_or_inscriptions]
-    else:
-        players = players_or_inscriptions
-
-    matches = []
-
-    if len(players) % 2 == 1:
-        # Numero dispari: ultimo giocatore ha un bye
-        bye_player = players[-1]
-
-        bye_score = gara.distance_config.get_winning_racks()
-
-        match = Match(
-            gara_id=gara.id,
-            round_number=round_number,
-            player1_id=bye_player.id,
-            is_bye=True,
-            player1_score=bye_score,
-            winner_id=bye_player.id,
-            status="completed",
-            match_distance=gara.distance,
-        )
-        matches.append(match)
-        players = players[:-1]
-
-    for i in range(0, len(players), 2):
-        match = Match(
-            gara_id=gara.id,
-            round_number=round_number,
-            player1_id=players[i].id,
-            player2_id=players[i + 1].id,
-            match_distance=gara.distance,
-        )
-        matches.append(match)
-
-    db.session.add_all(matches)
-    return matches
-
-
-def calculate_round_classification(gara_id, round_number):
-    """Calcola la classifica dopo un turno."""
-    from models import Match, Inscription  # Local import to avoid circular dependency
-
-    matches = Match.query.filter_by(gara_id=gara_id, round_number=round_number).all()
-    players_stats = {}
-
-    for match in matches:
-        if match.is_bye:
-            if match.player1_id not in players_stats:
-                players_stats[match.player1_id] = {
-                    "matches_won": 0,
-                    "point_diff": 0,
-                    "initial_order": 0,
-                }
-            players_stats[match.player1_id]["matches_won"] += 1
-            players_stats[match.player1_id]["point_diff"] += match.player1_score
-        else:
-            for player_id in [match.player1_id, match.player2_id]:
-                if player_id not in players_stats:
-                    inscription = Inscription.query.filter_by(
-                        user_id=player_id, gara_id=gara_id
-                    ).first()
-                    players_stats[player_id] = {
-                        "matches_won": 0,
-                        "point_diff": 0,
-                        "initial_order": (
-                            inscription.initial_order if inscription else 999
-                        ),
-                    }
-
-            if match.status == "completed" and match.winner_id:
-                players_stats[match.winner_id]["matches_won"] += 1
-                if match.winner_id == match.player1_id:
-                    diff = match.player1_score - match.player2_score
-                    players_stats[match.player1_id]["point_diff"] += diff
-                    players_stats[match.player2_id]["point_diff"] -= diff
-                else:
-                    diff = match.player2_score - match.player1_score
-                    players_stats[match.player2_id]["point_diff"] += diff
-                    players_stats[match.player1_id]["point_diff"] -= diff
-
-    sorted_players = sorted(
-        players_stats.items(),
-        key=lambda x: (
-            -x[1]["matches_won"],
-            -x[1]["point_diff"],
-            x[1]["initial_order"],
-        ),
-    )
-    return [(pid, stats) for pid, stats in sorted_players]
-
 
 # --------------------------------------------------------------------------
 # Funzioni di bootstrap / sample data
@@ -311,51 +223,6 @@ def create_admin_if_not_exists():
     admin.set_password(password)
     db.session.add(admin)
     return admin
-
-
-def create_round_matches_amalfi_compatible(gara, players_or_inscriptions, round_number):
-    """Versione compatibile 'Amalfi'. Differisce per campo ``amalfi_round``."""
-    from models import (
-        Inscription,
-        Match,
-        db,
-    )  # Local import to avoid circular dependency
-
-    if isinstance(players_or_inscriptions[0], Inscription):
-        players = [insc.user for insc in players_or_inscriptions]
-    else:
-        players = players_or_inscriptions
-
-    matches = []
-
-    if len(players) % 2 == 1:
-        bye_player = players[-1]
-        bye_score = gara.distance_config.get_winning_racks()
-        match = Match(
-            gara_id=gara.id,
-            round_number=round_number,
-            player1_id=bye_player.id,
-            is_bye=True,
-            player1_score=bye_score,
-            winner_id=bye_player.id,
-            status="completed",
-            match_distance=gara.distance,
-        )
-        matches.append(match)
-        players = players[:-1]
-
-    for i in range(0, len(players), 2):
-        match = Match(
-            gara_id=gara.id,
-            round_number=round_number,
-            player1_id=players[i].id,
-            player2_id=players[i + 1].id,
-            match_distance=gara.distance,
-        )
-        matches.append(match)
-
-    db.session.add_all(matches)
-    return matches
 
 
 # ============================================================================
