@@ -460,7 +460,7 @@ def create_round_matches(gara, players_or_inscriptions, round_number):
         # Numero dispari: ultimo giocatore ha un bye
         bye_player = players[-1]
 
-        bye_score = gara.get_winning_score() if gara.is_race_to else gara.distance
+        bye_score = gara.distance_config.get_winning_racks()
 
         match = Match(
             gara_id=gara.id,
@@ -713,7 +713,7 @@ def create_round_matches_amalfi_compatible(gara, players_or_inscriptions, round_
 
     if len(players) % 2 == 1:
         bye_player = players[-1]
-        bye_score = gara.get_winning_score() if gara.is_race_to else gara.distance
+        bye_score = gara.distance_config.get_winning_racks()
         match = Match(
             gara_id=gara.id,
             round_number=round_number,

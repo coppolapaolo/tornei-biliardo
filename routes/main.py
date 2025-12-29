@@ -431,8 +431,8 @@ def debug_complete_current_round(gara_id):
 
         # Genera risultati random basati sulla modalità gara
         if gara.is_race_to:
-            # Al meglio di N - il vincitore deve arrivare a get_winning_score()
-            winning_score = gara.get_winning_score()
+            # Race to N - il vincitore deve arrivare a distance_config.get_winning_racks()
+            winning_score = gara.distance_config.get_winning_racks()
             loser_score = random.randint(0, winning_score - 1)
 
             # Random winner

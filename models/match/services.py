@@ -611,7 +611,7 @@ class RackService:
         # Controlla sempre se il punteggio giustifica ancora il winner_id
         should_clear_winner = False
         if match.gara.is_race_to:
-            winning_score = match.gara.get_winning_score()
+            winning_score = match.gara.distance_config.get_winning_racks()
             if max(match.player1_score, match.player2_score) < winning_score:
                 should_clear_winner = True
         else:  # esatto numero

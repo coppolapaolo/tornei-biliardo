@@ -318,7 +318,7 @@ class ScoringService:
     def _should_clear_winner(match: Match) -> bool:
         """Check if winner should be cleared based on current scores."""
         if match.gara.is_race_to:
-            winning_score = match.gara.get_winning_score()
+            winning_score = match.gara.distance_config.get_winning_racks()
             return max(match.player1_score, match.player2_score) < winning_score
         else:
             return (match.player1_score + match.player2_score) < match.gara.distance
@@ -440,7 +440,7 @@ class ScoringService:
         # In "race to n" matches, both players cannot have winning score
         # (match ends when first player reaches it)
         if match.gara.is_race_to:
-            winning_score = match.gara.get_winning_score()
+            winning_score = match.gara.distance_config.get_winning_racks()
             if player1_score >= winning_score and player2_score >= winning_score:
                 raise ValueError(
                     f"In un match 'al {winning_score}', entrambi i giocatori "
@@ -452,7 +452,7 @@ class ScoringService:
         match: Match, player1_score: int, player2_score: int
     ) -> Tuple[bool, Optional[int]]:
         """Calculate if result is complete and who won."""
-        winning_score = match.gara.get_winning_score()
+        winning_score = match.gara.distance_config.get_winning_racks()
 
         if match.gara.is_race_to:
             if player1_score >= winning_score:

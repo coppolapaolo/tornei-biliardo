@@ -105,9 +105,7 @@ class RoundService:
                 for pairing in pairings:
                     if len(pairing.players) == 1 and pairing.is_bye:
                         # Match con X - assegnalo come completato con punteggio pieno
-                        bye_score = (
-                            gara.get_winning_score() if gara.is_race_to else gara.distance
-                        )
+                        bye_score = gara.distance_config.get_winning_racks()
                         match = Match(
                             gara_id=gara_id,
                             round_number=round_num,
@@ -321,9 +319,7 @@ class RoundService:
             for pairing in pairings:
                 if len(pairing.players) == 1 and pairing.is_bye:
                     # Match con X - assegnalo come completato con punteggio pieno
-                    bye_score = (
-                        gara.get_winning_score() if gara.is_race_to else gara.distance
-                    )
+                    bye_score = gara.distance_config.get_winning_racks()
                     match = Match(
                         gara_id=gara_id,
                         round_number=round_number,
@@ -344,9 +340,7 @@ class RoundService:
 
                     if player1_forfeit or player2_forfeit:
                         # At least one player forfeited - match is auto-completed
-                        winning_score = (
-                            gara.get_winning_score() if gara.is_race_to else gara.distance
-                        )
+                        winning_score = gara.distance_config.get_winning_racks()
 
                         if player1_forfeit and player2_forfeit:
                             # Both forfeit - player1 wins (arbitrary but consistent)

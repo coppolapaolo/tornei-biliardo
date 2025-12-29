@@ -16,10 +16,13 @@ class TestRaceToScoreValidation:
 
     def _create_mock_match(self, distance: int, is_race_to: bool):
         """Create a mock match with gara configuration."""
+        mock_distance_config = MagicMock()
+        mock_distance_config.get_winning_racks.return_value = distance
+
         mock_gara = MagicMock()
         mock_gara.distance = distance
         mock_gara.is_race_to = is_race_to
-        mock_gara.get_winning_score.return_value = distance  # For race-to, winning = distance
+        mock_gara.distance_config = mock_distance_config
 
         mock_match = MagicMock()
         mock_match.gara = mock_gara
