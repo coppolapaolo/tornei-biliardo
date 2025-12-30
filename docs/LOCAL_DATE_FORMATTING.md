@@ -4,13 +4,44 @@
 
 Il sistema formatta tutte le date in formato italiano (`dd/mm/yyyy`) direttamente lato server usando Python, garantendo consistenza totale indipendentemente dal browser.
 
+## Gestione Fuso Orario e Ora Legale (DST)
+
+### Convenzione Database
+Le date nel database sono salvate come **UTC naive** (senza informazione timezone).
+
+### Conversione Automatica
+Il filtro `datetime_local` converte automaticamente UTC → Europe/Rome:
+- **Usa `zoneinfo.ZoneInfo`** (Python 3.9+) per gestione DST corretta
+- **Estate (CEST)**: UTC+2
+- **Inverno (CET)**: UTC+1
+- La conversione è automatica e non richiede intervento manuale
+
+### Output HTML5 Semantico
+Il filtro `datetime_local` produce un elemento `<time>` semantico:
+```html
+<time datetime="2025-01-15T14:30:00Z" class="datetime-local">15/01/2025, 15:30</time>
+```
+
+Vantaggi:
+- **SEO**: I motori di ricerca capiscono le date
+- **Accessibilità**: Screen reader interpretano correttamente
+- **JavaScript Enhancement**: Opzionale conversione a fuso orario browser
+
+### Conversione Browser-Local (Opzionale)
+Per mostrare l'ora nel fuso orario del browser dell'utente:
+```html
+<script src="{{ url_for('static', filename='js/datetime-local.js') }}"></script>
+```
+Questo converte automaticamente tutti gli elementi `<time class="datetime-local">` all'ora locale del browser.
+
 ## Come Funziona
 
 ### 1. Formattazione Lato Server (Python)
 
 I filtri Jinja formattano le date direttamente in Python usando `strftime()`:
 - Formato consistente garantito lato server
-- Nessuna dipendenza da JavaScript o locale del browser
+- Conversione timezone automatica per `datetime_local`
+- Nessuna dipendenza da JavaScript per il caso base
 - Prestazioni migliori (nessun parsing client-side)
 
 ### 2. Filtri Jinja Disponibili
@@ -145,9 +176,18 @@ def format_date_local(value):
     # ...
 
 def format_datetime_local(value):
+    """Converte UTC → Europe/Rome con DST automatico."""
+    from zoneinfo import ZoneInfo
+
     if isinstance(value, datetime):
-        return value.strftime('%d/%m/%Y, %H:%M')
-    # ...
+        # Tratta datetime naive come UTC
+        utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
+        # Converti a fuso orario italiano
+        italian_time = utc_dt.astimezone(ZoneInfo("Europe/Rome"))
+        formatted = italian_time.strftime('%d/%m/%Y, %H:%M')
+        iso_utc = utc_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+        # Output: <time datetime="..." class="datetime-local">...</time>
+        return Markup(f'<time datetime="{iso_utc}" class="datetime-local">{formatted}</time>')
 ```
 
 ### Formati Supportati

@@ -29,25 +29,51 @@ def format_date_local(value) -> Markup:
 
 
 def format_datetime_local(value) -> Markup:
-    """Formatta data e ora per la visualizzazione locale (Italia: UTC+2).
+    """Formatta data e ora per la visualizzazione locale (Italia).
 
     IMPORTANT: Database stores naive datetimes as UTC (project convention).
-    This filter converts UTC to Italian time (UTC+2 in summer, UTC+1 in winter).
+    This filter converts UTC to Italian time using proper DST handling.
 
-    NOTE: Hardcoded to Italian timezone. For multi-timezone support,
-    consider using pytz or JavaScript-based conversion.
+    Output format:
+        <time datetime="2025-01-15T14:30:00Z" class="datetime-local">15/01/2025, 15:30</time>
+
+    The <time> element:
+    - Has semantic meaning for screen readers and search engines
+    - Contains ISO 8601 UTC timestamp in datetime attribute
+    - Displays Italian local time (Europe/Rome) accounting for DST
+    - Can be enhanced by JavaScript to show browser-local time
+
+    For JavaScript enhancement, add to your page:
+        <script src="{{ url_for('static', filename='js/datetime-local.js') }}"></script>
     """
     if not value:
         return Markup(_("N/A"))
 
     if isinstance(value, datetime):
-        # Database stores as UTC, convert to Italian time (UTC+2)
-        # TODO: Handle DST (daylight saving time) properly - currently fixed at +2
-        italian_time = value + timedelta(hours=2)
+        # Import zoneinfo for proper DST handling (Python 3.9+)
+        from zoneinfo import ZoneInfo
+
+        # Treat naive datetime as UTC (project convention)
+        if value.tzinfo is None:
+            utc_dt = value.replace(tzinfo=ZoneInfo("UTC"))
+        else:
+            utc_dt = value.astimezone(ZoneInfo("UTC"))
+
+        # Convert to Italian timezone (handles DST automatically)
+        italian_tz = ZoneInfo("Europe/Rome")
+        italian_time = utc_dt.astimezone(italian_tz)
+
+        # Format for display
         formatted = italian_time.strftime('%d/%m/%Y, %H:%M')
-        return Markup(escape(formatted))
+        iso_utc = utc_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        # Output <time> element with ISO datetime for potential JS enhancement
+        return Markup(
+            f'<time datetime="{iso_utc}" class="datetime-local">'
+            f'{escape(formatted)}</time>'
+        )
     elif isinstance(value, date):
-        # Just a date, no timezone conversion
+        # Just a date, no timezone conversion needed
         formatted = value.strftime('%d/%m/%Y')
         return Markup(escape(formatted))
     else:
