@@ -1,26 +1,38 @@
 # TODO Backlog
 
 Documento generato il 2025-12-29 dopo triage dei TODO comments nel codebase.
+**Aggiornato**: 2025-12-29 (Sprint 9 - P0 resolution)
 
 **Totale iniziale**: 28 TODO
 **Rimossi (risolti/obsoleti)**: 6
-**Rimanenti documentati**: 22
+**Risolti in Sprint 9**: 1 (DST)
+**Convertiti a Planned Feature**: 1 (Playoff)
+**Rimanenti documentati**: 20
 
 ---
 
-## P0 - Bug / Problemi Concreti (3)
+## Resolved in Sprint 9
 
-### DST Timezone Handling
+### ~~DST Timezone Handling~~ ✅ FIXED
 - **File**: `utils/jinja.py:45`
-- **Problema**: Il filtro `datetime_local` usa un offset fisso +2 ore invece di gestire correttamente l'ora legale/solare italiana
-- **Impatto**: Orari mostrati sbagliati per ~6 mesi all'anno
-- **Soluzione suggerita**: Usare `pytz` o `zoneinfo` per conversione corretta UTC → Europe/Rome
+- **Risolto in**: Commit `553d1a5`
+- **Soluzione**: Usato `zoneinfo.ZoneInfo("Europe/Rome")` per conversione automatica DST
+- **Output**: Elemento `<time>` semantico con datetime ISO e classe `datetime-local`
+- **Bonus**: Aggiunto `static/js/datetime-local.js` per conversione browser-local opzionale
+- **Docs**: `docs/LOCAL_DATE_FORMATTING.md` aggiornato
 
-### Playoff Feature Not Implemented
-- **File**: `models/playoff/models.py:395, 410`
-- **Problema**: Codice commentato con chiamate a metodi che non esistono (`GaraService.create_gara`, `GaraService.inscribe_user`)
-- **Impatto**: Feature playoff non funzionante
-- **Soluzione suggerita**: Decidere se implementare playoff o rimuovere il codice morto
+---
+
+## Planned Features (non bug, feature incomplete)
+
+### Playoff System
+- **File**: `models/playoff/models.py`
+- **Stato**: Modelli esistono, integrazione con servizi pendente
+- **Documentazione**: `docs/TODO_PLAYOFF_IMPLEMENTATION.md`
+- **Prossimi passi**:
+  1. Creare `PlayoffService` con `create_playoff_gara()` e `inscribe_qualified_players()`
+  2. Aggiungere routes admin per configurazione playoff
+  3. UI per conferma qualificazione giocatori
 
 ---
 
