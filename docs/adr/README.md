@@ -22,6 +22,7 @@ Crea un ADR quando:
 | ADR-001 | [Amalfi Strategy Pattern Unification](ADR-001-Amalfi-Strategy-Pattern-Unification.md) | Accepted | 2025-09 |
 | ADR-002 | [Fix Anti-Rematch Encounter Cleanup](ADR-002-fix-anti-rematch-encounter-cleanup.md) | Accepted | 2025-12-28 |
 | ADR-003 | [User Privacy System](ADR-003-user-privacy-system.md) | Accepted | 2025-12-28 |
+| ADR-004 | [Challenge/Gara Decoupling](ADR-004-challenge-gara-decoupling.md) | Accepted | 2025-12-29 |
 
 ## Come Creare un Nuovo ADR
 

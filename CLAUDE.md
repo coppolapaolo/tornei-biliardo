@@ -328,3 +328,21 @@ pytest tests/new/ -n auto
 - Application usually running - no need to restart for most changes
 - All 8 tournament use cases fully implemented with comprehensive integration tests
 - Gamification system is event-driven and decoupled from core domains
+
+---
+
+## 🔧 AUDIT IN CORSO
+
+Vedi `docs/AUDIT_REFACTORING_PLAN.md` per il piano completo.
+
+### Priorità Immediate (P0)
+1. Consolidare docs/decisions/ in docs/adr/
+2. Aggiornare README ADR
+3. Aggiungere coverage.json a .gitignore
+4. Rimuovere riferimento admin_backup.py
+5. Aggiornare ADR-001 (amalfi migrato)
+
+### Comandi di Verifica
+```bash
+./scripts/audit/verify_audit_completion.sh
+```
