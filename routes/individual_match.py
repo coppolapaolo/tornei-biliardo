@@ -91,7 +91,15 @@ def proposal_detail(proposal_id):
 def create_proposal():
     """Create new match proposal."""
     if request.method == "GET":
-        return render_template("individual_match/create_proposal.html")
+        from models.location.models import BilliardHall
+
+        verified_venues = BilliardHall.query.filter_by(
+            is_active=True, verified=True
+        ).order_by(BilliardHall.name).all()
+        return render_template(
+            "individual_match/create_proposal.html",
+            verified_venues=verified_venues,
+        )
 
     try:
         data = request.get_json() if request.is_json else request.form
@@ -104,10 +112,21 @@ def create_proposal():
         # Calculate expiration (default 24 hours before match)
         expires_at = scheduled_at - timedelta(hours=int(data.get("expires_hours", 24)))
 
+        # Look up BilliardHall FK from location string
+        location = data["location"].strip() if data.get("location") else ""
+        billiard_hall_id = None
+        if location:
+            from models.location.models import BilliardHall
+
+            venue = BilliardHall.query.filter_by(name=location).first()
+            if venue:
+                billiard_hall_id = venue.id
+
         proposal_data = {
             "proposer_id": current_user.id,
             "proposal_type": data["proposal_type"],
-            "location": data["location"],
+            "location": location,
+            "billiard_hall_id": billiard_hall_id,  # FK to BilliardHall (if found)
             "scheduled_at": scheduled_at,
             "expires_at": expires_at,
             "discipline": data.get("discipline", "palla_8"),
@@ -463,12 +482,20 @@ def cancel_match(match_id):
 @RoleRequirement.player_or_director_required
 def manage_availability():
     """Manage player availability for match proposals."""
+    from models.location.models import BilliardHall
+
+    verified_venues = BilliardHall.query.filter_by(
+        is_active=True, verified=True
+    ).order_by(BilliardHall.name).all()
+
     if request.method == "GET":
         availability_data = IndividualMatchService.get_user_availability(
             current_user.id
         )
         return render_template(
-            "individual_match/availability.html", **availability_data
+            "individual_match/availability.html",
+            verified_venues=verified_venues,
+            **availability_data,
         )
 
     try:
@@ -496,7 +523,10 @@ def manage_availability():
             return jsonify({"success": False, "error": error_msg}), 400
         else:
             flash(error_msg, "danger")
-            return render_template("individual_match/availability.html")
+            return render_template(
+                "individual_match/availability.html",
+                verified_venues=verified_venues,
+            )
 
 
 @individual_match_bp.route("/statistics")

@@ -53,10 +53,13 @@ class MatchProposal(BaseModel, TimestampMixin):
         db.Enum(ProposalStatus), nullable=False, default=ProposalStatus.PENDING
     )
 
-    # Match details
-    location = db.Column(
-        db.String(255), nullable=False
-    )  # TODO: da modificare con un riferimento alle location nel DB
+    # Match details - Location
+    # New: FK to BilliardHall (nullable for backward compatibility)
+    billiard_hall_id = db.Column(
+        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+    )
+    # Legacy: string-based location (kept for backward compatibility, will be deprecated)
+    location = db.Column(db.String(255), nullable=True)  # Made nullable - prefer billiard_hall_id
     scheduled_at = db.Column(db.DateTime, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
 
@@ -92,6 +95,7 @@ class MatchProposal(BaseModel, TimestampMixin):
     # Relationships
     proposer = db.relationship("User", foreign_keys=[proposer_id])
     accepted_by = db.relationship("User", foreign_keys=[accepted_by_id])
+    billiard_hall = db.relationship("BilliardHall", foreign_keys=[billiard_hall_id])
 
     # Direct invitations (for DIRECT proposals)
     invitations = db.relationship(  # type: ignore[assignment]
@@ -102,6 +106,20 @@ class MatchProposal(BaseModel, TimestampMixin):
     individual_match = db.relationship(
         "IndividualMatch", back_populates="proposal", uselist=False
     )
+
+    @property
+    def location_display(self) -> str:
+        """Get display name for location.
+
+        Returns billiard_hall.name if available, otherwise falls back
+        to legacy location string.
+
+        Returns:
+            str: Location name for display
+        """
+        if self.billiard_hall:
+            return self.billiard_hall.name
+        return self.location or ""
 
     @property
     def distance_config(self):
@@ -180,6 +198,8 @@ class MatchProposal(BaseModel, TimestampMixin):
             proposal_id=self.id,
             player1_id=self.proposer_id,
             player2_id=user_id,
+            # Location: prefer FK, fallback to legacy string
+            billiard_hall_id=self.billiard_hall_id,
             location=self.location,
             scheduled_at=self.scheduled_at,
             discipline=self.discipline,
@@ -333,19 +353,22 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
 
-    # Match details
-    # TODO: e' necessario? non puo' fare riferimento alla location di proposal?
-    location = db.Column(db.String(255), nullable=False)
-    # TODO: anche questo, credo, puo' fare riferimento al relativo
-    # campo di proposal
+    # Match details - Location
+    # Note: kept separate from proposal for matches created without proposal
+    # New: FK to BilliardHall (nullable for backward compatibility)
+    billiard_hall_id = db.Column(
+        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+    )
+    # Legacy: string-based location (kept for backward compatibility)
+    location = db.Column(db.String(255), nullable=True)  # Made nullable - prefer billiard_hall_id
     scheduled_at = db.Column(db.DateTime, nullable=False)
     status = db.Column(
         db.Enum(MatchStatus), nullable=False, default=MatchStatus.SCHEDULED
     )
 
     # Game configuration
-    # TODO: tutti questi sei da discipline fino a notes possono fare
-    # riferimento a proposal. perche' duplicare?
+    # Note: duplicated from proposal for matches created without proposal
+    # or when proposal is deleted. This denormalization is intentional.
     discipline = db.Column(db.String(50), nullable=False, default="palla_8")
     distance = db.Column(db.Integer, nullable=False, default=5)
     is_race_to = db.Column(db.Boolean, nullable=False, default=True)
@@ -379,6 +402,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
 
     # Relationships
     proposal = db.relationship("MatchProposal", back_populates="individual_match")
+    billiard_hall = db.relationship("BilliardHall", foreign_keys=[billiard_hall_id])
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
@@ -438,6 +462,20 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             player1_racks=self.player1_score,
             player2_racks=self.player2_score,
         )
+
+    @property
+    def location_display(self) -> str:
+        """Get display name for location.
+
+        Returns billiard_hall.name if available, otherwise falls back
+        to legacy location string.
+
+        Returns:
+            str: Location name for display
+        """
+        if self.billiard_hall:
+            return self.billiard_hall.name
+        return self.location or ""
 
     def start_match(self) -> None:
         """Start the match."""
@@ -616,7 +654,17 @@ class IndividualRack(BaseModel, TimestampMixin):
 
 
 class PlayerAvailability(BaseModel, TimestampMixin):
-    """Player availability preferences for match locations."""
+    """Player availability preferences for match locations.
+
+    DEPRECATED: This model uses string-based location for legacy compatibility.
+    For new features, use UserLocationAvailability from models/location/models.py
+    which uses proper billiard_hall_id FK reference.
+
+    Migration path:
+    1. Use UserLocationAvailability for new availability records
+    2. Gradually migrate existing data via admin tools
+    3. Eventually deprecate this table
+    """
 
     __tablename__ = "player_availability"
 
@@ -624,9 +672,8 @@ class PlayerAvailability(BaseModel, TimestampMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
-    location = db.Column(
-        db.String(255), nullable=False
-    )  # TODO: deve essere collegato alle location, non una stringa libera
+    # Legacy: string-based location. Prefer UserLocationAvailability.billiard_hall_id
+    location = db.Column(db.String(255), nullable=False)
 
     # Availability preferences
     is_available = db.Column(db.Boolean, nullable=False, default=True)

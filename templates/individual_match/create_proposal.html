@@ -44,8 +44,18 @@
                                         <div class="mb-3">
                                             <label for="location" class="form-label">Luogo *</label>
                                             <input type="text" class="form-control" id="location" name="location"
-                                                required placeholder="Es: Bar Sport, Sala Biliardi Centro">
-                                            <div class="form-text">Dove si svolgerà il match</div>
+                                                required placeholder="Es: Bar Sport, Sala Biliardi Centro"
+                                                list="venue-suggestions" autocomplete="off">
+                                            <datalist id="venue-suggestions">
+                                                {% if verified_venues %}
+                                                {% for venue in verified_venues %}
+                                                <option value="{{ venue.name }}">
+                                                    {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
+                                                </option>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </datalist>
+                                            <div class="form-text">Seleziona una sala esistente o scrivine una nuova</div>
                                         </div>
 
                                         <div class="mb-3">

@@ -55,8 +55,12 @@ class Gara(db.Model):
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=True)  # Ora della gara
 
-    # NUOVI CAMPI
-    location = db.Column(db.String(200))  # Luogo della gara
+    # Location - FK to BilliardHall (nullable for backward compatibility)
+    billiard_hall_id = db.Column(
+        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+    )
+    # Legacy: string-based location (kept for backward compatibility and display cache)
+    location = db.Column(db.String(200))
     # Available tables for this gara - JSON list: '["2", "3", "5"]'
     # If set, overrides venue's tables. If None, uses venue's tables.
     available_tables = db.Column(db.Text, nullable=True)
@@ -148,6 +152,9 @@ class Gara(db.Model):
     tiebreaker_challenge = db.relationship(
         "Challenge", foreign_keys=[tiebreaker_challenge_id]
     )
+    billiard_hall = db.relationship(
+        "BilliardHall", foreign_keys=[billiard_hall_id]
+    )
 
     # Co-directors relationship (similar to campionati)
     @property
@@ -167,11 +174,32 @@ class Gara(db.Model):
 
     @property
     def venue(self):
-        """Get the associated BilliardHall by location name."""
+        """Get the associated BilliardHall.
+
+        Prefers FK relationship, falls back to name lookup for legacy data.
+        """
+        # Prefer FK if set
+        if self.billiard_hall:
+            return self.billiard_hall
+        # Fallback: lookup by name for legacy data
         if not self.location:
             return None
         from models.location.models import BilliardHall
         return BilliardHall.query.filter_by(name=self.location).first()
+
+    @property
+    def location_display(self) -> str:
+        """Get display name for location.
+
+        Returns billiard_hall.name if FK set, otherwise falls back
+        to legacy location string.
+
+        Returns:
+            str: Location name for display
+        """
+        if self.billiard_hall:
+            return self.billiard_hall.name
+        return self.location or ""
 
     @staticmethod
     def parse_tables_input(input_str: str) -> List[str]:

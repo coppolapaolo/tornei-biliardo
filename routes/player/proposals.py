@@ -210,7 +210,8 @@ def accept_match_proposal(proposal_id):
                     proposal_id=proposal.id,
                     player1_id=proposal.proposer_id,
                     player2_id=current_user.id,
-                    location=proposal.location,
+                    billiard_hall_id=proposal.billiard_hall_id,  # FK from proposal
+                    location=proposal.location,  # String for backward compat
                     scheduled_at=proposal.scheduled_at,
                     discipline=proposal.discipline,
                     distance=proposal.distance,

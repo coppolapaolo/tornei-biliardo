@@ -45,7 +45,7 @@ from . import competition_bp
 
 def _handle_venue_creation(
     location: str, tables_input: Optional[str] = None
-) -> str:
+) -> tuple[str, Optional[int]]:
     """
     Handle venue creation/validation for competitions.
     If location doesn't match existing venues, create as disabled and non-verified.
@@ -55,10 +55,14 @@ def _handle_venue_creation(
         tables_input: Either a single number ("5") or comma-separated list ("2,3,5")
                      If single number, creates venue with that many tables.
 
-    Returns the location string to use.
+    Returns:
+        Tuple of (location_str, billiard_hall_id):
+        - (location, venue.id) if venue exists or was created
+        - (location, None) if venue doesn't exist and couldn't be created
+        - ("", None) if location is empty
     """
     if not location or not location.strip():
-        return location
+        return ("", None)
 
     location = location.strip()
 
@@ -66,7 +70,7 @@ def _handle_venue_creation(
     existing_venue = BilliardHall.query.filter_by(name=location).first()
 
     if existing_venue:
-        return location
+        return (location, existing_venue.id)
 
     # New venue - try to create it if we have table info
     if tables_input and tables_input.strip():
@@ -92,8 +96,9 @@ def _handle_venue_creation(
                     f"Sarà verificato dall'admin.",
                     "info",
                 )
+                return (location, new_venue.id)
             except Exception as e:
-                # If creation fails, continue with original location
+                # If creation fails, continue with original location string only
                 flash(f"Errore nella creazione del luogo: {str(e)}", "warning")
     else:
         flash(
@@ -101,7 +106,8 @@ def _handle_venue_creation(
             "warning",
         )
 
-    return location
+    # Venue not found and couldn't be created - return string only
+    return (location, None)
 
 
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
@@ -125,11 +131,11 @@ def create_gara_standalone():
             time = datetime_obj.time()
 
             # Campi opzionali
-            location = request.form.get("location", "").strip()
+            location_input = request.form.get("location", "").strip()
             tables_input = request.form.get("available_tables", "").strip()
 
-            # Handle venue auto-creation
-            location = _handle_venue_creation(location, tables_input)
+            # Handle venue auto-creation - returns (location_str, billiard_hall_id)
+            location, billiard_hall_id = _handle_venue_creation(location_input, tables_input)
 
             # Parse tables for gara-specific configuration
             available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
@@ -195,7 +201,8 @@ def create_gara_standalone():
                 name=name,
                 date=date,
                 time=time,
-                location=location,
+                billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
+                location=location,  # String for backward compat/display cache
                 description=description,
                 rounds_count=rounds_count,
                 min_participants=min_participants,
@@ -340,8 +347,8 @@ def create_gara():
     location = request.form.get("location", "").strip()
     tables_input = request.form.get("available_tables", "").strip()
 
-    # Handle venue auto-creation
-    location = _handle_venue_creation(location, tables_input)
+    # Handle venue auto-creation - returns tuple (location_str, billiard_hall_id)
+    location, billiard_hall_id = _handle_venue_creation(location, tables_input)
 
     # Parse tables for gara-specific configuration
     available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
@@ -364,7 +371,8 @@ def create_gara():
         number=number,
         name=name,
         date=date,
-        location=location,
+        billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
+        location=location,  # String for backward compat/display cache
         description=description,
         rounds_count=rounds_count,
         min_participants=min_participants,
@@ -415,11 +423,11 @@ def edit_gara(gara_id):
             match_distance = int(match_distance) if match_distance else None
             is_race_to_sets = "is_race_to_sets" in request.form
 
-            # Handle venue auto-creation for location
+            # Handle venue auto-creation for location - returns tuple (location_str, billiard_hall_id)
             location = request.form.get("location", "").strip()
             tables_input = request.form.get("available_tables", "").strip()
 
-            location = _handle_venue_creation(location, tables_input)
+            location, billiard_hall_id = _handle_venue_creation(location, tables_input)
 
             # Parse tables for gara-specific configuration
             available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
@@ -444,7 +452,8 @@ def edit_gara(gara_id):
                 name=request.form.get("name", gara.name),
                 date_str=request.form["date"],
                 time_str=time_str,
-                location=location,
+                billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
+                location=location,  # String for backward compat/display cache
                 description=request.form.get("description", ""),
                 rounds_count=int(request.form.get("rounds_count", 3)),
                 min_participants=int(request.form.get("min_participants", 2)),

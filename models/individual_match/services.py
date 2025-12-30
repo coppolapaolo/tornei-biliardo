@@ -44,6 +44,7 @@ class MatchProposalService:
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
         invited_user_ids: Optional[List[int]] = None,
+        billiard_hall_id: Optional[int] = None,
     ) -> MatchProposal:
         """Create a match proposal with invitations if needed."""
 
@@ -60,6 +61,7 @@ class MatchProposalService:
                 break_rule=break_rule,
                 description=description,
                 entry_fee=entry_fee,
+                billiard_hall_id=billiard_hall_id,
             )
         else:
             return IndividualMatchService.create_open_proposal(
@@ -73,6 +75,7 @@ class MatchProposalService:
                 break_rule=break_rule,
                 description=description,
                 entry_fee=entry_fee,
+                billiard_hall_id=billiard_hall_id,
             )
 
     @staticmethod
@@ -127,6 +130,7 @@ class IndividualMatchService:
         break_rule: Optional[str] = None,
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
+        billiard_hall_id: Optional[int] = None,
     ) -> MatchProposal:
         """Create a direct match proposal to specific players."""
 
@@ -138,7 +142,8 @@ class IndividualMatchService:
         proposal = MatchProposal(
             proposer_id=proposer_id,
             proposal_type=ProposalType.DIRECT,
-            location=location,
+            billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
+            location=location,  # String for backward compat/display cache
             scheduled_at=scheduled_at,
             expires_at=expires_at,
             discipline=discipline,
@@ -204,6 +209,7 @@ class IndividualMatchService:
         break_rule: Optional[str] = None,
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
+        billiard_hall_id: Optional[int] = None,
     ) -> MatchProposal:
         """Create an open match proposal for all eligible players."""
 
@@ -213,7 +219,8 @@ class IndividualMatchService:
         proposal = MatchProposal(
             proposer_id=proposer_id,
             proposal_type=ProposalType.OPEN,
-            location=location,
+            billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
+            location=location,  # String for backward compat/display cache
             scheduled_at=scheduled_at,
             expires_at=expires_at,
             discipline=discipline,
