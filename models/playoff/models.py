@@ -377,42 +377,54 @@ class PlayoffTournament(BaseModel, TimestampMixin):
     winner = db.relationship("User", foreign_keys=[winner_id])
 
     def start_registration(self) -> None:
-        """Start the registration process for confirmed qualifiers."""
+        """Start the registration process for confirmed qualifiers.
+
+        NOTE: This method is not yet fully implemented.
+        See docs/TODO_PLAYOFF_IMPLEMENTATION.md for implementation plan.
+
+        Current state:
+        - Domain models exist (PlayoffConfiguration, PlayoffQualification, PlayoffTournament)
+        - Integration with GaraService and InscriptionService is pending
+
+        Required services (not yet implemented):
+        - PlayoffService.create_playoff_gara()
+        - PlayoffService.inscribe_qualified_players()
+        """
         if self.status != "setup":
             raise ValueError("Can only start registration from setup status")
 
         self.status = "registration"
         self.registration_start = datetime.utcnow()
 
-        # Create inscriptions for confirmed qualifiers
-
-        confirmed_qualifications = self.configuration.qualifications.filter_by(
-            status=QualificationStatus.CONFIRMED
-        ).all()
+        # Get confirmed qualifications
+        confirmed_qualifications = [
+            q for q in self.configuration.qualifications
+            if q.status == QualificationStatus.CONFIRMED
+        ]
 
         if not self.gara_id:
-            # Create the playoff gara if it doesn't exist
-            # TODO: Fix GaraService.create_gara call with proper parameters
-            # gara = GaraService.create_gara(
-            #     campionato_id=self.configuration.campionato_id,
-            #     director_id=1,  # Admin or first director
-            #     name=self.name,
-            #     location=self.location or "TBD",
-            #     date=self.campionato_date or datetime.utcnow(),
-            #     is_playoff=True
-            # )
+            # Playoff gara creation is not yet implemented
+            # See docs/TODO_PLAYOFF_IMPLEMENTATION.md for required API:
+            #
+            # from models.playoff.services import PlayoffService
+            # gara = PlayoffService.create_playoff_gara(self)
             # self.gara_id = gara.id
-            pass
+            raise NotImplementedError(
+                "Playoff gara creation not implemented. "
+                "See docs/TODO_PLAYOFF_IMPLEMENTATION.md"
+            )
 
         # Auto-inscribe confirmed players
-        for qualification in confirmed_qualifications:
-            try:
-                # TODO: Fix GaraService.inscribe_user call - method doesn't exist
-                # GaraService.inscribe_user(self.gara_id, qualification.user_id)
-                # self.confirmed_participants += 1
-                pass
-            except Exception as e:
-                print(f"Failed to inscribe user {qualification.user_id}: {e}")
+        # Currently raises NotImplementedError above, so this won't execute yet
+        # When implemented, use:
+        #
+        # from models.competition.inscription_service import InscriptionService
+        # for qualification in confirmed_qualifications:
+        #     InscriptionService.inscribe_user(
+        #         user_id=qualification.user_id,
+        #         gara_id=self.gara_id
+        #     )
+        #     self.confirmed_participants += 1
 
     def complete_campionato(self, winner_id: Optional[int] = None) -> None:
         """Mark campionato as completed."""
