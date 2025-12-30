@@ -1,13 +1,15 @@
 # TODO Backlog
 
 Documento generato il 2025-12-29 dopo triage dei TODO comments nel codebase.
-**Aggiornato**: 2025-12-29 (Sprint 9 - P0 resolution)
+**Aggiornato**: 2025-12-30 (Sprint 11 completion)
 
 **Totale iniziale**: 28 TODO
 **Rimossi (risolti/obsoleti)**: 6
 **Risolti in Sprint 9**: 1 (DST)
+**Risolti in Sprint 10**: 3 (Location FK)
+**Risolti in Sprint 11**: 3 (Challenge/Gara decoupling)
 **Convertiti a Planned Feature**: 1 (Playoff)
-**Rimanenti documentati**: 20
+**Rimanenti documentati**: 14
 
 ---
 
@@ -23,6 +25,46 @@ Documento generato il 2025-12-29 dopo triage dei TODO comments nel codebase.
 
 ---
 
+## ~~P1 - Location/Venue Refactoring~~ ✅ RESOLVED IN SPRINT 10
+
+### Sprint 10 Resolution (December 2025)
+Location FK migration completed. See commits in Sprint 10.
+
+**Completed**:
+- ✅ `billiard_hall_id` FK aggiunto a `Gara`, `MatchProposal`, `IndividualMatch`
+- ✅ UI datalist implementata per selezione venue
+- ✅ Migration script eseguito
+- ✅ Backward compatibility mantenuta (campo `location` string deprecato)
+
+**Previously tracked**:
+- ~~MatchProposal.location~~ - Migrato a `billiard_hall_id`
+- ~~PlayerAvailability.location~~ - Usa datalist con BilliardHall
+- ~~IndividualMatch Fields Duplication~~ - `billiard_hall_id` FK aggiunto
+
+---
+
+## ~~P2 - Design Questions: Challenge/Gara Coupling~~ ✅ FULLY RESOLVED IN SPRINT 11
+
+### Sprint 11 Resolution (December 2025)
+Domain decoupling fully completed. See `docs/adr/ADR-004-challenge-gara-decoupling.md`.
+
+**All Phases Completed**:
+- ✅ FASE 1: Analysis of all coupling usages
+- ✅ FASE 2: Moved `GaraChallenge*` models and service to Competition domain
+- ✅ FASE 3: Updated all imports across codebase
+- ✅ FASE 4: Migrated bye logic to use `GaraByeChallenge`
+- ✅ FASE 5: Deprecated `ChallengeAttempt.gara_id` with comments
+- ✅ FASE 6: Created database migration script
+- ✅ FASE 7: ADR documentation complete
+
+**Key Changes**:
+- `GaraByeChallenge` bridge entity created in `models/competition/gara_bye_challenge.py`
+- `GaraChallenge*` models moved to `models/competition/gara_challenge.py`
+- Dependency direction inverted: Competition → Challenge (correct DDD)
+- Backward compatibility via deprecated re-exports
+
+---
+
 ## Planned Features (non bug, feature incomplete)
 
 ### Playoff System
@@ -33,63 +75,6 @@ Documento generato il 2025-12-29 dopo triage dei TODO comments nel codebase.
   1. Creare `PlayoffService` con `create_playoff_gara()` e `inscribe_qualified_players()`
   2. Aggiungere routes admin per configurazione playoff
   3. UI per conferma qualificazione giocatori
-
----
-
-## P1 - Location/Venue Refactoring (4)
-
-Questi TODO sono correlati: il sistema usa stringhe libere invece di FK a BilliardHall.
-
-### MatchProposal.location
-- **File**: `models/individual_match/models.py:59`
-- **TODO**: "da modificare con un riferimento alle location nel DB"
-- **Impatto**: Nessuna validazione, duplicati, nessun link a venue
-
-### PlayerAvailability.location
-- **File**: `models/individual_match/models.py:629`
-- **TODO**: "deve essere collegato alle location, non una stringa libera"
-- **Impatto**: Stesso problema, duplicazione
-
-### IndividualMatch Fields Duplication
-- **Files**: `models/individual_match/models.py:337, 339, 347`
-- **TODO**: Campi duplicati da MatchProposal (`location`, `scheduled_at`, `discipline`, etc.)
-- **Soluzione suggerita**:
-  1. Migrare `location` a `billiard_hall_id` FK
-  2. Valutare se IndividualMatch deve fare riferimento a MatchProposal invece di duplicare campi
-
-### Availability Time Format Validation
-- **File**: `models/individual_match/availability_service.py:73`
-- **TODO**: "bisogna assicurarsi che l'interfaccia forzi questo formato"
-- **Impatto**: Parsing può fallire silenziosamente se formato sbagliato
-
----
-
-## ~~P2 - Design Questions: Challenge/Gara Coupling~~ ✅ PARTIALLY RESOLVED
-
-### Sprint 11 Progress (December 2025)
-Domain decoupling completed in FASE 1-3. See `docs/decisions/ADR-004-challenge-gara-decoupling.md`.
-
-**Completed**:
-- ✅ FASE 1: Analysis of all coupling usages
-- ✅ FASE 2: Moved `GaraChallenge*` models and service to Competition domain
-- ✅ FASE 3: Updated all imports across codebase
-- ✅ Created `GaraByeChallenge` model for bye replacement
-- ✅ Backward compatibility via deprecated re-exports
-
-**Pending** (future sprints):
-- ⏳ FASE 4: Migrate bye logic to use `GaraByeChallenge`
-- ⏳ FASE 5: Deprecate `ChallengeAttempt.gara_id`
-- ⏳ FASE 6: Create database migration script
-
-### ~~ChallengeAttempt.gara_id~~ (TO BE DEPRECATED)
-- **File**: `models/challenge/models.py:308`
-- **Status**: Will be replaced by `GaraByeChallenge` bridge entity
-- **New Location**: `models/competition/gara_bye_challenge.py`
-
-### ~~GaraChallenge Inheritance~~ ✅ RESOLVED
-- **Old Location**: `models/challenge/gara_challenge_models.py`
-- **New Location**: `models/competition/gara_challenge.py`
-- **Solution**: Moved to Competition domain (proper DDD boundaries)
 
 ---
 
@@ -146,6 +131,11 @@ Riflessioni su possibili astrazioni per Score, Referto, e Rack.
 
 ## P3 - Minor / Low Priority (5)
 
+### Availability Time Format Validation
+- **File**: `models/individual_match/availability_service.py:73`
+- **TODO**: "bisogna assicurarsi che l'interfaccia forzi questo formato"
+- **Impatto**: Parsing può fallire silenziosamente se formato sbagliato
+
 ### IndividualMatch Score Delegation
 - **File**: `models/individual_match/models.py:481`
 - **TODO**: "forse questo va delegato ad un servizio che astrae il punteggio"
@@ -162,17 +152,19 @@ Riflessioni su possibili astrazioni per Score, Referto, e Rack.
 ## Note per Implementazione
 
 ### Priorità suggerita:
-1. **P0**: Bug DST - impatta UX quotidianamente
-2. **P1**: Location refactoring - preparazione per feature venue-based
+1. ~~**P0**: Bug DST~~ ✅ Risolto Sprint 9
+2. ~~**P1**: Location refactoring~~ ✅ Risolto Sprint 10
 3. **P2**: Design questions - valutare solo se si toccano quei file
 4. **P3**: Minor - ignorare fino a refactoring maggiore
 
-### Pattern comuni identificati:
-- **Stringhe libere invece di FK**: `location` in MatchProposal, IndividualMatch, PlayerAvailability
-- **Coupling Challenge-Gara**: ChallengeAttempt sa troppo delle gare
-- **Duplicazione campi**: IndividualMatch duplica MatchProposal
-- **Astrazioni mancanti**: Score, Referto, SetRack vs Rack
+### Pattern comuni risolti:
+- ~~**Stringhe libere invece di FK**~~: ✅ Migrato a `billiard_hall_id` FK (Sprint 10)
+- ~~**Coupling Challenge-Gara**~~: ✅ Invertito a Competition → Challenge (Sprint 11)
+
+### Pattern ancora presenti:
+- **Duplicazione campi**: IndividualMatch duplica MatchProposal (valutare se necessario)
+- **Astrazioni mancanti**: Score, Referto, SetRack vs Rack (P2 - low priority)
 
 ---
 
-*Documento generato durante Sprint 5 del refactoring audit.*
+*Documento aggiornato durante Sprint 11 del refactoring.*
