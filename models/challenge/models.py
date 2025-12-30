@@ -304,16 +304,23 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
     # Note opzionali sul tentativo (condizioni particolari, osservazioni)
     notes = db.Column(db.Text, nullable=True)
 
-    # Integrazione Campionati - quando usato come sostituzione X
-    gara_id = db.Column( # TODO: non sono convinto che sia la modellazione giusta, perche' challenge non dovrebbe sapere nulla di campionati e gare e round. 
+    # DEPRECATED (Sprint 11, December 2025)
+    # These fields violate DDD: Challenge domain shouldn't know about Gara.
+    # Use GaraByeChallenge (models.competition.gara_bye_challenge) instead.
+    # These fields are kept for backward compatibility with existing data.
+    # New X replacement logic uses GaraByeChallenge as bridge entity.
+    # See ADR-004-challenge-gara-decoupling.md for rationale.
+    gara_id = db.Column(
         db.Integer, db.ForeignKey("gara.id", ondelete="SET NULL"), nullable=True
-    )  # Gara di appartenenza se usato come X
-    round_number = db.Column(db.Integer, nullable=True)  # Turno specifico della gara
+    )  # DEPRECATED: Use GaraByeChallenge.gara_id instead
+    round_number = db.Column(
+        db.Integer, nullable=True
+    )  # DEPRECATED: Use GaraByeChallenge.round_number instead
 
     # Relationships
     challenge = db.relationship("Challenge", back_populates="attempts")
     user = db.relationship("User")
-    gara = db.relationship("Gara") # TODO: non sono sicuro che debba essere parte del modello 
+    gara = db.relationship("Gara")  # DEPRECATED: Use GaraByeChallenge.gara instead
 
     def complete_attempt(
         self, score: Optional[int] = None, passed: Optional[bool] = None
