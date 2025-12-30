@@ -64,24 +64,32 @@ Questi TODO sono correlati: il sistema usa stringhe libere invece di FK a Billia
 
 ---
 
-## P2 - Design Questions: Challenge/Gara Coupling (3)
+## ~~P2 - Design Questions: Challenge/Gara Coupling~~ ✅ PARTIALLY RESOLVED
 
-Il sistema Challenge ha un accoppiamento con Gara che potrebbe violare separation of concerns.
+### Sprint 11 Progress (December 2025)
+Domain decoupling completed in FASE 1-3. See `docs/decisions/ADR-004-challenge-gara-decoupling.md`.
 
-### ChallengeAttempt.gara_id
+**Completed**:
+- ✅ FASE 1: Analysis of all coupling usages
+- ✅ FASE 2: Moved `GaraChallenge*` models and service to Competition domain
+- ✅ FASE 3: Updated all imports across codebase
+- ✅ Created `GaraByeChallenge` model for bye replacement
+- ✅ Backward compatibility via deprecated re-exports
+
+**Pending** (future sprints):
+- ⏳ FASE 4: Migrate bye logic to use `GaraByeChallenge`
+- ⏳ FASE 5: Deprecate `ChallengeAttempt.gara_id`
+- ⏳ FASE 6: Create database migration script
+
+### ~~ChallengeAttempt.gara_id~~ (TO BE DEPRECATED)
 - **File**: `models/challenge/models.py:308`
-- **TODO**: "non sono convinto che sia la modellazione giusta, perche' challenge non dovrebbe sapere nulla di campionati e gare e round"
-- **Contesto**: gara_id usato quando challenge sostituisce la X nel sistema Amalfi
+- **Status**: Will be replaced by `GaraByeChallenge` bridge entity
+- **New Location**: `models/competition/gara_bye_challenge.py`
 
-### ChallengeAttempt.gara Relationship
-- **File**: `models/challenge/models.py:316`
-- **TODO**: "non sono sicuro che debba essere parte del modello"
-- **Correlato**: Stesso problema di coupling
-
-### GaraChallenge Inheritance
-- **File**: `models/challenge/gara_challenge_models.py:23`
-- **TODO**: "forse questo dovrebbe solo estendere Challenge con le informazioni e i metodi relativi alla connessione con la gara"
-- **Soluzione suggerita**: Valutare pattern Decorator o Strategy invece di classe separata
+### ~~GaraChallenge Inheritance~~ ✅ RESOLVED
+- **Old Location**: `models/challenge/gara_challenge_models.py`
+- **New Location**: `models/competition/gara_challenge.py`
+- **Solution**: Moved to Competition domain (proper DDD boundaries)
 
 ---
 
