@@ -455,11 +455,20 @@ def create_x_replacement(gara_id, round_number):
 @login_required
 def complete_x_replacement(attempt_id):
     """Complete X replacement challenge attempt."""
+    from models.competition.gara_bye_challenge import GaraByeChallenge
+
     try:
         attempt = ChallengeAttempt.query.get_or_404(attempt_id)
 
+        # Check if this is an X replacement via GaraByeChallenge (new pattern)
+        bye_challenge = GaraByeChallenge.query.filter_by(
+            challenge_attempt_id=attempt_id
+        ).first()
+
         # Verify user owns this attempt and it's for X replacement
-        if attempt.user_id != current_user.id or not attempt.gara_id:
+        # Check both new pattern (GaraByeChallenge) and deprecated field (gara_id)
+        is_x_replacement = bye_challenge is not None or attempt.gara_id is not None
+        if attempt.user_id != current_user.id or not is_x_replacement:
             return jsonify({"success": False, "error": "Access denied"}), 403
 
         data = request.get_json() if request.is_json else request.form
@@ -467,6 +476,9 @@ def complete_x_replacement(attempt_id):
         completed_attempt = ChallengeService.complete_x_replacement_attempt(
             attempt_id=attempt_id, score=int(data["score"]), notes=data.get("notes")
         )
+
+        # Get gara_id for redirect (prefer GaraByeChallenge, fall back to deprecated field)
+        redirect_gara_id = bye_challenge.gara_id if bye_challenge else attempt.gara_id
 
         if request.is_json:
             return jsonify(
@@ -478,7 +490,7 @@ def complete_x_replacement(attempt_id):
             )
         else:
             flash("X replacement completed successfully!", "success")
-            return redirect(url_for("admin.gara_detail", gara_id=attempt.gara_id))
+            return redirect(url_for("admin.gara_detail", gara_id=redirect_gara_id))
 
     except ValueError as e:
         error_msg = f"Error completing X replacement: {str(e)}"

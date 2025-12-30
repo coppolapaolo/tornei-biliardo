@@ -188,15 +188,33 @@ class ChallengeService:
         gara_id: Optional[int] = None,
         round_number: Optional[int] = None,
     ) -> ChallengeAttempt:
-        """Start a new challenge attempt."""
+        """Start a new challenge attempt.
+
+        If gara_id is provided, also creates a GaraByeChallenge entry to track
+        the relationship (Competition → Challenge direction).
+        """
         attempt = ChallengeAttempt(
             user_id=user_id,
             challenge_id=challenge_id,
-            gara_id=gara_id,
-            round_number=round_number,
+            gara_id=gara_id,  # DEPRECATED: kept for backward compatibility
+            round_number=round_number,  # DEPRECATED: kept for backward compatibility
         )
 
         db.session.add(attempt)
+        db.session.flush()  # Get attempt.id before creating GaraByeChallenge
+
+        # Create GaraByeChallenge entry for bye replacement (new pattern)
+        if gara_id is not None and round_number is not None:
+            from models.competition.gara_bye_challenge import GaraByeChallenge
+
+            bye_challenge = GaraByeChallenge.create_for_bye(
+                gara_id=gara_id,
+                user_id=user_id,
+                round_number=round_number,
+            )
+            bye_challenge.challenge_attempt_id = attempt.id
+            db.session.add(bye_challenge)
+
         return attempt
 
     @staticmethod
@@ -317,6 +335,7 @@ class ChallengeService:
         attempt_id: int, score: int, notes: Optional[str] = None
     ) -> ChallengeAttempt:
         """Complete X replacement challenge and return match-equivalent result."""
+        from models.competition.gara_bye_challenge import GaraByeChallenge
 
         attempt = db.session.get(ChallengeAttempt, attempt_id)
         if not attempt:
@@ -331,6 +350,13 @@ class ChallengeService:
         if notes:
             attempt.notes = notes
 
+        # Mark GaraByeChallenge as completed (new pattern)
+        bye_challenge = GaraByeChallenge.query.filter_by(
+            challenge_attempt_id=attempt_id
+        ).first()
+        if bye_challenge:
+            bye_challenge.complete_with_attempt(attempt_id)
+
         # Create equivalent match result for campionato classification
         ChallengeService._create_x_replacement_match_result(attempt)
 
@@ -339,15 +365,37 @@ class ChallengeService:
     @staticmethod
     @transactional(domain="challenge")
     def _create_x_replacement_match_result(attempt: ChallengeAttempt) -> None:
-        """Create a match result equivalent for X replacement challenge."""
+        """Create a match result equivalent for X replacement challenge.
+
+        Uses GaraByeChallenge to get gara context (Competition → Challenge direction).
+        Falls back to attempt.gara_id for backward compatibility with existing data.
+        """
         from ..match.models import Match
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+
+        # Try to get gara context from GaraByeChallenge (new pattern)
+        bye_challenge = GaraByeChallenge.query.filter_by(
+            challenge_attempt_id=attempt.id
+        ).first()
+
+        if bye_challenge:
+            gara_id = bye_challenge.gara_id
+            round_number = bye_challenge.round_number
+        else:
+            # Backward compatibility: use deprecated attempt fields
+            gara_id = attempt.gara_id
+            round_number = attempt.round_number
+
+        if not gara_id or not round_number:
+            # Not an X replacement challenge, skip match creation
+            return
 
         # Find or create a match for this X replacement
         match = (
             db.session.query(Match)
             .filter_by(
-                gara_id=attempt.gara_id,
-                round_number=attempt.round_number,
+                gara_id=gara_id,
+                round_number=round_number,
                 player1_id=attempt.user_id,
                 is_bye=True,
             )
@@ -356,8 +404,8 @@ class ChallengeService:
 
         if not match:
             match = Match(
-                gara_id=attempt.gara_id,
-                round_number=attempt.round_number,
+                gara_id=gara_id,
+                round_number=round_number,
                 player1_id=attempt.user_id,
                 player2_id=None,
                 is_bye=True,
