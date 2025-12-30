@@ -13,7 +13,7 @@ Sub-modules:
     - utils.reset_data: Database reset utilities
     - utils.database_utils: Database statistics utilities
 
-CIRCULAR IMPORT WORKAROUNDS (14 local imports)
+CIRCULAR IMPORT WORKAROUNDS (13 local imports)
 ----------------------------------------------
 This package uses local imports inside functions to avoid circular dependencies.
 This is the RECOMMENDED Flask pattern for this situation.
@@ -23,7 +23,7 @@ Why local imports are necessary:
 2. TYPE_CHECKING cannot be used because imports are for runtime, not type hints
 
 Distribution:
-- utils.permissions: 11 local imports (permission checks need model queries)
+- utils.permissions: 10 local imports (permission checks need model queries)
 - utils.__init__: 3 local imports (bootstrap functions)
 
 The remaining local imports are intentional and represent the minimum necessary

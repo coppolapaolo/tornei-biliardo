@@ -147,7 +147,7 @@ def rack_manager_required(f):
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        from models import Rack  # Local import to avoid circular dependency
+        from models import Rack, db  # Local import to avoid circular dependency
 
         rack_id = kwargs.get("rack_id")
         rack = Rack.query.get_or_404(rack_id)
@@ -170,7 +170,6 @@ def rack_manager_required(f):
 
             # Co-direttore via DirectorAssignment
             from models.user.models import DirectorAssignment
-            from models import db  # Local import to avoid circular dependency
 
             gara_id = gara.id
             is_co_director = (
