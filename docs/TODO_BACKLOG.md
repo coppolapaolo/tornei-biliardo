@@ -1,15 +1,16 @@
 # TODO Backlog
 
 Documento generato il 2025-12-29 dopo triage dei TODO comments nel codebase.
-**Aggiornato**: 2025-12-30 (Sprint 11 completion)
+**Aggiornato**: 2025-12-30 (Sprint 12 completion)
 
 **Totale iniziale**: 28 TODO
 **Rimossi (risolti/obsoleti)**: 6
 **Risolti in Sprint 9**: 1 (DST)
 **Risolti in Sprint 10**: 3 (Location FK)
 **Risolti in Sprint 11**: 3 (Challenge/Gara decoupling)
+**Risolti in Sprint 12**: 6 (Match/Rack design questions)
 **Convertiti a Planned Feature**: 1 (Playoff)
-**Rimanenti documentati**: 14
+**Rimanenti documentati**: 8
 
 ---
 
@@ -65,6 +66,21 @@ Domain decoupling fully completed. See `docs/adr/ADR-004-challenge-gara-decoupli
 
 ---
 
+## ~~P2 - Design Questions: Match/Rack Abstraction~~ ✅ RESOLVED IN SPRINT 12
+
+### Sprint 12 Resolution (December 2025)
+All 6 design questions analyzed and resolved. No code changes needed - existing design validated.
+
+**Decisions**:
+- ~~Continuous Pool Scoring~~ - Future feature, Pool Continuo non supportato
+- ~~Referto Class~~ - Design attuale OK, astrazione sarebbe over-engineering
+- ~~Score Abstraction~~ - **Già implementato** in `models/match/score.py` (RackScore, MatchScore)
+- ~~TrioMatch Winner~~ - Modello corretto, nel biliardo c'è sempre un vincitore
+- ~~SetRack vs Rack~~ - Separazione intenzionale per contesti diversi (multi-set vs single-set)
+- ~~Multi-Discipline~~ - Complessità giustificata, feature opzionale ben testata
+
+---
+
 ## Planned Features (non bug, feature incomplete)
 
 ### Playoff System
@@ -75,47 +91,6 @@ Domain decoupling fully completed. See `docs/adr/ADR-004-challenge-gara-decoupli
   1. Creare `PlayoffService` con `create_playoff_gara()` e `inscribe_qualified_players()`
   2. Aggiungere routes admin per configurazione playoff
   3. UI per conferma qualificazione giocatori
-
----
-
-## P2 - Design Questions: Match/Rack Abstraction (6)
-
-Riflessioni su possibili astrazioni per Score, Referto, e Rack.
-
-### Continuous Pool Scoring
-- **File**: `models/match/models.py:525`
-- **TODO**: "nel pool continuo, un rack non e' detto che abbia un vincitore"
-- **Contesto**: Pool continuo usa punteggi progressivi, non winner per rack
-- **Impatto**: Feature non supportata
-
-### Referto Class Abstraction
-- **Files**: `models/match/models.py:528, 589`
-- **TODO**: "forse questo va astratto con una classe Referto"
-- **Contesto**: Campi `reported_by_id`, `confirmed_by_player`, `validated_by_admin` su Rack
-- **Soluzione suggerita**: Valutare se creare classe `MatchReport` per tracciare chi segnala cosa
-
-### Score Abstraction
-- **File**: `models/match/models.py:629`
-- **TODO**: "se si astrae Score allora qui va modificato"
-- **Dipendenza**: Da decisione su classe Score
-
-### TrioMatch Winner Nullable
-- **File**: `models/match/models.py:638`
-- **TODO**: "non e' detto che esista un winner"
-- **Contesto**: Trio match potrebbe finire in pareggio?
-- **Impatto**: Modello assume sempre un vincitore
-
-### SetRack vs Rack
-- **File**: `models/match/set_models.py:337`
-- **TODO**: "non sono convinto che sia necessario e che non si possa usare Rack"
-- **Contesto**: SetRack duplica parte della logica di Rack
-- **Soluzione suggerita**: Valutare unificazione con discriminatore
-
-### Multi-Discipline Complexity
-- **File**: `models/match/set_models.py:68`
-- **TODO**: "questo mi sembra sovraingegnerizzato"
-- **Contesto**: `configure_multi_discipline` ha logica complessa per casi rari
-- **Impatto**: Basso - feature opzionale
 
 ---
 
@@ -154,17 +129,19 @@ Riflessioni su possibili astrazioni per Score, Referto, e Rack.
 ### Priorità suggerita:
 1. ~~**P0**: Bug DST~~ ✅ Risolto Sprint 9
 2. ~~**P1**: Location refactoring~~ ✅ Risolto Sprint 10
-3. **P2**: Design questions - valutare solo se si toccano quei file
-4. **P3**: Minor - ignorare fino a refactoring maggiore
+3. ~~**P2**: Challenge/Gara~~ ✅ Risolto Sprint 11
+4. ~~**P2**: Match/Rack~~ ✅ Risolto Sprint 12
+5. **P2**: Discipline - valutare solo se si tocca quel file
+6. **P3**: Minor - ignorare fino a refactoring maggiore
 
 ### Pattern comuni risolti:
 - ~~**Stringhe libere invece di FK**~~: ✅ Migrato a `billiard_hall_id` FK (Sprint 10)
 - ~~**Coupling Challenge-Gara**~~: ✅ Invertito a Competition → Challenge (Sprint 11)
+- ~~**Astrazioni mancanti**~~: ✅ Score già implementato, altre non necessarie (Sprint 12)
 
 ### Pattern ancora presenti:
 - **Duplicazione campi**: IndividualMatch duplica MatchProposal (valutare se necessario)
-- **Astrazioni mancanti**: Score, Referto, SetRack vs Rack (P2 - low priority)
 
 ---
 
-*Documento aggiornato durante Sprint 11 del refactoring.*
+*Documento aggiornato durante Sprint 12 del refactoring.*

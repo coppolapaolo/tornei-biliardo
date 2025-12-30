@@ -522,10 +522,9 @@ class Rack(db.Model):
     rack_number = db.Column(db.Integer, nullable=False)
     winner_id = db.Column(
         db.Integer, db.ForeignKey("user.id")
-    )  # TODO: nel pool continuo, un rack non e' detto che abbia un vincitore, perche' ogni giocatore ha un punteggio. bisogna pensare anche questa cosa.
+    )  # Pool Continuo (Straight Pool) non supportato - future feature
 
-    # NUOVI CAMPI per conferma punti
-    # TODO: forse questo va astratto con una classe Referto ed e' in quella classe che vanno messe queste info.
+    # Campi per conferma punti (reporting workflow)
     reported_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))  # chi ha segnato
     confirmed_by_player = db.Column(
         db.Boolean, default=False
@@ -584,9 +583,7 @@ class Rack(db.Model):
         return f"<Rack {self.rack_number} (Match {self.match_id})>"
 
 
-class MatchResult(
-    db.Model
-):  # TODO: se si fa una classe Referto per i rack allora si potrebbe fare una gerarchia con referto e sottoclassi per rack e match? da verificare
+class MatchResult(db.Model):
     """Tracking of match results submitted by players."""
 
     __tablename__ = "match_result"
@@ -625,8 +622,7 @@ class TrioMatch(db.Model):
     current_player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     waiting_player_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    # Punteggi individuali nel trio
-    # TODO: se si astrae Score allora qui va modificato
+    # Punteggi individuali nel trio (vedi models/match/score.py per value objects)
     player1_racks = db.Column(db.Integer, default=0)
     player2_racks = db.Column(db.Integer, default=0)
     player3_racks = db.Column(db.Integer, default=0)
@@ -635,7 +631,7 @@ class TrioMatch(db.Model):
     is_completed = db.Column(db.Boolean, default=False)
     winner_id = db.Column(
         db.Integer, db.ForeignKey("user.id")
-    )  # TODO: non e' detto che esista un winner
+    )  # Nel biliardo c'è sempre un vincitore (primo a 2 rack)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
