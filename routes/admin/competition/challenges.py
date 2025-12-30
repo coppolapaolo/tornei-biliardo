@@ -225,7 +225,7 @@ def get_available_challenges_for_gara(gara_id):
     """Get available challenges for selection, excluding those already added
     to the gara (AJAX endpoint)."""
     from models.challenge import Challenge
-    from models.challenge.gara_challenge_service import GaraChallengeService
+    from models.competition.gara_challenge_service import GaraChallengeService
 
     try:
         # Get all active challenges

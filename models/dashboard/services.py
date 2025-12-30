@@ -645,8 +645,8 @@ class DashboardService:
         user_id: int, selected_campionato: Optional[Campionato]
     ) -> dict:
         """Build challenge sections for user."""
-        from ..challenge.gara_challenge_service import GaraChallengeService
-        from ..challenge.gara_challenge_models import GaraChallenge
+        from ..competition.gara_challenge_service import GaraChallengeService
+        from ..competition.gara_challenge import GaraChallenge
 
         available_challenges = []
         player_challenge_progress = {}

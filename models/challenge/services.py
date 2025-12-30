@@ -426,7 +426,7 @@ class ChallengeService:
         # Controlla relazioni gara-challenge se il modello esiste
         has_gara_usage = False
         try:
-            from .gara_challenge_models import GaraChallenge
+            from models.competition.gara_challenge import GaraChallenge
 
             has_gara_usage = (
                 db.session.query(GaraChallenge)

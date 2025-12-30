@@ -9,7 +9,7 @@ from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus
 from models.competition.services import GaraService
 from models.challenge.models import Challenge
-from models.challenge.gara_challenge_models import GaraChallenge
+from models.competition.gara_challenge import GaraChallenge
 from utils.image_paths import ImagePathManager
 
 

@@ -19,7 +19,7 @@ from . import player_bp
 @login_required
 def challenge_detail(gara_challenge_id):
     """Show challenge detail page for players"""
-    from models.challenge.gara_challenge_models import GaraChallenge
+    from models.competition.gara_challenge import GaraChallenge
 
     gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
     if not gara_challenge:
@@ -35,7 +35,7 @@ def challenge_detail(gara_challenge_id):
             abort(403, "Non hai accesso a questa challenge")
 
     # Get user progress for this challenge's gara
-    from models.challenge.gara_challenge_service import GaraChallengeService
+    from models.competition.gara_challenge_service import GaraChallengeService
 
     progress = GaraChallengeService.get_user_gara_challenge_progress(
         gara_challenge.gara_id, current_user.id
@@ -65,8 +65,8 @@ def challenge_detail(gara_challenge_id):
 @login_required
 def record_challenge_attempt(gara_challenge_id):
     """Record a challenge attempt by the player"""
-    from models.challenge.gara_challenge_models import GaraChallenge
-    from models.challenge.gara_challenge_service import GaraChallengeService
+    from models.competition.gara_challenge import GaraChallenge
+    from models.competition.gara_challenge_service import GaraChallengeService
 
     try:
         data = request.get_json() if request.is_json else request.form.to_dict()

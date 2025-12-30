@@ -39,7 +39,7 @@ class AmalfiChallengeByeService:
             bool: True if bye match was found and updated, False otherwise
         """
         try:
-            from models.challenge.gara_challenge_models import GaraChallengeAttempt
+            from models.competition.gara_challenge import GaraChallengeAttempt
             from models.match.models import Match
 
             # Get the completed challenge attempt
@@ -86,7 +86,7 @@ class AmalfiChallengeByeService:
             bool: True if this challenge is replacing a bye, False otherwise
         """
         try:
-            from models.challenge.gara_challenge_models import GaraChallengeAttempt
+            from models.competition.gara_challenge import GaraChallengeAttempt
             from models.match.models import Match
 
             attempt = db.session.get(GaraChallengeAttempt, attempt_id)
@@ -119,7 +119,7 @@ class AmalfiChallengeByeService:
             Optional[int]: Challenge score if found, None otherwise
         """
         try:
-            from models.challenge.gara_challenge_models import GaraChallengeAttempt, GaraChallenge
+            from models.competition.gara_challenge import GaraChallengeAttempt, GaraChallenge
 
             # Find completed challenge attempt for this user/round
             attempt = (
