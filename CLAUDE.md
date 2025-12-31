@@ -318,7 +318,7 @@ pytest tests/new/ -n auto
 - **[docs/SPECIFICHE.md](docs/SPECIFICHE.md)**: Complete platform requirements (Italian)
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
 - **[docs/UI_CONVENTIONS.md](docs/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
-- **[docs/decisions/](docs/decisions/)**: Architecture Decision Records (ADR)
+- **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
 
 ---
 
@@ -331,16 +331,19 @@ pytest tests/new/ -n auto
 
 ---
 
-## 🔧 AUDIT IN CORSO
+## ✅ AUDIT COMPLETATO (31 Dicembre 2025)
 
-Vedi `docs/AUDIT_REFACTORING_PLAN.md` per il piano completo.
+14 sprint completati con risultato finale: **0 FAIL, 0 WARNING**.
 
-### Priorità Immediate (P0)
-1. Consolidare docs/decisions/ in docs/adr/
-2. Aggiornare README ADR
-3. Aggiungere coverage.json a .gitignore
-4. Rimuovere riferimento admin_backup.py
-5. Aggiornare ADR-001 (amalfi migrato)
+Vedi `docs/AUDIT_REFACTORING_PLAN.md` per il piano completo e `docs/TODO_BACKLOG.md` per lo storico.
+
+### Metriche Finali
+| Metrica | Iniziale | Finale |
+|---------|----------|--------|
+| TODO comments | 28 | 7 (P3 minor) |
+| File > 1000 linee | 2 | 1 |
+| Import circolari | 14 | 13 |
+| Pyright errors | 0 | 0 |
 
 ### Comandi di Verifica
 ```bash
