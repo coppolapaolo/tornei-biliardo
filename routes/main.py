@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user, logout_user
 from datetime import date
-from models import db, Campionato, Gara, Classification, User, Inscription, Match
+from models import db, Campionato, Gara, User, Inscription, Match
 from config import Config
 
 
@@ -47,6 +47,9 @@ def index():
         return render_template("no_campionato.html")
 
     # Raccogli dati per TUTTI i campionati attivi
+    from models.campionato.services import TournamentService
+    from types import SimpleNamespace
+
     tournaments_data = []
     for campionato in active_campionatos:
         # Prossime gare per questo campionato
@@ -59,43 +62,29 @@ def index():
             .all()
         )
 
-        # Classifica generale per questo campionato (top 5)
-        top_classifications = (
-            Classification.query.filter(Classification.campionato_id == campionato.id)
-            .order_by(Classification.position)
-            .limit(5)
-            .all()
+        # Classifica generale per questo campionato usando TournamentService
+        # Questo gestisce correttamente tutti i tipi: Amalfi, Random, Points-based
+        campionato_service = TournamentService()
+        general_classification = campionato_service.calculate_general_classification(
+            campionato.id
         )
 
-        # Se non c'è classifica generale, gara a prendere la classifica della gara più recente
-        if not top_classifications and campionato.campionato_type == "Amalfi":
-            from models.classification.models import RoundClassification
-            from models.status_enum import GaraStatus
-
-            # Trova la gara completata più recente
-            latest_completed_gara = (
-                Gara.query.filter(
-                    Gara.campionato_id == campionato.id,
-                    Gara.status == GaraStatus.COMPLETED.value,
-                )
-                .order_by(Gara.date.desc())
-                .first()
+        # Trasforma il risultato nel formato atteso dal template
+        # Il template si aspetta oggetti con: position, user.username, total_matches_won/total_rack_difference
+        top_classifications = []
+        for position, player_data in general_classification[:5]:  # Top 5
+            # Crea un oggetto che il template può usare
+            classification_obj = SimpleNamespace(
+                position=position,
+                user=SimpleNamespace(username=player_data.get("username", "N/A")),
+                total_matches_won=player_data.get("total_matches_won", 0),
+                matches_won=player_data.get("total_matches_won", 0),
+                # Per Random campionati, total_rack_difference contiene i rack totali
+                total_rack_difference=player_data.get("total_rack_difference", 0),
+                # Punti spareggio (SSR) per Random campionati
+                total_spot_shot_wins=player_data.get("total_spot_shot_wins", 0),
             )
-
-            if latest_completed_gara:
-                # Prendi la classifica dell'ultimo turno di questa gara
-                top_classifications = (
-                    RoundClassification.query.filter(
-                        RoundClassification.gara_id == latest_completed_gara.id
-                    )
-                    .filter(
-                        RoundClassification.round_number
-                        == latest_completed_gara.current_round
-                    )
-                    .order_by(RoundClassification.position)
-                    .limit(5)
-                    .all()
-                )
+            top_classifications.append(classification_obj)
 
         tournaments_data.append(
             {
@@ -200,6 +189,8 @@ def public_campionatos_list():
 @main_bp.route("/campionato/<int:campionato_id>/public")
 def campionato_detail_public(campionato_id):
     """Dettaglio campionato pubblico - visibile ai guest"""
+    from models.campionato.services import TournamentService
+
     campionato = db.session.get(Campionato, campionato_id)
     if campionato is None:
         abort(404)
@@ -209,18 +200,24 @@ def campionato_detail_public(campionato_id):
         Gara.query.filter_by(campionato_id=campionato_id).order_by(Gara.number).all()
     )
 
-    # Get overall classification
-    classifications = (
-        Classification.query.filter_by(campionato_id=campionato_id)
-        .order_by(Classification.position)
-        .all()
+    # Calculate general classification using the service (handles Amalfi, Random, etc.)
+    campionato_service = TournamentService()
+    general_classification = campionato_service.calculate_general_classification(
+        campionato_id
     )
+
+    # Determine last completed gara number
+    last_completed_gara_number = None
+    completed_garas = [g for g in garas if g.status == "completed"]
+    if completed_garas:
+        last_completed_gara_number = max(g.number for g in completed_garas)
 
     return render_template(
         "public/campionato_detail.html",
         campionato=campionato,
         garas=garas,
-        classifications=classifications,
+        general_classification=general_classification,
+        last_completed_gara_number=last_completed_gara_number,
     )
 
 

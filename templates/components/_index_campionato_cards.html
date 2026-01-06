@@ -62,14 +62,19 @@
                                                 </small>
                                             {% endif %}
                                             
-                                            {% if current_user.is_authenticated and gara.can_inscribe() and not gara.is_user_inscribed(current_user.id) %}
-                                                <br>
-                                                <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" class="mt-2">
-                                                    <button type="submit" class="btn btn-primary btn-sm">
-                                                        <i class="fas fa-user-plus"></i> Iscriviti
-                                                    </button>
-                                                </form>
-                                            {% endif %}
+                                            <div class="mt-2">
+                                                <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i> Dettagli
+                                                </a>
+                                                {% if current_user.is_authenticated and gara.can_inscribe() and not gara.is_user_inscribed(current_user.id) %}
+                                                    <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-user-plus"></i> Iscriviti
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -89,7 +94,7 @@
                             <div class="col-md-6">
                                 <small class="text-muted">
                                     <strong>Tipo:</strong> {{ campionato.campionato_type }}<br>
-                                    <strong>Gare totali:</strong> {{ campionato.provas|length }}
+                                    <strong>Gare totali:</strong> {{ campionato.gare|length }}
                                 </small>
                             </div>
                             <div class="col-md-6">
@@ -124,7 +129,13 @@
                                             {{ classification.position }}. {{ classification.user.username }}
                                         </strong>
                                     </div>
-                                    <small class="text-muted">{{ classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won }} vittorie</small>
+                                    <small class="text-muted">
+                                        {% if campionato.campionato_type|lower == 'random' %}
+                                            {{ classification.total_rack_difference }} rack
+                                        {% else %}
+                                            {{ classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won }} vittorie
+                                        {% endif %}
+                                    </small>
                                 </div>
                             {% endfor %}
                         </div>

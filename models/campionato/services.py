@@ -705,6 +705,20 @@ class TournamentService(DomainService):
                 .all()
             )
 
+            # Per Random campionati, ottieni anche i punteggi SSR da GaraClassification
+            gara_ssr_scores: Dict[int, int] = {}
+            if campionato.campionato_type == "Random":
+                from models.classification.models import GaraClassification
+                gara_classifications = (
+                    db.session.query(GaraClassification)
+                    .filter_by(gara_id=gara.id)
+                    .all()
+                )
+                gara_ssr_scores = {
+                    gc.user_id: gc.spot_shot_wins or 0
+                    for gc in gara_classifications
+                }
+
             for classification in classifications:
                 user_id = classification.user_id
                 if user_id not in player_totals:
@@ -712,6 +726,7 @@ class TournamentService(DomainService):
                         "username": classification.user.username,
                         "total_matches_won": 0,
                         "total_rack_difference": 0,
+                        "total_spot_shot_wins": 0,
                         "participations": 0,
                     }
 
@@ -722,6 +737,10 @@ class TournamentService(DomainService):
                 player_totals[user_id]["total_rack_difference"] += (
                     classification.rack_difference or 0
                 )
+                # Aggiungi punteggio SSR per campionati Random
+                player_totals[user_id]["total_spot_shot_wins"] += (
+                    gara_ssr_scores.get(user_id, 0)
+                )
                 player_totals[user_id]["participations"] += 1
 
         # Per campionati Amalfi: ordina per match vinti (decrescente), poi per differenza rack (decrescente)
@@ -731,6 +750,16 @@ class TournamentService(DomainService):
                 key=lambda x: (
                     -x[1]["total_matches_won"],  # Prima i match vinti
                     -x[1]["total_rack_difference"],  # Poi la differenza rack
+                ),
+            )
+        elif campionato.campionato_type == "Random":
+            # Per campionati Random: ordina per rack totali (decrescente), poi punti SSR
+            # Nota: per strategia Random, rack_difference contiene i rack totali vinti
+            sorted_players = sorted(
+                player_totals.items(),
+                key=lambda x: (
+                    -x[1]["total_rack_difference"],  # Rack totali (stored in rack_difference for Random)
+                    -x[1]["total_spot_shot_wins"],  # Secondary: punti spareggio (SSR)
                 ),
             )
         else:

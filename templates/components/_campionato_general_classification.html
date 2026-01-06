@@ -16,6 +16,9 @@
                         {% if campionato.campionato_type|lower == 'amalfi' %}
                             <th width="15%">Match Vinti</th>
                             <th width="15%">Diff. Rack</th>
+                        {% elif campionato.campionato_type|lower == 'random' %}
+                            <th width="15%">Rack Totali</th>
+                            <th width="15%">Punti SSR</th>
                         {% else %}
                             <th width="15%">Punti Totali</th>
                             <th width="15%">Diff. Rack Tot.</th>
@@ -51,6 +54,17 @@
                                         <span class="text-danger">{{ player_data.total_rack_difference }}</span>
                                     {% else %}
                                         <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                            {% elif campionato.campionato_type|lower == 'random' %}
+                                <td>
+                                    <span class="badge bg-primary">{{ player_data.total_rack_difference }}</span>
+                                </td>
+                                <td>
+                                    {% if player_data.total_spot_shot_wins|default(0) > 0 %}
+                                        <span class="badge bg-warning">{{ player_data.total_spot_shot_wins }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
                             {% else %}
@@ -97,9 +111,11 @@
         </div>
         
         <div class="mt-3 text-muted small">
-            <i class="fas fa-info-circle"></i> 
-            {% if campionato.campionato_type == 'Amalfi' %}
+            <i class="fas fa-info-circle"></i>
+            {% if campionato.campionato_type|lower == 'amalfi' %}
                 Classifica generale Amalfi: ordinata per match vinti, poi per differenza rack totale.
+            {% elif campionato.campionato_type|lower == 'random' %}
+                Classifica generale Random: ordinata per rack totali, poi per punti spareggio (SSR).
             {% else %}
                 Classifica generale basata sui punti ottenuti in tutte le gare completate.
                 Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti.

@@ -211,6 +211,41 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Spareggio (SSR) -->
+<div class="modal fade" id="ssrModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title">
+          <i class="fas fa-balance-scale"></i> {{ _('Risolvi Spareggi') }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info mb-3">
+          <i class="fas fa-info-circle"></i>
+          {{ _('Ci sono parimerito nei primi 3 posti. Inserire il punteggio finale dello Spot Shot Rally (SSR) per ogni giocatore.') }}
+          <br><small class="text-muted">{{ _('Punteggi più alti = posizione migliore') }}</small>
+        </div>
+
+        <form id="ssrForm">
+          <div id="ssrGroupsContainer">
+            <!-- Groups will be inserted here dynamically -->
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> {{ _('Annulla') }}
+        </button>
+        <button type="button" class="btn btn-primary" onclick="submitSsrScores()">
+          <i class="fas fa-check"></i> {{ _('Conferma e Termina Gara') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endif %}
 {% endblock %}
 
@@ -279,17 +314,170 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
         }
-      }).then(response => {
-        if (response.ok) {
-          location.reload();
-        } else {
-          response.text().then(text => {
-            alert({{ _("Errore durante la terminazione:")|tojson }} + ' ' + text);
-          });
-        }
-      });
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else if (data.needs_tiebreaker) {
+            // Show SSR modal for tiebreaker resolution
+            showSsrModal(garaId, data.tiebreakers);
+          } else {
+            alert({{ _("Errore durante la terminazione:")|tojson }} + ' ' + (data.error || data.message));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert({{ _("Errore durante la terminazione della gara")|tojson }});
+        });
     }
+  }
+
+  function showSsrModal(garaId, tiebreakers) {
+    const modal = document.getElementById('ssrModal');
+    const form = document.getElementById('ssrForm');
+    const groupsContainer = document.getElementById('ssrGroupsContainer');
+
+    // Store gara ID in form data attribute
+    form.dataset.garaId = garaId;
+
+    // Clear previous content
+    while (groupsContainer.firstChild) {
+      groupsContainer.removeChild(groupsContainer.firstChild);
+    }
+
+    const positionIcons = {1: 'text-warning', 2: 'text-secondary', 3: 'text-danger'};
+    const i18n = {
+      tieFor: {{ _("Pari merito per il")|tojson }},
+      place: {{ _("posto")|tojson }},
+      ssrPoints: {{ _("Punti SSR")|tojson }}
+    };
+
+    // Build UI for each tiebreaker group using safe DOM methods
+    tiebreakers.forEach(function(group) {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'mb-4';
+
+      // Header
+      const header = document.createElement('h6');
+      header.className = 'border-bottom pb-2 mb-3';
+
+      const trophy = document.createElement('i');
+      trophy.className = 'fas fa-trophy ' + (positionIcons[group.position] || '');
+      header.appendChild(trophy);
+
+      const headerText = document.createTextNode(' ' + i18n.tieFor + ' ' + group.position + '° ' + i18n.place + ' ');
+      header.appendChild(headerText);
+
+      const rackInfo = document.createElement('small');
+      rackInfo.className = 'text-muted';
+      rackInfo.textContent = '(' + group.rack_totali + ' rack)';
+      header.appendChild(rackInfo);
+
+      groupDiv.appendChild(header);
+
+      // Player inputs
+      group.players.forEach(function(player) {
+        const row = document.createElement('div');
+        row.className = 'row mb-2 align-items-center';
+
+        const nameCol = document.createElement('div');
+        nameCol.className = 'col-6';
+        const nameStrong = document.createElement('strong');
+        nameStrong.textContent = player.username;
+        nameCol.appendChild(nameStrong);
+
+        const inputCol = document.createElement('div');
+        inputCol.className = 'col-6';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'form-control ssr-score-input';
+        input.name = 'ssr_' + player.user_id;
+        input.dataset.userId = player.user_id;
+        input.min = '1';
+        input.step = '1';
+        input.placeholder = i18n.ssrPoints;
+        input.required = true;
+        if (player.current_ssr_score) {
+          input.value = player.current_ssr_score;
+        }
+        inputCol.appendChild(input);
+
+        row.appendChild(nameCol);
+        row.appendChild(inputCol);
+        groupDiv.appendChild(row);
+      });
+
+      groupsContainer.appendChild(groupDiv);
+    });
+
+    // Show modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+  }
+
+  function submitSsrScores() {
+    const form = document.getElementById('ssrForm');
+    const garaId = form.dataset.garaId;
+    const inputs = document.querySelectorAll('.ssr-score-input');
+
+    // Collect scores
+    const scores = {};
+    let hasErrors = false;
+
+    inputs.forEach(function(input) {
+      const userId = input.dataset.userId;
+      const value = parseInt(input.value, 10);
+
+      if (isNaN(value) || value <= 0) {
+        input.classList.add('is-invalid');
+        hasErrors = true;
+      } else {
+        input.classList.remove('is-invalid');
+        scores[userId] = value;
+      }
+    });
+
+    if (hasErrors) {
+      alert({{ _("Tutti i punteggi devono essere numeri interi positivi")|tojson }});
+      return;
+    }
+
+    // Check for duplicates within each group
+    const scoreValues = Object.values(scores);
+    if (new Set(scoreValues).size !== scoreValues.length) {
+      alert({{ _("I punteggi devono essere tutti diversi per risolvere il parimerito")|tojson }});
+      return;
+    }
+
+    // Submit scores
+    fetch(`/admin/gara/${garaId}/save_ssr_scores`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ scores: scores })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal and reload
+          const modal = bootstrap.Modal.getInstance(document.getElementById('ssrModal'));
+          if (modal) modal.hide();
+          location.reload();
+        } else if (data.needs_tiebreaker) {
+          // Still have unresolved tiebreakers - update modal
+          showSsrModal(garaId, data.tiebreakers);
+          alert(data.message);
+        } else {
+          alert({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert({{ _("Errore durante il salvataggio dei punteggi")|tojson }});
+      });
   }
 
   function resetLastRound(garaId, roundNumber) {
