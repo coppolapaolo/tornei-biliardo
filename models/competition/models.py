@@ -287,8 +287,27 @@ class Gara(db.Model):
     def get_real_status(self):
         """Restituisce lo status reale, considerando anche round e iscrizioni"""
         if self.status == GaraStatus.PLAYING.value:
-            # Se tutti i match del round corrente sono finiti
             matches_list = getattr(self, "matches", []) or []
+
+            # First check: Are ALL matches across ALL rounds completed?
+            # This handles cases where current_round wasn't updated properly
+            if matches_list:
+                all_matches_completed = all(
+                    m.status == MatchStatus.COMPLETED.value for m in matches_list
+                )
+                # Check if we have matches for all rounds
+                rounds_with_matches = set(
+                    m.round_number for m in matches_list if hasattr(m, "round_number")
+                )
+                all_rounds_have_matches = (
+                    len(rounds_with_matches) == self.rounds_count
+                    and max(rounds_with_matches) == self.rounds_count
+                )
+
+                if all_matches_completed and all_rounds_have_matches:
+                    return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
+
+            # Fallback: Check current round status
             current_round_matches = [
                 m
                 for m in matches_list
