@@ -185,40 +185,71 @@ def gara_detail(gara_id):
     latest_round_with_classification = None
 
     if gara.current_round > 0:
-        # Helper function to check if a round is completed
-        def is_round_completed(round_number):
-            round_matches = Match.query.filter_by(
-                gara_id=gara_id, round_number=round_number
-            ).all()
-            if not round_matches:
-                return False
-            return all(
-                match.status == MatchStatus.COMPLETED.value for match in round_matches
-            )
+        # For Random strategy: show overall classification if ANY matches are completed
+        # For other strategies: show classification only for completed rounds
+        if gara.matchmaking_strategy == "random":
+            # Random: calcola classifica complessiva da tutti i match completati
+            completed_count = Match.query.filter_by(
+                gara_id=gara_id, status=MatchStatus.COMPLETED.value
+            ).count()
 
-        # Cerca la classificazione del turno completato più recente
-        for round_num in range(gara.current_round, 0, -1):
-            if is_round_completed(round_num):
-                # SEMPRE ricalcola la classificazione per garantire dati
-                # aggiornati. Necessario perché i risultati potrebbero essere
-                # stati modificati dopo il calcolo iniziale
+            if completed_count > 0:
+                # Usa il numero massimo di turni (query dal database) per la classifica complessiva
+                from sqlalchemy import func
+                max_round = db.session.query(func.max(Match.round_number)).filter(
+                    Match.gara_id == gara_id
+                ).scalar() or gara.current_round
                 RoundClassification.calculate_classification_after_round(
-                    gara_id, round_num
+                    gara_id, max_round
                 )
-
-                # Carica la classificazione appena ricalcolata
                 classification = (
                     RoundClassification.query.filter_by(
-                        gara_id=gara_id, round_number=round_num
+                        gara_id=gara_id, round_number=max_round
                     )
                     .order_by(RoundClassification.position)
                     .all()
                 )
-
                 if classification:
                     current_round_classification = classification
-                    latest_round_with_classification = round_num
-                    break
+                    # For Random, use 0 to indicate overall classification
+                    latest_round_with_classification = 0
+        else:
+            # Amalfi/other strategies: classification per completed round
+            def is_round_completed(round_number):
+                round_matches = Match.query.filter_by(
+                    gara_id=gara_id, round_number=round_number
+                ).all()
+                if not round_matches:
+                    return False
+                # Exclude bye matches from completion check
+                return all(
+                    match.status == MatchStatus.COMPLETED.value or match.is_bye
+                    for match in round_matches
+                )
+
+            # Cerca la classificazione del turno completato più recente
+            for round_num in range(gara.current_round, 0, -1):
+                if is_round_completed(round_num):
+                    # SEMPRE ricalcola la classificazione per garantire dati
+                    # aggiornati. Necessario perché i risultati potrebbero essere
+                    # stati modificati dopo il calcolo iniziale
+                    RoundClassification.calculate_classification_after_round(
+                        gara_id, round_num
+                    )
+
+                    # Carica la classificazione appena ricalcolata
+                    classification = (
+                        RoundClassification.query.filter_by(
+                            gara_id=gara_id, round_number=round_num
+                        )
+                        .order_by(RoundClassification.position)
+                        .all()
+                    )
+
+                    if classification:
+                        current_round_classification = classification
+                        latest_round_with_classification = round_num
+                        break
 
     # Get challenge data
     challenge_classification = None
@@ -263,6 +294,11 @@ def gara_detail(gara_id):
 
         available_tables = TableAssignmentService.get_table_names(gara.location)
 
+    # Get forfeit user IDs for visual indication
+    forfeit_user_ids = set(
+        insc.user_id for insc in inscriptions if insc.is_forfeit
+    )
+
     return render_template(
         "gara_detail.html",  # Template unificato
         gara=gara,
@@ -283,4 +319,5 @@ def gara_detail(gara_id):
         match_can_modify=match_can_modify,
         discipline_choices=Discipline.get_choices(),
         available_tables=available_tables,
+        forfeit_user_ids=forfeit_user_ids,
     )

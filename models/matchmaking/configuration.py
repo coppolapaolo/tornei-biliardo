@@ -21,7 +21,7 @@ Business Context:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 
 class MatchmakingStrategy(str, Enum):
@@ -42,6 +42,136 @@ class OddNumberPolicy(str, Enum):
     BYE = "bye"
     BYE_WITH_CHALLENGE = "bye_with_challenge"
     TRIO = "trio"
+
+
+# =============================================================================
+# Strategy Behavior Configuration
+# =============================================================================
+# These enums and config define behavioral differences between strategies
+
+
+class ClassificationType(str, Enum):
+    """How classification is structured."""
+
+    PER_ROUND = "per_round"  # Separate classification per round (Amalfi)
+    OVERALL = "overall"  # Single cumulative classification (Random)
+
+
+class ClassificationCriteria(str, Enum):
+    """What determines ranking in classification."""
+
+    MATCH_WINS = "match_wins"  # Primary: wins, secondary: rack difference (Amalfi)
+    RACKS_WON = "racks_won"  # Only total racks won count (Random)
+
+
+class ClassificationUpdateTiming(str, Enum):
+    """When classification is recalculated."""
+
+    ON_ROUND_COMPLETE = "round_complete"  # After all round matches finish (Amalfi)
+    ON_MATCH_COMPLETE = "match_complete"  # After each individual match (Random)
+
+
+@dataclass(frozen=True)
+class StrategyBehaviorConfig:
+    """Defines behavioral differences between matchmaking strategies.
+
+    This configuration captures how different strategies behave regarding:
+    - Round locking (can previous rounds be modified?)
+    - Classification (structure, criteria, update timing)
+    - Bye/odd number handling defaults
+    - Match reset permissions
+
+    Design: Frozen dataclass for immutability. Use STRATEGY_BEHAVIORS registry
+    to access configuration for each strategy.
+    """
+
+    # Round locking
+    supports_round_locking: bool
+
+    # Classification behavior
+    classification_type: ClassificationType
+    classification_criteria: ClassificationCriteria
+    classification_update: ClassificationUpdateTiming
+
+    # Bye/odd number handling - function that takes distance and returns default policy
+    default_odd_policy_fn: Callable[[int], OddNumberPolicy]
+
+    # Trio constraint
+    trio_max_distance: int = 7
+
+    def get_default_odd_policy(self, distance: int) -> OddNumberPolicy:
+        """Get the default odd number policy based on distance."""
+        return self.default_odd_policy_fn(distance)
+
+    def can_use_trio(self, distance: int) -> bool:
+        """Check if trio matches are allowed for this distance."""
+        return distance <= self.trio_max_distance
+
+
+def _amalfi_odd_policy(distance: int) -> OddNumberPolicy:
+    """Amalfi default: always BYE (X)."""
+    return OddNumberPolicy.BYE
+
+
+def _random_odd_policy(distance: int) -> OddNumberPolicy:
+    """Random default: TRIO if distance <= 7, else BYE_WITH_CHALLENGE."""
+    if distance <= 7:
+        return OddNumberPolicy.TRIO
+    return OddNumberPolicy.BYE_WITH_CHALLENGE
+
+
+STRATEGY_BEHAVIORS: Dict[MatchmakingStrategy, StrategyBehaviorConfig] = {
+    MatchmakingStrategy.AMALFI: StrategyBehaviorConfig(
+        supports_round_locking=True,
+        classification_type=ClassificationType.PER_ROUND,
+        classification_criteria=ClassificationCriteria.MATCH_WINS,
+        classification_update=ClassificationUpdateTiming.ON_ROUND_COMPLETE,
+        default_odd_policy_fn=_amalfi_odd_policy,
+    ),
+    MatchmakingStrategy.RANDOM: StrategyBehaviorConfig(
+        supports_round_locking=False,
+        classification_type=ClassificationType.OVERALL,
+        classification_criteria=ClassificationCriteria.RACKS_WON,
+        classification_update=ClassificationUpdateTiming.ON_MATCH_COMPLETE,
+        default_odd_policy_fn=_random_odd_policy,
+    ),
+    MatchmakingStrategy.ROUND_ROBIN: StrategyBehaviorConfig(
+        supports_round_locking=True,
+        classification_type=ClassificationType.PER_ROUND,
+        classification_criteria=ClassificationCriteria.MATCH_WINS,
+        classification_update=ClassificationUpdateTiming.ON_ROUND_COMPLETE,
+        default_odd_policy_fn=_amalfi_odd_policy,
+    ),
+    MatchmakingStrategy.DIRECT_ELIMINATION: StrategyBehaviorConfig(
+        supports_round_locking=True,
+        classification_type=ClassificationType.PER_ROUND,
+        classification_criteria=ClassificationCriteria.MATCH_WINS,
+        classification_update=ClassificationUpdateTiming.ON_ROUND_COMPLETE,
+        default_odd_policy_fn=_amalfi_odd_policy,
+    ),
+    MatchmakingStrategy.DOUBLE_KNOCKOUT: StrategyBehaviorConfig(
+        supports_round_locking=True,
+        classification_type=ClassificationType.PER_ROUND,
+        classification_criteria=ClassificationCriteria.MATCH_WINS,
+        classification_update=ClassificationUpdateTiming.ON_ROUND_COMPLETE,
+        default_odd_policy_fn=_amalfi_odd_policy,
+    ),
+}
+
+
+def get_strategy_behavior(strategy: MatchmakingStrategy) -> StrategyBehaviorConfig:
+    """Get behavior configuration for a strategy.
+
+    Args:
+        strategy: The matchmaking strategy
+
+    Returns:
+        StrategyBehaviorConfig for the strategy
+
+    Raises:
+        KeyError: If strategy not found in registry
+    """
+    return STRATEGY_BEHAVIORS[strategy]
 
 
 @dataclass

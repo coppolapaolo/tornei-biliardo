@@ -570,6 +570,24 @@ class RackService:
         if hasattr(match, "validated_by_admin"):
             match.validated_by_admin = False
 
+        # Clear forfeit flags on inscriptions for both players
+        # This allows the player to continue competing after match reset
+        from models.competition.models import Inscription
+        for player_id in [match.player1_id, match.player2_id]:
+            if player_id:  # player2_id could be None for bye matches
+                inscription = (
+                    db.session.query(Inscription)
+                    .filter_by(
+                        user_id=player_id,
+                        gara_id=match.gara_id,
+                        is_forfeit=True
+                    )
+                    .first()
+                )
+                if inscription:
+                    inscription.is_forfeit = False
+                    inscription.forfeit_at = None
+
         db.session.add(match)
 
     @staticmethod

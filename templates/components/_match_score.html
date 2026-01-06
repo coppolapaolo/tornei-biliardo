@@ -8,7 +8,7 @@
         </h2>
         <h5>{{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }}</h5>
         {% if match.gara.is_race_to %}
-        <small class="text-muted">Vince con {{ match.gara.get_winning_score() }}</small>
+        <small class="text-muted">Vince con {{ match.gara.distance }}</small>
         {% endif %}
     </div>
     <div class="col-2">
@@ -20,7 +20,7 @@
         </h2>
         <h5>{{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) }}</h5>
         {% if match.gara.is_race_to %}
-        <small class="text-muted">Vince con {{ match.gara.get_winning_score() }}</small>
+        <small class="text-muted">Vince con {{ match.gara.distance }}</small>
         {% endif %}
     </div>
 </div>

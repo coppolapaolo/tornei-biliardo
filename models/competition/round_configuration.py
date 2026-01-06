@@ -85,7 +85,7 @@ class RoundConfiguration(BaseModel, TimestampMixin):
         if distance is not None:
             config.distance = distance
         if best_of is not None:
-            config.is_race_to = best_of
+            config.best_of = best_of
         if notes is not None:
             config.notes = notes
 
@@ -106,7 +106,7 @@ class RoundConfiguration(BaseModel, TimestampMixin):
 
     def get_effective_best_of(self, fallback_best_of: bool) -> bool:
         """Get the effective best_of mode for this round, with fallback."""
-        return self.is_race_to if self.is_race_to is not None else fallback_best_of
+        return self.best_of if self.best_of is not None else fallback_best_of
 
     def has_overrides(self) -> bool:
         """Check if this configuration has any overrides from gara defaults."""
@@ -114,7 +114,7 @@ class RoundConfiguration(BaseModel, TimestampMixin):
             [
                 self.discipline is not None,
                 self.distance is not None,
-                self.is_race_to is not None,
+                self.best_of is not None,
             ]
         )
 

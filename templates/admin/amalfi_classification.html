@@ -1,13 +1,29 @@
 {% extends "base.html" %}
 
-{% block title %}Classifica Turno {{ round_number }} - Gara {{ gara.number }}{% endblock %}
+{% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
+
+{% block title %}
+    {% if is_random_strategy %}
+        Classifica - {{ gara.get_display_name() }}
+    {% else %}
+        Classifica Turno {{ round_number }} - Gara {{ gara.number }}
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1><i class="fas fa-trophy"></i> Classifica Turno {{ round_number }}</h1>
+        {% if is_random_strategy %}
+            <h1><i class="fas fa-trophy"></i> Classifica</h1>
+        {% else %}
+            <h1><i class="fas fa-trophy"></i> Classifica Turno {{ round_number }}</h1>
+        {% endif %}
         <p class="text-muted mb-0">
-            {{ gara.campionato.name }} - Gara {{ gara.number }} - {{ gara.date|date_local }}
+            {% if gara.campionato %}
+                {{ gara.campionato.name }} - Gara {{ gara.number }} - {{ gara.date|date_local }}
+            {% else %}
+                {{ gara.name }} - {{ gara.date|date_local }}
+            {% endif %}
         </p>
     </div>
     <div>
@@ -17,15 +33,21 @@
     </div>
 </div>
 
-<!-- Info Algoritmo Amalfi -->
+<!-- Info Algoritmo -->
 <div class="row mb-4">
-    <div class="col-md-8">
-        {% include "components/_amalfi_algorithm_info.html" %}
-    </div>
-    <div class="col-md-4">
-        <!-- Navigation Turni -->
-        {% include "components/_round_navigation.html" %}
-    </div>
+    {% if is_random_strategy %}
+        <div class="col-md-12">
+            {% include "components/_strategy_algorithm_info.html" %}
+        </div>
+    {% else %}
+        <div class="col-md-8">
+            {% include "components/_amalfi_algorithm_info.html" %}
+        </div>
+        <div class="col-md-4">
+            <!-- Navigation Turni (solo per strategie con round locking) -->
+            {% include "components/_round_navigation.html" %}
+        </div>
+    {% endif %}
 </div>
 
 <!-- Classifica Dettagliata -->

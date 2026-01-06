@@ -20,9 +20,9 @@
         round_matches | length %}
 
         {% if has_playing or has_pending %}
-        {% set _ = active_rounds.append(round_num) %}
+        {% set _void = active_rounds.append(round_num) %}
         {% elif all_completed %}
-        {% set _ = completed_rounds.append(round_num) %}
+        {% set _void = completed_rounds.append(round_num) %}
         {% endif %}
         {% endif %}
         {% endfor %}
@@ -32,16 +32,16 @@
         {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
         <h6 class="mt-3 mb-2">{{ _('Turno %(num)s', num=round_num) }}</h6>
         <div class="table-responsive">
-            <table class="table table-sm">
+            <table class="table table-sm" style="table-layout: fixed;">
                 <thead>
                     <tr>
-                        <th>{{ _('Giocatore 1') }}</th>
-                        <th>vs</th>
-                        <th>{{ _('Giocatore 2') }}</th>
-                        <th>{{ _('Risultato') }}</th>
-                        <th>{{ _('Stato') }}</th>
-                        <th>{{ _('Tavolo') }}</th>
-                        {% if user_can_manage %}<th>{{ _('Azioni') }}</th>{% endif %}
+                        <th style="width: 20%;">{{ _('Giocatore 1') }}</th>
+                        <th style="width: 5%;" class="text-center">vs</th>
+                        <th style="width: 20%;">{{ _('Giocatore 2') }}</th>
+                        <th style="width: 12%;">{{ _('Risultato') }}</th>
+                        <th style="width: 13%;">{{ _('Stato') }}</th>
+                        <th style="width: 15%;">{{ _('Tavolo') }}</th>
+                        {% if user_can_manage %}<th style="width: 15%;">{{ _('Azioni') }}</th>{% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -58,16 +58,16 @@
         {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
         <h6 class="mt-3 mb-2">{{ _('Turno %(num)s', num=round_num) }}</h6>
         <div class="table-responsive">
-            <table class="table table-sm">
+            <table class="table table-sm" style="table-layout: fixed;">
                 <thead>
                     <tr>
-                        <th>{{ _('Giocatore 1') }}</th>
-                        <th>vs</th>
-                        <th>{{ _('Giocatore 2') }}</th>
-                        <th>{{ _('Risultato') }}</th>
-                        <th>{{ _('Stato') }}</th>
-                        <th>{{ _('Tavolo') }}</th>
-                        {% if user_can_manage %}<th>{{ _('Azioni') }}</th>{% endif %}
+                        <th style="width: 20%;">{{ _('Giocatore 1') }}</th>
+                        <th style="width: 5%;" class="text-center">vs</th>
+                        <th style="width: 20%;">{{ _('Giocatore 2') }}</th>
+                        <th style="width: 12%;">{{ _('Risultato') }}</th>
+                        <th style="width: 13%;">{{ _('Stato') }}</th>
+                        <th style="width: 15%;">{{ _('Tavolo') }}</th>
+                        {% if user_can_manage %}<th style="width: 15%;">{{ _('Azioni') }}</th>{% endif %}
                     </tr>
                 </thead>
                 <tbody>

@@ -52,6 +52,14 @@ from .bootstrap import get_matchmaking_service, get_registry
 from .registry import EngineRegistry, PairingContext
 from .strategies.base import Pairing, ValidationResult, PairingStrategy, BaseStrategy
 from .amalfi_challenge_bye_service import AmalfiChallengeByeService
+from .configuration import (
+    ClassificationType,
+    ClassificationCriteria,
+    ClassificationUpdateTiming,
+    StrategyBehaviorConfig,
+    STRATEGY_BEHAVIORS,
+    get_strategy_behavior,
+)
 
 __all__ = [
     "MatchmakingService",
@@ -65,4 +73,11 @@ __all__ = [
     "PairingStrategy",
     "BaseStrategy",
     "AmalfiChallengeByeService",
+    # Strategy behavior configuration
+    "ClassificationType",
+    "ClassificationCriteria",
+    "ClassificationUpdateTiming",
+    "StrategyBehaviorConfig",
+    "STRATEGY_BEHAVIORS",
+    "get_strategy_behavior",
 ]

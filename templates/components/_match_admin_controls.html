@@ -4,54 +4,63 @@
         <h6><i class="fas fa-user-shield"></i> {% if current_user.is_admin %}{{ _('Controlli Amministratore') }}{% else %}{{ _('Controlli Direttore') }}{% endif %}</h6>
     </div>
     <div class="card-body">
-        {# Quick Rack Entry Section - Always shown for admin/director #}
-        {% if match.status != 'completed' and not match.is_bye %}
-        <!-- Form Risultato Diretto -->
-        <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
-            class="mb-3" onsubmit="return validateScoreForm(this)"
-            data-is-race-to="{{ 'true' if match.gara.is_race_to else 'false' }}"
-            data-winning-score="{{ match.gara.get_winning_score() }}">
-            <h6>{{ _('Imposta Risultato') }}</h6>
-            <div class="row">
-                <div class="col-4">
-                    <label class="form-label">{{ match.player1.username }}</label>
-                    <input type="number" class="form-control" name="player1_score" min="0"
-                        max="{{ match.gara.distance }}" value="{{ match.player1_score }}" required>
+        {# Score controls require table assignment #}
+        {% if match.table_assignment %}
+            {# Quick Rack Entry Section - Only for matches with table assigned #}
+            {% if match.status != 'completed' and not match.is_bye %}
+            <!-- Form Risultato Diretto -->
+            <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
+                class="mb-3" onsubmit="return validateScoreForm(this)"
+                data-is-race-to="{{ 'true' if match.gara.is_race_to else 'false' }}"
+                data-winning-score="{{ match.gara.distance }}">
+                <h6>{{ _('Imposta Risultato') }}</h6>
+                <div class="row">
+                    <div class="col-4">
+                        <label class="form-label">{{ match.player1.username }}</label>
+                        <input type="number" class="form-control" name="player1_score" min="0"
+                            max="{{ match.gara.distance }}" value="{{ match.player1_score }}" required>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">{{ match.player2.username }}</label>
+                        <input type="number" class="form-control" name="player2_score" min="0"
+                            max="{{ match.gara.distance }}" value="{{ match.player2_score }}" required>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
+                        </button>
+                    </div>
                 </div>
-                <div class="col-4">
-                    <label class="form-label">{{ match.player2.username }}</label>
-                    <input type="number" class="form-control" name="player2_score" min="0"
-                        max="{{ match.gara.distance }}" value="{{ match.player2_score }}" required>
-                </div>
-                <div class="col-4">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-warning w-100">
-                        <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
-                    </button>
-                </div>
-            </div>
-            <small class="text-muted">
-                {{ match.gara.distance_config|format_distance }}:
-                {% if match.gara.is_race_to %}
-                {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.gara.get_winning_score(), max=match.gara.distance) }}
-                {% else %}
-                {{ _('la somma dei rack deve essere %(distance)s', distance=match.gara.distance) }}
-                {% endif %}
+                <small class="text-muted">
+                    {{ match.gara.distance_config|format_distance }}:
+                    {% if match.gara.is_race_to %}
+                    {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.gara.distance, max=match.gara.distance) }}
+                    {% else %}
+                    {{ _('la somma dei rack deve essere %(distance)s', distance=match.gara.distance) }}
+                    {% endif %}
+                </small>
+            </form>
+
+            {# Validate Result Button - Show when match has winner but not validated/completed #}
+            {% if match.winner_id and not match.validated_by_admin %}
+            <button class="btn btn-success w-100 mb-3" onclick="validateMatch({{ match.id }})">
+                <i class="fas fa-check-circle"></i> {{ _('Valida Risultato') }}
+            </button>
+            <small class="text-muted d-block mb-3">
+                <i class="fas fa-info-circle"></i> {{ _('Valida il risultato per completare la partita e liberare il tavolo') }}
             </small>
-        </form>
-
-        {# Validate Result Button - Show when match has winner but not validated/completed #}
-        {% if match.winner_id and not match.validated_by_admin %}
-        <button class="btn btn-success w-100 mb-3" onclick="validateMatch({{ match.id }})">
-            <i class="fas fa-check-circle"></i> {{ _('Valida Risultato') }}
-        </button>
-        <small class="text-muted d-block mb-3">
-            <i class="fas fa-info-circle"></i> {{ _('Valida il risultato per completare la partita e liberare il tavolo') }}
-        </small>
-        {% endif %}
+            {% endif %}
+            {% endif %}
+        {% elif match.status != 'completed' %}
+            {# No table assigned - show info message #}
+            <div class="alert alert-info mb-3">
+                <i class="fas fa-clock"></i> {{ _('Tavolo non assegnato') }}
+                <small class="d-block text-muted mt-1">{{ _('Assegna un tavolo per abilitare i controlli di punteggio') }}</small>
+            </div>
         {% endif %}
 
-        <!-- Reset Match -->
+        <!-- Reset Match - Always available for completed matches or matches with scores -->
         {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
         <button class="btn btn-danger" onclick="resetMatch({{ match.id }})">
             <i class="fas fa-undo"></i> {{ _('Reset Partita') }}

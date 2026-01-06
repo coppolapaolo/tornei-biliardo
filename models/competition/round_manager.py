@@ -31,13 +31,14 @@ class AdvancedRoundManager:
     def get_round_lock_status(gara_id: int, round_number: int) -> RoundLockStatus:
         """Determine the lock status of a specific round.
 
-        Business Rule: Match modification is allowed based on strategy:
+        Business Rule: Match modification is allowed based on strategy behavior
+        configured in models/matchmaking/configuration.py (StrategyBehaviorConfig).
 
-        Sequential strategies (Amalfi, Round-Robin, Elimination):
+        Strategies with supports_round_locking=True (Amalfi, Round-Robin, Elimination):
         - Only the current active round (highest with matches) is unlocked
         - Past rounds are locked to maintain historical integrity
 
-        Random strategy:
+        Strategies with supports_round_locking=False (Random):
         - ALL rounds are unlocked (matches can be played in any order)
         - This is because Random creates all rounds at startup
         """
@@ -48,12 +49,12 @@ class AdvancedRoundManager:
         if gara.status != GaraStatus.PLAYING.value:
             return RoundLockStatus.LOCKED
 
-        # Random strategy: ALL rounds are unlocked
-        # because matches can be played in any order
-        if gara.matchmaking_strategy == "random":
+        # Check strategy behavior for round locking support
+        # Uses gara.supports_round_locking() which delegates to StrategyBehaviorConfig
+        if not gara.supports_round_locking():
             return RoundLockStatus.UNLOCKED
 
-        # Sequential strategies: only the active round is unlocked
+        # Strategies with round locking: only the active round is unlocked
         # Find the highest round that has matches (the actual active round)
         highest_round_with_matches = (
             db.session.query(db.func.max(Match.round_number))

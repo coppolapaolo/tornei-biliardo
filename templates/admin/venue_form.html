@@ -150,7 +150,7 @@
                                           id="amenities" 
                                           name="amenities" 
                                           rows="3"
-                                          placeholder="es: Parcheggio, Bar, WiFi, Aria Condizionata">{% if is_edit %}{% set filtered_amenities = [] %}{% for amenity in venue.get_amenities() %}{% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}{% set _ = filtered_amenities.append(amenity) %}{% endif %}{% endfor %}{{ filtered_amenities|join(', ') }}{% endif %}</textarea>
+                                          placeholder="es: Parcheggio, Bar, WiFi, Aria Condizionata">{% if is_edit %}{% set filtered_amenities = [] %}{% for amenity in venue.get_amenities() %}{% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}{% set _void = filtered_amenities.append(amenity) %}{% endif %}{% endfor %}{{ filtered_amenities|join(', ') }}{% endif %}</textarea>
                                 <small class="text-muted">Separare con virgola</small>
                             </div>
                         </div>

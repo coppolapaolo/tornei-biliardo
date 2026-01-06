@@ -146,8 +146,10 @@ def amalfi_classification(gara_id, round_number):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Controlla se tutti i match del turno sono completati
+    # Bye matches are considered completed automatically
     incomplete_matches = [
-        m for m in matches_in_round if m.status != MatchStatus.COMPLETED.value
+        m for m in matches_in_round
+        if m.status != MatchStatus.COMPLETED.value and not m.is_bye
     ]
     if incomplete_matches:
         flash(

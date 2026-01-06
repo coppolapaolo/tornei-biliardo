@@ -12,10 +12,17 @@
     <div class="d-flex align-items-center gap-2 gap-md-3 gap-lg-4">
         {% if current_user.is_authenticated %}
         {% if gara.campionato_id %}
+        {% if current_user.can_manage_competition(gara.id) %}
         <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}"
             class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
         </a>
+        {% else %}
+        <a href="{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}"
+            class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> {{ _('Torna al Campionato') }}
+        </a>
+        {% endif %}
         {% else %}
         <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}

@@ -117,7 +117,7 @@
                         {% set filtered_amenities = [] %}
                         {% for amenity in stats.amenities %}
                             {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
-                                {% set _ = filtered_amenities.append(amenity) %}
+                                {% set _void = filtered_amenities.append(amenity) %}
                             {% endif %}
                         {% endfor %}
                         {% if filtered_amenities %}
@@ -209,7 +209,7 @@
                 {% set photos = [] %}
                 {% for amenity in venue.get_amenities() %}
                     {% if amenity.startswith("Foto:") %}
-                        {% set _ = photos.append(amenity) %}
+                        {% set _void = photos.append(amenity) %}
                     {% endif %}
                 {% endfor %}
                 {% if photos %}

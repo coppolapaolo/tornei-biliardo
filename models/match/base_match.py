@@ -84,13 +84,16 @@ class BaseMatchMixin:
         # Extract value if it is an enum member
         status_val = self.status.value if hasattr(self.status, "value") else self.status
 
-        # Both 'playing' (tournament) and 'in_progress' (individual) are active states
-        active_states = [
+        # States where racks can be added:
+        # - pending: first rack transitions match to playing
+        # - playing/in_progress: match actively in progress
+        allowed_states = [
+            SharedMatchStatus.PENDING.value,
             SharedMatchStatus.PLAYING.value,
             SharedMatchStatus.IN_PROGRESS.value,
         ]
 
-        if status_val not in active_states:
+        if status_val not in allowed_states:
             return False
 
         # Cannot add rack if match is at validation stage

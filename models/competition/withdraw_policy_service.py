@@ -23,6 +23,9 @@ class WithdrawPolicyService:
         """
         Handle player forfeit according to gara's withdraw policy.
 
+        When a player forfeits, ALL their remaining pending/playing matches
+        in this gara are also completed with the opponent as winner.
+
         Args:
             gara_id: ID of the gara
             user_id: ID of player who forfeited
@@ -33,6 +36,10 @@ class WithdrawPolicyService:
         Raises:
             ValueError: If gara not found or user not inscribed
         """
+        from sqlalchemy import or_
+        from models.match.models import Match
+        from models.status_enum import MatchStatus
+
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
@@ -44,6 +51,37 @@ class WithdrawPolicyService:
         )
         if not inscription:
             raise ValueError(f"User {user_id} not inscribed or already withdrawn from gara {gara_id}")
+
+        # Complete ALL pending/playing matches for this player in this gara
+        # (The match that triggered the forfeit is already completed)
+        pending_matches = (
+            db.session.query(Match)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
+                or_(
+                    Match.player1_id == user_id,
+                    Match.player2_id == user_id
+                ),
+                Match.is_bye == False  # Skip bye matches
+            )
+            .all()
+        )
+
+        for match in pending_matches:
+            # Determine winner (the opponent)
+            if match.player1_id == user_id:
+                winner_id = match.player2_id
+                # Set winning score for opponent, 0 for forfeiting player
+                match.player1_score = 0
+                match.player2_score = gara.distance
+            else:
+                winner_id = match.player1_id
+                match.player1_score = gara.distance
+                match.player2_score = 0
+
+            match.winner_id = winner_id
+            match.status = MatchStatus.COMPLETED.value
 
         if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value:
             # Policy FORFEIT: Mark as forfeit but keep in inscriptions

@@ -96,6 +96,7 @@ class MatchStateService:
         MatchStateService._record_encounter(match)
         MatchStateService._release_table(match)
         MatchStateService._emit_completion_event(match)
+        MatchStateService._update_classification_if_needed(match)
 
         return match
 
@@ -153,6 +154,44 @@ class MatchStateService:
             score=score,
         )
         EventBus.publish(event)
+
+    @staticmethod
+    def _update_classification_if_needed(match: Match) -> None:
+        """Update classification if strategy requires it on match completion.
+
+        For strategies with ClassificationUpdateTiming.ON_MATCH_COMPLETE (e.g., Random),
+        this recalculates the overall classification after each match.
+
+        For strategies with ON_ROUND_COMPLETE (e.g., Amalfi), this does nothing -
+        classification is calculated by RoundService.update_round_progression().
+        """
+        if not match.gara_id:
+            return
+
+        gara = match.gara
+        if not gara:
+            return
+
+        # Use the new strategy behavior config to check timing
+        if not gara.should_update_classification_on_match_complete():
+            return
+
+        # For strategies that update on match complete, recalculate classification
+        # using the highest round number to aggregate ALL matches
+        from models.classification.models import RoundClassification
+
+        # Find the highest round with matches (for overall classification)
+        highest_round = (
+            db.session.query(db.func.max(Match.round_number))
+            .filter(Match.gara_id == gara.id)
+            .scalar()
+        ) or 1
+
+        # Recalculate overall classification
+        # For Random, this aggregates all rounds and sorts by racks_won
+        RoundClassification.calculate_classification_after_round(
+            gara.id, highest_round
+        )
 
 
 __all__ = ["MatchStateService"]

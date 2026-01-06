@@ -413,6 +413,87 @@ class Gara(db.Model):
             # Fallback to Amalfi if strategy not found
             return STRATEGY_CONSTRAINTS[MatchmakingStrategy.AMALFI]
 
+    # =========================================================================
+    # Strategy Behavior Methods
+    # =========================================================================
+    # These methods provide access to strategy-specific behaviors defined in
+    # models/matchmaking/configuration.py (StrategyBehaviorConfig)
+
+    def get_strategy_behavior(self):
+        """Get the StrategyBehaviorConfig for this gara's strategy.
+
+        Returns:
+            StrategyBehaviorConfig with all behavioral settings
+
+        Example:
+            behavior = gara.get_strategy_behavior()
+            if behavior.supports_round_locking:
+                # Apply round locking logic
+        """
+        from models.matchmaking.configuration import (
+            get_strategy_behavior,
+            MatchmakingStrategy,
+            STRATEGY_BEHAVIORS,
+        )
+
+        try:
+            strategy = MatchmakingStrategy(self.matchmaking_strategy)
+            return get_strategy_behavior(strategy)
+        except (ValueError, KeyError):
+            # Fallback to Amalfi behavior
+            return STRATEGY_BEHAVIORS[MatchmakingStrategy.AMALFI]
+
+    def supports_round_locking(self) -> bool:
+        """Check if this gara's strategy supports round locking.
+
+        Random strategy: False (all rounds modifiable)
+        Other strategies: True (past rounds locked)
+        """
+        return self.get_strategy_behavior().supports_round_locking
+
+    def get_classification_type(self):
+        """Get classification structure type for this strategy.
+
+        Returns:
+            ClassificationType.PER_ROUND or ClassificationType.OVERALL
+        """
+        return self.get_strategy_behavior().classification_type
+
+    def get_classification_criteria(self):
+        """Get ranking criteria for this strategy.
+
+        Returns:
+            ClassificationCriteria.MATCH_WINS or ClassificationCriteria.RACKS_WON
+        """
+        return self.get_strategy_behavior().classification_criteria
+
+    def should_update_classification_on_match_complete(self) -> bool:
+        """Check if classification should update after each match.
+
+        Random strategy: True (update after each match)
+        Other strategies: False (update after round completes)
+        """
+        from models.matchmaking.configuration import ClassificationUpdateTiming
+
+        timing = self.get_strategy_behavior().classification_update
+        return timing == ClassificationUpdateTiming.ON_MATCH_COMPLETE
+
+    def get_default_odd_policy(self):
+        """Get default odd number policy based on strategy and distance.
+
+        Random (distance <= 7): TRIO
+        Random (distance > 7): BYE_WITH_CHALLENGE
+        Other strategies: BYE
+        """
+        return self.get_strategy_behavior().get_default_odd_policy(self.distance)
+
+    def can_use_trio(self) -> bool:
+        """Check if trio matches are allowed for this gara.
+
+        Trio matches only allowed if distance <= 7.
+        """
+        return self.get_strategy_behavior().can_use_trio(self.distance)
+
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
         # Permetti modifica in setup, inscription, o quando le iscrizioni sono scadute

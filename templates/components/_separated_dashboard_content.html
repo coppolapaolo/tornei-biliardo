@@ -6,7 +6,8 @@
 <div class="mb-4">
   <h4><i class="fas fa-shield-halved text-danger"></i> Le Tue Partite</h4>
   <div class="row">
-    {% for match in vm.current_matches %}
+    {# Ordina per round_number per mostrare il turno più basso prima #}
+    {% for match in vm.current_matches|sort(attribute='round_number') %}
       <div class="col-md-6 col-lg-4 mb-3">
         {% set is_completed = match.status == 'completed' %}
         {% set is_winner = (current_user.id == match.winner_id) if is_completed else false %}
@@ -94,14 +95,19 @@
           
           <div class="card-footer py-2 bg-transparent">
             {% if is_completed %}
-              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" 
+              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
                  class="btn {{ 'btn-success' if is_winner else 'btn-warning' }} btn-sm w-100">
                 <i class="fas fa-eye"></i> Vedi Risultato
               </a>
-            {% else %}
-              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" 
+            {% elif match.table_assignment %}
+              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
                  class="btn btn-danger btn-sm w-100">
                 <i class="fas fa-play"></i> Gioca Partita
+              </a>
+            {% else %}
+              <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
+                 class="btn btn-secondary btn-sm w-100" disabled>
+                <i class="fas fa-clock"></i> In Attesa Tavolo
               </a>
             {% endif %}
           </div>
@@ -127,12 +133,12 @@
   {# Raccogli tutte le gare interessanti (iscrizioni aperte, in corso, o round completato) #}
   {% for item in vm.unified_items %}
     {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
-      {% set _ = available_garas.append(item) %}
+      {% set _void = available_garas.append(item) %}
     {% elif item.type == 'campionato' %}
       {# Aggiungi le gare del campionato interessanti #}
       {% for gara in item.entity.gare %}
         {% if gara.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
-          {% set _ = available_garas.append({
+          {% set _void = available_garas.append({
             'type': 'gara',
             'id': gara.id,
             'name': gara.name or ('Gara ' ~ gara.number),
@@ -293,13 +299,24 @@
                 </small>
                 {% endif %}
               {% elif item.entity.get_real_status() == GaraStatus.PLAYING.value %}
-                {# Gara in corso - mostra info turno #}
+                {# Gara in corso - mostra info appropriate per tipo torneo #}
                 <div class="d-flex justify-content-between align-items-center">
+                  {% if item.entity.matchmaking_strategy == 'random' %}
+                  {# Random: mostra partite completate #}
+                  {% set total_matches = item.entity.matches|length %}
+                  {% set completed_matches = item.entity.matches|selectattr('status', 'equalto', 'completed')|list|length %}
+                  <small class="text-warning fw-bold">
+                    <i class="fas fa-play-circle me-1"></i>
+                    {{ completed_matches }}/{{ total_matches }} partite
+                  </small>
+                  {% else %}
+                  {# Amalfi e altri: mostra turno corrente #}
                   <small class="text-warning fw-bold">
                     <i class="fas fa-play-circle me-1"></i>
                     Turno {{ [item.entity.current_round, 1]|max }}
                     {% if item.entity.total_rounds %}/ {{ item.entity.total_rounds }}{% endif %}
                   </small>
+                  {% endif %}
                   <small class="text-muted">
                     <i class="fas fa-users me-1"></i>
                     {{ item.entity.get_active_inscriptions_count() }} giocatori
@@ -347,18 +364,24 @@
                       <i class="fas fa-eye"></i> Dettagli
                     </a>
                   {% endif %}
-                  
+
                   {% if not current_user.is_admin %}
-                    
-                    {# Trova il match del giocatore corrente in questa gara #}
+                    {# Trova il match con il turno più basso ancora da giocare per il giocatore #}
+                    {% set player_matches = [] %}
                     {% for match in vm.current_matches|default([]) %}
                       {% if match.gara_id == item.id and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
-                        <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" 
-                           class="btn btn-warning btn-sm">
-                          <i class="fas fa-play"></i> Vedi Match
-                        </a>
+                        {% set _void = player_matches.append(match) %}
                       {% endif %}
                     {% endfor %}
+                    {# Ordina per round_number e mostra solo il primo (turno più basso) #}
+                    {% set sorted_matches = player_matches|sort(attribute='round_number') %}
+                    {% if sorted_matches %}
+                      {% set lowest_match = sorted_matches[0] %}
+                      <a href="{{ url_for('admin.match.match_detail', match_id=lowest_match.id) }}"
+                         class="btn btn-warning btn-sm">
+                        <i class="fas fa-play"></i> Turno {{ lowest_match.round_number }}
+                      </a>
+                    {% endif %}
                   {% endif %}
                   
                 {% elif item.entity.get_real_status() == GaraStatus.SETUP.value %}
@@ -423,7 +446,7 @@
   {# Raccogli tutti i campionati #}
   {% for item in vm.unified_items %}
     {% if item.type == 'campionato' %}
-      {% set _ = campionati.append(item) %}
+      {% set _void = campionati.append(item) %}
     {% endif %}
   {% endfor %}
   
@@ -490,11 +513,16 @@
             
             <div class="card-footer py-2 bg-transparent">
               <div class="btn-group w-100" role="group">
-                {# Pulsante dettagli per gestori #}
-                {% if item.can_view_details %}
-                  <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}" 
+                {# Pulsante dettagli/gestione in base ai permessi #}
+                {% if item.can_manage %}
+                  <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}"
                      class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-eye"></i> Gestione
+                    <i class="fas fa-cog"></i> Gestione
+                  </a>
+                {% elif item.can_view_details %}
+                  <a href="{{ url_for('main.campionato_detail_public', campionato_id=item.id) }}"
+                     class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye"></i> Dettagli
                   </a>
                 {% else %}
                   {# Per ora mostra solo badge senza link per i player #}
@@ -502,10 +530,10 @@
                     <i class="fas fa-chart-line"></i> Classifica
                   </button>
                 {% endif %}
-                
+
                 {# Pulsante modifica per gestori #}
                 {% if item.can_manage and item.entity.can_be_modified() %}
-                  <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=item.id) }}" 
+                  <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=item.id) }}"
                      class="btn btn-outline-warning btn-sm">
                     <i class="fas fa-edit"></i>
                   </a>

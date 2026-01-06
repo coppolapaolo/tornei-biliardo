@@ -1,0 +1,35 @@
+<!-- Strategy Algorithm Info Component -->
+{% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
+
+{% if is_random_strategy %}
+{# Random Strategy Info #}
+<div class="card border-success">
+    <div class="card-header bg-success bg-opacity-10">
+        <h5><i class="fas fa-random"></i> Strategia Random - Classifica Complessiva</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Criterio Classifica:</strong><br>
+                <small class="text-muted">1. Rack Totali Vinti (desc) &rarr; 2. Diff. Rack (desc)</small><br><br>
+                <strong>Aggiornamento:</strong> <span class="badge bg-info">Dopo ogni match</span>
+            </div>
+            <div class="col-md-6">
+                <strong>Giocatori Totali:</strong> {{ total_players }}<br>
+                <strong>Match Completati:</strong>
+                {% set completed_matches = matches|selectattr("status", "equalto", "completed")|list|length %}
+                {% set total_matches = matches|length %}
+                {{ completed_matches }}/{{ total_matches }}<br>
+                <strong>Note:</strong><br>
+                <small class="text-muted">
+                    I match possono essere giocati in qualsiasi ordine.
+                    La classifica si aggiorna in tempo reale.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+{# Fallback to Amalfi info #}
+{% include "components/_amalfi_algorithm_info.html" %}
+{% endif %}

@@ -54,18 +54,18 @@
                     {% set organizers = [] %}
                     {% if gara.is_standalone %}
                         {% if gara.director and gara.director.role != 'admin' %}
-                            {% set _ = organizers.append({'user': gara.director, 'primary': true}) %}
+                            {% set _void = organizers.append({'user': gara.director, 'primary': true}) %}
                         {% endif %}
                         {% for director in gara.directors %}
                             {% if director.role != 'admin' %}
-                                {% set _ = organizers.append({'user': director, 'primary': false}) %}
+                                {% set _void = organizers.append({'user': director, 'primary': false}) %}
                             {% endif %}
                         {% endfor %}
                     {% else %}
                         {% if gara.campionato and gara.campionato.directors %}
                             {% for director in gara.campionato.directors %}
                                 {% if director.role != 'admin' %}
-                                    {% set _ = organizers.append({'user': director, 'primary': true}) %}
+                                    {% set _void = organizers.append({'user': director, 'primary': true}) %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}

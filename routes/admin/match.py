@@ -47,20 +47,24 @@ def match_detail(match_id):
     user_can_manage = False
     user_is_player = False
 
+    # Track if user was player in match (for view access, even if forfeited)
+    is_player_in_match = False
+
     if current_user.is_authenticated:
         # Check se può gestire la gara di questo match
         user_can_manage = current_user.can_manage_competition(match.gara_id)
 
-        # Check se è player nel match AND non ha dato forfait
+        # Check se è player nel match
         is_player_in_match = current_user.id in [match.player1_id, match.player2_id]
 
-        # Se è player nel match, verifica che non abbia dato forfait
+        # Se è player nel match, verifica che non abbia dato forfait per i controlli
         if is_player_in_match:
             from models.competition.withdraw_policy_service import WithdrawPolicyService
             has_forfeit = WithdrawPolicyService.is_player_forfeit(
                 gara_id=match.gara_id,
                 user_id=current_user.id
             )
+            # user_is_player = True solo se non ha dato forfait (per i controlli UI)
             user_is_player = not has_forfeit
         else:
             user_is_player = False
@@ -80,8 +84,8 @@ def match_detail(match_id):
             user_id=match.player2_id
         )
 
-    # Verifica accesso: deve essere gestore O player
-    if not (user_can_manage or user_is_player):
+    # Verifica accesso: deve essere gestore O player nel match (anche se forfait per sola lettura)
+    if not (user_can_manage or is_player_in_match):
         abort(403)
 
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
