@@ -100,7 +100,8 @@
     </td>
     {% if user_can_manage %}
     <td>
-        {% if not match.is_bye and match_can_modify.get(match.id, True) %}
+        {% if not match.is_bye and match_can_modify.get(match.id, True) and match.table_assignment %}
+        {# Actions only available when match has table assigned #}
         <div class="btn-group btn-group-sm" role="group">
             <!-- Imposta Risultato Rapido -->
             {% if match.status != 'completed' %}
@@ -131,9 +132,13 @@
             </button>
             {% endif %}
         </div>
-        {% elif not match.is_bye %}
+        {% elif not match.is_bye and not match_can_modify.get(match.id, True) %}
         <span class="text-muted small">
             <i class="fas fa-lock"></i> {{ _('Bloccato') }}
+        </span>
+        {% elif not match.is_bye and not match.table_assignment and match.status != 'completed' %}
+        <span class="text-muted small">
+            <i class="fas fa-clock"></i> {{ _('Assegna tavolo') }}
         </span>
         {% endif %}
     </td>

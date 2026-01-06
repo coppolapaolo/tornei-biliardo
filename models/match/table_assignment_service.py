@@ -120,15 +120,31 @@ class TableAssignmentService:
             .all()
         )
 
-        # Assign tables in order
+        # Assign tables only to matches where both players are free
         assigned_count = 0
-        for i, match in enumerate(matches):
-            if i < len(table_names):
-                match.table_assignment = table_names[i]
+        table_index = 0
+
+        for match in matches:
+            if table_index >= len(table_names):
+                break  # No more tables available
+
+            # Skip bye matches - they don't need tables
+            if match.is_bye:
+                continue
+
+            # Check if both players are free
+            player1_busy = TableAssignmentService._is_player_busy(
+                gara_id, match.player1_id
+            )
+            player2_busy = TableAssignmentService._is_player_busy(
+                gara_id, match.player2_id
+            )
+
+            if not player1_busy and not player2_busy:
+                match.table_assignment = table_names[table_index]
                 MatchService.to_playing(match.id)
                 assigned_count += 1
-            else:
-                break  # No more tables available
+                table_index += 1
 
         return assigned_count
 
@@ -158,21 +174,41 @@ class TableAssignmentService:
         return match
 
     @staticmethod
+    def _is_player_busy(gara_id: int, player_id: int) -> bool:
+        """Check if a player is currently busy in another match.
+
+        A player is busy if they have a match with status PLAYING in the gara.
+        """
+        if not player_id:
+            return False
+
+        busy_match = (
+            Match.query.filter_by(gara_id=gara_id, status=MatchStatus.PLAYING.value)
+            .filter((Match.player1_id == player_id) | (Match.player2_id == player_id))
+            .first()
+        )
+        return busy_match is not None
+
+    @staticmethod
     @transactional(domain="match")
     def release_and_reassign_table(match_id: int) -> Optional[Match]:
-        """Release table from completed match and reassign to first waiting match.
+        """Release table from completed match and reassign to first eligible waiting match.
 
         This method:
         1. Removes the table from the completed match
-        2. Finds the first pending match in the same round without a table
+        2. Finds the first pending match where BOTH players are free
         3. Assigns the freed table to the waiting match
         4. Transitions the waiting match to PLAYING status
+
+        Business Rule: A match can only receive a table if BOTH players are not
+        currently playing in another match. This prevents a player from being
+        assigned to two matches simultaneously.
 
         Args:
             match_id: ID of the completed match
 
         Returns:
-            The match that received the freed table (now PLAYING), or None if no waiting match
+            The match that received the freed table (now PLAYING), or None if no eligible match
         """
         from models.match.services import MatchService
 
@@ -192,26 +228,34 @@ class TableAssignmentService:
         completed_match.table_assignment = None
         db.session.add(completed_match)
 
-        # Find first pending match in SAME round without table (exclude bye matches)
-        waiting_match = (
+        # Find pending matches without table (exclude bye matches)
+        # Order by round_number, then match.id for consistent assignment
+        pending_matches = (
             Match.query.filter_by(
                 gara_id=completed_match.gara_id,
-                round_number=completed_match.round_number,
                 table_assignment=None,
                 status=MatchStatus.PENDING.value,
             )
             .filter(Match.is_bye == False)  # noqa: E712
-            .order_by(Match.id)
-            .first()
+            .order_by(Match.round_number, Match.id)
+            .all()
         )
 
-        if waiting_match:
-            # Assign freed table to waiting match and set to PLAYING
-            waiting_match.table_assignment = freed_table
-            waiting_match.status = MatchStatus.PLAYING.value
-            db.session.add(waiting_match)
+        # Find first match where BOTH players are free
+        for waiting_match in pending_matches:
+            player1_busy = TableAssignmentService._is_player_busy(
+                completed_match.gara_id, waiting_match.player1_id
+            )
+            player2_busy = TableAssignmentService._is_player_busy(
+                completed_match.gara_id, waiting_match.player2_id
+            )
 
-            return waiting_match
+            if not player1_busy and not player2_busy:
+                # Both players are free - assign table
+                waiting_match.table_assignment = freed_table
+                waiting_match.status = MatchStatus.PLAYING.value
+                db.session.add(waiting_match)
+                return waiting_match
 
         return None
 
@@ -252,6 +296,24 @@ class TableAssignmentService:
             return False, reason, None
 
         old_table = match.table_assignment
+
+        # Check if players are busy in another match (when assigning a table)
+        # This only applies when assigning a new table, not when removing
+        if new_table is not None and not old_table:
+            player1_busy = TableAssignmentService._is_player_busy(
+                match.gara_id, match.player1_id
+            )
+            player2_busy = TableAssignmentService._is_player_busy(
+                match.gara_id, match.player2_id
+            )
+            if player1_busy or player2_busy:
+                from models.user.models import User
+                if player1_busy:
+                    player = db.session.get(User, match.player1_id)
+                else:
+                    player = db.session.get(User, match.player2_id)
+                name = player.username if player else "Un giocatore"
+                return False, f"{name} è già impegnato in un'altra partita", None
 
         # Case 1: Remove table assignment
         if new_table is None:
