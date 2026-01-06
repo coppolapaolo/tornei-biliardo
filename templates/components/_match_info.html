@@ -11,7 +11,7 @@
         <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
         <p><strong>Disciplina:</strong> {{ match.gara.discipline }}</p>
         <p><strong>Modalità:</strong>
-            {{ match.gara.distance_config|format_distance }}
+            {{ match.distance_config|format_distance }}
         </p>
         <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>
         {% if match.gara.location %}

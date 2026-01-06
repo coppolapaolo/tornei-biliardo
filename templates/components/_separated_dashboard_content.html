@@ -84,7 +84,7 @@
             
             <small class="text-muted">
               <i class="fas fa-trophy me-1"></i>{{ match.gara.discipline|replace('_',' ')|title }}
-              - {{ match.gara.distance_config|format_distance }}
+              - {{ match.distance_config|format_distance }}
               {% if match.table_assignment %}
                 <br><i class="fas fa-table me-1"></i>Tavolo {{ match.table_assignment }}
               {% else %}

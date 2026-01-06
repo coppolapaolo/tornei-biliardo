@@ -168,6 +168,29 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         return Distance.from_match(self)
 
     @property
+    def effective_distance(self) -> int:
+        """Get the effective distance (racks to win) for this match.
+
+        Supports per-round distance overrides. Falls back to gara.distance
+        for legacy matches without match_distance set.
+
+        Legacy matches have match_distance=1 (default), so we detect this
+        and use gara.distance instead.
+
+        Returns:
+            int: Number of racks needed to win (for single-set matches)
+        """
+        gara_dist = self.gara.distance
+        # Use match_distance if explicitly set (> 1 or equals gara.distance)
+        if self.match_distance and self.match_distance > 1:
+            return self.match_distance
+        elif self.match_distance and self.match_distance == gara_dist:
+            return self.match_distance
+        else:
+            # Legacy match with default match_distance=1
+            return gara_dist
+
+    @property
     def rack_score(self):
         """Get RackScore value object for single-set match.
 

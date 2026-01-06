@@ -4,7 +4,7 @@
         <small>
         {{ match.gara|gara_display_name }} - Turno {{ match.round_number }} -
         {{ match.gara.discipline.replace('_', ' ') }} -
-        {{ match.gara.distance_config|format_distance }}
+        {{ match.distance_config|format_distance }}
         - Tavolo {{ match.table_assignment or 'In attesa di assegnazione'}}
         </small>
         <div>

@@ -12,18 +12,18 @@
             <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
                 class="mb-3" onsubmit="return validateScoreForm(this)"
                 data-is-race-to="{{ 'true' if match.gara.is_race_to else 'false' }}"
-                data-winning-score="{{ match.gara.distance }}">
+                data-winning-score="{{ match.effective_distance }}">
                 <h6>{{ _('Imposta Risultato') }}</h6>
                 <div class="row">
                     <div class="col-4">
                         <label class="form-label">{{ match.player1.username }}</label>
                         <input type="number" class="form-control" name="player1_score" min="0"
-                            max="{{ match.gara.distance }}" value="{{ match.player1_score }}" required>
+                            max="{{ match.effective_distance }}" value="{{ match.player1_score }}" required>
                     </div>
                     <div class="col-4">
                         <label class="form-label">{{ match.player2.username }}</label>
                         <input type="number" class="form-control" name="player2_score" min="0"
-                            max="{{ match.gara.distance }}" value="{{ match.player2_score }}" required>
+                            max="{{ match.effective_distance }}" value="{{ match.player2_score }}" required>
                     </div>
                     <div class="col-4">
                         <label class="form-label">&nbsp;</label>
@@ -33,11 +33,11 @@
                     </div>
                 </div>
                 <small class="text-muted">
-                    {{ match.gara.distance_config|format_distance }}:
+                    {{ match.distance_config|format_distance }}:
                     {% if match.gara.is_race_to %}
-                    {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.gara.distance, max=match.gara.distance) }}
+                    {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.effective_distance, max=match.effective_distance) }}
                     {% else %}
-                    {{ _('la somma dei rack deve essere %(distance)s', distance=match.gara.distance) }}
+                    {{ _('la somma dei rack deve essere %(distance)s', distance=match.effective_distance) }}
                     {% endif %}
                 </small>
             </form>

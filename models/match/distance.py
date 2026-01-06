@@ -130,6 +130,7 @@ class Distance:
         """Factory: Create Distance from Match model.
 
         Handles both single-set and multi-set matches.
+        Uses match.match_distance for per-round distance overrides.
 
         Args:
             match: Match model instance
@@ -138,15 +139,36 @@ class Distance:
             Distance object representing the match's configuration
         """
         if not match.is_multi_set:
-            # Single-set match - use gara's distance
-            return cls.from_gara(match.gara)
+            # Single-set match - use match's distance (supports per-round overrides)
+            # Fall back to gara.distance for legacy matches without match_distance set
+            # Legacy matches have match_distance=1 (default), so we need to detect this
+            match_dist = getattr(match, "match_distance", None)
+            gara_dist = match.gara.distance
+
+            # Use match_distance if explicitly set to a value different from default (1)
+            # or if it equals gara.distance (confirming it was set intentionally)
+            if match_dist and match_dist > 1:
+                effective_distance = match_dist
+            elif match_dist and match_dist == gara_dist:
+                effective_distance = match_dist
+            else:
+                # Legacy match with default match_distance=1, use gara.distance
+                effective_distance = gara_dist
+
+            return cls(
+                racks=effective_distance,
+                is_race_to_racks=getattr(match.gara, "is_race_to", getattr(match.gara, "best_of", True)),
+                is_multi_set=False,
+                sets=1,
+                is_race_to_sets=True
+            )
         else:
             # Multi-set match
             return cls(
                 racks=match.gara.distance,
                 is_race_to_racks=getattr(match.gara, "is_race_to", getattr(match.gara, "best_of", True)),
                 is_multi_set=True,
-                sets=match.match_distance,
+                sets=getattr(match, "match_distance", 1),
                 is_race_to_sets=True  # Assume race-to for sets
             )
 

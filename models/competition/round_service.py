@@ -95,17 +95,18 @@ class RoundService:
             for round_num in range(1, gara.rounds_count + 1):
                 pairings = strategy.create_round(gara, round_num)
 
-                # Get discipline configuration for this round
+                # Get round configuration for this round (discipline and distance overrides)
                 from models.competition.round_configuration import RoundConfiguration
 
                 round_config = RoundConfiguration.get_for_gara_round(gara_id, round_num)
                 round_discipline = round_config.discipline if round_config else None
+                round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
 
                 # Crea i match nel database
                 for pairing in pairings:
                     if len(pairing.players) == 1 and pairing.is_bye:
                         # Match con X - assegnalo come completato con punteggio pieno
-                        bye_score = gara.distance_config.get_winning_racks()
+                        bye_score = round_distance  # Use round-specific distance
                         match = Match(
                             gara_id=gara_id,
                             round_number=round_num,
@@ -116,6 +117,7 @@ class RoundService:
                             winner_id=pairing.players[0],
                             status="completed",
                             discipline=round_discipline,
+                            match_distance=round_distance,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 2 and not pairing.is_bye:
@@ -127,6 +129,7 @@ class RoundService:
                             player2_id=pairing.players[1],
                             is_bye=False,
                             discipline=round_discipline,
+                            match_distance=round_distance,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
@@ -141,6 +144,7 @@ class RoundService:
                             is_bye=False,
                             is_trio=True,
                             discipline=round_discipline,
+                            match_distance=round_distance,
                         )
                         db.session.add(match)
 
@@ -185,17 +189,18 @@ class RoundService:
             # Genera gli abbinamenti per il primo turno
             pairings = strategy.create_round(gara, 1)
 
-            # Get discipline configuration for round 1
+            # Get round configuration for round 1 (discipline and distance overrides)
             from models.competition.round_configuration import RoundConfiguration
 
             round_config = RoundConfiguration.get_for_gara_round(gara_id, 1)
             round_discipline = round_config.discipline if round_config else None
+            round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
 
             # Crea i match nel database
             for pairing in pairings:
                 if len(pairing.players) == 1 and pairing.is_bye:
                     # Match con X - assegnalo come completato con punteggio pieno
-                    bye_score = gara.distance_config.get_winning_racks()
+                    bye_score = round_distance  # Use round-specific distance
                     match = Match(
                         gara_id=gara_id,
                         round_number=1,
@@ -206,7 +211,7 @@ class RoundService:
                         winner_id=pairing.players[0],
                         status="completed",
                         discipline=round_discipline,
-                        match_distance=gara.distance,
+                        match_distance=round_distance,
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 2 and not pairing.is_bye:
@@ -218,7 +223,7 @@ class RoundService:
                         player2_id=pairing.players[1],
                         is_bye=False,
                         discipline=round_discipline,
-                        match_distance=gara.distance,
+                        match_distance=round_distance,
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 3:
@@ -233,7 +238,7 @@ class RoundService:
                         is_bye=False,
                         is_trio=True,
                         discipline=round_discipline,
-                        match_distance=gara.distance,
+                        match_distance=round_distance,
                     )
                     db.session.add(match)
 
@@ -422,11 +427,18 @@ class RoundService:
                 for inscription in WithdrawPolicyService.get_forfeit_inscriptions(gara_id)
             )
 
+            # Get round configuration for distance override
+            from models.competition.round_configuration import RoundConfiguration
+            round_config = RoundConfiguration.get_for_gara_round(gara_id, round_number)
+            round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
+            # Use discipline_override if provided, otherwise check round_config
+            effective_discipline = discipline_override or (round_config.discipline if round_config else None)
+
             # Crea i match nel database
             for pairing in pairings:
                 if len(pairing.players) == 1 and pairing.is_bye:
                     # Match con X - assegnalo come completato con punteggio pieno
-                    bye_score = gara.distance_config.get_winning_racks()
+                    bye_score = round_distance  # Use round-specific distance
                     match = Match(
                         gara_id=gara_id,
                         round_number=round_number,
@@ -436,8 +448,8 @@ class RoundService:
                         player1_score=bye_score,
                         winner_id=pairing.players[0],
                         status="completed",
-                        discipline=discipline_override,
-                        match_distance=gara.distance,
+                        discipline=effective_discipline,
+                        match_distance=round_distance,
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 2 and not pairing.is_bye:
@@ -447,7 +459,7 @@ class RoundService:
 
                     if player1_forfeit or player2_forfeit:
                         # At least one player forfeited - match is auto-completed
-                        winning_score = gara.distance_config.get_winning_racks()
+                        winning_score = round_distance  # Use round-specific distance
 
                         if player1_forfeit and player2_forfeit:
                             # Both forfeit - player1 wins (arbitrary but consistent)
@@ -475,8 +487,8 @@ class RoundService:
                             player2_score=player2_score,
                             winner_id=winner_id,
                             status="completed",
-                            discipline=discipline_override,
-                            match_distance=gara.distance,
+                            discipline=effective_discipline,
+                            match_distance=round_distance,
                         )
                         db.session.add(match)
                     else:
@@ -487,8 +499,8 @@ class RoundService:
                             player1_id=pairing.players[0],
                             player2_id=pairing.players[1],
                             is_bye=False,
-                            discipline=discipline_override,
-                            match_distance=gara.distance,
+                            discipline=effective_discipline,
+                            match_distance=round_distance,
                         )
                         db.session.add(match)
                 elif len(pairing.players) == 3:
@@ -500,8 +512,8 @@ class RoundService:
                         player2_id=pairing.players[1],
                         is_bye=False,
                         is_trio=True,
-                        discipline=discipline_override,
-                        match_distance=gara.distance,
+                        discipline=effective_discipline,
+                        match_distance=round_distance,
                     )
                     db.session.add(match)
                     db.session.flush()  # Assicura che il match abbia un ID
