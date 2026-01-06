@@ -13,7 +13,7 @@
                     <tr>
                         <th width="10%">Pos.</th>
                         <th width="30%">Giocatore</th>
-                        {% if campionato.campionato_type == 'Amalfi' %}
+                        {% if campionato.campionato_type|lower == 'amalfi' %}
                             <th width="15%">Match Vinti</th>
                             <th width="15%">Diff. Rack</th>
                         {% else %}
@@ -40,7 +40,7 @@
                             <td>
                                 <strong>{{ player_data.username }}</strong>
                             </td>
-                            {% if campionato.campionato_type == 'Amalfi' %}
+                            {% if campionato.campionato_type|lower == 'amalfi' %}
                                 <td>
                                     <span class="badge bg-success">{{ player_data.total_matches_won }}</span>
                                 </td>

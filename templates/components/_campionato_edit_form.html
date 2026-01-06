@@ -15,11 +15,17 @@
             <div class="mb-3">
                 <label for="campionato_type" class="form-label">Tipo Campionato</label>
                 <select class="form-control" name="campionato_type" required>
-                    <option value="Amalfi" {% if campionato.campionato_type == 'Amalfi' %}selected{% endif %}>
+                    <option value="amalfi" {% if campionato.campionato_type|lower == 'amalfi' %}selected{% endif %}>
                         Amalfi
                     </option>
-                    <!-- Aggiungi altri tipi in futuro -->
+                    <option value="random" {% if campionato.campionato_type|lower == 'random' %}selected{% endif %}>
+                        Random
+                    </option>
                 </select>
+                <small class="text-muted">
+                    Amalfi: accoppiamenti basati su classifica.
+                    Random: accoppiamenti casuali con anti-rematch.
+                </small>
             </div>
             
             <div class="mb-4">

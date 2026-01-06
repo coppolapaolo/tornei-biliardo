@@ -30,7 +30,7 @@ def create_campionato():
         return redirect(url_for("dashboard.dashboard"))
 
     name = request.form["name"]
-    campionato_type = request.form.get("campionato_type", "Amalfi")
+    campionato_type = request.form.get("campionato_type", "amalfi")
     without_x = "without_x" in request.form
     final_playoffs = "final_playoffs" in request.form
     challenge_mode = "challenge_mode" in request.form
@@ -142,7 +142,7 @@ def edit_campionato(campionato_id):
             campionato_service.update_campionato(
                 campionato_id=campionato_id,
                 name=request.form["name"],
-                campionato_type=request.form.get("campionato_type", "Amalfi"),
+                campionato_type=request.form.get("campionato_type", "amalfi"),
                 without_x="without_x" in request.form,
                 final_playoffs="final_playoffs" in request.form,
                 challenge_mode="challenge_mode" in request.form,

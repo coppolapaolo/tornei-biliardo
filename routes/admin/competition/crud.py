@@ -366,6 +366,10 @@ def create_gara():
     exact_number = "exact_number" in request.form
     is_race_to = not exact_number
     withdraw_policy = request.form.get("withdraw_policy", DEFAULT_WITHDRAW_POLICY)
+
+    # Eredita la strategia di matchmaking dal campionato
+    matchmaking_strategy = campionato.campionato_type
+
     gara = GaraService.create_gara(
         campionato_id=campionato_id,
         number=number,
@@ -382,6 +386,7 @@ def create_gara():
         distance=distance,
         is_race_to=is_race_to,
         withdraw_policy=withdraw_policy,
+        matchmaking_strategy=matchmaking_strategy,
     )
 
     # Set gara-specific available tables
