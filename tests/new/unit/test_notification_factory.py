@@ -148,7 +148,7 @@ class TestNotificationFactory:
         call_kwargs = mock_create.call_args_list[0][1]
         assert call_kwargs["message"] == "New tournament: Championship 2025"
         assert call_kwargs["notification_type"] == NotificationType.TOURNAMENT_REGISTRATION
-        assert call_kwargs["action_url"] == "/gare/123"
+        assert call_kwargs["action_url"] == "/gara/123"
 
     @patch('models.notification.factory.NotificationService.create_notification')
     def test_create_match_notification_proposal(self, mock_create):

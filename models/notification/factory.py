@@ -160,17 +160,17 @@ class NotificationFactory:
             List of created notifications
         """
         message = message_template.format(tournament_name=tournament_name)
-        action_url = f"/gare/{tournament_id}" if tournament_id else None
+        action_url = f"/gara/{tournament_id}" if tournament_id else None
 
         return NotificationFactory.create_bulk_notification(
             user_ids=user_ids,
             notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-            title="Aggiornamento Torneo",
+            title="Aggiornamento Gara",
             message=message,
             priority=priority,
             related_entities={"tournament_id": tournament_id, "tournament_name": tournament_name} if tournament_id else None,
             action_url=action_url,
-            action_text="Visualizza Torneo" if action_url else None,
+            action_text="Visualizza Gara" if action_url else None,
         )
 
     @staticmethod

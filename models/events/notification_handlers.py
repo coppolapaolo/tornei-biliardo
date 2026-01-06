@@ -343,7 +343,7 @@ class NotificationEventHandlers:
                         "location_id": event.location_id,
                         "location_name": event.location_name
                     },
-                    action_url=f"/gare/{event.gara_id}",
+                    action_url=f"/gara/{event.gara_id}",
                     action_text="Iscriviti Ora"
                 )
             logger.info(f"Sent competition registration notifications for gara {event.gara_id}")

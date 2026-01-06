@@ -273,20 +273,24 @@ class RoundService:
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
 
-        if gara.current_round != 1:
+        # Per strategie che creano tutti i round all'avvio (es. Random),
+        # permettiamo l'annullamento indipendentemente da current_round
+        if not gara.creates_all_rounds_at_startup() and gara.current_round != 1:
             raise ValueError("Questa operazione è valida solo per il primo turno")
 
-        # Verifica che non ci siano risultati inseriti
+        # Verifica che non ci siano risultati inseriti in NESSUN round
+        # (esclusi i bye che sono auto-completati)
         matches_with_results = (
             db.session.query(Match)
-            .filter_by(gara_id=gara_id, round_number=1)
+            .filter_by(gara_id=gara_id)
             .filter(Match.winner_id.isnot(None))
+            .filter(Match.is_bye == False)  # noqa: E712 - Exclude bye matches
             .count()
         )
 
         if matches_with_results > 0:
             raise ValueError(
-                "Impossibile cancellare il primo turno: ci sono già dei risultati inseriti"
+                "Impossibile cancellare l'avvio: ci sono già dei risultati inseriti"
             )
 
         # Cancella TUTTI i match della gara

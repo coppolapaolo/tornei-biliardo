@@ -99,6 +99,9 @@ class StrategyBehaviorConfig:
     # Trio constraint
     trio_max_distance: int = 7
 
+    # Round creation behavior
+    creates_all_rounds_at_startup: bool = False
+
     def get_default_odd_policy(self, distance: int) -> OddNumberPolicy:
         """Get the default odd number policy based on distance."""
         return self.default_odd_policy_fn(distance)
@@ -134,6 +137,7 @@ STRATEGY_BEHAVIORS: Dict[MatchmakingStrategy, StrategyBehaviorConfig] = {
         classification_criteria=ClassificationCriteria.RACKS_WON,
         classification_update=ClassificationUpdateTiming.ON_MATCH_COMPLETE,
         default_odd_policy_fn=_random_odd_policy,
+        creates_all_rounds_at_startup=True,
     ),
     MatchmakingStrategy.ROUND_ROBIN: StrategyBehaviorConfig(
         supports_round_locking=True,

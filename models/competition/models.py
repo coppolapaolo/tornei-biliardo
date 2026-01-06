@@ -494,6 +494,14 @@ class Gara(db.Model):
         """
         return self.get_strategy_behavior().can_use_trio(self.distance)
 
+    def creates_all_rounds_at_startup(self) -> bool:
+        """Check if this strategy creates all rounds at tournament startup.
+
+        Random strategy creates all rounds at once (no progressive round creation).
+        Other strategies create rounds one at a time.
+        """
+        return self.get_strategy_behavior().creates_all_rounds_at_startup
+
     def can_modify_inscription_dates(self):
         """Verifica se si possono modificare le date iscrizioni"""
         # Permetti modifica in setup, inscription, o quando le iscrizioni sono scadute
@@ -543,7 +551,10 @@ class Gara(db.Model):
                 return False
 
             # Controlla che non ci siano risultati inseriti (neanche parziali)
+            # Esclude i match bye che sono auto-completati con 3-0
             for match in round_matches:
+                if match.is_bye:
+                    continue  # Skip bye matches - they're auto-completed
                 if (
                     match.player1_score > 0
                     or match.player2_score > 0

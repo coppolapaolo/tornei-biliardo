@@ -83,13 +83,13 @@ NOTIFICATION_TEMPLATES = {
     "tournament.inscription_confirmed": {
         "title": "Iscrizione Confermata",
         "message": "Sei iscritto a '%(tournament_name)s'",
-        "action_text": "Visualizza Torneo",
+        "action_text": "Visualizza Gara",
     },
 
     "tournament.starting_soon": {
-        "title": "Torneo in Partenza",
-        "message": "Il torneo '%(tournament_name)s' inizia tra poco!",
-        "action_text": "Vai al Torneo",
+        "title": "Gara in Partenza",
+        "message": "La gara '%(tournament_name)s' inizia tra poco!",
+        "action_text": "Vai alla Gara",
     },
 
     "tournament.match_ready": {

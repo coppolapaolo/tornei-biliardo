@@ -48,6 +48,12 @@ class MatchStateService:
         if not match:
             raise ValueError(f"Match {match_id} non trovato")
 
+        # Bye matches should never be transitioned to playing - they are auto-completed
+        if match.is_bye:
+            raise InvalidTransitionError(
+                "I match bye non possono essere messi in stato 'playing'"
+            )
+
         if (match.status or MatchStatus.PENDING.value) not in (
             MatchStatus.PENDING.value,
             MatchStatus.COMPLETED.value,
