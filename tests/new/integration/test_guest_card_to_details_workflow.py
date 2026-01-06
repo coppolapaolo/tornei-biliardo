@@ -67,7 +67,7 @@ class TestGuestCardToDetailsWorkflow:
             strategy_config={
                 "matchmaking_strategy": "random",
                 "first_round_policy": "random",
-                "odd_number_policy": "X",  # For challenges
+                "odd_number_policy": "bye_with_challenge",  # Valid enum value
             },
         )
 

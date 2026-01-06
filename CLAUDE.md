@@ -9,12 +9,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Start development server
 python app.py
 
-# Run all tests (ALWAYS use -n auto for parallel execution)
-pytest tests/new/ -n auto
+# Run all tests (use -n 4 for integration to avoid SQLite deadlocks)
+pytest tests/new/ -n 4
 
 # Run specific test types
-pytest tests/new/unit/ -n auto
-pytest tests/new/integration/ -n auto
+pytest tests/new/unit/ -n auto          # Unit tests: -n auto OK
+pytest tests/new/integration/ -n 4      # Integration: MUST use -n 4 (SQLite concurrency)
 
 # Run single test file
 pytest tests/new/unit/test_specific.py -v -n auto
@@ -302,7 +302,7 @@ pytest tests/new/ -n auto
 | `gara.distance = 9` (thinking best of 9) | `gara.distance = 5` (race to 5) |
 | `db.session.delete(user)` | `user.anonymize()` |
 | `gara.status == GaraStatus.PLAYING` | `gara.status == GaraStatus.PLAYING.value` |
-| `pytest tests/new/` (no parallel) | `pytest tests/new/ -n auto` |
+| `pytest tests/new/integration/ -n auto` | `pytest tests/new/integration/ -n 4` (SQLite deadlock) |
 | Manual `db.session.commit()` | Use `@transactional` decorator |
 | `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
 | `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |

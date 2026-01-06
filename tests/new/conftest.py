@@ -61,6 +61,10 @@ def db_session(app):
         db.drop_all()
         db.create_all()
 
+        # Configure session to NOT expire objects after commit
+        # This prevents DetachedInstanceError in tests
+        db.session.expire_on_commit = False
+
         # Clear any remaining session state
         db.session.remove()
 
@@ -146,6 +150,50 @@ def clean_session():
         db.session.expunge_all()
 
     return _clean
+
+
+@pytest.fixture
+def logged_in_client(app, db_session):
+    """
+    Create a test client with a logged-in user.
+
+    Usage:
+        def test_something(logged_in_client):
+            client, user = logged_in_client(role="admin")
+            response = client.get('/some/protected/route')
+    """
+    from models import User
+    from models.user.role_enum import UserRole
+    from flask_login import login_user
+
+    def _create_logged_in_client(role="player", username_prefix="test"):
+        unique_id = str(uuid.uuid4())[:8]
+        user = User(
+            username=f"{username_prefix}_{unique_id}",
+            email=f"{username_prefix}_{unique_id}@test.com",
+            role=role if isinstance(role, str) else role.value,
+        )
+        user.set_password("test123")
+        db_session.add(user)
+        db_session.commit()
+
+        # Store user_id for later use
+        user_id = user.id
+
+        client = app.test_client()
+
+        # Login using session manipulation (compatible with test client)
+        with client.session_transaction() as sess:
+            sess["_user_id"] = str(user_id)
+            sess["_fresh"] = True
+
+        # Refresh user from current session to avoid DetachedInstanceError
+        from models import db
+        user = db.session.get(User, user_id)
+
+        return client, user
+
+    return _create_logged_in_client
 
 # def pytest_runtest_logstart(nodeid, location):
 #     print(f"\n>>> STARTING {nodeid}\n", flush=True)

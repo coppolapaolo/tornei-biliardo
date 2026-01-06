@@ -2,11 +2,17 @@
 {# Crown shows when match is completed and has a winner #}
 {% set p1_wins = match.status == 'completed' and match.winner_id == match.player1_id %}
 {% set p2_wins = match.status == 'completed' and match.winner_id == match.player2_id %}
+{# Check if players have forfeited - show them in gray #}
+{% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
+{% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
 <tr>
     <td>
-        <strong>{{ match.player1.username }}</strong>
+        <strong class="{% if p1_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ match.player1.username }}</strong>
         {% if p1_wins %}
         <i class="fas fa-crown text-warning ms-1"></i>
+        {% endif %}
+        {% if p1_forfeit %}
+        <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
         {% endif %}
     </td>
     <td class="text-center">vs</td>
@@ -14,14 +20,20 @@
         {% if match.is_bye %}
         <em class="text-muted">{{ _('Bye') }}</em>
         {% else %}
-        <strong>{{ match.player2.username }}</strong>
+        <strong class="{% if p2_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ match.player2.username }}</strong>
         {% if p2_wins %}
         <i class="fas fa-crown text-warning ms-1"></i>
+        {% endif %}
+        {% if p2_forfeit %}
+        <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
         {% endif %}
         {% endif %}
     </td>
     <td>
-        {% if match.status == 'completed' %}
+        {% if match.is_bye %}
+        {# Match bye: non ha un vero risultato, mostra semplicemente "-" #}
+        <span class="text-muted">-</span>
+        {% elif match.status == 'completed' %}
         <span class="badge bg-info">
             {{ match.player1_score }} - {{ match.player2_score }}
         </span>
@@ -65,7 +77,10 @@
         {% endif %}
     </td>
     <td>
-        {% if match.status == 'completed' %}
+        {% if match.is_bye %}
+        {# Match bye: non richiede tavolo #}
+        <span class="text-muted">-</span>
+        {% elif match.status == 'completed' %}
         {# Partite completate: nessun tavolo (già liberato) #}
         <span class="text-muted">-</span>
         {% elif user_can_manage and available_tables %}
@@ -100,8 +115,8 @@
     </td>
     {% if user_can_manage %}
     <td>
-        {% if not match.is_bye and match_can_modify.get(match.id, True) and match.table_assignment %}
-        {# Actions only available when match has table assigned #}
+        {# Show actions if: match is not bye, can be modified, and either has table OR is completed #}
+        {% if not match.is_bye and match_can_modify.get(match.id, True) and (match.table_assignment or match.status == 'completed') %}
         <div class="btn-group btn-group-sm" role="group">
             <!-- Imposta Risultato Rapido -->
             {% if match.status != 'completed' %}

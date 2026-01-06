@@ -1,7 +1,12 @@
 <!-- Detailed Classification Component -->
+{% set is_random_strategy = gara.matchmaking_strategy == 'random' %}
 <div class="card">
     <div class="card-header">
-        <h5><i class="fas fa-list-ol"></i> Classifica dopo Turno {{ round_number }}</h5>
+        {% if is_random_strategy %}
+            <h5><i class="fas fa-list-ol"></i> Classifica Complessiva</h5>
+        {% else %}
+            <h5><i class="fas fa-list-ol"></i> Classifica dopo Turno {{ round_number }}</h5>
+        {% endif %}
     </div>
     <div class="card-body">
         {% if classification %}
@@ -11,9 +16,11 @@
                         <tr>
                             <th width="10%">Pos.</th>
                             <th width="25%">Giocatore</th>
+                            {% if not is_random_strategy %}
                             <th width="15%">Vittorie</th>
+                            {% endif %}
                             <th width="15%">
-                                {% if classification and classification[0].gara.matchmaking_strategy == 'random' %}
+                                {% if is_random_strategy %}
                                     Rack Totali
                                 {% else %}
                                     Diff. Rack
@@ -41,11 +48,13 @@
                                 <td>
                                     <strong>{{ player_class.user.username }}</strong>
                                 </td>
+                                {% if not is_random_strategy %}
                                 <td>
                                     <span class="badge bg-success">{{ player_class.matches_won }}</span>
                                 </td>
+                                {% endif %}
                                 <td>
-                                    {% if classification[0].gara.matchmaking_strategy == 'random' %}
+                                    {% if is_random_strategy %}
                                         {# For Random strategy, show total racks won without +/- signs #}
                                         <span class="badge bg-primary">{{ player_class.rack_difference }}</span>
                                     {% else %}

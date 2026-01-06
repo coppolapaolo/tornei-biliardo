@@ -118,11 +118,14 @@ class TestBaseMatchMaxRacksValidation:
         # Then: Should not be able to add rack
         assert result is False
 
-    def test_can_add_rack_returns_false_when_match_pending(
+    def test_can_add_rack_returns_true_when_match_pending(
         self, db_session, sample_match
     ):
-        """Should not allow adding rack if match is pending."""
-        # Given: A match that is pending
+        """Should allow adding first rack if match is pending.
+
+        The first rack addition transitions the match from pending to playing.
+        """
+        # Given: A match that is pending with no scores
         sample_match.player1_score = 0
         sample_match.player2_score = 0
         sample_match.status = MatchStatus.PENDING.value
@@ -130,8 +133,8 @@ class TestBaseMatchMaxRacksValidation:
         # When: Checking if can add rack
         result = sample_match.can_add_rack()
 
-        # Then: Should not be able to add rack
-        assert result is False
+        # Then: Should be able to add rack (first rack starts the match)
+        assert result is True
 
 
 class TestIndividualMatchCannotAddRackAtMax:

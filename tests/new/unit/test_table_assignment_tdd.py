@@ -58,9 +58,9 @@ class TestTableAssignmentTDD:
 
     @pytest.fixture
     def players(self, db_session):
-        """Create test players"""
+        """Create test players - 10 players for 5 non-overlapping matches"""
         players = []
-        for i in range(6):
+        for i in range(10):  # 10 players for 5 matches
             user = User(
                 username=f"player{i + 1}",
                 email=f"player{i + 1}@test.com",
@@ -73,14 +73,22 @@ class TestTableAssignmentTDD:
 
     @pytest.fixture
     def matches_without_tables(self, db_session, gara_with_venue, players):
-        """Create 5 matches without table assignment (more than available tables)"""
+        """Create 5 non-overlapping matches (more matches than available tables).
+
+        Each player is in exactly ONE match to avoid player-busy conflicts:
+        - Match 0: player[0] vs player[1]
+        - Match 1: player[2] vs player[3]
+        - Match 2: player[4] vs player[5]
+        - Match 3: player[6] vs player[7]
+        - Match 4: player[8] vs player[9]
+        """
         matches = []
-        for i in range(0, 5):  # 5 matches > 3 tables available
+        for i in range(5):  # 5 matches > 3 tables available
             match = Match(
                 gara_id=gara_with_venue.id,
                 round_number=1,
-                player1_id=players[i].id if i < len(players) else None,
-                player2_id=players[i + 1].id if i + 1 < len(players) else None,
+                player1_id=players[i * 2].id,      # 0, 2, 4, 6, 8
+                player2_id=players[i * 2 + 1].id,  # 1, 3, 5, 7, 9
                 status=MatchStatus.PENDING.value,
                 table_assignment=None,  # No table assigned yet
             )

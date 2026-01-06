@@ -129,10 +129,13 @@ markers =
 ### Test Execution
 - **Default**: `pytest` (runs unit + integration, excludes legacy)
 - **Correct Path**: `PYTHONPATH=. pytest tests/new/` (REQUIRED for proper imports)
-- **Unit only**: `PYTHONPATH=. pytest tests/new/unit/`
-- **Integration only**: `PYTHONPATH=. pytest tests/new/integration/`
+- **Unit only**: `PYTHONPATH=. pytest tests/new/unit/ -n auto`
+- **Integration only**: `PYTHONPATH=. pytest tests/new/integration/ -n 4` ⚠️ **MUST use -n 4**
 - **E2E only**: `PYTHONPATH=. pytest tests/new/e2e/`
 - **Legacy tests**: `pytest tests/legacy/` (separate, not maintained)
+
+**⚠️ SQLite Concurrency Warning**: Integration tests MUST use `-n 4` (not `-n auto`).
+With more workers, SQLite creates deadlocks causing infinite loops.
 
 ## Testing Strategies
 
