@@ -293,6 +293,29 @@ class RoundService:
                 "Impossibile cancellare l'avvio: ci sono già dei risultati inseriti"
             )
 
+        # Cancella le classifiche della gara
+        from models.classification.models import RoundClassification, GaraClassification
+        from models.competition.gara_challenge import (
+            GaraChallenge,
+            GaraChallengeAttempt,
+            GaraChallengeClassification,
+        )
+
+        RoundClassification.query.filter_by(gara_id=gara_id).delete()
+        GaraClassification.query.filter_by(gara_id=gara_id).delete()
+
+        # Cancella tentativi e classifiche challenge (se presenti)
+        GaraChallengeClassification.query.filter_by(gara_id=gara_id).delete()
+
+        # Cancella i tentativi challenge associati alle challenge di questa gara
+        gara_challenge_ids = [
+            gc.id for gc in GaraChallenge.query.filter_by(gara_id=gara_id).all()
+        ]
+        if gara_challenge_ids:
+            GaraChallengeAttempt.query.filter(
+                GaraChallengeAttempt.gara_challenge_id.in_(gara_challenge_ids)
+            ).delete(synchronize_session=False)
+
         # Cancella TUTTI i match della gara
         # Questo è necessario specialmente per la strategia 'random' che pre-genera tutto
         matches = (
