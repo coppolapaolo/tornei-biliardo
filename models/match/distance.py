@@ -131,6 +131,7 @@ class Distance:
 
         Handles both single-set and multi-set matches.
         Uses match.match_distance for per-round distance overrides.
+        Supports standalone matches (match.gara is None).
 
         Args:
             match: Match model instance
@@ -138,12 +139,19 @@ class Distance:
         Returns:
             Distance object representing the match's configuration
         """
+        # Handle standalone matches (gara_id is NULL after soft delete with keep_matches)
+        gara = match.gara
+        gara_dist = gara.distance if gara else 5  # Default distance for standalone
+        is_race_to = (
+            getattr(gara, "is_race_to", True) if gara
+            else True  # Default to race-to for standalone
+        )
+
         if not match.is_multi_set:
             # Single-set match - use match's distance (supports per-round overrides)
             # Fall back to gara.distance for legacy matches without match_distance set
             # Legacy matches have match_distance=1 (default), so we need to detect this
             match_dist = getattr(match, "match_distance", None)
-            gara_dist = match.gara.distance
 
             # Use match_distance if explicitly set to a value different from default (1)
             # or if it equals gara.distance (confirming it was set intentionally)
@@ -157,7 +165,7 @@ class Distance:
 
             return cls(
                 racks=effective_distance,
-                is_race_to_racks=getattr(match.gara, "is_race_to", getattr(match.gara, "best_of", True)),
+                is_race_to_racks=is_race_to,
                 is_multi_set=False,
                 sets=1,
                 is_race_to_sets=True
@@ -165,8 +173,8 @@ class Distance:
         else:
             # Multi-set match
             return cls(
-                racks=match.gara.distance,
-                is_race_to_racks=getattr(match.gara, "is_race_to", getattr(match.gara, "best_of", True)),
+                racks=gara_dist,
+                is_race_to_racks=is_race_to,
                 is_multi_set=True,
                 sets=getattr(match, "match_distance", 1),
                 is_race_to_sets=True  # Assume race-to for sets

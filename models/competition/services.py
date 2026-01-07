@@ -846,6 +846,47 @@ class GaraService:
 
     @staticmethod
     @transactional(domain="competition")
+    def soft_delete_gara(
+        gara_id: int,
+        deleted_by_id: int,
+        cascade_option: str,
+        reason: str = ""
+    ) -> None:
+        """Soft delete a gara with cascade options.
+
+        Admin-only operation. Marks the gara as deleted without physical removal.
+        Related matches can be either detached (kept as standalone) or logically
+        deleted along with the gara.
+
+        Args:
+            gara_id: ID of gara to soft delete
+            deleted_by_id: ID of admin performing the deletion
+            cascade_option: "delete_all" or "keep_matches"
+                - delete_all: Matches stay linked (will be hidden by gara filter)
+                - keep_matches: Matches become standalone (gara_id = NULL)
+            reason: Optional reason for deletion
+
+        Raises:
+            ValueError: If gara not found
+        """
+        from models.match.models import Match
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+
+        # If keep_matches: detach all matches from gara
+        if cascade_option == "keep_matches":
+            Match.query.filter_by(gara_id=gara_id).update({"gara_id": None})
+
+        # Soft delete the gara
+        gara.deleted_at = datetime.utcnow()
+        gara.deleted_reason = reason
+
+        db.session.add(gara)
+
+    @staticmethod
+    @transactional(domain="competition")
     def cancel_tournament(
         gara_id: int,
         admin_id: int,

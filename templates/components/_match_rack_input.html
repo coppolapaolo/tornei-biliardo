@@ -1,6 +1,6 @@
 <!-- Rack Input Component -->
 {% if match.status != 'completed' and (user_is_player or user_can_manage) %}
-{% if match.gara.is_race_to %}
+{% if match.distance_config.is_race_to_racks %}
     {# Caso "al meglio di N" - controlla se uno dei giocatori ha raggiunto il punteggio vincente #}
     {% set winning_score = match.effective_distance %}
     {% set match_completed = (match.player1_score >= winning_score or match.player2_score >= winning_score) %}

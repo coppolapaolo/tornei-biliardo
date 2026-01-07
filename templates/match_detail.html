@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ _('Match') }} {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
-match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }} - {{ _('Gara')
-}} {{
-match.gara.name }}{% endblock %}
+match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}{% if match.gara %} - {{ _('Gara') }} {{ match.gara.name }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -17,11 +15,18 @@ match.gara.name }}{% endblock %}
             </h1>
         </div>
         <div>
-            {# Unified back button - uses single adaptive gara_detail route #}
+            {# Back button - adapts based on whether match belongs to a gara #}
+            {% if match.gara_id %}
             <a href="{{ url_for('admin.competition.gara_detail', gara_id=match.gara_id) }}"
                 class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> {{ _('Torna alla Gara') }}
             </a>
+            {% else %}
+            <a href="{{ url_for('player.history') }}"
+                class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> {{ _('Torna allo Storico') }}
+            </a>
+            {% endif %}
         </div>
     </div>
 

@@ -90,13 +90,23 @@
                             <!-- Date and Competition -->
                             <div class="col-md-3">
                                 <div class="fw-bold">
-                                    {{ match.gara.date|date_local if match.gara.date else '-' }}
+                                    {% if match.gara and match.gara.date %}
+                                        {{ match.gara.date|date_local }}
+                                    {% elif match.created_at %}
+                                        {{ match.created_at|date_local }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
                                 </div>
                                 <small class="text-muted">
-                                    {% if match.gara.campionato %}
-                                        {{ match.gara.campionato.name }} - {{ match.gara.name or ('Gara ' ~ match.gara.number) }}
+                                    {% if match.gara %}
+                                        {% if match.gara.campionato %}
+                                            {{ match.gara.campionato.name }} - {{ match.gara.name or ('Gara ' ~ match.gara.number) }}
+                                        {% else %}
+                                            {{ match.gara.name or 'Gara Singola' }}
+                                        {% endif %}
                                     {% else %}
-                                        {{ match.gara.name or 'Gara Singola' }}
+                                        {{ _('Match Individuale') }}
                                     {% endif %}
                                 </small>
                             </div>
@@ -118,14 +128,15 @@
                             <div class="col-md-2">
                                 <small class="text-muted">
                                     <i class="fas fa-trophy me-1"></i>
-                                    {{ (match.discipline or match.gara.discipline)|replace('_', ' ')|title }}
+                                    {% set discipline = match.discipline or (match.gara.discipline if match.gara else '') %}
+                                    {{ discipline|replace('_', ' ')|title if discipline else '-' }}
                                 </small>
                             </div>
 
                             <!-- Location -->
                             <div class="col-md-2">
                                 <small class="text-muted">
-                                    {% if match.gara.location %}
+                                    {% if match.gara and match.gara.location %}
                                     <i class="fas fa-map-marker-alt me-1"></i>
                                     {{ match.gara.location|truncate(20) }}
                                     {% endif %}

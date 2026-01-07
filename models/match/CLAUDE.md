@@ -388,6 +388,34 @@ if not match.is_completed():
 
 When `MatchService.to_completed()` is called, it automatically records a `PlayerEncounter` for anti-rematch logic in future rounds.
 
+### Standalone Matches (Match Individuali)
+
+Matches can exist without a gara (`gara_id = NULL`) in two scenarios:
+1. **Soft delete with keep_matches**: When a gara/campionato is soft deleted with "Mantieni match" option
+2. **Future**: Individual matches proposed outside tournaments
+
+**Handling in Code:**
+```python
+# Distance value object handles null gara
+distance = Distance.from_match(match)  # Works even if match.gara is None
+# Uses defaults: racks=5, is_race_to=True
+
+# Check for standalone match
+if match.gara_id is None:
+    # This is a standalone "Match Individuale"
+    # Use match.created_at for date
+    # Use match.discipline for discipline
+```
+
+**Templates must check `match.gara` before accessing:**
+```jinja2
+{% if match.gara %}
+    {{ match.gara.discipline }}
+{% else %}
+    {{ match.discipline|replace('_', ' ')|title }}
+{% endif %}
+```
+
 ---
 
 ## Cross-References

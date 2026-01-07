@@ -48,12 +48,12 @@
                     
                     <!-- Azioni -->
                     <div class="btn-group w-100" role="group">
-                        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}" 
+                        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}"
                            class="btn btn-primary btn-sm">
                             <i class="fas fa-eye"></i> Dettagli
                         </a>
                         {% if campionato.can_be_modified() %}
-                            <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" 
+                            <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
                                class="btn btn-warning btn-sm">
                                 <i class="fas fa-edit"></i> Modifica
                             </a>
@@ -66,10 +66,17 @@
                                 <i class="fas fa-play"></i> Attiva
                             {% endif %}
                         </button>
+                        {% if current_user.is_admin %}
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="showSoftDeleteModal('campionato', {{ campionato.id }}, '{{ campionato.name|e }}', '{{ url_for('admin.campionato.soft_delete_campionato', campionato_id=campionato.id) }}')"
+                                    title="{{ _('Elimina') }}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        {% endif %}
                     </div>
-                    
-                    {% if campionato.can_be_deleted() %}
-                        <button class="btn btn-danger btn-sm w-100 mt-2" 
+
+                    {% if campionato.can_be_deleted() and not current_user.is_admin %}
+                        <button class="btn btn-danger btn-sm w-100 mt-2"
                                 onclick="deleteTournament({{ campionato.id }}, '{{ campionato.name }}')">
                             <i class="fas fa-trash"></i> Elimina Campionato
                         </button>

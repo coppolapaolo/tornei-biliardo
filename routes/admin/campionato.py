@@ -11,6 +11,7 @@ from models import (
 )
 from utils import (
     campionato_manager_required,
+    admin_required,
 )
 from models.campionato.services import TournamentService
 
@@ -177,6 +178,54 @@ def delete_campionato(campionato_id):
         return redirect(
             url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
         )
+
+
+@campionato_bp.route("/<int:campionato_id>/soft-delete", methods=["POST"])
+@login_required
+@admin_required
+def soft_delete_campionato(campionato_id):
+    """Soft delete campionato - admin only.
+
+    Marks the campionato and all its garas as deleted.
+    Supports cascade options for related matches.
+    """
+    campionato = db.session.get(Campionato, campionato_id)
+    if campionato is None:
+        abort(404)
+
+    # Get cascade option from form
+    cascade_option = request.form.get("cascade_option", "delete_all")
+    reason = request.form.get("reason", "").strip()
+
+    campionato_name = campionato.name
+
+    try:
+        success = campionato_service.soft_delete_campionato(
+            campionato_id=campionato_id,
+            deleted_by_id=current_user.id,
+            cascade_option=cascade_option,
+            reason=reason
+        )
+
+        if success:
+            if cascade_option == "keep_matches":
+                flash(
+                    f'Campionato "{campionato_name}" eliminato. '
+                    f"I match sono stati mantenuti come match individuali.",
+                    "success"
+                )
+            else:
+                flash(f'Campionato "{campionato_name}" eliminato con successo!', "success")
+        else:
+            flash(f'Campionato "{campionato_name}" era già eliminato.', "warning")
+
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    return redirect(url_for("dashboard.dashboard"))
 
 
 @campionato_bp.route("/<int:campionato_id>/toggle_active", methods=["POST"])

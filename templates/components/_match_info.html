@@ -4,19 +4,31 @@
         <h6>Info Partita</h6>
     </div>
     <div class="card-body">
-        {% if match.gara.campionato %}
-        <p><strong>Campionato:</strong> {{ match.gara.campionato.name }}</p>
+        {% if match.gara %}
+            {% if match.gara.campionato %}
+            <p><strong>Campionato:</strong> {{ match.gara.campionato.name }}</p>
+            {% endif %}
+            <p><strong>Gara:</strong> {{ match.gara.name or match.gara.number }}</p>
+            <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
+            <p><strong>Disciplina:</strong> {{ match.gara.discipline }}</p>
+            <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>
+            {% if match.gara.location %}
+                <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
+            {% endif %}
+        {% else %}
+            {# Standalone match (dopo soft delete con keep_matches) #}
+            <p><strong>Tipo:</strong> <span class="badge bg-secondary">{{ _('Match Individuale') }}</span></p>
+            <p><strong>Turno:</strong> {{ match.round_number }}</p>
+            {% if match.discipline %}
+            <p><strong>Disciplina:</strong> {{ match.discipline|replace('_', ' ')|title }}</p>
+            {% endif %}
+            {% if match.created_at %}
+            <p><strong>Data:</strong> {{ match.created_at|date_local }}</p>
+            {% endif %}
         {% endif %}
-        <p><strong>Gara:</strong> {{ match.gara.name or match.gara.number }}</p>
-        <p><strong>Turno:</strong> {{ match.round_number }}/{{ match.gara.rounds_count }}</p>
-        <p><strong>Disciplina:</strong> {{ match.gara.discipline }}</p>
         <p><strong>Modalità:</strong>
             {{ match.distance_config|format_distance }}
         </p>
-        <p><strong>Data:</strong> {{ match.gara.date|date_local }}</p>
-        {% if match.gara.location %}
-            <p><strong>Luogo:</strong> {{ match.gara.location }}</p>
-        {% endif %}
         {% if match.table_assignment %}
             <p><strong>Tavolo:</strong> {{ match.table_assignment }}</p>
         {% else %}

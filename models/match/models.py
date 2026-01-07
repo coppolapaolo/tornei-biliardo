@@ -21,8 +21,9 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     __tablename__ = "match"
 
     id = db.Column(db.Integer, primary_key=True)
+    # gara_id nullable to support standalone matches (detached from deleted gara)
     gara_id = db.Column(
-        db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
+        db.Integer, db.ForeignKey("gara.id", ondelete="SET NULL"), nullable=True
     )
     round_number = db.Column(
         db.Integer, nullable=False
@@ -120,6 +121,15 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             f"<Match {self.player1_id} vs {self.player2_id} "
             f"(Round {self.round_number})>"
         )
+
+    @property
+    def is_standalone(self) -> bool:
+        """Check if this match is standalone (no gara association).
+
+        A match becomes standalone when its gara is soft-deleted
+        with the 'keep_matches' option.
+        """
+        return self.gara_id is None
 
     def apply_handicap(self, handicap_data: dict) -> None:
         """Apply handicap to the match."""

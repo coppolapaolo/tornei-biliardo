@@ -147,9 +147,16 @@
                     <i class="fas fa-edit"></i> Modifica
                   </a>
                 {% endif %}
+                {% if current_user.is_admin %}
+                  <button class="btn btn-danger btn-sm"
+                          onclick="showSoftDeleteModal('gara', {{ p.id }}, '{{ p.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=p.id) }}')"
+                          title="{{ _('Elimina') }}">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                {% endif %}
               </div>
 
-              {% if p.can_be_deleted() %}
+              {% if p.can_be_deleted() and not current_user.is_admin %}
                 <form class="mt-2" method="POST"
                       action="{{ url_for('admin.competition.delete_gara', gara_id=p.id) }}"
                       onsubmit="return confirm('Sei SICURO di voler eliminare definitivamente questa gara?');">

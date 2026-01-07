@@ -542,6 +542,57 @@ def delete_gara(gara_id):
         )
 
 
+@competition_bp.route("/<int:gara_id>/soft-delete", methods=["POST"])
+@login_required
+@admin_required
+def soft_delete_gara(gara_id):
+    """Soft delete gara - admin only.
+
+    Marks the gara as deleted without physical removal.
+    Supports cascade options for related matches.
+    """
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
+        abort(404)
+
+    # Get cascade option from form
+    cascade_option = request.form.get("cascade_option", "delete_all")
+    reason = request.form.get("reason", "").strip()
+
+    # Determine redirect before soft delete
+    is_standalone = gara.campionato_id is None
+    campionato_id = gara.campionato_id
+    gara_name = gara.name
+
+    try:
+        GaraService.soft_delete_gara(
+            gara_id=gara_id,
+            deleted_by_id=current_user.id,
+            cascade_option=cascade_option,
+            reason=reason
+        )
+
+        if cascade_option == "keep_matches":
+            flash(
+                f"{gara_name} eliminata. I match sono stati mantenuti come match individuali.",
+                "success"
+            )
+        else:
+            flash(f"{gara_name} eliminata con successo!", "success")
+
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    # Redirect: home for standalone, campionato detail for campionato gare
+    if is_standalone:
+        return redirect(url_for("dashboard.dashboard"))
+    else:
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+
 @competition_bp.route("/<int:gara_id>/cancel", methods=["POST"])
 @login_required
 @gara_manager_required

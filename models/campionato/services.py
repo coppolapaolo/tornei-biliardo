@@ -333,12 +333,34 @@ class TournamentService(DomainService):
 
     @transactional(domain="campionato")
     def soft_delete_campionato(
-        self, campionato_id: int, reason: Optional[str] = None
+        self,
+        campionato_id: int,
+        deleted_by_id: int,
+        cascade_option: str = "delete_all",
+        reason: Optional[str] = None
     ) -> bool:
+        """Soft delete campionato with cascade options.
+
+        Admin-only operation. Marks the campionato and all its garas as deleted.
+        Related matches can be either kept linked (hidden with garas) or detached
+        (become standalone).
+
+        Args:
+            campionato_id: ID of campionato to soft delete
+            deleted_by_id: ID of admin performing the deletion
+            cascade_option: "delete_all" or "keep_matches"
+                - delete_all: Matches stay linked (hidden with garas)
+                - keep_matches: Matches become standalone (gara_id = NULL)
+            reason: Optional reason for deletion
+
+        Returns:
+            True if successful, False if already deleted
+
+        Raises:
+            ValueError: If campionato not found
         """
-        Perform soft delete on campionato with played matches.
-        Returns True if successful, False if already deleted.
-        """
+        from models.competition.models import Gara
+
         # Track domain access
         self._track_domain_access()
 
@@ -351,6 +373,24 @@ class TournamentService(DomainService):
         if campionato.is_deleted:
             return False
 
+        # Handle cascade option for all garas in the campionato
+        if cascade_option == "keep_matches":
+            # Detach all matches from garas in this campionato
+            gara_ids = [g.id for g in campionato.gare]
+            if gara_ids:
+                Match.query.filter(Match.gara_id.in_(gara_ids)).update(
+                    {"gara_id": None},
+                    synchronize_session="fetch"
+                )
+
+        # Soft delete all garas in the campionato
+        for gara in campionato.gare:
+            if not gara.is_deleted:
+                gara.deleted_at = datetime.utcnow()
+                gara.deleted_reason = reason or ""
+                db.session.add(gara)
+
+        # Soft delete the campionato itself
         success = campionato.soft_delete(reason or "")
         return success
 

@@ -1,0 +1,120 @@
+<!-- Soft Delete Modal Component -->
+<!-- Usage: include this in any page, then call showSoftDeleteModal() from JavaScript -->
+<div class="modal fade" id="softDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-trash-alt me-2"></i>
+                    <span id="softDeleteModalTitle">Elimina</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="softDeleteForm" method="POST">
+                <div class="modal-body">
+                    <p class="mb-3">
+                        <span id="softDeleteModalMessage"></span>
+                        <strong id="softDeleteEntityName"></strong>?
+                    </p>
+                    <p id="softDeleteExtraMessage" class="text-muted small mb-3" style="display: none;"></p>
+
+                    <!-- Cascade Options -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ _("Cosa fare con i match esistenti?") }}</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="cascade_option"
+                                   id="cascadeDeleteAll" value="delete_all" checked>
+                            <label class="form-check-label" for="cascadeDeleteAll">
+                                <i class="fas fa-trash text-danger me-1"></i>
+                                {{ _("Elimina tutto") }}
+                                <small class="text-muted d-block">
+                                    {{ _("I match saranno nascosti insieme alla gara") }}
+                                </small>
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="cascade_option"
+                                   id="cascadeKeepMatches" value="keep_matches">
+                            <label class="form-check-label" for="cascadeKeepMatches">
+                                <i class="fas fa-exchange-alt text-primary me-1"></i>
+                                {{ _("Mantieni i match") }}
+                                <small class="text-muted d-block">
+                                    {{ _("I match diventeranno match individuali (standalone)") }}
+                                </small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Optional Reason -->
+                    <div class="mb-3">
+                        <label for="softDeleteReason" class="form-label">
+                            {{ _("Motivo (opzionale)") }}
+                        </label>
+                        <input type="text" class="form-control" id="softDeleteReason"
+                               name="reason" maxlength="255"
+                               placeholder="{{ _('Es: Torneo annullato per maltempo') }}">
+                    </div>
+
+                    <div class="alert alert-warning mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <small>{{ _("Questa azione non elimina permanentemente i dati.") }}</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ _("Annulla") }}
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i>
+                        {{ _("Elimina") }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * Show the soft delete confirmation modal.
+ *
+ * @param {string} entityType - 'gara' or 'campionato'
+ * @param {number} entityId - ID of the entity
+ * @param {string} entityName - Display name of the entity
+ * @param {string} actionUrl - URL to POST the delete request
+ */
+function showSoftDeleteModal(entityType, entityId, entityName, actionUrl) {
+    var modal = document.getElementById('softDeleteModal');
+    var form = document.getElementById('softDeleteForm');
+    var title = document.getElementById('softDeleteModalTitle');
+    var message = document.getElementById('softDeleteModalMessage');
+    var nameSpan = document.getElementById('softDeleteEntityName');
+    var extraMessage = document.getElementById('softDeleteExtraMessage');
+
+    // Set title and message based on entity type
+    if (entityType === 'campionato') {
+        title.textContent = {{ _("Elimina Campionato")|tojson }};
+        message.textContent = {{ _("Sei sicuro di voler eliminare il campionato")|tojson }} + ' ';
+        extraMessage.textContent = {{ _("Verranno eliminate anche tutte le gare associate.")|tojson }};
+        extraMessage.style.display = 'block';
+    } else {
+        title.textContent = {{ _("Elimina Gara")|tojson }};
+        message.textContent = {{ _("Sei sicuro di voler eliminare la gara")|tojson }} + ' ';
+        extraMessage.style.display = 'none';
+    }
+
+    // Set entity name (safely escaped)
+    nameSpan.textContent = entityName;
+
+    // Set form action URL
+    form.action = actionUrl;
+
+    // Reset form state
+    document.getElementById('cascadeDeleteAll').checked = true;
+    document.getElementById('softDeleteReason').value = '';
+
+    // Show modal
+    var bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+</script>

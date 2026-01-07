@@ -101,9 +101,10 @@ class PlayerHistoryService:
             Tuple of (pagination object, aggregated stats for filtered matches)
         """
         # Base query - completed matches where user participated
+        # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
         query = (
             db.session.query(Match)
-            .join(Gara, Gara.id == Match.gara_id)
+            .outerjoin(Gara, Gara.id == Match.gara_id)
             .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
             .filter(
                 Match.status == MatchStatus.COMPLETED.value,
@@ -132,9 +133,10 @@ class PlayerHistoryService:
         stats = PlayerHistoryService._calculate_match_stats(query.all(), user_id)
 
         # Re-run query for pagination (SQLAlchemy pagination needs fresh query)
+        # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
         query = (
             db.session.query(Match)
-            .join(Gara, Gara.id == Match.gara_id)
+            .outerjoin(Gara, Gara.id == Match.gara_id)
             .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
             .filter(
                 Match.status == MatchStatus.COMPLETED.value,

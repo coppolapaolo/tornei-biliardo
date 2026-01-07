@@ -331,6 +331,29 @@ def cancel_gara_with_notifications(
     cancelled_by_id: int
 ) -> None:
     """Cancel gara and notify all participants."""
+
+@transactional
+def soft_delete_gara(
+    gara_id: int,
+    deleted_by_id: int,
+    cascade_option: str,
+    reason: str = ""
+) -> None:
+    """Soft delete gara (admin only).
+
+    Args:
+        gara_id: ID of gara to delete
+        deleted_by_id: Admin user ID performing deletion
+        cascade_option: "delete_all" or "keep_matches"
+        reason: Optional deletion reason
+
+    Cascade Options:
+    - "delete_all": Soft delete gara and all related data
+    - "keep_matches": Detach matches (gara_id = NULL) before soft delete.
+      Detached matches become "Match Individuali" visible in player history.
+
+    Note: Only admin can soft delete. Directors cannot delete gare.
+    """
 ```
 
 #### Round Management (Facade to RoundService)
@@ -1017,6 +1040,12 @@ optimal_rounds = gara.calculate_rounds_for_strategy(
    - Rounds locked when subsequent round exists
    - Prevents accidental modifications
    - Admin override available
+
+6. **Soft Delete with Keep Matches**:
+   - When deleting gara with "keep_matches" option, matches are detached (gara_id = NULL)
+   - Detached matches become "Match Individuali" visible in player history
+   - Match.distance_config handles null gara with sensible defaults
+   - Templates use `match.gara_id` checks before accessing gara properties
 
 ### Gotchas
 

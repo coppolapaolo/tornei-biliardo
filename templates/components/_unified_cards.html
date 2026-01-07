@@ -233,16 +233,28 @@
           {% endif %}
         </div>
 
-        {# Pulsanti di eliminazione - riga separata - solo se può gestire #}
+        {# Pulsanti di eliminazione - riga separata #}
         {% if item.can_manage %}
         {% if item.type == 'campionato' %}
-        {% if item.entity.can_be_deleted() %}
+        {# Admin: soft delete sempre disponibile #}
+        {% if current_user.is_admin %}
+        <button class="btn btn-danger btn-sm w-100 mt-2"
+                onclick="showSoftDeleteModal('campionato', {{ item.id }}, '{{ item.name|e }}', '{{ url_for('admin.campionato.soft_delete_campionato', campionato_id=item.id) }}')">
+          <i class="fas fa-trash-alt"></i> {{ _('Elimina Campionato') }}
+        </button>
+        {% elif item.entity.can_be_deleted() %}
         <button class="btn btn-danger btn-sm w-100 mt-2" onclick="deleteTournament({{ item.id }}, '{{ item.name|e }}')">
           <i class="fas fa-trash"></i> {{ _('Elimina Campionato') }}
         </button>
         {% endif %}
         {% else %}
-        {% if item.entity.can_be_deleted() %}
+        {# Admin: soft delete sempre disponibile #}
+        {% if current_user.is_admin %}
+        <button class="btn btn-danger btn-sm w-100 mt-2"
+                onclick="showSoftDeleteModal('gara', {{ item.id }}, '{{ item.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=item.id) }}')">
+          <i class="fas fa-trash-alt"></i> {{ _('Elimina Gara') }}
+        </button>
+        {% elif item.entity.can_be_deleted() %}
         <form class="mt-2" method="POST" action="{{ url_for('admin.competition.delete_gara', gara_id=item.id) }}"
           onsubmit="return confirm('{{ _('Sei SICURO di voler eliminare definitivamente questa gara?') }}');">
           <button type="submit" class="btn btn-danger btn-sm w-100">

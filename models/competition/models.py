@@ -6,7 +6,7 @@ Dependencies: models.base.db, datetime
 """
 
 from datetime import datetime
-from models.base import db
+from models.base import db, SoftDeleteMixin
 from enum import Enum
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 from models.matchmaking.configuration import (
@@ -30,12 +30,21 @@ if TYPE_CHECKING:
 
 
 
-class Gara(db.Model):
-    """Competition round within a campionato or standalone."""
+class Gara(SoftDeleteMixin, db.Model):
+    """Competition round within a campionato or standalone.
+
+    Supports soft delete via SoftDeleteMixin:
+    - deleted_at: datetime when soft deleted
+    - is_deleted: property to check if deleted
+    - Automatic query filtering via soft_delete_filter
+    """
 
     __tablename__ = "gara"
 
     id = db.Column(db.Integer, primary_key=True)
+
+    # Soft delete reason (optional)
+    deleted_reason = db.Column(db.String(255), nullable=True)
 
     # FK nullable per supportare standalone competitions
     # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-002.
@@ -536,6 +545,16 @@ class Gara(db.Model):
         """Verifica se la gara può essere cancellata"""
         inscriptions_list = getattr(self, "inscriptions", []) or []
         return not inscriptions_list and self.status == GaraStatus.SETUP.value
+
+    def soft_delete(self, reason: str = "") -> None:
+        """Override soft_delete to support deleted_reason field.
+
+        Args:
+            reason: Optional reason for deletion
+        """
+        from datetime import datetime
+        self.deleted_at = datetime.utcnow()
+        self.deleted_reason = reason
 
     def can_cancel_round(self, round_number: Optional[int] = None) -> bool:
         """Verifica se l'avvio di un turno può essere cancellato.

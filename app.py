@@ -14,7 +14,7 @@ from utils.database_utils import get_database_stats
 from utils.status_ui import register_status_filters
 
 from sqlalchemy.orm import Session as SASession
-from models.user.soft_delete_filter import register_soft_delete_filter_for
+from models.soft_delete import register_soft_delete_filters
 
 
 def create_app(config_name=None):
@@ -43,7 +43,7 @@ def create_app(config_name=None):
     # Inizializza estensioni
     db.init_app(app)
 
-    register_soft_delete_filter_for(SASession)
+    register_soft_delete_filters(SASession)
 
     # Setup Login Manager
     login_manager = LoginManager()
