@@ -343,7 +343,14 @@ def create_gara():
 
     # Campi base
     name = request.form.get("name", f"Gara {number}")
-    date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+    # Support both date and datetime-local formats
+    date_str = request.form["date"]
+    if "T" in date_str:
+        # datetime-local format: YYYY-MM-DDTHH:MM
+        date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M").date()
+    else:
+        # date format: YYYY-MM-DD
+        date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
     # Nuovi campi
     location = request.form.get("location", "").strip()
@@ -376,6 +383,10 @@ def create_gara():
     matchmaking_strategy = campionato.campionato_type
     anti_rematch = campionato.default_anti_rematch if campionato.default_anti_rematch is not None else True
     odd_policy = campionato.default_odd_policy if campionato.default_odd_policy else "bye"
+
+    # Trio matches require "race to N" mode (is_race_to=True)
+    if odd_policy == "trio":
+        is_race_to = True
 
     gara = GaraService.create_gara(
         campionato_id=campionato_id,
