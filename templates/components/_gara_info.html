@@ -39,7 +39,9 @@
                     <span class="text-secondary">{{ _('Disabilitato') }}</span>
                     {% endif %}<br>
                     <strong>{{ _('Numero dispari:') }}</strong> {{ gara.odd_number_policy.replace('_', ' ').title() }}
-                    {% if gara.matchmaking_strategy == 'random' %}
+                    {# Show challenge info only for random strategy with challenge_mode enabled #}
+                    {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+                    {% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
                     <br>
                     {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length
                     %}

@@ -1,49 +1,37 @@
 {# templates/components/_new_campionato_modal.html #}
-<!-- Modal Nuovo Campionato -->
+<!-- Modal Nuovo Campionato - Redirect to Wizard (UPDATED ADR-0001) -->
 {% if is_director %}
 <div class="modal fade" id="newTournamentModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="{{ url_for('admin.campionato.create_campionato') }}">
-        <div class="modal-header">
-          <h5 class="modal-title">Crea Nuovo Campionato</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-trophy"></i> {{ _("Nuovo Campionato") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("Il wizard di creazione campionato ti guidera' attraverso la configurazione in due semplici passaggi:") }}</p>
+                <ol class="mb-4">
+                    <li class="mb-2">
+                        <strong>{{ _("Configurazione Base") }}</strong>
+                        <br><small class="text-muted">{{ _("Nome, tipo, numero gare, playoff") }}</small>
+                    </li>
+                    <li>
+                        <strong>{{ _("Default per le Gare") }}</strong>
+                        <br><small class="text-muted">{{ _("Sede, costo, turni, opzioni matchmaking") }}</small>
+                    </li>
+                </ol>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    {{ _("I default potranno essere modificati singolarmente per ogni gara.") }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
+                <a href="{{ url_for('admin.campionato.wizard_start') }}" class="btn btn-success">
+                    <i class="fas fa-magic"></i> {{ _("Avvia Wizard") }}
+                </a>
+            </div>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Nome campionato</label>
-            <input type="text" class="form-control" name="name" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Tipo</label>
-            <select class="form-select" name="campionato_type">
-              <option value="amalfi" selected>Amalfi</option>
-              <option value="random">Random</option>
-            </select>
-            <small class="text-muted">
-              Amalfi: classifica. Random: casuale anti-rematch.
-            </small>
-          </div>
-          <!-- opzioni rapide -->
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="without_x" id="without_x">
-            <label class="form-check-label" for="without_x">Senza X</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="final_playoffs" id="final_playoffs">
-            <label class="form-check-label" for="final_playoffs">Playoff finali</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="challenge_mode" id="challenge_mode">
-            <label class="form-check-label" for="challenge_mode">Challenge mode</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-          <button type="submit" class="btn btn-primary">Crea</button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 {% endif %}

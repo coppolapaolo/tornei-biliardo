@@ -115,8 +115,9 @@
 <!-- Modal Modifica Date -->
 {% include "components/_modify_dates_modal.html" %}
 
-<!-- Modal Gestione Challenge (solo per gare Random) -->
-{% if gara.matchmaking_strategy == 'random' %}
+<!-- Modal Gestione Challenge (solo per gare Random con challenge_mode abilitato) -->
+{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+{% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
 {% include "components/_challenge_management_modal.html" %}
 {% endif %}
 

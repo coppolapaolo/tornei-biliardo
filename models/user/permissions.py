@@ -46,27 +46,25 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Director can manage assigned campionati
-        if user.is_director:
-            try:
-                from .models import DirectorAssignment
-                from models.base import db
+        # Users with DirectorAssignment can manage assigned campionati
+        # This includes directors AND players who were added as co-directors
+        try:
+            from .models import DirectorAssignment
+            from models.base import db
 
-                assignment = (
-                    db.session.query(DirectorAssignment)
-                    .filter(
-                        DirectorAssignment.entity_type == "campionato",
-                        DirectorAssignment.entity_id == campionato_id,
-                        DirectorAssignment.user_id == user.id,
-                    )
-                    .first()
+            assignment = (
+                db.session.query(DirectorAssignment)
+                .filter(
+                    DirectorAssignment.entity_type == "campionato",
+                    DirectorAssignment.entity_id == campionato_id,
+                    DirectorAssignment.user_id == user.id,
                 )
-                return assignment is not None
-            except Exception:
-                # If we're outside application context or other issues, return False
-                return False
-
-        return False
+                .first()
+            )
+            return assignment is not None
+        except Exception:
+            # If we're outside application context or other issues, return False
+            return False
 
     @staticmethod
     def can_manage_competition(user, competition_id: int) -> bool:
@@ -91,44 +89,46 @@ class PermissionChecker:
         if user.is_admin:
             return True
 
-        # Director can manage competitions in their campionati OR gare they manage
-        if user.is_director:
-            try:
-                # Import here to avoid circular imports during transition
-                from models import Gara, db
+        # Users with DirectorAssignment can manage their assigned competitions
+        # This includes directors AND players who were added as co-directors
+        try:
+            # Import here to avoid circular imports during transition
+            from models import Gara, db
+            from .models import DirectorAssignment
 
-                competition = db.session.get(Gara, competition_id)
-                if competition:
-                    # For gare in campionati
-                    if competition.campionato_id:
-                        return PermissionChecker.can_manage_campionato(
-                            user, competition.campionato_id
-                        )
-                    # For standalone gare
-                    else:
-                        # Director principale
-                        if (
-                            hasattr(competition, "director_id")
-                            and competition.director_id == user.id
-                        ):
-                            return True
-                        # Co-direttore via DirectorAssignment
-                        from .models import DirectorAssignment
+            competition = db.session.get(Gara, competition_id)
+            if competition:
+                # First check direct gara-level assignment (works for both
+                # standalone gare and gare within campionati)
+                is_gara_director = (
+                    db.session.query(DirectorAssignment)
+                    .filter(
+                        DirectorAssignment.entity_type == "gara",
+                        DirectorAssignment.entity_id == competition_id,
+                        DirectorAssignment.user_id == user.id,
+                    )
+                    .first()
+                    is not None
+                )
+                if is_gara_director:
+                    return True
 
-                        is_co_director = (
-                            db.session.query(DirectorAssignment)
-                            .filter(
-                                DirectorAssignment.entity_type == "gara",
-                                DirectorAssignment.entity_id == competition_id,
-                                DirectorAssignment.user_id == user.id,
-                            )
-                            .first()
-                            is not None
-                        )
-                        return is_co_director
-            except Exception:
-                # If we're outside application context or other issues, return False
-                return False
+                # For standalone gare - also check director_id field
+                if not competition.campionato_id:
+                    if (
+                        hasattr(competition, "director_id")
+                        and competition.director_id == user.id
+                    ):
+                        return True
+                # For gare in campionati - also check campionato-level assignment
+                else:
+                    if PermissionChecker.can_manage_campionato(
+                        user, competition.campionato_id
+                    ):
+                        return True
+        except Exception:
+            # If we're outside application context or other issues, return False
+            return False
 
         return False
 

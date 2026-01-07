@@ -44,12 +44,21 @@ class TournamentService(DomainService):
 
         # Filter valid kwargs for Campionato model
         valid_campionato_fields = {
+            # Core configuration
             "campionato_type",
+            "challenge_mode",
+            "is_active",
+            "planned_gare_count",
+            # Default values for gare
+            "default_venue_id",
+            "default_entry_fee",
+            "default_rounds_count",
+            "default_odd_policy",
+            "default_anti_rematch",
+            # Deprecated but kept for compatibility
             "without_x",
             "final_playoffs",
-            "challenge_mode",
             "scoring_policy",
-            "is_active",
         }
         filtered_kwargs = {
             k: v for k, v in kwargs.items() if k in valid_campionato_fields
@@ -83,14 +92,40 @@ class TournamentService(DomainService):
         self,
         name: str,
         creator_user_id: int,
-        campionato_type: str = "Amalfi",
+        campionato_type: str = "amalfi",
+        challenge_mode: bool = False,
+        is_active: bool = True,
+        # New fields - wizard step 1
+        planned_gare_count: int = 10,
+        # New fields - wizard step 2 (defaults for gare)
+        default_venue_id: Optional[int] = None,
+        default_entry_fee: Optional[float] = None,
+        default_rounds_count: int = 3,
+        default_odd_policy: str = "bye",
+        default_anti_rematch: bool = True,
+        # Deprecated but kept for compatibility
         without_x: bool = False,
         final_playoffs: bool = False,
-        challenge_mode: bool = False,
         scoring_policy: str = "classic",
-        is_active: bool = True,
     ) -> Campionato:
-        """Crea campionato e assegna automaticamente il direttore se necessario."""
+        """Crea campionato e assegna automaticamente il direttore se necessario.
+
+        Args:
+            name: Nome del campionato
+            creator_user_id: ID dell'utente che crea il campionato
+            campionato_type: Tipo matchmaking (amalfi, random, etc.)
+            challenge_mode: Abilita challenge drill
+            is_active: Se il campionato è attivo
+            planned_gare_count: Numero di gare previste (target)
+            default_venue_id: Venue di default per le gare
+            default_entry_fee: Costo iscrizione di default
+            default_rounds_count: Numero turni di default per gara
+            default_odd_policy: Gestione dispari di default (bye, bye_with_challenge, trio)
+            default_anti_rematch: Anti-rematch di default
+            without_x: DEPRECATED - use default_odd_policy
+            final_playoffs: DEPRECATED - use PlayoffConfiguration
+            scoring_policy: DEPRECATED - automatic from campionato_type
+        """
         # Track domain access
         self._track_domain_access()
 
@@ -107,11 +142,18 @@ class TournamentService(DomainService):
             lambda: Campionato(
                 name=name,
                 campionato_type=campionato_type,
+                challenge_mode=challenge_mode,
+                is_active=is_active,
+                planned_gare_count=planned_gare_count,
+                default_venue_id=default_venue_id,
+                default_entry_fee=default_entry_fee,
+                default_rounds_count=default_rounds_count,
+                default_odd_policy=default_odd_policy,
+                default_anti_rematch=default_anti_rematch,
+                # Deprecated fields
                 without_x=without_x,
                 final_playoffs=final_playoffs,
-                challenge_mode=challenge_mode,
                 scoring_policy=scoring_policy,
-                is_active=is_active,
             )
         )
         db.session.add(campionato)

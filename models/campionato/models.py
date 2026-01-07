@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from models.base import db
 from models.status_enum import TournamentStatus, GaraStatus, EntityType
-from models.matchmaking.configuration import MatchmakingStrategy
+from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 
 if TYPE_CHECKING:
     from models.user.models import User, TournamentDirector
@@ -26,13 +26,36 @@ class Campionato(db.Model):
     # Campi configurazione
     campionato_type = db.Column(
         db.String(50), nullable=False, default=MatchmakingStrategy.AMALFI.value
-    )  # Matchmaking strategy type
-    without_x = db.Column(db.Boolean, default=False)  # Opzione "senza X"
-    final_playoffs = db.Column(db.Boolean, default=True)  # Play off finali
-    challenge_mode = db.Column(db.Boolean, default=False)  # Challenge
+    )  # Matchmaking strategy type (Amalfi, Random, etc.)
+    challenge_mode = db.Column(db.Boolean, default=False)  # Challenge drill mode
+    planned_gare_count = db.Column(
+        db.Integer, nullable=False, default=10
+    )  # Target number of gare in campionato
+
+    # Default values inherited by gare
+    default_venue_id = db.Column(
+        db.Integer, db.ForeignKey("billiard_hall.id"), nullable=True
+    )  # Default venue for gare
+    default_entry_fee = db.Column(db.Float, nullable=True)  # Default entry fee
+    default_rounds_count = db.Column(
+        db.Integer, nullable=False, default=3
+    )  # Default rounds per gara
+    default_odd_policy = db.Column(
+        db.String(30), nullable=False, default=OddNumberPolicy.BYE.value
+    )  # Default odd number handling (bye, bye_with_challenge, trio)
+    default_anti_rematch = db.Column(
+        db.Boolean, nullable=False, default=True
+    )  # Default anti-rematch setting
+
+    # DEPRECATED - To be removed in future migration
+    # Use default_odd_policy instead of without_x
+    without_x = db.Column(db.Boolean, default=False)  # DEPRECATED: use default_odd_policy
+    # Playoff configuration now in PlayoffConfiguration model
+    final_playoffs = db.Column(db.Boolean, default=True)  # DEPRECATED: use PlayoffConfiguration
+    # Scoring is now automatic based on campionato_type
     scoring_policy = db.Column(
         db.String(50), nullable=False, default="classic"
-    )  # Scoring policy
+    )  # DEPRECATED: automatic from campionato_type
 
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
@@ -49,6 +72,9 @@ class Campionato(db.Model):
     # Relazioni
     gare = db.relationship(
         "Gara", backref="campionato", lazy=True, cascade="all, delete-orphan"
+    )
+    default_venue = db.relationship(
+        "BilliardHall", foreign_keys=[default_venue_id], lazy=True
     )
 
     @property
@@ -166,7 +192,6 @@ class Campionato(db.Model):
         """Check if campionato is ready for playoff generation."""
         return (
             self.get_status() == TournamentStatus.COMPLETED.value
-            and self.final_playoffs
             and self.has_playoff_configurations()
         )
 
@@ -232,23 +257,59 @@ class Campionato(db.Model):
 
         return True
 
+    def get_scoring_system(self) -> dict:
+        """Get the automatic scoring system based on campionato_type.
+
+        Returns a dict with ordering criteria for classification.
+        The scoring system is automatically determined by the campionato type:
+        - AMALFI: Wins DESC → Rack diff DESC → SSR DESC → Previous order
+        - RANDOM: Racks won DESC → SSR DESC → Previous order
+        """
+        if self.campionato_type == MatchmakingStrategy.AMALFI.value:
+            return {
+                "type": "amalfi",
+                "ordering": ["wins", "rack_difference", "ssr", "previous_order"],
+                "description": "Vittorie → Differenza rack → SSR → Ordine precedente"
+            }
+        elif self.campionato_type == MatchmakingStrategy.RANDOM.value:
+            return {
+                "type": "random",
+                "ordering": ["racks_won", "ssr", "previous_order"],
+                "description": "Rack vinti → SSR → Ordine precedente"
+            }
+        else:
+            # Default fallback for other strategies
+            return {
+                "type": "default",
+                "ordering": ["wins", "rack_difference", "previous_order"],
+                "description": "Vittorie → Differenza rack → Ordine precedente"
+            }
+
     def get_scoring_policy_name(self) -> str:
-        """Get the name of the scoring policy for this campionato."""
-        return self.scoring_policy or "classic"
+        """DEPRECATED: Use get_scoring_system() instead.
+
+        Get the name of the scoring policy for this campionato.
+        Scoring is now automatic based on campionato_type.
+        """
+        # Return automatic type based on campionato_type
+        return self.get_scoring_system()["type"]
 
     def set_scoring_policy(self, policy_name: str) -> None:
-        """Set the scoring policy for this campionato.
+        """DEPRECATED: Scoring policy is now automatic based on campionato_type.
 
-        Note: This refers to the campionato classification scoring system,
-        not player ratings. Player ratings (Fargo/Elo) are stored in the
-        User model as per Phase 4 refactoring.
+        This method is kept for backwards compatibility but does nothing.
+        The scoring system is automatically determined by campionato_type:
+        - AMALFI → amalfi scoring
+        - RANDOM → random scoring
 
         Args:
-            policy_name: One of "classic", "fargo", or "elo"
-
-        Raises:
-            ValueError: If policy_name is not valid
+            policy_name: Ignored (kept for API compatibility)
         """
+        # No-op: scoring is now automatic
+        pass
+
+    def _legacy_set_scoring_policy(self, policy_name: str) -> None:
+        """Internal legacy method for migration purposes only."""
         valid_policies = ["classic", "fargo", "elo"]
         if policy_name not in valid_policies:
             raise ValueError(

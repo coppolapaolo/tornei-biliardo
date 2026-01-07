@@ -59,9 +59,13 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
     # Qualification criteria
     max_participants = db.Column(db.Integer, nullable=False)
     min_garas_played = db.Column(db.Integer, nullable=True)  # Minimum provas to qualify
+    # Simplified position-based criteria (preferred over JSON for simple cases)
+    positions_from = db.Column(db.Integer, nullable=True)  # Starting position (e.g., 1 for Elite)
+    positions_to = db.Column(db.Integer, nullable=True)  # Ending position (e.g., 6 for Top 6)
+    # Legacy JSON criteria for complex cases
     qualification_criteria = db.Column(
-        db.Text, nullable=False
-    )  # JSON string with criteria
+        db.Text, nullable=True
+    )  # JSON string with criteria (optional)
 
     # Playoff campionato details
     location = db.Column(db.String(255), nullable=True)
@@ -86,6 +90,10 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
     )
     playoff_campionato = db.relationship(
         "PlayoffTournament", back_populates="configuration", uselist=False
+    )
+    # The playoff gara (linked from Gara.playoff_config_id)
+    gara = db.relationship(
+        "Gara", back_populates="playoff_config", uselist=False
     )
 
     def get_qualification_criteria(self) -> Dict[str, Any]:
@@ -276,8 +284,12 @@ class PlayoffQualification(BaseModel, TimestampMixin):
         nullable=False,
         default=QualificationStatus.PENDING,
     )
-    notified_at = db.Column(db.DateTime, nullable=True)
-    responded_at = db.Column(db.DateTime, nullable=True)
+    # Invitation timing (individual per invitation for batch management)
+    invited_at = db.Column(db.DateTime, nullable=True)  # When invitation was sent
+    expires_at = db.Column(db.DateTime, nullable=True)  # Individual deadline for this invitation
+    responded_at = db.Column(db.DateTime, nullable=True)  # When player responded
+    # Legacy field (kept for compatibility)
+    notified_at = db.Column(db.DateTime, nullable=True)  # Deprecated: use invited_at
 
     # Replacement tracking
     replaced_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)

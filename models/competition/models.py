@@ -140,6 +140,12 @@ class Gara(SoftDeleteMixin, db.Model):
         db.Integer, db.ForeignKey("challenge.id", ondelete="SET NULL"), nullable=True
     )  # FK a Challenge se mode = "challenge"
 
+    # Playoff configuration (if this gara is a playoff)
+    playoff_config_id = db.Column(
+        db.Integer, db.ForeignKey("playoff_configuration.id", ondelete="SET NULL"),
+        nullable=True
+    )  # If set, this gara is a playoff tournament
+
     # Relazioni
     inscriptions = db.relationship(
         "Inscription",
@@ -164,6 +170,15 @@ class Gara(SoftDeleteMixin, db.Model):
     billiard_hall = db.relationship(
         "BilliardHall", foreign_keys=[billiard_hall_id]
     )
+    playoff_config = db.relationship(
+        "PlayoffConfiguration", foreign_keys=[playoff_config_id],
+        back_populates="gara"
+    )
+
+    @property
+    def is_playoff(self) -> bool:
+        """Check if this gara is a playoff tournament."""
+        return self.playoff_config_id is not None
 
     # Co-directors relationship (similar to campionati)
     @property

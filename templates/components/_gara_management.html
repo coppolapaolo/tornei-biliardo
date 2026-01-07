@@ -1,8 +1,11 @@
 {# templates/components/_gara_management.html #}
 
 {# Macro for Challenge Button #}
+{# Show only for random strategy AND (standalone gara OR campionato with challenge_mode enabled) #}
 {% macro challenge_button(gara) %}
 {% if gara.matchmaking_strategy == 'random' %}
+{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+{% if challenge_enabled %}
 {% set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 %}
 <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
     <i class="fas fa-trophy"></i>
@@ -12,6 +15,7 @@
     {{ _('Aggiungi Challenge') }}
     {% endif %}
 </button>
+{% endif %}
 {% endif %}
 {% endmacro %}
 

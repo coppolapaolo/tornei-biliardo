@@ -1,17 +1,29 @@
 # routes/admin/campionato.py
-"""Campionato management blueprint for admin interface."""
+"""Campionato management blueprint for admin interface.
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+Implements:
+- Multi-step wizard for campionato creation (ADR-0001)
+- Step 1: Base configuration (name, type, playoffs, challenge mode)
+- Step 2: Default values for gare (venue, cost, rounds, odd policy)
+"""
+
+from flask import (
+    Blueprint, render_template, request, redirect, url_for, flash, abort, session
+)
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
+from flask_babel import _
 
 from models import (
     db,
     Campionato,
 )
+from models.location.models import BilliardHall
+from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 from utils import (
     campionato_manager_required,
     admin_required,
+    director_or_admin_required,
 )
 from models.campionato.services import TournamentService
 
@@ -21,33 +33,304 @@ campionato_service = TournamentService()
 # Campionato management blueprint
 campionato_bp = Blueprint("campionato", __name__)
 
+# Session key for wizard data
+WIZARD_SESSION_KEY = "campionato_wizard_data"
+
+
+# =============================================================================
+# WIZARD CREAZIONE CAMPIONATO (ADR-0001)
+# =============================================================================
+
+
+@campionato_bp.route("/wizard", methods=["GET"])
+@login_required
+@director_or_admin_required
+def wizard_start():
+    """Step 1: Mostra il form di configurazione base del campionato.
+
+    Parametri Step 1:
+    - name: Nome del campionato
+    - planned_gare_count: Numero pianificato di gare (default: 10)
+    - campionato_type: Tipo (amalfi/random)
+    - challenge_mode: Abilita sfide individuali
+    - playoff_elite_enabled: Abilita playoff Elite
+    - playoff_elite_participants: Numero partecipanti Elite (default: 6)
+    - playoff_academy_enabled: Abilita playoff Academy
+    - playoff_academy_participants: Numero partecipanti Academy (default: 6)
+    """
+    # Clear any previous wizard data
+    session.pop(WIZARD_SESSION_KEY, None)
+
+    return render_template(
+        "admin/campionato_wizard_step1.html",
+        matchmaking_strategies=[
+            (MatchmakingStrategy.AMALFI.value, "Amalfi"),
+            (MatchmakingStrategy.RANDOM.value, "Random"),
+        ],
+    )
+
+
+@campionato_bp.route("/wizard/step2", methods=["POST"])
+@login_required
+@director_or_admin_required
+def wizard_step2():
+    """Step 2: Salva dati Step 1 e mostra form default gare.
+
+    Parametri Step 2:
+    - default_venue_id: Sede predefinita (opzionale)
+    - default_entry_fee: Quota iscrizione predefinita (opzionale)
+    - default_rounds_count: Numero turni predefinito (default: 3)
+    - default_odd_policy: Politica numero dispari (bye/trio)
+    - default_anti_rematch: Abilita anti-rematch (default: True)
+    """
+    # Validate Step 1 data
+    name = request.form.get("name", "").strip()
+    if not name:
+        flash(_("Il nome del campionato è obbligatorio"), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
+
+    planned_gare_count = request.form.get("planned_gare_count", "10")
+    try:
+        planned_gare_count = int(planned_gare_count)
+        if planned_gare_count < 1:
+            raise ValueError()
+    except ValueError:
+        flash(_("Il numero di gare deve essere un numero positivo"), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
+
+    campionato_type = request.form.get("campionato_type", MatchmakingStrategy.AMALFI.value)
+    if campionato_type not in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value]:
+        campionato_type = MatchmakingStrategy.AMALFI.value
+
+    challenge_mode = "challenge_mode" in request.form
+
+    # Playoff configuration
+    playoff_elite_enabled = "playoff_elite_enabled" in request.form
+    playoff_elite_participants = 6
+    if playoff_elite_enabled:
+        try:
+            playoff_elite_participants = int(request.form.get("playoff_elite_participants", "6"))
+        except ValueError:
+            playoff_elite_participants = 6
+
+    playoff_academy_enabled = "playoff_academy_enabled" in request.form
+    playoff_academy_participants = 6
+    if playoff_academy_enabled:
+        try:
+            playoff_academy_participants = int(request.form.get("playoff_academy_participants", "6"))
+        except ValueError:
+            playoff_academy_participants = 6
+
+    # Store Step 1 data in session
+    session[WIZARD_SESSION_KEY] = {
+        "name": name,
+        "planned_gare_count": planned_gare_count,
+        "campionato_type": campionato_type,
+        "challenge_mode": challenge_mode,
+        "playoff_elite_enabled": playoff_elite_enabled,
+        "playoff_elite_participants": playoff_elite_participants,
+        "playoff_academy_enabled": playoff_academy_enabled,
+        "playoff_academy_participants": playoff_academy_participants,
+    }
+
+    # Get venues for dropdown
+    venues = (
+        BilliardHall.query.filter_by(is_active=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
+
+    return render_template(
+        "admin/campionato_wizard_step2.html",
+        wizard_data=session[WIZARD_SESSION_KEY],
+        venues=venues,
+        odd_policies=[
+            (OddNumberPolicy.BYE.value, _("Bye (riposo)")),
+            (OddNumberPolicy.BYE_WITH_CHALLENGE.value, _("Bye con Challenge")),
+            (OddNumberPolicy.TRIO.value, _("Trio (match a 3)")),
+        ],
+    )
+
+
+@campionato_bp.route("/wizard/create", methods=["POST"])
+@login_required
+@director_or_admin_required
+def wizard_create():
+    """Crea il campionato con tutti i dati del wizard.
+
+    Combina i dati di Step 1 (dalla sessione) con Step 2 (dal form).
+    """
+    # Retrieve Step 1 data from session
+    wizard_data = session.get(WIZARD_SESSION_KEY)
+    if not wizard_data:
+        flash(_("Sessione wizard scaduta. Ricomincia la creazione."), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
+
+    # Get Step 2 data from form
+    default_venue_id = request.form.get("default_venue_id")
+    if default_venue_id:
+        try:
+            default_venue_id = int(default_venue_id)
+        except ValueError:
+            default_venue_id = None
+    else:
+        default_venue_id = None
+
+    default_entry_fee = request.form.get("default_entry_fee")
+    if default_entry_fee:
+        try:
+            default_entry_fee = float(default_entry_fee)
+        except ValueError:
+            default_entry_fee = None
+    else:
+        default_entry_fee = None
+
+    default_rounds_count = request.form.get("default_rounds_count", "3")
+    try:
+        default_rounds_count = int(default_rounds_count)
+        if default_rounds_count < 1:
+            default_rounds_count = 3
+    except ValueError:
+        default_rounds_count = 3
+
+    default_odd_policy = request.form.get("default_odd_policy", OddNumberPolicy.BYE.value)
+    valid_policies = [
+        OddNumberPolicy.BYE.value,
+        OddNumberPolicy.BYE_WITH_CHALLENGE.value,
+        OddNumberPolicy.TRIO.value,
+    ]
+    if default_odd_policy not in valid_policies:
+        default_odd_policy = OddNumberPolicy.BYE.value
+
+    default_anti_rematch = "default_anti_rematch" in request.form
+
+    # Create the campionato
+    try:
+        campionato = campionato_service.create_campionato_with_director(
+            name=wizard_data["name"],
+            creator_user_id=current_user.id,
+            campionato_type=wizard_data["campionato_type"],
+            challenge_mode=wizard_data["challenge_mode"],
+            is_active=True,
+            planned_gare_count=wizard_data["planned_gare_count"],
+            default_venue_id=default_venue_id,
+            default_entry_fee=default_entry_fee,
+            default_rounds_count=default_rounds_count,
+            default_odd_policy=default_odd_policy,
+            default_anti_rematch=default_anti_rematch,
+        )
+
+        # Create playoff configurations if enabled
+        if wizard_data.get("playoff_elite_enabled"):
+            _create_playoff_config(
+                campionato_id=campionato.id,
+                name=_("Playoff Elite"),
+                max_participants=wizard_data.get("playoff_elite_participants", 6),
+                positions_from=1,
+                positions_to=wizard_data.get("playoff_elite_participants", 6),
+            )
+
+        if wizard_data.get("playoff_academy_enabled"):
+            elite_size = wizard_data.get("playoff_elite_participants", 6) if wizard_data.get("playoff_elite_enabled") else 0
+            academy_size = wizard_data.get("playoff_academy_participants", 6)
+            _create_playoff_config(
+                campionato_id=campionato.id,
+                name=_("Playoff Academy"),
+                max_participants=academy_size,
+                positions_from=elite_size + 1,
+                positions_to=elite_size + academy_size,
+            )
+
+        # Clear wizard session
+        session.pop(WIZARD_SESSION_KEY, None)
+
+        flash(_('Campionato "%(name)s" creato con successo!', name=wizard_data["name"]), "success")
+        return redirect(url_for("admin.campionato.campionato_detail", campionato_id=campionato.id))
+
+    except Exception as e:
+        flash(_("Errore durante la creazione: %(error)s", error=str(e)), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
+
+
+def _create_playoff_config(
+    campionato_id: int,
+    name: str,
+    max_participants: int,
+    positions_from: int,
+    positions_to: int,
+) -> None:
+    """Helper per creare una configurazione playoff."""
+    from models.playoff.models import PlayoffConfiguration, PlayoffType
+
+    config = PlayoffConfiguration(
+        campionato_id=campionato_id,
+        name=name,
+        playoff_type=PlayoffType.TOP_N,
+        max_participants=max_participants,
+        positions_from=positions_from,
+        positions_to=positions_to,
+        is_active=True,
+        auto_generate=True,
+    )
+    db.session.add(config)
+    db.session.commit()
+
+
+@campionato_bp.route("/wizard/cancel", methods=["GET", "POST"])
+@login_required
+def wizard_cancel():
+    """Annulla il wizard e torna alla dashboard."""
+    session.pop(WIZARD_SESSION_KEY, None)
+    flash(_("Creazione campionato annullata"), "info")
+    return redirect(url_for("dashboard.dashboard"))
+
+
+# =============================================================================
+# ROUTE LEGACY (compatibilità con vecchi form)
+# =============================================================================
+
 
 @campionato_bp.route("/create", methods=["POST"])
 @login_required
 def create_campionato():
-    """Crea nuovo campionato: accessibile ad admin e direttori"""
+    """Crea nuovo campionato (LEGACY - mantiene compatibilità).
+
+    DEPRECATO: Usa /wizard per il nuovo flusso multi-step.
+    Questa route è mantenuta per retrocompatibilità con form esistenti.
+    """
     if not (current_user.is_admin or current_user.is_director):
-        flash("Non hai i permessi per creare un campionato.", "error")
+        flash(_("Non hai i permessi per creare un campionato."), "error")
         return redirect(url_for("dashboard.dashboard"))
 
-    name = request.form["name"]
+    name = request.form.get("name", "").strip()
+    if not name:
+        flash(_("Il nome del campionato è obbligatorio"), "error")
+        return redirect(url_for("dashboard.dashboard"))
+
     campionato_type = request.form.get("campionato_type", "amalfi")
-    without_x = "without_x" in request.form
-    final_playoffs = "final_playoffs" in request.form
     challenge_mode = "challenge_mode" in request.form
 
-    # Usa il service layer invece del direct database access
+    # Deprecated fields (still supported for backwards compatibility)
+    without_x = "without_x" in request.form
+    final_playoffs = "final_playoffs" in request.form
+
+    # Map without_x to default_odd_policy
+    default_odd_policy = OddNumberPolicy.TRIO.value if without_x else OddNumberPolicy.BYE.value
+
+    # Usa il service layer
     campionato = campionato_service.create_campionato_with_director(
         name=name,
         creator_user_id=current_user.id,
         campionato_type=campionato_type,
-        without_x=without_x,
-        final_playoffs=final_playoffs,
         challenge_mode=challenge_mode,
         is_active=True,
+        default_odd_policy=default_odd_policy,
+        # Legacy fields (deprecated but still passed for compatibility)
+        without_x=without_x,
+        final_playoffs=final_playoffs,
     )
 
-    flash(f'Campionato "{name}" creato con successo!')
+    flash(_('Campionato "%(name)s" creato con successo!', name=name), "success")
     return redirect(url_for("dashboard.dashboard"))
 
 

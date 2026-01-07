@@ -356,11 +356,14 @@ def create_gara():
     available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
 
     description = request.form.get("description", "")
-    rounds_count = int(request.form.get("rounds_count", DEFAULT_ROUNDS_COUNT))
+    # Use campionato defaults as fallback (ADR-0001)
+    default_rounds = campionato.default_rounds_count if campionato.default_rounds_count else DEFAULT_ROUNDS_COUNT
+    default_fee = campionato.default_entry_fee if campionato.default_entry_fee is not None else DEFAULT_ENTRY_FEE
+    rounds_count = int(request.form.get("rounds_count", default_rounds))
     min_participants = int(request.form.get("min_participants", DEFAULT_MIN_PARTICIPANTS))
     max_participants = request.form.get("max_participants")
     max_participants = int(max_participants) if max_participants else None
-    entry_fee = float(request.form.get("entry_fee", DEFAULT_ENTRY_FEE))
+    entry_fee = float(request.form.get("entry_fee", default_fee))
 
     # Game settings
     discipline = request.form["discipline"]
@@ -369,8 +372,10 @@ def create_gara():
     is_race_to = not exact_number
     withdraw_policy = request.form.get("withdraw_policy", DEFAULT_WITHDRAW_POLICY)
 
-    # Eredita la strategia di matchmaking dal campionato
+    # Eredita la strategia di matchmaking e altri default dal campionato (ADR-0001)
     matchmaking_strategy = campionato.campionato_type
+    anti_rematch = campionato.default_anti_rematch if campionato.default_anti_rematch is not None else True
+    odd_policy = campionato.default_odd_policy if campionato.default_odd_policy else "bye"
 
     gara = GaraService.create_gara(
         campionato_id=campionato_id,
@@ -389,6 +394,8 @@ def create_gara():
         is_race_to=is_race_to,
         withdraw_policy=withdraw_policy,
         matchmaking_strategy=matchmaking_strategy,
+        anti_rematch_enabled=anti_rematch,
+        odd_number_policy=odd_policy,
     )
 
     # Set gara-specific available tables

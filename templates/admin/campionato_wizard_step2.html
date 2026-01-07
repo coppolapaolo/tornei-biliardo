@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Nuovo Campionato - Step 2") }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ _("Nuovo Campionato") }}</h1>
+            <p class="text-muted mb-0">{{ wizard_data.name }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.campionato.wizard_cancel') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> {{ _("Annulla") }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Stepper Progress -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-center flex-fill">
+                    <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; font-weight: bold;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="mt-2 text-success"><strong>{{ _("Configurazione") }}</strong></div>
+                </div>
+                <div class="flex-fill" style="height: 2px; background: #198754;"></div>
+                <div class="text-center flex-fill">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; font-weight: bold;">2</div>
+                    <div class="mt-2"><strong>{{ _("Default Gare") }}</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary of Step 1 -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-8">
+            <div class="alert alert-light border">
+                <div class="row small">
+                    <div class="col-6 col-md-3">
+                        <strong>{{ _("Nome:") }}</strong><br>{{ wizard_data.name }}
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <strong>{{ _("Tipo:") }}</strong><br>{{ wizard_data.campionato_type|capitalize }}
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <strong>{{ _("Gare:") }}</strong><br>{{ wizard_data.planned_gare_count }}
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <strong>{{ _("Playoff:") }}</strong><br>
+                        {% if wizard_data.playoff_elite_enabled %}Elite ({{ wizard_data.playoff_elite_participants }}){% endif %}
+                        {% if wizard_data.playoff_elite_enabled and wizard_data.playoff_academy_enabled %}, {% endif %}
+                        {% if wizard_data.playoff_academy_enabled %}Academy ({{ wizard_data.playoff_academy_participants }}){% endif %}
+                        {% if not wizard_data.playoff_elite_enabled and not wizard_data.playoff_academy_enabled %}{{ _("Nessuno") }}{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Step 2 -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> {{ _("Step 2: Impostazioni Default per le Gare") }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        {{ _("Questi valori saranno utilizzati come default quando crei nuove gare. Potrai sempre modificarli singolarmente.") }}
+                    </p>
+
+                    <form action="{{ url_for('admin.campionato.wizard_create') }}" method="POST">
+                        <!-- Default Venue -->
+                        <div class="mb-4">
+                            <label for="default_venue_id" class="form-label">{{ _("Sede Predefinita") }}</label>
+                            <select class="form-select" id="default_venue_id" name="default_venue_id">
+                                <option value="">{{ _("-- Nessuna sede predefinita --") }}</option>
+                                {% for venue in venues %}
+                                <option value="{{ venue.id }}">
+                                    {{ venue.name }}
+                                    {% if venue.verified %}<i class="fas fa-check-circle text-success"></i>{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">{{ _("Dove si svolgeranno tipicamente le gare") }}</small>
+                        </div>
+
+                        <!-- Default Entry Fee -->
+                        <div class="mb-4">
+                            <label for="default_entry_fee" class="form-label">{{ _("Quota Iscrizione Predefinita") }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text">&euro;</span>
+                                <input type="number" class="form-control" id="default_entry_fee" name="default_entry_fee"
+                                       step="0.50" min="0" max="100" placeholder="0.00">
+                            </div>
+                            <small class="text-muted">{{ _("Lascia vuoto se la partecipazione e' gratuita") }}</small>
+                        </div>
+
+                        <!-- Default Rounds Count -->
+                        <div class="mb-4">
+                            <label for="default_rounds_count" class="form-label">{{ _("Numero Turni Predefinito") }}</label>
+                            <select class="form-select" id="default_rounds_count" name="default_rounds_count">
+                                <option value="2">2 {{ _("turni") }}</option>
+                                <option value="3" selected>3 {{ _("turni") }}</option>
+                                <option value="4">4 {{ _("turni") }}</option>
+                                <option value="5">5 {{ _("turni") }}</option>
+                            </select>
+                            <small class="text-muted">{{ _("Quanti turni per ogni gara") }}</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3"><i class="fas fa-sliders-h"></i> {{ _("Opzioni Matchmaking") }}</h5>
+
+                        <!-- Default Odd Policy -->
+                        <div class="mb-4">
+                            <label for="default_odd_policy" class="form-label">{{ _("Gestione Numero Dispari") }}</label>
+                            <select class="form-select" id="default_odd_policy" name="default_odd_policy">
+                                {% for value, label in odd_policies %}
+                                <option value="{{ value }}" {% if value == 'bye' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="mt-2">
+                                <div id="policy-description-bye" class="alert alert-info py-2 mb-0 small">
+                                    <i class="fas fa-user-clock"></i>
+                                    {{ _("Il giocatore piu' basso in classifica riceve un bye (riposo) e vince automaticamente con il punteggio target.") }}
+                                </div>
+                                <div id="policy-description-bye_with_challenge" class="alert alert-info py-2 mb-0 small d-none">
+                                    <i class="fas fa-bullseye"></i>
+                                    {{ _("Il giocatore riceve bye ma deve completare una sfida (es. Spot Shot Rally) per guadagnare punti extra.") }}
+                                </div>
+                                <div id="policy-description-trio" class="alert alert-info py-2 mb-0 small d-none">
+                                    <i class="fas fa-users"></i>
+                                    {{ _("I tre giocatori piu' bassi giocano un match a 3. Alternativa al bye per gare piu' inclusive.") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Default Anti-Rematch -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="default_anti_rematch"
+                                       name="default_anti_rematch" checked>
+                                <label class="form-check-label" for="default_anti_rematch">
+                                    <strong>{{ _("Anti-Rematch") }}</strong>
+                                    <br><small class="text-muted">{{ _("Evita accoppiamenti ripetuti tra gli stessi giocatori nella stessa gara") }}</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Navigation -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.campionato.wizard_start') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> {{ _("Indietro") }}
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> {{ _("Crea Campionato") }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const policySelect = document.getElementById('default_odd_policy');
+    const descBye = document.getElementById('policy-description-bye');
+    const descByeChallenge = document.getElementById('policy-description-bye_with_challenge');
+    const descTrio = document.getElementById('policy-description-trio');
+
+    function updatePolicyDescription() {
+        const policy = policySelect.value;
+        descBye.classList.toggle('d-none', policy !== 'bye');
+        descByeChallenge.classList.toggle('d-none', policy !== 'bye_with_challenge');
+        descTrio.classList.toggle('d-none', policy !== 'trio');
+    }
+
+    policySelect.addEventListener('change', updatePolicyDescription);
+    updatePolicyDescription();
+});
+</script>
+{% endblock %}
+{% endblock %}

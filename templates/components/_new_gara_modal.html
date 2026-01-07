@@ -9,6 +9,12 @@
             <form action="{{ url_for('admin.competition.create_gara') }}" method="POST">
                 <input type="hidden" name="campionato_id" value="{{ campionato.id }}">
                 <div class="modal-body">
+                    {% if campionato.default_venue or campionato.default_entry_fee or campionato.default_rounds_count != 3 %}
+                    <div class="alert alert-light border-primary mb-3 py-2">
+                        <i class="fas fa-magic text-primary"></i>
+                        <small>{{ _("Valori precompilati dai default del campionato. Puoi modificarli per questa gara.") }}</small>
+                    </div>
+                    {% endif %}
                     <!-- Prima riga: Info base -->
                     <div class="row">
                         <div class="col-md-3">
@@ -45,7 +51,8 @@
                                 <label for="location" class="form-label">Luogo</label>
                                 <input type="text" class="form-control" name="location" id="create_location"
                                     placeholder="es: Circolo Biliardo Centro" list="venue-suggestions"
-                                    autocomplete="off">
+                                    autocomplete="off"
+                                    value="{{ campionato.default_venue.name if campionato.default_venue else '' }}">
                                 <datalist id="venue-suggestions">
                                     <!-- Venue verificate -->
                                     {% if verified_venues %}
@@ -65,7 +72,8 @@
                             <div class="mb-3">
                                 <label for="available_tables" class="form-label">Tavoli</label>
                                 <input type="text" class="form-control" name="available_tables"
-                                    id="create_available_tables" placeholder="es: 3 o 2,3,5">
+                                    id="create_available_tables" placeholder="es: 3 o 2,3,5"
+                                    value="{{ campionato.default_venue.number_of_tables if campionato.default_venue and campionato.default_venue.number_of_tables else '' }}">
                                 <small class="text-muted">Numero o elenco</small>
                             </div>
                         </div>
@@ -87,7 +95,7 @@
                             <div class="mb-3">
                                 <label for="entry_fee" class="form-label">Quota €</label>
                                 <input type="number" class="form-control" name="entry_fee" id="create_entry_fee" min="0"
-                                    step="0.50" value="0" required>
+                                    step="0.50" value="{{ campionato.default_entry_fee or 0 }}" required>
                             </div>
                         </div>
                     </div>
@@ -130,7 +138,7 @@
                             <div class="mb-3">
                                 <label for="rounds_count" class="form-label">Turni</label>
                                 <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
-                                    min="1" max="10" value="3" required>
+                                    min="1" max="10" value="{{ campionato.default_rounds_count or 3 }}" required>
                             </div>
                         </div>
                         <div class="col-md-2">
