@@ -34,6 +34,7 @@
     "reportIncompatibleMethodOverride": false,
     "reportIncompatibleVariableOverride": false,
     "reportArgumentType": false,
+    "reportCallIssue": false,
     "reportAttributeAccessIssue": false,
     "reportAssignmentType": false,
     "useLibraryCodeForTypes": true,

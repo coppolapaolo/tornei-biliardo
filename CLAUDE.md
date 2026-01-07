@@ -277,6 +277,7 @@ set.distance = 5  # Each set is race to 5 racks
 ### Type Safety (MANDATORY)
 - Run `pyright` before every commit - maintain 0 errors
 - Use proper type hints for all functions
+- Pyright config (`pyrightconfig.json`) disables `reportCallIssue` due to SQLAlchemy mixin inheritance issues (pyright doesn't recognize that `db.Model` generates constructors accepting column names as kwargs)
 
 ### Code Quality Checklist
 ```bash
