@@ -8,6 +8,7 @@ from flask_login import login_required, current_user
 
 from models import db, Gara, Inscription, Match
 from models.status_enum import GaraStatus
+from models.kpi import track_gara_inscription
 from utils import player_only, player_required
 
 from . import player_bp
@@ -70,6 +71,7 @@ def inscribe_to_gara(gara_id):
     )
 
     if inscription:
+        track_gara_inscription()  # KPI tracking
         if inscription.is_waitlist:
             flash(
                 f"Aggiunto alla lista d'attesa per {gara.name} "

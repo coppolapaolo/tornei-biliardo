@@ -33,6 +33,7 @@ from utils import (
 from models.competition.services import GaraService
 from models.location.models import BilliardHall
 from models.location.services import LocationService
+from models.kpi import track_gara_create
 from models.competition.constants import (
     DEFAULT_MIN_PARTICIPANTS,
     DEFAULT_ROUNDS_COUNT,
@@ -227,6 +228,7 @@ def create_gara_standalone():
             if available_tables:
                 gara.set_available_tables(available_tables)
 
+            track_gara_create()  # KPI tracking
             flash(f"Gara singola '{name}' creata con successo!", "success")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 

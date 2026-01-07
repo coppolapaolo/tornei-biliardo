@@ -1,0 +1,690 @@
+<!-- templates/admin/kpi.html - KPI Dashboard -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('KPI Dashboard') }} - Admin{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .kpi-card {
+        transition: transform 0.2s;
+    }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+    }
+    .trend-up {
+        color: #28a745;
+    }
+    .trend-down {
+        color: #dc3545;
+    }
+    .trend-stable {
+        color: #6c757d;
+    }
+    .feature-row-zero {
+        opacity: 0.6;
+        background-color: #f8f9fa;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .period-selector .btn {
+        min-width: 60px;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-graph-up"></i> {{ _('KPI Dashboard') }}</h1>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> {{ _('Dashboard') }}
+        </a>
+    </div>
+</div>
+
+<!-- Period Selector -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted">{{ _('Periodo:') }}</span>
+                <div class="btn-group period-selector" role="group">
+                    <a href="{{ url_for('admin.kpi.index', days=1, tab=active_tab) }}"
+                       class="btn btn-sm {% if days == 1 and not is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        {{ _('Oggi') }}
+                    </a>
+                    <a href="{{ url_for('admin.kpi.index', days=7, tab=active_tab) }}"
+                       class="btn btn-sm {% if days == 7 and not is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        7{{ _('gg') }}
+                    </a>
+                    <a href="{{ url_for('admin.kpi.index', days=30, tab=active_tab) }}"
+                       class="btn btn-sm {% if days == 30 and not is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        30{{ _('gg') }}
+                    </a>
+                    <a href="{{ url_for('admin.kpi.index', days=90, tab=active_tab) }}"
+                       class="btn btn-sm {% if days == 90 and not is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        90{{ _('gg') }}
+                    </a>
+                    <a href="{{ url_for('admin.kpi.index', tab=active_tab) }}"
+                       class="btn btn-sm {% if not days and not is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                       title="Tutto">
+                        <i class="fas fa-infinity"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Custom Date Range -->
+            <form class="d-flex align-items-center gap-2" method="get" action="{{ url_for('admin.kpi.index') }}">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <div class="input-group input-group-sm" style="width: auto;">
+                    <span class="input-group-text">{{ _('Da') }}</span>
+                    <input type="date" class="form-control form-control-sm" name="start_date"
+                           value="{{ start_date }}" style="width: 140px;">
+                </div>
+                <div class="input-group input-group-sm" style="width: auto;">
+                    <span class="input-group-text">{{ _('A') }}</span>
+                    <input type="date" class="form-control form-control-sm" name="end_date"
+                           value="{{ end_date }}" style="width: 140px;">
+                </div>
+                <button type="submit" class="btn btn-sm {% if is_custom %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </form>
+        </div>
+        {% if is_custom %}
+        <div class="mt-2 small text-muted">
+            <i class="fas fa-calendar-alt"></i>
+            {{ date_range.get_display_label() }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tabs -->
+{% macro tab_url(tab_name) %}
+    {% if is_custom %}
+        {{ url_for('admin.kpi.index', tab=tab_name, start_date=start_date if start_date else none, end_date=end_date if end_date else none) }}
+    {% else %}
+        {{ url_for('admin.kpi.index', days=days, tab=tab_name) }}
+    {% endif %}
+{% endmacro %}
+<ul class="nav nav-tabs mb-4" id="kpiTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}"
+           href="{{ tab_url('overview') }}">
+            <i class="bi bi-speedometer2"></i> {{ _('Panoramica') }}
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'acquisition' %}active{% endif %}"
+           href="{{ tab_url('acquisition') }}">
+            <i class="bi bi-person-plus"></i> {{ _('Acquisizione') }}
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'retention' %}active{% endif %}"
+           href="{{ tab_url('retention') }}">
+            <i class="bi bi-arrow-repeat"></i> {{ _('Retention') }}
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'engagement' %}active{% endif %}"
+           href="{{ tab_url('engagement') }}">
+            <i class="bi bi-lightning"></i> {{ _('Engagement') }}
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'features' %}active{% endif %}"
+           href="{{ tab_url('features') }}">
+            <i class="bi bi-puzzle"></i> {{ _('Features') }}
+        </a>
+    </li>
+</ul>
+
+<!-- Alert Container -->
+<div id="alertContainer"></div>
+
+<!-- Tab Content -->
+<div class="tab-content">
+    {% if active_tab == 'overview' %}
+    <!-- OVERVIEW TAB -->
+    <div class="row g-4 mb-4">
+        <!-- Total Users -->
+        <div class="col-md-4 col-lg-2">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ metrics.total_users }}</div>
+                    <div class="metric-label"><i class="bi bi-people"></i> {{ _('Utenti totali') }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- New Users -->
+        <div class="col-md-4 col-lg-2">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ metrics.new_users.current }}</div>
+                    <div class="metric-label"><i class="bi bi-person-plus"></i> {{ _('Nuovi utenti') }}</div>
+                    <small class="trend-{{ metrics.new_users.trend_direction }}">
+                        {% if metrics.new_users.trend_direction == 'up' %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif metrics.new_users.trend_direction == 'down' %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                        {{ metrics.new_users.trend_percent }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+        <!-- Matches Played -->
+        <div class="col-md-4 col-lg-2">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ metrics.matches_played.current }}</div>
+                    <div class="metric-label"><i class="bi bi-controller"></i> {{ _('Match giocati') }}</div>
+                    <small class="trend-{{ metrics.matches_played.trend_direction }}">
+                        {% if metrics.matches_played.trend_direction == 'up' %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif metrics.matches_played.trend_direction == 'down' %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                        {{ metrics.matches_played.trend_percent }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+        <!-- Active Gare -->
+        <div class="col-md-4 col-lg-2">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ metrics.active_gare }}</div>
+                    <div class="metric-label"><i class="bi bi-trophy"></i> {{ _('Gare attive') }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- Activation Rate -->
+        <div class="col-md-4 col-lg-2">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ metrics.activation_rate }}%</div>
+                    <div class="metric-label"><i class="bi bi-check-circle"></i> {{ _('Attivazione') }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- MAU -->
+        <div class="col-md-4 col-lg-2">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ metrics.mau }}</div>
+                    <div class="metric-label"><i class="bi bi-calendar-month"></i> MAU</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Registrazioni') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="registrationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Match giocati') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="matchesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif active_tab == 'acquisition' %}
+    <!-- ACQUISITION TAB -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ total_users }}</div>
+                    <div class="metric-label"><i class="bi bi-people"></i> {{ _('Utenti totali') }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ new_users.current }}</div>
+                    <div class="metric-label"><i class="bi bi-person-plus"></i> {{ _('Nuovi nel periodo') }}</div>
+                    <small class="trend-{{ new_users.trend_direction }}">
+                        {% if new_users.trend_direction == 'up' %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif new_users.trend_direction == 'down' %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                        {{ new_users.trend_percent }}% {{ _('vs periodo precedente') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ new_users.previous }}</div>
+                    <div class="metric-label"><i class="bi bi-clock-history"></i> {{ _('Periodo precedente') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Trend registrazioni') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="acquisitionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {% elif active_tab == 'retention' %}
+    <!-- RETENTION TAB -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ dau }}</div>
+                    <div class="metric-label"><i class="bi bi-calendar-day"></i> DAU</div>
+                    <small class="text-muted">{{ _('Utenti attivi oggi') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ wau }}</div>
+                    <div class="metric-label"><i class="bi bi-calendar-week"></i> WAU</div>
+                    <small class="text-muted">{{ _('Utenti attivi settimana') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ mau }}</div>
+                    <div class="metric-label"><i class="bi bi-calendar-month"></i> MAU</div>
+                    <small class="text-muted">{{ _('Utenti attivi mese') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ retention_7d }}%</div>
+                    <div class="metric-label"><i class="bi bi-arrow-repeat"></i> {{ _('Retention 7gg') }}</div>
+                    <small class="text-muted">{{ _('Tornati entro 7 giorni') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ retention_30d }}%</div>
+                    <div class="metric-label"><i class="bi bi-arrow-repeat"></i> {{ _('Retention 30gg') }}</div>
+                    <small class="text-muted">{{ _('Tornati entro 30 giorni') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100 border-warning">
+                <div class="card-body text-center">
+                    <div class="metric-value text-warning">{{ dormant_users }}</div>
+                    <div class="metric-label"><i class="bi bi-moon"></i> {{ _('Utenti dormienti') }}</div>
+                    <small class="text-muted">{{ _('Registrati ma mai attivi') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif active_tab == 'engagement' %}
+    <!-- ENGAGEMENT TAB -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ total_matches }}</div>
+                    <div class="metric-label"><i class="bi bi-controller"></i> {{ _('Match totali') }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ matches.current }}</div>
+                    <div class="metric-label"><i class="bi bi-calendar-check"></i> {{ _('Nel periodo') }}</div>
+                    <small class="trend-{{ matches.trend_direction }}">
+                        {% if matches.trend_direction == 'up' %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif matches.trend_direction == 'down' %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                        {{ matches.trend_percent }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ active_gare }}</div>
+                    <div class="metric-label"><i class="bi bi-trophy"></i> {{ _('Gare in corso') }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ completed_gare }}</div>
+                    <div class="metric-label"><i class="bi bi-check-circle"></i> {{ _('Gare completate') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ matches_per_user }}</div>
+                    <div class="metric-label"><i class="bi bi-person"></i> {{ _('Match/utente attivo') }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ avg_level }}</div>
+                    <div class="metric-label"><i class="bi bi-star"></i> {{ _('Livello medio') }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ xp_awarded }}</div>
+                    <div class="metric-label"><i class="bi bi-lightning"></i> {{ _('XP erogati') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> {{ _('Match giornalieri') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="engagementChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {% elif active_tab == 'features' %}
+    <!-- FEATURES TAB -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-puzzle"></i> {{ _('Utilizzo funzionalità') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Funzionalità') }}</th>
+                            <th class="text-center">{{ _('Utilizzi') }}</th>
+                            <th class="text-center">{{ _('Utenti unici') }}</th>
+                            <th class="text-center">{{ _('Trend') }}</th>
+                            <th class="text-center">% su totale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feature in feature_usage %}
+                        <tr class="{% if feature.usage_count == 0 %}feature-row-zero{% endif %}">
+                            <td>
+                                <strong>{{ feature.feature_label }}</strong>
+                            </td>
+                            <td class="text-center">
+                                {% if feature.usage_count == 0 %}
+                                    <span class="badge bg-secondary">0</span>
+                                {% else %}
+                                    <span class="badge bg-primary">{{ feature.usage_count }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="text-muted">{{ feature.unique_users }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="trend-{{ feature.trend_direction }}">
+                                    {% if feature.trend_direction == 'up' %}
+                                        <i class="bi bi-arrow-up"></i>
+                                    {% elif feature.trend_direction == 'down' %}
+                                        <i class="bi bi-arrow-down"></i>
+                                    {% else %}
+                                        <i class="bi bi-dash"></i>
+                                    {% endif %}
+                                    {{ feature.trend_percent }}%
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar {% if feature.usage_count == 0 %}bg-secondary{% endif %}"
+                                         role="progressbar"
+                                         style="width: {{ feature.percentage }}%"
+                                         aria-valuenow="{{ feature.percentage }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                        {{ feature.percentage }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if not feature_usage %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">{{ _('Nessun dato di utilizzo disponibile') }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for alerts
+    fetch('{{ url_for("admin.kpi.api_check_alerts") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.alerts.length > 0) {
+                const container = document.getElementById('alertContainer');
+                data.alerts.forEach(alert => {
+                    container.innerHTML += `
+                        <div class="alert alert-${alert.type} alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> ${alert.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                });
+            }
+        });
+
+    // Check for milestones
+    fetch('{{ url_for("admin.kpi.api_check_milestones") }}', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.milestones.length > 0) {
+                const container = document.getElementById('alertContainer');
+                data.milestones.forEach(milestone => {
+                    container.innerHTML += `
+                        <div class="alert alert-${milestone.type} alert-dismissible fade show" role="alert">
+                            <i class="bi bi-trophy"></i> ${milestone.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                });
+            }
+        });
+
+    {% if active_tab == 'overview' %}
+    // Overview charts
+    const dailyUsers = {{ daily_users|tojson }};
+    const dailyMatches = {{ daily_matches|tojson }};
+
+    // Registrations chart
+    new Chart(document.getElementById('registrationsChart'), {
+        type: 'line',
+        data: {
+            labels: dailyUsers.map(d => d.date),
+            datasets: [{
+                label: {{ _('Registrazioni')|tojson }},
+                data: dailyUsers.map(d => d.count),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Matches chart
+    new Chart(document.getElementById('matchesChart'), {
+        type: 'line',
+        data: {
+            labels: dailyMatches.map(d => d.date),
+            datasets: [{
+                label: {{ _('Match')|tojson }},
+                data: dailyMatches.map(d => d.count),
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    {% elif active_tab == 'acquisition' %}
+    // Acquisition chart
+    const registrations = {{ daily_registrations|tojson }};
+
+    new Chart(document.getElementById('acquisitionChart'), {
+        type: 'bar',
+        data: {
+            labels: registrations.map(d => d.date),
+            datasets: [{
+                label: {{ _('Nuove registrazioni')|tojson }},
+                data: registrations.map(d => d.count),
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    {% elif active_tab == 'engagement' %}
+    // Engagement chart
+    const matchesData = {{ daily_matches|tojson }};
+
+    new Chart(document.getElementById('engagementChart'), {
+        type: 'bar',
+        data: {
+            labels: matchesData.map(d => d.date),
+            datasets: [{
+                label: {{ _('Match giocati')|tojson }},
+                data: matchesData.map(d => d.count),
+                backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                borderColor: 'rgb(255, 159, 64)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

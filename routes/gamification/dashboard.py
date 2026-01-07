@@ -14,6 +14,7 @@ from models.gamification.models import (
     AchievementCategory, AchievementDifficulty, StreakType,
     Quest, QuestStatus
 )
+from models.kpi import track_achievement_view, track_leaderboard_view
 
 from . import gamification_bp
 
@@ -192,6 +193,7 @@ def achievements():
             achievements_by_category[category] = []
         achievements_by_category[category].append(ua)
 
+    track_achievement_view()  # KPI tracking
     return render_template(
         "gamification/achievements.html",
         achievements_by_category=achievements_by_category,
@@ -239,6 +241,7 @@ def leaderboards():
         StreakTracker.current_streak.desc()
     ).limit(limit).all()
 
+    track_leaderboard_view()  # KPI tracking
     return render_template(
         "gamification/leaderboards.html",
         xp_leaderboard=xp_leaderboard,

@@ -53,6 +53,10 @@ class NotificationType(Enum):
     QUEST_COMPLETED = "quest_completed"  # Quest finished
     QUEST_NEW = "quest_new"  # New quest available
 
+    # KPI (Admin only)
+    KPI_MILESTONE = "kpi_milestone"  # Community milestone reached
+    KPI_ACTIVITY_ALERT = "kpi_activity_alert"  # Activity drop alert
+
 
 class NotificationPriority(Enum):
     """Notification priority levels."""

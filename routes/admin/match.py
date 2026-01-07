@@ -23,6 +23,7 @@ from utils import (
     rack_manager_required,
 )
 from models.match.services import RackService
+from models.kpi import track_match_played, track_result_submit
 
 # Match management blueprint
 match_bp = Blueprint("match", __name__)
@@ -249,6 +250,7 @@ def validate_match(match_id):
 
         db.session.commit()
 
+        track_match_played()  # KPI tracking
         flash("Risultato validato e partita completata!")
         return jsonify({
             "success": True,

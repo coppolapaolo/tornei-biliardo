@@ -9,6 +9,7 @@ from .competition import competition_bp
 from .match import match_bp
 from .user import user_bp
 from .venue import venue_bp
+from .kpi import kpi_bp
 # from .dashboard import dashboard_bp  # Removed - admin dashboard deprecated, using unified dashboard
 
 # Main admin blueprint (parent)
@@ -29,6 +30,9 @@ admin_bp.register_blueprint(user_bp)
 
 # Venue domain: /admin/venues, /admin/venue/*
 admin_bp.register_blueprint(venue_bp)
+
+# KPI domain: /admin/kpi
+admin_bp.register_blueprint(kpi_bp, url_prefix="/kpi")
 
 # Dashboard domain: /admin/ (root) - REMOVED
 # admin_bp.register_blueprint(dashboard_bp)  # Deprecated - using unified dashboard
