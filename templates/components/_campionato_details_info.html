@@ -6,23 +6,38 @@
     <div class="card-body">
         <div class="row">
             <div class="col-md-4">
-                <strong>Tipo:</strong> {{ campionato.campionato_type }}<br>
+                <strong>Tipo:</strong>
+                {% if campionato.campionato_type == 'amalfi' %}
+                    <span class="badge bg-primary">Amalfi</span>
+                {% elif campionato.campionato_type == 'random' %}
+                    <span class="badge bg-info">Random</span>
+                {% elif campionato.campionato_type == 'round_robin' %}
+                    <span class="badge bg-success">Round Robin</span>
+                {% else %}
+                    {{ campionato.campionato_type }}
+                {% endif %}
+                <br>
                 <strong>Creato:</strong> {{ campionato.created_at|date_local }}
+                {% if campionato.planned_gare_count %}
+                <br><strong>Gare previste:</strong> {{ campionato.planned_gare_count }}
+                {% endif %}
             </div>
             <div class="col-md-4">
-                <strong>Opzioni:</strong><br>
+                <strong>Opzioni:</strong>
+                {% if campionato.without_x or campionato.challenge_mode %}
+                <br>
                 {% if campionato.without_x %}
-                    <span class="badge bg-info me-1">Senza X</span><br>
-                {% endif %}
-                {% if campionato.final_playoffs %}
-                    <span class="badge bg-success me-1">Playoff</span><br>
+                    <span class="badge bg-info me-1">Senza X</span>
                 {% endif %}
                 {% if campionato.challenge_mode %}
-                    <span class="badge bg-warning me-1">Challenge</span><br>
+                    <span class="badge bg-warning me-1"><i class="fas fa-trophy"></i> Challenge</span>
+                {% endif %}
+                {% else %}
+                <span class="text-muted">Nessuna</span>
                 {% endif %}
             </div>
             <div class="col-md-4">
-                <strong>Stato:</strong> 
+                <strong>Stato:</strong>
                 {% if campionato.is_active %}
                     <span class="badge bg-success">Attivo</span>
                 {% else %}
@@ -30,5 +45,81 @@
                 {% endif %}
             </div>
         </div>
+
+        {# Playoff Configuration #}
+        {% if campionato.playoff_elite_enabled or campionato.playoff_academy_enabled %}
+        <hr class="my-3">
+        <div class="row">
+            <div class="col-12">
+                <strong><i class="fas fa-medal text-warning"></i> Playoff:</strong>
+                {% if campionato.playoff_elite_enabled %}
+                    <span class="badge bg-success me-2">
+                        <i class="fas fa-star"></i> Elite (Top {{ campionato.playoff_elite_participants }})
+                    </span>
+                {% endif %}
+                {% if campionato.playoff_academy_enabled %}
+                    <span class="badge bg-secondary me-2">
+                        <i class="fas fa-graduation-cap"></i> Academy ({{ campionato.playoff_academy_participants }} giocatori)
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Default Gare Settings #}
+        {% if campionato.default_venue or campionato.default_entry_fee or campionato.default_rounds_count or campionato.default_odd_policy %}
+        <hr class="my-3">
+        <div class="row">
+            <div class="col-12">
+                <strong><i class="fas fa-sliders-h text-primary"></i> Default Gare:</strong>
+            </div>
+        </div>
+        <div class="row mt-2">
+            {% if campionato.default_venue %}
+            <div class="col-md-3">
+                <small class="text-muted">Sede:</small><br>
+                <span>{{ campionato.default_venue.name }}</span>
+            </div>
+            {% endif %}
+            {% if campionato.default_entry_fee %}
+            <div class="col-md-2">
+                <small class="text-muted">Quota:</small><br>
+                <span>€{{ "%.2f"|format(campionato.default_entry_fee) }}</span>
+            </div>
+            {% endif %}
+            {% if campionato.default_rounds_count %}
+            <div class="col-md-2">
+                <small class="text-muted">Turni:</small><br>
+                <span>{{ campionato.default_rounds_count }}</span>
+            </div>
+            {% endif %}
+            {% if campionato.default_odd_policy %}
+            <div class="col-md-3">
+                <small class="text-muted">Gestione Dispari:</small><br>
+                <span>
+                    {% if campionato.default_odd_policy == 'bye' %}
+                        X (vinto a tavolino)
+                    {% elif campionato.default_odd_policy == 'bye_with_challenge' %}
+                        X con Challenge
+                    {% elif campionato.default_odd_policy == 'trio' %}
+                        Match a 3
+                    {% else %}
+                        {{ campionato.default_odd_policy }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+            {% if campionato.default_anti_rematch is not none %}
+            <div class="col-md-2">
+                <small class="text-muted">Anti-rematch:</small><br>
+                {% if campionato.default_anti_rematch %}
+                    <span class="text-success"><i class="fas fa-check"></i> Attivo</span>
+                {% else %}
+                    <span class="text-secondary"><i class="fas fa-times"></i> Disattivo</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>

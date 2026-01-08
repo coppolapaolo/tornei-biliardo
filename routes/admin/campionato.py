@@ -407,7 +407,9 @@ def campionato_detail(campionato_id):
 @campionato_bp.route("/<int:campionato_id>/edit", methods=["GET", "POST"])
 @campionato_manager_required(lambda campionato_id: campionato_id)
 def edit_campionato(campionato_id):
-    """Modifica campionato - AGGIORNATO per nuovo model"""
+    """Modifica campionato - allineato al wizard di creazione"""
+    from models.location.models import BilliardHall
+
     campionato = db.session.get(Campionato, campionato_id)
     if campionato is None:
         abort(404)
@@ -423,14 +425,38 @@ def edit_campionato(campionato_id):
     if request.method == "POST":
         # Usa il service layer invece del direct database access
         try:
+            # Parse default_venue_id (can be empty string)
+            default_venue_id = request.form.get("default_venue_id")
+            default_venue_id = int(default_venue_id) if default_venue_id else None
+
+            # Parse default_entry_fee (can be empty string)
+            default_entry_fee = request.form.get("default_entry_fee")
+            default_entry_fee = (
+                float(default_entry_fee) if default_entry_fee else None
+            )
+
+            # Parse planned_gare_count
+            planned_gare_count = request.form.get("planned_gare_count")
+            planned_gare_count = (
+                int(planned_gare_count) if planned_gare_count else None
+            )
+
             campionato_service.update_campionato(
                 campionato_id=campionato_id,
+                # Step 1 fields
                 name=request.form["name"],
                 campionato_type=request.form.get("campionato_type", "amalfi"),
-                without_x="without_x" in request.form,
-                final_playoffs="final_playoffs" in request.form,
+                planned_gare_count=planned_gare_count,
                 challenge_mode="challenge_mode" in request.form,
                 scoring_policy=request.form.get("scoring_policy", "classic"),
+                # Step 2 fields - Default gare settings
+                default_venue_id=default_venue_id,
+                default_entry_fee=default_entry_fee,
+                default_rounds_count=int(
+                    request.form.get("default_rounds_count", 3)
+                ),
+                default_odd_policy=request.form.get("default_odd_policy", "bye"),
+                default_anti_rematch="default_anti_rematch" in request.form,
             )
             flash("Campionato aggiornato con successo!")
         except ValueError as ve:
@@ -440,7 +466,25 @@ def edit_campionato(campionato_id):
             url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
         )
 
-    return render_template("admin/campionato_edit.html", campionato=campionato)
+    # GET: Prepare data for template
+    venues = BilliardHall.query.order_by(BilliardHall.name).all()
+    matchmaking_strategies = [
+        ("amalfi", "Amalfi"),
+        ("random", "Random"),
+    ]
+    odd_policies = [
+        ("bye", "X (vinto a tavolino)"),
+        ("bye_with_challenge", "X con Challenge"),
+        ("trio", "Match a 3 Giocatori"),
+    ]
+
+    return render_template(
+        "admin/campionato_edit.html",
+        campionato=campionato,
+        venues=venues,
+        matchmaking_strategies=matchmaking_strategies,
+        odd_policies=odd_policies,
+    )
 
 
 @campionato_bp.route("/<int:campionato_id>/delete", methods=["POST"])

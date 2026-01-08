@@ -516,7 +516,15 @@
           {% else %}
           window.location.href = '/dashboard';
           {% endif %}
+        } else {
+          response.text().then(text => {
+            alert({{ _("Errore durante l'eliminazione della gara: ")|tojson }} + response.status);
+            console.error('Delete error:', text);
+          });
         }
+      }).catch(err => {
+        alert({{ _("Errore di rete durante l'eliminazione")|tojson }});
+        console.error('Network error:', err);
       });
     }
   }

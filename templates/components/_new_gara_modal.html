@@ -164,6 +164,52 @@
                         </div>
                     </div>
 
+                    <!-- Quarta riga: Strategy Settings -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
+                                <select class="form-control" name="first_round_policy" id="create_first_round_policy">
+                                    <option value="random" selected>Casuale</option>
+                                    <option value="rating">Basato su Rating</option>
+                                    <option value="classification">Basato su Classifica</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="odd_number_policy" class="form-label">Gestione Dispari</label>
+                                <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
+                                    <option value="bye" {% if not campionato.default_odd_policy or campionato.default_odd_policy == 'bye' %}selected{% endif %}>
+                                        X (vinto a tavolino)
+                                    </option>
+                                    <option value="bye_with_challenge" {% if campionato.default_odd_policy == 'bye_with_challenge' %}selected{% endif %}>
+                                        X con Challenge
+                                    </option>
+                                    <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
+                                        Match a 3 Giocatori
+                                    </option>
+                                </select>
+                                <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
+                                    Match a 3 disponibile solo fino a distanza 7
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Anti-Rematch</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="anti_rematch_enabled"
+                                        id="create_anti_rematch_enabled" {% if campionato.default_anti_rematch is none or campionato.default_anti_rematch %}checked{% endif %}>
+                                    <label class="form-check-label" for="create_anti_rematch_enabled">
+                                        Evita reincontri
+                                    </label>
+                                </div>
+                                <small class="text-muted">Evita stessi avversari</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Descrizione -->
                     <div class="mb-3">
                         <label for="description" class="form-label">Descrizione (opzionale)</label>
@@ -190,38 +236,71 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Preload number of tables when venue is selected
+        // Elements
         const locationInput = document.getElementById('create_location');
         const tablesInput = document.getElementById('create_available_tables');
         const venueOptions = document.querySelectorAll('#venue-suggestions option');
+        const distanceInput = document.getElementById('create_distance');
+        const exactNumberCheckbox = document.getElementById('create_exact_number');
+        const gameModeText = document.getElementById('create-game-mode-text');
+        const oddPolicySelect = document.getElementById('create_odd_number_policy');
+        const trioWarning = document.getElementById('create_trio_warning');
 
+        // Preload number of tables when venue is selected
         if (locationInput && tablesInput) {
             locationInput.addEventListener('input', function () {
                 const selectedValue = this.value;
-
-                // Find matching venue option
                 const matchingOption = Array.from(venueOptions).find(option =>
                     option.value === selectedValue
                 );
-
                 if (matchingOption) {
-                    // Preload tables count from verified venue as default
                     const tablesCount = matchingOption.getAttribute('data-tables');
                     if (tablesCount && tablesCount !== '0') {
                         tablesInput.value = tablesCount;
-                        // Don't disable - user can override with specific tables
                     }
                 }
             });
         }
 
-        // Update game mode text on distance or exact number change
-        if (distanceInput && exactNumberCheckbox && gameModeText) {
-            distanceInput.addEventListener('input', updateGameModeText);
-            exactNumberCheckbox.addEventListener('change', updateGameModeText);
-            // Initial update
-            updateGameModeText();
+        // Update game mode text
+        function updateGameModeText() {
+            if (!distanceInput || !gameModeText) return;
+            const distance = parseInt(distanceInput.value) || 0;
+            const isExactNumber = exactNumberCheckbox && exactNumberCheckbox.checked;
+            if (isExactNumber) {
+                gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
+            } else {
+                gameModeText.textContent = 'Al ' + distance + ' (si vince a ' + distance + ' rack)';
+            }
         }
+
+        // Validate trio policy (max distance 7)
+        function updateTrioWarning() {
+            if (!distanceInput || !oddPolicySelect || !trioWarning) return;
+            const distance = parseInt(distanceInput.value) || 0;
+            const oddPolicy = oddPolicySelect.value;
+            if (oddPolicy === 'trio' && distance > 7) {
+                trioWarning.style.display = 'block';
+                oddPolicySelect.value = 'bye';
+            } else {
+                trioWarning.style.display = 'none';
+            }
+        }
+
+        // Event listeners
+        if (distanceInput) {
+            distanceInput.addEventListener('input', updateGameModeText);
+            distanceInput.addEventListener('input', updateTrioWarning);
+        }
+        if (exactNumberCheckbox) {
+            exactNumberCheckbox.addEventListener('change', updateGameModeText);
+        }
+        if (oddPolicySelect) {
+            oddPolicySelect.addEventListener('change', updateTrioWarning);
+        }
+
+        // Initial updates
+        updateGameModeText();
+        updateTrioWarning();
     });
 </script>
-```

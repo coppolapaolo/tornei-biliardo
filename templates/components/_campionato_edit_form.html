@@ -1,114 +1,242 @@
-<!-- Campionato Edit Form Component -->
+<!-- Campionato Edit Form Component - Allineato al Wizard di Creazione -->
 <div class="card">
-    <div class="card-header">
-        <h5><i class="fas fa-edit"></i> Informazioni Campionato</h5>
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-edit"></i> {{ _("Modifica Campionato") }}</h5>
     </div>
     <div class="card-body">
         <form action="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" method="POST">
+
+            {# SEZIONE 1: Configurazione Base (Step 1 del Wizard) #}
+            <h5 class="mb-3"><i class="fas fa-trophy text-primary"></i> {{ _("Configurazione Base") }}</h5>
+
+            <!-- Nome -->
             <div class="mb-3">
-                <label for="name" class="form-label">Nome Campionato</label>
-                <input type="text" class="form-control" name="name" 
+                <label for="name" class="form-label">{{ _("Nome Campionato") }} *</label>
+                <input type="text" class="form-control" id="name" name="name"
                        value="{{ campionato.name }}" required>
-                <small class="text-muted">Includi l'anno nel nome se necessario</small>
+                <small class="text-muted">{{ _("Includi l'anno nel nome per distinguerlo facilmente") }}</small>
             </div>
-            
+
+            <!-- Numero Gare Pianificate -->
             <div class="mb-3">
-                <label for="campionato_type" class="form-label">Tipo Campionato</label>
-                <select class="form-control" name="campionato_type" required>
-                    <option value="amalfi" {% if campionato.campionato_type|lower == 'amalfi' %}selected{% endif %}>
-                        Amalfi
-                    </option>
-                    <option value="random" {% if campionato.campionato_type|lower == 'random' %}selected{% endif %}>
-                        Random
-                    </option>
-                </select>
-                <small class="text-muted">
-                    Amalfi: accoppiamenti basati su classifica.
-                    Random: accoppiamenti casuali con anti-rematch.
-                </small>
+                <label for="planned_gare_count" class="form-label">{{ _("Numero Gare Pianificate") }}</label>
+                <input type="number" class="form-control" id="planned_gare_count" name="planned_gare_count"
+                       value="{{ campionato.planned_gare_count or 10 }}" min="1" max="52">
+                <small class="text-muted">{{ _("Obiettivo indicativo. Il direttore puo' aggiungere o cancellare gare.") }}</small>
             </div>
-            
-            <div class="mb-4">
-                <label class="form-label">Opzioni Campionato</label>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="without_x" id="without_x"
-                           {% if campionato.without_x %}checked{% endif %}>
-                    <label class="form-check-label" for="without_x">
-                        <strong>Senza X</strong>
-                        <br><small class="text-muted">Nessun giocatore riceve bye automatico nei turni</small>
-                    </label>
+
+            <!-- Tipo Campionato -->
+            <div class="mb-3">
+                <label for="campionato_type" class="form-label">{{ _("Tipo Campionato") }} *</label>
+                <select class="form-select" id="campionato_type" name="campionato_type" required>
+                    {% for value, label in matchmaking_strategies %}
+                    <option value="{{ value }}" {% if campionato.campionato_type == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="mt-2">
+                    <div id="type-description-amalfi" class="alert alert-info py-2 mb-0 small {% if campionato.campionato_type != 'amalfi' %}d-none{% endif %}">
+                        <i class="fas fa-chess"></i>
+                        <strong>Amalfi:</strong> {{ _("Accoppiamenti basati sulla classifica del turno precedente.") }}
+                    </div>
+                    <div id="type-description-random" class="alert alert-info py-2 mb-0 small {% if campionato.campionato_type != 'random' %}d-none{% endif %}">
+                        <i class="fas fa-random"></i>
+                        <strong>Random:</strong> {{ _("Accoppiamenti casuali con anti-rematch.") }}
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="final_playoffs" id="final_playoffs"
-                           {% if campionato.final_playoffs %}checked{% endif %}>
-                    <label class="form-check-label" for="final_playoffs">
-                        <strong>Playoff Finali</strong>
-                        <br><small class="text-muted">Organizza playoff Elite (primi 6) e Academy (secondi 6) alla fine</small>
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="challenge_mode" id="challenge_mode"
+            </div>
+
+            <!-- Challenge Mode -->
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="challenge_mode" name="challenge_mode"
                            {% if campionato.challenge_mode %}checked{% endif %}>
                     <label class="form-check-label" for="challenge_mode">
-                        <strong>Modalità Challenge</strong>
-                        <br><small class="text-muted">Abilita funzionalità avanzate di sfida (in sviluppo)</small>
+                        <strong>{{ _("Challenge Mode") }}</strong>
                     </label>
                 </div>
+                <small class="text-muted">{{ _("Abilita sfide individuali tra giocatori durante il campionato") }}</small>
             </div>
-            
+
+            <!-- Sistema di Punteggio -->
             <div class="mb-4">
-                <label for="scoring_policy" class="form-label">Sistema di Punteggio</label>
-                <select class="form-control" name="scoring_policy" id="scoring_policy">
+                <label for="scoring_policy" class="form-label">{{ _("Sistema di Punteggio") }}</label>
+                <select class="form-select" id="scoring_policy" name="scoring_policy">
                     <option value="classic" {% if campionato.scoring_policy == "classic" %}selected{% endif %}>
-                        Classico (Vittorie → Differenza rack → Ordine precedente)
+                        {{ _("Classico (Vittorie > Differenza rack > Ordine precedente)") }}
                     </option>
                     <option value="fargo" {% if campionato.scoring_policy == "fargo" %}selected{% endif %}>
-                        Fargo Rating (Rating → Vittorie → Differenza rack)
+                        {{ _("Fargo Rating (Rating > Vittorie > Differenza rack)") }}
                     </option>
                     <option value="elo" {% if campionato.scoring_policy == "elo" %}selected{% endif %}>
-                        Elo Rating (Rating → Vittorie → Differenza rack)
+                        {{ _("Elo Rating (Rating > Vittorie > Differenza rack)") }}
                     </option>
                 </select>
-                <small class="text-muted">Determina come vengono calcolate le classifiche del campionato</small>
             </div>
-            
-            <hr>
-            
+
+            <hr class="my-4">
+
+            {# SEZIONE 2: Default per le Gare (Step 2 del Wizard) #}
+            <h5 class="mb-3"><i class="fas fa-cogs text-primary"></i> {{ _("Default per le Gare") }}</h5>
+            <p class="text-muted small mb-3">
+                {{ _("Questi valori saranno utilizzati come default quando crei nuove gare.") }}
+            </p>
+
+            <!-- Sede Predefinita -->
+            <div class="mb-3">
+                <label for="default_venue_id" class="form-label">{{ _("Sede Predefinita") }}</label>
+                <select class="form-select" id="default_venue_id" name="default_venue_id">
+                    <option value="">{{ _("-- Nessuna sede predefinita --") }}</option>
+                    {% for venue in venues %}
+                    <option value="{{ venue.id }}" {% if campionato.default_venue_id == venue.id %}selected{% endif %}>
+                        {{ venue.name }}
+                        {% if venue.verified %}<i class="fas fa-check-circle text-success"></i>{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">{{ _("Dove si svolgeranno tipicamente le gare") }}</small>
+            </div>
+
+            <div class="row">
+                <!-- Quota Iscrizione -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="default_entry_fee" class="form-label">{{ _("Quota Iscrizione Predefinita") }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text">&euro;</span>
+                            <input type="number" class="form-control" id="default_entry_fee" name="default_entry_fee"
+                                   step="0.50" min="0" max="100"
+                                   value="{{ campionato.default_entry_fee if campionato.default_entry_fee else '' }}"
+                                   placeholder="0.00">
+                        </div>
+                        <small class="text-muted">{{ _("Lascia vuoto se gratuita") }}</small>
+                    </div>
+                </div>
+
+                <!-- Numero Turni -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="default_rounds_count" class="form-label">{{ _("Numero Turni Predefinito") }}</label>
+                        <select class="form-select" id="default_rounds_count" name="default_rounds_count">
+                            {% for i in range(2, 6) %}
+                            <option value="{{ i }}" {% if campionato.default_rounds_count == i %}selected{% endif %}>
+                                {{ i }} {{ _("turni") }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3"><i class="fas fa-sliders-h text-primary"></i> {{ _("Opzioni Matchmaking") }}</h5>
+
+            <!-- Gestione Numero Dispari -->
+            <div class="mb-3">
+                <label for="default_odd_policy" class="form-label">{{ _("Gestione Numero Dispari") }}</label>
+                <select class="form-select" id="default_odd_policy" name="default_odd_policy">
+                    {% for value, label in odd_policies %}
+                    <option value="{{ value }}" {% if campionato.default_odd_policy == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="mt-2">
+                    <div id="policy-description-bye" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'bye' %}d-none{% endif %}">
+                        <i class="fas fa-user-clock"></i>
+                        {{ _("Il giocatore piu' basso in classifica riceve un bye (riposo) e vince automaticamente.") }}
+                    </div>
+                    <div id="policy-description-bye_with_challenge" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'bye_with_challenge' %}d-none{% endif %}">
+                        <i class="fas fa-bullseye"></i>
+                        {{ _("Il giocatore riceve bye ma deve completare una sfida per guadagnare punti extra.") }}
+                    </div>
+                    <div id="policy-description-trio" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'trio' %}d-none{% endif %}">
+                        <i class="fas fa-users"></i>
+                        {{ _("I tre giocatori piu' bassi giocano un match a 3.") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anti-Rematch -->
+            <div class="mb-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="default_anti_rematch" name="default_anti_rematch"
+                           {% if campionato.default_anti_rematch %}checked{% endif %}>
+                    <label class="form-check-label" for="default_anti_rematch">
+                        <strong>{{ _("Anti-Rematch") }}</strong>
+                    </label>
+                </div>
+                <small class="text-muted">{{ _("Evita accoppiamenti ripetuti tra gli stessi giocatori nella stessa gara") }}</small>
+            </div>
+
+            <hr class="my-4">
+
             <div class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>Attenzione:</strong> Una volta che una gara del campionato avrà delle iscrizioni, 
-                non sarà più possibile modificare le impostazioni del campionato.
+                <strong>{{ _("Attenzione:") }}</strong> {{ _("Una volta che una gara del campionato avra' delle iscrizioni, non sara' piu' possibile modificare le impostazioni del campionato.") }}
             </div>
-            
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                <strong>Nota:</strong> Le impostazioni specifiche (numero turni, discipline, quote, ecc.) 
-                vengono configurate in ogni singola gara.
-            </div>
-            
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}" 
+                <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}"
                    class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Annulla
+                    <i class="fas fa-times"></i> {{ _("Annulla") }}
                 </a>
                 <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i> Salva Modifiche
+                    <i class="fas fa-save"></i> {{ _("Salva Modifiche") }}
                 </button>
             </div>
         </form>
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle type descriptions
+    const typeSelect = document.getElementById('campionato_type');
+    const descAmalfi = document.getElementById('type-description-amalfi');
+    const descRandom = document.getElementById('type-description-random');
+
+    function updateTypeDescription() {
+        const type = typeSelect.value;
+        descAmalfi.classList.toggle('d-none', type !== 'amalfi');
+        descRandom.classList.toggle('d-none', type !== 'random');
+    }
+
+    typeSelect.addEventListener('change', updateTypeDescription);
+
+    // Toggle odd policy descriptions
+    const policySelect = document.getElementById('default_odd_policy');
+    const descBye = document.getElementById('policy-description-bye');
+    const descByeChallenge = document.getElementById('policy-description-bye_with_challenge');
+    const descTrio = document.getElementById('policy-description-trio');
+
+    function updatePolicyDescription() {
+        const policy = policySelect.value;
+        descBye.classList.toggle('d-none', policy !== 'bye');
+        descByeChallenge.classList.toggle('d-none', policy !== 'bye_with_challenge');
+        descTrio.classList.toggle('d-none', policy !== 'trio');
+    }
+
+    policySelect.addEventListener('change', updatePolicyDescription);
+});
+</script>
+
 {% if debug_info.debug_mode %}
-    <div class="mt-4">
-        <div class="alert alert-dark">
-            <h6><i class="fas fa-bug"></i> DEBUG - Edit Campionato</h6>
-            <small>
-                Campionato ID: {{ campionato.id }}<br>
-                Can be modified: {{ campionato.can_be_modified() }}<br>
-                Current values: Type={{ campionato.campionato_type }}<br>
-                Options: Without_X={{ campionato.without_x }}, Playoffs={{ campionato.final_playoffs }}, Challenge={{ campionato.challenge_mode }}
-            </small>
-        </div>
+<div class="mt-4">
+    <div class="alert alert-dark">
+        <h6><i class="fas fa-bug"></i> DEBUG - Edit Campionato</h6>
+        <small>
+            Campionato ID: {{ campionato.id }}<br>
+            Can be modified: {{ campionato.can_be_modified() }}<br>
+            Type: {{ campionato.campionato_type }}<br>
+            Default Venue ID: {{ campionato.default_venue_id }}<br>
+            Default Entry Fee: {{ campionato.default_entry_fee }}<br>
+            Default Rounds: {{ campionato.default_rounds_count }}<br>
+            Default Odd Policy: {{ campionato.default_odd_policy }}<br>
+            Default Anti-Rematch: {{ campionato.default_anti_rematch }}
+        </small>
     </div>
+</div>
 {% endif %}
