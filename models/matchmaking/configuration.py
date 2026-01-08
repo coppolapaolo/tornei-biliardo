@@ -96,8 +96,9 @@ class StrategyBehaviorConfig:
     # Bye/odd number handling - function that takes distance and returns default policy
     default_odd_policy_fn: Callable[[int], OddNumberPolicy]
 
-    # Trio constraint
-    trio_max_distance: int = 7
+    # Trio constraints (per ADR-005: trio only valid for distances 2-5)
+    trio_min_distance: int = 2
+    trio_max_distance: int = 5
 
     # Round creation behavior
     creates_all_rounds_at_startup: bool = False
@@ -107,18 +108,23 @@ class StrategyBehaviorConfig:
         return self.default_odd_policy_fn(distance)
 
     def can_use_trio(self, distance: int) -> bool:
-        """Check if trio matches are allowed for this distance."""
-        return distance <= self.trio_max_distance
+        """Check if trio matches are allowed for this distance.
+
+        Trio is only valid for distances 2-5 (ADR-005).
+        - Distance 1: Not enough racks for round-robin format
+        - Distance > 5: Too many racks, impractical for trio format
+        """
+        return self.trio_min_distance <= distance <= self.trio_max_distance
 
 
-def _amalfi_odd_policy(distance: int) -> OddNumberPolicy:
-    """Amalfi default: always BYE (X)."""
+def _amalfi_odd_policy(_distance: int) -> OddNumberPolicy:
+    """Amalfi default: always BYE (X) regardless of distance."""
     return OddNumberPolicy.BYE
 
 
 def _random_odd_policy(distance: int) -> OddNumberPolicy:
-    """Random default: TRIO if distance <= 7, else BYE_WITH_CHALLENGE."""
-    if distance <= 7:
+    """Random default: TRIO if distance 2-5 (per ADR-005), else BYE_WITH_CHALLENGE."""
+    if 2 <= distance <= 5:
         return OddNumberPolicy.TRIO
     return OddNumberPolicy.BYE_WITH_CHALLENGE
 

@@ -384,9 +384,14 @@ class GaraService:
     @staticmethod
     @transactional(domain="competition")
     def reset_trio(trio_id: int) -> None:
-        """Reset completo di una partita trio."""
-        from models.match.models import TrioMatch, Match
-        from models.match.services import MatchService
+        """Reset completo di una partita trio.
+
+        Uses the new TrioMatch.reset() method which handles:
+        - Resetting all scores to 0
+        - Resetting round-robin tracking (current_round, racks_played, etc.)
+        - Resetting the associated match status
+        """
+        from models.match.models import TrioMatch
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
@@ -394,21 +399,81 @@ class GaraService:
 
             abort(404)
 
-        # Reset scores
-        trio.player1_racks = 0
-        trio.player2_racks = 0
-        trio.player3_racks = 0
+        # Use the new reset method on TrioMatch
+        trio.reset()
 
-        # Reset state
-        trio.current_player1_id = trio.player1_id
-        trio.current_player2_id = trio.player2_id
-        trio.waiting_player_id = trio.player3_id
-        trio.is_completed = False
-        trio.winner_id = None
+    @staticmethod
+    @transactional(domain="competition")
+    def set_trio_result(
+        trio_id: int, player1_racks: int, player2_racks: int, player3_racks: int
+    ) -> dict:
+        """Imposta direttamente il risultato di una partita trio.
 
-        # Reset match associato using new unified method
-        from models.match.services import RackService
-        RackService.reset_match_complete(trio.match_id)
+        The trio uses a round-robin system where each player can win up to
+        `distance` racks total (including bonus if applicable).
+        See ADR-005 for full specification.
+
+        Args:
+            trio_id: ID del TrioMatch
+            player1_racks: Rack vinti dal player1
+            player2_racks: Rack vinti dal player2
+            player3_racks: Rack vinti dal player3
+
+        Returns:
+            Dict con risultato dell'operazione
+
+        Raises:
+            ValueError: Se i punteggi non sono validi per la distanza configurata
+        """
+        from models.match.models import TrioMatch, Match
+        from models.match.trio_config import TrioConfig
+
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+
+            abort(404)
+
+        # Get configuration based on gara distance
+        config = trio.trio_config
+
+        # Validate scores against configuration
+        scores = [player1_racks, player2_racks, player3_racks]
+        max_allowed = config.max_racks_per_player
+
+        # Check no score exceeds max allowed
+        for score in scores:
+            if score < 0:
+                raise ValueError("I punteggi non possono essere negativi")
+            if score > max_allowed:
+                raise ValueError(
+                    f"Punteggio massimo per giocatore: {max_allowed} "
+                    f"(distanza {config.distance})"
+                )
+
+        # Use the new set_result_direct method
+        trio.set_result_direct(player1_racks, player2_racks, player3_racks)
+
+        # Also mark as validated by admin
+        match = db.session.get(Match, trio.match_id)
+        if match:
+            match.validated_by_admin = True
+
+        return {
+            "success": True,
+            "winner_id": trio.winner_id,  # May be None if tie
+            "is_tie": trio.winner_id is None,
+            "scores": {
+                "player1": player1_racks,
+                "player2": player2_racks,
+                "player3": player3_racks,
+            },
+            "config": {
+                "distance": config.distance,
+                "num_rounds": config.num_rounds,
+                "bonus_racks": config.bonus_racks,
+            },
+        }
 
     # -----------------------------
     # VALIDAZIONE DATI (type-safe)

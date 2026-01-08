@@ -131,7 +131,8 @@
       </div>
       <form id="quickResultForm" onsubmit="return submitQuickResult(event)">
         <div class="modal-body">
-          <div class="alert alert-warning">
+          {# Info modalità per match normali #}
+          <div class="alert alert-warning" id="quickResultNormalInfo">
             <small>
               <i class="fas fa-info-circle"></i>
               <strong>{{ _('Modalità:') }}</strong>
@@ -144,20 +145,56 @@
             </small>
           </div>
 
-          <div class="row">
+          {# Info modalità per trio - calculated from TrioConfig #}
+          {% set trio_config = gara.distance|trio_config_for_distance %}
+          <div class="alert alert-info" id="quickResultTrioInfo" style="display: none;">
+            <small>
+              <i class="fas fa-users"></i>
+              <strong>{{ _('Trio (Round-Robin):') }}</strong>
+              {% if trio_config %}
+              {{ _('%(gironi)s gironi, max %(max_racks)s rack per giocatore', gironi=trio_config.num_rounds, max_racks=trio_config.max_racks_per_player) }}
+              {% if trio_config.bonus_racks > 0 %}
+              <br><i class="fas fa-plus-circle text-success"></i> {{ _('Bonus: +%(bonus)s rack equamente distribuiti', bonus=trio_config.bonus_racks) }}
+              {% endif %}
+              {% else %}
+              {{ _('Distanza %(d)s', d=gara.distance) }}
+              {% endif %}
+            </small>
+          </div>
+
+          {# Layout per match normali (2 giocatori) #}
+          <div class="row" id="quickResultNormalInputs">
             <div class="col-6">
               <label id="player1Label" class="form-label">{{ _('Giocatore 1') }}</label>
-              <input type="number" class="form-control" id="quickPlayer1Score" min="0" max="{{ gara.distance }}"
-                required>
+              <input type="number" class="form-control" id="quickPlayer1Score" min="0" max="{{ gara.distance }}">
             </div>
             <div class="col-6">
               <label id="player2Label" class="form-label">{{ _('Giocatore 2') }}</label>
-              <input type="number" class="form-control" id="quickPlayer2Score" min="0" max="{{ gara.distance }}"
-                required>
+              <input type="number" class="form-control" id="quickPlayer2Score" min="0" max="{{ gara.distance }}">
+            </div>
+          </div>
+
+          {# Layout per trio (3 giocatori) #}
+          {# Max racks = distance (or default 5 if trio not configured) #}
+          {% set trio_max_racks = trio_config.max_racks_per_player if trio_config else gara.distance %}
+          <div class="row" id="quickResultTrioInputs" style="display: none;">
+            <div class="col-4">
+              <label id="trioPlayer1Label" class="form-label">{{ _('Giocatore 1') }}</label>
+              <input type="number" class="form-control" id="quickTrioPlayer1Score" min="0" max="{{ trio_max_racks }}">
+            </div>
+            <div class="col-4">
+              <label id="trioPlayer2Label" class="form-label">{{ _('Giocatore 2') }}</label>
+              <input type="number" class="form-control" id="quickTrioPlayer2Score" min="0" max="{{ trio_max_racks }}">
+            </div>
+            <div class="col-4">
+              <label id="trioPlayer3Label" class="form-label">{{ _('Giocatore 3') }}</label>
+              <input type="number" class="form-control" id="quickTrioPlayer3Score" min="0" max="{{ trio_max_racks }}">
             </div>
           </div>
 
           <input type="hidden" id="quickMatchId">
+          <input type="hidden" id="quickTrioId">
+          <input type="hidden" id="quickIsTrio" value="false">
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
@@ -764,42 +801,127 @@
 
   let currentMatchId = null;
 
+  /**
+   * Apre il modal Quick Result per match normali (2 giocatori)
+   */
   function openQuickResult(matchId, player1Name, player2Name, player1Score, player2Score) {
     currentMatchId = matchId;
     document.getElementById('quickMatchId').value = matchId;
+    document.getElementById('quickIsTrio').value = 'false';
+    document.getElementById('quickTrioId').value = '';
+
+    // Mostra input normali, nascondi trio
+    document.getElementById('quickResultNormalInfo').style.display = 'block';
+    document.getElementById('quickResultTrioInfo').style.display = 'none';
+    document.getElementById('quickResultNormalInputs').style.display = 'flex';
+    document.getElementById('quickResultTrioInputs').style.display = 'none';
+
+    // Popola i campi
     document.getElementById('player1Label').textContent = player1Name;
     document.getElementById('player2Label').textContent = player2Name;
     document.getElementById('quickPlayer1Score').value = player1Score;
     document.getElementById('quickPlayer2Score').value = player2Score;
+
+    // Imposta required solo per input normali
+    document.getElementById('quickPlayer1Score').required = true;
+    document.getElementById('quickPlayer2Score').required = true;
+    document.getElementById('quickTrioPlayer1Score').required = false;
+    document.getElementById('quickTrioPlayer2Score').required = false;
+    document.getElementById('quickTrioPlayer3Score').required = false;
+  }
+
+  /**
+   * Apre il modal Quick Result per match trio (3 giocatori)
+   */
+  function openQuickResultTrio(matchId, trioId, player1Name, player2Name, player3Name, p1Racks, p2Racks, p3Racks) {
+    currentMatchId = matchId;
+    document.getElementById('quickMatchId').value = matchId;
+    document.getElementById('quickIsTrio').value = 'true';
+    document.getElementById('quickTrioId').value = trioId;
+
+    // Mostra input trio, nascondi normali
+    document.getElementById('quickResultNormalInfo').style.display = 'none';
+    document.getElementById('quickResultTrioInfo').style.display = 'block';
+    document.getElementById('quickResultNormalInputs').style.display = 'none';
+    document.getElementById('quickResultTrioInputs').style.display = 'flex';
+
+    // Popola i campi
+    document.getElementById('trioPlayer1Label').textContent = player1Name;
+    document.getElementById('trioPlayer2Label').textContent = player2Name;
+    document.getElementById('trioPlayer3Label').textContent = player3Name;
+    document.getElementById('quickTrioPlayer1Score').value = p1Racks;
+    document.getElementById('quickTrioPlayer2Score').value = p2Racks;
+    document.getElementById('quickTrioPlayer3Score').value = p3Racks;
+
+    // Imposta required solo per input trio
+    document.getElementById('quickPlayer1Score').required = false;
+    document.getElementById('quickPlayer2Score').required = false;
+    document.getElementById('quickTrioPlayer1Score').required = true;
+    document.getElementById('quickTrioPlayer2Score').required = true;
+    document.getElementById('quickTrioPlayer3Score').required = true;
   }
 
   function submitQuickResult(event) {
     event.preventDefault();
 
-    const matchId = document.getElementById('quickMatchId').value;
-    const player1Score = document.getElementById('quickPlayer1Score').value;
-    const player2Score = document.getElementById('quickPlayer2Score').value;
+    const isTrio = document.getElementById('quickIsTrio').value === 'true';
 
-    const formData = new FormData();
-    formData.append('player1_score', player1Score);
-    formData.append('player2_score', player2Score);
+    if (isTrio) {
+      // Submit trio result
+      const trioId = document.getElementById('quickTrioId').value;
+      const player1Racks = document.getElementById('quickTrioPlayer1Score').value;
+      const player2Racks = document.getElementById('quickTrioPlayer2Score').value;
+      const player3Racks = document.getElementById('quickTrioPlayer3Score').value;
 
-    fetch(`/admin/match/${matchId}/set_result`, {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => {
-        if (response.ok) {
-          bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
-          location.reload();
-        } else {
-          alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
-        }
+      const formData = new FormData();
+      formData.append('player1_racks', player1Racks);
+      formData.append('player2_racks', player2Racks);
+      formData.append('player3_racks', player3Racks);
+
+      fetch(`/admin/gara/trio/${trioId}/set_result`, {
+        method: 'POST',
+        body: formData
       })
-      .catch(error => {
-        console.error('Error:', error);
-        alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
-      });
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+            location.reload();
+          } else {
+            alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+        });
+    } else {
+      // Submit normal match result
+      const matchId = document.getElementById('quickMatchId').value;
+      const player1Score = document.getElementById('quickPlayer1Score').value;
+      const player2Score = document.getElementById('quickPlayer2Score').value;
+
+      const formData = new FormData();
+      formData.append('player1_score', player1Score);
+      formData.append('player2_score', player2Score);
+
+      fetch(`/admin/match/${matchId}/set_result`, {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => {
+          if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+            location.reload();
+          } else {
+            alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+        });
+    }
 
     return false;
   }
@@ -817,6 +939,28 @@
             location.reload();
           } else {
             alert({{ _("Errore durante il reset")|tojson }});
+          }
+        });
+    }
+  }
+
+  function resetTrioQuick(trioId) {
+    if (confirm({{ _("Sei sicuro di voler resettare questo trio?")|tojson }})) {
+      fetch(`/admin/gara/trio/${trioId}/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            response.json().then(data => {
+              alert(data.error || {{ _("Errore durante il reset del trio")|tojson }});
+            }).catch(() => {
+              alert({{ _("Errore durante il reset del trio")|tojson }});
+            });
           }
         });
     }
@@ -855,16 +999,15 @@
    * Apre il modal di assegnazione tavolo
    * @param {number} matchId - ID del match
    * @param {string|null} currentTable - Tavolo attualmente assegnato
-   * @param {string} player1 - Nome giocatore 1
-   * @param {string} player2 - Nome giocatore 2
+   * @param {string} playerDisplay - Stringa formattata dei giocatori (es: "P1 vs P2" o "P1 • P2 • P3")
+   * @param {string} _unused - Parametro legacy, non usato
    */
-  function openTableAssignment(matchId, currentTable, player1, player2) {
+  function openTableAssignment(matchId, currentTable, playerDisplay, _unused) {
     tableAssignmentMatchId = matchId;
     tableAssignmentCurrentTable = currentTable;
 
     // Aggiorna info partita nel modal
-    document.getElementById('tableModalMatchInfo').textContent =
-      `${player1} vs ${player2}`;
+    document.getElementById('tableModalMatchInfo').textContent = playerDisplay;
 
     // Mostra/nascondi info tavolo attuale
     if (currentTable) {

@@ -8,6 +8,47 @@
         {% if match.table_assignment %}
             {# Quick Rack Entry Section - Only for matches with table assigned #}
             {% if match.status != 'completed' and not match.is_bye %}
+
+            {# === TRIO MATCH - 3 player admin controls === #}
+            {% if match.is_trio and match.trio_match %}
+            {% set trio = match.trio_match %}
+            <h6>{{ _('Gestione Trio') }}</h6>
+            <div class="row mb-3">
+                <div class="col-4">
+                    <label class="form-label">{{ trio.player1.username }}</label>
+                    <div class="input-group">
+                        <span class="form-control text-center">{{ trio.player1_racks }}</span>
+                        <button type="button" class="btn btn-outline-primary" onclick="addTrioRackWin({{ trio.player1_id }})"
+                            {% if trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2 %}disabled{% endif %}>
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">{{ trio.player2.username }}</label>
+                    <div class="input-group">
+                        <span class="form-control text-center">{{ trio.player2_racks }}</span>
+                        <button type="button" class="btn btn-outline-primary" onclick="addTrioRackWin({{ trio.player2_id }})"
+                            {% if trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2 %}disabled{% endif %}>
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">{{ trio.player3.username }}</label>
+                    <div class="input-group">
+                        <span class="form-control text-center">{{ trio.player3_racks }}</span>
+                        <button type="button" class="btn btn-outline-primary" onclick="addTrioRackWin({{ trio.player3_id }})"
+                            {% if trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2 %}disabled{% endif %}>
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <small class="text-muted mb-3 d-block">{{ _('Primo a 2 rack vince') }}</small>
+
+            {# === REGULAR MATCH - 2 player admin controls === #}
+            {% else %}
             <!-- Form Risultato Diretto -->
             <form action="{{ url_for('admin.match.set_match_result_direct', match_id=match.id) }}" method="POST"
                 class="mb-3" onsubmit="return validateScoreForm(this)"
@@ -41,6 +82,7 @@
                     {% endif %}
                 </small>
             </form>
+            {% endif %}
 
             {# Validate Result Button - Show when match has winner but not validated/completed #}
             {% if match.winner_id and not match.validated_by_admin %}

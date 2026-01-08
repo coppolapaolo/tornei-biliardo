@@ -53,6 +53,8 @@ class ScoreAggregator:
         for match in matches:
             if match.is_bye:
                 self._process_bye_match(match, player_stats)
+            elif match.is_trio and match.trio_match:
+                self._process_trio_match(match, player_stats)
             else:
                 self._process_regular_match(match, player_stats)
 
@@ -95,7 +97,10 @@ class ScoreAggregator:
                 m for m in gara.matches if m.status == "completed" and not m.is_bye
             ]
             for match in matches:
-                self._process_regular_match(match, player_stats)
+                if match.is_trio and match.trio_match:
+                    self._process_trio_match(match, player_stats)
+                else:
+                    self._process_regular_match(match, player_stats)
 
         return [
             PlayerScore(
@@ -287,6 +292,70 @@ class ScoreAggregator:
         player_stats[pid]["matches_won"] += 1
         player_stats[pid]["racks_won"] += match.player1_score or 0
         # No rack_lost for bye matches
+
+    def _process_trio_match(
+        self,
+        match: Any,
+        player_stats: Dict[int, Dict[str, int]],
+    ) -> None:
+        """Process a trio match using round-robin format (ADR-005).
+
+        In trio, 3 players play round-robin matches within "gironi" (rounds).
+        Classification is based on total racks won, with bonus racks added
+        to equalize with normal matches (bonus = 1 if distance is odd).
+
+        Winner is optional - ties are allowed for rack-based classification.
+
+        Args:
+            match: Match model instance (with is_trio=True and trio_match)
+            player_stats: Dict to accumulate stats into
+        """
+        trio = match.trio_match
+        if not trio:
+            return
+
+        player_ids = [trio.player1_id, trio.player2_id, trio.player3_id]
+        racks = [trio.player1_racks, trio.player2_racks, trio.player3_racks]
+
+        # Calculate bonus racks (1 if distance is odd, 0 otherwise)
+        # This equalizes trio players with normal match players
+        distance = match.gara.distance if match.gara else 5
+        bonus_racks = distance % 2  # 1 for distance 3,5; 0 for distance 2,4
+
+        # Initialize all three players if not seen
+        for pid in player_ids:
+            if pid and pid not in player_stats:
+                player_stats[pid] = {
+                    "matches_won": 0,
+                    "matches_lost": 0,
+                    "racks_won": 0,
+                    "racks_lost": 0,
+                    "sets_won": 0,
+                    "sets_lost": 0,
+                }
+
+        winner_id = match.winner_id
+
+        # Process each player
+        for i, pid in enumerate(player_ids):
+            if not pid:
+                continue
+
+            player_racks = racks[i]
+            # Opponent racks = sum of other two players' racks
+            opponent_racks = sum(r for j, r in enumerate(racks) if j != i)
+
+            # Add bonus racks to each player (equalization with normal matches)
+            player_stats[pid]["racks_won"] += player_racks + bonus_racks
+            player_stats[pid]["racks_lost"] += opponent_racks
+
+            # Winner exists: winner gets match_won, others get match_lost
+            # No winner (tie): no one gets match_won or match_lost
+            if winner_id:
+                if pid == winner_id:
+                    player_stats[pid]["matches_won"] += 1
+                else:
+                    player_stats[pid]["matches_lost"] += 1
 
 
 __all__ = ["ScoreAggregator"]

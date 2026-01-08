@@ -148,6 +148,7 @@ def create_app(config_name=None):
         format_distance_short,
         gara_display_name,
         player_name_with_forfeit,
+        trio_config_for_distance,
     )
 
     app.jinja_env.filters["format_distance"] = format_distance
@@ -155,6 +156,7 @@ def create_app(config_name=None):
     app.jinja_env.filters["format_distance_short"] = format_distance_short
     app.jinja_env.filters["gara_display_name"] = gara_display_name
     app.jinja_env.filters["player_name_with_forfeit"] = player_name_with_forfeit
+    app.jinja_env.filters["trio_config_for_distance"] = trio_config_for_distance
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

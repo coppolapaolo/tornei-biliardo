@@ -4,10 +4,15 @@
   <div class="card-header"><h5 class="mb-0"><i class="fas fa-shield-halved"></i> Le Mie Partite in Corso ({{ vm.current_matches|length }})</h5></div>
   <div class="card-body">
     {% for m in vm.current_matches %}
-    <div class="card mb-3 border-primary">
+    <div class="card mb-3 {% if m.is_trio %}border-info{% else %}border-primary{% endif %}">
       <div class="card-body">
         <h6 class="mb-1">
-          {{ m.player1.username }} vs {{ m.player2.username if m.player2 else 'Bye' }}
+          {% if m.is_trio and m.trio_match %}
+            <span class="badge bg-info me-2"><i class="fas fa-users"></i> Trio</span>
+            {{ m.trio_match.player1.username }} • {{ m.trio_match.player2.username }} • {{ m.trio_match.player3.username }}
+          {% else %}
+            {{ m.player1.username }} vs {{ m.player2.username if m.player2 else 'Bye' }}
+          {% endif %}
           <span class="badge {{ m | status_badge_class }} ms-2">{{ m | status_text }}</span>
         </h6>
         <p class="mb-2">
@@ -17,7 +22,14 @@
           </small>
         </p>
         <div class="d-flex justify-content-between align-items-center">
-          <div> Punteggio: <strong>{{ m.player1_score }} - {{ m.player2_score }}</strong> </div>
+          <div>
+            Punteggio:
+            {% if m.is_trio and m.trio_match %}
+              <strong>{{ m.trio_match.player1_racks }}-{{ m.trio_match.player2_racks }}-{{ m.trio_match.player3_racks }}</strong>
+            {% else %}
+              <strong>{{ m.player1_score }} - {{ m.player2_score }}</strong>
+            {% endif %}
+          </div>
           <a href="{{ url_for('admin.match.match_detail', match_id=m.id) }}" class="btn btn-primary btn-sm">
             <i class="fas fa-edit"></i> Inserisci Risultato
           </a>

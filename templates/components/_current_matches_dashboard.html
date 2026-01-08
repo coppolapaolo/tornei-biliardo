@@ -7,10 +7,15 @@
         </div>
         <div class="card-body">
             {% for match in current_matches %}
-                <div class="card mb-3 border-primary">
+                <div class="card mb-3 {% if match.is_trio %}border-info{% else %}border-primary{% endif %}">
                     <div class="card-body">
                         <h6>
-                            {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
+                            {% if match.is_trio and match.trio_match %}
+                                <span class="badge bg-info me-2"><i class="fas fa-users"></i> Trio</span>
+                                {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username }}
+                            {% else %}
+                                {{ match.player1.username }} vs {{ match.player2.username if match.player2 else 'Bye' }}
+                            {% endif %}
                             <span class="badge {{ match | status_badge_class }} ms-2">{{ match | status_text }}</span>
                         </h6>
                         <p class="mb-1">
@@ -21,7 +26,12 @@
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                Punteggio: <strong>{{ match.player1_score }} - {{ match.player2_score }}</strong>
+                                Punteggio:
+                                {% if match.is_trio and match.trio_match %}
+                                    <strong>{{ match.trio_match.player1_racks }}-{{ match.trio_match.player2_racks }}-{{ match.trio_match.player3_racks }}</strong>
+                                {% else %}
+                                    <strong>{{ match.player1_score }} - {{ match.player2_score }}</strong>
+                                {% endif %}
                             </div>
                             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> Inserisci Risultato

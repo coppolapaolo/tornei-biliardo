@@ -191,7 +191,7 @@
                                     </option>
                                 </select>
                                 <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
-                                    Match a 3 disponibile solo fino a distanza 7
+                                    <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 5
                                 </small>
                             </div>
                         </div>
@@ -274,12 +274,12 @@
             }
         }
 
-        // Validate trio policy (max distance 7)
+        // Validate trio policy (only distances 2-5 per ADR-005)
         function updateTrioWarning() {
             if (!distanceInput || !oddPolicySelect || !trioWarning) return;
             const distance = parseInt(distanceInput.value) || 0;
             const oddPolicy = oddPolicySelect.value;
-            if (oddPolicy === 'trio' && distance > 7) {
+            if (oddPolicy === 'trio' && (distance < 2 || distance > 5)) {
                 trioWarning.style.display = 'block';
                 oddPolicySelect.value = 'bye';
             } else {

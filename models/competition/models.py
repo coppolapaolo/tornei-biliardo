@@ -533,7 +533,7 @@ class Gara(SoftDeleteMixin, db.Model):
     def can_use_trio(self) -> bool:
         """Check if trio matches are allowed for this gara.
 
-        Trio matches only allowed if distance <= 7.
+        Trio matches only allowed for distances 2-5 (per ADR-005).
         """
         return self.get_strategy_behavior().can_use_trio(self.distance)
 
@@ -608,11 +608,21 @@ class Gara(SoftDeleteMixin, db.Model):
             for match in round_matches:
                 if match.is_bye:
                     continue  # Skip bye matches - they're auto-completed
-                if (
-                    match.player1_score > 0
-                    or match.player2_score > 0
-                ):
+
+                # Check normal match scores
+                if match.player1_score > 0 or match.player2_score > 0:
                     return False
+
+                # Check trio match scores
+                if match.is_trio and match.trio_match:
+                    trio = match.trio_match
+                    if (
+                        trio.player1_racks > 0
+                        or trio.player2_racks > 0
+                        or trio.player3_racks > 0
+                        or trio.is_completed
+                    ):
+                        return False
 
             return True
         except Exception:

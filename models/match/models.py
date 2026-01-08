@@ -638,7 +638,12 @@ class MatchResult(db.Model):
 
 
 class TrioMatch(db.Model):
-    """Special handling for trio matches (3 players)."""
+    """Special handling for trio matches (3 players).
+
+    A trio is a mini round-robin tournament where each player plays against
+    each other player. The number of rounds (gironi) depends on the gara distance.
+    See ADR-005 and models/match/trio_config.py for details.
+    """
 
     __tablename__ = "trio_match"
 
@@ -650,26 +655,33 @@ class TrioMatch(db.Model):
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     player3_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
-    # Stato corrente del trio
+    # Stato corrente del trio (chi gioca, chi aspetta)
     current_player1_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     current_player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     waiting_player_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    # Punteggi individuali nel trio (vedi models/match/score.py per value objects)
+    # Punteggi individuali nel trio
     player1_racks = db.Column(db.Integer, default=0)
     player2_racks = db.Column(db.Integer, default=0)
     player3_racks = db.Column(db.Integer, default=0)
+
+    # Round-robin tracking (gironi)
+    current_round = db.Column(db.Integer, default=1)  # Girone corrente (1-based)
+    current_rack_in_round = db.Column(db.Integer, default=0)  # Rack nel girone (0-2)
+    total_racks_played = db.Column(db.Integer, default=0)  # Rack totali giocati
+    bonus_applied = db.Column(db.Boolean, default=False)  # Bonus rack applicato
 
     # Stato del trio
     is_completed = db.Column(db.Boolean, default=False)
     winner_id = db.Column(
         db.Integer, db.ForeignKey("user.id")
-    )  # Nel biliardo c'è sempre un vincitore (primo a 2 rack)
+    )  # Con classifica rack-based, winner_id puo' essere NULL (pareggio)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relations
-    match = db.relationship("Match", backref="trio_match")
+    # uselist=False because each Match has at most one TrioMatch (1:1 relationship)
+    match = db.relationship("Match", backref=db.backref("trio_match", uselist=False))
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     player3 = db.relationship("User", foreign_keys=[player3_id])
@@ -678,80 +690,254 @@ class TrioMatch(db.Model):
     waiting_player = db.relationship("User", foreign_keys=[waiting_player_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
 
-    def add_rack_win(self, winner_id):
-        """Aggiunge una vittoria di rack"""
+    @property
+    def trio_config(self):
+        """Get TrioConfig based on gara distance."""
+        from models.match.trio_config import TrioConfig
+
+        match_obj = db.session.get(Match, self.match_id)
+        if match_obj and match_obj.gara:
+            return TrioConfig(distance=match_obj.gara.distance)
+        # Default fallback
+        return TrioConfig(distance=2)
+
+    @property
+    def player_ids(self):
+        """List of player IDs in order."""
+        return [self.player1_id, self.player2_id, self.player3_id]
+
+    @property
+    def player_racks_list(self):
+        """List of rack scores in order."""
+        return [self.player1_racks, self.player2_racks, self.player3_racks]
+
+    def get_player_index(self, player_id: int) -> int:
+        """Get 0-based index for a player ID, or -1 if not found."""
+        try:
+            return self.player_ids.index(player_id)
+        except ValueError:
+            return -1
+
+    def add_rack_win(self, winner_id: int) -> bool:
+        """Add a rack win for a player in the round-robin.
+
+        Uses TrioConfig to determine the matchup schedule.
+        Returns True if rack was added, False if invalid.
+        """
         if self.is_completed:
             return False
 
-        # Aggiorna il punteggio del vincitore
-        if winner_id == self.player1_id:
-            self.player1_racks += 1
-        elif winner_id == self.player2_id:
-            self.player2_racks += 1
-        elif winner_id == self.player3_id:
-            self.player3_racks += 1
-        else:
+        config = self.trio_config
+
+        # Check if all racks are already played
+        if self.total_racks_played >= config.total_played_racks:
             return False
 
-        # Controlla se qualcuno ha vinto (almeno 2 rack)
-        max_racks = max(self.player1_racks, self.player2_racks, self.player3_racks)
-        if max_racks >= 2:
-            # Trova il vincitore
-            if self.player1_racks >= 2:
-                self.winner_id = self.player1_id
-            elif self.player2_racks >= 2:
-                self.winner_id = self.player2_id
-            elif self.player3_racks >= 2:
-                self.winner_id = self.player3_id
+        # Get current matchup from config
+        next_rack = self.total_racks_played + 1
+        matchup = config.get_matchup_for_rack(next_rack)
+        if not matchup:
+            return False
 
-            self.is_completed = True
-            # Aggiorna anche il match associato
-            # Query the match directly to avoid relationship property issues
+        p1_idx, p2_idx, waiting_idx = matchup
+        valid_winners = [self.player_ids[p1_idx], self.player_ids[p2_idx]]
 
-            match_obj = db.session.get(Match, self.match_id)
-            if match_obj:
-                match_obj.winner_id = self.winner_id
-                match_obj.status = "completed"
-                match_obj.player1_score = self.player1_racks
-                match_obj.player2_score = self.player2_racks
+        # Verify winner is one of the current players
+        if winner_id not in valid_winners:
+            return False
 
-                # Controlla se tutti i match della gara sono completati e completa automaticamente la gara
-                match_obj._check_and_complete_gara_if_needed(match_obj)
+        # Update score
+        winner_idx = self.get_player_index(winner_id)
+        if winner_idx == 0:
+            self.player1_racks += 1
+        elif winner_idx == 1:
+            self.player2_racks += 1
+        elif winner_idx == 2:
+            self.player3_racks += 1
 
-        # Ruota i giocatori per il prossimo rack
-        self._rotate_players()
+        # Update tracking
+        self.total_racks_played += 1
+        self.current_rack_in_round = (self.total_racks_played - 1) % 3
+        self.current_round = config.get_round_for_rack(self.total_racks_played)
+
+        # Update current players for next rack
+        self._update_current_players()
+
+        # Check if trio is completed
+        if self.total_racks_played >= config.total_played_racks:
+            self._apply_bonus_and_complete()
+
         return True
 
-    def _rotate_players(self):
-        """Ruota i giocatori per il prossimo rack"""
-        if self.is_completed:
+    def _update_current_players(self):
+        """Update current_player1, current_player2, waiting_player based on next rack."""
+        config = self.trio_config
+        next_rack = self.total_racks_played + 1
+
+        if next_rack > config.total_played_racks:
+            # All racks done
             return
 
-        # Se non ci sono giocatori correnti, inizializza
-        if not self.current_player1_id:
-            self.current_player1_id = self.player1_id
-            self.current_player2_id = self.player2_id
-            self.waiting_player_id = self.player3_id
-            return
+        matchup = config.get_matchup_for_rack(next_rack)
+        if matchup:
+            p1_idx, p2_idx, waiting_idx = matchup
+            self.current_player1_id = self.player_ids[p1_idx]
+            self.current_player2_id = self.player_ids[p2_idx]
+            self.waiting_player_id = self.player_ids[waiting_idx]
 
-        # Ruota: waiting -> current1, current1 -> current2, current2 -> waiting
-        new_waiting = self.current_player1_id
-        self.current_player1_id = self.current_player2_id
-        self.current_player2_id = self.waiting_player_id
-        self.waiting_player_id = new_waiting
+    def _apply_bonus_and_complete(self):
+        """Apply bonus racks and mark trio as completed."""
+        config = self.trio_config
+
+        # Apply bonus (added to all players equally)
+        if config.bonus_racks > 0 and not self.bonus_applied:
+            self.player1_racks += config.bonus_racks
+            self.player2_racks += config.bonus_racks
+            self.player3_racks += config.bonus_racks
+            self.bonus_applied = True
+
+        self.is_completed = True
+
+        # Determine winner (highest racks, or None if tie)
+        scores = [
+            (self.player1_racks, self.player1_id),
+            (self.player2_racks, self.player2_id),
+            (self.player3_racks, self.player3_id),
+        ]
+        scores.sort(reverse=True)
+
+        # Check for tie at the top
+        if scores[0][0] > scores[1][0]:
+            self.winner_id = scores[0][1]
+        else:
+            # Tie - no single winner (valid for rack-based classification)
+            self.winner_id = None
+
+        # Update associated match
+        match_obj = db.session.get(Match, self.match_id)
+        if match_obj:
+            match_obj.winner_id = self.winner_id
+            match_obj.status = "completed"
+            # Store total racks in match scores for quick access
+            match_obj.player1_score = self.player1_racks
+            match_obj.player2_score = self.player2_racks
+            match_obj._check_and_complete_gara_if_needed(match_obj)
+
+    def set_result_direct(
+        self, player1_racks: int, player2_racks: int, player3_racks: int
+    ) -> bool:
+        """Set trio result directly (for quick result entry).
+
+        Validates that total racks match expected for the distance.
+        """
+        config = self.trio_config
+
+        # Set scores
+        self.player1_racks = player1_racks
+        self.player2_racks = player2_racks
+        self.player3_racks = player3_racks
+
+        # Mark as played all racks
+        self.total_racks_played = config.total_played_racks
+        self.bonus_applied = config.bonus_racks > 0
+
+        # Complete the trio
+        self.is_completed = True
+
+        # Determine winner
+        scores = [
+            (player1_racks, self.player1_id),
+            (player2_racks, self.player2_id),
+            (player3_racks, self.player3_id),
+        ]
+        scores.sort(reverse=True)
+
+        if scores[0][0] > scores[1][0]:
+            self.winner_id = scores[0][1]
+        else:
+            self.winner_id = None  # Tie
+
+        # Update associated match
+        match_obj = db.session.get(Match, self.match_id)
+        if match_obj:
+            match_obj.winner_id = self.winner_id
+            match_obj.status = "completed"
+            match_obj.player1_score = player1_racks
+            match_obj.player2_score = player2_racks
+            match_obj._check_and_complete_gara_if_needed(match_obj)
+
+        return True
+
+    def reset(self):
+        """Reset trio to initial state."""
+        self.player1_racks = 0
+        self.player2_racks = 0
+        self.player3_racks = 0
+        self.current_round = 1
+        self.current_rack_in_round = 0
+        self.total_racks_played = 0
+        self.bonus_applied = False
+        self.is_completed = False
+        self.winner_id = None
+
+        # Set initial players for first rack
+        self.current_player1_id = self.player1_id
+        self.current_player2_id = self.player2_id
+        self.waiting_player_id = self.player3_id
+
+        # Reset associated match
+        match_obj = db.session.get(Match, self.match_id)
+        if match_obj:
+            match_obj.winner_id = None
+            match_obj.status = "pending"
+            match_obj.player1_score = 0
+            match_obj.player2_score = 0
 
     def get_current_state(self):
-        """Restituisce lo stato corrente del trio"""
+        """Return current state of the trio for UI rendering."""
+        config = self.trio_config
+        next_rack = self.total_racks_played + 1
+
         return {
-            "current_player1": self.current_player1,
-            "current_player2": self.current_player2,
-            "waiting_player": self.waiting_player,
-            "scores": {
-                "player1": self.player1_racks,
-                "player2": self.player2_racks,
-                "player3": self.player3_racks,
+            "players": {
+                "player1": {
+                    "id": self.player1_id,
+                    "user": self.player1,
+                    "racks": self.player1_racks,
+                },
+                "player2": {
+                    "id": self.player2_id,
+                    "user": self.player2,
+                    "racks": self.player2_racks,
+                },
+                "player3": {
+                    "id": self.player3_id,
+                    "user": self.player3,
+                    "racks": self.player3_racks,
+                },
+            },
+            "current_matchup": {
+                "player1": self.current_player1,
+                "player2": self.current_player2,
+                "waiting": self.waiting_player,
+            },
+            "progress": {
+                "current_round": self.current_round,
+                "total_rounds": config.num_rounds,
+                "rack_in_round": self.current_rack_in_round + 1,
+                "racks_per_round": config.racks_per_round,
+                "total_racks_played": self.total_racks_played,
+                "total_racks_needed": config.total_played_racks,
+                "next_rack": next_rack if next_rack <= config.total_played_racks else None,
+            },
+            "config": {
+                "distance": config.distance,
+                "num_rounds": config.num_rounds,
+                "bonus_racks": config.bonus_racks,
+                "max_racks_per_player": config.max_racks_per_player,
             },
             "is_completed": self.is_completed,
+            "bonus_applied": self.bonus_applied,
             "winner": self.winner,
         }
 

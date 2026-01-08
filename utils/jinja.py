@@ -1,6 +1,6 @@
 # utils/jinja.py — aggiunta di un helper per render accattivante
 from markupsafe import Markup, escape
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time
 from flask_babel import gettext as _
 
 
@@ -253,3 +253,24 @@ def player_name_with_forfeit(user, gara_id=None, is_forfeit=False) -> Markup:
             pass
 
     return Markup(username)
+
+
+def trio_config_for_distance(distance: int):
+    """Get TrioConfig for a given distance.
+
+    Args:
+        distance: The distance value from gara
+
+    Returns:
+        TrioConfig object if trio is allowed for this distance, None otherwise
+
+    Examples:
+        {% set config = gara.distance|trio_config_for_distance %}
+        {% if config %}
+            {{ config.num_rounds }} gironi, max {{ config.max_racks_per_player }} rack
+        {% endif %}
+    """
+    from models.match.trio_config import TrioConfig
+
+    config = TrioConfig(distance=distance)
+    return config if config.is_trio_allowed else None

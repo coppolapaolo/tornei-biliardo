@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Match') }} {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
-match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}{% if match.gara %} - {{ _('Gara') }} {{ match.gara.name }}{% endif %}{% endblock %}
+{% block title %}{{ _('Match') }}
+{%- if match.is_trio and match.trio_match -%}
+    {# Trio match title #}
+    {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username }}
+{%- else -%}
+    {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
+    match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
+{%- endif -%}
+{% if match.gara %} - {{ _('Gara') }} {{ match.gara.name }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -9,9 +16,15 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>
+                {% if match.is_trio and match.trio_match %}
+                <i class="fas fa-users"></i>
+                <span class="badge bg-primary me-2">{{ _('Trio') }}</span>
+                {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username }}
+                {% else %}
                 <i class="fas fa-shield-halved"></i>
                 {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
                 match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
+                {% endif %}
             </h1>
         </div>
         <div>
@@ -108,6 +121,31 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
 
 {% block scripts %}
 <script>
+    // TRIO MATCH - Add rack win for trio matches
+    {% if match.is_trio and match.trio_match %}
+    function addTrioRackWin(winnerId) {
+        fetch(`/admin/gara/trio/{{ match.trio_match.id }}/add_rack`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `winner_id=${winnerId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert({{ _("Errore durante l'aggiunta del rack al trio")|tojson }});
+            });
+    }
+    {% endif %}
+
     // NEW SIMPLIFIED UX - Add/Remove Racks with validation at end
     function addRack(winnerId) {
         fetch(`/player/match/{{ match.id }}/racks/add`, {

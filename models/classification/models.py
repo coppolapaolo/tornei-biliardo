@@ -160,6 +160,44 @@ class RoundClassification(db.Model):
                 player_stats[match.player1_id]["matches_won"] += 1
                 player_stats[match.player1_id]["rack_won"] += match.player1_score or 0
                 # No rack_lost for bye matches
+            elif match.is_trio and match.trio_match:
+                # Handle trio matches using round-robin format (ADR-005)
+                # Bonus racks added to equalize with normal matches
+                trio = match.trio_match
+                player_ids = [trio.player1_id, trio.player2_id, trio.player3_id]
+                racks = [trio.player1_racks, trio.player2_racks, trio.player3_racks]
+
+                # Calculate bonus racks (1 if distance is odd, 0 otherwise)
+                distance = gara.distance
+                bonus_racks = distance % 2  # 1 for distance 3,5; 0 for distance 2,4
+
+                # Initialize all three players if not seen
+                for pid in player_ids:
+                    if pid and pid not in player_stats:
+                        player_stats[pid] = {
+                            "matches_won": 0,
+                            "rack_won": 0,
+                            "rack_lost": 0,
+                        }
+
+                # Process each player
+                winner_id = match.winner_id
+                for i, pid in enumerate(player_ids):
+                    if not pid:
+                        continue
+
+                    player_racks = racks[i]
+                    # Opponent racks = sum of other two players' racks
+                    opponent_racks = sum(r for j, r in enumerate(racks) if j != i)
+
+                    # Add bonus racks to each player (equalization)
+                    player_stats[pid]["rack_won"] += player_racks + bonus_racks
+                    player_stats[pid]["rack_lost"] += opponent_racks
+
+                    # Winner exists: winner gets match_won
+                    # No winner (tie): no one gets match_won
+                    if winner_id and pid == winner_id:
+                        player_stats[pid]["matches_won"] += 1
             else:
                 # Handle regular matches
                 # Initialize players if not seen

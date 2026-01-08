@@ -10,9 +10,10 @@
     {% for match in vm.current_matches|sort(attribute='round_number') %}
       <div class="col-md-6 col-lg-4 mb-3">
         {% set is_completed = match.status == 'completed' %}
+        {% set is_trio = match.is_trio and match.trio_match %}
         {% set is_winner = (current_user.id == match.winner_id) if is_completed else false %}
-        {% set border_class = 'border-success' if (is_completed and is_winner) else ('border-warning' if is_completed else 'border-danger') %}
-        {% set bg_class = 'bg-success' if (is_completed and is_winner) else ('bg-warning' if is_completed else 'bg-danger') %}
+        {% set border_class = 'border-info' if is_trio else ('border-success' if (is_completed and is_winner) else ('border-warning' if is_completed else 'border-danger')) %}
+        {% set bg_class = 'bg-info' if is_trio else ('bg-success' if (is_completed and is_winner) else ('bg-warning' if is_completed else 'bg-danger')) %}
         
         <div class="card h-100 {{ border_class }} border-2">
           <div class="card-header py-2 {{ bg_class }} bg-opacity-10">
@@ -49,11 +50,43 @@
           
           <div class="card-body py-2">
             <div class="mb-2">
-              <strong>vs {{ match.player1.username if match.player2_id == current_user.id else match.player2.username }}</strong>
+              {% if is_trio %}
+                <span class="badge bg-info me-1"><i class="fas fa-users"></i> Trio</span>
+                <strong>{{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username }}</strong>
+              {% else %}
+                <strong>vs {{ match.player1.username if match.player2_id == current_user.id else match.player2.username }}</strong>
+              {% endif %}
             </div>
             
             {# Risultato finale o punteggio attuale #}
-            {% if match.player1_score or match.player2_score %}
+            {% if is_trio %}
+              {# Trio match - 3 scores #}
+              {% set trio = match.trio_match %}
+              {% if trio.player1_racks or trio.player2_racks or trio.player3_racks %}
+              <div class="mb-2">
+                {% if is_completed %}
+                  {# Trio completato - evidenzia il vincitore #}
+                  <span class="badge {{ 'bg-success' if match.winner_id == trio.player1_id else 'bg-secondary' }} fs-6">{{ trio.player1_racks }}</span>
+                  <span class="mx-1">-</span>
+                  <span class="badge {{ 'bg-success' if match.winner_id == trio.player2_id else 'bg-secondary' }} fs-6">{{ trio.player2_racks }}</span>
+                  <span class="mx-1">-</span>
+                  <span class="badge {{ 'bg-success' if match.winner_id == trio.player3_id else 'bg-secondary' }} fs-6">{{ trio.player3_racks }}</span>
+                  <div class="mt-1">
+                    <small class="{{ 'text-success fw-bold' if is_winner else 'text-warning fw-bold' }}">
+                      {{ 'Hai vinto!' if is_winner else 'Hai perso' }}
+                    </small>
+                  </div>
+                {% else %}
+                  {# Trio in corso #}
+                  <span class="badge bg-info">{{ trio.player1_racks }}</span>
+                  <span class="mx-1">-</span>
+                  <span class="badge bg-info">{{ trio.player2_racks }}</span>
+                  <span class="mx-1">-</span>
+                  <span class="badge bg-info">{{ trio.player3_racks }}</span>
+                {% endif %}
+              </div>
+              {% endif %}
+            {% elif match.player1_score or match.player2_score %}
             <div class="mb-2">
               {% if is_completed %}
                 {# Partita completata - evidenzia il punteggio del giocatore corrente #}
@@ -369,7 +402,12 @@
                     {# Trova il match con il turno più basso ancora da giocare per il giocatore #}
                     {% set player_matches = [] %}
                     {% for match in vm.current_matches|default([]) %}
-                      {% if match.gara_id == item.id and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
+                      {# Check player1/2 for normal matches, or player1/2/3 for trio #}
+                      {% set is_player_in_match = (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
+                      {% if match.is_trio and match.trio_match %}
+                        {% set is_player_in_match = is_player_in_match or match.trio_match.player3_id == current_user.id %}
+                      {% endif %}
+                      {% if match.gara_id == item.id and is_player_in_match %}
                         {% set _void = player_matches.append(match) %}
                       {% endif %}
                     {% endfor %}

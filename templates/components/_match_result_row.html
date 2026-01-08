@@ -5,6 +5,47 @@
 {# Check if players have forfeited - show them in gray #}
 {% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
 {% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
+
+{# === TRIO MATCH === #}
+{% if match.is_trio and match.trio_match %}
+{% set trio = match.trio_match %}
+{% set p3_wins = match.status == 'completed' and match.winner_id == trio.player3_id %}
+{% set p3_forfeit = forfeit_user_ids is defined and trio.player3_id in forfeit_user_ids %}
+<tr class="table-info">
+    <td colspan="3">
+        <span class="badge bg-primary me-2"><i class="fas fa-users"></i> {{ _('Trio') }}</span>
+        {# Player 1 #}
+        <strong class="{% if p1_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ trio.player1.username }}</strong>
+        {% if p1_wins %}<i class="fas fa-crown text-warning ms-1"></i>{% endif %}
+        {% if p1_forfeit %}<i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>{% endif %}
+        <span class="text-muted mx-2">•</span>
+        {# Player 2 #}
+        <strong class="{% if p2_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ trio.player2.username }}</strong>
+        {% if p2_wins %}<i class="fas fa-crown text-warning ms-1"></i>{% endif %}
+        {% if p2_forfeit %}<i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>{% endif %}
+        <span class="text-muted mx-2">•</span>
+        {# Player 3 #}
+        <strong class="{% if p3_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ trio.player3.username }}</strong>
+        {% if p3_wins %}<i class="fas fa-crown text-warning ms-1"></i>{% endif %}
+        {% if p3_forfeit %}<i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>{% endif %}
+    </td>
+    <td>
+        {# Trio score: show all three player scores #}
+        {% if match.status == 'completed' %}
+        <span class="badge bg-info">
+            {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
+        </span>
+        {% elif trio.player1_racks > 0 or trio.player2_racks > 0 or trio.player3_racks > 0 %}
+        <span class="badge bg-warning">
+            {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
+        </span>
+        {% else %}
+        <span class="text-muted">-</span>
+        {% endif %}
+    </td>
+
+{# === REGULAR MATCH (2 players or bye) === #}
+{% else %}
 <tr>
     <td>
         <strong class="{% if p1_forfeit %}text-muted text-decoration-line-through{% endif %}">{{ match.player1.username }}</strong>
@@ -45,6 +86,7 @@
         <span class="text-muted">-</span>
         {% endif %}
     </td>
+{% endif %}
     <td>
         {# Determina se è una partita del giocatore corrente #}
         {% set is_my_match = user_inscription and current_user.is_authenticated and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
@@ -85,15 +127,21 @@
         <span class="text-muted">-</span>
         {% elif user_can_manage and available_tables %}
         {# Admin/Director view: Badge cliccabile per apertura modal #}
+        {# Build player display string based on match type #}
+        {% if match.is_trio and match.trio_match %}
+            {% set player_display = match.trio_match.player1.username ~ ' • ' ~ match.trio_match.player2.username ~ ' • ' ~ match.trio_match.player3.username %}
+        {% else %}
+            {% set player_display = match.player1.username ~ ' vs ' ~ (match.player2.username if not match.is_bye else _('Bye')) %}
+        {% endif %}
         {% if match.table_assignment %}
         <span class="badge bg-primary cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
-            onclick="openTableAssignment({{ match.id }}, '{{ match.table_assignment }}', '{{ match.player1.username }}', '{{ match.player2.username if not match.is_bye else _('Bye') }}')">
+            onclick="openTableAssignment({{ match.id }}, '{{ match.table_assignment }}', {{ player_display|tojson }}, '')">
             <i class="fas fa-table"></i>
             {{ _('Tavolo %(id)s', id=match.table_assignment) }}
         </span>
         {% else %}
         <span class="badge bg-warning cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
-            onclick="openTableAssignment({{ match.id }}, null, '{{ match.player1.username }}', '{{ match.player2.username if not match.is_bye else _('Bye') }}')">
+            onclick="openTableAssignment({{ match.id }}, null, {{ player_display|tojson }}, '')">
             <i class="fas fa-plus-circle"></i>
             {{ _('Assegna') }}
         </span>
@@ -120,10 +168,20 @@
         <div class="btn-group btn-group-sm" role="group">
             <!-- Imposta Risultato Rapido -->
             {% if match.status != 'completed' %}
-            <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#quickResultModal"
-                onclick="openQuickResult({{ match.id }}, '{{ match.player1.username }}', '{{ match.player2.username }}', {{ match.player1_score }}, {{ match.player2_score }})">
-                <i class="fas fa-tachometer-alt"></i>
-            </button>
+                {% if match.is_trio and match.trio_match %}
+                {# Trio: chiama openQuickResultTrio con 3 giocatori #}
+                {% set trio = match.trio_match %}
+                <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#quickResultModal"
+                    onclick="openQuickResultTrio({{ match.id }}, {{ trio.id }}, '{{ trio.player1.username }}', '{{ trio.player2.username }}', '{{ trio.player3.username }}', {{ trio.player1_racks }}, {{ trio.player2_racks }}, {{ trio.player3_racks }})">
+                    <i class="fas fa-tachometer-alt"></i>
+                </button>
+                {% else %}
+                {# Match normale: chiama openQuickResult con 2 giocatori #}
+                <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#quickResultModal"
+                    onclick="openQuickResult({{ match.id }}, '{{ match.player1.username }}', '{{ match.player2.username }}', {{ match.player1_score }}, {{ match.player2_score }})">
+                    <i class="fas fa-tachometer-alt"></i>
+                </button>
+                {% endif %}
             {% endif %}
 
             <!-- Vai al Dettaglio (solo se non completato) -->
@@ -141,10 +199,22 @@
             {% endif %}
 
             <!-- Reset Match -->
-            {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
-            <button class="btn btn-outline-danger" onclick="resetMatchQuick({{ match.id }})">
-                <i class="fas fa-undo"></i>
-            </button>
+            {% set has_scores = (match.player1_score > 0 or match.player2_score > 0) %}
+            {% if match.is_trio and match.trio_match %}
+                {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
+            {% endif %}
+            {% if match.status == 'completed' or has_scores %}
+                {% if match.is_trio and match.trio_match %}
+                {# Trio: call resetTrioQuick with trio ID #}
+                <button class="btn btn-outline-danger" onclick="resetTrioQuick({{ match.trio_match.id }})">
+                    <i class="fas fa-undo"></i>
+                </button>
+                {% else %}
+                {# Normal match: call resetMatchQuick with match ID #}
+                <button class="btn btn-outline-danger" onclick="resetMatchQuick({{ match.id }})">
+                    <i class="fas fa-undo"></i>
+                </button>
+                {% endif %}
             {% endif %}
         </div>
         {% elif not match.is_bye and not match_can_modify.get(match.id, True) %}
