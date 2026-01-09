@@ -223,4 +223,123 @@
         </div>
     </div>
 </div>
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   SSE: Real-time notifications for gamification events
+   User receives live notifications for XP gains, level-ups, and achievements.
+   ═══════════════════════════════════════════════════════════════════════════ #}
+{% if current_user.is_authenticated %}
+<!-- Toast container for SSE notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+    <div id="sseToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i id="sseToastIcon" class="fas fa-star text-warning me-2"></i>
+            <strong class="me-auto" id="sseToastTitle">{{ _('Notifica') }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="sseToastBody"></div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const userId = {{ current_user.id }};
+    let eventSource = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+
+    // i18n strings (safe - from server)
+    const i18n = {
+        xpGained: {{ _('XP Guadagnati!')|tojson }},
+        levelUp: {{ _('Nuovo Livello!')|tojson }},
+        achievement: {{ _('Achievement Sbloccato!')|tojson }},
+        total: {{ _('Totale: ')|tojson }},
+        reachedLevel: {{ _('Hai raggiunto il livello ')|tojson }}
+    };
+
+    function showToast(icon, iconColor, title, message) {
+        const toastEl = document.getElementById('sseToast');
+        document.getElementById('sseToastIcon').className = 'fas ' + icon + ' ' + iconColor + ' me-2';
+        document.getElementById('sseToastTitle').textContent = title;
+        document.getElementById('sseToastBody').textContent = message;
+
+        const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+        toast.show();
+    }
+
+    function connectSSE() {
+        if (eventSource) {
+            eventSource.close();
+        }
+
+        console.log('[SSE User] Connecting to /sse/user/' + userId);
+        eventSource = new EventSource('/sse/user/' + userId);
+
+        eventSource.addEventListener('connected', function(e) {
+            console.log('[SSE User] Connected:', e.data);
+            reconnectAttempts = 0;
+        });
+
+        // XP gained - show toast notification
+        eventSource.addEventListener('xp_gained', function(e) {
+            const data = JSON.parse(e.data);
+            console.log('[SSE User] XP gained:', data);
+            showToast(
+                'fa-star',
+                'text-warning',
+                i18n.xpGained,
+                '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP'
+            );
+            setTimeout(function() { location.reload(); }, 3000);
+        });
+
+        // Level up - show celebration toast
+        eventSource.addEventListener('level_up', function(e) {
+            const data = JSON.parse(e.data);
+            console.log('[SSE User] Level up:', data);
+            showToast(
+                'fa-level-up-alt',
+                'text-success',
+                i18n.levelUp,
+                i18n.reachedLevel + data.new_level + '!'
+            );
+            setTimeout(function() { location.reload(); }, 3000);
+        });
+
+        // Achievement unlocked - show celebration toast
+        eventSource.addEventListener('achievement', function(e) {
+            const data = JSON.parse(e.data);
+            console.log('[SSE User] Achievement:', data);
+            showToast(
+                'fa-trophy',
+                'text-primary',
+                i18n.achievement,
+                data.achievement_name + ' (+' + data.xp_awarded + ' XP)'
+            );
+            setTimeout(function() { location.reload(); }, 3000);
+        });
+
+        eventSource.onerror = function(e) {
+            console.error('[SSE User] Connection error:', e);
+            eventSource.close();
+
+            if (reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                console.log('[SSE User] Reconnecting in ' + delay + 'ms');
+                setTimeout(connectSSE, delay);
+            }
+        };
+    }
+
+    connectSSE();
+
+    window.addEventListener('beforeunload', function() {
+        if (eventSource) {
+            eventSource.close();
+        }
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

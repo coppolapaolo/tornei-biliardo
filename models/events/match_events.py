@@ -100,6 +100,7 @@ class MatchCompletedEvent(DomainEvent):
     score: Optional[str] = None
     location_id: Optional[int] = None
     location_name: Optional[str] = None
+    gara_id: Optional[int] = None  # For SSE routing to gara detail page
 
     def __post_init__(self):
         super().__post_init__()
@@ -119,7 +120,8 @@ class MatchCompletedEvent(DomainEvent):
             "winner_name": self.winner_name,
             "score": self.score,
             "location_id": self.location_id,
-            "location_name": self.location_name
+            "location_name": self.location_name,
+            "gara_id": self.gara_id,
         }
 
 

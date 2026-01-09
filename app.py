@@ -175,6 +175,8 @@ def create_app(config_name=None):
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401
+    # Register SSE bridge - routes domain events to SSE for real-time updates
+    from routes import sse_bridge  # noqa: F401
 
     # Inizializzazione database per applicazione normale (non testing)
     if not app.config.get("TESTING", False):

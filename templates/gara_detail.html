@@ -1127,4 +1127,83 @@
   }
 </script>
 {% endif %}
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   SSE: Real-time updates for gara detail page
+   All authenticated users receive live updates when matches complete,
+   rounds start, inscriptions are added, or gara completes.
+   ═══════════════════════════════════════════════════════════════════════════ #}
+{% if current_user.is_authenticated and gara.status != 'completed' %}
+<script>
+(function() {
+    const garaId = {{ gara.id }};
+    let eventSource = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+
+    function connectSSE() {
+        if (eventSource) {
+            eventSource.close();
+        }
+
+        console.log('[SSE Gara] Connecting to /sse/gara/' + garaId);
+        eventSource = new EventSource('/sse/gara/' + garaId);
+
+        eventSource.addEventListener('connected', function(e) {
+            console.log('[SSE Gara] Connected:', e.data);
+            reconnectAttempts = 0;
+        });
+
+        // Match completed - reload to show updated scores/classification
+        eventSource.addEventListener('match_completed', function(e) {
+            console.log('[SSE Gara] Match completed:', e.data);
+            location.reload();
+        });
+
+        // Round started - reload to show new matches
+        eventSource.addEventListener('round_started', function(e) {
+            console.log('[SSE Gara] Round started:', e.data);
+            location.reload();
+        });
+
+        // Inscription added - reload to show updated participant list
+        eventSource.addEventListener('inscription_added', function(e) {
+            console.log('[SSE Gara] Inscription added:', e.data);
+            location.reload();
+        });
+
+        // Gara completed - reload to show final results
+        eventSource.addEventListener('gara_completed', function(e) {
+            console.log('[SSE Gara] Gara completed:', e.data);
+            location.reload();
+        });
+
+        eventSource.onerror = function(e) {
+            console.error('[SSE Gara] Connection error:', e);
+            eventSource.close();
+
+            // Reconnect with exponential backoff
+            if (reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                console.log('[SSE Gara] Reconnecting in ' + delay + 'ms (attempt ' + reconnectAttempts + ')');
+                setTimeout(connectSSE, delay);
+            } else {
+                console.log('[SSE Gara] Max reconnect attempts reached');
+            }
+        };
+    }
+
+    // Start SSE connection
+    connectSSE();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (eventSource) {
+            eventSource.close();
+        }
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

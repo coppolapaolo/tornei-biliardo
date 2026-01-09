@@ -158,6 +158,7 @@ class MatchStateService:
             winner_id=match.winner_id,
             winner_name=winner_name,
             score=score,
+            gara_id=match.gara_id,  # For SSE routing
         )
         EventBus.publish(event)
 
