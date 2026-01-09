@@ -195,7 +195,7 @@ class TestDistanceDisplayStrings:
     def test_display_single_set_exact_4(self):
         """Display string for exactly-4 single-set."""
         distance = Distance(racks=4, is_race_to_racks=False)
-        assert distance.to_display_string() == "Exactly 4 racks"
+        assert distance.to_display_string() == "Esattamente 4 rack"
 
     def test_display_multi_set_race_to_3_sets_race_to_5_racks(self):
         """Display: race-to-3 sets, each race-to-5 racks."""
@@ -218,7 +218,7 @@ class TestDistanceDisplayStrings:
             sets=4,
             is_race_to_sets=False
         )
-        expected = "Exactly 4 sets, ogni set al 3 rack"
+        expected = "Esattamente 4 set, ogni set al 3 rack"
         assert distance.to_display_string() == expected
 
     def test_display_multi_set_race_to_5_sets_exact_2_racks(self):
@@ -230,7 +230,7 @@ class TestDistanceDisplayStrings:
             sets=5,
             is_race_to_sets=True
         )
-        expected = "Al 5 set, ogni set exactly 2 rack"
+        expected = "Al 5 set, ogni set esattamente 2 rack"
         assert distance.to_display_string() == expected
 
     def test_display_multi_set_exact_2_sets_exact_3_racks(self):
@@ -242,7 +242,7 @@ class TestDistanceDisplayStrings:
             sets=2,
             is_race_to_sets=False
         )
-        expected = "Exactly 2 sets, ogni set exactly 3 rack"
+        expected = "Esattamente 2 set, ogni set esattamente 3 rack"
         assert distance.to_display_string() == expected
 
 

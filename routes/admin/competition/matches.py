@@ -50,6 +50,21 @@ def trio_remove_rack(trio_id):
         return jsonify({"error": f"Errore durante rimozione rack: {str(e)}"}), 500
 
 
+@competition_bp.route("/trio/<int:trio_id>/confirm", methods=["POST"])
+@login_required
+@trio_manager_required
+def trio_confirm(trio_id):
+    """Conferma il risultato del trio e completa la partita."""
+    try:
+        result = GaraService.confirm_trio_result(trio_id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante conferma risultato: {str(e)}"}), 500
+
+
 @competition_bp.route("/trio/<int:trio_id>/reset", methods=["POST"])
 @login_required
 @trio_manager_required

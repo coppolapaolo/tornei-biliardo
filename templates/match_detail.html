@@ -180,6 +180,35 @@
                 alert({{ _("Errore durante la rimozione del rack")|tojson }});
             });
     }
+
+    function confirmTrioResult() {
+        // Use admin endpoint for managers, player endpoint for players
+        {% if user_can_manage %}
+        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/confirm`;
+        {% else %}
+        const trioEndpoint = `/player/match/{{ match.id }}/trio/confirm`;
+        {% endif %}
+
+        fetch(trioEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: ''
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert({{ _("Errore durante la conferma del risultato")|tojson }});
+            });
+    }
     {% endif %}
 
     // NEW SIMPLIFIED UX - Add/Remove Racks with validation at end

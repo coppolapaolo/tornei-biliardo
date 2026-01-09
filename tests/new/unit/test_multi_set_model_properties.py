@@ -53,7 +53,8 @@ class TestGaraMultiSetProperty:
         assert distance.racks == 5
         assert distance.is_race_to_racks is False
         assert distance.is_multi_set is False
-        assert distance.to_display_string() == "Exactly 5 racks"
+        # Italian string expected (Flask-Babel returns untranslated without app context)
+        assert distance.to_display_string() == "Esattamente 5 rack"
 
     def test_gara_multi_set_race_to_sets_race_to_racks(self):
         """Test multi-set with best-of sets and best-of racks."""
@@ -99,7 +100,8 @@ class TestGaraMultiSetProperty:
         assert distance.racks == 3
         assert distance.sets == 4
         assert distance.is_race_to_sets is False
-        assert distance.to_display_string() == "Exactly 4 sets, ogni set al 3 rack"
+        # Italian string expected (Flask-Babel returns untranslated without app context)
+        assert distance.to_display_string() == "Esattamente 4 set, ogni set al 3 rack"
 
     def test_gara_multi_set_defaults(self):
         """Test multi-set with None values uses defaults."""

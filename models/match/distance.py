@@ -23,6 +23,7 @@ Examples:
 """
 
 from dataclasses import dataclass
+from flask_babel import gettext as _
 
 
 @dataclass(frozen=True)
@@ -79,32 +80,28 @@ class Distance:
         Returns:
             Examples:
                 "Al 4 rack" (Race to)
-                "Exactly 4 racks"
+                "Esattamente 4 rack"
                 "Al 2 set, ogni set al 4 rack"
 
         """
         if not self.is_multi_set:
             # Single-set
-            racks_desc = (
-                f"al {self.racks}"
-                if self.is_race_to_racks
-                else f"exactly {self.racks}"
-            )
-            return f"{racks_desc.capitalize()} rack" if self.is_race_to_racks else f"{racks_desc.capitalize()} racks"
+            if self.is_race_to_racks:
+                return _("Al %(n)s rack", n=self.racks)
+            else:
+                return _("Esattamente %(n)s rack", n=self.racks)
         else:
             # Multi-set
-            sets_desc = (
-                f"al {self.sets}"
-                if self.is_race_to_sets
-                else f"exactly {self.sets}"
-            )
-            racks_desc = (
-                f"al {self.racks}"
-                if self.is_race_to_racks
-                else f"exactly {self.racks}"
-            )
-            sets_part = f"{sets_desc.capitalize()} set" if self.is_race_to_sets else f"{sets_desc.capitalize()} sets"
-            racks_part = f"ogni set {racks_desc} rack"
+            if self.is_race_to_sets:
+                sets_part = _("Al %(n)s set", n=self.sets)
+            else:
+                sets_part = _("Esattamente %(n)s set", n=self.sets)
+
+            if self.is_race_to_racks:
+                racks_part = _("ogni set al %(n)s rack", n=self.racks)
+            else:
+                racks_part = _("ogni set esattamente %(n)s rack", n=self.racks)
+
             return f"{sets_part}, {racks_part}"
 
     @classmethod

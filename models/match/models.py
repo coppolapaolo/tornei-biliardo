@@ -668,6 +668,7 @@ class TrioMatch(db.Model):
 
     # Stato del trio
     is_completed = db.Column(db.Boolean, default=False)
+    awaiting_confirmation = db.Column(db.Boolean, default=False)  # Validation step
     winner_id = db.Column(
         db.Integer, db.ForeignKey("user.id")
     )  # Con classifica rack-based, winner_id puo' essere NULL (pareggio)
@@ -713,6 +714,30 @@ class TrioMatch(db.Model):
         """Get the last active rack, or None."""
         racks = self.active_racks
         return max(racks, key=lambda r: r.rack_number) if racks else None
+
+    @property
+    def rack_history(self) -> list:
+        """Get history of played racks for UI display.
+
+        Returns racks in reverse order (most recent first) with metadata
+        for UI rendering: player names, winner, and can_undo flag.
+        Only the most recent rack can be undone.
+        """
+        racks = sorted(self.active_racks, key=lambda r: r.rack_number, reverse=True)
+        last_rack_number = racks[0].rack_number if racks else 0
+
+        return [
+            {
+                "rack_number": r.rack_number,
+                "player1": r.player1,
+                "player2": r.player2,
+                "waiting_player": r.waiting_player,
+                "winner": r.winner,
+                "winner_id": r.winner_id,
+                "can_undo": r.rack_number == last_rack_number,
+            }
+            for r in racks
+        ]
 
     @property
     def player1_racks(self) -> int:
@@ -802,11 +827,14 @@ class TrioMatch(db.Model):
         )
         db.session.add(trio_rack)
 
+        # Flush to ensure the new rack is visible in the relationship
+        db.session.flush()
+
         # Update current players for next rack
         self._update_current_players()
 
-        # Check if trio is completed (use +1 because computed property won't see new rack yet)
-        if self.total_racks_played + 1 >= config.total_played_racks:
+        # Check if trio is completed
+        if self.total_racks_played >= config.total_played_racks:
             self._apply_bonus_and_complete()
 
         return trio_rack
@@ -867,19 +895,20 @@ class TrioMatch(db.Model):
             self._update_current_players()
 
     def _apply_bonus_and_complete(self):
-        """Apply bonus flag and mark trio as completed.
+        """Apply bonus flag and set trio to awaiting confirmation.
 
         Note: bonus_racks don't create actual rack records - the bonus is virtual
         and applied equally to all players for display/classification purposes.
         Since it's equal for all, it doesn't affect winner determination.
+
+        The trio enters 'awaiting_confirmation' state - user must call
+        confirm_result() to finalize the match.
         """
         config = self.trio_config
 
         # Set bonus flag (for UI display - bonus is virtual, not actual racks)
         if config.bonus_racks > 0:
             self.bonus_applied = True
-
-        self.is_completed = True
 
         # Flush to ensure computed properties see all racks
         db.session.flush()
@@ -899,6 +928,25 @@ class TrioMatch(db.Model):
             # Tie - no single winner (valid for rack-based classification)
             self.winner_id = None
 
+        # Enter awaiting confirmation state (don't complete yet)
+        self.awaiting_confirmation = True
+
+    def confirm_result(self) -> bool:
+        """Confirm the trio result and finalize the match.
+
+        Must be called after all racks are played and trio is awaiting_confirmation.
+        Updates the parent Match status and winner.
+
+        Returns:
+            True if confirmed successfully, False if not in awaiting_confirmation state.
+        """
+        if not self.awaiting_confirmation:
+            return False
+
+        # Mark as completed
+        self.awaiting_confirmation = False
+        self.is_completed = True
+
         # Update associated match
         match_obj = db.session.get(Match, self.match_id)
         if match_obj:
@@ -908,6 +956,8 @@ class TrioMatch(db.Model):
             match_obj.player1_score = self.player1_racks
             match_obj.player2_score = self.player2_racks
             match_obj._check_and_complete_gara_if_needed(match_obj)
+
+        return True
 
     def set_result_direct(
         self, player1_racks: int, player2_racks: int, player3_racks: int

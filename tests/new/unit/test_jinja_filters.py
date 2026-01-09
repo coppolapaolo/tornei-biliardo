@@ -22,7 +22,8 @@ class TestFormatDistanceFilter:
         """Format exactly-4 single-set distance."""
         distance = Distance(racks=4, is_race_to_racks=False)
         result = format_distance(distance)
-        assert str(result) == "Exactly 4 racks"
+        # Italian string expected (Flask-Babel returns untranslated without app context)
+        assert str(result) == "Esattamente 4 rack"
 
     def test_format_distance_multi_set(self):
         """Format multi-set distance."""

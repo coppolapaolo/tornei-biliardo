@@ -130,6 +130,29 @@ def remove_trio_rack(match_id):
         return jsonify({"error": f"Errore durante rimozione rack: {str(e)}"}), 500
 
 
+@player_bp.route("/match/<int:match_id>/trio/confirm", methods=["POST"])
+@login_required
+@trio_player_required
+def confirm_trio_result(match_id):
+    """Confirm trio match result (player endpoint)"""
+    try:
+        # Get the trio match
+        match = db.session.get(Match, match_id)
+        if not match or not match.trio_match:
+            return jsonify({"error": "Trio match non trovato"}), 404
+
+        trio_id = match.trio_match.id
+
+        # Use the service layer
+        result = GaraService.confirm_trio_result(trio_id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante conferma risultato: {str(e)}"}), 500
+
+
 # ============ SIMPLIFIED UX - Match (Tournament) Rack Management ============
 
 

@@ -478,6 +478,38 @@ class GaraService:
 
     @staticmethod
     @transactional(domain="competition")
+    def confirm_trio_result(trio_id: int) -> dict:
+        """Conferma il risultato del trio e completa la partita.
+
+        Called after all racks are played and trio is awaiting_confirmation.
+
+        Returns:
+            Dict con stato aggiornato del trio
+        """
+        from models.match.models import TrioMatch
+
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+
+            abort(404)
+
+        if not trio.awaiting_confirmation:
+            raise ValueError("Trio non in attesa di conferma")
+
+        # Confirm the result
+        success = trio.confirm_result()
+        if not success:
+            raise ValueError("Impossibile confermare il risultato")
+
+        return {
+            "success": True,
+            "trio_completed": trio.is_completed,
+            "winner_id": trio.winner_id,
+        }
+
+    @staticmethod
+    @transactional(domain="competition")
     def set_trio_result(
         trio_id: int, player1_racks: int, player2_racks: int, player3_racks: int
     ) -> dict:

@@ -263,6 +263,46 @@ def last_rack(self) -> Optional[TrioRack]
 - Template `_trio_rack_input.html` mostra +/- per ogni giocatore
 - Il `-` è disabilitato se quel giocatore non ha vinto l'ultimo rack
 
+### 7. Conferma Risultato (Aggiornamento 2026-01-09)
+
+Per prevenire errori e dare all'utente la possibilità di verificare il risultato finale, il completamento del trio segue un **flusso a due fasi**:
+
+**Fase 1: `awaiting_confirmation`**
+- Quando tutti i rack sono stati giocati, il trio entra in stato `awaiting_confirmation=True`
+- Il bonus rack viene già applicato ai punteggi
+- Il match NON è ancora completato (`is_completed=False`)
+- L'UI mostra un riepilogo e il pulsante "Conferma risultato"
+
+**Fase 2: `confirm_result()`**
+- L'utente conferma il risultato
+- `awaiting_confirmation` → `False`, `is_completed` → `True`
+- Il Match associato viene aggiornato (winner_id, status, scores)
+- La gara verifica se è completata
+
+**Metodi chiave:**
+```python
+# TrioMatch
+awaiting_confirmation = db.Column(db.Boolean, default=False)
+
+def confirm_result(self) -> bool:
+    """Conferma il risultato e finalizza il match."""
+    if not self.awaiting_confirmation:
+        return False
+    self.awaiting_confirmation = False
+    self.is_completed = True
+    # Aggiorna Match associato...
+    return True
+```
+
+**Endpoint:**
+- Admin: `POST /admin/gara/trio/<trio_id>/confirm`
+- Player: `POST /player/match/<match_id>/trio/confirm`
+
+**Vantaggi:**
+- L'utente può verificare il risultato prima della conferma definitiva
+- Possibilità di fare undo durante la fase `awaiting_confirmation`
+- Consistente con il pattern di conferma usato in altri contesti
+
 ## Riferimenti
 
 - File correlati:
@@ -272,4 +312,5 @@ def last_rack(self) -> Optional[TrioRack]
   - `models/classification/score_aggregator.py`
   - `templates/components/_trio_rack_input.html`
   - `migrations/add_trio_rack_table.py`
+  - `migrations/20260109_trio_awaiting_confirmation.py`
 - ADR correlato: ADR-001 (Amalfi Strategy Pattern)
