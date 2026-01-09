@@ -619,7 +619,8 @@ class TestUseCaseOneComprehensive:
             assert matches[3].table_assignment is None
 
             # 2. Verify table assignments in tournament view
-            response = client.get(f"/gara/{standalone_gara.id}")
+            # Note: /gara/<id> redirects to admin.competition.gara_detail
+            response = client.get(f"/gara/{standalone_gara.id}", follow_redirects=True)
             assert response.status_code == 200
             html_content = response.data.decode("utf-8")
 
@@ -632,27 +633,24 @@ class TestUseCaseOneComprehensive:
             # 3. When first match finishes, table should be assigned to waiting match
             first_match = matches[0]
 
-            # Complete first match
-            rack_num = 1
-            # Player 1 wins 5 racks
-            for _ in range(5):
+            # Complete first match with interleaved racks (race to 5 → final score 5-2)
+            # Interleave racks so match doesn't auto-complete too early
+            rack_sequence = [
+                first_match.player1_id,  # 1-0
+                first_match.player2_id,  # 1-1
+                first_match.player1_id,  # 2-1
+                first_match.player1_id,  # 3-1
+                first_match.player2_id,  # 3-2
+                first_match.player1_id,  # 4-2
+                first_match.player1_id,  # 5-2 → auto-completes
+            ]
+            for rack_num, winner_id in enumerate(rack_sequence, start=1):
                 RackService.add_rack_result(
                     first_match.id,
                     rack_num,
-                    first_match.player1_id,
-                    first_match.player1_id,
+                    winner_id,
+                    winner_id,
                 )
-                rack_num += 1
-            # Player 2 wins 2 racks
-            for _ in range(2):
-                RackService.add_rack_result(
-                    first_match.id,
-                    rack_num,
-                    first_match.player2_id,
-                    first_match.player2_id,
-                )
-                rack_num += 1
-            MatchService.to_completed(first_match.id)
 
             # Simulate table reassignment logic (would be handled by system)
             waiting_match = matches[3]

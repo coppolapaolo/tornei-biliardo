@@ -46,7 +46,9 @@ class AdvancedRoundManager:
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
+        # Return special lock status for non-playing gare (with reason encoded)
         if gara.status != GaraStatus.PLAYING.value:
+            # Return LOCKED but caller can check gara.status for reason
             return RoundLockStatus.LOCKED
 
         # Check strategy behavior for round locking support
@@ -83,6 +85,23 @@ class AdvancedRoundManager:
         match = db.session.get(Match, match_id)
         if not match:
             return False, "Match non trovato"
+
+        # Handle matches without gara (standalone)
+        if not match.gara_id:
+            return True, ""  # Standalone matches are always modifiable
+
+        gara = db.session.get(Gara, match.gara_id)
+        if not gara:
+            return False, "Gara non trovata"
+
+        # Check gara status first for better error messages
+        if gara.status != GaraStatus.PLAYING.value:
+            if gara.status == GaraStatus.COMPLETED.value:
+                return False, "La gara è già completata"
+            elif gara.status == GaraStatus.INSCRIPTION.value:
+                return False, "La gara è ancora in fase di iscrizione"
+            else:
+                return False, f"La gara non è in corso (stato: {gara.status})"
 
         lock_status = AdvancedRoundManager.get_round_lock_status(
             match.gara_id, match.round_number

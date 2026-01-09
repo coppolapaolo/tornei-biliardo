@@ -1243,14 +1243,16 @@ class TrioMatch(db.Model):
         else:
             self.winner_id = None  # Tie
 
-        # Update associated match
+        # Update associated match and complete via service (emits SSE)
         match_obj = db.session.get(Match, self.match_id)
         if match_obj:
             match_obj.winner_id = self.winner_id
-            match_obj.status = "completed"
             match_obj.player1_score = player1_racks
             match_obj.player2_score = player2_racks
-            match_obj._check_and_complete_gara_if_needed(match_obj)
+            match_obj.validated_by_admin = True
+            # Use service to complete - emits SSE and records PlayerEncounter
+            from .state_service import MatchStateService
+            MatchStateService.to_completed(match_obj.id)
 
         return True
 
