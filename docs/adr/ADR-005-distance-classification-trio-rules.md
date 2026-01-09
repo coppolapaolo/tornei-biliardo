@@ -226,11 +226,50 @@ class TrioConfig:
         return self.num_rounds * 3
 ```
 
+### 6. TrioRack Model per Undo (Aggiornamento 2026-01-09)
+
+Per supportare la funzionalità di **undo** (annullamento ultimo rack), è stato introdotto il modello `TrioRack` seguendo le best practice OO del modello `Rack`.
+
+**Principi di design:**
+- I contatori (`player1_racks`, `player2_racks`, `player3_racks`) sono **computed properties** calcolate dai record `TrioRack`
+- Ogni rack giocato crea un record `TrioRack` con:
+  - `trio_match_id`: riferimento al trio
+  - `rack_number`: numero progressivo
+  - `winner_id`: chi ha vinto
+  - `player1_id`, `player2_id`, `waiting_player_id`: stato del matchup
+- **Soft delete** per undo: `is_deleted=True`, `removed_by_id`, `removed_at`
+
+**Vincoli undo:**
+- Solo l'**ultimo rack** può essere rimosso (a causa della sequenza fissa round-robin)
+- Il pulsante `-` è abilitato solo per il giocatore che ha vinto l'ultimo rack
+- Dopo la rimozione, lo stato del trio viene ricalcolato automaticamente
+
+**Metodi chiave:**
+```python
+# TrioMatch
+def add_rack_win(winner_id: int, added_by_id: int = None) -> TrioRack
+def remove_last_rack(removed_by_id: int = None) -> Optional[TrioRack]
+
+# Computed properties
+@property
+def player1_racks(self) -> int
+@property
+def total_racks_played(self) -> int
+@property
+def last_rack(self) -> Optional[TrioRack]
+```
+
+**UI:**
+- Template `_trio_rack_input.html` mostra +/- per ogni giocatore
+- Il `-` è disabilitato se quel giocatore non ha vinto l'ultimo rack
+
 ## Riferimenti
 
 - File correlati:
-  - `models/match/models.py` (TrioMatch)
+  - `models/match/models.py` (Match, TrioMatch, TrioRack)
+  - `models/match/trio_config.py` (TrioConfig)
   - `models/competition/services.py` (GaraService)
   - `models/classification/score_aggregator.py`
-  - `templates/gara_detail.html`
+  - `templates/components/_trio_rack_input.html`
+  - `migrations/add_trio_rack_table.py`
 - ADR correlato: ADR-001 (Amalfi Strategy Pattern)

@@ -75,7 +75,7 @@ gara.distance = 9
 |--------|---------|------------|
 | `user/` | Users, roles, permissions | User, DirectorAssignment, VenueManagement |
 | `competition/` | Gara, inscriptions | Gara, Inscription |
-| `match/` | Match execution, scoring | Match, Set, Rack, TrioMatch |
+| `match/` | Match execution, scoring | Match, Set, Rack, TrioMatch, TrioRack |
 | `matchmaking/` | Pairing strategies | AmalfiStrategy, RoundRobinStrategy, etc. |
 | `campionato/` | Tournament container | Campionato |
 | `classification/` | Rankings | Classification, RoundClassification |

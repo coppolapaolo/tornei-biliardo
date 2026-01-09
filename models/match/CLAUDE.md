@@ -25,9 +25,10 @@ The Match domain handles the execution and scoring of individual matches within 
 ### Most-Used Classes
 
 ```python
-from models.match.models import Match, Rack, TrioMatch
+from models.match.models import Match, Rack, TrioMatch, TrioRack
 from models.match.set_models import Set, SetRack
 from models.match.services import MatchService, RackService
+from models.match.trio_config import TrioConfig
 from models.status_enum import MatchStatus
 
 # Create match
@@ -294,6 +295,99 @@ def remove_rack(rack_id: int) -> bool:
 def reset_match_complete(match_id: int) -> None:
     """Remove all racks from match and reset to pending."""
 ```
+
+---
+
+### TrioMatch Model (`models.py`)
+
+**Purpose**: Represents a 3-player match using round-robin format.
+
+**Critical Fields:**
+```python
+id: int (PK)
+match_id: int (FK to match.id, unique)
+player1_id: int (FK to user.id)
+player2_id: int (FK to user.id)
+player3_id: int (FK to user.id)
+
+# Current matchup (who is playing, who waits)
+current_player1_id: int (FK to user.id)
+current_player2_id: int (FK to user.id)
+waiting_player_id: int (FK to user.id)
+
+# Completion state
+is_completed: bool - default False
+bonus_applied: bool - default False
+winner_id: int (FK to user.id, nullable)
+```
+
+**Computed Properties (from TrioRack records):**
+```python
+@property
+def player1_racks(self) -> int
+@property
+def player2_racks(self) -> int
+@property
+def player3_racks(self) -> int
+@property
+def total_racks_played(self) -> int
+@property
+def current_round(self) -> int
+@property
+def current_rack_in_round(self) -> int
+@property
+def last_rack(self) -> Optional[TrioRack]
+```
+
+**Key Methods:**
+```python
+def add_rack_win(winner_id: int, added_by_id: int = None) -> TrioRack
+    # Add rack win and update matchup for next rack
+
+def remove_last_rack(removed_by_id: int = None) -> Optional[TrioRack]
+    # Soft-delete last rack (undo). Returns removed rack or None.
+
+def reset() -> None
+    # Delete all racks, reset state. Preserves table assignment.
+
+@property
+def trio_config(self) -> TrioConfig
+    # Get round-robin configuration based on gara distance
+```
+
+---
+
+### TrioRack Model (`models.py`)
+
+**Purpose**: Individual rack record for trio matches. Enables undo functionality.
+
+**Critical Fields:**
+```python
+id: int (PK)
+trio_match_id: int (FK to trio_match.id, cascade delete)
+rack_number: int
+winner_id: int (FK to user.id)
+
+# Matchup snapshot
+player1_id: int (FK to user.id)
+player2_id: int (FK to user.id)
+waiting_player_id: int (FK to user.id)
+
+# Audit
+added_by_id: int (FK to user.id)
+created_at: datetime
+
+# Soft delete for undo
+is_deleted: bool - default False
+removed_by_id: int (FK to user.id, nullable)
+removed_at: datetime (nullable)
+```
+
+**Design Pattern:**
+- Follows `Rack` model OO pattern
+- Counters are **computed properties** from active records
+- Soft delete enables undo without losing history
+- Only last rack can be removed (round-robin sequence is fixed)
 
 ---
 
