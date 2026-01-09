@@ -397,9 +397,17 @@ class GaraService:
         }
 
         # Emit SSE event for real-time updates
-        from routes.sse import emit_trio_event
+        from routes.sse import emit_trio_event, emit_gara_event
 
         emit_trio_event(trio_id, "rack_added", result)
+
+        # Emit gara event for directors watching gara detail page
+        if trio.match and trio.match.gara_id:
+            emit_gara_event(trio.match.gara_id, "match_updated", {
+                "match_id": trio.match.id,
+                "trio_id": trio_id,
+                "event": "rack_added",
+            })
 
         return result
 
@@ -485,9 +493,17 @@ class GaraService:
         }
 
         # Emit SSE event for real-time updates
-        from routes.sse import emit_trio_event
+        from routes.sse import emit_trio_event, emit_gara_event
 
         emit_trio_event(trio_id, "rack_removed", result)
+
+        # Emit gara event for directors watching gara detail page
+        if trio.match and trio.match.gara_id:
+            emit_gara_event(trio.match.gara_id, "match_updated", {
+                "match_id": trio.match.id,
+                "trio_id": trio_id,
+                "event": "rack_removed",
+            })
 
         return result
 

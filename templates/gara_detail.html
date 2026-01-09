@@ -1160,6 +1160,12 @@
             location.reload();
         });
 
+        // Match updated (trio rack added/removed) - reload to show live scores
+        eventSource.addEventListener('match_updated', function(e) {
+            console.log('[SSE Gara] Match updated:', e.data);
+            location.reload();
+        });
+
         // Round started - reload to show new matches
         eventSource.addEventListener('round_started', function(e) {
             console.log('[SSE Gara] Round started:', e.data);

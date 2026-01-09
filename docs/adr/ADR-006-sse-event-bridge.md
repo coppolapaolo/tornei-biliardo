@@ -82,15 +82,24 @@ Sottoscrive ai seguenti eventi domain:
 | LevelUpEvent | user | level_up |
 | AchievementUnlockedEvent | user | achievement |
 
-### Trio Events: Eccezione Deliberata
+### Trio Events: Pattern Ibrido
 
-Gli eventi trio (rack_added, rack_removed, forfeit) **non** passano per l'Event Bridge perché:
+Gli eventi trio usano un **pattern dual-emit**:
 
-1. **Granularità**: Richiedono aggiornamenti per-rack immediati
-2. **Non sono Domain Events**: Sono operazioni UI, non eventi business
-3. **Funzionano bene**: L'implementazione esistente è testata e stabile
+1. **`emit_trio_event()`**: Per aggiornamenti in tempo reale ai player del trio match
+2. **`emit_gara_event()`**: Per aggiornamenti ai director che guardano la pagina gara
 
-Il pattern `emit_trio_event()` diretto viene mantenuto per i trio.
+```python
+# In GaraService.add_trio_rack() e remove_trio_rack():
+emit_trio_event(trio_id, "rack_added", result)
+if trio.match and trio.match.gara_id:
+    emit_gara_event(trio.match.gara_id, "match_updated", {...})
+```
+
+**Motivazione**:
+- I trio events **non** passano per l'Event Bridge perché richiedono aggiornamenti immediati per-rack
+- Ma i director che osservano la gara devono vedere gli aggiornamenti in tempo reale
+- La connessione SSE nel match_detail rimane attiva anche dopo `is_completed=True` per supportare undo
 
 ## Client-Side Implementation
 
@@ -99,6 +108,7 @@ Il pattern `emit_trio_event()` diretto viene mantenuto per i trio.
 ```javascript
 const eventSource = new EventSource('/sse/gara/' + garaId);
 eventSource.addEventListener('match_completed', (e) => location.reload());
+eventSource.addEventListener('match_updated', (e) => location.reload());  // trio rack added/removed
 eventSource.addEventListener('round_started', (e) => location.reload());
 // + exponential backoff reconnection
 ```
