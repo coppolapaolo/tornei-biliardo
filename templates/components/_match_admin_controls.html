@@ -9,43 +9,49 @@
             {# Quick Rack Entry Section - Only for matches with table assigned #}
             {% if match.status != 'completed' and not match.is_bye %}
 
-            {# === TRIO MATCH - 3 player admin controls === #}
+            {# === TRIO MATCH - 3 player admin controls (direct result entry) === #}
             {% if match.is_trio and match.trio_match %}
             {% set trio = match.trio_match %}
-            <h6>{{ _('Gestione Trio') }}</h6>
-            <div class="row mb-3">
-                <div class="col-4">
-                    <label class="form-label">{{ trio.player1.username }}</label>
-                    <div class="input-group">
-                        <span class="form-control text-center">{{ trio.player1_racks }}</span>
-                        <button type="button" class="btn btn-outline-primary" onclick="addTrioRackWin({{ trio.player1_id }})"
-                            {% if trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2 %}disabled{% endif %}>
-                            <i class="fas fa-plus"></i>
+            {% set config = trio.trio_config %}
+            <!-- Form Risultato Diretto Trio -->
+            <form id="trioResultForm" class="mb-3"
+                data-url="{{ url_for('admin.competition.trio_set_result', trio_id=trio.id) }}"
+                data-num-rounds="{{ config.num_rounds }}"
+                data-max-per-player="{{ config.num_rounds * 2 }}">
+                <h6>{{ _('Imposta Risultato Trio') }}</h6>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <label class="form-label">{{ trio.player1.username }}</label>
+                        <input type="number" class="form-control" name="player1_racks" min="0"
+                            max="{{ config.num_rounds * 2 }}" value="{{ trio.player1_racks }}" required>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">{{ trio.player2.username }}</label>
+                        <input type="number" class="form-control" name="player2_racks" min="0"
+                            max="{{ config.num_rounds * 2 }}" value="{{ trio.player2_racks }}" required>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">{{ trio.player3.username }}</label>
+                        <input type="number" class="form-control" name="player3_racks" min="0"
+                            max="{{ config.num_rounds * 2 }}" value="{{ trio.player3_racks }}" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
                         </button>
                     </div>
                 </div>
-                <div class="col-4">
-                    <label class="form-label">{{ trio.player2.username }}</label>
-                    <div class="input-group">
-                        <span class="form-control text-center">{{ trio.player2_racks }}</span>
-                        <button type="button" class="btn btn-outline-primary" onclick="addTrioRackWin({{ trio.player2_id }})"
-                            {% if trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2 %}disabled{% endif %}>
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <label class="form-label">{{ trio.player3.username }}</label>
-                    <div class="input-group">
-                        <span class="form-control text-center">{{ trio.player3_racks }}</span>
-                        <button type="button" class="btn btn-outline-primary" onclick="addTrioRackWin({{ trio.player3_id }})"
-                            {% if trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2 %}disabled{% endif %}>
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <small class="text-muted mb-3 d-block">{{ _('Primo a 2 rack vince') }}</small>
+                <small class="text-muted d-block mt-2">
+                    <i class="fas fa-info-circle"></i>
+                    {{ config.num_rounds }} {{ _('girone/i') }} ({{ config.num_rounds * 3 }} rack)
+                    {% if config.bonus_racks > 0 %}
+                    + {{ config.bonus_racks }} bonus ({{ _('aggiunto automaticamente') }})
+                    {% endif %}
+                    &mdash; {{ _('max %(max)s rack/giocatore, somma = %(sum)s', max=config.num_rounds * 2, sum=config.num_rounds * 3) }}
+                </small>
+            </form>
 
             {# === REGULAR MATCH - 2 player admin controls === #}
             {% else %}
@@ -103,8 +109,12 @@
         {% endif %}
 
         <!-- Reset Match - Always available for completed matches or matches with scores -->
-        {% if match.status == 'completed' or (match.player1_score > 0 or match.player2_score > 0) %}
-        <button class="btn btn-danger" onclick="resetMatch({{ match.id }})">
+        {% set has_scores = (match.player1_score > 0 or match.player2_score > 0) %}
+        {% if match.is_trio and match.trio_match %}
+            {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
+        {% endif %}
+        {% if match.status == 'completed' or has_scores %}
+        <button class="btn btn-danger" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">
             <i class="fas fa-undo"></i> {{ _('Reset Partita') }}
         </button>
         {% endif %}
@@ -130,4 +140,62 @@ function validateScoreForm(form) {
 
     return confirm({{ _("Confermi di voler impostare questo risultato?")|tojson }});
 }
+
+/**
+ * Validates and submits trio score form via AJAX.
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const trioForm = document.getElementById('trioResultForm');
+    if (trioForm) {
+        trioForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const numRounds = parseInt(this.dataset.numRounds, 10);
+            const maxPerPlayer = parseInt(this.dataset.maxPerPlayer, 10);
+            const expectedSum = numRounds * 3;
+
+            const p1Racks = parseInt(this.querySelector('[name="player1_racks"]').value, 10);
+            const p2Racks = parseInt(this.querySelector('[name="player2_racks"]').value, 10);
+            const p3Racks = parseInt(this.querySelector('[name="player3_racks"]').value, 10);
+
+            // Check max per player
+            if (p1Racks > maxPerPlayer || p2Racks > maxPerPlayer || p3Racks > maxPerPlayer) {
+                alert({{ _("Ogni giocatore puo' vincere al massimo")|tojson }} + ' ' + maxPerPlayer + ' rack');
+                return;
+            }
+
+            // Check sum equals expected total
+            const actualSum = p1Racks + p2Racks + p3Racks;
+            if (actualSum !== expectedSum) {
+                alert({{ _("La somma dei rack deve essere")|tojson }} + ' ' + expectedSum + ' (' + {{ _("hai inserito")|tojson }} + ' ' + actualSum + ')');
+                return;
+            }
+
+            if (!confirm({{ _("Confermi di voler impostare questo risultato?")|tojson }})) {
+                return;
+            }
+
+            // Submit via AJAX
+            const url = this.dataset.url;
+            const formData = new FormData(this);
+
+            fetch(url, {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+            });
+        });
+    }
+});
 </script>

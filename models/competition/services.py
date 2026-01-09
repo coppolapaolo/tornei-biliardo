@@ -360,24 +360,38 @@ class GaraService:
         # Prepara risposta con nuovo stato
         state = trio.get_current_state()
 
+        # Extract current matchup (the two players currently facing each other)
+        matchup = state["current_matchup"]
+        current_players = []
+        if matchup["player1"]:
+            current_players.append(
+                {"id": matchup["player1"].id, "username": matchup["player1"].username}
+            )
+        if matchup["player2"]:
+            current_players.append(
+                {"id": matchup["player2"].id, "username": matchup["player2"].username}
+            )
+
+        waiting = matchup.get("waiting")
+        waiting_player = (
+            {"id": waiting.id, "username": waiting.username} if waiting else None
+        )
+
+        # Extract scores from players dict
+        scores = {
+            "player1": state["players"]["player1"]["racks"],
+            "player2": state["players"]["player2"]["racks"],
+            "player3": state["players"]["player3"]["racks"],
+        }
+
         return {
             "success": True,
             "trio_completed": trio.is_completed,
             "winner_id": trio.winner_id,
             "current_state": {
-                "current_players": [
-                    {"id": p.id, "username": p.username}
-                    for p in state["current_players"]
-                ],
-                "waiting_player": (
-                    {
-                        "id": state["waiting_player"].id,
-                        "username": state["waiting_player"].username,
-                    }
-                    if state["waiting_player"]
-                    else None
-                ),
-                "scores": state["scores"],
+                "current_players": current_players,
+                "waiting_player": waiting_player,
+                "scores": scores,
             },
         }
 
@@ -404,6 +418,66 @@ class GaraService:
 
     @staticmethod
     @transactional(domain="competition")
+    def remove_trio_rack(trio_id: int, removed_by_id: int) -> dict:
+        """Rimuove l'ultimo rack da una partita trio (undo).
+
+        Returns:
+            Dict con stato aggiornato del trio
+        """
+        from models.match.models import TrioMatch
+
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+
+            abort(404)
+
+        # Remove last rack
+        removed_rack = trio.remove_last_rack(removed_by_id)
+        if not removed_rack:
+            raise ValueError("Nessun rack da rimuovere")
+
+        # Prepare response with new state
+        state = trio.get_current_state()
+
+        # Extract current matchup
+        matchup = state["current_matchup"]
+        current_players = []
+        if matchup["player1"]:
+            current_players.append(
+                {"id": matchup["player1"].id, "username": matchup["player1"].username}
+            )
+        if matchup["player2"]:
+            current_players.append(
+                {"id": matchup["player2"].id, "username": matchup["player2"].username}
+            )
+
+        waiting = matchup.get("waiting")
+        waiting_player = (
+            {"id": waiting.id, "username": waiting.username} if waiting else None
+        )
+
+        # Extract scores
+        scores = {
+            "player1": state["players"]["player1"]["racks"],
+            "player2": state["players"]["player2"]["racks"],
+            "player3": state["players"]["player3"]["racks"],
+        }
+
+        return {
+            "success": True,
+            "removed_rack_winner_id": removed_rack.winner_id,
+            "trio_completed": trio.is_completed,
+            "current_state": {
+                "current_players": current_players,
+                "waiting_player": waiting_player,
+                "scores": scores,
+                "last_rack_winner_id": trio.last_rack.winner_id if trio.last_rack else None,
+            },
+        }
+
+    @staticmethod
+    @transactional(domain="competition")
     def set_trio_result(
         trio_id: int, player1_racks: int, player2_racks: int, player3_racks: int
     ) -> dict:
@@ -425,8 +499,7 @@ class GaraService:
         Raises:
             ValueError: Se i punteggi non sono validi per la distanza configurata
         """
-        from models.match.models import TrioMatch, Match
-        from models.match.trio_config import TrioConfig
+        from models.match.models import TrioMatch, Match  # noqa: F811
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:

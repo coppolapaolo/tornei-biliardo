@@ -287,6 +287,36 @@ def match_player_required(f):
     return decorated_function
 
 
+def trio_player_required(f):
+    """Permette l'accesso solo ai giocatori di un match trio (tramite match_id)."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        from models import Match  # Local import to avoid circular dependency
+
+        match_id = kwargs.get("match_id")
+        if not match_id:
+            abort(400)  # Bad request if match_id is missing
+
+        # Get the match and check it's a trio
+        match = Match.query.get(match_id)
+        if not match:
+            abort(404)
+
+        if not match.is_trio or not match.trio_match:
+            abort(400)  # Not a trio match
+
+        # Check if user is one of the 3 players in the trio
+        trio = match.trio_match
+        if current_user.id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
+            flash("Non sei un giocatore di questa partita trio.", "error")
+            return redirect(url_for("dashboard.dashboard"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 def rack_player_required(f):
     """Permette l'accesso solo ai giocatori del rack specificato."""
 
@@ -476,6 +506,7 @@ __all__ = [
     "player_only",
     "player_required",
     "match_player_required",
+    "trio_player_required",
     "rack_player_required",
     "inscription_owner_required",
     "challenge_player_required",

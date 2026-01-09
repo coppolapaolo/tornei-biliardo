@@ -156,6 +156,7 @@ class RoundService:
                             player3_id=pairing.players[2],
                         )
                         db.session.add(trio_match)
+                        trio_match.initialize_matchup()
 
             # Imposta il turno corrente al primo
             gara.current_round = 1
@@ -250,6 +251,7 @@ class RoundService:
                         player3_id=pairing.players[2],
                     )
                     db.session.add(trio_match)
+                    trio_match.initialize_matchup()
 
             gara.current_round = 1
             from models.competition.state_service import StateService
@@ -527,6 +529,7 @@ class RoundService:
                     )
                     db.session.add(trio_match)
                     db.session.flush()  # Assicura che il TrioMatch sia visibile
+                    trio_match.initialize_matchup()
 
             # Conta i risultati
             matches = (

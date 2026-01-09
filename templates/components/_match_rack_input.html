@@ -3,64 +3,7 @@
 
 {# === TRIO MATCH - 3 player rack input === #}
 {% if match.is_trio and match.trio_match %}
-{% set trio = match.trio_match %}
-{% set trio_completed = (trio.player1_racks >= 2 or trio.player2_racks >= 2 or trio.player3_racks >= 2) %}
-
-<div class="card bg-light mb-3">
-    <div class="card-body">
-        <h6>
-            {% if user_can_manage %}
-                {{ _('Gestione rack (Trio)') }}
-            {% else %}
-                {{ _('Gestione risultato rack (Trio)') }}
-            {% endif %}
-        </h6>
-        <div class="row">
-            <div class="col-4">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary"
-                            onclick="addTrioRackWin({{ trio.player1_id }})"
-                            {% if trio_completed or not match.table_assignment %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i><br>{{ trio.player1.username }}
-                    </button>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary"
-                            onclick="addTrioRackWin({{ trio.player2_id }})"
-                            {% if trio_completed or not match.table_assignment %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i><br>{{ trio.player2.username }}
-                    </button>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary"
-                            onclick="addTrioRackWin({{ trio.player3_id }})"
-                            {% if trio_completed or not match.table_assignment %}disabled{% endif %}>
-                        <i class="fas fa-plus"></i><br>{{ trio.player3.username }}
-                    </button>
-                </div>
-            </div>
-        </div>
-        {% if trio_completed %}
-        <div class="mt-3">
-            <div class="alert alert-success mb-2">
-                <i class="fas fa-flag-checkered"></i>
-                {{ _('Match completato - Un giocatore ha raggiunto 2 rack') }}
-            </div>
-        </div>
-        {% elif not match.table_assignment %}
-        <div class="mt-2">
-            <small class="text-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                {{ _('Assegnare un tavolo prima di iniziare la partita') }}
-            </small>
-        </div>
-        {% endif %}
-    </div>
-</div>
+    {% include "components/_trio_rack_input.html" %}
 
 {# === REGULAR MATCH - 2 player rack input === #}
 {% else %}

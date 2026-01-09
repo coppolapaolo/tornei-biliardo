@@ -660,16 +660,11 @@ class TrioMatch(db.Model):
     current_player2_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     waiting_player_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    # Punteggi individuali nel trio
-    player1_racks = db.Column(db.Integer, default=0)
-    player2_racks = db.Column(db.Integer, default=0)
-    player3_racks = db.Column(db.Integer, default=0)
+    # NOTE: player1_racks, player2_racks, player3_racks, total_racks_played,
+    # current_round, current_rack_in_round are now computed properties
+    # based on TrioRack records. Old columns will be removed by migration.
 
-    # Round-robin tracking (gironi)
-    current_round = db.Column(db.Integer, default=1)  # Girone corrente (1-based)
-    current_rack_in_round = db.Column(db.Integer, default=0)  # Rack nel girone (0-2)
-    total_racks_played = db.Column(db.Integer, default=0)  # Rack totali giocati
-    bonus_applied = db.Column(db.Boolean, default=False)  # Bonus rack applicato
+    bonus_applied = db.Column(db.Boolean, default=False)  # Bonus rack flag
 
     # Stato del trio
     is_completed = db.Column(db.Boolean, default=False)
@@ -707,6 +702,52 @@ class TrioMatch(db.Model):
         return [self.player1_id, self.player2_id, self.player3_id]
 
     @property
+    def active_racks(self) -> list:
+        """Get all non-deleted racks, ordered by rack_number."""
+        if not hasattr(self, "racks"):
+            return []
+        return [r for r in self.racks.all() if not r.is_deleted]
+
+    @property
+    def last_rack(self):
+        """Get the last active rack, or None."""
+        racks = self.active_racks
+        return max(racks, key=lambda r: r.rack_number) if racks else None
+
+    @property
+    def player1_racks(self) -> int:
+        """Computed: count of racks won by player1."""
+        return sum(1 for r in self.active_racks if r.winner_id == self.player1_id)
+
+    @property
+    def player2_racks(self) -> int:
+        """Computed: count of racks won by player2."""
+        return sum(1 for r in self.active_racks if r.winner_id == self.player2_id)
+
+    @property
+    def player3_racks(self) -> int:
+        """Computed: count of racks won by player3."""
+        return sum(1 for r in self.active_racks if r.winner_id == self.player3_id)
+
+    @property
+    def total_racks_played(self) -> int:
+        """Computed: total active racks."""
+        return len(self.active_racks)
+
+    @property
+    def current_round(self) -> int:
+        """Computed: current round based on racks played."""
+        config = self.trio_config
+        return config.get_round_for_rack(self.total_racks_played)
+
+    @property
+    def current_rack_in_round(self) -> int:
+        """Computed: rack position within current round (0-2)."""
+        if self.total_racks_played == 0:
+            return 0
+        return (self.total_racks_played - 1) % 3
+
+    @property
     def player_racks_list(self):
         """List of rack scores in order."""
         return [self.player1_racks, self.player2_racks, self.player3_racks]
@@ -718,56 +759,87 @@ class TrioMatch(db.Model):
         except ValueError:
             return -1
 
-    def add_rack_win(self, winner_id: int) -> bool:
+    def add_rack_win(
+        self, winner_id: int, added_by_id: int = None
+    ) -> "TrioRack | None":
         """Add a rack win for a player in the round-robin.
 
-        Uses TrioConfig to determine the matchup schedule.
-        Returns True if rack was added, False if invalid.
+        Creates a TrioRack record. Returns the created rack or None if invalid.
         """
         if self.is_completed:
-            return False
+            return None
 
         config = self.trio_config
 
         # Check if all racks are already played
         if self.total_racks_played >= config.total_played_racks:
-            return False
+            return None
 
         # Get current matchup from config
-        next_rack = self.total_racks_played + 1
-        matchup = config.get_matchup_for_rack(next_rack)
+        next_rack_number = self.total_racks_played + 1
+        matchup = config.get_matchup_for_rack(next_rack_number)
         if not matchup:
-            return False
+            return None
 
         p1_idx, p2_idx, waiting_idx = matchup
-        valid_winners = [self.player_ids[p1_idx], self.player_ids[p2_idx]]
+        current_p1_id = self.player_ids[p1_idx]
+        current_p2_id = self.player_ids[p2_idx]
+        waiting_id = self.player_ids[waiting_idx]
 
         # Verify winner is one of the current players
-        if winner_id not in valid_winners:
-            return False
+        if winner_id not in [current_p1_id, current_p2_id]:
+            return None
 
-        # Update score
-        winner_idx = self.get_player_index(winner_id)
-        if winner_idx == 0:
-            self.player1_racks += 1
-        elif winner_idx == 1:
-            self.player2_racks += 1
-        elif winner_idx == 2:
-            self.player3_racks += 1
-
-        # Update tracking
-        self.total_racks_played += 1
-        self.current_rack_in_round = (self.total_racks_played - 1) % 3
-        self.current_round = config.get_round_for_rack(self.total_racks_played)
+        # Create TrioRack record
+        trio_rack = TrioRack(
+            trio_match_id=self.id,
+            rack_number=next_rack_number,
+            winner_id=winner_id,
+            player1_id=current_p1_id,
+            player2_id=current_p2_id,
+            waiting_player_id=waiting_id,
+            added_by_id=added_by_id,
+        )
+        db.session.add(trio_rack)
 
         # Update current players for next rack
         self._update_current_players()
 
-        # Check if trio is completed
-        if self.total_racks_played >= config.total_played_racks:
+        # Check if trio is completed (use +1 because computed property won't see new rack yet)
+        if self.total_racks_played + 1 >= config.total_played_racks:
             self._apply_bonus_and_complete()
 
-        return True
+        return trio_rack
+
+    def remove_last_rack(self, removed_by_id: int) -> "TrioRack | None":
+        """Remove the last rack (undo).
+
+        Soft-deletes the most recent active rack.
+        Returns the removed TrioRack, or None if no racks to remove.
+        """
+        last = self.last_rack
+        if not last:
+            return None
+
+        # Soft delete
+        last.soft_delete(removed_by_id)
+
+        # If trio was completed, reopen it
+        if self.is_completed:
+            self.is_completed = False
+            self.winner_id = None
+            self.bonus_applied = False
+
+            # Revert associated match status
+            match_obj = db.session.get(Match, self.match_id)
+            if match_obj:
+                match_obj.status = "playing"
+                match_obj.winner_id = None
+
+        # Update current players to show the matchup for the removed rack
+        self._update_current_players()
+
+        return last
 
     def _update_current_players(self):
         """Update current_player1, current_player2, waiting_player based on next rack."""
@@ -785,18 +857,32 @@ class TrioMatch(db.Model):
             self.current_player2_id = self.player_ids[p2_idx]
             self.waiting_player_id = self.player_ids[waiting_idx]
 
+    def initialize_matchup(self):
+        """Initialize current players for the first rack.
+
+        Should be called immediately after trio creation to set up
+        the initial matchup (P1 vs P2, P3 waits).
+        """
+        if self.total_racks_played == 0 and self.current_player1_id is None:
+            self._update_current_players()
+
     def _apply_bonus_and_complete(self):
-        """Apply bonus racks and mark trio as completed."""
+        """Apply bonus flag and mark trio as completed.
+
+        Note: bonus_racks don't create actual rack records - the bonus is virtual
+        and applied equally to all players for display/classification purposes.
+        Since it's equal for all, it doesn't affect winner determination.
+        """
         config = self.trio_config
 
-        # Apply bonus (added to all players equally)
-        if config.bonus_racks > 0 and not self.bonus_applied:
-            self.player1_racks += config.bonus_racks
-            self.player2_racks += config.bonus_racks
-            self.player3_racks += config.bonus_racks
+        # Set bonus flag (for UI display - bonus is virtual, not actual racks)
+        if config.bonus_racks > 0:
             self.bonus_applied = True
 
         self.is_completed = True
+
+        # Flush to ensure computed properties see all racks
+        db.session.flush()
 
         # Determine winner (highest racks, or None if tie)
         scores = [
@@ -828,21 +914,70 @@ class TrioMatch(db.Model):
     ) -> bool:
         """Set trio result directly (for quick result entry).
 
+        Creates synthetic TrioRack records to match the given scores.
         Validates that total racks match expected for the distance.
         """
         config = self.trio_config
 
-        # Set scores
-        self.player1_racks = player1_racks
-        self.player2_racks = player2_racks
-        self.player3_racks = player3_racks
+        # Validate total racks
+        total = player1_racks + player2_racks + player3_racks
+        if total != config.total_played_racks:
+            return False
 
-        # Mark as played all racks
-        self.total_racks_played = config.total_played_racks
+        # Delete any existing racks
+        for rack in self.racks.all():
+            db.session.delete(rack)
+        db.session.flush()
+
+        # Create synthetic racks matching the scores
+        # Track remaining wins needed for each player
+        remaining_wins = {
+            self.player1_id: player1_racks,
+            self.player2_id: player2_racks,
+            self.player3_id: player3_racks,
+        }
+
+        # Go through round-robin sequence and assign winners
+        for rack_num in range(1, config.total_played_racks + 1):
+            matchup = config.get_matchup_for_rack(rack_num)
+            if not matchup:
+                continue
+
+            p1_idx, p2_idx, waiting_idx = matchup
+            current_p1_id = self.player_ids[p1_idx]
+            current_p2_id = self.player_ids[p2_idx]
+            waiting_id = self.player_ids[waiting_idx]
+
+            # Assign winner: prefer player who still needs wins
+            if remaining_wins.get(current_p1_id, 0) > 0:
+                winner_id = current_p1_id
+            elif remaining_wins.get(current_p2_id, 0) > 0:
+                winner_id = current_p2_id
+            else:
+                # Should not happen if scores are valid
+                winner_id = current_p1_id
+
+            remaining_wins[winner_id] = remaining_wins.get(winner_id, 0) - 1
+
+            trio_rack = TrioRack(
+                trio_match_id=self.id,
+                rack_number=rack_num,
+                winner_id=winner_id,
+                player1_id=current_p1_id,
+                player2_id=current_p2_id,
+                waiting_player_id=waiting_id,
+            )
+            db.session.add(trio_rack)
+
+        # Set bonus flag and complete
         self.bonus_applied = config.bonus_racks > 0
-
-        # Complete the trio
         self.is_completed = True
+
+        # Update current players (will point past end since completed)
+        self._update_current_players()
+
+        # Flush to ensure computed properties work
+        db.session.flush()
 
         # Determine winner
         scores = [
@@ -869,29 +1004,35 @@ class TrioMatch(db.Model):
         return True
 
     def reset(self):
-        """Reset trio to initial state."""
-        self.player1_racks = 0
-        self.player2_racks = 0
-        self.player3_racks = 0
-        self.current_round = 1
-        self.current_rack_in_round = 0
-        self.total_racks_played = 0
+        """Reset trio to initial state by deleting all TrioRack records.
+
+        Preserves table assignment - status is set based on whether table is assigned:
+        - PLAYING if table is assigned (ready to play)
+        - PENDING if no table (waiting for assignment)
+        """
+        # Hard delete all rack records (not soft delete - this is a full reset)
+        for rack in self.racks.all():
+            db.session.delete(rack)
+
+        # Reset state flags
         self.bonus_applied = False
         self.is_completed = False
         self.winner_id = None
 
-        # Set initial players for first rack
-        self.current_player1_id = self.player1_id
-        self.current_player2_id = self.player2_id
-        self.waiting_player_id = self.player3_id
+        # Set initial players for first rack (P1 vs P2, P3 waits)
+        self._update_current_players()
 
-        # Reset associated match
+        # Reset associated match - preserve table assignment
         match_obj = db.session.get(Match, self.match_id)
         if match_obj:
             match_obj.winner_id = None
-            match_obj.status = "pending"
             match_obj.player1_score = 0
             match_obj.player2_score = 0
+            # Status based on table assignment (like regular match reset)
+            if match_obj.table_assignment:
+                match_obj.status = MatchStatus.PLAYING.value
+            else:
+                match_obj.status = MatchStatus.PENDING.value
 
     def get_current_state(self):
         """Return current state of the trio for UI rendering."""
@@ -943,3 +1084,63 @@ class TrioMatch(db.Model):
 
     def __repr__(self):
         return f"<TrioMatch {self.player1_id}-{self.player2_id}-{self.player3_id}>"
+
+
+class TrioRack(db.Model):
+    """Tracking of individual racks within a trio match.
+
+    Follows the same pattern as Rack for regular matches.
+    Each rack records who won and the matchup at that moment.
+    Supports soft delete for undo functionality.
+    """
+
+    __tablename__ = "trio_rack"
+
+    id = db.Column(db.Integer, primary_key=True)
+    trio_match_id = db.Column(
+        db.Integer, db.ForeignKey("trio_match.id", ondelete="CASCADE"), nullable=False
+    )
+    rack_number = db.Column(db.Integer, nullable=False)  # 1-based, chronological order
+
+    # Who won this rack
+    winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    # Matchup at the moment of this rack (for audit/debugging)
+    player1_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    player2_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    waiting_player_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    # Audit trail
+    added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Soft delete for undo
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    removed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    removed_at = db.Column(db.DateTime, nullable=True)
+
+    # Relationships
+    trio_match = db.relationship(
+        "TrioMatch",
+        backref=db.backref("racks", lazy="dynamic", order_by="TrioRack.rack_number"),
+    )
+    winner = db.relationship("User", foreign_keys=[winner_id])
+    player1 = db.relationship("User", foreign_keys=[player1_id])
+    player2 = db.relationship("User", foreign_keys=[player2_id])
+    waiting_player = db.relationship("User", foreign_keys=[waiting_player_id])
+    added_by = db.relationship("User", foreign_keys=[added_by_id])
+    removed_by = db.relationship("User", foreign_keys=[removed_by_id])
+
+    @property
+    def is_active(self) -> bool:
+        """Rack not deleted."""
+        return not self.is_deleted
+
+    def soft_delete(self, removed_by_id: int) -> None:
+        """Mark rack as deleted (undo)."""
+        self.is_deleted = True
+        self.removed_by_id = removed_by_id
+        self.removed_at = datetime.utcnow()
+
+    def __repr__(self):
+        return f"<TrioRack {self.rack_number} trio={self.trio_match_id} winner={self.winner_id}>"

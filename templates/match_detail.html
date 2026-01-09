@@ -124,7 +124,14 @@
     // TRIO MATCH - Add rack win for trio matches
     {% if match.is_trio and match.trio_match %}
     function addTrioRackWin(winnerId) {
-        fetch(`/admin/gara/trio/{{ match.trio_match.id }}/add_rack`, {
+        // Use admin endpoint for managers, player endpoint for players
+        {% if user_can_manage %}
+        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/add_rack`;
+        {% else %}
+        const trioEndpoint = `/player/match/{{ match.id }}/trio/add_rack`;
+        {% endif %}
+
+        fetch(trioEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -142,6 +149,35 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert({{ _("Errore durante l'aggiunta del rack al trio")|tojson }});
+            });
+    }
+
+    function removeTrioLastRack() {
+        // Use admin endpoint for managers, player endpoint for players
+        {% if user_can_manage %}
+        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/remove_rack`;
+        {% else %}
+        const trioEndpoint = `/player/match/{{ match.id }}/trio/remove_rack`;
+        {% endif %}
+
+        fetch(trioEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: ''
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert({{ _("Errore durante la rimozione del rack")|tojson }});
             });
     }
     {% endif %}
@@ -329,6 +365,29 @@
                         location.reload();
                     } else {
                         alert({{ _("Errore durante il reset")|tojson }});
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert({{ _("Errore durante il reset")|tojson }});
+                });
+        }
+    }
+
+    function resetTrio(trioId) {
+        if (confirm({{ _("Sei sicuro di voler resettare completamente questa partita trio? Tutti i risultati verranno cancellati.")|tojson }})) {
+            fetch(`/admin/gara/trio/${trioId}/reset`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore durante il reset")|tojson }}));
                     }
                 })
                 .catch(error => {

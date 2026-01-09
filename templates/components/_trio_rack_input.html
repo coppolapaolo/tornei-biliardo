@@ -1,0 +1,242 @@
+{# Trio Rack Input Component
+   Used by both admin and player views for trio matches.
+   Displays round-robin structure, current matchup, and scoring buttons.
+
+   Expected context:
+   - match: the Match object with is_trio=True
+   - match.trio_match: the TrioMatch object
+   - user_is_player: True if current user is one of the 3 trio players
+   - user_can_manage: True if current user is admin/director
+#}
+{% if match.is_trio and match.trio_match %}
+{% set trio = match.trio_match %}
+{% set config = trio.trio_config %}
+
+{# Initialize current players if not set (fallback for newly created trios) #}
+{% if trio.current_player1 %}
+    {% set current_p1 = trio.current_player1 %}
+    {% set current_p2 = trio.current_player2 %}
+    {% set waiting_p = trio.waiting_player %}
+{% else %}
+    {# Fallback: first rack is always P1 vs P2, P3 waits #}
+    {% set current_p1 = trio.player1 %}
+    {% set current_p2 = trio.player2 %}
+    {% set waiting_p = trio.player3 %}
+{% endif %}
+
+{# Check if current user is one of the two playing now #}
+{% set user_is_current_player = current_user.is_authenticated and current_user.id in [current_p1.id, current_p2.id] %}
+
+{# Get last rack winner for undo button enablement #}
+{% set last_rack_winner_id = trio.last_rack.winner_id if trio.last_rack else none %}
+
+<div class="card border-primary mb-3">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>
+                <i class="fas fa-users"></i>
+                {% if config.num_rounds == 1 %}
+                    {{ _('Girone all\'italiana') }}
+                {% else %}
+                    {{ _('Girone %(current)s/%(total)s', current=trio.current_round, total=config.num_rounds) }}
+                {% endif %}
+            </span>
+            <span class="badge bg-light text-dark">
+                {{ _('Rack %(played)s/%(total)s', played=trio.total_racks_played, total=config.total_played_racks) }}
+                {% if config.bonus_racks > 0 %}
+                    (+{{ config.bonus_racks }} bonus)
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        {# Current matchup - who's playing vs who's waiting #}
+        {% if not trio.is_completed %}
+        <div class="text-center mb-3">
+            <div class="mb-2">
+                <span class="badge bg-success fs-6">
+                    <i class="fas fa-play"></i> {{ _('In gioco') }}
+                </span>
+            </div>
+            <strong class="fs-5">{{ current_p1.username }}</strong>
+            <span class="mx-2 text-muted">vs</span>
+            <strong class="fs-5">{{ current_p2.username }}</strong>
+            <br>
+            <small class="text-muted">
+                <i class="fas fa-hourglass-half"></i>
+                {{ waiting_p.username }} {{ _('aspetta') }}
+            </small>
+        </div>
+        {% endif %}
+
+        {# Scores for all 3 players #}
+        <div class="row text-center mb-3">
+            {% set players_data = [
+                (trio.player1_id, trio.player1, trio.player1_racks),
+                (trio.player2_id, trio.player2, trio.player2_racks),
+                (trio.player3_id, trio.player3, trio.player3_racks)
+            ] %}
+            {% for pid, player, racks in players_data %}
+            <div class="col-4">
+                {% set is_waiting = (pid == waiting_p.id) if waiting_p else false %}
+                {% set is_winner = (pid == trio.winner_id) if trio.winner_id else false %}
+                <div class="fs-2 fw-bold {% if is_winner %}text-success{% elif is_waiting and not trio.is_completed %}text-muted{% endif %}">
+                    {{ racks }}
+                </div>
+                <small class="{% if is_waiting and not trio.is_completed %}text-muted{% endif %}">
+                    {{ player.username }}
+                    {% if is_waiting and not trio.is_completed %}
+                        <br><span class="badge bg-secondary">{{ _('Aspetta') }}</span>
+                    {% endif %}
+                    {% if is_winner %}
+                        <br><span class="badge bg-success"><i class="fas fa-trophy"></i></span>
+                    {% endif %}
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Action buttons - different for admin vs player #}
+        {% if not trio.is_completed %}
+            {% if not match.table_assignment %}
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ _('Assegna un tavolo per abilitare i controlli') }}
+            </div>
+            {% elif user_can_manage %}
+                {# Admin/Director: can add/remove rack for either current player #}
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-outline-danger flex-shrink-0"
+                                    onclick="removeTrioLastRack()"
+                                    {% if last_rack_winner_id != current_p1.id %}disabled{% endif %}
+                                    title="{{ _('Annulla ultimo rack') }}">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="btn btn-primary flex-grow-1 py-3"
+                                    onclick="addTrioRackWin({{ current_p1.id }})">
+                                <i class="fas fa-plus"></i><br>
+                                <span class="fw-bold">{{ current_p1.username }}</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-primary flex-grow-1 py-3"
+                                    onclick="addTrioRackWin({{ current_p2.id }})">
+                                <i class="fas fa-plus"></i><br>
+                                <span class="fw-bold">{{ current_p2.username }}</span>
+                            </button>
+                            <button class="btn btn-outline-danger flex-shrink-0"
+                                    onclick="removeTrioLastRack()"
+                                    {% if last_rack_winner_id != current_p2.id %}disabled{% endif %}
+                                    title="{{ _('Annulla ultimo rack') }}">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% elif user_is_current_player %}
+                {# Player: can add/remove rack if they are one of the two currently playing #}
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-outline-danger flex-shrink-0"
+                                    onclick="removeTrioLastRack()"
+                                    {% if last_rack_winner_id != current_p1.id %}disabled{% endif %}
+                                    title="{{ _('Annulla ultimo rack') }}">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="btn btn-primary flex-grow-1 py-3"
+                                    onclick="addTrioRackWin({{ current_p1.id }})">
+                                <i class="fas fa-plus"></i><br>
+                                <span class="fw-bold">{{ current_p1.username }}</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-primary flex-grow-1 py-3"
+                                    onclick="addTrioRackWin({{ current_p2.id }})">
+                                <i class="fas fa-plus"></i><br>
+                                <span class="fw-bold">{{ current_p2.username }}</span>
+                            </button>
+                            <button class="btn btn-outline-danger flex-shrink-0"
+                                    onclick="removeTrioLastRack()"
+                                    {% if last_rack_winner_id != current_p2.id %}disabled{% endif %}
+                                    title="{{ _('Annulla ultimo rack') }}">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% elif user_is_player %}
+                {# Player is in the trio but currently waiting - show info message #}
+                <div class="alert alert-info text-center mb-0">
+                    <i class="fas fa-hourglass-half"></i>
+                    {{ _('Stai aspettando il tuo turno') }}
+                    <br>
+                    <small class="text-muted">
+                        {{ _('Aspetta che %(p1)s e %(p2)s finiscano questo rack', p1=current_p1.username, p2=current_p2.username) }}
+                    </small>
+                </div>
+            {% else %}
+                {# Not a participant - show read-only message #}
+                <div class="alert alert-secondary text-center mb-0">
+                    <i class="fas fa-eye"></i>
+                    {{ _('Partita in corso') }}
+                </div>
+            {% endif %}
+        {% else %}
+            {# Trio completed - show result #}
+            <div class="alert {% if trio.winner %}alert-success{% else %}alert-info{% endif %} text-center mb-2">
+                <i class="fas fa-{% if trio.winner %}trophy{% else %}equals{% endif %} fa-2x mb-2"></i>
+                <div class="fs-5 fw-bold">
+                    {% if trio.winner %}
+                        {{ _('Vincitore: %(name)s', name=trio.winner.username) }}
+                    {% else %}
+                        {{ _('Pareggio!') }}
+                    {% endif %}
+                </div>
+                {% if trio.bonus_applied and config.bonus_racks > 0 %}
+                <small class="text-muted d-block mt-1">
+                    {{ _('(+%(bonus)s rack bonus applicato a tutti)', bonus=config.bonus_racks) }}
+                </small>
+                {% endif %}
+            </div>
+
+            {# Show validation status for completed trio #}
+            {% if match.validated_by_admin %}
+                <div class="alert alert-success text-center mb-0">
+                    <i class="fas fa-check-circle"></i>
+                    {{ _('Risultato validato') }}
+                </div>
+            {% elif user_is_player and not user_can_manage %}
+                <div class="alert alert-warning text-center mb-0">
+                    <i class="fas fa-clock"></i>
+                    {{ _('In attesa di validazione') }}
+                    <br>
+                    <small class="text-muted">{{ _('Il direttore di gara validera il risultato') }}</small>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {# Format description #}
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                {% if config.num_rounds == 1 %}
+                    {{ _('1 girone all\'italiana (3 rack)') }}
+                {% else %}
+                    {{ _('%(n)s gironi all\'italiana (%(racks)s rack)', n=config.num_rounds, racks=config.total_played_racks) }}
+                {% endif %}
+                {% if config.bonus_racks > 0 %}
+                    + {{ config.bonus_racks }} bonus
+                {% endif %}
+                &mdash; {{ _('vince chi ha piu rack') }}
+            </small>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -6,14 +6,14 @@ from typing import Any, List, Optional, Iterable, Tuple
 from datetime import date as date_cls
 from flask_babel import gettext as _
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, and_
 from sqlalchemy.orm import joinedload
 
 from models.base import db
 from models.campionato.models import Campionato
 from models.user.models import DirectorAssignment
 from models.competition.models import Gara, Inscription
-from models.match.models import Match as TournamentMatch
+from models.match.models import Match as TournamentMatch, TrioMatch
 from models.user.models import User
 from models.status_enum import GaraStatus, MatchStatus
 
@@ -35,24 +35,35 @@ def _role_truthy(user: User, attr_name: str) -> bool:
         return bool(val)
 
 
+def _user_is_match_participant(user_id: int):
+    """Filter condition for matches where user is a participant.
+
+    Handles both regular matches (player1 or player2) and trio matches
+    (player1, player2, or player3 via TrioMatch).
+
+    Returns SQLAlchemy OR condition for use in filter().
+    """
+    return or_(
+        TournamentMatch.player1_id == user_id,
+        TournamentMatch.player2_id == user_id,
+        # Trio matches: also check player3 in TrioMatch
+        and_(
+            TournamentMatch.is_trio == True,  # noqa: E712
+            TournamentMatch.trio_match.has(TrioMatch.player3_id == user_id),
+        ),
+    )
+
+
 def _compute_user_stats(user_id: int) -> dict[str, Any]:
     total_matches = (
         db.session.query(TournamentMatch)
-        .filter(
-            or_(
-                TournamentMatch.player1_id == user_id,
-                TournamentMatch.player2_id == user_id,
-            )
-        )
+        .filter(_user_is_match_participant(user_id))
         .count()
     )
     won_matches = (
         db.session.query(TournamentMatch)
         .filter(
-            or_(
-                TournamentMatch.player1_id == user_id,
-                TournamentMatch.player2_id == user_id,
-            ),
+            _user_is_match_participant(user_id),
             TournamentMatch.winner_id == user_id,
         )
         .count()
@@ -535,29 +546,13 @@ class DashboardService:
             .all()
         )
 
-        # DEBUG: Controlla TUTTI i match dell'utente per debug
-        all_user_matches = (
-            db.session.query(TournamentMatch)
-            .join(Gara, Gara.id == TournamentMatch.gara_id)
-            .filter(
-                or_(
-                    TournamentMatch.player1_id == user_id,
-                    TournamentMatch.player2_id == user_id,
-                ),
-            )
-            .all()
-        )
-
         # Partite attive (solo in attesa e in corso, NO completate - quelle vanno nello storico)
         my_upcoming = (
             db.session.query(TournamentMatch)
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
                 TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
-                or_(
-                    TournamentMatch.player1_id == user_id,
-                    TournamentMatch.player2_id == user_id,
-                ),
+                _user_is_match_participant(user_id),
             )
             .order_by(
                 TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
@@ -572,10 +567,7 @@ class DashboardService:
             .filter(
                 Gara.campionato_id == selected.id,
                 TournamentMatch.status == "completed",  # type: ignore[operator]
-                or_(
-                    TournamentMatch.player1_id == user_id,
-                    TournamentMatch.player2_id == user_id,
-                ),
+                _user_is_match_participant(user_id),
             )
             .order_by(
                 TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
@@ -795,10 +787,7 @@ class DashboardService:
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
                 TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
-                or_(
-                    TournamentMatch.player1_id == user_id,
-                    TournamentMatch.player2_id == user_id,
-                ),
+                _user_is_match_participant(user_id),
             )
             .order_by(
                 TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()
@@ -945,10 +934,7 @@ class DashboardService:
             .join(Gara, Gara.id == TournamentMatch.gara_id)
             .filter(
                 TournamentMatch.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),  # type: ignore[attr-defined]
-                or_(
-                    TournamentMatch.player1_id == user_id,
-                    TournamentMatch.player2_id == user_id,
-                ),
+                _user_is_match_participant(user_id),
             )
             .order_by(
                 TournamentMatch.created_at.desc().nullslast(), TournamentMatch.id.desc()

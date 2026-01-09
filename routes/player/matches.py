@@ -8,8 +8,9 @@ from werkzeug.exceptions import abort
 from models import db, Match, Rack
 from models.status_enum import MatchStatus
 from models.match.services import MatchService, RackService
+from models.competition.services import GaraService
 from models.transaction.manager import transactional
-from utils import match_player_required, rack_player_required
+from utils import match_player_required, trio_player_required, rack_player_required
 
 from . import player_bp
 
@@ -76,6 +77,57 @@ def add_rack(match_id):
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
         return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+
+
+# ============ TRIO MATCH RACK OPERATIONS ============
+
+
+@player_bp.route("/match/<int:match_id>/trio/add_rack", methods=["POST"])
+@login_required
+@trio_player_required
+def add_trio_rack(match_id):
+    """Add rack to trio match (player endpoint)"""
+    try:
+        winner_id = int(request.form["winner_id"])
+
+        # Get the trio match
+        match = db.session.get(Match, match_id)
+        if not match or not match.trio_match:
+            return jsonify({"error": "Trio match non trovato"}), 404
+
+        trio_id = match.trio_match.id
+
+        # Use the service layer (same as admin)
+        result = GaraService.add_trio_rack(trio_id, winner_id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+
+
+@player_bp.route("/match/<int:match_id>/trio/remove_rack", methods=["POST"])
+@login_required
+@trio_player_required
+def remove_trio_rack(match_id):
+    """Remove last rack from trio match (player endpoint - undo)"""
+    try:
+        # Get the trio match
+        match = db.session.get(Match, match_id)
+        if not match or not match.trio_match:
+            return jsonify({"error": "Trio match non trovato"}), 404
+
+        trio_id = match.trio_match.id
+
+        # Use the service layer
+        result = GaraService.remove_trio_rack(trio_id, current_user.id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante rimozione rack: {str(e)}"}), 500
 
 
 # ============ SIMPLIFIED UX - Match (Tournament) Rack Management ============

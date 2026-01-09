@@ -685,10 +685,9 @@ class TestUseCaseRandomStrategyVariants:
             )
 
         # Add racks for other players (1 rack each)
-        # Get the trio data to access all 3 players
-        trio_data_list = trio_match.trio_match
-        if trio_data_list and len(trio_data_list) > 0:
-            trio_data = trio_data_list[0]  # Get the first (and should be only) trio record
+        # Get the trio data to access all 3 players (1:1 relationship, not a list)
+        trio_data = trio_match.trio_match
+        if trio_data:
             if trio_data.player2_id:
                 RackService.add_rack_result(
                     match_id=trio_match.id,

@@ -48,9 +48,10 @@ class TrioConfig:
         """
         if not self.is_trio_allowed:
             return 0
-        # Formula: ceil(distance / 2) - but we want:
+        # Formula from ADR-005: ceil((distance - 1) / 2)
+        # Simplified: distance // 2
         # 2->1, 3->1, 4->2, 5->2
-        return (self.distance + 1) // 2
+        return self.distance // 2
 
     @property
     def bonus_racks(self) -> int:

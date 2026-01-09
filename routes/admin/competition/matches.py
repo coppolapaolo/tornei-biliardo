@@ -5,7 +5,7 @@ from flask import (
     request,
     jsonify,
 )
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from models.competition.services import GaraService
 from utils import trio_manager_required
@@ -32,6 +32,22 @@ def trio_add_rack(trio_id):
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
         return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+
+
+@competition_bp.route("/trio/<int:trio_id>/remove_rack", methods=["POST"])
+@login_required
+@trio_manager_required
+def trio_remove_rack(trio_id):
+    """Rimuovi ultimo rack da partita trio (undo)"""
+    try:
+        # Usa il service layer
+        result = GaraService.remove_trio_rack(trio_id, current_user.id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante rimozione rack: {str(e)}"}), 500
 
 
 @competition_bp.route("/trio/<int:trio_id>/reset", methods=["POST"])
