@@ -303,6 +303,13 @@ def confirm_result(self) -> bool:
 - Possibilità di fare undo durante la fase `awaiting_confirmation`
 - Consistente con il pattern di conferma usato in altri contesti
 
+**Undo durante conferma:**
+Se un giocatore esegue undo mentre il trio è in `awaiting_confirmation`:
+- `awaiting_confirmation` viene resettato a `False`
+- `bonus_applied` viene resettato a `False` (il bonus era pre-applicato)
+- Il trio torna allo stato precedente (ultimo rack rimosso)
+- Gli altri giocatori ricevono notifica SSE e la pagina si ricarica
+
 ### 8. Forfait nel Trio (Aggiornamento 2026-01-09)
 
 Per gestire il caso in cui un giocatore dichiara forfait durante un trio match, è stato implementato un sistema che:
@@ -357,9 +364,10 @@ routes/sse.py
 - `connected`: conferma connessione iniziale
 
 **Client-side:**
-- Solo i giocatori **in attesa** (non quelli attualmente in gioco) si connettono allo stream
+- **Tutti i giocatori del trio** si connettono allo stream SSE (non solo chi aspetta)
+- Questo permette la notifica di undo: se chi aspetta fa undo, chi sta giocando riceve l'aggiornamento
 - Al ricevimento di un evento, la pagina viene ricaricata automaticamente
-- La connessione viene chiusa quando si lascia la pagina
+- La connessione viene chiusa quando si lascia la pagina o il trio è completato
 
 **Integrazione:**
 ```python

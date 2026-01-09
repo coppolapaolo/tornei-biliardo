@@ -856,6 +856,11 @@ class TrioMatch(db.Model):
         # Soft delete
         last.soft_delete(removed_by_id)
 
+        # If trio was awaiting confirmation, reset it
+        if self.awaiting_confirmation:
+            self.awaiting_confirmation = False
+            self.bonus_applied = False  # Revert bonus that was pre-applied
+
         # If trio was completed, reopen it
         if self.is_completed:
             self.is_completed = False
