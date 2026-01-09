@@ -18,7 +18,16 @@ if TYPE_CHECKING:
 
 
 class RandomAntiRematchStrategy(BaseStrategy):
-    """Random pairing strategy that prevents rematches."""
+    """Random pairing strategy that prevents rematches and ensures fair trio distribution.
+
+    Features:
+    - Random pairings with anti-rematch logic using NetworkX maximum matching
+    - Trio selection (odd players) with multi-objective optimization:
+        1. Fairness: minimize max(trio_count) for equal participation
+        2. Anti-rematch: minimize internal rematches within trio
+        3. Efficiency: minimize sum(trio_count) as tiebreaker
+    - Automatic fallback to rematches when anti-rematch constraints prevent complete matching
+    """
 
     # PairingStrategy metadata
     name = "random_anti_rematch"
@@ -128,6 +137,27 @@ class RandomAntiRematchStrategy(BaseStrategy):
                 remaining_players
             )
 
+            # Check if matching is complete (covers all players)
+            # If not, we need to retry with all pairs (allowing rematches)
+            matched_players = set()
+            for pair in selected_pairs:
+                matched_players.update(pair)
+
+            expected_pairs = len(remaining_players) // 2
+            if len(selected_pairs) < expected_pairs:
+                # Incomplete matching - retry with all pairs (including rematches)
+                # but prioritize non-rematch pairs by putting them first
+                all_pairs_shuffled = canonical_pairs.copy()
+                random.shuffle(all_pairs_shuffled)
+                # Put valid (non-rematch) pairs first to prefer them
+                prioritized_pairs = valid_pairs + [
+                    p for p in all_pairs_shuffled if p not in valid_pairs
+                ]
+                selected_pairs = self._apply_maximum_matching(
+                    prioritized_pairs,
+                    remaining_players
+                )
+
             # Convert selected pairs to Pairing objects
             for pair in selected_pairs:
                 if self.BYE_PLAYER_ID in pair:
@@ -227,77 +257,56 @@ class RandomAntiRematchStrategy(BaseStrategy):
         trio_count: Dict[int, int],
         previous_pairs: Set[Tuple[int, int]],
     ) -> List[int]:
-        """Select optimal trio minimizing trio history and avoiding rematches."""
+        """Select optimal trio balancing fair distribution and anti-rematch.
 
-        # Priority 1: Players who have never been in a trio
-        never_trio = [p for p in players if trio_count.get(p, 0) == 0]
+        Multi-objective optimization with priority order:
+        1. Minimize max(trio_count) in the trio (fairness - most important)
+        2. Minimize internal rematches (anti-rematch)
+        3. Minimize sum(trio_count) (secondary fairness)
+        4. Random among equivalent options
+        """
+        # Shuffle players to add randomness among equivalent options
+        shuffled_players = players.copy()
+        random.shuffle(shuffled_players)
 
-        if len(never_trio) >= 3:
-            # Try combinations from players who never did trio
-            for trio in combinations(never_trio, 3):
-                if self._trio_has_no_internal_rematches(trio, previous_pairs):
-                    return list(trio)
-
-            # If no trio without rematches found, apply cascading fallback logic:
-            # Get players with trio_count = 1
-            trio_count_1 = [p for p in players if trio_count.get(p, 0) == 1]
-            random.shuffle(trio_count_1)
-
-            # 1. Try to find 2 players from never_trio who haven't played together
-            #    + 1 from trio_count=1 who hasn't played with either
-            valid_pairs_never_trio = []
-            for p1, p2 in combinations(never_trio, 2):
-                if tuple(sorted([p1, p2])) not in previous_pairs:
-                    valid_pairs_never_trio.append((p1, p2))
-
-            if valid_pairs_never_trio:
-                random.shuffle(valid_pairs_never_trio)  # randomize order
-                for p1, p2 in valid_pairs_never_trio:
-                    for candidate in trio_count_1:
-                        if (
-                            tuple(sorted([p1, candidate])) not in previous_pairs
-                            and tuple(sorted([p2, candidate])) not in previous_pairs
-                        ):
-                            return [p1, p2, candidate]
-
-            # 2. If that fails, take 1 random from never_trio + 2 from trio_count=1
-            #    (ensuring anti-rematch)
-            if len(trio_count_1) >= 2:
-                chosen_never = random.choice(never_trio)
-                remaining_trio_count_1 = [p for p in trio_count_1]
-                random.shuffle(remaining_trio_count_1)
-
-                for i, p1 in enumerate(remaining_trio_count_1):
-                    if tuple(sorted([chosen_never, p1])) not in previous_pairs:
-                        for p2 in remaining_trio_count_1[i + 1 :]:
-                            if (
-                                tuple(sorted([chosen_never, p2])) not in previous_pairs
-                                and tuple(sorted([p1, p2])) not in previous_pairs
-                            ):
-                                return [chosen_never, p1, p2]
-
-            # 3. Ultimate fallback: pick first combination from never_trio anyway
-            return list(list(combinations(never_trio, 3))[0])
-
-        # Priority 2: Minimize total trio count and avoid internal rematches
+        # Evaluate all possible trios
         best_trio = None
-        min_trio_count = float("inf")
+        best_score = (float("inf"), float("inf"), float("inf"))
 
-        for trio in combinations(players, 3):
-            total_trio_count = sum(trio_count.get(p, 0) for p in trio)
+        for trio in combinations(shuffled_players, 3):
+            # Calculate fairness score (lower is better)
+            max_count = max(trio_count.get(p, 0) for p in trio)
+            sum_count = sum(trio_count.get(p, 0) for p in trio)
 
-            if (
-                total_trio_count < min_trio_count
-                and self._trio_has_no_internal_rematches(trio, previous_pairs)
-            ):
+            # Calculate rematch penalty (number of internal rematches, 0-3)
+            rematch_penalty = self._count_internal_rematches(trio, previous_pairs)
+
+            # Score tuple: (max_count, rematch_penalty, sum_count)
+            # Prioritizes: fairness > anti-rematch > efficiency
+            score = (max_count, rematch_penalty, sum_count)
+
+            if score < best_score:
                 best_trio = trio
-                min_trio_count = total_trio_count
+                best_score = score
 
-        # Fallback: return any trio if no optimal found
         if best_trio:
             return list(best_trio)
-        else:
-            return list(list(combinations(players, 3))[0])
+
+        # Fallback (should never reach here with valid players)
+        return list(shuffled_players[:3])
+
+    def _count_internal_rematches(
+        self, trio: Tuple[int, ...], previous_pairs: Set[Tuple[int, int]]
+    ) -> int:
+        """Count number of internal rematches in a trio (0-3)."""
+        count = 0
+        players = list(trio)
+        for i in range(len(players)):
+            for j in range(i + 1, len(players)):
+                pair = tuple(sorted([players[i], players[j]]))
+                if pair in previous_pairs:
+                    count += 1
+        return count
 
     def _trio_has_no_internal_rematches(
         self, trio: Tuple[int, int, int], previous_pairs: Set[Tuple[int, int]]

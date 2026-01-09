@@ -289,6 +289,17 @@ pairings = strategy.create_round(gara, round_number=2)
 - Falls back to any pairing if no valid non-rematch available
 - Good for casual tournaments
 
+**Trio Selection (odd players):**
+Uses multi-objective optimization with priority order:
+1. **Fairness**: Minimize `max(trio_count)` - ensures equal trio participation
+2. **Anti-rematch**: Minimize internal rematches within the trio
+3. **Efficiency**: Minimize `sum(trio_count)` as tiebreaker
+
+**Matching Algorithm:**
+- Uses NetworkX maximum cardinality matching
+- If anti-rematch constraints prevent complete matching, retries with rematches allowed
+- Prioritizes non-rematch pairs when rematches are necessary
+
 #### DoubleKnockoutStrategy (`strategies/double_knockout.py`)
 - Double-elimination tournament
 - Losers get second chance in losers bracket

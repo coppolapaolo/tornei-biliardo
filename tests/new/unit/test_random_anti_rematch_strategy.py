@@ -491,6 +491,42 @@ class TestRandomAntiRematchStrategy:
         unique_pairing_sets = len(set(pairing_sets))
         assert unique_pairing_sets > 1  # Not all pairings should be identical
 
+    def test_trio_selection_is_random(self):
+        """Test that trio selection is randomized across multiple calls.
+
+        Regression test for bug: trio was always the same because
+        combinations() is deterministic and players list wasn't shuffled.
+        """
+        player_ids = [1, 2, 3, 4, 5, 6, 7]  # 7 players = 1 trio + 2 matches
+
+        # Mock gara with trio policy
+        mock_gara = Mock()
+        mock_gara.odd_number_policy = "trio"
+        mock_gara.id = 1
+
+        # Mock encounter history - no previous matches, so all players never did trio
+        with patch.object(self.strategy, '_get_encounter_history') as mock_history:
+            mock_history.return_value = (set(), {})  # No previous matches, no trio history
+
+            # Generate pairings multiple times and collect trios
+            trio_selections = []
+            for _ in range(20):
+                pairings = self.strategy._generate_valid_random_pairings(
+                    player_ids.copy(), set(), round_number=1, gara=mock_gara
+                )
+
+                trio_pairings = [p for p in pairings if len(p.players) == 3]
+                assert len(trio_pairings) == 1, "Should have exactly one trio"
+                trio_selections.append(tuple(sorted(trio_pairings[0].players)))
+
+            # The trio should vary across multiple calls
+            unique_trios = len(set(trio_selections))
+            assert unique_trios > 1, (
+                f"Trio selection is deterministic! "
+                f"Got same trio {trio_selections[0]} all {len(trio_selections)} times. "
+                f"Expected random variation."
+            )
+
 
 class TestEncounterHistory:
     """Test encounter history tracking with BYE_PLAYER_ID."""

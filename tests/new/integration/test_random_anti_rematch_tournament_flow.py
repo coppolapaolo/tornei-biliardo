@@ -178,13 +178,76 @@ class TestRandomAntiRematchTournamentFlow:
             for pairing in regular_pairings:
                 all_matches.append(tuple(sorted(pairing.players)))
 
-        # Check trio participation is somewhat balanced
-        # With random anti-rematch logic, some imbalance may occur
-        # Ensure no player dominates completely (max 3 times in 3 rounds)
-        assert max(trio_participation.values()) <= 3
-        # Most players should participate in trio at least once, but not required
-        participating_players = sum(1 for count in trio_participation.values() if count > 0)
-        assert participating_players >= len(players) // 2  # At least half should participate
+        # Check trio participation is balanced:
+        # 3 rounds × 3 players/trio = 9 slots for 7 players
+        # Ideal distribution: 5 players do 1 trio, 2 players do 2 trios
+        # max - min should be <= 1 for perfect distribution
+        max_participation = max(trio_participation.values())
+        min_participation = min(trio_participation.values())
+
+        # Strict check: max should be at most 2 (ideal distribution)
+        assert max_participation <= 2, (
+            f"Trio participation not minimized: max={max_participation}, "
+            f"distribution={dict(trio_participation)}"
+        )
+        # All players should participate at least once (9 slots > 7 players)
+        assert min_participation >= 1, (
+            f"Some players never did trio: distribution={dict(trio_participation)}"
+        )
+
+    def test_trio_distribution_fairness_over_multiple_simulations(self):
+        """Test that trio participation is fairly distributed across many simulations.
+
+        This test runs multiple tournament simulations and verifies that
+        on average, trio participation is distributed fairly among all players.
+        """
+        players = [1, 2, 3, 4, 5, 6, 7]
+        num_simulations = 20
+        total_participation = {p: 0 for p in players}
+
+        for _ in range(num_simulations):
+            gara = self.create_mock_gara(players, odd_policy="trio")
+            all_matches = []
+            simulation_participation = {p: 0 for p in players}
+
+            # Simulate 3 rounds
+            for round_num in range(1, 4):
+                pairings = self.simulate_tournament_round(gara, round_num, all_matches)
+
+                trio_pairings = [p for p in pairings if len(p.players) == 3]
+                regular_pairings = [p for p in pairings if len(p.players) == 2]
+
+                assert len(trio_pairings) == 1
+                assert len(regular_pairings) == 2
+
+                # Track trio participation
+                trio_players = trio_pairings[0].players
+                for player in trio_players:
+                    simulation_participation[player] += 1
+
+                # Add to match history
+                all_matches.append(tuple(trio_players))
+                for pairing in regular_pairings:
+                    all_matches.append(tuple(sorted(pairing.players)))
+
+            # Accumulate for overall statistics
+            for player, count in simulation_participation.items():
+                total_participation[player] += count
+
+        # Calculate average participation per player across all simulations
+        avg_participation = {p: total_participation[p] / num_simulations for p in players}
+
+        # Expected average: 9 slots / 7 players = 1.29 per simulation
+        expected_avg = (3 * 3) / 7  # rounds * players_per_trio / total_players
+
+        # Check that all players have similar average participation
+        # Deviation from expected should be small (< 0.5)
+        for player, avg in avg_participation.items():
+            deviation = abs(avg - expected_avg)
+            assert deviation < 0.5, (
+                f"Player {player} has unfair trio distribution: "
+                f"avg={avg:.2f}, expected={expected_avg:.2f}, deviation={deviation:.2f}"
+            )
 
     def test_large_tournament_performance(self):
         """Test performance with larger tournament (20 players)."""
