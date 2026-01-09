@@ -134,7 +134,11 @@ def remove_trio_rack(match_id):
 @login_required
 @trio_player_required
 def confirm_trio_result(match_id):
-    """Confirm trio match result (player endpoint)"""
+    """Confirm trio match result (player endpoint).
+
+    Player confirmation requires all 3 players to confirm.
+    Returns confirmation count and completion status.
+    """
     try:
         # Get the trio match
         match = db.session.get(Match, match_id)
@@ -143,8 +147,8 @@ def confirm_trio_result(match_id):
 
         trio_id = match.trio_match.id
 
-        # Use the service layer
-        result = GaraService.confirm_trio_result(trio_id)
+        # Use player-specific confirmation (requires all 3 to confirm)
+        result = GaraService.confirm_trio_result_by_player(trio_id, current_user.id)
         return jsonify(result)
 
     except ValueError as ve:

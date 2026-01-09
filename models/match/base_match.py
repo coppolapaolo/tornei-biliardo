@@ -186,6 +186,7 @@ class BaseMatchMixin:
         Complete the match after both players have confirmed.
 
         Sets winner and status based on current scores.
+        Emits MatchCompletedEvent for SSE real-time updates.
         """
         from models.status_enum import MatchStatus as TournamentMatchStatus
         from models.individual_match.models import (
@@ -200,7 +201,8 @@ class BaseMatchMixin:
             self.winner_id = self.player1_id if winner_number == 1 else self.player2_id
 
         # Update status - use correct enum based on type
-        if isinstance(self.status, str):
+        is_tournament_match = isinstance(self.status, str)
+        if is_tournament_match:
             # Match (tournament) - use string value
             self.status = TournamentMatchStatus.COMPLETED.value
         else:
@@ -209,6 +211,10 @@ class BaseMatchMixin:
 
         if hasattr(self, "completed_at"):
             self.completed_at = datetime.utcnow()
+
+        # Emit SSE event for tournament matches (gara matches)
+        if is_tournament_match and hasattr(self, "gara_id") and self.gara_id:
+            self._emit_match_completed_event()
 
     def _remove_last_rack(self, user_id: int) -> None:
         """
@@ -236,3 +242,35 @@ class BaseMatchMixin:
         self.player2_confirmed = False
         self.player1_confirmed_at = None
         self.player2_confirmed_at = None
+
+    def _emit_match_completed_event(self) -> None:
+        """
+        Emit MatchCompletedEvent for SSE real-time updates.
+
+        Called when match completes after player confirmation.
+        Only for tournament matches with gara_id.
+        """
+        from models.events.match_events import MatchCompletedEvent
+        from models.events.base import EventBus
+
+        # Build player names
+        player1_name = self.player1.username if self.player1 else "Player 1"
+        player2_name = self.player2.username if self.player2 else "Player 2"
+        winner_name = None
+        if self.winner_id and self.winner:
+            winner_name = self.winner.username
+
+        score = f"{self.player1_score}-{self.player2_score}"
+
+        event = MatchCompletedEvent(
+            match_id=self.id,
+            player1_id=self.player1_id,
+            player1_name=player1_name,
+            player2_id=self.player2_id,
+            player2_name=player2_name,
+            winner_id=self.winner_id,
+            winner_name=winner_name,
+            score=score,
+            gara_id=self.gara_id,
+        )
+        EventBus.publish(event)

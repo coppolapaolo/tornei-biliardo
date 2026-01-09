@@ -669,6 +669,12 @@ class TrioMatch(db.Model):
     # Stato del trio
     is_completed = db.Column(db.Boolean, default=False)
     awaiting_confirmation = db.Column(db.Boolean, default=False)  # Validation step
+
+    # Individual player confirmations - all 3 needed OR admin validation to complete
+    player1_confirmed = db.Column(db.Boolean, default=False)
+    player2_confirmed = db.Column(db.Boolean, default=False)
+    player3_confirmed = db.Column(db.Boolean, default=False)
+
     forfeit_player_id = db.Column(
         db.Integer, db.ForeignKey("user.id")
     )  # Player who forfeited (if any)
@@ -856,10 +862,14 @@ class TrioMatch(db.Model):
         # Soft delete
         last.soft_delete(removed_by_id)
 
-        # If trio was awaiting confirmation, reset it
+        # If trio was awaiting confirmation, reset it and all player confirmations
         if self.awaiting_confirmation:
             self.awaiting_confirmation = False
             self.bonus_applied = False  # Revert bonus that was pre-applied
+            # Reset all player confirmations on undo
+            self.player1_confirmed = False
+            self.player2_confirmed = False
+            self.player3_confirmed = False
 
         # If trio was completed, reopen it
         if self.is_completed:
@@ -940,33 +950,108 @@ class TrioMatch(db.Model):
         # Enter awaiting confirmation state (don't complete yet)
         self.awaiting_confirmation = True
 
-    def confirm_result(self) -> bool:
-        """Confirm the trio result and finalize the match.
+    def confirm_result_by_player(self, user_id: int) -> dict:
+        """Confirm the trio result by a specific player.
 
-        Must be called after all racks are played and trio is awaiting_confirmation.
-        Updates the parent Match status and winner.
+        All 3 players must confirm for the match to complete.
+        Returns confirmation status.
+
+        Args:
+            user_id: ID of the player confirming
 
         Returns:
-            True if confirmed successfully, False if not in awaiting_confirmation state.
+            dict with 'success', 'is_completed', 'confirmations' count
+
+        Raises:
+            ValueError: If user is not in this trio or not awaiting confirmation
+        """
+        if not self.awaiting_confirmation:
+            raise ValueError("Trio non in attesa di conferma")
+
+        if user_id not in self.player_ids:
+            raise ValueError("Utente non è un giocatore di questo trio")
+
+        # Track which player confirmed
+        if user_id == self.player1_id:
+            self.player1_confirmed = True
+        elif user_id == self.player2_id:
+            self.player2_confirmed = True
+        elif user_id == self.player3_id:
+            self.player3_confirmed = True
+
+        confirmations = sum([
+            self.player1_confirmed,
+            self.player2_confirmed,
+            self.player3_confirmed
+        ])
+
+        # Complete if all 3 confirmed
+        if confirmations == 3:
+            self._finalize_trio()
+            return {
+                "success": True,
+                "is_completed": True,
+                "confirmations": 3,
+                "message": "Tutti i giocatori hanno confermato, partita completata"
+            }
+
+        return {
+            "success": True,
+            "is_completed": False,
+            "confirmations": confirmations,
+            "message": f"Conferma registrata ({confirmations}/3)"
+        }
+
+    def confirm_result_by_admin(self) -> dict:
+        """Confirm the trio result by admin/director - bypasses player confirmations.
+
+        Returns:
+            dict with 'success', 'is_completed'
+
+        Raises:
+            ValueError: If not awaiting confirmation
+        """
+        if not self.awaiting_confirmation:
+            raise ValueError("Trio non in attesa di conferma")
+
+        self._finalize_trio()
+
+        return {
+            "success": True,
+            "is_completed": True,
+            "message": "Partita validata dall'amministratore"
+        }
+
+    def confirm_result(self) -> bool:
+        """Legacy method - use confirm_result_by_admin for admin or confirm_result_by_player.
+
+        Kept for backward compatibility, acts as admin confirmation.
         """
         if not self.awaiting_confirmation:
             return False
+
+        self._finalize_trio()
+        return True
+
+    def _finalize_trio(self) -> None:
+        """Internal method to finalize the trio match."""
+        from .state_service import MatchStateService
 
         # Mark as completed
         self.awaiting_confirmation = False
         self.is_completed = True
 
-        # Update associated match
+        # Update associated match via state service for SSE emission
         match_obj = db.session.get(Match, self.match_id)
         if match_obj:
             match_obj.winner_id = self.winner_id
-            match_obj.status = "completed"
             # Store total racks in match scores for quick access
             match_obj.player1_score = self.player1_racks
             match_obj.player2_score = self.player2_racks
-            match_obj._check_and_complete_gara_if_needed(match_obj)
+            match_obj.validated_by_admin = True  # Mark as validated
 
-        return True
+            # Use state service to complete match and emit SSE
+            MatchStateService.to_completed(match_obj.id)
 
     def handle_forfeit(self, forfeiting_player_id: int, added_by_id: int = None) -> bool:
         """Handle player forfeit in trio match.

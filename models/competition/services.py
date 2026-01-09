@@ -510,9 +510,10 @@ class GaraService:
     @staticmethod
     @transactional(domain="competition")
     def confirm_trio_result(trio_id: int) -> dict:
-        """Conferma il risultato del trio e completa la partita.
+        """Conferma il risultato del trio da admin/director (bypassa conferme player).
 
         Called after all racks are played and trio is awaiting_confirmation.
+        Admin/director confirmation completes the match immediately.
 
         Returns:
             Dict con stato aggiornato del trio
@@ -525,19 +526,69 @@ class GaraService:
 
             abort(404)
 
-        if not trio.awaiting_confirmation:
-            raise ValueError("Trio non in attesa di conferma")
+        result = trio.confirm_result_by_admin()
 
-        # Confirm the result
-        success = trio.confirm_result()
-        if not success:
-            raise ValueError("Impossibile confermare il risultato")
+        # Emit SSE for real-time updates
+        from routes.sse import emit_trio_event, emit_gara_event
+
+        emit_trio_event(trio_id, "result_confirmed", {
+            "is_completed": result["is_completed"],
+            "validated_by_admin": True,
+        })
+
+        if trio.match and trio.match.gara_id:
+            emit_gara_event(trio.match.gara_id, "match_completed", {
+                "match_id": trio.match.id,
+                "trio_id": trio_id,
+            })
 
         return {
             "success": True,
             "trio_completed": trio.is_completed,
             "winner_id": trio.winner_id,
+            "message": result.get("message"),
         }
+
+    @staticmethod
+    @transactional(domain="competition")
+    def confirm_trio_result_by_player(trio_id: int, user_id: int) -> dict:
+        """Conferma il risultato del trio da parte di un giocatore.
+
+        Richiede la conferma di tutti e 3 i giocatori per completare.
+
+        Args:
+            trio_id: ID del trio match
+            user_id: ID del giocatore che conferma
+
+        Returns:
+            Dict con stato conferme e completamento
+        """
+        from models.match.models import TrioMatch
+
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+
+            abort(404)
+
+        result = trio.confirm_result_by_player(user_id)
+
+        # Emit SSE for real-time updates
+        from routes.sse import emit_trio_event, emit_gara_event
+
+        emit_trio_event(trio_id, "player_confirmed", {
+            "user_id": user_id,
+            "confirmations": result["confirmations"],
+            "is_completed": result["is_completed"],
+        })
+
+        if result["is_completed"] and trio.match and trio.match.gara_id:
+            emit_gara_event(trio.match.gara_id, "match_completed", {
+                "match_id": trio.match.id,
+                "trio_id": trio_id,
+            })
+
+        return result
 
     @staticmethod
     @transactional(domain="competition")

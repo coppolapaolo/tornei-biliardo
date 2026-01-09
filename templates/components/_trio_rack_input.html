@@ -84,7 +84,8 @@
            ═══════════════════════════════════════════════════════════════════════════ #}
         {% if trio.awaiting_confirmation %}
             {# ═══════════════════════════════════════════════════════════════════════════
-               AWAITING CONFIRMATION: Show result preview + confirm button
+               AWAITING CONFIRMATION: Show result preview + player confirmations
+               All 3 players must confirm, OR admin/director can bypass
                ═══════════════════════════════════════════════════════════════════════════ #}
             <div class="alert alert-warning text-center mb-3">
                 <i class="fas fa-clipboard-check fa-2x mb-2"></i>
@@ -100,12 +101,62 @@
                     {{ _('(+%(bonus)s rack bonus applicato a tutti)', bonus=config.bonus_racks) }}
                 </small>
                 {% endif %}
-                <p class="mb-2 mt-2">{{ _('Conferma il risultato per completare la partita') }}</p>
-                {% if user_can_manage or user_is_player %}
-                <button class="btn btn-success btn-lg"
-                        onclick="confirmTrioResult()">
-                    <i class="fas fa-check"></i> {{ _('Conferma risultato') }}
-                </button>
+
+                {# Show confirmation status for each player #}
+                <div class="mt-3 mb-2">
+                    <small class="text-muted d-block mb-2">{{ _('Conferme giocatori:') }}</small>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        {% set confirmations = [
+                            (trio.player1, trio.player1_confirmed),
+                            (trio.player2, trio.player2_confirmed),
+                            (trio.player3, trio.player3_confirmed)
+                        ] %}
+                        {% for player, confirmed in confirmations %}
+                        <span class="badge {% if confirmed %}bg-success{% else %}bg-secondary{% endif %} fs-6">
+                            {% if confirmed %}
+                                <i class="fas fa-check-circle"></i>
+                            {% else %}
+                                <i class="far fa-circle"></i>
+                            {% endif %}
+                            {{ player.username }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {# Confirmation buttons #}
+                {% if user_can_manage %}
+                    {# Admin/Director: can validate directly (bypasses player confirmations) #}
+                    <p class="mb-2 mt-2 text-muted">
+                        <small>{{ _('Come direttore puoi validare direttamente') }}</small>
+                    </p>
+                    <button class="btn btn-success btn-lg"
+                            onclick="confirmTrioResult()">
+                        <i class="fas fa-check-double"></i> {{ _('Valida risultato') }}
+                    </button>
+                {% elif user_is_player %}
+                    {# Player: needs to confirm, wait for others, or already confirmed #}
+                    {% set user_confirmed = (
+                        (current_user.id == trio.player1_id and trio.player1_confirmed) or
+                        (current_user.id == trio.player2_id and trio.player2_confirmed) or
+                        (current_user.id == trio.player3_id and trio.player3_confirmed)
+                    ) %}
+                    {% if user_confirmed %}
+                        <p class="mb-2 mt-2">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check"></i> {{ _('Hai confermato') }}
+                            </span>
+                        </p>
+                        <small class="text-muted">
+                            {{ _('In attesa che gli altri giocatori confermino') }}
+                        </small>
+                    {% else %}
+                        <p class="mb-2 mt-2">{{ _('Conferma il risultato per completare la partita') }}</p>
+                        <button class="btn btn-success btn-lg"
+                                onclick="confirmTrioResult()">
+                            <i class="fas fa-check"></i> {{ _('Conferma risultato') }}
+                        </button>
+                    {% endif %}
                 {% endif %}
             </div>
         {% elif not trio.is_completed %}
