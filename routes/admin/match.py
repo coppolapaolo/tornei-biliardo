@@ -55,8 +55,14 @@ def match_detail(match_id):
         # Check se può gestire la gara di questo match
         user_can_manage = current_user.can_manage_competition(match.gara_id)
 
-        # Check se è player nel match
-        is_player_in_match = current_user.id in [match.player1_id, match.player2_id]
+        # Check se è player nel match (trio has 3 players, normal match has 2)
+        if match.is_trio and match.trio_match:
+            trio = match.trio_match
+            is_player_in_match = current_user.id in [
+                trio.player1_id, trio.player2_id, trio.player3_id
+            ]
+        else:
+            is_player_in_match = current_user.id in [match.player1_id, match.player2_id]
 
         # Se è player nel match, verifica che non abbia dato forfait per i controlli
         if is_player_in_match:

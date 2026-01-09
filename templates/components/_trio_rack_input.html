@@ -262,7 +262,7 @@
                             <i class="fas fa-check"></i> {{ rack.winner.username }}
                         </span>
                     </div>
-                    {% if rack.can_undo and (user_can_manage or user_is_current_player) and not trio.is_completed %}
+                    {% if rack.can_undo and (user_can_manage or user_is_player) and not trio.is_completed %}
                     <button class="btn btn-outline-danger btn-sm"
                             onclick="removeTrioLastRack()"
                             title="{{ _('Annulla ultimo rack') }}">
