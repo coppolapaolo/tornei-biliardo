@@ -65,6 +65,25 @@ def trio_confirm(trio_id):
         return jsonify({"error": f"Errore durante conferma risultato: {str(e)}"}), 500
 
 
+@competition_bp.route("/trio/<int:trio_id>/forfeit", methods=["POST"])
+@login_required
+@trio_manager_required
+def trio_forfeit(trio_id):
+    """Handle player forfeit in trio match (admin endpoint)."""
+    try:
+        forfeiting_player_id = request.form.get("player_id", type=int)
+        if not forfeiting_player_id:
+            return jsonify({"error": "Player ID richiesto"}), 400
+
+        result = GaraService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante registrazione forfait: {str(e)}"}), 500
+
+
 @competition_bp.route("/trio/<int:trio_id>/reset", methods=["POST"])
 @login_required
 @trio_manager_required

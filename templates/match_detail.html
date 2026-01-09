@@ -209,6 +209,39 @@
                 alert({{ _("Errore durante la conferma del risultato")|tojson }});
             });
     }
+
+    function declareForfeit(playerId) {
+        if (!confirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")|tojson }})) {
+            return;
+        }
+
+        // Use admin endpoint for managers, player endpoint for players
+        {% if user_can_manage %}
+        const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
+        {% else %}
+        const forfeitEndpoint = `/player/match/{{ match.id }}/trio/forfeit`;
+        {% endif %}
+
+        fetch(forfeitEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `player_id=${playerId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert({{ _("Errore durante la registrazione del forfait")|tojson }});
+            });
+    }
     {% endif %}
 
     // NEW SIMPLIFIED UX - Add/Remove Racks with validation at end
@@ -448,5 +481,48 @@
                 });
         }
     }
+
+    {# SSE: Real-time updates for trio match waiting players #}
+    {% if match.is_trio and match.trio_match and user_is_player %}
+    {% set trio = match.trio_match %}
+    {% set current_p1 = trio.current_player1 if trio.current_player1 else trio.player1 %}
+    {% set current_p2 = trio.current_player2 if trio.current_player2 else trio.player2 %}
+    {% set user_is_waiting = current_user.is_authenticated and current_user.id not in [current_p1.id, current_p2.id] %}
+    {% if user_is_waiting and not trio.is_completed %}
+    (function() {
+        // Connect to SSE stream for real-time updates
+        const trioId = {{ trio.id }};
+        const eventSource = new EventSource('/sse/trio/' + trioId);
+
+        eventSource.addEventListener('rack_added', function(e) {
+            console.log('Rack added, reloading...');
+            location.reload();
+        });
+
+        eventSource.addEventListener('rack_removed', function(e) {
+            console.log('Rack removed, reloading...');
+            location.reload();
+        });
+
+        eventSource.addEventListener('forfeit', function(e) {
+            console.log('Forfeit declared, reloading...');
+            location.reload();
+        });
+
+        eventSource.addEventListener('connected', function(e) {
+            console.log('SSE connected to trio ' + trioId);
+        });
+
+        eventSource.onerror = function(e) {
+            console.log('SSE connection error, will retry...');
+        };
+
+        // Close connection when leaving page
+        window.addEventListener('beforeunload', function() {
+            eventSource.close();
+        });
+    })();
+    {% endif %}
+    {% endif %}
 </script>
 {% endblock %}

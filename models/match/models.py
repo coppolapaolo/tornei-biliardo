@@ -669,6 +669,9 @@ class TrioMatch(db.Model):
     # Stato del trio
     is_completed = db.Column(db.Boolean, default=False)
     awaiting_confirmation = db.Column(db.Boolean, default=False)  # Validation step
+    forfeit_player_id = db.Column(
+        db.Integer, db.ForeignKey("user.id")
+    )  # Player who forfeited (if any)
     winner_id = db.Column(
         db.Integer, db.ForeignKey("user.id")
     )  # Con classifica rack-based, winner_id puo' essere NULL (pareggio)
@@ -685,6 +688,7 @@ class TrioMatch(db.Model):
     current_player2 = db.relationship("User", foreign_keys=[current_player2_id])
     waiting_player = db.relationship("User", foreign_keys=[waiting_player_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
+    forfeit_player = db.relationship("User", foreign_keys=[forfeit_player_id])
 
     @property
     def trio_config(self):
@@ -958,6 +962,113 @@ class TrioMatch(db.Model):
             match_obj._check_and_complete_gara_if_needed(match_obj)
 
         return True
+
+    def handle_forfeit(self, forfeiting_player_id: int, added_by_id: int = None) -> bool:
+        """Handle player forfeit in trio match.
+
+        When a player forfeits:
+        - Remaining racks where they would play are auto-assigned to opponent
+        - They don't receive bonus rack
+        - Match enters awaiting_confirmation state
+
+        Args:
+            forfeiting_player_id: ID of the player who is forfeiting
+            added_by_id: ID of user who registered the forfeit
+
+        Returns:
+            True if forfeit was processed, False if invalid
+        """
+        if self.is_completed or self.awaiting_confirmation:
+            return False
+
+        # Validate player is in this trio
+        if forfeiting_player_id not in self.player_ids:
+            return False
+
+        # Already forfeited?
+        if self.forfeit_player_id is not None:
+            return False
+
+        self.forfeit_player_id = forfeiting_player_id
+        config = self.trio_config
+
+        # Auto-complete remaining racks where forfeiting player would have played
+        while self.total_racks_played < config.total_played_racks:
+            next_rack_number = self.total_racks_played + 1
+            matchup = config.get_matchup_for_rack(next_rack_number)
+            if not matchup:
+                break
+
+            p1_idx, p2_idx, waiting_idx = matchup
+            current_p1_id = self.player_ids[p1_idx]
+            current_p2_id = self.player_ids[p2_idx]
+            waiting_id = self.player_ids[waiting_idx]
+
+            # If forfeiting player is in this matchup, assign win to opponent
+            if forfeiting_player_id == current_p1_id:
+                winner_id = current_p2_id
+            elif forfeiting_player_id == current_p2_id:
+                winner_id = current_p1_id
+            else:
+                # Forfeiting player is waiting - this is a normal rack between others
+                # Stop auto-completing, let the other two play normally
+                break
+
+            # Create TrioRack for auto-assigned win
+            trio_rack = TrioRack(
+                trio_match_id=self.id,
+                rack_number=next_rack_number,
+                winner_id=winner_id,
+                player1_id=current_p1_id,
+                player2_id=current_p2_id,
+                waiting_player_id=waiting_id,
+                added_by_id=added_by_id,
+            )
+            db.session.add(trio_rack)
+            db.session.flush()
+
+            # Update matchup for next rack
+            self._update_current_players()
+
+        # If all racks now played, apply bonus and enter confirmation
+        if self.total_racks_played >= config.total_played_racks:
+            self._apply_bonus_and_complete_forfeit()
+
+        return True
+
+    def _apply_bonus_and_complete_forfeit(self):
+        """Apply bonus (excluding forfeit player) and set to awaiting confirmation.
+
+        Similar to _apply_bonus_and_complete but forfeit player doesn't get bonus.
+        """
+        config = self.trio_config
+
+        # Set bonus flag (for UI display)
+        if config.bonus_racks > 0:
+            self.bonus_applied = True
+
+        db.session.flush()
+
+        # Determine winner (forfeit player can't win)
+        scores = []
+        for pid, racks in [
+            (self.player1_id, self.player1_racks),
+            (self.player2_id, self.player2_racks),
+            (self.player3_id, self.player3_racks),
+        ]:
+            if pid != self.forfeit_player_id:
+                scores.append((racks, pid))
+
+        scores.sort(reverse=True)
+
+        # Check for tie at the top (among non-forfeit players)
+        if len(scores) >= 2 and scores[0][0] > scores[1][0]:
+            self.winner_id = scores[0][1]
+        else:
+            # Tie or only one player left
+            self.winner_id = scores[0][1] if scores else None
+
+        self.awaiting_confirmation = True
 
     def set_result_direct(
         self, player1_racks: int, player2_racks: int, player3_racks: int

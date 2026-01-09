@@ -153,6 +153,35 @@ def confirm_trio_result(match_id):
         return jsonify({"error": f"Errore durante conferma risultato: {str(e)}"}), 500
 
 
+@player_bp.route("/match/<int:match_id>/trio/forfeit", methods=["POST"])
+@login_required
+@trio_player_required
+def forfeit_trio(match_id):
+    """Handle player forfeit in trio match"""
+    try:
+        # Get the trio match
+        match = db.session.get(Match, match_id)
+        if not match or not match.trio_match:
+            return jsonify({"error": "Trio match non trovato"}), 404
+
+        trio_id = match.trio_match.id
+
+        # Get forfeiting player from request
+        forfeiting_player_id = request.form.get("player_id", type=int)
+        if not forfeiting_player_id:
+            # Default to current user if not specified
+            forfeiting_player_id = current_user.id
+
+        # Use the service layer
+        result = GaraService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
+        return jsonify(result)
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Errore durante registrazione forfait: {str(e)}"}), 500
+
+
 # ============ SIMPLIFIED UX - Match (Tournament) Rack Management ============
 
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-09 12:04+0100\n"
+"POT-Creation-Date: 2026-01-09 12:36+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -839,10 +839,11 @@ msgstr ""
 #: templates/gara_detail.html:891 templates/gara_detail.html:982
 #: templates/gara_detail.html:1120 templates/match_detail.html:146
 #: templates/match_detail.html:175 templates/match_detail.html:204
-#: templates/match_detail.html:228 templates/match_detail.html:250
-#: templates/match_detail.html:272 templates/match_detail.html:294
-#: templates/match_detail.html:318 templates/match_detail.html:366
-#: templates/match_detail.html:419 templates/match_detail.html:442
+#: templates/match_detail.html:237 templates/match_detail.html:261
+#: templates/match_detail.html:283 templates/match_detail.html:305
+#: templates/match_detail.html:327 templates/match_detail.html:351
+#: templates/match_detail.html:399 templates/match_detail.html:452
+#: templates/match_detail.html:475
 msgid "Errore:"
 msgstr "Error:"
 
@@ -925,7 +926,8 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:191
 #: templates/gara_detail.html:891 templates/match_detail.html:146
 #: templates/match_detail.html:175 templates/match_detail.html:204
-#: templates/match_detail.html:228 templates/match_detail.html:366
+#: templates/match_detail.html:237 templates/match_detail.html:261
+#: templates/match_detail.html:399
 msgid "Errore sconosciuto"
 msgstr "Unknown error"
 
@@ -939,9 +941,9 @@ msgstr ""
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr "Are you sure you want to reset this match?"
 
-#: templates/gara_detail.html:941 templates/match_detail.html:396
-#: templates/match_detail.html:401 templates/match_detail.html:419
-#: templates/match_detail.html:424
+#: templates/gara_detail.html:941 templates/match_detail.html:429
+#: templates/match_detail.html:434 templates/match_detail.html:452
+#: templates/match_detail.html:457
 msgid "Errore durante il reset"
 msgstr ""
 
@@ -955,18 +957,18 @@ msgstr "Are you sure you want to reset this match?"
 msgid "Errore durante il reset del trio"
 msgstr "Error during cancellation:"
 
-#: templates/gara_detail.html:970 templates/match_detail.html:430
+#: templates/gara_detail.html:970 templates/match_detail.html:463
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
 "assegnato alla prossima partita in attesa."
 msgstr ""
 
-#: templates/gara_detail.html:982 templates/match_detail.html:442
+#: templates/gara_detail.html:982 templates/match_detail.html:475
 #, fuzzy
 msgid "Impossibile validare il risultato"
 msgstr "Unable to remove rack"
 
-#: templates/gara_detail.html:987 templates/match_detail.html:447
+#: templates/gara_detail.html:987 templates/match_detail.html:480
 #, fuzzy
 msgid "Errore durante la validazione"
 msgstr "Error during cancellation:"
@@ -1029,7 +1031,7 @@ msgstr ""
 msgid "Errore durante l'aggiunta del rack al trio"
 msgstr "Error while adding rack"
 
-#: templates/match_detail.html:180 templates/match_detail.html:255
+#: templates/match_detail.html:180 templates/match_detail.html:288
 msgid "Errore durante la rimozione del rack"
 msgstr ""
 
@@ -1037,69 +1039,77 @@ msgstr ""
 msgid "Errore durante la conferma del risultato"
 msgstr "Error confirming result"
 
-#: templates/match_detail.html:233
+#: templates/match_detail.html:214
+msgid "Sei sicuro di voler dichiarare forfait per questo giocatore?"
+msgstr "Are you sure you want to declare forfeit for this player?"
+
+#: templates/match_detail.html:242
+msgid "Errore durante la registrazione del forfait"
+msgstr "Error registering forfeit"
+
+#: templates/match_detail.html:266
 msgid "Errore durante l'aggiunta del rack"
 msgstr "Error while adding rack"
 
-#: templates/match_detail.html:250
+#: templates/match_detail.html:283
 msgid "Impossibile rimuovere il rack"
 msgstr "Unable to remove rack"
 
-#: templates/match_detail.html:272
+#: templates/match_detail.html:305
 msgid "Impossibile confermare il risultato"
 msgstr "Unable to confirm result"
 
-#: templates/match_detail.html:277
+#: templates/match_detail.html:310
 msgid "Errore durante la conferma"
 msgstr "Error during confirmation"
 
-#: templates/match_detail.html:282
+#: templates/match_detail.html:315
 msgid "Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso."
 msgstr ""
 
-#: templates/match_detail.html:294
+#: templates/match_detail.html:327
 msgid "Impossibile rifiutare il risultato"
 msgstr ""
 
-#: templates/match_detail.html:299
+#: templates/match_detail.html:332
 msgid "Errore durante il rifiuto"
 msgstr ""
 
-#: templates/match_detail.html:305
+#: templates/match_detail.html:338
 msgid ""
 "Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita "
 "dalla gara secondo la policy impostata."
 msgstr ""
 
-#: templates/match_detail.html:315
+#: templates/match_detail.html:348
 msgid "Forfait dichiarato"
 msgstr ""
 
-#: templates/match_detail.html:318
+#: templates/match_detail.html:351
 msgid "Impossibile dichiarare forfait"
 msgstr ""
 
-#: templates/match_detail.html:323
+#: templates/match_detail.html:356
 msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
 
-#: templates/match_detail.html:373
+#: templates/match_detail.html:406
 msgid "Errore durante l'aggiornamento"
 msgstr ""
 
-#: templates/match_detail.html:381
+#: templates/match_detail.html:414
 msgid ""
 "Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti "
 "verranno sostituiti."
 msgstr ""
 
-#: templates/match_detail.html:385
+#: templates/match_detail.html:418
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita? Tutti i "
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/match_detail.html:407
+#: templates/match_detail.html:440
 #, fuzzy
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita trio? Tutti i "
@@ -2446,7 +2456,7 @@ msgid "Assegna tavolo"
 msgstr "Assign Table"
 
 #: templates/components/_match_score.html:38
-#: templates/components/_trio_rack_input.html:257
+#: templates/components/_trio_rack_input.html:292
 msgid "vince chi ha piu rack"
 msgstr "most racks wins"
 
@@ -2694,7 +2704,7 @@ msgid "Rack %(played)s/%(total)s"
 msgstr "Rack %(played)s/%(total)s"
 
 #: templates/components/_trio_rack_input.html:47
-#: templates/components/_trio_rack_input.html:255
+#: templates/components/_trio_rack_input.html:290
 msgid "bonus"
 msgstr "bonus"
 
@@ -2703,18 +2713,18 @@ msgid "Aspetta"
 msgstr "Waiting"
 
 #: templates/components/_trio_rack_input.html:93
-#: templates/components/_trio_rack_input.html:176
+#: templates/components/_trio_rack_input.html:211
 #, python-format
 msgid "Vincitore: %(name)s"
 msgstr "Winner: %(name)s"
 
 #: templates/components/_trio_rack_input.html:95
-#: templates/components/_trio_rack_input.html:178
+#: templates/components/_trio_rack_input.html:213
 msgid "Pareggio!"
 msgstr "Draw!"
 
 #: templates/components/_trio_rack_input.html:100
-#: templates/components/_trio_rack_input.html:183
+#: templates/components/_trio_rack_input.html:218
 #, python-format
 msgid "(+%(bonus)s rack bonus applicato a tutti)"
 msgstr "(+%(bonus)s bonus rack applied to all)"
@@ -2748,31 +2758,41 @@ msgstr "Wait for %(p1)s and %(p2)s to finish this rack"
 msgid "Partita in corso"
 msgstr "Match in progress"
 
-#: templates/components/_trio_rack_input.html:192
+#: templates/components/_trio_rack_input.html:178
+#: templates/components/_trio_rack_input.html:193
+msgid "Dichiara forfait"
+msgstr "Declare forfeit"
+
+#: templates/components/_trio_rack_input.html:200
+#, python-format
+msgid "Forfait: %(name)s"
+msgstr "Forfeit: %(name)s"
+
+#: templates/components/_trio_rack_input.html:227
 msgid "Risultato validato"
 msgstr "Result validated"
 
-#: templates/components/_trio_rack_input.html:197
+#: templates/components/_trio_rack_input.html:232
 msgid "In attesa di validazione"
 msgstr "Awaiting validation"
 
-#: templates/components/_trio_rack_input.html:199
+#: templates/components/_trio_rack_input.html:234
 msgid "Il direttore di gara validera il risultato"
 msgstr "The race director will validate the result"
 
-#: templates/components/_trio_rack_input.html:211
+#: templates/components/_trio_rack_input.html:246
 msgid "Storico rack"
 msgstr "Rack history"
 
-#: templates/components/_trio_rack_input.html:233
+#: templates/components/_trio_rack_input.html:268
 msgid "Annulla ultimo rack"
 msgstr "Undo last rack"
 
-#: templates/components/_trio_rack_input.html:250
+#: templates/components/_trio_rack_input.html:285
 msgid "1 girone all'italiana (3 rack)"
 msgstr "1 round-robin (3 racks)"
 
-#: templates/components/_trio_rack_input.html:252
+#: templates/components/_trio_rack_input.html:287
 #, python-format
 msgid "%(n)s gironi all'italiana (%(racks)s rack)"
 msgstr "%(n)s round-robins (%(racks)s racks)"

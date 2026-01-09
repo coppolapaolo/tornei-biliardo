@@ -303,6 +303,87 @@ def confirm_result(self) -> bool:
 - Possibilità di fare undo durante la fase `awaiting_confirmation`
 - Consistente con il pattern di conferma usato in altri contesti
 
+### 8. Forfait nel Trio (Aggiornamento 2026-01-09)
+
+Per gestire il caso in cui un giocatore dichiara forfait durante un trio match, è stato implementato un sistema che:
+
+**Comportamento:**
+1. Il giocatore che dichiara forfait viene registrato (`forfeit_player_id`)
+2. I rack rimanenti dove il giocatore forfait avrebbe giocato vengono assegnati automaticamente all'avversario
+3. Il giocatore forfait **non riceve** il bonus rack finale
+4. I rack già giocati restano validi
+
+**Esempio** (player4 forfait a metà trio distance=5):
+```
+Match già giocati: restano validi
+Match futuri con player4: assegnati automaticamente all'avversario
+player4 non riceve bonus
+```
+
+**Model:**
+```python
+# TrioMatch
+forfeit_player_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+forfeit_player = db.relationship("User", foreign_keys=[forfeit_player_id])
+
+def handle_forfeit(self, forfeiting_player_id: int, added_by_id: int = None) -> bool:
+    """Gestisce forfait e auto-completa rack rimanenti."""
+```
+
+**UI:**
+- Admin: dropdown per selezionare quale giocatore forfait
+- Player: può solo dichiarare forfait per se stesso
+- Alert visualizza "Forfait: [nome giocatore]" quando presente
+
+**Endpoint:**
+- Admin: `POST /admin/gara/trio/<trio_id>/forfeit`
+- Player: `POST /player/match/<match_id>/trio/forfeit`
+
+### 9. SSE Real-time Updates (Aggiornamento 2026-01-09)
+
+Per permettere ai giocatori in attesa di vedere gli aggiornamenti in tempo reale senza refresh manuale, è stato implementato un sistema **Server-Sent Events (SSE)**.
+
+**Architettura:**
+```
+routes/sse.py
+├── emit_trio_event(trio_id, event_type, data)  # Emette eventi
+└── /sse/trio/<trio_id>                         # Stream SSE per client
+```
+
+**Eventi emessi:**
+- `rack_added`: quando viene aggiunto un rack
+- `rack_removed`: quando viene rimosso un rack (undo)
+- `forfeit`: quando viene dichiarato forfait
+- `connected`: conferma connessione iniziale
+
+**Client-side:**
+- Solo i giocatori **in attesa** (non quelli attualmente in gioco) si connettono allo stream
+- Al ricevimento di un evento, la pagina viene ricaricata automaticamente
+- La connessione viene chiusa quando si lascia la pagina
+
+**Integrazione:**
+```python
+# models/competition/services.py
+from routes.sse import emit_trio_event
+
+# In add_trio_rack, remove_trio_rack, forfeit_trio:
+emit_trio_event(trio_id, "rack_added", result)
+```
+
+**JavaScript client** (in `match_detail.html`):
+```javascript
+const eventSource = new EventSource('/sse/trio/' + trioId);
+eventSource.addEventListener('rack_added', function(e) {
+    location.reload();
+});
+```
+
+**Note implementative:**
+- Event store in-memory (semplice, adatto a single-server deployment)
+- Thread-safe con Lock per accessi concorrenti
+- Cleanup automatico eventi > 60 secondi
+- Auto-reconnect gestito nativamente da EventSource API
+
 ## Riferimenti
 
 - File correlati:
@@ -311,6 +392,9 @@ def confirm_result(self) -> bool:
   - `models/competition/services.py` (GaraService)
   - `models/classification/score_aggregator.py`
   - `templates/components/_trio_rack_input.html`
+  - `templates/match_detail.html` (SSE client)
+  - `routes/sse.py` (SSE server)
   - `migrations/add_trio_rack_table.py`
   - `migrations/20260109_trio_awaiting_confirmation.py`
+  - `migrations/20260109_trio_forfeit_player.py`
 - ADR correlato: ADR-001 (Amalfi Strategy Pattern)

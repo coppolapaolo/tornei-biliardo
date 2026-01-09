@@ -165,6 +165,41 @@
                     {{ _('Partita in corso') }}
                 </div>
             {% endif %}
+
+            {# ═══════════════════════════════════════════════════════════════════════════
+               FORFEIT SECTION: Allow player or admin to declare forfeit
+               ═══════════════════════════════════════════════════════════════════════════ #}
+            {% if not trio.forfeit_player_id and (user_can_manage or user_is_player) and match.table_assignment %}
+            <div class="text-center mt-2 mb-3">
+                {% if user_can_manage %}
+                    {# Admin/Director can forfeit any player #}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-danger btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for pid, player, racks in players_data %}
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="declareForfeit({{ pid }}); return false;">
+                                    {{ player.username }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% elif user_is_player %}
+                    {# Player can only forfeit themselves #}
+                    <button class="btn btn-outline-danger btn-sm" onclick="declareForfeit({{ current_user.id }})">
+                        <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
+                    </button>
+                {% endif %}
+            </div>
+            {% elif trio.forfeit_player_id %}
+            <div class="alert alert-warning text-center mb-3">
+                <i class="fas fa-flag"></i>
+                {{ _('Forfait: %(name)s', name=trio.forfeit_player.username) }}
+            </div>
+            {% endif %}
         {% else %}
             {# ═══════════════════════════════════════════════════════════════════════════
                COMPLETED: Show result and validation status

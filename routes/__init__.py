@@ -18,6 +18,9 @@ def register_blueprints(app):
     # Import gamification blueprint (Phase 4)
     from .gamification import gamification_bp
 
+    # Import SSE blueprint for real-time updates
+    from .sse import sse_bp
+
     # Registrazione blueprints core
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -33,3 +36,6 @@ def register_blueprints(app):
 
     # Registrazione gamification blueprint
     app.register_blueprint(gamification_bp)
+
+    # Registrazione SSE blueprint
+    app.register_blueprint(sse_bp)

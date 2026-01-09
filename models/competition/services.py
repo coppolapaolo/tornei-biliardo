@@ -384,9 +384,10 @@ class GaraService:
             "player3": state["players"]["player3"]["racks"],
         }
 
-        return {
+        result = {
             "success": True,
             "trio_completed": trio.is_completed,
+            "awaiting_confirmation": trio.awaiting_confirmation,
             "winner_id": trio.winner_id,
             "current_state": {
                 "current_players": current_players,
@@ -394,6 +395,13 @@ class GaraService:
                 "scores": scores,
             },
         }
+
+        # Emit SSE event for real-time updates
+        from routes.sse import emit_trio_event
+
+        emit_trio_event(trio_id, "rack_added", result)
+
+        return result
 
     @staticmethod
     @transactional(domain="competition")
@@ -464,7 +472,7 @@ class GaraService:
             "player3": state["players"]["player3"]["racks"],
         }
 
-        return {
+        result = {
             "success": True,
             "removed_rack_winner_id": removed_rack.winner_id,
             "trio_completed": trio.is_completed,
@@ -475,6 +483,13 @@ class GaraService:
                 "last_rack_winner_id": trio.last_rack.winner_id if trio.last_rack else None,
             },
         }
+
+        # Emit SSE event for real-time updates
+        from routes.sse import emit_trio_event
+
+        emit_trio_event(trio_id, "rack_removed", result)
+
+        return result
 
     @staticmethod
     @transactional(domain="competition")
@@ -507,6 +522,48 @@ class GaraService:
             "trio_completed": trio.is_completed,
             "winner_id": trio.winner_id,
         }
+
+    @staticmethod
+    @transactional(domain="competition")
+    def forfeit_trio(trio_id: int, forfeiting_player_id: int, added_by_id: int) -> dict:
+        """Handle player forfeit in trio match.
+
+        Auto-completes remaining racks where the forfeiting player would play,
+        awarding those racks to their opponents.
+
+        Args:
+            trio_id: ID of the trio match
+            forfeiting_player_id: ID of the player forfeiting
+            added_by_id: ID of user who registered the forfeit
+
+        Returns:
+            Dict with updated trio state
+        """
+        from models.match.models import TrioMatch
+
+        trio = db.session.get(TrioMatch, trio_id)
+        if not trio:
+            from flask import abort
+
+            abort(404)
+
+        success = trio.handle_forfeit(forfeiting_player_id, added_by_id)
+        if not success:
+            raise ValueError("Impossibile registrare il forfait")
+
+        result = {
+            "success": True,
+            "trio_completed": trio.is_completed,
+            "awaiting_confirmation": trio.awaiting_confirmation,
+            "forfeit_player_id": trio.forfeit_player_id,
+        }
+
+        # Emit SSE event for real-time updates
+        from routes.sse import emit_trio_event
+
+        emit_trio_event(trio_id, "forfeit", result)
+
+        return result
 
     @staticmethod
     @transactional(domain="competition")
