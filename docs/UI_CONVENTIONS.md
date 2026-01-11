@@ -234,6 +234,14 @@ Sostituisce i nativi `alert()` con componenti Bootstrap per una UX migliore.
 | `showValidationError(el, msg)` | Validazione form | Alert inline sotto l'elemento |
 | `clearValidationError(el)` | Rimuove validazione | Pulisce stato errore |
 
+### Helper per Form/Link con Conferma
+
+| Funzione | Uso | Pattern HTML |
+|----------|-----|--------------|
+| `confirmSubmit(form, msg, opts)` | Form submission | `onsubmit="return confirmSubmit(this, 'Confermi?')"` |
+| `confirmLink(link, msg, opts)` | Link navigation | `onclick="return confirmLink(this, 'Confermi?')"` |
+| `confirmAction(msg, action, opts)` | Azione generica | `onclick="confirmAction('Confermi?', () => doSomething())"` |
+
 ### Esempi d'Uso
 
 ```javascript
@@ -274,13 +282,17 @@ Presenti in `base.html`:
 <div class="modal fade" id="confirmModal" tabindex="-1">...</div>
 ```
 
-### Mapping da alert() Nativo
+### Mapping da alert()/confirm() Nativi
 
 | Prima | Dopo |
 |-------|------|
 | `alert('Errore: ' + msg)` | `showError('Errore: ' + msg)` |
 | `alert('Completato!')` | `showSuccess('Completato!')` |
 | `if (confirm(msg)) { ... }` | `showConfirm(msg, () => { ... })` |
+| `if (!confirm(msg)) { return; }` | `showConfirm(msg, () => { /* resto funzione */ })` |
+| `onsubmit="return confirm('...')"` | `onsubmit="return confirmSubmit(this, '...')"` |
+| `onclick="return confirm('...')"` (link) | `onclick="return confirmLink(this, '...')"` |
+| `onclick="return confirm('...')"` (button) | `onclick="confirmSubmit(this.closest('form'), '...')"` + `type="button"` |
 
 ---
 
@@ -501,6 +513,7 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 | 2025-12-28 | Layout profilo context-aware | Stesso template per profilo proprio e pubblico con condizionali `is_own_profile` |
 | 2025-12-28 | Titoli context-aware nei componenti | "Le mie Statistiche" vs "Statistiche" in base a chi visualizza |
 | 2026-01-11 | Sistema notifiche Bootstrap (Toast/Modal) | Sostituisce `alert()` nativi per UX migliore. Toast per feedback, Modal per conferme |
+| 2026-01-11 | Migrazione completa `confirm()` → `showConfirm()` | 67 chiamate migrate in 36 file. Helper: `confirmSubmit()`, `confirmLink()`, `confirmAction()` |
 
 ---
 
