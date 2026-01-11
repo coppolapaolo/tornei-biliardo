@@ -56,7 +56,7 @@ The test suite follows a modern pytest-based approach with clear separation betw
 ### Integration Tests (`new/integration/`)
 **Purpose**: Test component interactions and data flow
 
-**Current Test Files** (14 files, ~93 tests):
+**Current Test Files** (20 files, ~124 tests):
 
 | File | Description | Tests |
 |------|-------------|-------|
@@ -65,8 +65,14 @@ The test suite follows a modern pytest-based approach with clear separation betw
 | `test_challenge_image_paths_fix.py` | Challenge image path handling | 6 passed |
 | `test_challenge_routes.py` | Challenge CRUD routes | 22 passed |
 | `test_classification_display.py` | Classification/ranking display | 1 passed, 3 skipped |
-| `test_gare_usecase_4_campionato_workflow.py` | Championship tournaments | 3 passed, 1 skipped |
-| `test_gare_usecase_7_player_availability.py` | Player availability system | 3 passed |
+| `test_gare_usecase_1_amalfi.py` | UC1: Amalfi strategy workflow | 5 passed |
+| `test_gare_usecase_2_random.py` | UC2: Random strategy workflow | 4 passed |
+| `test_gare_usecase_3_round_robin.py` | UC3: Round-robin strategy | 3 passed |
+| `test_gare_usecase_4_campionato_workflow.py` | UC4: Championship tournaments | 3 passed, 1 skipped |
+| `test_gare_usecase_5_guest.py` | UC5: Guest access | 6 passed |
+| `test_gare_usecase_6_individual.py` | UC6: Individual match proposals | 8 passed |
+| `test_gare_usecase_7_player_availability.py` | UC7: Player availability | 3 passed |
+| `test_gare_usecase_8_modification.py` | UC8: Match modification | 5 passed |
 | `test_guest_card_to_details_workflow.py` | Guest card navigation | 6 passed |
 | `test_matchmaking_anti_rematch.py` | Anti-rematch logic | 2 passed |
 | `test_random_anti_rematch_tournament_flow.py` | Random strategy anti-rematch | 12 passed |
@@ -94,29 +100,31 @@ The test suite follows a modern pytest-based approach with clear separation betw
 **⚠️ Note**: Many integration tests were removed due to SQLite concurrency issues and session isolation problems with `@transactional`. The remaining tests are reliable with `-n 4`.
 
 #### Use Case Integration Testing
-**Purpose**: Test files mapped to documented use case workflows from `docs/usecases/`
+**Purpose**: Test files mapped to documented use case workflows from `docs/usecases/gare.md`
 
-**Remaining Use Case Tests** (from `docs/usecases/gare.md`):
-- Use Case 4: `test_gare_usecase_4_campionato_workflow.py` - Championship tournaments with multiple competitions
-- Use Case 7: `test_gare_usecase_7_player_availability.py` - Player availability system and match coordination
+**All 8 Use Cases Covered** (31 tests total):
 
-**Removed Use Case Tests** (January 2026 cleanup):
-The following use case tests were removed due to persistent failures:
+| Use Case | File | Tests | Description |
+|----------|------|-------|-------------|
+| UC 1 | `test_gare_usecase_1_amalfi.py` | 5 | Amalfi strategy: rounds, anti-rematch, classification |
+| UC 2 | `test_gare_usecase_2_random.py` | 4 | Random strategy: all rounds at once, classification |
+| UC 3 | `test_gare_usecase_3_round_robin.py` | 3 | Round-robin: all vs all pairing, live classification |
+| UC 4 | `test_gare_usecase_4_campionato_workflow.py` | 4 | Championship with multiple competitions |
+| UC 5 | `test_gare_usecase_5_guest.py` | 6 | Guest access: view campionato, results, live scores |
+| UC 6 | `test_gare_usecase_6_individual.py` | 8 | Individual match proposals and cancellation |
+| UC 7 | `test_gare_usecase_7_player_availability.py` | 3 | Player availability and match coordination |
+| UC 8 | `test_gare_usecase_8_modification.py` | 5 | Match reset, modification, round management |
 
-| Use Case | File | Removal Reason |
-|----------|------|----------------|
-| UC 1 (Amalfi) | `test_gare_usecase_1_amalfi_complete_workflow.py` | SQLite deadlock, session isolation |
-| UC 2 (Random) | `test_gare_usecase_2_random_strategy.py` | SQLite concurrency timeout |
-| UC 3 (Round-Robin) | `test_gare_usecase_3_round_robin.py` | Session isolation with @transactional |
-| UC 5 (Guest) | `test_gare_usecase_5_guest_access.py` | Outdated test setup |
-| UC 6 (Individual) | `test_gare_usecase_6_individual_matches.py` | Session isolation issues |
-| UC 8 (Modification) | `test_gare_usecase_8_match_modification.py` | SQLite concurrency issues |
-| UC01 1-7 | `test_UC01_usecase_1_to_7_guest_access_workflows.py` | Multiple isolation failures |
+**Testing Patterns Used** (January 2026 rewrite):
+- Short focused tests (30-50 lines) instead of long workflows
+- Explicit `db_session.commit()` in fixtures
+- Unique identifiers via `uuid.uuid4()[:8]`
+- Interleaved rack scoring for race-to-N matches
+- Avoid complex cross-service workflows that cause session isolation issues
 
-**Naming Convention** (for future tests):
+**Naming Convention**:
 - **Pattern**: `test_<source>_usecase_<N>_<description>.py`
 - `test_gare_usecase_X_*.py` for use cases from `gare.md`
-- `test_UC01_usecase_X_*.py` for use cases from `UC01.md`
 - Clear naming enables traceability to source documentation
 
 ### End-to-End Tests (`new/e2e/`)
