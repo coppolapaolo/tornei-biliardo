@@ -287,12 +287,12 @@ def gara_detail(gara_id):
                 }
             )
 
-    # Get available tables for venue (for table assignment UI)
+    # Get available tables for gara (for table assignment UI)
     available_tables = []
-    if user_can_manage and gara.location:
+    if user_can_manage:
         from models.match.table_assignment_service import TableAssignmentService
 
-        available_tables = TableAssignmentService.get_table_names(gara.location)
+        available_tables = TableAssignmentService.get_table_names_for_gara(gara.id)
 
     # Get forfeit user IDs for visual indication
     forfeit_user_ids = set(

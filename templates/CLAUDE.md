@@ -29,6 +29,24 @@ alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
 
 **Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript and cause silent failures.
 
+### Onclick Attributes with Dynamic Strings (CRITICAL)
+
+When using `|tojson` in HTML onclick attributes, **use single quotes for the attribute**:
+
+```html
+{# ❌ WRONG - tojson produces "..." which breaks double-quoted attribute #}
+<span onclick="myFunc({{ player_name|tojson }})">
+
+{# Renders as: onclick="myFunc("John")" - BROKEN HTML! #}
+
+{# ✅ CORRECT - single quotes for attribute, tojson produces double quotes inside #}
+<span onclick='myFunc({{ player_name|tojson }})'>
+
+{# Renders as: onclick='myFunc("John")' - Valid HTML #}
+```
+
+**Why**: `|tojson` always produces JSON strings with double quotes. Using single quotes for the onclick attribute avoids quote conflicts.
+
 ### Python-style Placeholders in JS Strings (CRITICAL)
 
 **NEVER use `%(name)s` placeholders** in translated strings that JavaScript will interpolate. Flask-Babel tries to substitute them at render time → `KeyError`.

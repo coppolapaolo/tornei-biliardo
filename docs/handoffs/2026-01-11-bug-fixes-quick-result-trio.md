@@ -155,3 +155,63 @@ pyright  # 0 errors
 ```
 
 **Stato**: ✅ Completato
+
+---
+
+## Bug 4: Modal Assegnazione Tavoli Non Funzionante
+
+### Sintomi
+- Cliccando su "Assegna" o "Tavolo X" il modal si apriva ma la griglia tavoli era vuota
+- Console JavaScript mostrava: `SyntaxError: Unexpected end of input`
+
+### Root Cause (Due Problemi)
+
+**Problema 1: Route usa metodo deprecato**
+```python
+# routes/admin/competition/detail.py (PRIMA)
+available_tables = TableAssignmentService.get_table_names(gara.location)  # ❌ DEPRECATO
+
+# (DOPO)
+available_tables = TableAssignmentService.get_table_names_for_gara(gara.id)  # ✅ CORRETTO
+```
+
+`get_table_names_for_gara()` rispetta la priorità:
+1. `gara.available_tables` (se configurato)
+2. Tavoli della venue
+3. Lista vuota
+
+**Problema 2: Virgolette annidate in onclick**
+```html
+<!-- PRIMA - virgolette doppie annidate -->
+onclick="openTableAssignment(46, null, "player3 • player4 • mario", '')"
+                                       ↑ ERRORE: chiude l'attributo!
+
+<!-- DOPO - single quotes per attributo -->
+onclick='openTableAssignment(46, null, "player3 \u2022 player4 \u2022 mario", "")'
+```
+
+Il filtro `|tojson` produce stringhe con virgolette doppie. Usando single quotes per l'attributo HTML si evita il conflitto.
+
+### Fix
+
+| File | Modifica |
+|------|----------|
+| `routes/admin/competition/detail.py` | Usa `get_table_names_for_gara(gara.id)` |
+| `templates/components/_match_result_row.html` | Attributo onclick con single quotes |
+
+### Lezione Appresa
+
+**CLAUDE.md già documentava questo pattern**, ma per le stringhe tradotte:
+```javascript
+// ❌ WRONG
+alert('{{ _("l'errore") }}');
+
+// ✅ CORRECT
+alert({{ _("l'errore")|tojson }});
+```
+
+Lo stesso principio si applica a QUALSIASI stringa Jinja2 in attributi HTML onclick:
+- Usare single quotes per l'attributo onclick
+- `|tojson` produce stringhe JSON valide con double quotes
+
+**Stato**: ✅ Completato

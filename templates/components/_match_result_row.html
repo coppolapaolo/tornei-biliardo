@@ -135,13 +135,13 @@
         {% endif %}
         {% if match.table_assignment %}
         <span class="badge bg-primary cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
-            onclick="openTableAssignment({{ match.id }}, '{{ match.table_assignment }}', {{ player_display|tojson }}, '')">
+            onclick='openTableAssignment({{ match.id }}, "{{ match.table_assignment }}", {{ player_display|tojson }}, "")'>
             <i class="fas fa-table"></i>
             {{ _('Tavolo %(id)s', id=match.table_assignment) }}
         </span>
         {% else %}
         <span class="badge bg-warning cursor-pointer" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
-            onclick="openTableAssignment({{ match.id }}, null, {{ player_display|tojson }}, '')">
+            onclick='openTableAssignment({{ match.id }}, null, {{ player_display|tojson }}, "")'>
             <i class="fas fa-plus-circle"></i>
             {{ _('Assegna') }}
         </span>
