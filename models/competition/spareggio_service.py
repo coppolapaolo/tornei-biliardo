@@ -95,7 +95,7 @@ class SpareggioService:
                         user = c.user
                         players.append({
                             'user_id': c.user_id,
-                            'username': user.display_name if user else f"User {c.user_id}",
+                            'username': user.username if user else f"User {c.user_id}",
                             'current_ssr_score': ssr_scores.get(c.user_id, 0)
                         })
 

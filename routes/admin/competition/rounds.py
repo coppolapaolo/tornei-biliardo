@@ -123,22 +123,22 @@ def terminate_gara(gara_id):
         flash("Non tutti i turni sono ancora completati!", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    # Check for tiebreakers in top 3 positions
-    tiebreakers = SpareggioService.detect_tiebreakers(gara_id)
-
-    if tiebreakers:
-        # Return tiebreaker data for the modal
-        if is_ajax:
-            return jsonify({
-                "success": False,
-                "needs_tiebreaker": True,
-                "tiebreakers": tiebreakers,
-                "message": "Ci sono parimerito nei primi 3 posti. Inserire i risultati dello spareggio."
-            })
-        flash("Ci sono parimerito nei primi 3 posti. Risolvi gli spareggi prima di terminare.", "warning")
-        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-
     try:
+        # Check for tiebreakers in top 3 positions
+        tiebreakers = SpareggioService.detect_tiebreakers(gara_id)
+
+        if tiebreakers:
+            # Return tiebreaker data for the modal
+            if is_ajax:
+                return jsonify({
+                    "success": False,
+                    "needs_tiebreaker": True,
+                    "tiebreakers": tiebreakers,
+                    "message": "Ci sono parimerito nei primi 3 posti. Inserire i risultati dello spareggio."
+                })
+            flash("Ci sono parimerito nei primi 3 posti. Risolvi gli spareggi prima di terminare.", "warning")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
         GaraService.complete(gara_id)
         if is_ajax:
             return jsonify({
@@ -652,7 +652,7 @@ def bulk_reset_round_matches(gara_id, round_number):
 @competition_bp.route("/<int:gara_id>/match/<int:match_id>/modification_check")
 @login_required
 @gara_manager_required
-def check_match_modification(gara_id, match_id):
+def check_match_modification(_gara_id, match_id):
     """AJAX endpoint to check if a match can be modified."""
     from models.competition.round_manager import AdvancedRoundManager
 
