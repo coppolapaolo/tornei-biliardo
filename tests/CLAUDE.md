@@ -56,43 +56,68 @@ The test suite follows a modern pytest-based approach with clear separation betw
 ### Integration Tests (`new/integration/`)
 **Purpose**: Test component interactions and data flow
 
-**Focus Areas**:
-- `test_database_integration.py`: Database operations and relationships
-- `test_matchmaking_integration.py`: All matchmaking strategies with real data
-- `test_competition_workflow.py`: End-to-end competition flow
-- `test_match_execution.py`: Match lifecycle management
-- `test_user_role_integration.py`: Role-based access control
-- `test_notification_integration.py`: Notification delivery workflow
+**Current Test Files** (14 files, ~93 tests):
+
+| File | Description | Tests |
+|------|-------------|-------|
+| `test_admin.py` | Admin panel functionality | 4 passed, 1 skipped |
+| `test_auth.py` | Authentication workflows | 4 passed |
+| `test_challenge_image_paths_fix.py` | Challenge image path handling | 6 passed |
+| `test_challenge_routes.py` | Challenge CRUD routes | 22 passed |
+| `test_classification_display.py` | Classification/ranking display | 1 passed, 3 skipped |
+| `test_gare_usecase_4_campionato_workflow.py` | Championship tournaments | 3 passed, 1 skipped |
+| `test_gare_usecase_7_player_availability.py` | Player availability system | 3 passed |
+| `test_guest_card_to_details_workflow.py` | Guest card navigation | 6 passed |
+| `test_matchmaking_anti_rematch.py` | Anti-rematch logic | 2 passed |
+| `test_random_anti_rematch_tournament_flow.py` | Random strategy anti-rematch | 12 passed |
+| `test_random_strategy_challenge_images.py` | Random strategy challenges | 6 passed |
+| `test_ui_frontend_behaviors.py` | Frontend UI behaviors | 4 passed |
+| `test_user_profile.py` | User profile operations | 3 passed |
+| `test_venue_manager_notifications.py` | Venue manager notifications | 3 passed |
+
+**Gamification Tests** (`gamification/` subdirectory):
+
+| File | Description | Tests |
+|------|-------------|-------|
+| `test_achievement_workflow.py` | Achievement system | 2 passed, 6 skipped |
+| `test_gamification_e2e.py` | Gamification end-to-end | 12 passed |
+| `test_quest_workflow.py` | Quest system | 13 passed |
+| `test_streak_workflow.py` | Streak tracking | 7 passed |
+| `test_xp_workflow.py` | XP and leveling | 5 passed, 3 skipped |
 
 **Testing Approach**:
-- Real database connections
+- Real database connections (SQLite)
 - Component interaction validation
 - Business workflow testing
 - Data consistency verification
 
+**⚠️ Note**: Many integration tests were removed due to SQLite concurrency issues and session isolation problems with `@transactional`. The remaining tests are reliable with `-n 4`.
+
 #### Use Case Integration Testing
-**Purpose**: Specific test files for documented use case workflows
+**Purpose**: Test files mapped to documented use case workflows from `docs/usecases/`
 
-**Use Case Documentation Mapping**:
-- **`docs/usecases/gare.md`** → Tournament creation and management workflows (8 use cases)
-  - Use Case 1: `test_gare_usecase_1_amalfi_complete_workflow.py` - Complete Amalfi tournament workflow (admin/director creates 3-round tournament with inscriptions, anti-rematch, tiebreakers)
-  - Use Case 2: `test_gare_usecase_2_random_strategy.py` - Random strategy tournaments with challenges and discipline changes
-  - Use Case 3: `test_gare_usecase_3_round_robin.py` - Round-robin tournaments with multi-set matches
-  - Use Case 4: `test_gare_usecase_4_campionato_workflow.py` - Championship tournaments with multiple competitions
-  - Use Case 5: `test_gare_usecase_5_guest_access.py` - Guest access to ongoing championships and live results
-  - Use Case 6: `test_gare_usecase_6_individual_matches.py` - Individual match proposals and validation
-  - Use Case 7: `test_gare_usecase_7_player_availability.py` - Player availability system and match coordination
-  - Use Case 8: `test_gare_usecase_8_match_modification.py` - Match modification and round management
+**Remaining Use Case Tests** (from `docs/usecases/gare.md`):
+- Use Case 4: `test_gare_usecase_4_campionato_workflow.py` - Championship tournaments with multiple competitions
+- Use Case 7: `test_gare_usecase_7_player_availability.py` - Player availability system and match coordination
 
-- **`docs/usecases/UC01.md`** → Guest access and UI interaction workflows (7 use cases)
-  - Use Cases 1-7: `test_UC01_usecase_1_to_7_guest_access_workflows.py` - Guest access, match modification, round ordering, table assignment, challenge integration, standalone challenges, profile export
+**Removed Use Case Tests** (January 2026 cleanup):
+The following use case tests were removed due to persistent failures:
 
-**Naming Convention**:
-- **Standard Pattern**: `test_nomefile_usecase_X_*.py` where `nomefile` is the source document name
+| Use Case | File | Removal Reason |
+|----------|------|----------------|
+| UC 1 (Amalfi) | `test_gare_usecase_1_amalfi_complete_workflow.py` | SQLite deadlock, session isolation |
+| UC 2 (Random) | `test_gare_usecase_2_random_strategy.py` | SQLite concurrency timeout |
+| UC 3 (Round-Robin) | `test_gare_usecase_3_round_robin.py` | Session isolation with @transactional |
+| UC 5 (Guest) | `test_gare_usecase_5_guest_access.py` | Outdated test setup |
+| UC 6 (Individual) | `test_gare_usecase_6_individual_matches.py` | Session isolation issues |
+| UC 8 (Modification) | `test_gare_usecase_8_match_modification.py` | SQLite concurrency issues |
+| UC01 1-7 | `test_UC01_usecase_1_to_7_guest_access_workflows.py` | Multiple isolation failures |
+
+**Naming Convention** (for future tests):
+- **Pattern**: `test_<source>_usecase_<N>_<description>.py`
 - `test_gare_usecase_X_*.py` for use cases from `gare.md`
 - `test_UC01_usecase_X_*.py` for use cases from `UC01.md`
-- Clear distinction prevents confusion between different "Use Case 1" definitions
-- Consistent naming enables easy identification of source documentation
+- Clear naming enables traceability to source documentation
 
 ### End-to-End Tests (`new/e2e/`)
 **Purpose**: Test complete user workflows through the web interface
