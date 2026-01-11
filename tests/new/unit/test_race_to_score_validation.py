@@ -77,13 +77,24 @@ class TestRaceToScoreValidation:
 
         assert "entrambi i giocatori" in str(exc_info.value).lower()
 
-    def test_exact_mode_allows_equal_scores(self):
-        """In 'exact' mode (not race-to), equal scores are allowed (tie)."""
+    def test_exact_mode_allows_equal_scores_when_total_equals_distance(self):
+        """In 'exact' mode (not race-to), equal scores are allowed when total=distance."""
+        match = self._create_mock_match(distance=6, is_race_to=False)
+
+        # In exact mode with distance=6, score 3-3 (total=6) is a valid tie result
+        ScoringService._validate_score_limits(match, 3, 3)
+
+    def test_exact_mode_rejects_invalid_total(self):
+        """In 'exact' mode, total racks must equal distance."""
         match = self._create_mock_match(distance=7, is_race_to=False)
 
-        # In exact mode with distance=7, score 3-3 should be allowed
-        # (assuming total racks limit isn't exceeded)
-        ScoringService._validate_score_limits(match, 3, 3)
+        # In exact mode with distance=7, score 3-3 (total=6) is invalid
+        with pytest.raises(ValueError) as exc_info:
+            ScoringService._validate_score_limits(match, 3, 3)
+
+        assert "esatto numero" in str(exc_info.value).lower()
+        assert "6" in str(exc_info.value)  # Actual total
+        assert "7" in str(exc_info.value)  # Expected total
 
     def test_negative_scores_rejected(self):
         """Negative scores are always rejected."""

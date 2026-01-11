@@ -355,7 +355,8 @@ class GaraService:
             raise ValueError("Vincitore non valido per questo trio")
 
         # Aggiungi rack e gestisci rotazione
-        trio.add_rack_win(winner_id)
+        from models.match.trio_scoring_service import TrioScoringService
+        TrioScoringService.add_rack_win(trio.id, winner_id)
 
         # Prepara risposta con nuovo stato
         state = trio.get_current_state()
@@ -429,8 +430,9 @@ class GaraService:
 
             abort(404)
 
-        # Use the new reset method on TrioMatch
-        trio.reset()
+        # Use TrioScoringService for reset
+        from models.match.trio_scoring_service import TrioScoringService
+        TrioScoringService.reset(trio.id)
 
     @staticmethod
     @transactional(domain="competition")
@@ -448,8 +450,9 @@ class GaraService:
 
             abort(404)
 
-        # Remove last rack
-        removed_rack = trio.remove_last_rack(removed_by_id)
+        # Remove last rack via service
+        from models.match.trio_scoring_service import TrioScoringService
+        removed_rack = TrioScoringService.remove_last_rack(trio.id, removed_by_id)
         if not removed_rack:
             raise ValueError("Nessun rack da rimuovere")
 
@@ -680,13 +683,10 @@ class GaraService:
                     f"(distanza {config.distance})"
                 )
 
-        # Use the new set_result_direct method
-        trio.set_result_direct(player1_racks, player2_racks, player3_racks)
-
-        # Also mark as validated by admin
-        match = db.session.get(Match, trio.match_id)
-        if match:
-            match.validated_by_admin = True
+        # Use TrioScoringService for direct result setting
+        from models.match.trio_scoring_service import TrioScoringService
+        TrioScoringService.set_result_direct(trio.id, player1_racks, player2_racks, player3_racks)
+        # Note: service already marks match as validated_by_admin
 
         return {
             "success": True,

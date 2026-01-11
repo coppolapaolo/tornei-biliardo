@@ -446,6 +446,14 @@ class ScoringService:
                     f"In un match 'al {winning_score}', entrambi i giocatori "
                     f"non possono avere {winning_score} o più punti!"
                 )
+        else:
+            # In "exact number" mode, total racks must equal distance
+            total_racks = player1_score + player2_score
+            if total_racks != match.gara.distance:
+                raise ValueError(
+                    f"In modalità 'esatto numero', il totale dei rack ({total_racks}) "
+                    f"deve essere esattamente {match.gara.distance}!"
+                )
 
     @staticmethod
     def _calculate_result(

@@ -9,6 +9,7 @@ session state when checking total_racks_played.
 
 from datetime import date
 from models.match.models import Match, TrioMatch
+from models.match.trio_scoring_service import TrioScoringService
 from models.competition.models import Gara
 from models.campionato.models import Campionato
 from models.match.trio_config import TrioConfig
@@ -76,21 +77,21 @@ class TestTrioCompletionAtCorrectRack:
         assert config.bonus_racks == 1
 
         # Add rack 1 (P0 vs P1) - should NOT complete
-        trio.add_rack_win(players[0].id)
+        TrioScoringService.add_rack_win(trio.id, players[0].id)
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.total_racks_played == 1
         assert not trio.is_completed, "Should not complete at rack 1"
 
         # Add rack 2 (P0 vs P2) - should NOT complete
-        trio.add_rack_win(players[0].id)  # P0 wins again
+        TrioScoringService.add_rack_win(trio.id, players[0].id)  # P0 wins again
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.total_racks_played == 2
         assert not trio.is_completed, "Should not complete at rack 2"
 
         # Add rack 3 (P1 vs P2) - SHOULD enter awaiting_confirmation
-        trio.add_rack_win(players[1].id)  # P1 wins
+        TrioScoringService.add_rack_win(trio.id, players[1].id)  # P1 wins
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.total_racks_played == 3
@@ -124,7 +125,7 @@ class TestTrioCompletionAtCorrectRack:
         for i in range(5):
             matchup = config.get_matchup_for_rack(i + 1)
             p1_idx, _, _ = matchup
-            trio.add_rack_win(players[p1_idx].id)
+            TrioScoringService.add_rack_win(trio.id, players[p1_idx].id)
             db_session.commit()
             trio = db_session.get(TrioMatch, trio.id)
             assert trio.total_racks_played == i + 1, f"Expected {i+1} racks"
@@ -133,7 +134,7 @@ class TestTrioCompletionAtCorrectRack:
         # Add rack 6 - SHOULD enter awaiting_confirmation
         matchup = config.get_matchup_for_rack(6)
         p1_idx, _, _ = matchup
-        trio.add_rack_win(players[p1_idx].id)
+        TrioScoringService.add_rack_win(trio.id, players[p1_idx].id)
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.total_racks_played == 6
@@ -166,7 +167,7 @@ class TestTrioCompletionAtCorrectRack:
             matchup = config.get_matchup_for_rack(i + 1)
             p1_idx, _, _ = matchup
             winner_id = players[p1_idx].id  # Always first player wins
-            trio.add_rack_win(winner_id)
+            TrioScoringService.add_rack_win(trio.id, winner_id)
             db_session.commit()
             trio = db_session.get(TrioMatch, trio.id)
             assert trio.total_racks_played == i + 1, f"Expected {i+1} racks, got {trio.total_racks_played}"
@@ -175,7 +176,7 @@ class TestTrioCompletionAtCorrectRack:
         # Add rack 6 - SHOULD enter awaiting_confirmation
         matchup = config.get_matchup_for_rack(6)
         p1_idx_final, _, _ = matchup
-        trio.add_rack_win(players[p1_idx_final].id)
+        TrioScoringService.add_rack_win(trio.id, players[p1_idx_final].id)
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.total_racks_played == 6

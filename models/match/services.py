@@ -530,6 +530,9 @@ class RackService:
         IMPORTANT: Also deletes the PlayerEncounter record to maintain
         anti-rematch consistency. This ensures that when a match is reset,
         the players can be paired again in future rounds.
+
+        For Trio matches, delegates to TrioScoringService.reset() which handles
+        TrioRack deletion and trio-specific state reset.
         """
         match = db.session.get(Match, match_id)
         if not match:
@@ -538,7 +541,13 @@ class RackService:
         if match.is_bye:
             raise ValueError("Non puoi resettare una partita bye!")
 
-        # Elimina tutti i rack
+        # Handle Trio matches separately via TrioScoringService
+        if match.is_trio and match.trio_match:
+            from .trio_scoring_service import TrioScoringService
+            TrioScoringService.reset(match.trio_match.id)
+            return
+
+        # Regular match reset: elimina tutti i rack
         existing_racks = Rack.query.filter_by(match_id=match_id).all()
         for rack in existing_racks:
             db.session.delete(rack)
