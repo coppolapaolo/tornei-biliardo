@@ -256,7 +256,7 @@ function addAvailability() {
     const notes = document.getElementById('notes').value.trim();
 
     if (!location || !time) {
-        alert('Compila tutti i campi obbligatori');
+        showError('Compila tutti i campi obbligatori');
         return;
     }
 
@@ -264,7 +264,7 @@ function addAvailability() {
     if (type === 'one_time') {
         const date = document.getElementById('date').value;
         if (!date) {
-            alert('Seleziona una data');
+            showError('Seleziona una data');
             return;
         }
         dateInfo = new Date(date).toLocaleDateString('it-IT');
@@ -339,7 +339,7 @@ document.getElementById('availabilityForm').addEventListener('submit', function(
     e.preventDefault();
 
     // In a real implementation, this would collect all availability data and send to server
-    alert('Disponibilità salvate con successo!');
+    showSuccess('Disponibilità salvate con successo!');
 
     // Update badges to show saved status
     document.querySelectorAll('.badge.bg-warning').forEach(badge => {

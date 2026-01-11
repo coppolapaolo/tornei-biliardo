@@ -410,12 +410,12 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert('Errore: ' + data.error);
+                    showError('Errore: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Errore durante l\'aggiunta del rack');
+                showError('Errore durante l\'aggiunta del rack');
             });
     }
 
@@ -436,12 +436,12 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert('Errore: ' + data.error);
+                    showError('Errore: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Errore durante la rimozione del rack');
+                showError('Errore durante la rimozione del rack');
             });
     }
 
@@ -460,18 +460,18 @@
             .then(data => {
                 if (data.success) {
                     if (data.completed) {
-                        alert('Match completato con successo!');
+                        showSuccess('Match completato con successo!');
                     } else {
-                        alert('Risultato confermato! In attesa dell\'altro giocatore.');
+                        showSuccess('Risultato confermato! In attesa dell\'altro giocatore.');
                     }
                     location.reload();
                 } else {
-                    alert('Errore: ' + data.error);
+                    showError('Errore: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Errore durante la conferma');
+                showError('Errore durante la conferma');
             });
     }
 
@@ -489,15 +489,15 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Ultimo rack rimosso. Continuate a giocare!');
+                    showInfo('Ultimo rack rimosso. Continuate a giocare!');
                     location.reload();
                 } else {
-                    alert('Errore: ' + data.error);
+                    showError('Errore: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Errore durante il rifiuto');
+                showError('Errore durante il rifiuto');
             });
     }
 </script>

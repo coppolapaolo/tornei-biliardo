@@ -279,14 +279,14 @@ function recordChallengeAttempt(garaChallengeId, playerId, attemptNum) {
     if (scoreInput) {
         const score = parseInt(scoreInput.value);
         if (isNaN(score)) {
-            alert('Inserire un punteggio valido');
+            showError('Inserire un punteggio valido');
             return;
         }
         data.score = score;
     } else if (passedSelect) {
         const passed = passedSelect.value;
         if (!passed) {
-            alert('Selezionare un risultato');
+            showError('Selezionare un risultato');
             return;
         }
         data.passed = passed === 'true';
@@ -311,12 +311,12 @@ function recordChallengeAttempt(garaChallengeId, playerId, attemptNum) {
         if (result.success) {
             location.reload(); // Ricarica per aggiornare i dati
         } else {
-            alert('Errore: ' + (result.error || 'Errore sconosciuto'));
+            showError('Errore: ' + (result.error || 'Errore sconosciuto'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Errore di rete durante la registrazione del tentativo');
+        showError('Errore di rete durante la registrazione del tentativo');
     });
 }
 
@@ -338,7 +338,7 @@ function recordChallengeAttempts(garaChallengeId, playerId) {
     }
     
     if (attempts.length === 0) {
-        alert('Selezionare almeno un risultato');
+        showError('Selezionare almeno un risultato');
         return;
     }
     
@@ -352,15 +352,15 @@ function recordChallengeAttempts(garaChallengeId, playerId) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            alert(`${attempts.length} tentativo/i registrato/i con successo!`);
+            showSuccess(`${attempts.length} tentativo/i registrato/i con successo!`);
             location.reload(); // Ricarica per aggiornare i dati
         } else {
-            alert('Errore: ' + (result.error || 'Errore sconosciuto'));
+            showError('Errore: ' + (result.error || 'Errore sconosciuto'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Errore di rete durante la registrazione dei tentativi');
+        showError('Errore di rete durante la registrazione dei tentativi');
     });
 }
 </script>

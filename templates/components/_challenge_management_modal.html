@@ -436,17 +436,17 @@ function createNewChallenge() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Challenge creata con successo!');
+            showSuccess('Challenge creata con successo!');
             window.returningToMainModal = true;
             $('#createChallengeModal').modal('hide');
             form.reset();
         } else {
-            alert(data.error || 'Errore nella creazione della challenge');
+            showError(data.error || 'Errore nella creazione della challenge');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Errore di rete nella creazione della challenge');
+        showError('Errore di rete nella creazione della challenge');
     });
 }
 

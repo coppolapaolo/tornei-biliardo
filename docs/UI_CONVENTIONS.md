@@ -216,6 +216,74 @@ Le icone sono fornite da [Font Awesome 6 Free](https://fontawesome.com/icons). Q
 
 ---
 
+## Sistema Notifiche JavaScript
+
+**File**: `static/js/notifications.js`
+
+Sostituisce i nativi `alert()` con componenti Bootstrap per una UX migliore.
+
+### Funzioni Disponibili
+
+| Funzione | Uso | Comportamento |
+|----------|-----|---------------|
+| `showSuccess(msg)` | Operazioni riuscite | Toast verde, auto-hide 3s |
+| `showError(msg)` | Errori | Toast rosso, persistente (click per chiudere) |
+| `showWarning(msg)` | Avvisi | Toast giallo, auto-hide 3s |
+| `showInfo(msg)` | Informazioni | Toast blu, auto-hide 3s |
+| `showConfirm(msg, onConfirm, options)` | Conferme critiche | Modal Bootstrap con callback |
+| `showValidationError(el, msg)` | Validazione form | Alert inline sotto l'elemento |
+| `clearValidationError(el)` | Rimuove validazione | Pulisce stato errore |
+
+### Esempi d'Uso
+
+```javascript
+// Successo
+showSuccess('Operazione completata!');
+
+// Errore
+showError('Errore durante il salvataggio');
+
+// Conferma con callback
+showConfirm('Eliminare questo elemento?', () => {
+    deleteItem(id);
+});
+
+// Conferma con opzioni personalizzate
+showConfirm('Terminare la gara?', onConfirm, {
+    title: 'Conferma Terminazione',
+    confirmText: 'Termina',
+    confirmClass: 'btn-warning'
+});
+
+// Validazione form
+if (!isValid) {
+    showValidationError(inputElement, 'Campo obbligatorio');
+    return;
+}
+```
+
+### Componenti HTML Richiesti
+
+Presenti in `base.html`:
+
+```html
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">...</div>
+```
+
+### Mapping da alert() Nativo
+
+| Prima | Dopo |
+|-------|------|
+| `alert('Errore: ' + msg)` | `showError('Errore: ' + msg)` |
+| `alert('Completato!')` | `showSuccess('Completato!')` |
+| `if (confirm(msg)) { ... }` | `showConfirm(msg, () => { ... })` |
+
+---
+
 ## Card Structure
 
 ### Struttura Standard
@@ -432,6 +500,7 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 | 2025-12-28 | Form switch per toggle privacy | Bootstrap `form-switch` per impostazioni ON/OFF - feedback visivo immediato |
 | 2025-12-28 | Layout profilo context-aware | Stesso template per profilo proprio e pubblico con condizionali `is_own_profile` |
 | 2025-12-28 | Titoli context-aware nei componenti | "Le mie Statistiche" vs "Statistiche" in base a chi visualizza |
+| 2026-01-11 | Sistema notifiche Bootstrap (Toast/Modal) | Sostituisce `alert()` nativi per UX migliore. Toast per feedback, Modal per conferme |
 
 ---
 

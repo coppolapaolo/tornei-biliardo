@@ -153,12 +153,12 @@ function toggleFavorite(challengeId, btn) {
                 btn.title = 'Aggiungi ai preferiti';
             }
         } else {
-            alert('Errore nell\'aggiornamento dei preferiti');
+            showError('Errore nell\'aggiornamento dei preferiti');
         }
     })
     .catch(error => {
         console.error('Error toggling favorite:', error);
-        alert('Errore di rete');
+        showError('Errore di rete');
     });
 }
 </script>

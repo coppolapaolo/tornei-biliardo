@@ -134,7 +134,7 @@ function validateScoreForm(form) {
 
     // For "race to n": both players cannot have winning score or higher
     if (isRaceTo && p1Score >= winningScore && p2Score >= winningScore) {
-        alert({{ _("In un match 'al N', entrambi i giocatori non possono avere il punteggio vincente!")|tojson }});
+        showError({{ _("In un match 'al N', entrambi i giocatori non possono avere il punteggio vincente!")|tojson }});
         return false;
     }
 
@@ -160,14 +160,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Check max per player
             if (p1Racks > maxPerPlayer || p2Racks > maxPerPlayer || p3Racks > maxPerPlayer) {
-                alert({{ _("Ogni giocatore puo' vincere al massimo")|tojson }} + ' ' + maxPerPlayer + ' rack');
+                showError({{ _("Ogni giocatore puo' vincere al massimo")|tojson }} + ' ' + maxPerPlayer + ' rack');
                 return;
             }
 
             // Check sum equals expected total
             const actualSum = p1Racks + p2Racks + p3Racks;
             if (actualSum !== expectedSum) {
-                alert({{ _("La somma dei rack deve essere")|tojson }} + ' ' + expectedSum + ' (' + {{ _("hai inserito")|tojson }} + ' ' + actualSum + ')');
+                showError({{ _("La somma dei rack deve essere")|tojson }} + ' ' + expectedSum + ' (' + {{ _("hai inserito")|tojson }} + ' ' + actualSum + ')');
                 return;
             }
 
@@ -188,12 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     location.reload();
                 } else {
-                    alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+                showError({{ _("Errore durante l'impostazione del risultato")|tojson }});
             });
         });
     }

@@ -213,12 +213,12 @@ document.getElementById('attemptForm').addEventListener('submit', function(e) {
         if (result.success) {
             location.reload(); // Reload to show updated progress
         } else {
-            alert('Errore: ' + (result.error || 'Errore sconosciuto'));
+            showError('Errore: ' + (result.error || 'Errore sconosciuto'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Errore di rete durante la registrazione del tentativo');
+        showError('Errore di rete durante la registrazione del tentativo');
     })
     .finally(() => {
         // Re-enable submit button

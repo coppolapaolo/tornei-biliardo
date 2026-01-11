@@ -320,7 +320,7 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
+            showError({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -339,7 +339,7 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
+            showError({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -362,12 +362,12 @@
             // Show SSR modal for tiebreaker resolution
             showSsrModal(garaId, data.tiebreakers);
           } else {
-            alert({{ _("Errore durante la terminazione:")|tojson }} + ' ' + (data.error || data.message));
+            showError({{ _("Errore durante la terminazione:")|tojson }} + ' ' + (data.error || data.message));
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert({{ _("Errore durante la terminazione della gara")|tojson }});
+          showError({{ _("Errore durante la terminazione della gara")|tojson }});
         });
     }
   }
@@ -478,14 +478,14 @@
     });
 
     if (hasErrors) {
-      alert({{ _("Tutti i punteggi devono essere numeri interi positivi")|tojson }});
+      showError({{ _("Tutti i punteggi devono essere numeri interi positivi")|tojson }});
       return;
     }
 
     // Check for duplicates within each group
     const scoreValues = Object.values(scores);
     if (new Set(scoreValues).size !== scoreValues.length) {
-      alert({{ _("I punteggi devono essere tutti diversi per risolvere il parimerito")|tojson }});
+      showError({{ _("I punteggi devono essere tutti diversi per risolvere il parimerito")|tojson }});
       return;
     }
 
@@ -507,14 +507,14 @@
         } else if (data.needs_tiebreaker) {
           // Still have unresolved tiebreakers - update modal
           showSsrModal(garaId, data.tiebreakers);
-          alert(data.message);
+          showInfo(data.message);
         } else {
-          alert({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
+          showError({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert({{ _("Errore durante il salvataggio dei punteggi")|tojson }});
+        showError({{ _("Errore durante il salvataggio dei punteggi")|tojson }});
       });
   }
 
@@ -530,7 +530,7 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert({{ _("Errore durante il reset:")|tojson }} + ' ' + text);
+            showError({{ _("Errore durante il reset:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -555,12 +555,12 @@
           {% endif %}
         } else {
           response.text().then(text => {
-            alert({{ _("Errore durante l'eliminazione della gara: ")|tojson }} + response.status);
+            showError({{ _("Errore durante l'eliminazione della gara: ")|tojson }} + response.status);
             console.error('Delete error:', text);
           });
         }
       }).catch(err => {
-        alert({{ _("Errore di rete durante l'eliminazione")|tojson }});
+        showError({{ _("Errore di rete durante l'eliminazione")|tojson }});
         console.error('Network error:', err);
       });
     }
@@ -584,7 +584,7 @@
           {% endif %}
         } else {
           response.text().then(text => {
-            alert({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
+            showError({{ _("Errore durante la cancellazione:")|tojson }} + ' ' + text);
           });
         }
       });
@@ -712,14 +712,14 @@
           location.reload();
         } else {
           response.text().then(text => {
-            alert({{ _("Errore durante l'avvio del turno:")|tojson }} + ' ' + text);
+            showError({{ _("Errore durante l'avvio del turno:")|tojson }} + ' ' + text);
             buttons.forEach(btn => btn.disabled = false);
           });
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert({{ _("Errore di rete durante l'avvio del turno")|tojson }});
+        showError({{ _("Errore di rete durante l'avvio del turno")|tojson }});
         buttons.forEach(btn => btn.disabled = false);
       });
   }
@@ -771,20 +771,20 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert(`${data.message}\n\n${data.details.join('\n')}`);
+          showSuccess(data.message + '\n' + data.details.join('\n'));
           if (data.redirect) {
-            window.location.href = data.redirect;
+            setTimeout(() => { window.location.href = data.redirect; }, 1500);
           } else {
-            location.reload();
+            setTimeout(() => { location.reload(); }, 1500);
           }
         } else {
-          alert({{ _("Errore:")|tojson }} + ' ' + data.error);
+          showError({{ _("Errore:")|tojson }} + ' ' + data.error);
           buttons.forEach(btn => btn.disabled = false);
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert({{ _("Errore di rete durante la creazione del turno")|tojson }});
+        showError({{ _("Errore di rete durante la creazione del turno")|tojson }});
         buttons.forEach(btn => btn.disabled = false);
       });
   }
@@ -888,12 +888,12 @@
             bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
             location.reload();
           } else {
-            alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+            showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+          showError({{ _("Errore durante l'impostazione del risultato")|tojson }});
         });
     } else {
       // Submit normal match result
@@ -914,12 +914,12 @@
             bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
             location.reload();
           } else {
-            alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+            showError({{ _("Errore durante l'impostazione del risultato")|tojson }});
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert({{ _("Errore durante l'impostazione del risultato")|tojson }});
+          showError({{ _("Errore durante l'impostazione del risultato")|tojson }});
         });
     }
 
@@ -938,7 +938,7 @@
           if (response.ok) {
             location.reload();
           } else {
-            alert({{ _("Errore durante il reset")|tojson }});
+            showError({{ _("Errore durante il reset")|tojson }});
           }
         });
     }
@@ -957,9 +957,9 @@
             location.reload();
           } else {
             response.json().then(data => {
-              alert(data.error || {{ _("Errore durante il reset del trio")|tojson }});
+              showError(data.error || {{ _("Errore durante il reset del trio")|tojson }});
             }).catch(() => {
-              alert({{ _("Errore durante il reset del trio")|tojson }});
+              showError({{ _("Errore durante il reset del trio")|tojson }});
             });
           }
         });
@@ -979,12 +979,12 @@
           if (data.success) {
             location.reload();
           } else {
-            alert({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile validare il risultato")|tojson }}));
+            showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile validare il risultato")|tojson }}));
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert({{ _("Errore durante la validazione")|tojson }});
+          showError({{ _("Errore durante la validazione")|tojson }});
         });
     }
   }
@@ -1109,7 +1109,7 @@
           // Se c'è stato uno swap, mostra notifica più dettagliata
           if (data.swapped_match_id) {
             console.log('Swap detected, swapped_match_id:', data.swapped_match_id);
-            alert(data.message + '\n\n{{ _("La pagina verrà ricaricata per mostrare le modifiche.") }}');
+            showSuccess(data.message);
           }
 
           // Ricarica la pagina per aggiornare la visualizzazione
@@ -1117,12 +1117,12 @@
           location.reload();
         } else {
           console.error('Error from server:', data.message);
-          alert({{ _("Errore:")|tojson }} + ' ' + data.message);
+          showError({{ _("Errore:")|tojson }} + ' ' + data.message);
         }
       })
       .catch(error => {
         console.error('Network error:', error);
-        alert({{ _("Errore di rete durante l'operazione sul tavolo")|tojson }});
+        showError({{ _("Errore di rete durante l'operazione sul tavolo")|tojson }});
       });
   }
 </script>

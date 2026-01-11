@@ -1,0 +1,175 @@
+/**
+ * Sistema di notifiche Bootstrap
+ * Sostituisce alert() con Toast, Modal e validazione inline
+ */
+
+// === TOAST ===
+
+/**
+ * Mostra un toast Bootstrap
+ * @param {string} message - Messaggio da mostrare
+ * @param {string} type - Tipo Bootstrap: 'success', 'danger', 'warning', 'info'
+ * @param {boolean} autohide - Se true, scompare dopo 3 secondi
+ */
+function showToast(message, type = 'success', autohide = true) {
+  const container = document.getElementById('toast-container');
+  if (!container) {
+    console.error('Toast container not found! Add #toast-container to base.html');
+    return;
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast align-items-center text-bg-${type} border-0`;
+  toast.setAttribute('role', 'alert');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'd-flex';
+
+  const body = document.createElement('div');
+  body.className = 'toast-body';
+  body.textContent = message;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'btn-close btn-close-white me-2 m-auto';
+  closeBtn.setAttribute('data-bs-dismiss', 'toast');
+
+  wrapper.appendChild(body);
+  wrapper.appendChild(closeBtn);
+  toast.appendChild(wrapper);
+  container.appendChild(toast);
+
+  const bsToast = new bootstrap.Toast(toast, { autohide, delay: 3000 });
+  bsToast.show();
+  toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+/**
+ * Mostra un messaggio di successo (toast verde, auto-hide)
+ * @param {string} message - Messaggio da mostrare
+ */
+function showSuccess(message) {
+  showToast(message, 'success', true);
+}
+
+/**
+ * Mostra un messaggio di errore (toast rosso, persistente)
+ * @param {string} message - Messaggio da mostrare
+ */
+function showError(message) {
+  showToast(message, 'danger', false);
+}
+
+/**
+ * Mostra un messaggio di warning (toast giallo, auto-hide)
+ * @param {string} message - Messaggio da mostrare
+ */
+function showWarning(message) {
+  showToast(message, 'warning', true);
+}
+
+/**
+ * Mostra un messaggio informativo (toast blu, auto-hide)
+ * @param {string} message - Messaggio da mostrare
+ */
+function showInfo(message) {
+  showToast(message, 'info', true);
+}
+
+// === MODAL CONFERMA ===
+
+/**
+ * Mostra un modal di conferma
+ * @param {string} message - Messaggio da mostrare
+ * @param {function} onConfirm - Callback da eseguire se l'utente conferma
+ * @param {object} options - Opzioni aggiuntive
+ * @param {string} options.title - Titolo del modal (default: "Conferma")
+ * @param {string} options.confirmText - Testo bottone conferma (default: "Conferma")
+ * @param {string} options.confirmClass - Classe bottone conferma (default: "btn-danger")
+ */
+function showConfirm(message, onConfirm, options = {}) {
+  const {
+    title = 'Conferma',
+    confirmText = 'Conferma',
+    confirmClass = 'btn-danger'
+  } = options;
+
+  const modalEl = document.getElementById('confirmModal');
+  if (!modalEl) {
+    console.error('Confirm modal not found! Add #confirmModal to base.html');
+    // Fallback a confirm() nativo
+    if (confirm(message)) {
+      onConfirm();
+    }
+    return;
+  }
+
+  const modalTitle = modalEl.querySelector('.modal-title');
+  const modalBody = document.getElementById('confirmModalBody');
+  const confirmBtn = document.getElementById('confirmModalBtn');
+
+  if (modalTitle) modalTitle.textContent = title;
+  modalBody.textContent = message;
+  confirmBtn.textContent = confirmText;
+  confirmBtn.className = `btn ${confirmClass}`;
+
+  const modal = new bootstrap.Modal(modalEl);
+
+  // Rimuovi handler precedenti clonando il bottone
+  const newBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+  newBtn.addEventListener('click', () => {
+    modal.hide();
+    onConfirm();
+  });
+
+  modal.show();
+}
+
+// === VALIDAZIONE INLINE ===
+
+/**
+ * Mostra un errore di validazione sotto un campo form
+ * @param {HTMLElement} element - L'elemento input/select
+ * @param {string} message - Messaggio di errore
+ */
+function showValidationError(element, message) {
+  clearValidationError(element);
+  element.classList.add('is-invalid');
+
+  const feedback = document.createElement('div');
+  feedback.className = 'invalid-feedback';
+  feedback.textContent = message;
+
+  // Inserisci dopo l'elemento (o dopo il parent se input-group)
+  const parent = element.closest('.input-group') || element;
+  parent.parentNode.insertBefore(feedback, parent.nextSibling);
+}
+
+/**
+ * Rimuove l'errore di validazione da un campo
+ * @param {HTMLElement} element - L'elemento input/select
+ */
+function clearValidationError(element) {
+  element.classList.remove('is-invalid');
+  const parent = element.closest('.input-group') || element;
+  const feedback = parent.parentNode.querySelector('.invalid-feedback');
+  if (feedback) feedback.remove();
+}
+
+/**
+ * Pulisce tutti gli errori di validazione in un form
+ * @param {HTMLFormElement|string} form - Il form o il suo selettore
+ */
+function clearAllValidationErrors(form) {
+  const formEl = typeof form === 'string' ? document.querySelector(form) : form;
+  if (!formEl) return;
+
+  formEl.querySelectorAll('.is-invalid').forEach(el => {
+    el.classList.remove('is-invalid');
+  });
+  formEl.querySelectorAll('.invalid-feedback').forEach(el => {
+    el.remove();
+  });
+}

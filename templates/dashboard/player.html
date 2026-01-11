@@ -18,8 +18,8 @@ function unsubscribeFromProva(provaId, provaNumber) {
     fetch(`/player/gara/${provaId}/unsubscribe`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-    }).then(r => { if (r.ok) location.reload(); else alert('Errore durante la disiscrizione'); })
-      .catch(() => alert('Errore durante la disiscrizione'));
+    }).then(r => { if (r.ok) location.reload(); else showError('Errore durante la disiscrizione'); })
+      .catch(() => showError('Errore durante la disiscrizione'));
   }
 }
 </script>

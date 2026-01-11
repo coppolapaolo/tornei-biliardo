@@ -227,6 +227,9 @@
 </head>
 
 <body>
+    <!-- Toast Container for notifications.js -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
@@ -517,8 +520,27 @@
     </footer>
     {% endif %}
 
+    <!-- Confirm Modal for notifications.js -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">{{ _('Conferma') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+                    <button type="button" class="btn btn-danger" id="confirmModalBtn">{{ _('Conferma') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Notifications System (Toast, Confirm Modal, Validation) -->
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
     <!-- Gamification Animations JS -->
     <script src="{{ url_for('static', filename='js/gamification.js') }}"></script>
 

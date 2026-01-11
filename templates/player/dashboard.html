@@ -48,11 +48,11 @@ function unsubscribeFromProva(provaId, provaNumber) {
             if (response.ok) {
                 location.reload();
             } else {
-                alert('Errore durante la disiscrizione');
+                showError('Errore durante la disiscrizione');
             }
         }).catch(error => {
             console.error('Error:', error);
-            alert('Errore durante la disiscrizione');
+            showError('Errore durante la disiscrizione');
         });
     }
 }

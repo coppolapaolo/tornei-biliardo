@@ -132,12 +132,12 @@ function deleteChallenge(challengeId) {
             if (data.success) {
                 location.reload(); // Ricarica la pagina
             } else {
-                alert('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
+                showError('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
             }
         })
         .catch(error => {
             console.error('Error deleting challenge:', error);
-            alert('Errore di rete nell\'eliminazione della challenge');
+            showError('Errore di rete nell\'eliminazione della challenge');
         });
     }
 }

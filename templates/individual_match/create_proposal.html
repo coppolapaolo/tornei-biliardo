@@ -295,7 +295,7 @@
 
         if (proposalType === 'direct' && selectedPlayerIds.length === 0) {
             e.preventDefault();
-            alert('Devi selezionare almeno un giocatore per un invito diretto');
+            showError('Devi selezionare almeno un giocatore per un invito diretto');
             return;
         }
 

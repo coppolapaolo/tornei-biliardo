@@ -121,7 +121,7 @@
 function confirmReset() {
   const userId = document.getElementById('reset_user_id').value;
   if (!userId) {
-    alert('{{ _("Seleziona un utente") }}');
+    showError('{{ _("Seleziona un utente") }}');
     return false;
   }
   if (confirm('{{ _("Sei sicuro di voler resettare il livello di questo utente?") }}')) {

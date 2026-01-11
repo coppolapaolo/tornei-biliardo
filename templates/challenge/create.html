@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error creating challenge:', error);
-            alert('Errore nella creazione della challenge. Riprova.');
+            showError('Errore nella creazione della challenge. Riprova.');
         });
     });
 });
