@@ -201,8 +201,8 @@
                         <h6><a href="{{ url_for('admin.user.user_detail', user_id=manager.id) }}" class="text-decoration-none">{{ manager.username }}</a></h6>
                         <small class="text-muted">Gestore Attuale</small>
                     </div>
-                    <form method="POST" action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager.id) }}" 
-                          onsubmit="return confirm('Sei sicuro di voler revocare la gestione di questa sala?')">
+                    <form method="POST" action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager.id) }}"
+                          onsubmit="return confirmSubmit(this, 'Sei sicuro di voler revocare la gestione di questa sala?')">
                         <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                             <i class="fas fa-user-times"></i> Revoca Gestione
                         </button>

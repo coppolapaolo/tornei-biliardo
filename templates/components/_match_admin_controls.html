@@ -127,6 +127,11 @@
  * For "race to n" matches, prevents both players from having the winning score.
  */
 function validateScoreForm(form) {
+    // If already confirmed via modal, proceed with submission
+    if (form.dataset.confirmed === 'true') {
+        return true;
+    }
+
     const isRaceTo = form.dataset.isRaceTo === 'true';
     const winningScore = parseInt(form.dataset.winningScore, 10);
     const p1Score = parseInt(form.querySelector('[name="player1_score"]').value, 10);
@@ -138,7 +143,12 @@ function validateScoreForm(form) {
         return false;
     }
 
-    return confirm({{ _("Confermi di voler impostare questo risultato?")|tojson }});
+    // Show confirmation modal, submit on confirm
+    showConfirm({{ _("Confermi di voler impostare questo risultato?")|tojson }}, () => {
+        form.dataset.confirmed = 'true';
+        form.submit();
+    });
+    return false;
 }
 
 /**
@@ -171,29 +181,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (!confirm({{ _("Confermi di voler impostare questo risultato?")|tojson }})) {
-                return;
-            }
-
-            // Submit via AJAX
+            // Show confirmation modal, submit via AJAX on confirm
             const url = this.dataset.url;
             const formData = new FormData(this);
 
-            fetch(url, {
-                method: 'POST',
-                body: new URLSearchParams(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante l'impostazione del risultato")|tojson }});
+            showConfirm({{ _("Confermi di voler impostare questo risultato?")|tojson }}, () => {
+                fetch(url, {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError({{ _("Errore durante l'impostazione del risultato")|tojson }});
+                });
             });
         });
     }

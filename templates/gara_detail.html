@@ -299,17 +299,17 @@
       message = {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.")|tojson }};
     }
 
-    if (confirm(message)) {
+    showConfirm(message, () => {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/admin/gara/${provaId}/start_first_round`;
       document.body.appendChild(form);
       form.submit();
-    }
+    });
   }
 
   function cancelFirstRound(provaId) {
-    if (confirm({{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.")|tojson }}, () => {
       fetch(`/admin/gara/${provaId}/cancel_first_round`, {
         method: 'POST',
         headers: {
@@ -324,11 +324,11 @@
           });
         }
       });
-    }
+    });
   }
 
   function cancelCurrentRound(provaId) {
-    if (confirm({{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.")|tojson }}, () => {
       fetch(`/admin/gara/${provaId}/cancel_current_round`, {
         method: 'POST',
         headers: {
@@ -343,11 +343,11 @@
           });
         }
       });
-    }
+    });
   }
 
   function terminateGara(garaId) {
-    if (confirm({{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.")|tojson }}, () => {
       fetch(`/admin/gara/${garaId}/terminate`, {
         method: 'POST',
         headers: {
@@ -369,7 +369,7 @@
           console.error('Error:', error);
           showError({{ _("Errore durante la terminazione della gara")|tojson }});
         });
-    }
+    });
   }
 
   function showSsrModal(garaId, tiebreakers) {
@@ -519,7 +519,7 @@
   }
 
   function resetLastRound(garaId, roundNumber) {
-    if (confirm({{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!")|tojson }}, () => {
       fetch(`/admin/gara/${garaId}/round/${roundNumber}/bulk_reset`, {
         method: 'POST',
         headers: {
@@ -534,13 +534,13 @@
           });
         }
       });
-    }
+    });
   }
 
   function deleteProva(provaId, provaNumber) {
     let confirmMsg = {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!")|tojson }};
     confirmMsg = confirmMsg.replace('{number}', provaNumber);
-    if (confirm(confirmMsg)) {
+    showConfirm(confirmMsg, () => {
       fetch(`/admin/gara/${provaId}/delete`, {
         method: 'POST',
         headers: {
@@ -563,13 +563,13 @@
         showError({{ _("Errore di rete durante l'eliminazione")|tojson }});
         console.error('Network error:', err);
       });
-    }
+    });
   }
 
   function cancelProvaWithNotifications(provaId, provaNumber) {
     let confirmMsg = {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!")|tojson }};
     confirmMsg = confirmMsg.replace('{number}', provaNumber);
-    if (confirm(confirmMsg)) {
+    showConfirm(confirmMsg, () => {
       fetch(`/admin/gara/${provaId}/cancel`, {
         method: 'POST',
         headers: {
@@ -588,7 +588,7 @@
           });
         }
       });
-    }
+    });
   }
 
   function dateToLocalString(date) {
@@ -790,13 +790,13 @@
   }
 
   function closeInscriptions(provaId) {
-    if (confirm({{ _("Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.")|tojson }}, () => {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/admin/gara/${provaId}/close_inscriptions`;
       document.body.appendChild(form);
       form.submit();
-    }
+    });
   }
 
   let currentMatchId = null;
@@ -927,7 +927,7 @@
   }
 
   function resetMatchQuick(matchId) {
-    if (confirm({{ _("Sei sicuro di voler resettare questa partita?")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler resettare questa partita?")|tojson }}, () => {
       fetch(`/admin/match/${matchId}/reset`, {
         method: 'POST',
         headers: {
@@ -941,11 +941,11 @@
             showError({{ _("Errore durante il reset")|tojson }});
           }
         });
-    }
+    });
   }
 
   function resetTrioQuick(trioId) {
-    if (confirm({{ _("Sei sicuro di voler resettare questo trio?")|tojson }})) {
+    showConfirm({{ _("Sei sicuro di voler resettare questo trio?")|tojson }}, () => {
       fetch(`/admin/gara/trio/${trioId}/reset`, {
         method: 'POST',
         headers: {
@@ -963,11 +963,11 @@
             });
           }
         });
-    }
+    });
   }
 
   function validateMatchQuick(matchId) {
-    if (confirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")|tojson }})) {
+    showConfirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")|tojson }}, () => {
       fetch(`/admin/match/${matchId}/validate`, {
         method: 'POST',
         headers: {
@@ -986,7 +986,7 @@
           console.error('Error:', error);
           showError({{ _("Errore durante la validazione")|tojson }});
         });
-    }
+    });
   }
 
   // ============ TABLE ASSIGNMENT MODAL SYSTEM ============

@@ -33,7 +33,7 @@
 {% block scripts %}
 <script>
 function toggleActive(tournamentId) {
-    if (confirm('Sei sicuro di voler cambiare lo stato del campionato?')) {
+    showConfirm('{{ _("Sei sicuro di voler cambiare lo stato del campionato?") }}', () => {
         fetch(`/admin/campionato/${tournamentId}/toggle_active`, {
             method: 'POST',
             headers: {
@@ -44,11 +44,11 @@ function toggleActive(tournamentId) {
                 location.reload();
             }
         });
-    }
+    });
 }
 
 function deleteTournament(tournamentId, tournamentName) {
-    if (confirm(`Sei SICURO di voler eliminare il campionato "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
+    showConfirm(`{{ _("Sei SICURO di voler eliminare il campionato \"{name}\"?\n\nQuesta azione è IRREVERSIBILE!") }}`.replace('{name}', tournamentName), () => {
         fetch(`/admin/campionato/${tournamentId}/delete`, {
             method: 'POST',
             headers: {
@@ -59,7 +59,7 @@ function deleteTournament(tournamentId, tournamentName) {
                 location.reload();
             }
         });
-    }
+    });
 }
 </script>
 {% endblock %}

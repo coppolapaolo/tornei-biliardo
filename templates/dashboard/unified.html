@@ -26,23 +26,23 @@
 {% block scripts %}
 <script>
 function unsubscribeFromProva(provaId, provaNumber) {
-  if (confirm(`Confermi di volerti disiscrivere dalla Gara ${provaNumber}?`)) {
+  showConfirm(`Confermi di volerti disiscrivere dalla Gara ${provaNumber}?`, () => {
     fetch(`/player/gara/${provaId}/unsubscribe`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
       .then(r => { if (r.ok) location.reload(); else showError('Errore durante la disiscrizione'); })
       .catch(() => showError('Errore durante la disiscrizione'));
-  }
+  });
 }
 function toggleActive(tournamentId) {
-  if (confirm('Confermi di voler cambiare lo stato del campionato?')) {
+  showConfirm('Confermi di voler cambiare lo stato del campionato?', () => {
     fetch(`/admin/campionato/${tournamentId}/toggle_active`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
       .then(r => { if (r.ok) location.reload(); });
-  }
+  });
 }
 function deleteTournament(tournamentId, tournamentName) {
-  if (confirm(`Confermi di voler eliminare il campionato "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`)) {
+  showConfirm(`Confermi di voler eliminare il campionato "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`, () => {
     fetch(`/admin/campionato/${tournamentId}/delete`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
       .then(r => { if (r.ok) location.reload(); });
-  }
+  });
 }
 </script>
 {% endblock %}

@@ -12,9 +12,9 @@
             {% if user.is_director %}
                 <span class="badge bg-secondary">Direttore di gara</span>
                 {% if current_user.is_admin %}
-                <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST" 
-                      style="display: inline; margin-left: 10px;" 
-                      onsubmit="return confirm('Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
+                <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST"
+                      style="display: inline; margin-left: 10px;"
+                      onsubmit="return confirmSubmit(this, 'Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
                     <button type="submit" class="btn btn-outline-danger btn-sm">
                         <i class="fas fa-user-minus"></i> Rimuovi ruolo
                     </button>
@@ -25,7 +25,7 @@
                 {% if current_user.is_admin %}
                 <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
                       style="display: inline; margin-left: 10px;"
-                      onsubmit="return confirm('Promuovere {{ user.username }} a Direttore di Gara?')">
+                      onsubmit="return confirmSubmit(this, 'Promuovere {{ user.username }} a Direttore di Gara?')">
                     <button type="submit" class="btn btn-outline-success btn-sm">
                         <i class="fas fa-user-plus"></i> Promuovi a Direttore
                     </button>

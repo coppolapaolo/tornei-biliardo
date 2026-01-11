@@ -173,3 +173,45 @@ function clearAllValidationErrors(form) {
     el.remove();
   });
 }
+
+// === CONFIRM HELPERS (per sostituire confirm() inline) ===
+
+/**
+ * Conferma prima di submit form. Uso: onsubmit="return confirmSubmit(this, 'Messaggio')"
+ * @param {HTMLFormElement} form - Il form da sottomettere
+ * @param {string} message - Messaggio di conferma
+ * @param {object} options - Opzioni per showConfirm
+ * @returns {boolean} - Sempre false (il form viene submittato dal callback)
+ */
+function confirmSubmit(form, message, options = {}) {
+  showConfirm(message, () => {
+    // Crea e dispatcha un evento submit "trusted" per bypassare la conferma
+    form.setAttribute('data-confirmed', 'true');
+    form.submit();
+  }, options);
+  return false;
+}
+
+/**
+ * Conferma prima di seguire un link. Uso: onclick="return confirmLink(this, 'Messaggio')"
+ * @param {HTMLAnchorElement} link - Il link da seguire
+ * @param {string} message - Messaggio di conferma
+ * @param {object} options - Opzioni per showConfirm
+ * @returns {boolean} - Sempre false (la navigazione avviene dal callback)
+ */
+function confirmLink(link, message, options = {}) {
+  showConfirm(message, () => {
+    window.location.href = link.href;
+  }, options);
+  return false;
+}
+
+/**
+ * Conferma prima di eseguire un'azione. Uso: onclick="confirmAction('Messaggio', () => doSomething())"
+ * @param {string} message - Messaggio di conferma
+ * @param {function} action - Azione da eseguire se confermato
+ * @param {object} options - Opzioni per showConfirm
+ */
+function confirmAction(message, action, options = {}) {
+  showConfirm(message, action, options);
+}

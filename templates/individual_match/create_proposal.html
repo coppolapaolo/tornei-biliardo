@@ -310,7 +310,11 @@
             });
         }
 
-        return confirm('Sei sicuro di voler creare questa proposta di match?');
+        // Show confirmation modal, submit on confirm
+        e.preventDefault();
+        showConfirm('Sei sicuro di voler creare questa proposta di match?', () => {
+            this.submit();
+        });
     });
 
     // Initialize format explanation

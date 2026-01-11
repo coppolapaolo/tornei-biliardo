@@ -211,11 +211,8 @@
     }
 
     function declareForfeit(playerId) {
-        if (!confirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")|tojson }})) {
-            return;
-        }
-
-        // Use admin endpoint for managers, player endpoint for players
+        showConfirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")|tojson }}, () => {
+            // Use admin endpoint for managers, player endpoint for players
         {% if user_can_manage %}
         const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
         {% else %}
@@ -241,6 +238,7 @@
                 console.error('Error:', error);
                 showError({{ _("Errore durante la registrazione del forfait")|tojson }});
             });
+        });
     }
     {% endif %}
 
@@ -312,7 +310,7 @@
     }
 
     function rejectResult() {
-        if (confirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")|tojson }})) {
+        showConfirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")|tojson }}, () => {
             fetch(`/player/match/{{ match.id }}/reject`, {
                 method: 'POST',
                 headers: {
@@ -331,11 +329,11 @@
                     console.error('Error:', error);
                     showError({{ _("Errore durante il rifiuto")|tojson }});
                 });
-        }
+        });
     }
 
     function forfeitMatch() {
-        if (confirm({{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.")|tojson }})) {
+        showConfirm({{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.")|tojson }}, () => {
             fetch(`/player/match/{{ match.id }}/forfeit`, {
                 method: 'POST',
                 headers: {
@@ -355,7 +353,7 @@
                     console.error('Error:', error);
                     showError({{ _("Errore durante la dichiarazione di forfait")|tojson }});
                 });
-        }
+        });
     }
 
     // Flag per prevenire chiamate multiple
@@ -410,12 +408,8 @@
     }
 
     // Funzioni Admin
-    function confirmSetResult() {
-        return confirm({{ _("Sei sicuro di voler impostare questo risultato? Tutti i rack esistenti verranno sostituiti.")|tojson }});
-    }
-
     function resetMatch(matchId) {
-        if (confirm({{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.")|tojson }})) {
+        showConfirm({{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.")|tojson }}, () => {
             fetch(`/admin/match/${matchId}/reset`, {
                 method: 'POST',
                 headers: {
@@ -433,11 +427,11 @@
                     console.error('Error:', error);
                     showError({{ _("Errore durante il reset")|tojson }});
                 });
-        }
+        });
     }
 
     function resetTrio(trioId) {
-        if (confirm({{ _("Sei sicuro di voler resettare completamente questa partita trio? Tutti i risultati verranno cancellati.")|tojson }})) {
+        showConfirm({{ _("Sei sicuro di voler resettare completamente questa partita trio? Tutti i risultati verranno cancellati.")|tojson }}, () => {
             fetch(`/admin/gara/trio/${trioId}/reset`, {
                 method: 'POST',
                 headers: {
@@ -456,11 +450,11 @@
                     console.error('Error:', error);
                     showError({{ _("Errore durante il reset")|tojson }});
                 });
-        }
+        });
     }
 
     function validateMatch(matchId) {
-        if (confirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")|tojson }})) {
+        showConfirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")|tojson }}, () => {
             fetch(`/admin/match/${matchId}/validate`, {
                 method: 'POST',
                 headers: {
@@ -479,7 +473,7 @@
                     console.error('Error:', error);
                     showError({{ _("Errore durante la validazione")|tojson }});
                 });
-        }
+        });
     }
 
     {# SSE: Real-time updates for ALL trio match players (not just waiting) #}

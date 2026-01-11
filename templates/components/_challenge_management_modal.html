@@ -396,13 +396,10 @@ function addChallengeToGara() {
 }
 
 function removeChallengeFromGara(garaChallengeId) {
-    if (!confirm('Sei sicuro di voler rimuovere questa challenge dalla gara?')) {
-        return;
-    }
+    showConfirm('Sei sicuro di voler rimuovere questa challenge dalla gara?', () => {
+        const garaId = {{ gara.id }};
 
-    const garaId = {{ gara.id }};
-
-    fetch(`/admin/gara/${garaId}/remove_challenge`, {
+        fetch(`/admin/gara/${garaId}/remove_challenge`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -422,6 +419,7 @@ function removeChallengeFromGara(garaChallengeId) {
     .catch(error => {
         console.error('Error:', error);
         showChallengeAlert('Errore di rete nella rimozione della challenge', 'danger');
+    });
     });
 }
 

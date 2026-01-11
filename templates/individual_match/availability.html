@@ -320,7 +320,7 @@ function addAvailability() {
 
 // Remove availability
 function removeAvailability(id) {
-    if (confirm('Sei sicuro di voler rimuovere questa disponibilità?')) {
+    showConfirm('Sei sicuro di voler rimuovere questa disponibilità?', () => {
         document.querySelector(`[data-id="${id}"]`).remove();
 
         // Show message
@@ -331,7 +331,7 @@ function removeAvailability(id) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         document.querySelector('.card-body').insertBefore(alert, document.querySelector('.row'));
-    }
+    });
 }
 
 // Form submission

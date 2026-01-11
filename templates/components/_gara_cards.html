@@ -159,7 +159,7 @@
               {% if p.can_be_deleted() and not current_user.is_admin %}
                 <form class="mt-2" method="POST"
                       action="{{ url_for('admin.competition.delete_gara', gara_id=p.id) }}"
-                      onsubmit="return confirm('Sei SICURO di voler eliminare definitivamente questa gara?');">
+                      onsubmit="return confirmSubmit(this, 'Sei SICURO di voler eliminare definitivamente questa gara?')">
                   <button type="submit" class="btn btn-danger btn-sm w-100">
                     <i class="fas fa-trash"></i> Elimina Gara
                   </button>

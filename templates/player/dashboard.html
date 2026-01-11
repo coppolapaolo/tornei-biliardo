@@ -38,7 +38,7 @@
 {% block scripts %}
 <script>
 function unsubscribeFromProva(provaId, provaNumber) {
-    if (confirm(`Sei sicuro di volerti disiscrivere dalla Gara ${provaNumber}?`)) {
+    showConfirm(`Sei sicuro di volerti disiscrivere dalla Gara ${provaNumber}?`, () => {
         fetch(`/player/gara/${provaId}/unsubscribe`, {
             method: 'POST',
             headers: {
@@ -54,7 +54,7 @@ function unsubscribeFromProva(provaId, provaNumber) {
             console.error('Error:', error);
             showError('Errore durante la disiscrizione');
         });
-    }
+    });
 }
 </script>
 {% endblock %}

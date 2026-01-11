@@ -124,10 +124,17 @@ function confirmReset() {
     showError('{{ _("Seleziona un utente") }}');
     return false;
   }
-  if (confirm('{{ _("Sei sicuro di voler resettare il livello di questo utente?") }}')) {
-    document.getElementById('resetForm').action = '{{ url_for("gamification.admin_reset_user_level", user_id=0) }}'.replace('/0', '/' + userId);
+  const form = document.getElementById('resetForm');
+  // If already confirmed via modal, proceed
+  if (form.dataset.confirmed === 'true') {
+    form.action = '{{ url_for("gamification.admin_reset_user_level", user_id=0) }}'.replace('/0', '/' + userId);
     return true;
   }
+  showConfirm({{ _("Sei sicuro di voler resettare il livello di questo utente?")|tojson }}, () => {
+    form.dataset.confirmed = 'true';
+    form.action = '{{ url_for("gamification.admin_reset_user_level", user_id=0) }}'.replace('/0', '/' + userId);
+    form.submit();
+  });
   return false;
 }
 </script>

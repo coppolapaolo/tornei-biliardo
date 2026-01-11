@@ -197,8 +197,8 @@
                                     <form method="POST"
                                         action="{{ url_for('individual_match.cancel_proposal', proposal_id=proposal.id) }}"
                                         class="d-inline">
-                                        <button type="submit" class="btn btn-outline-danger"
-                                            onclick="return confirm('Sei sicuro di voler annullare questa proposta?')">
+                                        <button type="button" class="btn btn-outline-danger"
+                                            onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare questa proposta?')">
                                             <i class="fas fa-times"></i> Annulla
                                         </button>
                                     </form>
@@ -340,10 +340,10 @@
 {% block scripts %}
 <script>
     function declineProposal(proposalId) {
-        if (confirm('Sei sicuro di voler rifiutare questa proposta?')) {
+        showConfirm('Sei sicuro di voler rifiutare questa proposta?', () => {
             // In a real implementation, this would make an AJAX call to decline
             showInfo('Funzionalità di rifiuto da implementare nel backend');
-        }
+        });
     }
 
     // Auto-refresh if there are pending proposals

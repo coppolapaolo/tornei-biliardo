@@ -347,8 +347,8 @@
                         {% if match.status.value == 'scheduled' %}
                         <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}"
                             class="d-inline">
-                            <button type="submit" class="btn btn-outline-danger w-100"
-                                onclick="return confirm('Sei sicuro di voler annullare il match?')">
+                            <button type="button" class="btn btn-outline-danger w-100"
+                                onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare il match?')">
                                 <i class="fas fa-times"></i> Annulla Match
                             </button>
                         </form>
@@ -420,11 +420,8 @@
     }
 
     function removeRack(playerId) {
-        if (!confirm('Rimuovere l\'ultimo rack vinto da questo giocatore?')) {
-            return;
-        }
-
-        fetch(`/player/match/${matchId}/racks/remove`, {
+        showConfirm('Rimuovere l\'ultimo rack vinto da questo giocatore?', () => {
+            fetch(`/player/match/${matchId}/racks/remove`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -443,14 +440,12 @@
                 console.error('Error:', error);
                 showError('Errore durante la rimozione del rack');
             });
+        });
     }
 
     function confirmResult() {
-        if (!confirm('Confermare il risultato del match?')) {
-            return;
-        }
-
-        fetch(`/player/match/${matchId}/confirm`, {
+        showConfirm('Confermare il risultato del match?', () => {
+            fetch(`/player/match/${matchId}/confirm`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -473,14 +468,12 @@
                 console.error('Error:', error);
                 showError('Errore durante la conferma');
             });
+        });
     }
 
     function rejectResult() {
-        if (!confirm('Rifiutare il risultato? L\'ultimo rack verrà rimosso e si potrà continuare a giocare.')) {
-            return;
-        }
-
-        fetch(`/player/match/${matchId}/reject`, {
+        showConfirm('Rifiutare il risultato? L\'ultimo rack verrà rimosso e si potrà continuare a giocare.', () => {
+            fetch(`/player/match/${matchId}/reject`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -499,6 +492,7 @@
                 console.error('Error:', error);
                 showError('Errore durante il rifiuto');
             });
+        });
     }
 </script>
 {% endblock %}

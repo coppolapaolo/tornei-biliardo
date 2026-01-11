@@ -46,9 +46,9 @@
                                         </form>
                                         
                                         {% if reset_data.deletable %}
-                                        <form method="POST" action="{{ url_for('main.delete_reset_snapshot', snapshot_id=reset_id) }}" 
+                                        <form method="POST" action="{{ url_for('main.delete_reset_snapshot', snapshot_id=reset_id) }}"
                                               style="display: inline-block;"
-                                              onsubmit="return confirm('Sei sicuro di voler eliminare questo snapshot?')">
+                                              onsubmit="return confirmSubmit(this, 'Sei sicuro di voler eliminare questo snapshot?')">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">
                                                 <i class="fas fa-trash"></i>
                                             </button>

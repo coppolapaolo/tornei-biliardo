@@ -117,17 +117,17 @@
                                                 <i class="fas fa-edit"></i> Modifica
                                             </a>
                                             {% if venue.is_active %}
-                                            <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}" 
+                                            <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}"
                                                   method="POST" style="display: inline;"
-                                                  onsubmit="return confirm('Disattivare la sala {{ venue.name }}?')">
+                                                  onsubmit="return confirmSubmit(this, 'Disattivare la sala {{ venue.name }}?')">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                                     <i class="fas fa-times"></i> Disattiva
                                                 </button>
                                             </form>
                                             {% else %}
-                                            <form action="{{ url_for('admin.venue.activate_venue', venue_id=venue.id) }}" 
+                                            <form action="{{ url_for('admin.venue.activate_venue', venue_id=venue.id) }}"
                                                   method="POST" style="display: inline;"
-                                                  onsubmit="return confirm('Attivare la sala {{ venue.name }}?')">
+                                                  onsubmit="return confirmSubmit(this, 'Attivare la sala {{ venue.name }}?')">
                                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                                     <i class="fas fa-check"></i> Attiva
                                                 </button>
@@ -146,21 +146,21 @@
                                                     <i class="fas fa-user-plus"></i> {{ request.user.username|truncate(8) }}
                                                 </button>
                                                 <div class="btn-group" role="group">
-                                                    <form action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}" 
+                                                    <form action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}"
                                                           method="POST" style="display: inline;">
                                                         <input type="hidden" name="action" value="approve">
-                                                        <button type="submit" class="btn btn-sm btn-success" 
+                                                        <button type="button" class="btn btn-sm btn-success"
                                                                 data-bs-toggle="tooltip" title="Approva richiesta"
-                                                                onclick="return confirm('Approvare la richiesta di {{ request.user.username }} per gestire {{ venue.name }}?')">
+                                                                onclick="confirmSubmit(this.closest('form'), 'Approvare la richiesta di {{ request.user.username }} per gestire {{ venue.name }}?')">
                                                             <i class="fas fa-check"></i>
                                                         </button>
                                                     </form>
-                                                    <form action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}" 
+                                                    <form action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}"
                                                           method="POST" style="display: inline;">
                                                         <input type="hidden" name="action" value="reject">
-                                                        <button type="submit" class="btn btn-sm btn-danger" 
+                                                        <button type="button" class="btn btn-sm btn-danger"
                                                                 data-bs-toggle="tooltip" title="Rifiuta richiesta"
-                                                                onclick="return confirm('Rifiutare la richiesta di {{ request.user.username }} per gestire {{ venue.name }}?')">
+                                                                onclick="confirmSubmit(this.closest('form'), 'Rifiutare la richiesta di {{ request.user.username }} per gestire {{ venue.name }}?')">
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     </form>
@@ -173,9 +173,9 @@
                                         <!-- Azione per revocare gestore esistente -->
                                         {% if manager and manager_assignment %}
                                         <div class="btn-group mt-1" role="group">
-                                            <form action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager_assignment.id) }}" 
+                                            <form action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager_assignment.id) }}"
                                                   method="POST" style="display: inline;"
-                                                  onsubmit="return confirm('Revocare la gestione di {{ venue.name }} a {{ manager.username }}?')">
+                                                  onsubmit="return confirmSubmit(this, 'Revocare la gestione di {{ venue.name }} a {{ manager.username }}?')">
                                                 <button type="submit" class="btn btn-sm btn-warning">
                                                     <i class="fas fa-user-times"></i> Revoca Gestore
                                                 </button>

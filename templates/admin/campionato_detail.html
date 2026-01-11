@@ -63,7 +63,7 @@
 {% block scripts %}
 <script>
     function deleteProva(provaId, provaNumber) {
-        if (confirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`)) {
+        showConfirm(`Sei SICURO di voler eliminare la Gara ${provaNumber}?\n\nQuesta azione è IRREVERSIBILE!`, () => {
             fetch(`/admin/gara/${provaId}/delete`, {
                 method: 'POST',
                 headers: {
@@ -74,7 +74,7 @@
                     location.reload();
                 }
             });
-        }
+        });
     }
 
     // Auto-popolamento dinamico + logica modalità di gioco

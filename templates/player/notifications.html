@@ -236,10 +236,17 @@
     document.getElementById('notification-form').addEventListener('submit', function(e) {
         const checkedCount = document.querySelectorAll('.notification-checkbox:checked').length;
         if (checkedCount > 0) {
-            const message = i18n.confirmDeleteTemplate.replace('{count}', checkedCount);
-            if (!confirm(message)) {
-                e.preventDefault();
+            // If already confirmed via modal, proceed
+            if (this.dataset.confirmed === 'true') {
+                return;
             }
+            e.preventDefault();
+            const message = i18n.confirmDeleteTemplate.replace('{count}', checkedCount);
+            const form = this;
+            showConfirm(message, () => {
+                form.dataset.confirmed = 'true';
+                form.submit();
+            });
         } else {
             e.preventDefault();
         }

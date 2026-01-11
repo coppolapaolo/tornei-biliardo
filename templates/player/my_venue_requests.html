@@ -81,10 +81,10 @@
                                 </td>
                                 <td>
                                     {% if request.status == "pending" %}
-                                        <form method="POST" 
-                                              action="{{ url_for('player.cancel_venue_manager_request', request_id=request.id) }}" 
+                                        <form method="POST"
+                                              action="{{ url_for('player.cancel_venue_manager_request', request_id=request.id) }}"
                                               style="display: inline;"
-                                              onsubmit="return confirm('Sei sicuro di voler annullare questa richiesta?')">
+                                              onsubmit="return confirmSubmit(this, 'Sei sicuro di voler annullare questa richiesta?')">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Annulla">
                                                 <i class="fas fa-ban"></i> Annulla
                                             </button>

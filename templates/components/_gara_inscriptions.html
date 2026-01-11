@@ -38,7 +38,7 @@
             {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
             <form class="d-inline" method="POST"
                 action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-                onsubmit="return confirm('{{ _('Sei sicuro di voler disiscrivere %(username)s? L\'utente riceverà una notifica.', username=inscription.user.username) }}')">
+                onsubmit="return confirmSubmit(this, {{ _('Sei sicuro di voler disiscrivere %(username)s? L\'utente riceverà una notifica.', username=inscription.user.username)|tojson }})">
                 <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ _('Disiscrive utente') }}">
                     <i class="fas fa-user-minus"></i>
                 </button>
@@ -68,7 +68,7 @@
             {% if (current_user.is_admin or current_user.is_director) and gara.status == 'inscription' %}
             <form class="d-inline" method="POST"
                 action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-                onsubmit="return confirm('{{ _('Sei sicuro di voler rimuovere %(username)s dalla lista d\'attesa?', username=inscription.user.username) }}')">
+                onsubmit="return confirmSubmit(this, {{ _('Sei sicuro di voler rimuovere %(username)s dalla lista d\'attesa?', username=inscription.user.username)|tojson }})">
                 <button type="submit" class="btn btn-sm btn-outline-danger"
                     title="{{ _('Rimuove dalla lista d\'attesa') }}">
                     <i class="fas fa-user-minus"></i>

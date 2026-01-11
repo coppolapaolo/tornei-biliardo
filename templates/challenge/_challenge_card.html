@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function deleteChallenge(challengeId) {
-    if (confirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.')) {
+    showConfirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.', () => {
         fetch(`/challenge/${challengeId}/delete`, {
             method: 'POST',
             headers: {
@@ -139,6 +139,6 @@ function deleteChallenge(challengeId) {
             console.error('Error deleting challenge:', error);
             showError('Errore di rete nell\'eliminazione della challenge');
         });
-    }
+    });
 }
 </script>

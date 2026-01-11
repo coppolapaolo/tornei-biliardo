@@ -66,8 +66,8 @@
                             <form method="POST"
                                 action="{{ url_for('player.reject_match_proposal', proposal_id=proposal.id) }}"
                                 class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('Sei sicuro di voler {{ 'rifiutare' if user_invitation.status.value == 'pending' else 'cambiare la tua decisione e rifiutare' }} questo invito?')">
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler {{ 'rifiutare' if user_invitation.status.value == 'pending' else 'cambiare la tua decisione e rifiutare' }} questo invito?')">
                                     <i class="fas fa-times"></i> {% if user_invitation.status.value == 'accepted'
                                     %}Cambia Idea{% else %}Rifiuta{% endif %}
                                 </button>
@@ -138,8 +138,8 @@
                             <form method="POST"
                                 action="{{ url_for('player.cancel_match_proposal', proposal_id=proposal.id) }}"
                                 class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('Sei sicuro di voler annullare questa proposta?')">
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare questa proposta?')">
                                     <i class="fas fa-times"></i> Annulla
                                 </button>
                             </form>
