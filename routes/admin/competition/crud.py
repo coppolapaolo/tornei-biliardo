@@ -438,7 +438,23 @@ def edit_gara(gara_id):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     if request.method == "POST":
-        # Usa il service layer invece del direct database access
+        # Handle venue auto-creation for location - returns tuple (location_str, billiard_hall_id)
+        location = request.form.get("location", "").strip()
+        tables_input = request.form.get("available_tables", "").strip()
+
+        location, billiard_hall_id = _handle_venue_creation(location, tables_input)
+
+        # Parse tables for gara-specific configuration
+        available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
+
+        # Update operational settings (available_tables, location) - always allowed
+        # These are logistical settings that directors need to adjust during competition
+        gara.set_available_tables(available_tables)
+        gara.location = location
+        gara.billiard_hall_id = billiard_hall_id
+        db.session.add(gara)
+
+        # Try to update competition settings (may fail if gara has inscriptions)
         try:
             max_participants = request.form.get("max_participants")
             max_participants = int(max_participants) if max_participants else None
@@ -451,15 +467,6 @@ def edit_gara(gara_id):
             match_distance = request.form.get("match_distance")
             match_distance = int(match_distance) if match_distance else None
             is_race_to_sets = "is_race_to_sets" in request.form
-
-            # Handle venue auto-creation for location - returns tuple (location_str, billiard_hall_id)
-            location = request.form.get("location", "").strip()
-            tables_input = request.form.get("available_tables", "").strip()
-
-            location, billiard_hall_id = _handle_venue_creation(location, tables_input)
-
-            # Parse tables for gara-specific configuration
-            available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
 
             # Estratti i parametri di configurazione matchmaking
             matchmaking_strategy = request.form.get(
@@ -512,13 +519,11 @@ def edit_gara(gara_id):
                 tiebreaker_until_position=tiebreaker_until_position,
             )
 
-            # Set gara-specific available tables
-            if available_tables:
-                gara.set_available_tables(available_tables)
-
             flash("Gara aggiornata con successo!")
         except ValueError as ve:
+            # Competition settings couldn't be updated, but operational settings were saved
             flash(str(ve), "error")
+            flash("Nota: le impostazioni tavoli e location sono state aggiornate.", "info")
 
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 

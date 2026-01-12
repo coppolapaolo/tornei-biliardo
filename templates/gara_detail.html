@@ -454,23 +454,32 @@
   }
 
   function startSsr(garaId) {
+    console.log('startSsr called with garaId:', garaId);
+    console.log('showConfirm function exists:', typeof showConfirm);
     showConfirm({{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nei primi 3 posti.")|tojson }}, () => {
+      console.log('Confirm callback triggered, making fetch request to /admin/gara/' + garaId + '/start_ssr');
       fetch(`/admin/gara/${garaId}/start_ssr`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Requested-With': 'XMLHttpRequest'
         }
-      }).then(response => response.json())
+      }).then(response => {
+        console.log('Fetch response status:', response.status);
+        return response.json();
+      })
         .then(data => {
+          console.log('Response data:', data);
           if (data.success) {
+            console.log('Success! Reloading page...');
             location.reload();
           } else {
+            console.log('Error in response:', data.error || data.message);
             showError({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
           }
         })
         .catch(error => {
-          console.error('Error:', error);
+          console.error('Fetch error:', error);
           showError({{ _("Errore durante l'avvio della fase SSR")|tojson }});
         });
     });
@@ -537,11 +546,11 @@
         input.className = 'form-control ssr-score-input';
         input.name = 'ssr_' + player.user_id;
         input.dataset.userId = player.user_id;
-        input.min = '1';
+        input.min = '0';
         input.step = '1';
         input.placeholder = i18n.ssrPoints;
         input.required = true;
-        if (player.current_ssr_score) {
+        if (player.current_ssr_score != null) {
           input.value = player.current_ssr_score;
         }
         inputCol.appendChild(input);
@@ -572,7 +581,7 @@
       const userId = input.dataset.userId;
       const value = parseInt(input.value, 10);
 
-      if (isNaN(value) || value <= 0) {
+      if (isNaN(value) || value < 0) {
         input.classList.add('is-invalid');
         hasErrors = true;
       } else {
@@ -582,7 +591,7 @@
     });
 
     if (hasErrors) {
-      showError({{ _("Tutti i punteggi devono essere numeri interi positivi")|tojson }});
+      showError({{ _("Tutti i punteggi devono essere numeri interi non negativi")|tojson }});
       return;
     }
 

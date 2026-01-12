@@ -18,8 +18,15 @@ function showToast(message, type = 'success', autohide = true) {
     return;
   }
 
+  // Bootstrap 5.1.x compatibility: use bg-* + text-* instead of text-bg-*
+  // Determine text color and close button style based on background
+  const darkBgTypes = ['success', 'danger', 'primary', 'dark'];
+  const isDarkBg = darkBgTypes.includes(type);
+  const textClass = isDarkBg ? 'text-white' : 'text-dark';
+  const closeBtnClass = isDarkBg ? 'btn-close-white' : '';
+
   const toast = document.createElement('div');
-  toast.className = `toast align-items-center text-bg-${type} border-0`;
+  toast.className = `toast align-items-center bg-${type} ${textClass} border-0`;
   toast.setAttribute('role', 'alert');
 
   const wrapper = document.createElement('div');
@@ -31,7 +38,7 @@ function showToast(message, type = 'success', autohide = true) {
 
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
-  closeBtn.className = 'btn-close btn-close-white me-2 m-auto';
+  closeBtn.className = `btn-close ${closeBtnClass} me-2 m-auto`.trim();
   closeBtn.setAttribute('data-bs-dismiss', 'toast');
 
   wrapper.appendChild(body);
@@ -53,10 +60,29 @@ function showSuccess(message) {
 }
 
 /**
+ * Chiude tutti i toast di errore esistenti
+ */
+function clearErrorToasts() {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  container.querySelectorAll('.text-bg-danger').forEach(toast => {
+    const bsToast = bootstrap.Toast.getInstance(toast);
+    if (bsToast) {
+      bsToast.hide();
+    } else {
+      toast.remove();
+    }
+  });
+}
+
+/**
  * Mostra un messaggio di errore (toast rosso, persistente)
+ * Rimuove automaticamente gli errori precedenti
  * @param {string} message - Messaggio da mostrare
  */
 function showError(message) {
+  clearErrorToasts();  // Rimuovi errori precedenti
   showToast(message, 'danger', false);
 }
 
@@ -87,7 +113,11 @@ function showInfo(message) {
  * @param {string} options.confirmText - Testo bottone conferma (default: "Conferma")
  * @param {string} options.confirmClass - Classe bottone conferma (default: "btn-danger")
  */
+// Store current callback globally so we can access it from the click handler
+let _confirmCallback = null;
+
 function showConfirm(message, onConfirm, options = {}) {
+  console.log('showConfirm called with message:', message);
   const {
     title = 'Conferma',
     confirmText = 'Conferma',
@@ -95,6 +125,7 @@ function showConfirm(message, onConfirm, options = {}) {
   } = options;
 
   const modalEl = document.getElementById('confirmModal');
+  console.log('confirmModal element found:', !!modalEl);
   if (!modalEl) {
     console.error('Confirm modal not found! Add #confirmModal to base.html');
     // Fallback a confirm() nativo
@@ -108,23 +139,33 @@ function showConfirm(message, onConfirm, options = {}) {
   const modalBody = document.getElementById('confirmModalBody');
   const confirmBtn = document.getElementById('confirmModalBtn');
 
+  console.log('confirmBtn found:', !!confirmBtn, confirmBtn);
+
   if (modalTitle) modalTitle.textContent = title;
   modalBody.textContent = message;
   confirmBtn.textContent = confirmText;
   confirmBtn.className = `btn ${confirmClass}`;
 
+  // Store callback for the click handler
+  _confirmCallback = onConfirm;
+
   const modal = new bootstrap.Modal(modalEl);
 
-  // Rimuovi handler precedenti clonando il bottone
-  const newBtn = confirmBtn.cloneNode(true);
-  confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-
-  newBtn.addEventListener('click', () => {
+  // Use onclick instead of addEventListener to ensure only one handler
+  confirmBtn.onclick = function() {
+    console.log('Confirm button clicked!');
     modal.hide();
-    onConfirm();
-  });
+    if (_confirmCallback) {
+      console.log('Calling callback...');
+      _confirmCallback();
+      _confirmCallback = null;
+    }
+  };
+  console.log('Click handler set via onclick');
 
+  console.log('Showing modal...');
   modal.show();
+  console.log('Modal show() called');
 }
 
 // === VALIDAZIONE INLINE ===

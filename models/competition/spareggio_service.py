@@ -100,12 +100,9 @@ class SpareggioService:
                         })
 
                     # Check if this tiebreaker is already resolved
-                    # (all SSR scores must be different and non-zero)
+                    # (all SSR scores must be different - 0 is a valid score)
                     scores = [p['current_ssr_score'] for p in players]
-                    is_resolved = (
-                        len(scores) == len(set(scores)) and
-                        all(s > 0 for s in scores)
-                    )
+                    is_resolved = len(scores) == len(set(scores))
 
                     if not is_resolved:
                         tiebreaker_groups.append({
@@ -227,10 +224,10 @@ class SpareggioService:
         """
         Check if a single tiebreaker group is resolved.
 
-        A group is resolved when all SSR scores are different and non-zero.
+        A group is resolved when all SSR scores are different (0 is valid).
         """
         scores = [p['current_ssr_score'] for p in group['players']]
-        return len(scores) == len(set(scores)) and all(s > 0 for s in scores)
+        return len(scores) == len(set(scores))
 
     @staticmethod
     def validate_ssr_scores_for_group(scores: Dict[int, int]) -> Tuple[bool, str]:
@@ -275,10 +272,10 @@ class SpareggioService:
         if not scores:
             return False, "Nessun punteggio inserito"
 
-        # Check all scores are positive integers
+        # Check all scores are non-negative integers
         for score in scores.values():
-            if not isinstance(score, int) or score <= 0:
-                return False, "Tutti i punteggi devono essere numeri interi positivi"
+            if not isinstance(score, int) or score < 0:
+                return False, "Tutti i punteggi devono essere numeri interi non negativi"
 
         # Check all scores are different
         score_values = list(scores.values())

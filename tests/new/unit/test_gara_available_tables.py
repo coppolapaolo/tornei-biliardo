@@ -10,7 +10,6 @@ Date: 2025-12-27
 import json
 from datetime import date, timedelta
 
-import pytest
 from models.competition.models import Gara
 from models.location.models import BilliardHall
 
@@ -223,3 +222,99 @@ class TestGaraSetAvailableTables:
 
         result = gara.get_available_tables()
         assert result == tables
+
+
+class TestAvailableTablesEditableWithInscriptions:
+    """Tests verifying available_tables can be modified regardless of gara state.
+
+    Regression test for bug: available_tables was not saved when editing gara
+    with inscriptions because update_gara() blocked the entire edit.
+    """
+
+    def test_set_available_tables_works_on_gara_with_inscriptions(self, db_session):
+        """available_tables can be set even when gara has inscriptions."""
+        from models.user.models import User
+        from models.competition.models import Inscription
+        from models.status_enum import GaraStatus
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        # Create user
+        user = User(
+            username="test_player_tables",
+            email="test_tables@example.com",
+            password_hash="hash",
+            role="player",
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Create gara in inscription status
+        gara = Gara(
+            number=1,
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            status=GaraStatus.INSCRIPTION.value,
+        )
+        db_session.add(gara)
+        db_session.commit()
+
+        # Add inscription (makes can_be_modified() return False)
+        inscription = Inscription(user_id=user.id, gara_id=gara.id)
+        db_session.add(inscription)
+        db_session.commit()
+
+        # Verify gara cannot be fully modified
+        assert not gara.can_be_modified()
+
+        # But available_tables can still be set directly
+        gara.set_available_tables(["7", "6", "5", "4"])
+        db_session.commit()
+
+        # Verify tables were saved
+        fresh_gara = db_session.get(Gara, gara.id)
+        assert fresh_gara.get_available_tables() == ["7", "6", "5", "4"]
+
+    def test_clear_available_tables_works_on_gara_with_inscriptions(self, db_session):
+        """available_tables can be cleared even when gara has inscriptions."""
+        from models.user.models import User
+        from models.competition.models import Inscription
+        from models.status_enum import GaraStatus
+
+        tomorrow = date.today() + timedelta(days=1)
+
+        # Create user
+        user = User(
+            username="test_player_clear",
+            email="test_clear@example.com",
+            password_hash="hash",
+            role="player",
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Create gara with pre-set tables
+        gara = Gara(
+            number=1,
+            date=tomorrow,
+            discipline="palla 9",
+            distance=7,
+            status=GaraStatus.INSCRIPTION.value,
+        )
+        gara.available_tables = json.dumps(["1", "2", "3"])
+        db_session.add(gara)
+        db_session.commit()
+
+        # Add inscription
+        inscription = Inscription(user_id=user.id, gara_id=gara.id)
+        db_session.add(inscription)
+        db_session.commit()
+
+        # Clear tables
+        gara.set_available_tables([])
+        db_session.commit()
+
+        # Verify tables were cleared
+        fresh_gara = db_session.get(Gara, gara.id)
+        assert fresh_gara.available_tables is None

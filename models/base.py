@@ -15,18 +15,26 @@ from sqlalchemy.engine import Engine
 import sqlite3
 from datetime import datetime
 
-# Import transactional decorator - doing a direct import to avoid circular imports
+# Initialize SQLAlchemy instance FIRST (before importing transactional)
+# This is required because transaction/manager.py imports db
+db = SQLAlchemy()
+
+# Import transactional decorator - now db is available when transaction/manager imports it
 try:
     from .transaction.manager import transactional
-except ImportError:
+except ImportError as e:
     # Fallback if transaction manager is not available
+    # WARNING: This fallback is a no-op! Transactions won't be managed!
+    import logging
+    logging.warning(
+        f"Failed to import transactional from transaction.manager: {e}. "
+        "Using no-op fallback - database transactions will NOT be managed!"
+    )
+
     def transactional(domain=None):
         def decorator(func):
             return func
         return decorator
-
-# Initialize SQLAlchemy instance
-db = SQLAlchemy()
 
 
 # Abilita le foreign key in SQLite (necessario per ON DELETE CASCADE nei test/dev)

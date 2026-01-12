@@ -252,12 +252,20 @@ class TransactionManager:
                         )
             elif is_pseudo_nested:
                 # For pseudo-nested (autobegin), release savepoint AND commit parent
+                # NOTE: First commit() releases the savepoint, second commits the
+                # outer autobegin transaction. Both are required!
                 try:
-                    db.session.commit()  # Release savepoint and commit transaction
+                    db.session.commit()  # Release savepoint
                     logger.debug(
-                        f"Pseudo-nested transaction {transaction_id} committed "
-                        "(savepoint released + parent committed)"
+                        f"Pseudo-nested transaction {transaction_id} savepoint released"
                     )
+                    # If session is still active, commit the outer transaction
+                    if db.session.is_active:
+                        db.session.commit()  # Commit outer autobegin transaction
+                        logger.debug(
+                            f"Pseudo-nested transaction {transaction_id} "
+                            "outer transaction committed"
+                        )
                 except Exception as e:
                     logger.warning(
                         f"Failed to commit pseudo-nested transaction "
