@@ -1,250 +1,493 @@
-<!-- New Gara Modal Component -->
+<!-- New Gara Modal Component - Wizard Version -->
 <div class="modal fade" id="newProvaModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Nuova Gara</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url_for('admin.competition.create_gara') }}" method="POST">
+            <form action="{{ url_for('admin.competition.create_gara') }}" method="POST" id="newGaraForm">
                 <input type="hidden" name="campionato_id" value="{{ campionato.id }}">
                 <div class="modal-body">
+                    <!-- Step Indicator -->
+                    <div class="wizard-steps mb-4">
+                        <div class="d-flex justify-content-between position-relative">
+                            <!-- Progress bar background -->
+                            <div class="wizard-progress-bg"></div>
+                            <div class="wizard-progress-fill" id="wizardProgressFill"></div>
+
+                            <div class="wizard-step active" data-step="1">
+                                <div class="wizard-step-circle">1</div>
+                                <div class="wizard-step-label">Base</div>
+                            </div>
+                            <div class="wizard-step" data-step="2">
+                                <div class="wizard-step-circle">2</div>
+                                <div class="wizard-step-label">Partecipanti</div>
+                            </div>
+                            <div class="wizard-step" data-step="3">
+                                <div class="wizard-step-circle">3</div>
+                                <div class="wizard-step-label">Gioco</div>
+                            </div>
+                            <div class="wizard-step" data-step="4">
+                                <div class="wizard-step-circle">4</div>
+                                <div class="wizard-step-label">Strategia</div>
+                            </div>
+                        </div>
+                    </div>
+
                     {% if campionato.default_venue or campionato.default_entry_fee or campionato.default_rounds_count != 3 %}
                     <div class="alert alert-light border-primary mb-3 py-2">
                         <i class="fas fa-magic text-primary"></i>
-                        <small>{{ _("Valori precompilati dai default del campionato. Puoi modificarli per questa gara.") }}</small>
+                        <small>{{ _("Valori precompilati dai default del campionato.") }}</small>
                     </div>
                     {% endif %}
-                    <!-- Prima riga: Info base -->
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="number" class="form-label">Numero Gara</label>
-                                <select class="form-control" name="number" required>
-                                    {% for i in range(1, 21) %}
-                                    {% if not provas|selectattr("number", "equalto", i)|list %}
-                                    <option value="{{ i }}">Gara {{ i }}</option>
-                                    {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nome (opzionale)</label>
-                                <input type="text" class="form-control" name="name" id="create_name"
-                                    placeholder="es: Prima Gara, Semifinale...">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="date" class="form-label">Data e Ora</label>
-                                <input type="datetime-local" class="form-control" name="date" id="create_date" required>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Seconda riga: Luogo e partecipanti -->
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="location" class="form-label">Luogo</label>
-                                <input type="text" class="form-control" name="location" id="create_location"
-                                    placeholder="es: Circolo Biliardo Centro" list="venue-suggestions"
-                                    autocomplete="off"
-                                    value="{{ campionato.default_venue.name if campionato.default_venue else '' }}">
-                                <datalist id="venue-suggestions">
-                                    <!-- Venue verificate -->
-                                    {% if verified_venues %}
-                                    {% for venue in verified_venues %}
-                                    <option value="{{ venue.name }}" data-tables="{{ venue.number_of_tables or 0 }}">{{
-                                        venue.name }} - {{ venue.city or 'Città non specificata' }}</option>
-                                    {% endfor %}
-                                    {% endif %}
-                                </datalist>
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle"></i>
-                                    Seleziona da sale verificate o inserisci nuovo nome
-                                </small>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label for="available_tables" class="form-label">Tavoli</label>
-                                <input type="text" class="form-control" name="available_tables"
-                                    id="create_available_tables" placeholder="es: 3 o 2,3,5"
-                                    value="{{ campionato.default_venue.number_of_tables if campionato.default_venue and campionato.default_venue.number_of_tables else '' }}">
-                                <small class="text-muted">Numero o elenco</small>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label for="min_participants" class="form-label">Min Iscritti</label>
-                                <input type="number" class="form-control" name="min_participants"
-                                    id="create_min_participants" min="2" max="32" value="6" required>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label for="max_participants" class="form-label">Max Iscritti</label>
-                                <input type="number" class="form-control" name="max_participants"
-                                    id="create_max_participants" min="2" max="64" placeholder="Illimitato">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label for="entry_fee" class="form-label">Quota €</label>
-                                <input type="number" class="form-control" name="entry_fee" id="create_entry_fee" min="0"
-                                    step="0.50" value="{{ campionato.default_entry_fee or 0 }}" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Terza riga: Game settings -->
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="discipline" class="form-label">Disciplina</label>
-                                <select class="form-control" name="discipline" id="create_discipline" required>
-                                    <option value="palla 8">Palla 8</option>
-                                    <option value="palla 9" selected>Palla 9</option>
-                                    <option value="palla 10">Palla 10</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label for="distance" class="form-label">Rack/Distanza</label>
-                                <input type="number" class="form-control" name="distance" id="create_distance" min="1"
-                                    max="15" value="7" required>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="exact_number" class="form-label">Modalità</label>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" name="exact_number"
-                                        id="create_exact_number">
-                                    <label class="form-check-label" for="exact_number">
-                                        Esatto numero
-                                    </label>
+                    <!-- Step 1: Info Base -->
+                    <div class="wizard-content" id="step1" style="display: block;">
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Informazioni Base</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="number" class="form-label">Numero Gara <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="number" id="create_number" required>
+                                        {% for i in range(1, 21) %}
+                                        {% if not provas|selectattr("number", "equalto", i)|list %}
+                                        <option value="{{ i }}">Gara {{ i }}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
                                 </div>
-                                <small class="text-muted">
-                                    <span id="create-game-mode-text">Al 4 (si vince a 4 rack)</span>
-                                </small>
                             </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label for="rounds_count" class="form-label">Turni</label>
-                                <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
-                                    min="1" max="10" value="{{ campionato.default_rounds_count or 3 }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="mb-3">
-                                <label class="form-label">Auto-copia</label>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" name="copy_from_previous"
-                                        id="copy_from_previous" value="true" {% if provas %}checked{% endif %}>
-                                    <label class="form-check-label" for="copy_from_previous">
-                                        Da precedente
-                                    </label>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nome</label>
+                                    <input type="text" class="form-control" name="name" id="create_name"
+                                        placeholder="es: Prima Gara, Semifinale... (opzionale)">
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
-                                <select class="form-control" name="withdraw_policy" id="withdraw_policy" required>
-                                    <option value="Forfeit" selected>Vincita a tavolino avversario</option>
-                                    <option value="Exclude">Escludi dal turno (X o Trio)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quarta riga: Strategy Settings -->
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
-                                <select class="form-control" name="first_round_policy" id="create_first_round_policy">
-                                    <option value="random" selected>Casuale</option>
-                                    <option value="rating">Basato su Rating</option>
-                                    <option value="classification">Basato su Classifica</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="odd_number_policy" class="form-label">Gestione Dispari</label>
-                                <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
-                                    <option value="bye" {% if not campionato.default_odd_policy or campionato.default_odd_policy == 'bye' %}selected{% endif %}>
-                                        X (vinto a tavolino)
-                                    </option>
-                                    <option value="bye_with_challenge" {% if campionato.default_odd_policy == 'bye_with_challenge' %}selected{% endif %}>
-                                        X con Challenge
-                                    </option>
-                                    <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
-                                        Match a 3 Giocatori
-                                    </option>
-                                </select>
-                                <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
-                                    <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 5
-                                </small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Anti-Rematch</label>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" name="anti_rematch_enabled"
-                                        id="create_anti_rematch_enabled" {% if campionato.default_anti_rematch is none or campionato.default_anti_rematch %}checked{% endif %}>
-                                    <label class="form-check-label" for="create_anti_rematch_enabled">
-                                        Evita reincontri
-                                    </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Data e Ora <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" class="form-control" name="date" id="create_date" required>
                                 </div>
-                                <small class="text-muted">Evita stessi avversari</small>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Luogo</label>
+                                    <input type="text" class="form-control" name="location" id="create_location"
+                                        placeholder="es: Circolo Biliardo Centro" list="venue-suggestions"
+                                        autocomplete="off"
+                                        value="{{ campionato.default_venue.name if campionato.default_venue else '' }}">
+                                    <datalist id="venue-suggestions">
+                                        {% if verified_venues %}
+                                        {% for venue in verified_venues %}
+                                        <option value="{{ venue.name }}" data-tables="{{ venue.number_of_tables or 0 }}">{{
+                                            venue.name }} - {{ venue.city or '' }}</option>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </datalist>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> Seleziona da sale verificate o inserisci nome
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="available_tables" class="form-label">Tavoli</label>
+                                    <input type="text" class="form-control" name="available_tables"
+                                        id="create_available_tables" placeholder="es: 3 o 2,3,5"
+                                        value="{{ campionato.default_venue.number_of_tables if campionato.default_venue and campionato.default_venue.number_of_tables else '' }}">
+                                    <small class="text-muted">Numero o elenco</small>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Descrizione -->
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Descrizione (opzionale)</label>
-                        <textarea class="form-control" name="description" id="create_description" rows="2"
-                            placeholder="Note aggiuntive sulla gara..."></textarea>
+                    <!-- Step 2: Partecipanti -->
+                    <div class="wizard-content" id="step2" style="display: none;">
+                        <h6 class="text-primary mb-3"><i class="fas fa-users"></i> Partecipanti e Quote</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="min_participants" class="form-label">Min Iscritti <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="min_participants"
+                                        id="create_min_participants" min="2" max="32" value="6" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="max_participants" class="form-label">Max Iscritti</label>
+                                    <input type="number" class="form-control" name="max_participants"
+                                        id="create_max_participants" min="2" max="64" placeholder="Illimitato">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="entry_fee" class="form-label">Quota €</label>
+                                    <input type="number" class="form-control" name="entry_fee" id="create_entry_fee" min="0"
+                                        step="0.50" value="{{ campionato.default_entry_fee or 0 }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="copy_from_previous"
+                                            id="copy_from_previous" value="true" {% if provas %}checked{% endif %}>
+                                        <label class="form-check-label" for="copy_from_previous">
+                                            <strong>Auto-copia iscritti</strong>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted ms-4">Copia gli iscritti dalla gara precedente</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% if provas %}
+                        <div class="alert alert-info py-2">
+                            <i class="fas fa-info-circle"></i>
+                            <small>Con auto-copia attiva, gli iscritti verranno copiati dall'ultima gara del campionato.</small>
+                        </div>
+                        {% endif %}
                     </div>
 
-                    {% if provas %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Da precedente:</strong> Se attivo, i campi verranno precompilati
-                        con i valori dell'ultima gara creata.
+                    <!-- Step 3: Gioco -->
+                    <div class="wizard-content" id="step3" style="display: none;">
+                        <h6 class="text-primary mb-3"><i class="fas fa-trophy"></i> Impostazioni di Gioco</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="discipline" class="form-label">Disciplina</label>
+                                    <select class="form-control" name="discipline" id="create_discipline" required>
+                                        <option value="palla 8">Palla 8</option>
+                                        <option value="palla 9" selected>Palla 9</option>
+                                        <option value="palla 10">Palla 10</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="distance" class="form-label">Distanza (Rack)</label>
+                                    <input type="number" class="form-control" name="distance" id="create_distance" min="1"
+                                        max="15" value="7" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="rounds_count" class="form-label">Numero Turni</label>
+                                    <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
+                                        min="1" max="10" value="{{ campionato.default_rounds_count or 3 }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Modalità Punteggio</label>
+                                    <div class="form-check" id="create_exact_number_container">
+                                        <input class="form-check-input" type="checkbox" name="exact_number"
+                                            id="create_exact_number">
+                                        <label class="form-check-label" for="create_exact_number">
+                                            Esatto numero di rack
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">
+                                        <span id="create-game-mode-text">Al 7 (si vince a 7 rack)</span>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="withdraw_policy" class="form-label">Gestione Forfait</label>
+                                    <select class="form-control" name="withdraw_policy" id="withdraw_policy" required>
+                                        <option value="Forfeit" selected>Vincita a tavolino</option>
+                                        <option value="Exclude">Escludi dal turno</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    {% endif %}
+
+                    <!-- Step 4: Strategia e Spareggio -->
+                    <div class="wizard-content" id="step4" style="display: none;">
+                        <h6 class="text-primary mb-3"><i class="fas fa-chess"></i> Strategia Abbinamenti</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_round_policy" class="form-label">Primo Abbinamento</label>
+                                    <select class="form-control" name="first_round_policy" id="create_first_round_policy">
+                                        <option value="random" selected>Casuale</option>
+                                        <option value="rating">Basato su Rating</option>
+                                        <option value="classification">Basato su Classifica</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="odd_number_policy" class="form-label">Gestione Dispari</label>
+                                    <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
+                                        <option value="bye" {% if not campionato.default_odd_policy or campionato.default_odd_policy == 'bye' %}selected{% endif %}>
+                                            X (vinto a tavolino)
+                                        </option>
+                                        <option value="bye_with_challenge" {% if campionato.default_odd_policy == 'bye_with_challenge' %}selected{% endif %}>
+                                            X con Challenge
+                                        </option>
+                                        <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
+                                            Match a 3 Giocatori
+                                        </option>
+                                    </select>
+                                    <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
+                                        <i class="fas fa-exclamation-triangle"></i> Trio disponibile solo per distanze 2-5
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="anti_rematch_enabled"
+                                            id="create_anti_rematch_enabled" {% if campionato.default_anti_rematch is none or campionato.default_anti_rematch %}checked{% endif %}>
+                                        <label class="form-check-label" for="create_anti_rematch_enabled">
+                                            <strong>Anti-Rematch</strong>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted ms-4">Evita reincontri tra stessi avversari</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+                        <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> Spareggio (SSR)</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="tiebreaker_enabled"
+                                            id="create_tiebreaker_enabled" checked>
+                                        <label class="form-check-label" for="create_tiebreaker_enabled">
+                                            <strong>Abilita spareggio</strong>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted ms-4">Spot Shot Rally per pari punti</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tiebreaker_until_position" class="form-label">Spareggio fino a</label>
+                                    <select class="form-control" name="tiebreaker_until_position" id="create_tiebreaker_until_position">
+                                        <option value="1">Solo 1° posto</option>
+                                        <option value="2">Fino al 2° posto</option>
+                                        <option value="3" selected>Fino al 3° posto (podio)</option>
+                                        <option value="5">Fino al 5° posto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Note</label>
+                            <textarea class="form-control" name="description" id="create_description" rows="2"
+                                placeholder="Note aggiuntive sulla gara... (opzionale)"></textarea>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="submit" class="btn btn-primary">Crea Gara</button>
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" id="wizardPrevBtn" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Indietro
+                    </button>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annulla</button>
+                        <button type="button" class="btn btn-primary" id="wizardNextBtn">
+                            Avanti <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="submit" class="btn btn-success" id="wizardSubmitBtn" style="display: none;">
+                            <i class="fas fa-check"></i> Crea Gara
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<style>
+    .wizard-steps {
+        position: relative;
+    }
+    .wizard-progress-bg {
+        position: absolute;
+        top: 15px;
+        left: 10%;
+        right: 10%;
+        height: 3px;
+        background: #e9ecef;
+        z-index: 0;
+    }
+    .wizard-progress-fill {
+        position: absolute;
+        top: 15px;
+        left: 10%;
+        height: 3px;
+        background: #0d6efd;
+        z-index: 1;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    .wizard-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+    .wizard-step-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    .wizard-step.active .wizard-step-circle,
+    .wizard-step.completed .wizard-step-circle {
+        background: #0d6efd;
+        color: white;
+    }
+    .wizard-step.completed .wizard-step-circle {
+        background: #198754;
+    }
+    .wizard-step-label {
+        font-size: 11px;
+        color: #6c757d;
+        margin-top: 4px;
+        text-align: center;
+    }
+    .wizard-step.active .wizard-step-label {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+    .wizard-step.completed .wizard-step-label {
+        color: #198754;
+    }
+    .wizard-content {
+        min-height: 280px;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Wizard state
+        let currentStep = 1;
+        const totalSteps = 4;
+
         // Elements
+        const steps = document.querySelectorAll('.wizard-step');
+        const contents = document.querySelectorAll('.wizard-content');
+        const prevBtn = document.getElementById('wizardPrevBtn');
+        const nextBtn = document.getElementById('wizardNextBtn');
+        const submitBtn = document.getElementById('wizardSubmitBtn');
+        const progressFill = document.getElementById('wizardProgressFill');
+
+        // Form elements
         const locationInput = document.getElementById('create_location');
         const tablesInput = document.getElementById('create_available_tables');
         const venueOptions = document.querySelectorAll('#venue-suggestions option');
         const distanceInput = document.getElementById('create_distance');
         const exactNumberCheckbox = document.getElementById('create_exact_number');
+        const exactNumberContainer = document.getElementById('create_exact_number_container');
         const gameModeText = document.getElementById('create-game-mode-text');
         const oddPolicySelect = document.getElementById('create_odd_number_policy');
         const trioWarning = document.getElementById('create_trio_warning');
+
+        // Update wizard UI
+        function updateWizardUI() {
+            // Update step indicators
+            steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                } else if (stepNum === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update content visibility
+            contents.forEach((content, index) => {
+                content.style.display = (index + 1 === currentStep) ? 'block' : 'none';
+            });
+
+            // Update progress bar
+            const progress = ((currentStep - 1) / (totalSteps - 1)) * 80; // 80% is the width between circles
+            progressFill.style.width = progress + '%';
+
+            // Update buttons
+            prevBtn.style.display = currentStep > 1 ? 'inline-block' : 'none';
+            nextBtn.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
+            submitBtn.style.display = currentStep === totalSteps ? 'inline-block' : 'none';
+        }
+
+        // Validate current step
+        function validateStep(step) {
+            const content = document.getElementById('step' + step);
+            const requiredFields = content.querySelectorAll('[required]');
+            let valid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            return valid;
+        }
+
+        // Navigation handlers
+        nextBtn.addEventListener('click', function () {
+            if (validateStep(currentStep)) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateWizardUI();
+                }
+            }
+        });
+
+        prevBtn.addEventListener('click', function () {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizardUI();
+            }
+        });
+
+        // Allow clicking on completed steps
+        steps.forEach((step, index) => {
+            step.addEventListener('click', function () {
+                const targetStep = index + 1;
+                // Can only go back or to completed steps
+                if (targetStep < currentStep) {
+                    currentStep = targetStep;
+                    updateWizardUI();
+                }
+            });
+            step.style.cursor = 'pointer';
+        });
 
         // Preload number of tables when venue is selected
         if (locationInput && tablesInput) {
@@ -266,12 +509,33 @@
         function updateGameModeText() {
             if (!distanceInput || !gameModeText) return;
             const distance = parseInt(distanceInput.value) || 0;
-            const isExactNumber = exactNumberCheckbox && exactNumberCheckbox.checked;
+            const isExactNumber = exactNumberCheckbox && exactNumberCheckbox.checked && !exactNumberCheckbox.disabled;
             if (isExactNumber) {
                 gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
             } else {
                 gameModeText.textContent = 'Al ' + distance + ' (si vince a ' + distance + ' rack)';
             }
+        }
+
+        // Update exact number availability
+        // Per ADR-005: Trio IS compatible with exact number mode
+        // (when using rack-based classification, ties are acceptable)
+        function updateExactNumberAvailability() {
+            if (!exactNumberCheckbox) return;
+
+            const distance = parseInt(distanceInput?.value) || 0;
+
+            // Exact number is always available when distance > 0
+            if (distance > 0) {
+                exactNumberCheckbox.disabled = false;
+                if (exactNumberContainer) exactNumberContainer.style.opacity = '1';
+            } else {
+                exactNumberCheckbox.disabled = true;
+                exactNumberCheckbox.checked = false;
+                if (exactNumberContainer) exactNumberContainer.style.opacity = '0.5';
+            }
+
+            updateGameModeText();
         }
 
         // Validate trio policy (only distances 2-5 per ADR-005)
@@ -285,9 +549,10 @@
             } else {
                 trioWarning.style.display = 'none';
             }
+            updateExactNumberAvailability();
         }
 
-        // Event listeners
+        // Event listeners for form fields
         if (distanceInput) {
             distanceInput.addEventListener('input', updateGameModeText);
             distanceInput.addEventListener('input', updateTrioWarning);
@@ -299,8 +564,21 @@
             oddPolicySelect.addEventListener('change', updateTrioWarning);
         }
 
+        // Reset wizard when modal is opened
+        const modal = document.getElementById('newProvaModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function () {
+                currentStep = 1;
+                updateWizardUI();
+                // Clear validation states
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            });
+        }
+
         // Initial updates
+        updateWizardUI();
         updateGameModeText();
         updateTrioWarning();
+        updateExactNumberAvailability();
     });
 </script>

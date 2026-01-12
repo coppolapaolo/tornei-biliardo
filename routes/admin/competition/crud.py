@@ -383,14 +383,24 @@ def create_gara():
     is_race_to = not exact_number
     withdraw_policy = request.form.get("withdraw_policy", DEFAULT_WITHDRAW_POLICY)
 
-    # Eredita la strategia di matchmaking e altri default dal campionato (ADR-0001)
-    matchmaking_strategy = campionato.campionato_type
-    anti_rematch = campionato.default_anti_rematch if campionato.default_anti_rematch is not None else True
-    odd_policy = campionato.default_odd_policy if campionato.default_odd_policy else "bye"
+    # Strategy settings from form with campionato defaults as fallback (ADR-0001)
+    matchmaking_strategy = campionato.campionato_type  # Always inherit from campionato
+    # Read form values, using campionato defaults as fallback
+    default_anti_rematch = campionato.default_anti_rematch if campionato.default_anti_rematch is not None else True
+    default_odd_policy = campionato.default_odd_policy if campionato.default_odd_policy else "bye"
+    default_first_round = "random"
 
-    # Trio matches require "race to N" mode (is_race_to=True)
-    if odd_policy == "trio":
-        is_race_to = True
+    anti_rematch = request.form.get("anti_rematch_enabled") == "on" if "anti_rematch_enabled" in request.form else default_anti_rematch
+    odd_policy = request.form.get("odd_number_policy", default_odd_policy)
+    first_round_policy = request.form.get("first_round_policy", default_first_round)
+
+    # SSR (Spot Shot Rally) tiebreaker configuration
+    tiebreaker_enabled = request.form.get("tiebreaker_enabled") == "on"
+    tiebreaker_until_position = int(request.form.get("tiebreaker_until_position", 3))
+
+    # Per ADR-005: Trio IS compatible with both "Race to N" AND "Exactly N" modes
+    # (when using rack-based classification, ties are acceptable)
+    # No need to force is_race_to=True for trio
 
     gara = GaraService.create_gara(
         campionato_id=campionato_id,
@@ -409,8 +419,11 @@ def create_gara():
         is_race_to=is_race_to,
         withdraw_policy=withdraw_policy,
         matchmaking_strategy=matchmaking_strategy,
+        first_round_policy=first_round_policy,
         anti_rematch_enabled=anti_rematch,
         odd_number_policy=odd_policy,
+        tiebreaker_enabled=tiebreaker_enabled,
+        tiebreaker_until_position=tiebreaker_until_position,
     )
 
     # Set gara-specific available tables

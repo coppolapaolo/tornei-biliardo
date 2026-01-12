@@ -118,17 +118,23 @@
         if (!distanceInput || !exactNumberCheckbox) return;
 
         const distance = parseInt(distanceInput.value) || 0;
-        const isOdd = distance % 2 === 1;
 
-        console.log('Updating exact number - Distance:', distance, 'Is odd:', isOdd); // Debug
-
-        if (isOdd && distance > 0) {
+        // Per ADR-005: Trio IS compatible with exact number mode
+        // (when using rack-based classification, ties are acceptable)
+        // Exact number is always available when distance > 0
+        if (distance > 0) {
             exactNumberCheckbox.disabled = false;
-            if (exactNumberContainer) exactNumberContainer.style.opacity = '1';
+            if (exactNumberContainer) {
+                exactNumberContainer.style.opacity = '1';
+                exactNumberContainer.title = '';
+            }
         } else {
             exactNumberCheckbox.disabled = true;
             exactNumberCheckbox.checked = false;
-            if (exactNumberContainer) exactNumberContainer.style.opacity = '0.5';
+            if (exactNumberContainer) {
+                exactNumberContainer.style.opacity = '0.5';
+                exactNumberContainer.title = '';
+            }
         }
 
         updateGameModeText();
@@ -154,7 +160,10 @@
         strategySelect.addEventListener('change', updateStrategyUI);
     }
     if (oddPolicySelect) {
-        oddPolicySelect.addEventListener('change', updateTrioWarning);
+        oddPolicySelect.addEventListener('change', function() {
+            updateTrioWarning();
+            updateExactNumberAvailability();
+        });
     }
 
     // Listen for distance changes

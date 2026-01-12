@@ -261,13 +261,12 @@ class StrategyConfiguration:
             )
 
         # Check trio match feasibility against tournament format complexity
+        # Per ADR-005: Trio allowed for distances 2-5 only
+        # Trio is compatible with BOTH "Race to N" AND "Exactly N" modes
+        # (when using rack-based classification, ties are acceptable)
         if self.odd_number_policy == OddNumberPolicy.TRIO:
-            if distance and distance > 7:
-                errors.append("Match a tre supportati solo fino a distanza 7")
-            if is_race_to is False:
-                errors.append(
-                    "Match a tre richiedono modalità 'al N' (is_race_to=True)"
-                )
+            if distance and (distance < 2 or distance > 5):
+                errors.append("Match a tre supportati solo per distanze da 2 a 5")
 
         # Ensure anti-rematch requirements are met for strategy integrity
         if not self.anti_rematch_enabled and constraints.get(

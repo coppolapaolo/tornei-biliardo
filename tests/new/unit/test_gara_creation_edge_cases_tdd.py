@@ -30,13 +30,16 @@ from models.exceptions import InvalidTransitionError
 class TestGaraCreationEdgeCasesTDD:
     """TDD tests for edge cases in gara creation and validation."""
 
-    def test_strategy_amalfi_with_exact_number_and_trio_policy_should_fail(
+    def test_strategy_amalfi_with_exact_number_and_trio_policy_should_succeed(
         self, db_session
     ):
-        """Test that Amalfi strategy with exact number and trio policy fails validation.
+        """Test that Amalfi strategy with exact number and trio policy SUCCEEDS.
 
-        RED PHASE: This test should fail initially because the validation
-        might not catch this specific invalid combination.
+        Per ADR-005: Trio matches ARE compatible with exact number mode when
+        using rack-based classification. This is because:
+        - Rack-based classification only counts racks won, not match wins
+        - Ties are acceptable in rack-based classification
+        - Trio matches don't need a single winner in this scoring mode
         """
         unique_id = str(uuid.uuid4())[:8]
         director = User(
@@ -50,24 +53,29 @@ class TestGaraCreationEdgeCasesTDD:
 
         tomorrow = date.today() + timedelta(days=1)
 
-        # This combination should be invalid:
-        # - Amalfi strategy with exact number (not best_of)
-        # - Trio policy (which requires best_of for proper scoring)
-        with pytest.raises(ValueError, match="Match a tre richiedono modalità"):
-            GaraService.create_gara(
-                campionato_id=None,
-                number=1,
-                name="Invalid Amalfi Exact Trio",
-                date=tomorrow,
-                discipline="palla 9",
-                distance=5,
-                is_race_to=False,  # Exact number
-                director_id=director.id,
-                matchmaking_strategy="amalfi",
-                odd_number_policy="trio",  # Should fail with exact number
-                rounds_count=3,
-                min_participants=4,
-            )
+        # Per ADR-005: This combination IS VALID:
+        # - Exact number scoring (is_race_to=False)
+        # - Trio policy
+        # - Distance 2-5 (within trio allowed range)
+        gara = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Valid Amalfi Exact Trio",
+            date=tomorrow,
+            discipline="palla 9",
+            distance=5,  # Within 2-5 range for trio
+            is_race_to=False,  # Exact number - compatible with trio per ADR-005
+            director_id=director.id,
+            matchmaking_strategy="amalfi",
+            odd_number_policy="trio",  # Valid with exact number
+            rounds_count=3,
+            min_participants=4,
+        )
+
+        assert gara is not None
+        assert gara.is_race_to is False
+        assert gara.odd_number_policy == "trio"
+        assert gara.distance == 5
 
     def test_strategy_random_with_rating_based_first_round_should_fail(
         self, db_session
@@ -328,10 +336,10 @@ class TestGaraCreationEdgeCasesTDD:
         assert "entry_fee" in errors
         assert "negativa" in errors["entry_fee"]
 
-    def test_trio_policy_with_distance_greater_than_7_should_fail(self, db_session):
-        """Test that trio policy with distance > 7 fails validation.
+    def test_trio_policy_with_distance_outside_2_5_should_fail(self, db_session):
+        """Test that trio policy with distance outside 2-5 fails validation.
 
-        RED PHASE: Trio matches should only be allowed up to distance 7.
+        Per ADR-005: Trio matches are only allowed for distances 2-5.
         """
         unique_id = str(uuid.uuid4())[:8]
         director = User(
@@ -345,9 +353,9 @@ class TestGaraCreationEdgeCasesTDD:
 
         tomorrow = date.today() + timedelta(days=1)
 
-        # Trio with distance > 7 should fail
+        # Trio with distance > 5 should fail (per ADR-005)
         with pytest.raises(
-            ValueError, match="Match a tre supportati solo fino a distanza 7"
+            ValueError, match="Match a tre supportati solo per distanze da 2 a 5"
         ):
             GaraService.create_gara(
                 campionato_id=None,
@@ -355,11 +363,11 @@ class TestGaraCreationEdgeCasesTDD:
                 name="Invalid Trio Distance",
                 date=tomorrow,
                 discipline="palla 8",
-                distance=9,  # Greater than 7
+                distance=7,  # Greater than 5
                 is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="amalfi",
-                odd_number_policy="trio",  # Should fail with distance > 7
+                odd_number_policy="trio",  # Should fail with distance > 5
                 rounds_count=3,
                 min_participants=4,
             )
