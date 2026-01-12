@@ -23,18 +23,18 @@ class TestSpareggioServiceValidation:
         assert "Nessun punteggio" in error
 
     def test_validate_ssr_scores_zero(self):
-        """Zero scores should fail validation."""
+        """Zero scores are valid - player didn't pocket any balls in SSR."""
         scores = {1: 5, 2: 0, 3: 1}
         is_valid, error = SpareggioService.validate_ssr_scores(scores)
-        assert is_valid is False
-        assert "numeri interi positivi" in error
+        assert is_valid is True
+        assert error == ""
 
     def test_validate_ssr_scores_negative(self):
         """Negative scores should fail validation."""
         scores = {1: 5, 2: -1, 3: 1}
         is_valid, error = SpareggioService.validate_ssr_scores(scores)
         assert is_valid is False
-        assert "numeri interi positivi" in error
+        assert "non negativi" in error
 
     def test_validate_ssr_scores_duplicate(self):
         """Duplicate scores should fail validation."""
@@ -48,7 +48,7 @@ class TestSpareggioServiceValidation:
         scores = {1: 5.5, 2: 3, 3: 1}  # type: ignore
         is_valid, error = SpareggioService.validate_ssr_scores(scores)
         assert is_valid is False
-        assert "numeri interi positivi" in error
+        assert "non negativi" in error
 
 
 class TestSpareggioServiceDetection:

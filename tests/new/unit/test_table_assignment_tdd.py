@@ -233,16 +233,19 @@ class TestTableAssignmentTDD:
         db_session.refresh(match)
         assert match.table_assignment is None
 
-    def test_reassign_only_to_same_round_matches(
+    def test_reassign_to_any_pending_match_across_rounds(
         self, db_session, gara_with_venue, players
     ):
         """
-        TEST 5: When releasing a table, only assign to matches from the same round
+        TEST 5: When releasing a table, assign to first pending match across all rounds
 
         Given: Completed match in round 1, pending match in round 2
         When: Table is released
-        Then: Table should not be assigned to round 2 match
+        Then: Table SHOULD be assigned to round 2 match (first pending)
               And completed match should have no table
+
+        NOTE: Cross-round assignment maximizes table utilization. Matches are
+        ordered by round_number, so earlier rounds get priority.
         """
         # Round 1 match with table
         match_r1 = Match(
@@ -271,9 +274,10 @@ class TestTableAssignmentTDD:
         # Act
         TableAssignmentService.release_and_reassign_table(match_r1.id)
 
-        # Assert - Round 2 match should not get the table
+        # Assert - Round 2 match SHOULD get the table (cross-round assignment)
         db_session.refresh(match_r2)
-        assert match_r2.table_assignment is None
+        assert match_r2.table_assignment == "Tavolo A"
+        assert match_r2.status == MatchStatus.PLAYING.value
 
         # Completed match should have table released
         db_session.refresh(match_r1)
