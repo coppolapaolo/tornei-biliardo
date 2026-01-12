@@ -741,44 +741,25 @@ class TournamentService(DomainService):
             "total_racks_played": total_racks_played,
         }
 
-    @read_only(domain="campionato")
-    def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
-        """Calcola la classifica generale del campionato basata su tutte le gare completate."""
-        from models.competition.models import Gara
-        from models.classification.models import RoundClassification
-        from models.campionato.models import Campionato
-        from models.user.models import User
-        from sqlalchemy import func
+    def _aggregate_player_totals(
+        self,
+        garas: List,
+        campionato_type: str,
+    ) -> Dict[int, Dict[str, Any]]:
+        """Aggrega i totali dei giocatori per un insieme di gare.
 
-        # Trova il campionato per verificare il tipo
-        campionato = db.session.query(Campionato).filter_by(id=campionato_id).first()
-        if not campionato:
-            return []
+        Args:
+            garas: Lista di gare da aggregare
+            campionato_type: Tipo di campionato (amalfi, random, etc.)
 
-        # Trova tutte le gare completate del campionato (incluse quelle "playing" ma finite)
-        all_garas = (
-            db.session.query(Gara)
-            .filter_by(campionato_id=campionato_id)
-            .filter(Gara.status.in_(["completed", "playing"]))
-            .all()
-        )
+        Returns:
+            Dizionario user_id -> dati aggregati del giocatore
+        """
+        from models.classification.models import RoundClassification, GaraClassification
 
-        # Filtra le gare che sono realmente completate
-        completed_garas = []
-        for gara in all_garas:
-            if gara.status == "completed":
-                completed_garas.append(gara)
-            elif gara.status == "playing" and gara.current_round > gara.rounds_count:
-                # Gara con tutti i round completati
-                completed_garas.append(gara)
+        player_totals: Dict[int, Dict[str, Any]] = {}
 
-        if not completed_garas:
-            return []
-
-        # Raccoglie tutti i risultati per giocatore
-        player_totals = {}
-
-        for gara in completed_garas:
+        for gara in garas:
             # Ottieni la classifica finale di questa gara (ultimo turno)
             final_round = gara.rounds_count
             classifications = (
@@ -790,8 +771,7 @@ class TournamentService(DomainService):
 
             # Per Random campionati, ottieni anche i punteggi SSR da GaraClassification
             gara_ssr_scores: Dict[int, int] = {}
-            if campionato.campionato_type == MatchmakingStrategy.RANDOM.value:
-                from models.classification.models import GaraClassification
+            if campionato_type == MatchmakingStrategy.RANDOM.value:
                 gara_classifications = (
                     db.session.query(GaraClassification)
                     .filter_by(gara_id=gara.id)
@@ -811,6 +791,7 @@ class TournamentService(DomainService):
                         "total_rack_difference": 0,
                         "total_spot_shot_wins": 0,
                         "participations": 0,
+                        "total_points": 0,
                     }
 
                 # Per campionati Amalfi: somma match vinti e differenza rack
@@ -826,41 +807,15 @@ class TournamentService(DomainService):
                 )
                 player_totals[user_id]["participations"] += 1
 
-        # Per campionati Amalfi: ordina per match vinti (decrescente), poi per differenza rack (decrescente)
-        if campionato.campionato_type == MatchmakingStrategy.AMALFI.value:
-            sorted_players = sorted(
-                player_totals.items(),
-                key=lambda x: (
-                    -x[1]["total_matches_won"],  # Prima i match vinti
-                    -x[1]["total_rack_difference"],  # Poi la differenza rack
-                ),
-            )
-        elif campionato.campionato_type == MatchmakingStrategy.RANDOM.value:
-            # Per campionati Random: ordina per rack totali (decrescente), poi punti SSR
-            # Nota: per strategia Random, rack_difference contiene i rack totali vinti
-            sorted_players = sorted(
-                player_totals.items(),
-                key=lambda x: (
-                    -x[1]["total_rack_difference"],  # Rack totali (stored in rack_difference for Random)
-                    -x[1]["total_spot_shot_wins"],  # Secondary: punti spareggio (SSR)
-                ),
-            )
-        else:
-            # Per altri tipi di campionato, usa il sistema a punti
+        # Per sistemi a punti, calcola i punti
+        if campionato_type not in [
+            MatchmakingStrategy.AMALFI.value,
+            MatchmakingStrategy.RANDOM.value,
+        ]:
             position_points = {
-                1: 10,
-                2: 7,
-                3: 5,
-                4: 4,
-                5: 3,
-                6: 2,
-                7: 2,
-                8: 1,
-                9: 1,
-                10: 1,
+                1: 10, 2: 7, 3: 5, 4: 4, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1, 10: 1
             }
-            # Calcola punti per giocatore (logica precedente)
-            for gara in completed_garas:
+            for gara in garas:
                 final_round = gara.rounds_count
                 classifications = (
                     db.session.query(RoundClassification)
@@ -868,15 +823,45 @@ class TournamentService(DomainService):
                     .order_by(RoundClassification.position)
                     .all()
                 )
-
                 for classification in classifications:
                     user_id = classification.user_id
-                    if "total_points" not in player_totals[user_id]:
-                        player_totals[user_id]["total_points"] = 0
+                    if user_id in player_totals:
+                        points = position_points.get(classification.position, 0)
+                        player_totals[user_id]["total_points"] += points
 
-                    points = position_points.get(classification.position, 0)
-                    player_totals[user_id]["total_points"] += points
+        return player_totals
 
+    def _sort_and_rank_players(
+        self,
+        player_totals: Dict[int, Dict[str, Any]],
+        campionato_type: str,
+    ) -> List[tuple]:
+        """Ordina i giocatori e assegna le posizioni.
+
+        Args:
+            player_totals: Dizionario user_id -> dati aggregati
+            campionato_type: Tipo di campionato
+
+        Returns:
+            Lista di tuple (posizione, user_id) ordinate
+        """
+        if campionato_type == MatchmakingStrategy.AMALFI.value:
+            sorted_players = sorted(
+                player_totals.items(),
+                key=lambda x: (
+                    -x[1]["total_matches_won"],
+                    -x[1]["total_rack_difference"],
+                ),
+            )
+        elif campionato_type == MatchmakingStrategy.RANDOM.value:
+            sorted_players = sorted(
+                player_totals.items(),
+                key=lambda x: (
+                    -x[1]["total_rack_difference"],
+                    -x[1]["total_spot_shot_wins"],
+                ),
+            )
+        else:
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
@@ -886,9 +871,71 @@ class TournamentService(DomainService):
                 ),
             )
 
-        # Aggiungi posizioni e restituisci nel formato richiesto
+        # Restituisce lista di (posizione, user_id)
+        return [(pos, user_id) for pos, (user_id, _) in enumerate(sorted_players, 1)]
+
+    @read_only(domain="campionato")
+    def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
+        """Calcola la classifica generale del campionato basata su tutte le gare completate.
+
+        Include il calcolo del trend (previous_position) confrontando la classifica
+        attuale con quella calcolata escludendo l'ultima gara completata.
+        """
+        from models.competition.models import Gara
+        from models.campionato.models import Campionato
+
+        # Trova il campionato per verificare il tipo
+        campionato = db.session.query(Campionato).filter_by(id=campionato_id).first()
+        if not campionato:
+            return []
+
+        # Trova tutte le gare completate del campionato (incluse quelle "playing" ma finite)
+        all_garas = (
+            db.session.query(Gara)
+            .filter_by(campionato_id=campionato_id)
+            .filter(Gara.status.in_(["completed", "playing"]))
+            .order_by(Gara.number)
+            .all()
+        )
+
+        # Filtra le gare che sono realmente completate
+        completed_garas = []
+        for gara in all_garas:
+            if gara.status == "completed":
+                completed_garas.append(gara)
+            elif gara.status == "playing" and gara.current_round > gara.rounds_count:
+                # Gara con tutti i round completati
+                completed_garas.append(gara)
+
+        if not completed_garas:
+            return []
+
+        # Calcola posizioni precedenti (tutte le gare tranne l'ultima)
+        previous_positions: Dict[int, int] = {}
+        if len(completed_garas) > 1:
+            previous_garas = completed_garas[:-1]
+            previous_totals = self._aggregate_player_totals(
+                previous_garas, campionato.campionato_type
+            )
+            previous_ranking = self._sort_and_rank_players(
+                previous_totals, campionato.campionato_type
+            )
+            previous_positions = {user_id: pos for pos, user_id in previous_ranking}
+
+        # Calcola classifica attuale (tutte le gare)
+        player_totals = self._aggregate_player_totals(
+            completed_garas, campionato.campionato_type
+        )
+        current_ranking = self._sort_and_rank_players(
+            player_totals, campionato.campionato_type
+        )
+
+        # Costruisci risultato con posizione precedente
         result = []
-        for position, (user_id, data) in enumerate(sorted_players, 1):
+        for position, user_id in current_ranking:
+            data = player_totals[user_id]
+            # Aggiungi previous_position solo se il giocatore era nella classifica precedente
+            data["previous_position"] = previous_positions.get(user_id)
             result.append((position, data))
 
         return result
