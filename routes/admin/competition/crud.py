@@ -20,10 +20,7 @@ from models import (
     Campionato,
     Gara,
 )
-from models.status_enum import (
-    GaraStatus,
-    Discipline,
-)
+from models.status_enum import Discipline
 from models.competition.models import WithdrawPolicy
 from utils import (
     gara_manager_required,
@@ -169,6 +166,10 @@ def create_gara_standalone():
             odd_number_policy = request.form.get("odd_number_policy", "bye")
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
 
+            # SSR (Spot Shot Rally) tiebreaker configuration
+            tiebreaker_enabled = request.form.get("tiebreaker_enabled") == "on"
+            tiebreaker_until_position = int(request.form.get("tiebreaker_until_position", 3))
+
             # Validazione della configurazione delle strategie
             from models.matchmaking.configuration import (
                 StrategyConfiguration,
@@ -222,6 +223,9 @@ def create_gara_standalone():
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
                 is_race_to_sets=is_race_to_sets,
+                # SSR (Spot Shot Rally) tiebreaker configuration
+                tiebreaker_enabled=tiebreaker_enabled,
+                tiebreaker_until_position=tiebreaker_until_position,
             )
 
             # Set gara-specific available tables
@@ -469,6 +473,10 @@ def edit_gara(gara_id):
             )
             anti_rematch_enabled = request.form.get("anti_rematch_enabled") == "on"
 
+            # SSR (Spot Shot Rally) tiebreaker configuration
+            tiebreaker_enabled = request.form.get("tiebreaker_enabled") == "on"
+            tiebreaker_until_position = int(request.form.get("tiebreaker_until_position", 3))
+
             # Estrai il campo time
             time_str = request.form.get("time", "20:00")
 
@@ -499,6 +507,9 @@ def edit_gara(gara_id):
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
                 is_race_to_sets=is_race_to_sets,
+                # SSR (Spot Shot Rally) tiebreaker configuration
+                tiebreaker_enabled=tiebreaker_enabled,
+                tiebreaker_until_position=tiebreaker_until_position,
             )
 
             # Set gara-specific available tables

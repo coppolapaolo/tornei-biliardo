@@ -92,6 +92,91 @@
   </div>
 </div>
 
+{# SSR (Spot Shot Rally) Section - visible when awaiting_ssr or has SSR data #}
+{% if gara.status == 'awaiting_ssr' or (ssr_groups and has_ssr_data) %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-balance-scale"></i> {{ _('Spot Shot Rally (SSR)') }}
+        </h5>
+        {% if gara.status == 'awaiting_ssr' %}
+        <span class="badge bg-dark">{{ _('In attesa di punteggi') }}</span>
+        {% else %}
+        <span class="badge bg-success">{{ _('Completato') }}</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if ssr_groups %}
+        <div class="row">
+          {% for group in ssr_groups %}
+          <div class="col-md-6 mb-3">
+            <div class="card h-100">
+              <div class="card-header py-2">
+                <strong>
+                  <i class="fas fa-trophy {% if group.position == 1 %}text-warning{% elif group.position == 2 %}text-secondary{% else %}text-danger{% endif %}"></i>
+                  {{ _('Parimerito per il %(pos)s° posto', pos=group.position) }}
+                </strong>
+                <small class="text-muted ms-2">({{ group.rack_totali }} rack)</small>
+              </div>
+              <div class="card-body py-2">
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>{{ _('Giocatore') }}</th>
+                      <th class="text-center" style="width: 100px;">{{ _('Punti SSR') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for player in group.players %}
+                    <tr>
+                      <td>{{ player.username }}</td>
+                      <td class="text-center">
+                        {% if can_edit_ssr %}
+                        <input type="number"
+                               class="form-control form-control-sm text-center ssr-group-input"
+                               data-user-id="{{ player.user_id }}"
+                               data-group-position="{{ group.position }}"
+                               value="{{ player.current_ssr_score if player.current_ssr_score else '' }}"
+                               min="0"
+                               style="width: 80px; display: inline-block;">
+                        {% else %}
+                          {% if player.current_ssr_score %}
+                          <span class="badge bg-warning text-dark">{{ player.current_ssr_score }}</span>
+                          {% else %}
+                          <span class="text-muted">-</span>
+                          {% endif %}
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% if can_edit_ssr %}
+                <div class="mt-2 text-end">
+                  <button type="button" class="btn btn-sm btn-warning"
+                          onclick='saveSsrGroup({{ gara.id }}, {{ group.position }})'>
+                    <i class="fas fa-save"></i> {{ _('Salva') }}
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info mb-0">
+          <i class="fas fa-info-circle"></i> {{ _('Nessun parimerito da risolvere.') }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {# Challenge Section - adattiva #}
 {% if gara_challenges or user_challenge_data %}
 <div class="row mb-4">
@@ -359,8 +444,8 @@
           if (data.success) {
             location.reload();
           } else if (data.needs_tiebreaker) {
-            // Show SSR modal for tiebreaker resolution
-            showSsrModal(garaId, data.tiebreakers);
+            // Show message to use SSR workflow instead
+            showInfo(data.message || {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi")|tojson }});
           } else {
             showError({{ _("Errore durante la terminazione:")|tojson }} + ' ' + (data.error || data.message));
           }
@@ -368,6 +453,29 @@
         .catch(error => {
           console.error('Error:', error);
           showError({{ _("Errore durante la terminazione della gara")|tojson }});
+        });
+    });
+  }
+
+  function startSsr(garaId) {
+    showConfirm({{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nei primi 3 posti.")|tojson }}, () => {
+      fetch(`/admin/gara/${garaId}/start_ssr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            showError({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError({{ _("Errore durante l'avvio della fase SSR")|tojson }});
         });
     });
   }
@@ -508,6 +616,66 @@
           // Still have unresolved tiebreakers - update modal
           showSsrModal(garaId, data.tiebreakers);
           showInfo(data.message);
+        } else {
+          showError({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante il salvataggio dei punteggi")|tojson }});
+      });
+  }
+
+  function saveSsrGroup(garaId, groupPosition) {
+    // Collect scores for this specific group
+    const inputs = document.querySelectorAll(`.ssr-group-input[data-group-position="${groupPosition}"]`);
+    const scores = {};
+    let hasErrors = false;
+
+    inputs.forEach(function(input) {
+      const userId = input.dataset.userId;
+      const value = parseInt(input.value, 10);
+
+      if (isNaN(value) || value < 0) {
+        input.classList.add('is-invalid');
+        hasErrors = true;
+      } else {
+        input.classList.remove('is-invalid');
+        scores[userId] = value;
+      }
+    });
+
+    if (hasErrors) {
+      showError({{ _("I punteggi devono essere numeri interi non negativi")|tojson }});
+      return;
+    }
+
+    // Check for duplicates within this group
+    const scoreValues = Object.values(scores);
+    if (new Set(scoreValues).size !== scoreValues.length) {
+      showError({{ _("I punteggi devono essere diversi all'interno del gruppo")|tojson }});
+      return;
+    }
+
+    // Submit scores for this group
+    fetch(`/admin/gara/${garaId}/save_ssr_group`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        group_position: groupPosition,
+        scores: scores
+      })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showSuccess(data.message);
+          if (data.all_resolved) {
+            // All tiebreakers resolved - reload to show terminate button
+            location.reload();
+          }
         } else {
           showError({{ _("Errore:")|tojson }} + ' ' + (data.error || data.message));
         }

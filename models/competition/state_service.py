@@ -74,9 +74,44 @@ class StateService:
 
     @staticmethod
     @transactional(domain="competition")
-    def complete(gara: Gara) -> Gara:
-        """playing → completed"""
+    def start_ssr(gara: Gara) -> Gara:
+        """playing → awaiting_ssr
+
+        Transition to SSR phase when rounds are complete but tiebreakers are needed.
+        """
         StateService._require(gara, GaraStatus.PLAYING)
+
+        # Check for pending or in-progress matches
+        from models.match.models import Match
+        from models.status_enum import MatchStatus
+
+        pending_matches = Match.query.filter_by(gara_id=gara.id).filter(
+            Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value])  # type: ignore[attr-defined]
+        ).first()
+
+        if pending_matches:
+            raise InvalidTransitionError("Match ancora in corso")
+
+        gara.status = GaraStatus.AWAITING_SSR.value
+        db.session.add(gara)
+        return gara
+
+    @staticmethod
+    def _require_one_of(gara: Gara, expected: list[GaraStatus]) -> None:
+        """Validate that gara is in one of the expected states."""
+        current_status = gara.status or GaraStatus.SETUP.value
+        if current_status not in [s.value for s in expected]:
+            allowed = " o ".join(s.name.lower() for s in expected)
+            raise InvalidTransitionError(
+                f"Transizione non ammessa: {gara.status!r} → "
+                f"richiesto uno tra: {allowed}."
+            )
+
+    @staticmethod
+    @transactional(domain="competition")
+    def complete(gara: Gara) -> Gara:
+        """playing|awaiting_ssr → completed"""
+        StateService._require_one_of(gara, [GaraStatus.PLAYING, GaraStatus.AWAITING_SSR])
 
         # Check for pending or in-progress matches
         from models.match.models import Match

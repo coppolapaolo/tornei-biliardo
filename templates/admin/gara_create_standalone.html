@@ -292,6 +292,33 @@
                                             </small>
                                         </div>
                                     </div>
+
+                                    <!-- SSR (Spot Shot Rally) Configuration -->
+                                    <div class="border-top pt-3 mt-3">
+                                        <h6 class="text-uppercase small fw-bold text-muted mb-3">
+                                            <i class="fas fa-balance-scale text-warning me-1"></i> Spareggio (SSR)
+                                        </h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="tiebreaker_enabled"
+                                                name="tiebreaker_enabled" checked>
+                                            <label class="form-check-label" for="tiebreaker_enabled">
+                                                {{ _('Abilita spareggio (SSR) per parimerito') }}
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mb-2">
+                                            {{ _('Richiede Spot Shot Rally per risolvere parimerito nelle prime posizioni') }}
+                                        </small>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <label for="tiebreaker_until_position" class="form-label small">{{ _('Spareggio fino alla posizione') }}</label>
+                                                <select class="form-select form-select-sm" name="tiebreaker_until_position" id="tiebreaker_until_position">
+                                                    <option value="1">{{ _('Solo 1° posto') }}</option>
+                                                    <option value="2">{{ _('Fino al 2° posto') }}</option>
+                                                    <option value="3" selected>{{ _('Fino al 3° posto') }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -342,6 +369,7 @@
                                             <span id="summary-anti-rematch" class="badge bg-secondary">-</span>
                                             <span id="summary-first-round" class="badge bg-secondary">- Seeding</span>
                                             <span id="summary-odd-policy" class="badge bg-secondary">- Dispari</span>
+                                            <span id="summary-ssr" class="badge bg-warning text-dark">-</span>
                                         </div>
                                     </div>
                                     <div class="col-12">
@@ -497,6 +525,19 @@
 
             const oddPolicy = document.getElementById('odd_number_policy');
             document.getElementById('summary-odd-policy').textContent = `Dispari: ${oddPolicy.options[oddPolicy.selectedIndex].text}`;
+
+            // SSR configuration summary
+            const ssrEnabled = document.getElementById('tiebreaker_enabled').checked;
+            const ssrPosition = document.getElementById('tiebreaker_until_position');
+            if (ssrEnabled) {
+                document.getElementById('summary-ssr').textContent = `SSR: fino ${ssrPosition.options[ssrPosition.selectedIndex].text}`;
+                document.getElementById('summary-ssr').classList.remove('bg-secondary');
+                document.getElementById('summary-ssr').classList.add('bg-warning', 'text-dark');
+            } else {
+                document.getElementById('summary-ssr').textContent = 'SSR: Disabilitato';
+                document.getElementById('summary-ssr').classList.remove('bg-warning', 'text-dark');
+                document.getElementById('summary-ssr').classList.add('bg-secondary');
+            }
 
             // Get preview text from component
             const previewText = document.getElementById('preview-text');

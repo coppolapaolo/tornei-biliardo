@@ -14,11 +14,13 @@ from models import (
     Match,
 )
 from models.status_enum import (
+    GaraStatus,
     MatchStatus,
     Discipline,
 )
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
+from models.competition.spareggio_service import SpareggioService
 
 from . import competition_bp
 
@@ -299,6 +301,39 @@ def gara_detail(gara_id):
         insc.user_id for insc in inscriptions if insc.is_forfeit
     )
 
+    # SSR (Spot Shot Rally) data for tiebreaker display
+    ssr_groups = []
+    has_ssr_data = False
+    can_edit_ssr = False
+    has_unresolved_tiebreakers = False
+
+    # Only load SSR data if competition is in final stages or has SSR data
+    if gara.status in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value, GaraStatus.COMPLETED.value]:
+        # Get all SSR groups (resolved and unresolved)
+        ssr_groups = SpareggioService.get_all_ssr_groups(gara_id)
+
+        # Check if there's any SSR data to display
+        has_ssr_data = any(
+            any(p['current_ssr_score'] > 0 for p in group['players'])
+            for group in ssr_groups
+        )
+
+        # Check for unresolved tiebreakers
+        has_unresolved_tiebreakers = SpareggioService.has_unresolved_tiebreakers(gara_id)
+
+        # Can edit SSR if user can manage and gara is in appropriate state
+        can_edit_ssr = user_can_manage and gara.status in [
+            GaraStatus.PLAYING.value,
+            GaraStatus.AWAITING_SSR.value
+        ]
+
+    # Build SSR scores map for classification display
+    ssr_scores_map = {}
+    for group in ssr_groups:
+        for player in group['players']:
+            if player['current_ssr_score'] > 0:
+                ssr_scores_map[player['user_id']] = player['current_ssr_score']
+
     return render_template(
         "gara_detail.html",  # Template unificato
         gara=gara,
@@ -320,4 +355,10 @@ def gara_detail(gara_id):
         discipline_choices=Discipline.get_choices(),
         available_tables=available_tables,
         forfeit_user_ids=forfeit_user_ids,
+        # SSR (Spot Shot Rally) data
+        ssr_groups=ssr_groups,
+        has_ssr_data=has_ssr_data,
+        can_edit_ssr=can_edit_ssr,
+        has_unresolved_tiebreakers=has_unresolved_tiebreakers,
+        ssr_scores_map=ssr_scores_map,
     )

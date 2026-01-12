@@ -26,8 +26,11 @@
                                     Diff. Rack
                                 {% endif %}
                             </th>
-                            <th width="15%">Pos. Prec.</th>
-                            <th width="20%">Movimento</th>
+                            {% if ssr_scores_map %}
+                            <th width="10%" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>
+                            {% endif %}
+                            <th width="{% if ssr_scores_map %}10{% else %}15{% endif %}%">Pos. Prec.</th>
+                            <th width="{% if ssr_scores_map %}15{% else %}20{% endif %}%">Movimento</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,6 +71,16 @@
                                         {% endif %}
                                     {% endif %}
                                 </td>
+                                {% if ssr_scores_map %}
+                                <td class="text-center">
+                                    {% set ssr_score = ssr_scores_map.get(player_class.user_id) %}
+                                    {% if ssr_score %}
+                                        <span class="badge bg-warning text-dark" title="{{ _('Punteggio Spot Shot Rally') }}">{{ ssr_score }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
                                 <td>
                                     {% if player_class.previous_position %}
                                         {{ player_class.previous_position }}°

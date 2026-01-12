@@ -101,44 +101,49 @@ def cancel_current_round(gara_id):
 def terminate_gara(gara_id):
     """Termina esplicitamente la gara dopo che tutti i turni sono completati.
 
-    If there are tiebreakers in top 3 positions, returns JSON with tiebreaker
-    data for the modal (AJAX) or redirects with message (non-AJAX).
+    Workflow:
+    - If status=playing and tiebreakers exist: suggest using start_ssr first
+    - If status=awaiting_ssr and tiebreakers resolved: complete the gara
+    - If status=playing and no tiebreakers: complete directly
     """
     from models.competition.spareggio_service import SpareggioService
 
     gara = Gara.query.get_or_404(gara_id)
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
-    # Verifica che la gara sia in stato "campionato_completed" (tutti i turni finiti)
-    if gara.status != GaraStatus.PLAYING.value:
+    # Accept both playing and awaiting_ssr statuses
+    if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
         if is_ajax:
             return jsonify({"success": False, "error": "La gara non è in corso!"}), 400
         flash("La gara non è in corso!", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    real_status = gara.get_real_status()
-    if real_status != "campionato_completed":
-        if is_ajax:
-            return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
-        flash("Non tutti i turni sono ancora completati!", "error")
-        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+    # For playing status, check if all rounds completed
+    if gara.status == GaraStatus.PLAYING.value:
+        real_status = gara.get_real_status()
+        if real_status != "campionato_completed":
+            if is_ajax:
+                return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
+            flash("Non tutti i turni sono ancora completati!", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     try:
-        # Check for tiebreakers in top 3 positions
+        # Check for unresolved tiebreakers
         tiebreakers = SpareggioService.detect_tiebreakers(gara_id)
 
         if tiebreakers:
-            # Return tiebreaker data for the modal
+            # Return tiebreaker data - suggest using SSR workflow
             if is_ajax:
                 return jsonify({
                     "success": False,
                     "needs_tiebreaker": True,
                     "tiebreakers": tiebreakers,
-                    "message": "Ci sono parimerito nei primi 3 posti. Inserire i risultati dello spareggio."
+                    "message": "Ci sono parimerito nei primi 3 posti. Usa 'Avvia SSR' per inserire i punteggi."
                 })
-            flash("Ci sono parimerito nei primi 3 posti. Risolvi gli spareggi prima di terminare.", "warning")
+            flash("Ci sono parimerito nei primi 3 posti. Usa 'Avvia SSR' per inserire i punteggi.", "warning")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+        # No tiebreakers or all resolved - complete the gara
         GaraService.complete(gara_id)
         if is_ajax:
             return jsonify({
@@ -155,25 +160,151 @@ def terminate_gara(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
-@competition_bp.route("/<int:gara_id>/save_ssr_scores", methods=["POST"])
+@competition_bp.route("/<int:gara_id>/start_ssr", methods=["POST"])
 @login_required
 @gara_manager_required
-def save_ssr_scores(gara_id):
-    """Save SSR scores and complete the gara.
+def start_ssr(gara_id):
+    """Avvia la fase SSR per risolvere i parimerito.
 
-    Expects JSON body with format: {"scores": {"user_id": score, ...}}
+    Transition: playing → awaiting_ssr
+    Returns JSON with SSR groups for display.
+    """
+    from models.competition.spareggio_service import SpareggioService
+    from models.competition.state_service import StateService
+
+    gara = Gara.query.get_or_404(gara_id)
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    # Must be in playing state
+    if gara.status != GaraStatus.PLAYING.value:
+        if is_ajax:
+            return jsonify({"success": False, "error": "La gara non è in stato 'in corso'!"}), 400
+        flash("La gara non è in stato 'in corso'!", "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    # Check all rounds completed
+    real_status = gara.get_real_status()
+    if real_status != "campionato_completed":
+        if is_ajax:
+            return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
+        flash("Non tutti i turni sono ancora completati!", "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    # Check for tiebreakers
+    tiebreakers = SpareggioService.detect_tiebreakers(gara_id)
+    if not tiebreakers:
+        if is_ajax:
+            return jsonify({"success": False, "error": "Non ci sono parimerito da risolvere!"}), 400
+        flash("Non ci sono parimerito da risolvere!", "warning")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    try:
+        # Transition to awaiting_ssr state
+        StateService.start_ssr(gara)
+
+        # Get all SSR groups for display
+        all_groups = SpareggioService.get_all_ssr_groups(gara_id)
+
+        if is_ajax:
+            return jsonify({
+                "success": True,
+                "message": "Fase SSR avviata. Inserire i punteggi per i parimerito.",
+                "ssr_groups": all_groups,
+                "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
+            })
+        flash("Fase SSR avviata. Inserire i punteggi per i parimerito.", "success")
+    except Exception as e:
+        if is_ajax:
+            return jsonify({"success": False, "error": str(e)}), 500
+        flash(f"Errore: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/save_ssr_group", methods=["POST"])
+@login_required
+@gara_manager_required
+def save_ssr_group(gara_id):
+    """Save SSR scores for a single tiebreaker group.
+
+    Expects JSON: {"group_position": 1, "scores": {"user_id": score, ...}}
+    Validates scores only within the specified group.
     """
     from models.competition.spareggio_service import SpareggioService
 
     gara = Gara.query.get_or_404(gara_id)
 
-    # Validate gara state
-    if gara.status != GaraStatus.PLAYING.value:
+    # Accept both playing and awaiting_ssr states
+    if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
         return jsonify({"success": False, "error": "La gara non è in corso!"}), 400
 
-    real_status = gara.get_real_status()
-    if real_status != "campionato_completed":
-        return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
+    # Parse request data
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "Dati non validi"}), 400
+
+    group_position = data.get("group_position")
+    raw_scores = data.get("scores")
+
+    if group_position is None or not raw_scores:
+        return jsonify({"success": False, "error": "Posizione gruppo e punteggi richiesti"}), 400
+
+    # Convert to integers
+    try:
+        group_position = int(group_position)
+        scores = {int(k): int(v) for k, v in raw_scores.items()}
+    except (ValueError, TypeError):
+        return jsonify({"success": False, "error": "I punteggi devono essere numeri interi"}), 400
+
+    # Save scores for this specific group
+    success, message = SpareggioService.save_ssr_scores_for_group(gara_id, group_position, scores)
+    if not success:
+        return jsonify({"success": False, "error": message}), 400
+
+    # Update classification with new positions
+    success, message = SpareggioService.finalize_classification(gara_id)
+    if not success:
+        return jsonify({"success": False, "error": message}), 400
+
+    # Check if all tiebreakers are now resolved
+    remaining = SpareggioService.detect_tiebreakers(gara_id)
+    all_resolved = len(remaining) == 0
+
+    # Get updated groups for display
+    all_groups = SpareggioService.get_all_ssr_groups(gara_id)
+
+    return jsonify({
+        "success": True,
+        "message": f"Punteggi SSR per posizione {group_position} salvati",
+        "all_resolved": all_resolved,
+        "ssr_groups": all_groups
+    })
+
+
+@competition_bp.route("/<int:gara_id>/save_ssr_scores", methods=["POST"])
+@login_required
+@gara_manager_required
+def save_ssr_scores(gara_id):
+    """Save SSR scores and optionally complete the gara.
+
+    Expects JSON body with format: {"scores": {"user_id": score, ...}}
+
+    Note: This is a legacy endpoint maintained for backward compatibility.
+    New code should use save_ssr_group for per-group validation.
+    """
+    from models.competition.spareggio_service import SpareggioService
+
+    gara = Gara.query.get_or_404(gara_id)
+
+    # Accept both playing and awaiting_ssr states
+    if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
+        return jsonify({"success": False, "error": "La gara non è in corso!"}), 400
+
+    # For playing status, check rounds completed
+    if gara.status == GaraStatus.PLAYING.value:
+        real_status = gara.get_real_status()
+        if real_status != "campionato_completed":
+            return jsonify({"success": False, "error": "Non tutti i turni sono ancora completati!"}), 400
 
     # Parse scores from request
     data = request.get_json()

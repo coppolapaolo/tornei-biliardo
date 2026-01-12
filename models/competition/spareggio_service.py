@@ -136,6 +136,132 @@ class SpareggioService:
         return len(SpareggioService.detect_tiebreakers(gara_id)) > 0
 
     @staticmethod
+    def get_all_ssr_groups(gara_id: int) -> List[TiebreakerGroup]:
+        """
+        Get ALL tiebreaker groups (resolved and unresolved) for display.
+
+        Unlike detect_tiebreakers() which only returns unresolved groups,
+        this method returns all groups for showing SSR scores in the UI.
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            List of TiebreakerGroup dictionaries (both resolved and unresolved)
+        """
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return []
+
+        # Get final round classification
+        final_round = gara.current_round or gara.rounds_count
+        classifications = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=final_round)
+            .order_by(RoundClassification.rack_difference.desc())
+            .all()
+        )
+
+        if not classifications:
+            return []
+
+        # Group players by rack_difference
+        groups_by_racks: Dict[int, List[RoundClassification]] = {}
+        for c in classifications:
+            rack_key = c.rack_difference
+            if rack_key not in groups_by_racks:
+                groups_by_racks[rack_key] = []
+            groups_by_racks[rack_key].append(c)
+
+        # Sort rack counts descending
+        sorted_rack_counts = sorted(groups_by_racks.keys(), reverse=True)
+
+        # Find ALL groups that affect top 3 positions (resolved or not)
+        all_groups: List[TiebreakerGroup] = []
+        current_position = 1
+
+        for rack_count in sorted_rack_counts:
+            group = groups_by_racks[rack_count]
+
+            # Check if this group includes any position <= 3 AND has multiple players
+            if current_position <= 3 and len(group) > 1:
+                # Get existing SSR scores
+                existing_gara_class = (
+                    db.session.query(GaraClassification)
+                    .filter(
+                        GaraClassification.gara_id == gara_id,
+                        GaraClassification.user_id.in_([c.user_id for c in group])
+                    )
+                    .all()
+                )
+                ssr_scores = {gc.user_id: gc.spot_shot_wins or 0 for gc in existing_gara_class}
+
+                # Build player list with SSR scores
+                players = []
+                for c in group:
+                    user = c.user
+                    players.append({
+                        'user_id': c.user_id,
+                        'username': user.username if user else f"User {c.user_id}",
+                        'current_ssr_score': ssr_scores.get(c.user_id, 0)
+                    })
+
+                all_groups.append({
+                    'position': current_position,
+                    'rack_totali': rack_count,
+                    'players': players
+                })
+
+            current_position += len(group)
+
+            # Stop if we've passed position 3
+            if current_position > 3:
+                break
+
+        return all_groups
+
+    @staticmethod
+    def is_group_resolved(group: TiebreakerGroup) -> bool:
+        """
+        Check if a single tiebreaker group is resolved.
+
+        A group is resolved when all SSR scores are different and non-zero.
+        """
+        scores = [p['current_ssr_score'] for p in group['players']]
+        return len(scores) == len(set(scores)) and all(s > 0 for s in scores)
+
+    @staticmethod
+    def validate_ssr_scores_for_group(scores: Dict[int, int]) -> Tuple[bool, str]:
+        """
+        Validate SSR scores for a SINGLE tiebreaker group.
+
+        Scores must be unique only within this group - different groups
+        can have overlapping scores.
+
+        Args:
+            scores: Dict mapping user_id to SSR score for players in ONE group
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        if not scores:
+            return False, "Nessun punteggio fornito"
+
+        # Check all scores are non-negative integers
+        for score in scores.values():
+            if not isinstance(score, int) or score < 0:
+                return False, "I punteggi devono essere numeri interi non negativi"
+
+        # Check all scores are different within the group
+        score_values = list(scores.values())
+        if len(score_values) != len(set(score_values)):
+            return False, "I punteggi devono essere diversi all'interno del gruppo"
+
+        return True, ""
+
+    @staticmethod
     def validate_ssr_scores(scores: Dict[int, int]) -> Tuple[bool, str]:
         """
         Validate SSR scores for a tiebreaker group.
@@ -150,7 +276,7 @@ class SpareggioService:
             return False, "Nessun punteggio inserito"
 
         # Check all scores are positive integers
-        for user_id, score in scores.items():
+        for score in scores.values():
             if not isinstance(score, int) or score <= 0:
                 return False, "Tutti i punteggi devono essere numeri interi positivi"
 
@@ -223,6 +349,94 @@ class SpareggioService:
             gara_class.tiebreaker_resolved = True
 
         return True, "Punteggi spareggio salvati con successo"
+
+    @staticmethod
+    @transactional(domain="competition")
+    def save_ssr_scores_for_group(
+        gara_id: int,
+        group_position: int,
+        scores: Dict[int, int]
+    ) -> Tuple[bool, str]:
+        """
+        Save SSR scores for a SINGLE tiebreaker group.
+
+        This validates scores only within the specified group, allowing
+        different groups to have overlapping SSR values.
+
+        Args:
+            gara_id: ID of the gara
+            group_position: Position of the tiebreaker group (1, 2, or 3)
+            scores: Dict mapping user_id to SSR score for this group
+
+        Returns:
+            Tuple of (success, message)
+        """
+        from models.competition.models import Gara
+
+        # Validate scores for this group
+        is_valid, error = SpareggioService.validate_ssr_scores_for_group(scores)
+        if not is_valid:
+            return False, error
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return False, "Gara non trovata"
+
+        # Verify the group exists and contains the specified user_ids
+        all_groups = SpareggioService.get_all_ssr_groups(gara_id)
+        target_group: Optional[TiebreakerGroup] = None
+        for group in all_groups:
+            if group['position'] == group_position:
+                target_group = group
+                break
+
+        if not target_group:
+            return False, f"Gruppo di parimerito alla posizione {group_position} non trovato"
+
+        # Verify all user_ids in scores belong to this group
+        group_user_ids = {p['user_id'] for p in target_group['players']}
+        for user_id in scores.keys():
+            if user_id not in group_user_ids:
+                return False, f"Giocatore {user_id} non appartiene a questo gruppo"
+
+        # Get final round for stats lookup
+        final_round = gara.current_round or gara.rounds_count
+
+        # Save scores for this group
+        for user_id, ssr_score in scores.items():
+            # Get round classification to get stats
+            round_class = (
+                db.session.query(RoundClassification)
+                .filter_by(gara_id=gara_id, round_number=final_round, user_id=user_id)
+                .first()
+            )
+
+            if not round_class:
+                continue
+
+            # Get or create gara classification
+            gara_class = (
+                db.session.query(GaraClassification)
+                .filter_by(gara_id=gara_id, user_id=user_id)
+                .first()
+            )
+
+            if not gara_class:
+                gara_class = GaraClassification(
+                    gara_id=gara_id,
+                    user_id=user_id,
+                    position=round_class.position,
+                    matches_won=round_class.matches_won,
+                    racks_won=round_class.rack_difference,
+                    rack_difference=round_class.rack_difference,
+                )
+                db.session.add(gara_class)
+
+            # Update SSR score
+            gara_class.spot_shot_wins = ssr_score
+            gara_class.tiebreaker_resolved = True
+
+        return True, f"Punteggi SSR per posizione {group_position} salvati"
 
     @staticmethod
     @transactional(domain="competition")

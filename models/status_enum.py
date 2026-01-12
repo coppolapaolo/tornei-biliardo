@@ -41,7 +41,7 @@ class _StrEnum(str, Enum):
 
 # ──────────────────────────────────────────────────────────────────────────────
 # GARA
-# Persistito: `gara.status` → {setup, inscription, playing, completed}
+# Persistito: `gara.status` → {setup, inscription, playing, awaiting_ssr, completed}
 # Derived/UI (non persistito):
 #   {inscription_closed, ready_to_start, round_completed, campionato_completed}
 # Fonte: models/competition/models.py
@@ -50,6 +50,7 @@ class GaraStatus(_StrEnum):
     SETUP = "setup"
     INSCRIPTION = "inscription"
     PLAYING = "playing"
+    AWAITING_SSR = "awaiting_ssr"  # Turni finiti, in attesa di spareggi SSR
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
