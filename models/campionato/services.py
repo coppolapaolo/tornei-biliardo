@@ -16,6 +16,7 @@ from sqlalchemy.exc import IntegrityError
 
 from models.base import db
 from models.status_enum import TournamentStatus, GaraStatus
+from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Campionato
 from ..user.role_enum import UserRole
 from ..transaction.manager import (
@@ -789,7 +790,7 @@ class TournamentService(DomainService):
 
             # Per Random campionati, ottieni anche i punteggi SSR da GaraClassification
             gara_ssr_scores: Dict[int, int] = {}
-            if campionato.campionato_type == "Random":
+            if campionato.campionato_type == MatchmakingStrategy.RANDOM.value:
                 from models.classification.models import GaraClassification
                 gara_classifications = (
                     db.session.query(GaraClassification)
@@ -826,7 +827,7 @@ class TournamentService(DomainService):
                 player_totals[user_id]["participations"] += 1
 
         # Per campionati Amalfi: ordina per match vinti (decrescente), poi per differenza rack (decrescente)
-        if campionato.campionato_type == "Amalfi":
+        if campionato.campionato_type == MatchmakingStrategy.AMALFI.value:
             sorted_players = sorted(
                 player_totals.items(),
                 key=lambda x: (
@@ -834,7 +835,7 @@ class TournamentService(DomainService):
                     -x[1]["total_rack_difference"],  # Poi la differenza rack
                 ),
             )
-        elif campionato.campionato_type == "Random":
+        elif campionato.campionato_type == MatchmakingStrategy.RANDOM.value:
             # Per campionati Random: ordina per rack totali (decrescente), poi punti SSR
             # Nota: per strategia Random, rack_difference contiene i rack totali vinti
             sorted_players = sorted(

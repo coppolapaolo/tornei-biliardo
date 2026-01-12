@@ -62,6 +62,17 @@ def index():
             .all()
         )
 
+        # Gare completate per questo campionato
+        from models.status_enum import GaraStatus
+        completed_garas = (
+            Gara.query.filter(
+                Gara.campionato_id == campionato.id,
+                Gara.status == GaraStatus.COMPLETED.value
+            )
+            .order_by(Gara.date.desc())
+            .all()
+        )
+
         # Classifica generale per questo campionato usando TournamentService
         # Questo gestisce correttamente tutti i tipi: Amalfi, Random, Points-based
         campionato_service = TournamentService()
@@ -90,6 +101,7 @@ def index():
             {
                 "campionato": campionato,
                 "upcoming_garas": upcoming_garas,
+                "completed_garas": completed_garas,
                 "top_classifications": top_classifications,
             }
         )

@@ -133,6 +133,34 @@ success, message = SpareggioService.save_ssr_scores_for_group(
 gara = StateService.complete(gara)
 ```
 
+## Bug Fix Post-Implementazione
+
+### 1. Template Syntax Error in _gara_management.html
+- **Problema**: `{% elif %}` orfano causava errore Jinja2 "Encountered unknown tag 'elif'"
+- **Causa**: `{% endif %}` extra chiudeva prematuramente il blocco if/elif principale
+- **Fix**: Rimosso endif extra, aggiunto endif finale per chiudere correttamente la catena
+
+### 2. SSR Section Width in gara_detail.html
+- **Problema**: Sezione SSR occupava tutta la larghezza invece di stare sotto "Partite"
+- **Fix**: Spostata sezione SSR dentro `col-md-8` (stessa colonna delle partite)
+
+### 3. Case-Sensitivity Bug in campionato/services.py
+- **Problema**: Confronto `campionato_type == "Random"` falliva perché DB contiene `"random"`
+- **Fix**: Uso di `MatchmakingStrategy.RANDOM.value` invece di stringhe letterali
+
+### 4. SSR non visibile in classifica campionato
+- **Problema**: Punti SSR non mostrati nella classifica generale del campionato
+- **Causa**: Bug case-sensitivity sopra (punto 3)
+- **Fix**: Corretto confronto enum
+
+### 5. SSR non visibile nella vista guest (homepage)
+- **Problema**: Classifica Top 5 non mostrava punti SSR
+- **Fix**: Aggiunto badge SSR in `_index_campionato_cards.html`
+
+### 6. Gare completate non visibili nella card campionato
+- **Problema**: Solo gare future mostrate, non quelle giocate
+- **Fix**: Aggiunta sezione "Gare Giocate" con link ai dettagli in `routes/main.py` e template
+
 ## Riferimenti
 
 - File correlati: `models/competition/spareggio_service.py`

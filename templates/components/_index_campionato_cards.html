@@ -3,6 +3,7 @@
 {% for data in tournaments_data %}
     {% set campionato = data.campionato %}
     {% set upcoming_garas = data.upcoming_garas %}
+    {% set completed_garas = data.completed_garas %}
     {% set top_classifications = data.top_classifications %}
     
     <div class="card mb-4 {% if not campionato.is_active %}border-secondary{% endif %}">
@@ -112,6 +113,30 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Gare Giocate -->
+                    {% if completed_garas %}
+                    <div class="mt-3">
+                        <h6><i class="fas fa-flag-checkered"></i> Gare Giocate ({{ completed_garas|length }})</h6>
+                        <div class="list-group list-group-flush">
+                            {% for gara in completed_garas[:5] %}
+                            <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
+                               class="list-group-item list-group-item-action py-2 px-0 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Gara {{ gara.number }}</strong>
+                                        <small class="text-muted ms-2">{{ gara.date|date_local }}</small>
+                                    </div>
+                                    <span class="badge bg-success">{{ _('Completata') }}</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                            {% if completed_garas|length > 5 %}
+                            <small class="text-muted">... e altre {{ completed_garas|length - 5 }} gare</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="col-md-4">
@@ -132,6 +157,9 @@
                                     <small class="text-muted">
                                         {% if campionato.campionato_type|lower == 'random' %}
                                             {{ classification.total_rack_difference }} rack
+                                            {% if classification.total_spot_shot_wins|default(0) > 0 %}
+                                                <span class="badge bg-warning text-dark ms-1" title="Punti SSR">{{ classification.total_spot_shot_wins }}</span>
+                                            {% endif %}
                                         {% else %}
                                             {{ classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won }} vittorie
                                         {% endif %}
