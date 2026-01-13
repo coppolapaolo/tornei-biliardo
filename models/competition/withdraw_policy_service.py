@@ -54,7 +54,10 @@ class WithdrawPolicyService:
 
         # Complete ALL pending/playing matches for this player in this gara
         # (The match that triggered the forfeit is already completed)
-        pending_matches = (
+        from models.match.models import TrioMatch
+
+        # Query 1: Regular matches (player is player1 or player2)
+        pending_regular_matches = (
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
@@ -63,25 +66,67 @@ class WithdrawPolicyService:
                     Match.player1_id == user_id,
                     Match.player2_id == user_id
                 ),
-                Match.is_bye == False  # Skip bye matches
+                Match.is_bye == False,  # Skip bye matches
+                Match.is_trio == False  # Skip trio matches (handled separately)
             )
             .all()
         )
 
-        for match in pending_matches:
+        # Query 2: Trio matches where player is player3 (not in Match table)
+        # These won't be found by Query 1
+        pending_trio_matches_as_player3 = (
+            db.session.query(Match)
+            .join(TrioMatch, Match.id == TrioMatch.match_id)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
+                Match.is_trio == True,
+                TrioMatch.player3_id == user_id
+            )
+            .all()
+        )
+
+        # Query 3: Trio matches where player is player1 or player2
+        # (found by player1_id/player2_id but need special handling)
+        pending_trio_matches_as_player12 = (
+            db.session.query(Match)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status.in_([MatchStatus.PENDING.value, MatchStatus.PLAYING.value]),
+                Match.is_trio == True,
+                or_(
+                    Match.player1_id == user_id,
+                    Match.player2_id == user_id
+                )
+            )
+            .all()
+        )
+
+        # Handle regular matches
+        for match in pending_regular_matches:
             # Determine winner (the opponent)
+            # Use match_distance if set, otherwise fall back to gara.distance
+            winning_score = match.match_distance or gara.distance
             if match.player1_id == user_id:
                 winner_id = match.player2_id
-                # Set winning score for opponent, 0 for forfeiting player
                 match.player1_score = 0
-                match.player2_score = gara.distance
+                match.player2_score = winning_score
             else:
                 winner_id = match.player1_id
-                match.player1_score = gara.distance
+                match.player1_score = winning_score
                 match.player2_score = 0
 
             match.winner_id = winner_id
             match.status = MatchStatus.COMPLETED.value
+
+        # Handle trio matches (all of them - player3, player1, or player2)
+        # Combine unique trio matches from both queries
+        all_trio_matches = set(pending_trio_matches_as_player3 + pending_trio_matches_as_player12)
+        for match in all_trio_matches:
+            trio = match.trio_match
+            if trio and not trio.is_completed:
+                # Use TrioMatch's forfeit handler for proper round-robin completion
+                trio.handle_forfeit(user_id)
 
         if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value:
             # Policy FORFEIT: Mark as forfeit but keep in inscriptions
