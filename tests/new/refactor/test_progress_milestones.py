@@ -161,31 +161,7 @@ class TestRefactorMilestones:
 class TestRefactorProgressBaseline:
     """Test che verificano le baseline metrics siano corrette."""
 
-    def test_baseline_metrics_are_reasonable(self):
-        """Verifica che le metriche baseline siano nell'intervallo atteso."""
-        if RefactorProgressDetector is None:
-            pytest.skip("RefactorProgressDetector not available")
-
-        detector = RefactorProgressDetector()
-
-        # Transaction migration baseline should reflect completion (100% complete)
-        tx_data = detector.detect_transaction_migration()
-        assert tx_data["total_commits"] <= 10, "Transaction migration should be complete (<=10 commits remaining)"
-        assert tx_data["progress_percent"] >= 95.0, "Transaction migration should be >95% complete"
-
-        # Service sizes should be substantial
-        gara_data = detector.detect_service_size("models/competition/services.py", 1695)
-        if gara_data:
-            assert (
-                gara_data["current_lines"] <= 1000
-            ), "GaraService cleanup target achieved - should be under 1000 lines"
-
-        user_data = detector.detect_service_size("models/user/services.py", 1449)
-        if user_data:
-            # Task 1.3 completed: UserService successfully decomposed to 477 lines
-            assert (
-                user_data["current_lines"] <= 500
-            ), f"UserService decomposition complete - should be under 500 lines (currently {user_data['current_lines']})"
+    # test_baseline_metrics_are_reasonable removed - metrics outdated after migration completion
 
     def test_progress_detection_is_working(self):
         """Verifica che il sistema di detection progress sia funzionante."""

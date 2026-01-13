@@ -54,9 +54,22 @@ class TestGaraServiceCharacterization:
         )
         self.player_user.set_password("password123")
 
+        # Additional players for min_participants=6 requirement
+        self.player_users = []
+        for i in range(2, 6):
+            player = User(
+                username=f"player_test_{i}",
+                email=f"player{i}@test.com",
+                role=UserRole.PLAYER.value,
+            )
+            player.set_password("password123")
+            self.player_users.append(player)
+
         db.session.add(self.admin_user)
         db.session.add(self.director_user)
         db.session.add(self.player_user)
+        for player in self.player_users:
+            db.session.add(player)
         db.session.commit()
 
     def teardown_method(self, method):
@@ -112,11 +125,11 @@ class TestGaraServiceCharacterization:
         assert gara.status == GaraStatus.SETUP.value
         assert gara.current_round == 0
         assert gara.rounds_count == 3  # default
-        assert gara.min_participants == 2  # default
+        assert gara.min_participants == 6  # default (changed from 2)
         assert gara.max_participants is None
         assert gara.entry_fee == 0.0  # default
         assert gara.matchmaking_strategy == "amalfi"  # default
-        assert gara.withdraw_policy == "Exclude"  # default
+        assert gara.withdraw_policy == "Forfeit"  # default (changed from Exclude)
 
     def test_create_gara_validation_characterization(self):
         """Caratterizza le validazioni nella creazione gara."""
@@ -288,8 +301,11 @@ class TestGaraServiceCharacterization:
         db.session.commit()
 
         gara = StateService.to_inscription(gara)
+        # Inscribe 6 players to meet min_participants requirement
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
         InscriptionService.inscribe_user(self.director_user.id, gara.id)
+        for player in self.player_users:
+            InscriptionService.inscribe_user(player.id, gara.id)
 
         gara = StateService.start_playing(gara)
         assert gara.status == GaraStatus.PLAYING.value
@@ -444,7 +460,7 @@ class TestGaraServiceCharacterization:
         with pytest.raises(ValueError, match="Servono almeno.*iscritti"):
             GaraService.start_first_round(gara.id)
 
-        # Con iscrizione insufficienti
+        # Con iscrizione insufficienti (min_participants=6 by default)
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
         with pytest.raises(ValueError, match="Servono almeno.*iscritti"):
             GaraService.start_first_round(gara.id)
@@ -454,8 +470,10 @@ class TestGaraServiceCharacterization:
         end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
-        # Con iscritti sufficienti
+        # Con iscritti sufficienti (6 totali)
         InscriptionService.inscribe_user(self.director_user.id, gara.id)
+        for player in self.player_users:
+            InscriptionService.inscribe_user(player.id, gara.id)
 
         updated_gara = GaraService.start_first_round(gara.id)
 
@@ -483,13 +501,15 @@ class TestGaraServiceCharacterization:
         with pytest.raises(ValueError, match="primo turno"):
             GaraService.cancel_first_round_startup(gara.id)
 
-        # Apri iscrizioni e iscrivi giocatori
+        # Apri iscrizioni e iscrivi giocatori (6 per min_participants)
         start_time = datetime.utcnow() - timedelta(minutes=10)
         end_time = datetime.utcnow() + timedelta(days=1)
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
         InscriptionService.inscribe_user(self.director_user.id, gara.id)
+        for player in self.player_users:
+            InscriptionService.inscribe_user(player.id, gara.id)
 
         # Avvia primo turno
         updated_gara = GaraService.start_first_round(gara.id)

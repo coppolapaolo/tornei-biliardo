@@ -35,22 +35,23 @@ class TestRoundServiceTDD:
         db_session.add(gara)
         db_session.commit()
 
-        # Aggiungi iscrizioni sufficienti
+        # Aggiungi iscrizioni sufficienti (6 per min_participants default)
         inscription1 = Inscription(user_id=isolated_director_user.id, gara_id=gara.id)
-
-        # Secondo giocatore
-        player2 = User(
-            username="player2_test",
-            email="player2@test.com",
-            role=UserRole.PLAYER.value,
-        )
-        player2.set_password("password123")
-        db.session.add(player2)
-        db.session.commit()
-        inscription2 = Inscription(user_id=player2.id, gara_id=gara.id)
-
         db.session.add(inscription1)
-        db.session.add(inscription2)
+
+        # Crea 5 giocatori aggiuntivi
+        for i in range(2, 7):
+            player = User(
+                username=f"player{i}_test",
+                email=f"player{i}@test.com",
+                role=UserRole.PLAYER.value,
+            )
+            player.set_password("password123")
+            db.session.add(player)
+            db.session.commit()
+            inscription = Inscription(user_id=player.id, gara_id=gara.id)
+            db.session.add(inscription)
+
         db.session.commit()
 
         from models.competition.services import RoundService

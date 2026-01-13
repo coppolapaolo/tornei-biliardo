@@ -3,10 +3,51 @@
 import pytest
 from datetime import date, timedelta
 
-from models import User, Campionato, Gara, DirectorRequest, Inscription
+from models import db, User, Campionato, Gara, DirectorRequest, Inscription
 from models.user.models import DirectorAssignment
 from models.user.role_enum import UserRole
 from models.campionato.services import TournamentService
+
+
+def grant_aspiring_director_achievement(user_id: int) -> None:
+    """Grant the 'aspiring_director' achievement to enable director promotion.
+
+    Required since the gamification system requires this achievement
+    before a player can request director promotion.
+    """
+    from models.gamification.models import Achievement, UserAchievement
+    from models.gamification.models import AchievementCategory, AchievementDifficulty
+
+    achievement = Achievement.query.filter_by(slug="aspiring_director").first()
+    if not achievement:
+        achievement = Achievement(
+            slug="aspiring_director",
+            name="Aspirante Direttore",
+            description="Test achievement for director eligibility",
+            category=AchievementCategory.MILESTONE,
+            difficulty=AchievementDifficulty.UNCOMMON,
+            requirements='{"type": "director_eligibility", "min_gare": 10}',
+            is_progressive=False,
+            xp_reward=200,
+            is_active=True,
+        )
+        db.session.add(achievement)
+        db.session.flush()
+
+    # Grant achievement to user
+    existing = UserAchievement.query.filter_by(
+        user_id=user_id, achievement_id=achievement.id
+    ).first()
+    if existing:
+        if not existing.is_unlocked:
+            existing.is_unlocked = True
+        return
+
+    user_achievement = UserAchievement(
+        user_id=user_id, achievement_id=achievement.id, is_unlocked=True
+    )
+    db.session.add(user_achievement)
+    db.session.commit()
 
 
 @pytest.mark.e2e
@@ -35,6 +76,9 @@ class TestCompleteUserJourney:
         player = User.query.filter_by(username="newplayer").first()
         assert player is not None
         assert player.role == UserRole.PLAYER.value
+
+        # Grant achievement required for director promotion
+        grant_aspiring_director_achievement(player.id)
 
         # Step 2: Player requests to become director
         response = client.post(
@@ -91,7 +135,7 @@ class TestCompleteUserJourney:
             "/admin/campionato/create",
             data={
                 "name": "My First Tournament",
-                "campionato_type": "Amalfi",
+                "campionato_type": "amalfi",
                 "without_x": "",
                 "final_playoffs": "on",
                 "challenge_mode": "",
@@ -325,7 +369,7 @@ class TestCompleteUserJourney:
             "/admin/campionato/create",
             data={
                 "name": "Multi-Director Tournament",
-                "campionato_type": "Amalfi",
+                "campionato_type": "amalfi",
                 "without_x": "on",
                 "final_playoffs": "on",
                 "challenge_mode": "",
@@ -437,6 +481,9 @@ class TestCompleteUserJourney:
         admin.set_password("admin123")
         db_session.add_all([player, admin])
         db_session.commit()
+
+        # Grant achievement required for director promotion
+        grant_aspiring_director_achievement(player.id)
 
         # Step 2: Player requests director status
         client.post("/auth/login", data={"username": "player", "password": "player123"})
@@ -569,7 +616,7 @@ class TestErrorHandlingWorkflows:
         campionato = tournament_service.create_campionato_with_director(
             name="Director Tournament",
             creator_user_id=director.id,
-            campionato_type="Amalfi",
+            campionato_type="amalfi",
         )
 
         # Step 2: Player tries to access admin routes
@@ -649,7 +696,7 @@ class TestErrorHandlingWorkflows:
             "/admin/campionato/create",
             data={
                 "name": "",  # Empty name
-                "campionato_type": "Amalfi",
+                "campionato_type": "amalfi",
             },
         )
 
@@ -665,7 +712,7 @@ class TestErrorHandlingWorkflows:
             "/admin/campionato/create",
             data={
                 "name": "Valid Tournament",
-                "campionato_type": "Amalfi",
+                "campionato_type": "amalfi",
             },
             follow_redirects=True,
         )

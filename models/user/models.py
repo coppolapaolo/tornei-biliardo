@@ -512,6 +512,7 @@ class VenueManagement(BaseModel):
     user = db.relationship("User", foreign_keys=[user_id])
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_id])
     revoked_by = db.relationship("User", foreign_keys=[revoked_by_id])
+    venue = db.relationship("BilliardHall", foreign_keys=[venue_id])
 
     # Unique constraint: one manager per venue
     __table_args__ = (
