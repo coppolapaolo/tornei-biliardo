@@ -39,6 +39,7 @@ pybabel compile -d translations                 # Compile translations
 - **Configuration**: `config.py` - Environment-based config
 - **Database**: `instance/billiard_campionato.db` (SQLite dev)
 - **Domain Documentation**: `models/CLAUDE.md`, `routes/CLAUDE.md`, `tests/CLAUDE.md`
+- **Template Documentation**: `templates/CLAUDE.md` - Jinja2/JS integration patterns
 
 ### CI/CD & Deployment
 ```bash
@@ -76,6 +77,17 @@ Flask-based **community platform for American Pool enthusiasts** focused on tour
 - Player statistics and challenge system
 - Gamification system (XP, levels, achievements, streaks, quests)
 - Guest access for public tournament viewing
+
+---
+
+## Things to Remember
+
+Before writing any code:
+
+1. **State how you will verify** this change works (test, bash command, browser check, etc.)
+2. **Write the test or verification step first**
+3. **Then implement the code**
+4. **Run verification and iterate** until it passes
 
 ---
 
@@ -205,6 +217,21 @@ const msg = {{ _("Elimina %(count)s elementi?", count=items|length)|tojson }};
 
 **Rule**: If JavaScript will do the interpolation, don't use `%(...)s` placeholders in `_()`.
 
+### 8. Onclick Attributes with tojson (CRITICAL)
+When using `|tojson` in HTML onclick attributes, **use single quotes for the attribute**:
+
+```html
+{# ❌ WRONG - tojson produces "..." which breaks double-quoted attribute #}
+<span onclick="myFunc({{ player_name|tojson }})">
+{# Renders as: onclick="myFunc("John")" - BROKEN HTML! #}
+
+{# ✅ CORRECT - single quotes for attribute, tojson produces double quotes inside #}
+<span onclick='myFunc({{ player_name|tojson }})'>
+{# Renders as: onclick='myFunc("John")' - Valid HTML #}
+```
+
+**Why**: `|tojson` always produces JSON strings with double quotes. Using single quotes for the onclick attribute avoids quote conflicts.
+
 ---
 
 ## Architecture
@@ -291,7 +318,7 @@ pytest tests/new/ -n auto
 - All new features MUST have tests in `tests/new/`
 - Test isolation: use `db_session.get()` not `refresh()`
 - Legacy tests (`tests/legacy/`) are not maintained
-- Always use `-n auto` for parallel execution
+- Unit tests: `-n auto` OK; Integration tests: `-n 4` (SQLite concurrency)
 
 ---
 
@@ -307,6 +334,7 @@ pytest tests/new/ -n auto
 | Manual `db.session.commit()` | Use `@transactional` decorator |
 | `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
 | `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |
+| `onclick="func({{ x\|tojson }})"` | `onclick='func({{ x\|tojson }})'` (single quotes) |
 
 ---
 
@@ -320,6 +348,27 @@ pytest tests/new/ -n auto
 - **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
 - **[docs/UI_CONVENTIONS.md](docs/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
 - **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
+
+---
+
+## Debugging Tips
+
+### @transactional Not Persisting Data
+If data changes in memory but doesn't persist to DB, check if the decorator is actually applied:
+
+```python
+# Check if decorator is applied
+from models.competition.state_service import StateService
+func = StateService.some_method
+print(f'Has __wrapped__: {hasattr(func, "__wrapped__")}')  # False = no decorator!
+
+# Compare imports (circular import detection)
+from models.base import transactional as base_t
+from models.transaction.manager import transactional as manager_t
+print(f'Same: {base_t is manager_t}')  # False = circular import problem!
+```
+
+See `docs/adr/ADR-012-transactional-circular-import-fix.md` for a detailed case study.
 
 ---
 

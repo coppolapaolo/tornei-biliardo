@@ -207,6 +207,17 @@ const config = {{ some_dict|tojson }};
 
 ---
 
+## Do Not
+
+- **Do not embed strings in JS without `|tojson`** - Italian apostrophes break JS strings
+- **Do not use double quotes for onclick with `|tojson`** - JSON produces double quotes internally
+- **Do not use `%(name)s` for JS interpolation** - Flask-Babel tries to substitute at render time
+- **Do not import Python modules in templates** - Pass data from route/view
+- **Do not use `%` in translated strings** - Interpreted as Python format specifier
+- **Do not access relationships without null check** - `gara.campionato` may be None
+
+---
+
 ## i18n Guidelines
 
 - Wrap all user-visible strings: `{{ _("Text") }}`

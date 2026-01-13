@@ -512,6 +512,16 @@ if match.gara_id is None:
 
 ---
 
+## Do Not
+
+- **Do not interpret scores without checking `is_multi_set`** - Scores are racks (single) or sets (multi-set)
+- **Do not call `db.session.commit()`** - Use `@transactional` in services
+- **Do not access `match.gara` without null check** - Standalone matches have `gara_id=NULL`
+- **Do not forget `@transactional` on `reset_to_pending`** - Uses custom transaction with OperationResult
+- **Do not manually complete matches** - Use `RackService.add_rack()` which auto-completes
+
+---
+
 ## Cross-References
 
 - **Competition**: [../competition/CLAUDE.md](../competition/CLAUDE.md)

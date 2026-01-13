@@ -239,3 +239,13 @@ if gara.campionato_id:
 else:
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 ```
+
+---
+
+## Do Not
+
+- **Do not use `filter_by(id=...)` for PK lookup** - Use `db.session.get(Model, id)`
+- **Do not skip permission checks** - Always verify `current_user.can_manage_*()` for entity operations
+- **Do not call `db.session.commit()`** - Services handle transactions via `@transactional`
+- **Do not forget soft-delete check** - Deleted users should be treated as not found
+- **Do not assume gara has campionato** - Check `gara.campionato_id` before accessing

@@ -184,6 +184,16 @@ matches = service.create_next_round()
 
 ---
 
+## Do Not
+
+- **Do not compare enums without `.value`** - Database stores strings, not enum objects
+- **Do not call `db.session.commit()` in services** - Use `@transactional` decorator
+- **Do not hard-delete User records** - Use `user.anonymize()` for GDPR compliance
+- **Do not modify computed properties** - `gara.directors`, `user.is_admin` are read-only
+- **Do not confuse `distance` semantics** - "Race to N" means first to WIN N racks
+
+---
+
 ## Subdomain Documentation
 
 For detailed domain-specific documentation, see:

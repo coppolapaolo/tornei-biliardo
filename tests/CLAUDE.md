@@ -321,3 +321,13 @@ Tests organized by platform domains supporting community growth:
 - **Documentation**: Clear test purpose and setup
 - **Code Review**: Test code quality standards
 - **Monitoring**: Track test health and performance
+
+---
+
+## Do Not
+
+- **Do not use `-n auto` for integration tests** - Use `-n 4` to avoid SQLite deadlocks
+- **Do not use `db.session.refresh()`** - Use `db.session.get()` for test isolation
+- **Do not maintain legacy tests** - Focus on `tests/new/`
+- **Do not create long workflow tests** - Keep tests 30-50 lines, focused on one behavior
+- **Do not share state between tests** - Each test must be independent

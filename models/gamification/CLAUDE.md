@@ -575,6 +575,16 @@ templates/gamification/
 
 ---
 
+## Do Not
+
+- **Do not call gamification services directly from other domains** - Use events via EventBus
+- **Do not forget to import event_handlers in app.py** - Handlers auto-register on import
+- **Do not confuse streak weeks with days** - Streaks are WEEKLY (ISO week), not daily
+- **Do not call `db.session.commit()`** - All services use `@transactional(domain="gamification")`
+- **Do not award XP for the same action twice** - Check transaction history if needed
+
+---
+
 ## Cross-References
 
 - **Match Events**: [../match/CLAUDE.md](../match/CLAUDE.md)
