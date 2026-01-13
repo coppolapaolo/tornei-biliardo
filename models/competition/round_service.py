@@ -93,6 +93,11 @@ class RoundService:
             from models.match.models import Match
 
             for round_num in range(1, gara.rounds_count + 1):
+                # Flush before generating pairings so anti-rematch can see previous rounds
+                # (SQLAlchemy autoflush should handle this, but explicit is safer)
+                if round_num > 1:
+                    db.session.flush()
+
                 pairings = strategy.create_round(gara, round_num)
 
                 # Get round configuration for this round (discipline and distance overrides)
