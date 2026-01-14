@@ -578,6 +578,54 @@ class TestValidateGaraIntegration:
         assert len(errors) == 1
         assert "trio" in errors[0].lower()
 
+    def test_validate_gara_uses_classification_system_field(self):
+        """validate_gara() usa il campo classification_system se presente."""
+
+        class MockGaraWithField:
+            matchmaking_strategy = "amalfi"
+            odd_number_policy = "bye"
+            is_race_to = False  # Exactly
+            is_multi_set = True  # Multi-set
+            distance = 5
+            classification_system = "RACK"  # Campo esplicito
+
+        # RACK + multi-set = errore (indipendentemente dal matchmaking)
+        errors, warnings = validate_gara(MockGaraWithField())
+        assert len(errors) >= 1
+        assert any("multi-set" in e.lower() for e in errors)
+
+    def test_validate_gara_field_overrides_inference(self):
+        """Campo classification_system sovrascrive l'inferenza da matchmaking."""
+
+        class MockGaraElimination:
+            matchmaking_strategy = "direct_elimination"
+            odd_number_policy = "bye"
+            is_race_to = True
+            is_multi_set = False
+            distance = 5
+            classification_system = "WINS"  # Forza WINS invece di POSITION
+
+        # Con WINS inferito sarebbe errore (WINS + elimination)
+        # Ma il campo è WINS, quindi validiamo come WINS
+        errors, warnings = validate_gara(MockGaraElimination())
+        # WINS + elimination = errore matchmaking
+        assert len(errors) >= 1
+
+    def test_validate_gara_position_from_field(self):
+        """Campo POSITION viene usato correttamente."""
+
+        class MockGaraPosition:
+            matchmaking_strategy = "direct_elimination"
+            odd_number_policy = "bye"
+            is_race_to = True
+            is_multi_set = False
+            distance = 5
+            classification_system = "POSITION"
+
+        errors, warnings = validate_gara(MockGaraPosition())
+        # POSITION + elimination + race_to = valido
+        assert errors == []
+
 
 class TestGaraServiceValidationIntegration:
     """Test integrazione validazione in GaraService."""

@@ -238,13 +238,19 @@ _ODD_HANDLING_MAP = {
     "trio": OddHandling.TRIO,
 }
 
+# Mapping classification_system string -> ClassificationSystem enum
+_CLASSIFICATION_SYSTEM_MAP = {
+    "RACK": ClassificationSystem.RACK,
+    "WINS": ClassificationSystem.WINS,
+    "POSITION": ClassificationSystem.POSITION,
+}
+
 
 def _infer_classification_system(matchmaking: MatchmakingStrategy) -> ClassificationSystem:
     """
     Inferisce il sistema di classificazione dal matchmaking.
 
-    Per ora, dato che classification_system non è nel modello Gara,
-    lo inferiamo dal matchmaking:
+    Usato come fallback quando gara.classification_system non è impostato:
     - Eliminazione/Doppio KO → POSITION
     - Altri → WINS (default più comune)
     """
@@ -297,8 +303,13 @@ def validate_gara(
     forfeit_policy = ForfeitPolicy.FORFEIT
 
     # Sistema di classificazione
+    # Priorità: 1) parametro esplicito, 2) campo gara, 3) inferenza da matchmaking
     if classification_system is None:
-        classification_system = _infer_classification_system(matchmaking)
+        gara_class_system = getattr(gara, "classification_system", None)
+        if gara_class_system and gara_class_system in _CLASSIFICATION_SYSTEM_MAP:
+            classification_system = _CLASSIFICATION_SYSTEM_MAP[gara_class_system]
+        else:
+            classification_system = _infer_classification_system(matchmaking)
 
     return validate_gara_configuration(
         classification_system=classification_system,

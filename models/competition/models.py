@@ -112,6 +112,12 @@ class Gara(SoftDeleteMixin, db.Model):
         db.String(10), nullable=False, default=DEFAULT_WITHDRAW_POLICY
     )
 
+    # Classification system: RACK (rack totali), WINS (vittorie+diff), POSITION (bracket)
+    # See docs/CLASSIFICATION_SYSTEM.md for constraints per system
+    classification_system = db.Column(
+        db.String(10), nullable=False, default="WINS"
+    )  # RACK, WINS, POSITION
+
     # Matchmaking strategy configuration
     matchmaking_strategy = db.Column(
         db.String(50), nullable=False, default=MatchmakingStrategy.AMALFI.value

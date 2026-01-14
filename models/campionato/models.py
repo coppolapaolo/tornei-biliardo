@@ -46,6 +46,9 @@ class Campionato(db.Model):
     default_anti_rematch = db.Column(
         db.Boolean, nullable=False, default=True
     )  # Default anti-rematch setting
+    default_classification_system = db.Column(
+        db.String(10), nullable=False, default="WINS"
+    )  # Default: RACK, WINS, POSITION (see docs/CLASSIFICATION_SYSTEM.md)
 
     # DEPRECATED - To be removed in future migration
     # Use default_odd_policy instead of without_x
