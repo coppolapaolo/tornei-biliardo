@@ -1,0 +1,54 @@
+{# templates/components/_match_cards_mobile.html #}
+{# Mobile card-based view for matches - replaces table on small screens #}
+{# Uses same variables as _gara_matches.html #}
+
+{% set display_matches = all_matches if all_matches else matches %}
+{% if display_matches %}
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-shield-halved"></i> {{ _('Partite') }}</h5>
+  </div>
+  <div class="card-body">
+    {# Collect rounds by status #}
+    {% set active_rounds = [] %}
+    {% set completed_rounds = [] %}
+
+    {% for round_num in range(1, gara.rounds_count + 1) %}
+      {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
+      {% if round_matches %}
+        {% set has_playing = round_matches | selectattr("status", "equalto", "playing") | list | length > 0 %}
+        {% set has_pending = round_matches | selectattr("status", "equalto", "pending") | list | length > 0 %}
+        {% set all_completed = round_matches | selectattr("status", "equalto", "completed") | list | length == round_matches | length %}
+
+        {% if has_playing or has_pending %}
+          {% set _void = active_rounds.append(round_num) %}
+        {% elif all_completed %}
+          {% set _void = completed_rounds.append(round_num) %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    {# Display active rounds first #}
+    {% for round_num in active_rounds %}
+      {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
+      <h6 class="mt-3 mb-3 pb-2 border-bottom">
+        <i class="fas fa-play-circle text-primary"></i> {{ _('Turno %(num)s', num=round_num) }}
+      </h6>
+      {% for match in round_matches %}
+        {% include "components/_match_card.html" %}
+      {% endfor %}
+    {% endfor %}
+
+    {# Then display completed rounds #}
+    {% for round_num in completed_rounds %}
+      {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
+      <h6 class="mt-4 mb-3 pb-2 border-bottom text-muted">
+        <i class="fas fa-check-circle text-success"></i> {{ _('Turno %(num)s', num=round_num) }}
+      </h6>
+      {% for match in round_matches %}
+        {% include "components/_match_card.html" %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
