@@ -1,8 +1,8 @@
 # Handoff: Redesign Sistema di Classificazione
 
-**Data**: 2026-01-13
+**Data**: 2026-01-13 (aggiornato 2026-01-14)
 **Sessione**: Analisi e documentazione sistema di classificazione
-**Stato**: Documentazione completata, implementazione da fare
+**Stato**: Validatore backend completato, integrazione e UI da fare
 
 ---
 
@@ -61,30 +61,55 @@ Range corretto: **2-5** (non 3-7 come precedentemente documentato)
 ### Nuovi
 - `docs/CLASSIFICATION_SYSTEM.md` - Specifiche complete (documento principale)
 - `docs/adr/ADR-013-classification-system-redesign.md` - Architecture Decision Record
+- `models/competition/validators.py` - Validatore configurazione gara ✅
+- `tests/new/unit/test_gara_validation.py` - 56 test TDD ✅
 
 ### Modificati
 - `docs/SPECIFICHE.md` - Allineato con nuove specifiche, corretto trio 2-5
 
 ---
 
-## Cosa NON È Stato Fatto
+## Cosa È Stato Fatto ✅
 
-### Implementazione Backend
+### Validatore Backend (completato 2026-01-14)
 
 ```python
-# Da creare: models/competition/validators.py
-def validate_gara_configuration(
-    classification_system: str,  # "RACK", "WINS", "POSITION"
-    distance_type: str,          # "race_to", "exactly"
-    distance: int,
-    multi_set: bool,
-    odd_handling: str,           # "NO", "TRIO", "BYE", "BYE_CHALLENGE", "BYE_N_RACK"
-    forfeit_policy: str,         # "EXCLUDE", "FORFEIT"
-    matchmaking: str             # "random", "amalfi", "round_robin", "elimination", "double_ko"
-) -> tuple[list[str], list[str]]:  # (errors, warnings)
-    """Valida configurazione gara e ritorna errori/warning."""
-    pass
+# models/competition/validators.py
+from models.competition.validators import (
+    validate_gara_configuration,  # Validazione con enum
+    validate_gara,                # Bridge per Gara esistenti
+    ClassificationSystem,         # RACK, WINS, POSITION
+    DistanceType,                 # RACE_TO, EXACTLY
+    OddHandling,                  # NO, TRIO, BYE, BYE_CHALLENGE, BYE_N_RACK, BRACKET_BYE
+    ForfeitPolicy,                # EXCLUDE, FORFEIT
+    MatchmakingStrategy,          # RANDOM, AMALFI, ROUND_ROBIN, ELIMINATION, DOUBLE_KO
+)
+
+# Uso diretto con enum
+errors, warnings = validate_gara_configuration(
+    classification_system=ClassificationSystem.RACK,
+    distance_type=DistanceType.EXACTLY,
+    distance=5,
+    multi_set=False,
+    odd_handling=OddHandling.TRIO,
+    forfeit_policy=ForfeitPolicy.EXCLUDE,
+    matchmaking=MatchmakingStrategy.AMALFI,
+)
+
+# Uso con oggetto Gara esistente (bridge function)
+errors, warnings = validate_gara(gara)  # Inferisce classification_system dal matchmaking
+errors, warnings = validate_gara(gara, classification_system=ClassificationSystem.RACK)
 ```
+
+**Test**: 56 test in `tests/new/unit/test_gara_validation.py`
+
+---
+
+## Cosa NON È Stato Fatto
+
+### Integrazione GaraService
+- Chiamare `validate_gara()` in `GaraService.create_gara()` e `update_gara()`
+- Decidere se bloccare o solo warning per configurazioni problematiche
 
 ### UI Wizard
 - Aggiornare wizard campionato/gara per nascondere opzioni incompatibili
@@ -120,11 +145,11 @@ def validate_gara_configuration(
 
 ## Come Riprendere il Lavoro
 
-### Per implementare validazione:
-1. Leggere `docs/CLASSIFICATION_SYSTEM.md` sezione 9 (Regole di Validazione)
-2. Creare `models/competition/validators.py`
-3. Integrare in `GaraService.create_gara()` e `update_gara()`
-4. Aggiungere test in `tests/new/unit/test_gara_validation.py`
+### Per integrare validazione in GaraService:
+1. ~~Leggere `docs/CLASSIFICATION_SYSTEM.md` sezione 9~~ ✅
+2. ~~Creare `models/competition/validators.py`~~ ✅
+3. **TODO**: Integrare in `GaraService.create_gara()` e `update_gara()`
+4. ~~Aggiungere test~~ ✅ (56 test)
 
 ### Per implementare opzione NO:
 1. Leggere `docs/CLASSIFICATION_SYSTEM.md` sezione 3.5
