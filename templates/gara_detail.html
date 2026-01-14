@@ -11,17 +11,34 @@
 {% endblock %}
 
 {% block content %}
+{# CSS for mobile collapsible sections #}
+<style>
+  /* Collapse icon rotation animation */
+  .collapse-icon {
+    transition: transform 0.2s ease;
+  }
+  [aria-expanded="true"] .collapse-icon {
+    transform: rotate(180deg);
+  }
+</style>
+
 {# Header comune a tutti gli utenti #}
 {% include "components/_gara_header.html" %}
 
-{# Row principale: Info + Sidebar adattiva #}
+{# Row principale: Sidebar + Info (ordine invertito su mobile) #}
 <div class="row mb-4">
-  <div class="col-md-8">
-    {% include "components/_gara_info.html" %}
-    {% include "components/_gara_challenges_display.html" %}
+  {# MOBILE: Sidebar FIRST (order-1), Info HIDDEN (moved to bottom) #}
+  {# DESKTOP: Info LEFT (col-md-8, order-md-1), Sidebar RIGHT (col-md-4, order-md-2) #}
+
+  <div class="col-md-8 order-2 order-md-1">
+    {# Info Gara: visible only on desktop, mobile version is collapsible at bottom #}
+    <div class="d-none d-md-block">
+      {% include "components/_gara_info.html" %}
+      {% include "components/_gara_challenges_display.html" %}
+    </div>
   </div>
 
-  <div class="col-md-4">
+  <div class="col-md-4 order-1 order-md-2">
     {# SIDEBAR ADATTIVA in base ai permessi #}
     {% if user_can_manage %}
     {# Admin/Director con permessi di gestione #}
@@ -158,9 +175,12 @@
   </div>
 
   <div class="col-md-4">
+    {# Check if there are actual scores (at least one entry with rack_difference != 0 or matches_won > 0) #}
+    {% set has_scores = current_round_classification and (current_round_classification|selectattr('rack_difference', 'ne', 0)|list|length > 0 or current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0) %}
+
     {# === MOBILE: Classification with toggle === #}
     <div class="d-md-none">
-      {% if current_round_classification %}
+      {% if has_scores %}
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_classification_mobile.html" %}
       {% endwith %}
@@ -169,17 +189,17 @@
 
     {# === DESKTOP: Detailed classification === #}
     <div class="d-none d-md-block">
-      {# Classificazione (tutti) - in alto #}
-      {% if current_round_classification %}
+      {# Classificazione (tutti) - solo se ci sono punteggi #}
+      {% if has_scores %}
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_detailed_classification.html" %}
       {% endwith %}
       {% endif %}
     </div>
 
-    {# Iscrizioni - visibili a tutti quando la gara non e' in setup #}
+    {# Iscrizioni - DESKTOP ONLY (mobile has collapsible version below) #}
     {% if gara.status != 'setup' %}
-    <div class="mt-3">
+    <div class="mt-3 d-none d-md-block">
       {% include "components/_gara_inscriptions.html" %}
     </div>
     {% endif %}
@@ -190,6 +210,96 @@
       {% include "components/_gara_challenge_classification_compact.html" %}
     </div>
     {% endif %}
+
+    {# === MOBILE ONLY: Collapsible Info & Iscritti === #}
+    <div class="d-md-none mt-3">
+      {# Collapsible Info Gara #}
+      <div class="card mb-3">
+        <div class="card-header py-2" role="button" data-bs-toggle="collapse" data-bs-target="#mobileInfoCollapse" aria-expanded="false" aria-controls="mobileInfoCollapse" style="cursor: pointer;">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-info-circle"></i> {{ _('Informazioni Gara') }}
+            </h6>
+            <i class="fas fa-chevron-down collapse-icon"></i>
+          </div>
+        </div>
+        <div id="mobileInfoCollapse" class="collapse">
+          <div class="card-body py-2">
+            <div class="small">
+              <strong>{{ _('Data:') }}</strong> {{ gara.date|date_local }}{% if gara.time %} {{ gara.time|time_local }}{% endif %}<br>
+              <strong>{{ _('Turni:') }}</strong> {{ gara.rounds_count }}<br>
+              <strong>{{ _('Tipo:') }}</strong> {{ gara.matchmaking_strategy.replace('_', ' ').title() }}<br>
+              {% if gara.location %}
+              <strong>{{ _('Luogo:') }}</strong> {{ gara.location }}<br>
+              {% endif %}
+              <strong>{{ _('Partecipanti:') }}</strong> {{ _('min') }} {{ gara.min_participants }}{% if gara.max_participants %} - {{ _('max') }} {{ gara.max_participants }}{% endif %}<br>
+              <strong>{{ _('Quota:') }}</strong> {% if gara.entry_fee > 0 %}€{{ "%.2f"|format(gara.entry_fee) }}{% else %}{{ _('Gratuita') }}{% endif %}<br>
+              <strong>{{ _('Anti-reincontro:') }}</strong> {% if gara.anti_rematch_enabled %}<span class="text-success">{{ _('Sì') }}</span>{% else %}<span class="text-muted">{{ _('No') }}</span>{% endif %}<br>
+              <strong>{{ _('Num. dispari:') }}</strong> {{ gara.odd_number_policy.replace('_', ' ').title() }}
+              {% if gara.description %}
+              <hr class="my-2">
+              <strong>{{ _('Descrizione:') }}</strong> {{ gara.description }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Collapsible Iscritti #}
+      {% if gara.status != 'setup' %}
+      <div class="card">
+        <div class="card-header py-2" role="button" data-bs-toggle="collapse" data-bs-target="#mobileInscriptionsCollapse" aria-expanded="false" aria-controls="mobileInscriptionsCollapse" style="cursor: pointer;">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-users"></i> {{ _('Iscritti') }}
+              ({{ gara.get_active_inscriptions_count() }}{% if gara.max_participants %}/{{ gara.max_participants }}{% endif %})
+              {% if gara.get_waitlist_count() > 0 %}
+              <span class="text-warning ms-1">
+                <i class="fas fa-clock"></i> +{{ gara.get_waitlist_count() }}
+              </span>
+              {% endif %}
+            </h6>
+            <i class="fas fa-chevron-down collapse-icon"></i>
+          </div>
+        </div>
+        <div id="mobileInscriptionsCollapse" class="collapse">
+          <div class="card-body py-2">
+            {% if inscriptions %}
+            {% set active_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
+            {% if active_inscriptions %}
+            <div class="small">
+              {% for inscription in active_inscriptions %}
+              <div class="d-flex align-items-center py-1 {% if not loop.last %}border-bottom{% endif %}">
+                <span class="{% if inscription.is_forfeit %}text-muted text-decoration-line-through{% endif %}">
+                  {{ inscription.user.username }}
+                </span>
+                {% if inscription.is_forfeit %}
+                <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% set waitlist = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
+            {% if waitlist %}
+            <h6 class="text-warning mt-2 mb-1 small"><i class="fas fa-clock"></i> {{ _('Lista Attesa') }}</h6>
+            <div class="small">
+              {% for inscription in waitlist %}
+              <div class="py-1 {% if not loop.last %}border-bottom{% endif %}">
+                <span class="badge bg-warning text-dark me-1">{{ inscription.waitlist_position }}</span>
+                {{ inscription.user.username }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <p class="text-muted small mb-0">{{ _('Nessun iscritto') }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
   </div>
 </div>
 

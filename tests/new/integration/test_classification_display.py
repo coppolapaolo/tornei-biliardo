@@ -559,3 +559,223 @@ class TestClassificationDisplay:
                 # (This is verified by the fact that the calculation is triggered on each request)
                 # We can't easily test the exact positions without parsing HTML,
                 # but we can verify that the calculation was triggered
+
+    def test_classification_not_shown_when_zero_scores(self, app, admin_user):
+        """
+        Test che la classificazione NON venga mostrata quando tutti i giocatori
+        hanno punteggi a zero (rack_difference = 0 e matches_won = 0).
+
+        Scenario: gara avviata, primo turno creato ma nessuna partita completata.
+        La classificazione esiste nel DB ma con tutti zeri → non deve apparire nell'HTML.
+        """
+        with app.test_client() as client:
+            # Login as admin
+            with client.session_transaction() as sess:
+                sess["_user_id"] = str(admin_user.id)
+                sess["_fresh"] = True
+
+            # 1. Create gara with 6 players (minimum required)
+            gara = GaraService.create_gara(
+                number=1,
+                name="Zero Scores Test",
+                date=date.today(),
+                discipline="9-ball",
+                distance=5,
+                campionato_id=None,
+                director_id=admin_user.id,
+                rounds_count=2,
+            )
+
+            # Set inscription dates before moving to inscription status
+            gara.inscription_start = datetime.utcnow()
+            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            db.session.commit()
+
+            # Move to inscription status
+            StateService.to_inscription(gara)
+
+            # 2. Create and register 6 players (minimum required)
+            players = []
+            import uuid
+
+            test_id = str(uuid.uuid4())[:8]
+            for i in range(6):
+                player = User(
+                    username=f"zero_scores_player_{test_id}_{i}",
+                    email=f"zero_scores_player_{test_id}_{i}@test.com",
+                    role=UserRole.PLAYER.value,
+                )
+                player.set_password("player123")
+                db.session.add(player)
+                players.append(player)
+
+            db.session.commit()
+
+            for player in players:
+                InscriptionService.inscribe_user(player.id, gara.id)
+
+            # 3. Start playing and create first round
+            gara_id = gara.id  # Store ID before any session changes
+            StateService.start_playing(gara)
+            GaraService.create_round_with_strategy(gara_id, 1)
+
+            # Use get() instead of refresh() for session isolation
+            from models.competition.models import Gara
+            gara = db.session.get(Gara, gara_id)
+
+            # 4. Create classification records manually with ALL ZERO scores
+            # This simulates a scenario where classification exists but no one has played yet
+            for i, player in enumerate(players):
+                existing = RoundClassification.query.filter_by(
+                    gara_id=gara.id, round_number=1, user_id=player.id
+                ).first()
+                if not existing:
+                    classification = RoundClassification(
+                        gara_id=gara.id,
+                        round_number=1,
+                        user_id=player.id,
+                        position=i + 1,
+                        matches_won=0,  # Zero!
+                        rack_difference=0,  # Zero!
+                    )
+                    db.session.add(classification)
+            db.session.commit()
+
+            # Verify classification records exist in DB with zero scores
+            classifications = RoundClassification.query.filter_by(
+                gara_id=gara.id, round_number=1
+            ).all()
+            assert len(classifications) == 6, "6 classification records should exist"
+            assert all(
+                c.rack_difference == 0 and c.matches_won == 0 for c in classifications
+            ), "All classifications should have zero scores"
+
+            # 5. Test: Classification should NOT be shown because all scores are zero
+            response = client.get(f"/admin/gara/{gara.id}")
+            assert response.status_code == 200
+
+            html_content = response.data.decode("utf-8")
+
+            # Should NOT show desktop classification
+            assert (
+                "Classifica dopo Turno" not in html_content
+            ), "Desktop classification should not be shown when all scores are zero"
+
+            # Should NOT show mobile classification (compact/completa toggle)
+            assert (
+                '<option value="compact">' not in html_content
+            ), "Mobile classification toggle should not be shown when all scores are zero"
+
+            # Should NOT show the classification card with trophy icon
+            assert (
+                'fa-trophy"></i> Classifica' not in html_content
+                and '<i class="fas fa-list-ol"></i> Classifica' not in html_content
+            ), "Classification card should not appear when all scores are zero"
+
+    def test_classification_shown_when_at_least_one_score(self, app, admin_user):
+        """
+        Test che la classificazione VENGA mostrata quando almeno un giocatore
+        ha un punteggio non-zero.
+
+        Nota: Per strategia Amalfi, il turno deve essere COMPLETATO (tutte le partite)
+        per mostrare la classifica. Per Random, basta una partita completata.
+        """
+        with app.test_client() as client:
+            # Login as admin
+            with client.session_transaction() as sess:
+                sess["_user_id"] = str(admin_user.id)
+                sess["_fresh"] = True
+
+            # 1. Create gara with 6 players
+            gara = GaraService.create_gara(
+                number=1,
+                name="With Scores Test",
+                date=date.today(),
+                discipline="9-ball",
+                distance=5,
+                campionato_id=None,
+                director_id=admin_user.id,
+                rounds_count=2,
+            )
+
+            gara.inscription_start = datetime.utcnow()
+            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            db.session.commit()
+
+            StateService.to_inscription(gara)
+
+            # 2. Create and register 6 players
+            players = []
+            import uuid
+
+            test_id = str(uuid.uuid4())[:8]
+            for i in range(6):
+                player = User(
+                    username=f"with_scores_player_{test_id}_{i}",
+                    email=f"with_scores_player_{test_id}_{i}@test.com",
+                    role=UserRole.PLAYER.value,
+                )
+                player.set_password("player123")
+                db.session.add(player)
+                players.append(player)
+
+            db.session.commit()
+
+            for player in players:
+                InscriptionService.inscribe_user(player.id, gara.id)
+
+            # 3. Start playing and create first round
+            gara_id = gara.id  # Store ID before any session changes
+            StateService.start_playing(gara)
+            GaraService.create_round_with_strategy(gara_id, 1)
+
+            # 4. Complete ALL matches in round 1 (required for Amalfi strategy)
+            first_round_matches = Match.query.filter_by(
+                gara_id=gara_id, round_number=1
+            ).all()
+
+            for match in first_round_matches:
+                if not match.is_bye:
+                    match.status = MatchStatus.COMPLETED.value
+                    match.winner_id = match.player1_id
+                    match.player1_score = 5
+                    match.player2_score = 2
+                    db.session.add(match)
+
+            db.session.commit()
+
+            # Update round progression - use get() instead of refresh()
+            GaraService.update_round_progression(gara_id)
+            from models.competition.models import Gara
+            gara = db.session.get(Gara, gara_id)
+
+            # 5. Create classification with at least one non-zero entry
+            for i, player in enumerate(players):
+                existing = RoundClassification.query.filter_by(
+                    gara_id=gara_id, round_number=1, user_id=player.id
+                ).first()
+                if not existing:
+                    classification = RoundClassification(
+                        gara_id=gara_id,
+                        round_number=1,
+                        user_id=player.id,
+                        position=i + 1,
+                        matches_won=1 if i < 3 else 0,  # First 3 players won their matches
+                        rack_difference=3 if i < 3 else -3,
+                    )
+                    db.session.add(classification)
+            db.session.commit()
+
+            # 6. Test: Classification SHOULD be shown
+            response = client.get(f"/admin/gara/{gara_id}")
+            assert response.status_code == 200
+
+            html_content = response.data.decode("utf-8")
+
+            # Should show classification (at least one player has scores)
+            has_desktop_classification = "Classifica dopo Turno" in html_content or "Classifica Complessiva" in html_content
+            has_mobile_classification = '<option value="compact">' in html_content
+
+            assert (
+                has_desktop_classification or has_mobile_classification
+            ), "Classification should be shown when at least one player has non-zero scores"

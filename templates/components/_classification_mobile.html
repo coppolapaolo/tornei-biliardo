@@ -30,9 +30,9 @@
               <span class="text-muted">{{ loop.index }}°</span>
               {% endif %}
             </td>
-            <td><strong>{{ entry.username }}</strong></td>
+            <td><strong>{{ entry.user.username }}</strong></td>
             <td class="text-end">
-              <span class="badge bg-secondary">{{ entry.rack_totali }}</span>
+              <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
             </td>
           </tr>
           {% endfor %}
@@ -62,25 +62,23 @@
             {% else %}
             <span class="text-muted">{{ loop.index }}°</span>
             {% endif %}
-            <strong class="ms-2">{{ entry.username }}</strong>
+            <strong class="ms-2">{{ entry.user.username }}</strong>
           </div>
-          <span class="badge bg-secondary">{{ entry.rack_totali }}</span>
+          <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
         </div>
         <div class="small text-muted mt-1 ms-4">
-          {% if entry.posizione_precedente %}
-          {{ _('Pos. Prec:') }} {{ entry.posizione_precedente }}°
-          {% if entry.movimento > 0 %}
-          <span class="text-success"><i class="fas fa-arrow-up"></i> {{ entry.movimento }}</span>
-          {% elif entry.movimento < 0 %}
-          <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ entry.movimento|abs }}</span>
+          {% if entry.previous_position %}
+          {{ _('Pos. Prec:') }} {{ entry.previous_position }}°
+          {% set movimento = entry.previous_position - entry.position %}
+          {% if movimento > 0 %}
+          <span class="text-success"><i class="fas fa-arrow-up"></i> +{{ movimento }}</span>
+          {% elif movimento < 0 %}
+          <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ movimento }}</span>
           {% else %}
           <span class="text-muted">=</span>
           {% endif %}
           {% else %}
           {{ _('Pos. Prec:') }} —
-          {% endif %}
-          {% if entry.ssr_score %}
-          · SSR: {{ entry.ssr_score }}
           {% endif %}
         </div>
       </div>
