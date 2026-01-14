@@ -1,0 +1,98 @@
+{# templates/components/_classification_mobile.html #}
+{# Mobile-friendly classification with compact/full toggle #}
+{# Expects: classification, round_number #}
+
+{% if classification %}
+<div class="card mt-3">
+  <div class="card-header py-2 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0"><i class="fas fa-trophy"></i> {{ _('Classifica') }}</h6>
+    <select class="form-select form-select-sm" style="width: auto;"
+            onchange="toggleClassificationView(this.value)" id="classificationViewToggle">
+      <option value="compact">{{ _('Compatta') }}</option>
+      <option value="full">{{ _('Completa') }}</option>
+    </select>
+  </div>
+  <div class="card-body py-2">
+    {# Compact view (default) #}
+    <div id="classificationCompact">
+      <table class="table table-sm mb-0">
+        <tbody>
+          {% for entry in classification[:6] %}
+          <tr>
+            <td style="width: 40px;">
+              {% if loop.index == 1 %}
+              <span class="text-warning"><i class="fas fa-medal"></i></span>
+              {% elif loop.index == 2 %}
+              <span class="text-secondary"><i class="fas fa-medal"></i></span>
+              {% elif loop.index == 3 %}
+              <span class="text-danger"><i class="fas fa-medal"></i></span>
+              {% else %}
+              <span class="text-muted">{{ loop.index }}°</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ entry.username }}</strong></td>
+            <td class="text-end">
+              <span class="badge bg-secondary">{{ entry.rack_totali }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if classification|length > 6 %}
+      <div class="text-center mt-2">
+        <button class="btn btn-sm btn-link" onclick="document.getElementById('classificationViewToggle').value='full'; toggleClassificationView('full');">
+          {{ _('Mostra tutti (%(count)s)', count=classification|length) }}
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    {# Full view (hidden by default) #}
+    <div id="classificationFull" style="display: none;">
+      {% for entry in classification %}
+      <div class="border-bottom py-2 {% if loop.index <= 3 %}bg-light{% endif %}">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            {% if loop.index == 1 %}
+            <span class="text-warning"><i class="fas fa-medal"></i></span>
+            {% elif loop.index == 2 %}
+            <span class="text-secondary"><i class="fas fa-medal"></i></span>
+            {% elif loop.index == 3 %}
+            <span class="text-danger"><i class="fas fa-medal"></i></span>
+            {% else %}
+            <span class="text-muted">{{ loop.index }}°</span>
+            {% endif %}
+            <strong class="ms-2">{{ entry.username }}</strong>
+          </div>
+          <span class="badge bg-secondary">{{ entry.rack_totali }}</span>
+        </div>
+        <div class="small text-muted mt-1 ms-4">
+          {% if entry.posizione_precedente %}
+          {{ _('Pos. Prec:') }} {{ entry.posizione_precedente }}°
+          {% if entry.movimento > 0 %}
+          <span class="text-success"><i class="fas fa-arrow-up"></i> {{ entry.movimento }}</span>
+          {% elif entry.movimento < 0 %}
+          <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ entry.movimento|abs }}</span>
+          {% else %}
+          <span class="text-muted">=</span>
+          {% endif %}
+          {% else %}
+          {{ _('Pos. Prec:') }} —
+          {% endif %}
+          {% if entry.ssr_score %}
+          · SSR: {{ entry.ssr_score }}
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleClassificationView(view) {
+  document.getElementById('classificationCompact').style.display = view === 'compact' ? 'block' : 'none';
+  document.getElementById('classificationFull').style.display = view === 'full' ? 'block' : 'none';
+}
+</script>
+{% endif %}
