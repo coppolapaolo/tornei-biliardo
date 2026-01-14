@@ -56,16 +56,24 @@
 {# Sezione Partite - adattiva #}
 <div class="row">
   <div class="col-md-8">
-    {% if user_can_manage %}
-    {# Admin/Director con permessi: mostra tutte le partite #}
-    {% include "components/_gara_matches.html" %}
-    {% elif user_inscription %}
-    {# Player iscritto: mostra tutte le partite (come guest) ma con azioni per le sue #}
-    {% include "components/_gara_matches.html" %}
-    {% else %}
-    {# Guest: mostra tutte le partite (read-only) #}
-    {% include "components/_gara_matches.html" %}
-    {% endif %}
+    {# === MOBILE VIEW (< 768px) === #}
+    <div class="d-md-none">
+      {% include "components/_match_cards_mobile.html" %}
+    </div>
+
+    {# === DESKTOP VIEW (>= 768px) === #}
+    <div class="d-none d-md-block">
+      {% if user_can_manage %}
+      {# Admin/Director con permessi: mostra tutte le partite #}
+      {% include "components/_gara_matches.html" %}
+      {% elif user_inscription %}
+      {# Player iscritto: mostra tutte le partite (come guest) ma con azioni per le sue #}
+      {% include "components/_gara_matches.html" %}
+      {% else %}
+      {# Guest: mostra tutte le partite (read-only) #}
+      {% include "components/_gara_matches.html" %}
+      {% endif %}
+    </div>
 
     {# SSR (Spot Shot Rally) Section - visible when awaiting_ssr or has SSR data #}
     {% if gara.status == 'awaiting_ssr' or (ssr_groups and has_ssr_data) %}
@@ -150,12 +158,24 @@
   </div>
 
   <div class="col-md-4">
-    {# Classificazione (tutti) - in alto #}
-    {% if current_round_classification %}
-    {% with classification=current_round_classification, round_number=latest_round_with_classification %}
-    {% include "components/_detailed_classification.html" %}
-    {% endwith %}
-    {% endif %}
+    {# === MOBILE: Classification with toggle === #}
+    <div class="d-md-none">
+      {% if current_round_classification %}
+      {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+      {% include "components/_classification_mobile.html" %}
+      {% endwith %}
+      {% endif %}
+    </div>
+
+    {# === DESKTOP: Detailed classification === #}
+    <div class="d-none d-md-block">
+      {# Classificazione (tutti) - in alto #}
+      {% if current_round_classification %}
+      {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+      {% include "components/_detailed_classification.html" %}
+      {% endwith %}
+      {% endif %}
+    </div>
 
     {# Iscrizioni - visibili a tutti quando la gara non e' in setup #}
     {% if gara.status != 'setup' %}
