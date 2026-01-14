@@ -104,6 +104,7 @@ class TournamentService(DomainService):
         default_rounds_count: int = 3,
         default_odd_policy: str = "bye",
         default_anti_rematch: bool = True,
+        default_classification_system: str = "WINS",
         # Deprecated but kept for compatibility
         without_x: bool = False,
         final_playoffs: bool = False,
@@ -151,6 +152,7 @@ class TournamentService(DomainService):
                 default_rounds_count=default_rounds_count,
                 default_odd_policy=default_odd_policy,
                 default_anti_rematch=default_anti_rematch,
+                default_classification_system=default_classification_system,
                 # Deprecated fields
                 without_x=without_x,
                 final_playoffs=final_playoffs,

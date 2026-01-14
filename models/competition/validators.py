@@ -206,6 +206,13 @@ def _validate_position_system(
             "EXCLUDE non è permesso nel bracket"
         )
 
+    # NO (lista attesa parità) non permesso - bracket usa bye interno
+    if odd_handling == OddHandling.NO:
+        errors.append(
+            "Sistema POSITION non supporta opzione NO: "
+            "il bracket gestisce i dispari con bye interno"
+        )
+
     # Matchmaking: solo Eliminazione, Doppio KO
     if matchmaking in (
         MatchmakingStrategy.RANDOM,
@@ -233,6 +240,7 @@ _MATCHMAKING_MAP = {
 
 # Mapping odd_number_policy esistente -> OddHandling
 _ODD_HANDLING_MAP = {
+    "no": OddHandling.NO,
     "bye": OddHandling.BYE,
     "bye_with_challenge": OddHandling.BYE_CHALLENGE,
     "trio": OddHandling.TRIO,

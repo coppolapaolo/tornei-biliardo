@@ -28,6 +28,15 @@ if TYPE_CHECKING:
     pass
 
 
+class WaitlistReason(str, Enum):
+    """Reason why an inscription is on the waiting list.
+
+    CAPACITY: max_participants exceeded (standard waitlist)
+    PARITY: odd_number_policy=NO and player count became odd
+    """
+
+    CAPACITY = "capacity"
+    PARITY = "parity"
 
 
 class Gara(SoftDeleteMixin, db.Model):
@@ -759,6 +768,8 @@ class Inscription(db.Model):
     # Lista d'attesa
     is_waitlist = db.Column(db.Boolean, default=False, nullable=False)
     waitlist_position = db.Column(db.Integer, nullable=True)
+    # Reason for waitlist: 'capacity' (max exceeded) or 'parity' (odd count with NO policy)
+    waitlist_reason = db.Column(db.String(20), nullable=True)
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.gara_id}>"

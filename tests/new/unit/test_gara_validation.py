@@ -768,3 +768,91 @@ class TestGaraServiceValidationIntegration:
         # Può essere "trio" o "match a tre" a seconda del validatore
         error_msg = str(exc_info.value).lower()
         assert "trio" in error_msg or "match a tre" in error_msg or "distanz" in error_msg
+
+
+# =============================================================================
+# Test per opzione NO (lista attesa parità)
+# =============================================================================
+
+
+class TestNoOptionValidation:
+    """Test per l'opzione NO (nessuna gestione dispari - lista attesa parità)."""
+
+    def test_no_option_allowed_for_rack_system(self):
+        """NO è permesso per sistema RACK."""
+        errors, warnings = validate_gara_configuration(
+            classification_system=ClassificationSystem.RACK,
+            distance_type=DistanceType.EXACTLY,
+            distance=5,
+            multi_set=False,
+            odd_handling=OddHandling.NO,
+            forfeit_policy=ForfeitPolicy.EXCLUDE,
+            matchmaking=MatchmakingStrategy.RANDOM,
+        )
+        assert errors == []
+
+    def test_no_option_allowed_for_wins_system(self):
+        """NO è permesso per sistema WINS."""
+        errors, warnings = validate_gara_configuration(
+            classification_system=ClassificationSystem.WINS,
+            distance_type=DistanceType.RACE_TO,
+            distance=5,
+            multi_set=False,
+            odd_handling=OddHandling.NO,
+            forfeit_policy=ForfeitPolicy.EXCLUDE,
+            matchmaking=MatchmakingStrategy.AMALFI,
+        )
+        assert errors == []
+
+    def test_no_option_rejected_for_position_system(self):
+        """NO è rifiutato per sistema POSITION (bracket usa bye interno)."""
+        errors, warnings = validate_gara_configuration(
+            classification_system=ClassificationSystem.POSITION,
+            distance_type=DistanceType.RACE_TO,
+            distance=5,
+            multi_set=False,
+            odd_handling=OddHandling.NO,
+            forfeit_policy=ForfeitPolicy.FORFEIT,
+            matchmaking=MatchmakingStrategy.ELIMINATION,
+        )
+        assert len(errors) >= 1
+        assert any("NO" in e or "bracket" in e.lower() for e in errors)
+
+    def test_no_option_with_amalfi_strategy(self):
+        """NO funziona con strategia Amalfi."""
+        errors, warnings = validate_gara_configuration(
+            classification_system=ClassificationSystem.WINS,
+            distance_type=DistanceType.RACE_TO,
+            distance=5,
+            multi_set=False,
+            odd_handling=OddHandling.NO,
+            forfeit_policy=ForfeitPolicy.FORFEIT,
+            matchmaking=MatchmakingStrategy.AMALFI,
+        )
+        assert errors == []
+
+    def test_no_option_with_random_strategy(self):
+        """NO funziona con strategia Random."""
+        errors, warnings = validate_gara_configuration(
+            classification_system=ClassificationSystem.RACK,
+            distance_type=DistanceType.EXACTLY,
+            distance=4,
+            multi_set=False,
+            odd_handling=OddHandling.NO,
+            forfeit_policy=ForfeitPolicy.EXCLUDE,
+            matchmaking=MatchmakingStrategy.RANDOM,
+        )
+        assert errors == []
+
+    def test_no_option_with_round_robin_strategy(self):
+        """NO funziona con strategia Round Robin (sistema WINS)."""
+        errors, warnings = validate_gara_configuration(
+            classification_system=ClassificationSystem.WINS,
+            distance_type=DistanceType.RACE_TO,
+            distance=5,
+            multi_set=False,
+            odd_handling=OddHandling.NO,
+            forfeit_policy=ForfeitPolicy.EXCLUDE,
+            matchmaking=MatchmakingStrategy.ROUND_ROBIN,
+        )
+        assert errors == []

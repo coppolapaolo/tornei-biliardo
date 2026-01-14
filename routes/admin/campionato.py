@@ -102,6 +102,10 @@ def wizard_step2():
     if campionato_type not in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value]:
         campionato_type = MatchmakingStrategy.AMALFI.value
 
+    classification_system = request.form.get("classification_system", "WINS")
+    if classification_system not in ["WINS", "RACK", "POSITION"]:
+        classification_system = "WINS"
+
     challenge_mode = "challenge_mode" in request.form
 
     # Playoff configuration
@@ -126,6 +130,7 @@ def wizard_step2():
         "name": name,
         "planned_gare_count": planned_gare_count,
         "campionato_type": campionato_type,
+        "classification_system": classification_system,
         "challenge_mode": challenge_mode,
         "playoff_elite_enabled": playoff_elite_enabled,
         "playoff_elite_participants": playoff_elite_participants,
@@ -140,15 +145,30 @@ def wizard_step2():
         .all()
     )
 
+    # Filter odd policies based on classification system
+    classification_system = session[WIZARD_SESSION_KEY].get("classification_system", "WINS")
+
+    # All available policies with their compatible systems
+    all_odd_policies = [
+        (OddNumberPolicy.NO.value, _("Lista Attesa (solo pari)"), ["WINS", "RACK"]),
+        (OddNumberPolicy.BYE.value, _("Bye (riposo)"), ["WINS"]),
+        (OddNumberPolicy.BYE_WITH_CHALLENGE.value, _("Bye con Challenge"), ["WINS", "RACK"]),
+        (OddNumberPolicy.TRIO.value, _("Trio (match a 3)"), ["WINS", "RACK"]),
+    ]
+
+    # Filter to only show compatible policies
+    odd_policies = [
+        (value, label)
+        for value, label, systems in all_odd_policies
+        if classification_system in systems
+    ]
+
     return render_template(
         "admin/campionato_wizard_step2.html",
         wizard_data=session[WIZARD_SESSION_KEY],
         venues=venues,
-        odd_policies=[
-            (OddNumberPolicy.BYE.value, _("Bye (riposo)")),
-            (OddNumberPolicy.BYE_WITH_CHALLENGE.value, _("Bye con Challenge")),
-            (OddNumberPolicy.TRIO.value, _("Trio (match a 3)")),
-        ],
+        odd_policies=odd_policies,
+        classification_system=classification_system,
     )
 
 
@@ -195,6 +215,7 @@ def wizard_create():
 
     default_odd_policy = request.form.get("default_odd_policy", OddNumberPolicy.BYE.value)
     valid_policies = [
+        OddNumberPolicy.NO.value,
         OddNumberPolicy.BYE.value,
         OddNumberPolicy.BYE_WITH_CHALLENGE.value,
         OddNumberPolicy.TRIO.value,
@@ -203,6 +224,9 @@ def wizard_create():
         default_odd_policy = OddNumberPolicy.BYE.value
 
     default_anti_rematch = "default_anti_rematch" in request.form
+
+    # Get classification system from Step 1
+    classification_system = wizard_data.get("classification_system", "WINS")
 
     # Create the campionato
     try:
@@ -218,6 +242,7 @@ def wizard_create():
             default_rounds_count=default_rounds_count,
             default_odd_policy=default_odd_policy,
             default_anti_rematch=default_anti_rematch,
+            default_classification_system=classification_system,
         )
 
         # Create playoff configurations if enabled

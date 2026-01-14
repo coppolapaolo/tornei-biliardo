@@ -37,6 +37,23 @@
         <div class="card-body">
             <h5 class="card-title">Strategia di Abbinamento</h5>
 
+            <!-- Sistema di Classifica -->
+            <div class="mb-3">
+                <label for="classification_system" class="form-label">Sistema di Classifica</label>
+                {% if gara.campionato_id %}
+                {# Gara in campionato: mostra readonly #}
+                <input type="text" class="form-control" value="{% if gara.classification_system == 'WINS' %}Vittorie{% elif gara.classification_system == 'RACK' %}Rack Totali{% else %}{{ gara.classification_system or 'WINS' }}{% endif %}" readonly disabled>
+                <input type="hidden" name="classification_system" value="{{ gara.classification_system or 'WINS' }}">
+                <small class="form-text text-muted">Ereditato dal campionato</small>
+                {% else %}
+                {# Gara standalone: select editabile #}
+                <select class="form-select" id="classification_system" name="classification_system">
+                    <option value="WINS" {% if (gara.classification_system or 'WINS') == 'WINS' %}selected{% endif %}>Vittorie (match vinti → diff rack)</option>
+                    <option value="RACK" {% if gara.classification_system == 'RACK' %}selected{% endif %}>Rack Totali (rack accumulati)</option>
+                </select>
+                {% endif %}
+            </div>
+
             <div class="mb-3">
                 <label for="matchmaking_strategy" class="form-label">Tipo di Competizione</label>
                 <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
@@ -83,12 +100,10 @@
                     <div class="mb-3">
                         <label for="odd_number_policy" class="form-label">Gestione Giocatori Dispari</label>
                         <select class="form-select" id="odd_number_policy" name="odd_number_policy">
-                            <option value="bye" {% if (gara.odd_number_policy or 'bye' )=='bye' %}selected{% endif %}>X
-                                (vinto a tavolino)</option>
-                            <option value="bye_with_challenge" {% if gara.odd_number_policy=='bye_with_challenge'
-                                %}selected{% endif %}>X con Challenge</option>
-                            <option value="trio" {% if gara.odd_number_policy=='trio' %}selected{% endif %}>Match a 3
-                                Giocatori</option>
+                            <option value="no" {% if gara.odd_number_policy=='no' %}selected{% endif %}>Lista Attesa (solo pari)</option>
+                            <option value="bye" {% if (gara.odd_number_policy or 'bye' )=='bye' %}selected{% endif %}>X (vinto a tavolino)</option>
+                            <option value="bye_with_challenge" {% if gara.odd_number_policy=='bye_with_challenge' %}selected{% endif %}>X con Challenge</option>
+                            <option value="trio" {% if gara.odd_number_policy=='trio' %}selected{% endif %}>Match a 3</option>
                         </select>
                         <small id="trio_warning" class="form-text text-warning" style="display: none;">
                             <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 5

@@ -39,6 +39,7 @@ class FirstRoundPolicy(str, Enum):
 
 
 class OddNumberPolicy(str, Enum):
+    NO = "no"  # Parity waitlist - players making odd count go to waiting list
     BYE = "bye"
     BYE_WITH_CHALLENGE = "bye_with_challenge"
     TRIO = "trio"
@@ -364,7 +365,7 @@ STRATEGY_CONSTRAINTS = {
     },
     MatchmakingStrategy.AMALFI: {
         "first_round_policies": ["random", "rating", "classification"],
-        "odd_policies": ["bye", "bye_with_challenge", "trio"],
+        "odd_policies": ["no", "bye", "bye_with_challenge", "trio"],
         "fixed_rounds": False,
         "anti_rematch": True,
         "anti_rematch_required": True,
@@ -372,7 +373,7 @@ STRATEGY_CONSTRAINTS = {
     },
     MatchmakingStrategy.RANDOM: {
         "first_round_policies": ["random"],
-        "odd_policies": ["bye", "bye_with_challenge", "trio"],
+        "odd_policies": ["no", "bye", "bye_with_challenge", "trio"],
         "fixed_rounds": False,
         "anti_rematch": True,
         "anti_rematch_required": False,

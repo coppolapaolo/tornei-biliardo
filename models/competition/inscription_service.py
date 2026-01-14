@@ -39,9 +39,15 @@ class InscriptionService:
     def inscribe_user(user_id: int, gara_id: int) -> Optional[Inscription]:
         """Registra un utente a una gara se non già iscritto.
 
-        Se la gara è piena, l'utente viene messo in lista d'attesa.
+        Gestisce due tipi di waitlist:
+        - CAPACITY: max_participants superato
+        - PARITY: odd_number_policy="no" e count diventa dispari
+
+        Con policy NO, ordine di controllo:
+        1. Prima verifica capacità (max_participants)
+        2. Poi verifica parità (odd_number_policy="no")
         """
-        from models.competition.models import Gara
+        from models.competition.models import Gara, WaitlistReason
         from models.user.models import User
         from models.user.role_enum import UserRole
 
@@ -75,32 +81,79 @@ class InscriptionService:
             if now > gara.inscription_end:
                 raise ValueError("Iscrizioni chiuse")
 
-        # Verifica se la gara è piena (per waitlist)
+        # Conta iscrizioni attive (non in waitlist)
+        active_count = (
+            db.session.query(Inscription)
+            .filter_by(gara_id=gara_id, is_waitlist=False, is_withdrawn=False)
+            .count()
+        )
+
+        # Conta iscrizioni in waitlist
+        total_count = (
+            db.session.query(Inscription)
+            .filter_by(gara_id=gara_id, is_withdrawn=False)
+            .count()
+        )
+
         is_waitlist = False
-        if gara.max_participants and gara.max_participants > 0:
-            current_count = (
-                db.session.query(Inscription).filter_by(gara_id=gara_id).count()
-            )
-            # If max participants reached, put user on waitlist
-            # instead of throwing error
-            is_waitlist = current_count >= gara.max_participants
+        waitlist_reason = None
         waitlist_position = None
 
-        if is_waitlist:
-            # Calcola la posizione in lista d'attesa
-            waitlist_position = (
-                gara.get_waitlist_count() + 1
-                if hasattr(gara, "get_waitlist_count")
-                else None
+        # 1. Verifica capacità (max_participants)
+        if gara.max_participants and gara.max_participants > 0:
+            if total_count >= gara.max_participants:
+                is_waitlist = True
+                waitlist_reason = WaitlistReason.CAPACITY.value
+                waitlist_position = (
+                    gara.get_waitlist_count() + 1
+                    if hasattr(gara, "get_waitlist_count")
+                    else total_count - gara.max_participants + 1
+                )
+
+        # 2. Verifica parità (odd_number_policy="no")
+        # Solo se non siamo già in waitlist per capacità
+        # E solo se ci sarà più di 1 giocatore (il primo deve sempre essere accettato)
+        if not is_waitlist and gara.odd_number_policy == "no":
+            new_active_count = active_count + 1
+
+            # Conta chi è già in parity waitlist
+            parity_waitlist_count = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=gara_id,
+                    is_waitlist=True,
+                    waitlist_reason=WaitlistReason.PARITY.value,
+                    is_withdrawn=False,
+                )
+                .count()
             )
+
+            if new_active_count > 1 and new_active_count % 2 == 1:
+                # Risultato sarebbe dispari
+                if parity_waitlist_count > 0:
+                    # C'è qualcuno in parity waitlist: accetta nuovo E promuovi
+                    # Così: active+1+1 = even
+                    pass  # Non mettere in waitlist, promozione avverrà dopo
+                else:
+                    # Nessuno in waitlist: metti in waitlist
+                    is_waitlist = True
+                    waitlist_reason = WaitlistReason.PARITY.value
+                    waitlist_position = 1
 
         ins = Inscription(
             user_id=user_id,
             gara_id=gara_id,
             is_waitlist=is_waitlist,
             waitlist_position=waitlist_position,
+            waitlist_reason=waitlist_reason,
         )
         db.session.add(ins)
+        db.session.flush()  # Get ID for event
+
+        # Se abbiamo aggiunto un giocatore attivo e c'è qualcuno in waitlist parità,
+        # promuovilo (perché ora abbiamo reso pari il count)
+        if not is_waitlist and gara.odd_number_policy == "no":
+            InscriptionService._promote_from_parity_waitlist(gara_id)
 
         # Emit InscriptionCreatedEvent for gamification
         from models.events.competition_events import InscriptionCreatedEvent
@@ -110,7 +163,7 @@ class InscriptionService:
         inscription_status = "waitlist" if is_waitlist else "confirmed"
 
         event = InscriptionCreatedEvent(
-            inscription_id=ins.id if ins.id else 0,  # May be None before flush
+            inscription_id=ins.id if ins.id else 0,
             gara_id=gara_id,
             gara_name=gara_name,
             user_id=user_id,
@@ -124,16 +177,100 @@ class InscriptionService:
         return ins
 
     @staticmethod
+    def _promote_from_parity_waitlist(gara_id: int) -> Optional[Inscription]:
+        """Promuove il primo giocatore dalla waitlist parità.
+
+        Chiamato quando un nuovo giocatore si iscrive e rende il count pari.
+        """
+        from models.competition.models import WaitlistReason
+
+        first_parity_waitlist = (
+            db.session.query(Inscription)
+            .filter_by(
+                gara_id=gara_id,
+                is_waitlist=True,
+                waitlist_reason=WaitlistReason.PARITY.value,
+                is_withdrawn=False,
+            )
+            .order_by(Inscription.waitlist_position.asc())
+            .first()
+        )
+
+        if first_parity_waitlist:
+            first_parity_waitlist.is_waitlist = False
+            first_parity_waitlist.waitlist_position = None
+            first_parity_waitlist.waitlist_reason = None
+
+            # Ricalcola posizioni degli altri in waitlist parità
+            remaining = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=gara_id,
+                    is_waitlist=True,
+                    waitlist_reason=WaitlistReason.PARITY.value,
+                    is_withdrawn=False,
+                )
+                .order_by(Inscription.waitlist_position.asc())
+                .all()
+            )
+            for i, insc in enumerate(remaining, 1):
+                insc.waitlist_position = i
+
+            return first_parity_waitlist
+        return None
+
+    @staticmethod
+    def _demote_last_to_parity_waitlist(gara_id: int) -> Optional[Inscription]:
+        """Mette l'ultimo iscritto attivo in waitlist parità.
+
+        Chiamato quando una disiscrizione rende il count dispari.
+        """
+        from models.competition.models import WaitlistReason
+
+        # Trova l'ultimo iscritto attivo (per created_at)
+        last_active = (
+            db.session.query(Inscription)
+            .filter_by(
+                gara_id=gara_id,
+                is_waitlist=False,
+                is_withdrawn=False,
+            )
+            .order_by(Inscription.created_at.desc())
+            .first()
+        )
+
+        if last_active:
+            # Conta quanti sono già in waitlist parità
+            parity_waitlist_count = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=gara_id,
+                    is_waitlist=True,
+                    waitlist_reason=WaitlistReason.PARITY.value,
+                    is_withdrawn=False,
+                )
+                .count()
+            )
+
+            last_active.is_waitlist = True
+            last_active.waitlist_reason = WaitlistReason.PARITY.value
+            last_active.waitlist_position = parity_waitlist_count + 1
+
+            return last_active
+        return None
+
+    @staticmethod
     @transactional(domain="competition")
     def uninscribe_user(user_id: int, gara_id: int) -> bool:
         """Cancella l'iscrizione di un utente dalla gara.
 
-        Se l'utente non era in lista d'attesa, promuove il primo della lista d'attesa.
-        Invia notifica al promosso.
+        Gestisce due casi:
+        1. Se c'è waitlist capacità, promuove il primo
+        2. Se odd_number_policy="no" e count diventa dispari, demota l'ultimo
 
         Returns: True se rimossa, False se non trovata.
         """
-        from models.competition.models import Gara
+        from models.competition.models import Gara, WaitlistReason
 
         inscription = (
             db.session.query(Inscription)
@@ -142,15 +279,95 @@ class InscriptionService:
         )
         if inscription:
             was_active = not inscription.is_waitlist and not inscription.is_withdrawn
+            was_parity_waitlist = (
+                inscription.is_waitlist
+                and inscription.waitlist_reason == WaitlistReason.PARITY.value
+            )
             gara_id_for_promotion = inscription.gara_id
 
             db.session.delete(inscription)
+            db.session.flush()
 
-            # Se l'utente era attivo (non in lista d'attesa),
-            # promuovi il primo della lista d'attesa
+            gara = db.session.get(Gara, gara_id_for_promotion)
+            if not gara:
+                return True
+
+            # Se l'utente era in parity waitlist, ricalcola le posizioni
+            if was_parity_waitlist:
+                remaining_parity = (
+                    db.session.query(Inscription)
+                    .filter_by(
+                        gara_id=gara_id_for_promotion,
+                        is_waitlist=True,
+                        waitlist_reason=WaitlistReason.PARITY.value,
+                        is_withdrawn=False,
+                    )
+                    .order_by(Inscription.waitlist_position.asc())
+                    .all()
+                )
+                for i, insc in enumerate(remaining_parity, 1):
+                    insc.waitlist_position = i
+                return True
+
+            # Se l'utente era attivo
             if was_active:
-                gara = db.session.get(Gara, gara_id_for_promotion)
-                if gara:
+                # Conta iscrizioni attive rimanenti
+                active_count = (
+                    db.session.query(Inscription)
+                    .filter_by(
+                        gara_id=gara_id_for_promotion,
+                        is_waitlist=False,
+                        is_withdrawn=False,
+                    )
+                    .count()
+                )
+
+                # Caso 1: Promuovi dalla waitlist capacità se c'è spazio
+                if gara.max_participants and gara.max_participants > 0:
+                    first_capacity_waitlist = (
+                        db.session.query(Inscription)
+                        .filter_by(
+                            gara_id=gara_id_for_promotion,
+                            is_waitlist=True,
+                            waitlist_reason=WaitlistReason.CAPACITY.value,
+                            is_withdrawn=False,
+                        )
+                        .order_by(Inscription.waitlist_position.asc())
+                        .first()
+                    )
+
+                    if first_capacity_waitlist:
+                        InscriptionService._promote_and_notify(
+                            first_capacity_waitlist, gara
+                        )
+                        return True
+
+                # Caso 2: Se odd_number_policy="no" e count è ora dispari
+                if gara.odd_number_policy == "no" and active_count % 2 == 1:
+                    # Prima verifica se c'è qualcuno in parity waitlist da promuovere
+                    first_parity = (
+                        db.session.query(Inscription)
+                        .filter_by(
+                            gara_id=gara_id_for_promotion,
+                            is_waitlist=True,
+                            waitlist_reason=WaitlistReason.PARITY.value,
+                            is_withdrawn=False,
+                        )
+                        .order_by(Inscription.waitlist_position.asc())
+                        .first()
+                    )
+
+                    if first_parity:
+                        # Promuovi dalla parity waitlist
+                        InscriptionService._promote_and_notify(first_parity, gara)
+                    else:
+                        # Nessuno in parity waitlist, demota l'ultimo attivo
+                        InscriptionService._demote_last_to_parity_waitlist(
+                            gara_id_for_promotion
+                        )
+
+                # Caso 3: Standard waitlist (senza reason specificato)
+                else:
                     first_waitlist = (
                         db.session.query(Inscription)
                         .filter_by(
@@ -163,60 +380,70 @@ class InscriptionService:
                     )
 
                     if first_waitlist:
-                        # Promuovi dalla lista d'attesa
-                        first_waitlist.is_waitlist = False
-                        first_waitlist.waitlist_position = None
+                        InscriptionService._promote_and_notify(first_waitlist, gara)
 
-                        # Ricalcola le posizioni degli altri in lista d'attesa
-                        remaining_waitlist = (
-                            db.session.query(Inscription)
-                            .filter_by(
-                                gara_id=gara_id_for_promotion,
-                                is_waitlist=True,
-                                is_withdrawn=False,
-                            )
-                            .order_by(Inscription.waitlist_position.asc())
-                            .all()
-                        )
-
-                        for i, insc in enumerate(remaining_waitlist, 1):
-                            insc.waitlist_position = i
-
-                        # Invia notifica al promosso
-                        # Use NotificationFactory for standardized error handling
-                        from models.notification.factory import NotificationFactory
-                        from models.notification.models import NotificationPriority
-
-                        gara_display = (
-                            gara.name or f'Gara {gara.number}'
-                        )
-                        msg = (
-                            f"Sei stato promosso dalla lista d'attesa "
-                            f"per la gara '{gara_display}'"
-                        )
-                        notification_result = (
-                            NotificationFactory
-                            .create_account_update_notification(
-                                user_id=first_waitlist.user_id,
-                                title="Posto disponibile!",
-                                message=msg,
-                                priority=NotificationPriority.HIGH,
-                                update_type="waitlist_promotion",
-                                related_entities={
-                                    "gara_id": gara.id,
-                                    "gara_name": gara.name
-                                }
-                            )
-                        )
-                        print(
-                            f"DEBUG: Promotion notification created "
-                            f"for user {first_waitlist.user_id}: "
-                            f"{notification_result}"
-                        )
-
-            # Transaction managed by @transactional decorator
             return True
         return False
+
+    @staticmethod
+    def _promote_and_notify(inscription: Inscription, gara: "Gara") -> None:
+        """Promuove un'iscrizione dalla waitlist e invia notifica."""
+        from models.notification.factory import NotificationFactory
+        from models.notification.models import NotificationPriority
+
+        old_reason = inscription.waitlist_reason
+        inscription.is_waitlist = False
+        inscription.waitlist_position = None
+        inscription.waitlist_reason = None
+
+        # Ricalcola posizioni degli altri nella stessa waitlist
+        if old_reason:
+            remaining = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=inscription.gara_id,
+                    is_waitlist=True,
+                    waitlist_reason=old_reason,
+                    is_withdrawn=False,
+                )
+                .order_by(Inscription.waitlist_position.asc())
+                .all()
+            )
+        else:
+            remaining = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=inscription.gara_id,
+                    is_waitlist=True,
+                    is_withdrawn=False,
+                )
+                .order_by(Inscription.waitlist_position.asc())
+                .all()
+            )
+
+        for i, insc in enumerate(remaining, 1):
+            insc.waitlist_position = i
+
+        # Invia notifica
+        gara_display = gara.name or f'Gara {gara.number}'
+        msg = (
+            f"Sei stato promosso dalla lista d'attesa "
+            f"per la gara '{gara_display}'"
+        )
+        try:
+            NotificationFactory.create_account_update_notification(
+                user_id=inscription.user_id,
+                title="Posto disponibile!",
+                message=msg,
+                priority=NotificationPriority.HIGH,
+                update_type="waitlist_promotion",
+                related_entities={
+                    "gara_id": gara.id,
+                    "gara_name": gara.name
+                }
+            )
+        except Exception as e:
+            print(f"DEBUG: Error creating promotion notification: {e}")
 
     @staticmethod
     @transactional(domain="competition")

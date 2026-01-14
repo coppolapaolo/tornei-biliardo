@@ -34,12 +34,20 @@
         const antiRematchCheck = document.getElementById('anti_rematch_enabled');
         const strategyDescription = document.getElementById('strategy_description');
         const trioWarning = document.getElementById('trio_warning');
+        const classificationSelect = document.getElementById('classification_system');
 
         // Exact number logic elements
         const distanceInput = document.getElementById('distance');
         const exactNumberCheckbox = document.getElementById('exact_number');
         const exactNumberContainer = document.getElementById('exact_number_container');
         const gameModeText = document.getElementById('game-mode-text');
+
+        // Classification system constraints for odd policies
+        const classificationOddPolicies = {
+            'WINS': ['no', 'bye', 'bye_with_challenge', 'trio'],
+            'RACK': ['no', 'bye_with_challenge', 'trio'],  // No 'bye' for RACK
+            'POSITION': []  // No odd policy selection for POSITION
+        };
 
         // Store strategy constraints (if available)
         const strategyConstraints = {{ available_strategies | tojson
@@ -108,10 +116,32 @@
         // Trio only valid for distances 2-5 (ADR-005)
         if (oddPolicy === 'trio' && (distance < 2 || distance > 5)) {
             trioWarning.style.display = 'block';
-            oddPolicySelect.value = 'bye';
+            // Find first valid option
+            const system = classificationSelect ? classificationSelect.value : 'WINS';
+            const validPolicies = classificationOddPolicies[system] || ['bye'];
+            oddPolicySelect.value = validPolicies.includes('bye') ? 'bye' : validPolicies[0];
         } else {
             trioWarning.style.display = 'none';
         }
+    }
+
+    function updateOddPoliciesForClassification() {
+        if (!oddPolicySelect || !classificationSelect) return;
+
+        const system = classificationSelect.value;
+        const validPolicies = classificationOddPolicies[system] || ['bye'];
+
+        Array.from(oddPolicySelect.options).forEach(option => {
+            if (option.value) {
+                const isValid = validPolicies.includes(option.value);
+                option.disabled = !isValid;
+                option.style.display = isValid ? '' : 'none';  // Hide invalid options
+                if (option.disabled && option.selected) {
+                    // Select first valid option
+                    oddPolicySelect.value = validPolicies[0] || 'bye';
+                }
+            }
+        });
     }
 
     function updateExactNumberAvailability() {
@@ -166,6 +196,14 @@
         });
     }
 
+    // Listen for classification system changes (standalone gare only)
+    if (classificationSelect) {
+        classificationSelect.addEventListener('change', function() {
+            updateOddPoliciesForClassification();
+            updateTrioWarning();
+        });
+    }
+
     // Listen for distance changes
     if (distanceInput) {
         distanceInput.addEventListener('input', function () {
@@ -184,10 +222,12 @@
 
     // Initial updates
     updateStrategyUI();
+    updateOddPoliciesForClassification();
     updateExactNumberAvailability();
     // Richiama anche dopo un piccolo delay nel caso ci siano problemi di timing
     setTimeout(function () {
         updateStrategyUI();
+        updateOddPoliciesForClassification();
         updateExactNumberAvailability();
     }, 100);
 });

@@ -60,22 +60,46 @@
                             <small class="text-muted">{{ _("Obiettivo indicativo. Il direttore potra' aggiungere o cancellare gare.") }}</small>
                         </div>
 
-                        <!-- Tipo Campionato -->
+                        <!-- Sistema di Classifica -->
                         <div class="mb-4">
-                            <label for="campionato_type" class="form-label">{{ _("Tipo Campionato") }} *</label>
+                            <label for="classification_system" class="form-label">{{ _("Sistema di Classifica") }} *</label>
+                            <select class="form-select form-select-lg" id="classification_system" name="classification_system" required>
+                                <option value="WINS" selected>{{ _("Vittorie (match vinti → diff rack)") }}</option>
+                                <option value="RACK">{{ _("Rack Totali (rack accumulati)") }}</option>
+                                <option value="POSITION" disabled>{{ _("Posizione Bracket (coming soon)") }}</option>
+                            </select>
+                            <div class="mt-2">
+                                <div id="class-description-WINS" class="alert alert-info py-2 mb-0 small">
+                                    <i class="fas fa-trophy"></i>
+                                    {{ _("Ordina per vittorie, poi differenza rack. Ideale per tornei dove vincere il match è prioritario.") }}
+                                </div>
+                                <div id="class-description-RACK" class="alert alert-info py-2 mb-0 small d-none">
+                                    <i class="fas fa-layer-group"></i>
+                                    {{ _("Ordina per rack totali vinti. Ideale per tornei dove ogni rack conta.") }}
+                                </div>
+                                <div id="class-description-POSITION" class="alert alert-info py-2 mb-0 small d-none">
+                                    <i class="fas fa-sitemap"></i>
+                                    {{ _("Punti per posizione nel bracket. Solo per eliminazione diretta o doppio KO.") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipo Campionato (Matchmaking) -->
+                        <div class="mb-4">
+                            <label for="campionato_type" class="form-label">{{ _("Strategia Abbinamento") }} *</label>
                             <select class="form-select form-select-lg" id="campionato_type" name="campionato_type" required>
                                 {% for value, label in matchmaking_strategies %}
-                                <option value="{{ value }}">{{ label }}</option>
+                                <option value="{{ value }}" data-systems="{{ matchmaking_systems.get(value, 'WINS,RACK')|default('WINS,RACK') }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
                             <div class="mt-2">
-                                <div id="type-description-amalfi" class="alert alert-info py-2 mb-2">
+                                <div id="type-description-amalfi" class="alert alert-info py-2 mb-0 small">
                                     <i class="fas fa-chess"></i>
-                                    <strong>Amalfi:</strong> {{ _("Accoppiamenti basati sulla classifica del turno precedente. Ordinamento: Vittorie > Differenza rack > SSR > Ordine precedente.") }}
+                                    <strong>Amalfi:</strong> {{ _("Accoppiamenti basati sulla classifica. Evita reincontri.") }}
                                 </div>
-                                <div id="type-description-random" class="alert alert-info py-2 mb-2 d-none">
+                                <div id="type-description-random" class="alert alert-info py-2 mb-0 small d-none">
                                     <i class="fas fa-random"></i>
-                                    <strong>Random:</strong> {{ _("Accoppiamenti casuali con anti-rematch. Ordinamento: Rack vinti > SSR > Ordine precedente.") }}
+                                    <strong>Random:</strong> {{ _("Accoppiamenti casuali con anti-rematch.") }}
                                 </div>
                             </div>
                         </div>
@@ -173,9 +197,50 @@
 {{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const classificationSelect = document.getElementById('classification_system');
     const typeSelect = document.getElementById('campionato_type');
+
+    // Classification descriptions
+    const classDescWINS = document.getElementById('class-description-WINS');
+    const classDescRACK = document.getElementById('class-description-RACK');
+    const classDescPOSITION = document.getElementById('class-description-POSITION');
+
+    // Matchmaking descriptions
     const descAmalfi = document.getElementById('type-description-amalfi');
     const descRandom = document.getElementById('type-description-random');
+
+    // Compatibility matrix: which matchmaking strategies are valid for each classification system
+    const validMatchmaking = {
+        'WINS': ['amalfi', 'random'],
+        'RACK': ['amalfi', 'random'],
+        'POSITION': ['elimination', 'double_ko']  // Not implemented yet
+    };
+
+    function updateClassificationDescription() {
+        const system = classificationSelect.value;
+        classDescWINS.classList.toggle('d-none', system !== 'WINS');
+        classDescRACK.classList.toggle('d-none', system !== 'RACK');
+        classDescPOSITION.classList.toggle('d-none', system !== 'POSITION');
+    }
+
+    function updateMatchmakingOptions() {
+        const system = classificationSelect.value;
+        const validStrategies = validMatchmaking[system] || ['amalfi', 'random'];
+
+        // Enable/disable matchmaking options based on classification system
+        Array.from(typeSelect.options).forEach(option => {
+            if (option.value) {
+                const isValid = validStrategies.includes(option.value);
+                option.disabled = !isValid;
+                if (option.disabled && option.selected) {
+                    // Select first valid option
+                    typeSelect.value = validStrategies[0] || 'amalfi';
+                }
+            }
+        });
+
+        updateTypeDescription();
+    }
 
     function updateTypeDescription() {
         const type = typeSelect.value;
@@ -183,8 +248,17 @@ document.addEventListener('DOMContentLoaded', function() {
         descRandom.classList.toggle('d-none', type !== 'random');
     }
 
+    // Event listeners
+    classificationSelect.addEventListener('change', function() {
+        updateClassificationDescription();
+        updateMatchmakingOptions();
+    });
+
     typeSelect.addEventListener('change', updateTypeDescription);
-    updateTypeDescription();
+
+    // Initial state
+    updateClassificationDescription();
+    updateMatchmakingOptions();
 });
 </script>
 {% endblock %}

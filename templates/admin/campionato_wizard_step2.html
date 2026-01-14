@@ -46,17 +46,16 @@
                         <strong>{{ _("Nome:") }}</strong><br>{{ wizard_data.name }}
                     </div>
                     <div class="col-6 col-md-3">
-                        <strong>{{ _("Tipo:") }}</strong><br>{{ wizard_data.campionato_type|capitalize }}
+                        <strong>{{ _("Classifica:") }}</strong><br>
+                        {% if wizard_data.classification_system == 'WINS' %}{{ _("Vittorie") }}
+                        {% elif wizard_data.classification_system == 'RACK' %}{{ _("Rack Totali") }}
+                        {% else %}{{ wizard_data.classification_system }}{% endif %}
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <strong>{{ _("Strategia:") }}</strong><br>{{ wizard_data.campionato_type|capitalize }}
                     </div>
                     <div class="col-6 col-md-3">
                         <strong>{{ _("Gare:") }}</strong><br>{{ wizard_data.planned_gare_count }}
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <strong>{{ _("Playoff:") }}</strong><br>
-                        {% if wizard_data.playoff_elite_enabled %}Elite ({{ wizard_data.playoff_elite_participants }}){% endif %}
-                        {% if wizard_data.playoff_elite_enabled and wizard_data.playoff_academy_enabled %}, {% endif %}
-                        {% if wizard_data.playoff_academy_enabled %}Academy ({{ wizard_data.playoff_academy_participants }}){% endif %}
-                        {% if not wizard_data.playoff_elite_enabled and not wizard_data.playoff_academy_enabled %}{{ _("Nessuno") }}{% endif %}
                     </div>
                 </div>
             </div>
@@ -127,18 +126,22 @@
                                 {% endfor %}
                             </select>
                             <div class="mt-2">
-                                <div id="policy-description-bye" class="alert alert-info py-2 mb-0 small">
+                                <div id="policy-description-no" class="alert alert-info py-2 mb-0 small d-none">
+                                    <i class="fas fa-list-ol"></i>
+                                    {{ _("Chi rende il numero dispari va in lista d'attesa. Appena si iscrive un altro giocatore, entrambi vengono iscritti.") }}
+                                </div>
+                                <div id="policy-description-bye" class="alert alert-info py-2 mb-0 small d-none">
                                     <i class="fas fa-user-clock"></i>
-                                    {{ _("Il giocatore piu' basso in classifica riceve un bye (riposo) e vince automaticamente con il punteggio target.") }}
+                                    {{ _("Il giocatore piu' basso in classifica riceve un bye (riposo) e vince automaticamente.") }}
                                 </div>
                                 <div id="policy-description-bye_with_challenge" class="alert alert-info py-2 mb-0 small d-none">
                                     <i class="fas fa-bullseye"></i>
-                                    {{ _("Il giocatore riceve bye ma deve completare una sfida (es. Spot Shot Rally) per guadagnare punti extra.") }}
+                                    {{ _("Il giocatore riceve bye ma deve completare una sfida per guadagnare punti.") }}
                                 </div>
                                 <div id="policy-description-trio" class="alert alert-info py-2 mb-0 small d-none">
                                     <i class="fas fa-users"></i>
-                                    {{ _("I tre giocatori piu' bassi giocano un match a 3. Alternativa al bye per gare piu' inclusive.") }}
-                                    <br><strong class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{ _("Nota: Il Trio è disponibile solo per gare con distanza da 2 a 5.") }}</strong>
+                                    {{ _("I tre giocatori piu' bassi giocano un match a 3.") }}
+                                    <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{ _("Solo per distanze 2-5.") }}</small>
                                 </div>
                             </div>
                         </div>
@@ -178,15 +181,17 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const policySelect = document.getElementById('default_odd_policy');
+    const descNo = document.getElementById('policy-description-no');
     const descBye = document.getElementById('policy-description-bye');
     const descByeChallenge = document.getElementById('policy-description-bye_with_challenge');
     const descTrio = document.getElementById('policy-description-trio');
 
     function updatePolicyDescription() {
         const policy = policySelect.value;
-        descBye.classList.toggle('d-none', policy !== 'bye');
-        descByeChallenge.classList.toggle('d-none', policy !== 'bye_with_challenge');
-        descTrio.classList.toggle('d-none', policy !== 'trio');
+        if (descNo) descNo.classList.toggle('d-none', policy !== 'no');
+        if (descBye) descBye.classList.toggle('d-none', policy !== 'bye');
+        if (descByeChallenge) descByeChallenge.classList.toggle('d-none', policy !== 'bye_with_challenge');
+        if (descTrio) descTrio.classList.toggle('d-none', policy !== 'trio');
     }
 
     policySelect.addEventListener('change', updatePolicyDescription);
