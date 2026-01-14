@@ -168,6 +168,11 @@ def run_migration(db_path: str) -> bool:
         return False
 
 
+def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
+    """Standard interface for migration runner."""
+    run_migration(db_path)
+
+
 if __name__ == "__main__":
     import os
     import sys
