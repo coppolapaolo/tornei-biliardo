@@ -135,6 +135,12 @@ class MyNewEvent(DomainEvent):
 - **Do not raise exceptions in handlers** - They're logged but don't stop other handlers
 - **Do not assume handler order** - Use priority if order matters
 - **Do not publish from handlers** - Can cause infinite loops; use with caution
+- **Do not clear `EventBus._handlers = {}` in test fixtures** - This removes ALL handlers globally and breaks other tests running in parallel. Save and restore instead:
+  ```python
+  original = {k: list(v) for k, v in EventBus._handlers.items()}
+  # ... test code ...
+  EventBus._handlers = original
+  ```
 
 ---
 

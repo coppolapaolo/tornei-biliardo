@@ -331,3 +331,11 @@ Tests organized by platform domains supporting community growth:
 - **Do not maintain legacy tests** - Focus on `tests/new/`
 - **Do not create long workflow tests** - Keep tests 30-50 lines, focused on one behavior
 - **Do not share state between tests** - Each test must be independent
+- **Do not clear `EventBus._handlers = {}`** - This removes ALL handlers (notification, gamification, etc.) and breaks other tests running in parallel. Instead, save handlers before test and restore after:
+  ```python
+  @pytest.fixture(autouse=True)
+  def preserve_handlers():
+      original = {k: list(v) for k, v in EventBus._handlers.items()}
+      yield
+      EventBus._handlers = original
+  ```
