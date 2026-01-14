@@ -25,13 +25,22 @@ from models.notification.models import Notification, NotificationType
 
 @pytest.fixture(autouse=True)
 def register_gamification_handlers():
-    """Register gamification event handlers for each test."""
-    # Clear existing handlers to avoid duplicates
-    EventBus._handlers = {}
-    GamificationEventHandlers.register_all_handlers()
+    """Ensure gamification event handlers are registered for each test.
+
+    Handlers are already registered at app startup via models.gamification import.
+    This fixture just ensures they stay registered and aren't affected by other tests.
+    """
+    # Save handlers state to restore after test (protect from other tests' cleanup)
+    original_handlers = {k: list(v) for k, v in EventBus._handlers.items()}
+
+    # Only register if not already registered (avoid duplicates)
+    if MatchCompletedEvent not in EventBus._handlers:
+        GamificationEventHandlers.register_all_handlers()
+
     yield
-    # Cleanup after test
-    EventBus._handlers = {}
+
+    # Restore original handlers after test
+    EventBus._handlers = original_handlers
 
 
 class TestAchievementWorkflowMatchBased:
