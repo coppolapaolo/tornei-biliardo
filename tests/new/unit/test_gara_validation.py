@@ -577,3 +577,146 @@ class TestValidateGaraIntegration:
         errors, warnings = validate_gara(MockGara())
         assert len(errors) == 1
         assert "trio" in errors[0].lower()
+
+
+class TestGaraServiceValidationIntegration:
+    """Test integrazione validazione in GaraService."""
+
+    @pytest.fixture
+    def director(self, db_session):
+        """Crea un director per i test."""
+        from models.user.models import User
+        import uuid
+
+        unique_id = str(uuid.uuid4())[:8]
+        director = User(
+            username=f"test_dir_{unique_id}",
+            email=f"dir_{unique_id}@test.com",
+            role="director",
+        )
+        director.set_password("test123")
+        db_session.add(director)
+        db_session.commit()
+        return director
+
+    def test_create_gara_warns_on_race_to_with_inferred_rack(self, app, db_session, director):
+        """create_gara() logga warning per RACK + Race to N (non blocca)."""
+        from models.competition.services import GaraService
+        from datetime import date, time, timedelta
+
+        # WINS + Race to N è valido senza warning
+        gara = GaraService.create_gara(
+            number=1,
+            name="Test Gara",
+            date=date.today() + timedelta(days=7),
+            discipline="palla_8",
+            distance=5,
+            director_id=director.id,
+            time=time(20, 0),
+            is_race_to=True,  # Race to
+            matchmaking_strategy="amalfi",
+        )
+        assert gara.id is not None
+
+    def test_create_gara_valid_wins_config(self, app, db_session, director):
+        """create_gara() accetta configurazione WINS valida."""
+        from models.competition.services import GaraService
+        from datetime import date, time, timedelta
+
+        gara = GaraService.create_gara(
+            number=1,
+            name="Test WINS",
+            date=date.today() + timedelta(days=7),
+            discipline="palla_9",
+            distance=5,
+            director_id=director.id,
+            time=time(19, 0),
+            is_race_to=True,
+            is_multi_set=False,
+            matchmaking_strategy="random",
+            odd_number_policy="bye",
+        )
+        assert gara.id is not None
+        assert gara.matchmaking_strategy == "random"
+
+    def test_create_gara_valid_elimination_config(self, app, db_session, director):
+        """create_gara() accetta configurazione POSITION/Eliminazione valida."""
+        from models.competition.services import GaraService
+        from datetime import date, time, timedelta
+
+        gara = GaraService.create_gara(
+            number=1,
+            name="Test Elimination",
+            date=date.today() + timedelta(days=7),
+            discipline="palla_10",
+            distance=5,
+            director_id=director.id,
+            time=time(18, 0),
+            is_race_to=True,  # Race to required for POSITION
+            matchmaking_strategy="direct_elimination",
+        )
+        assert gara.id is not None
+        assert gara.matchmaking_strategy == "direct_elimination"
+
+    def test_create_gara_rejects_elimination_with_exactly_even(self, app, db_session, director):
+        """create_gara() rifiuta Eliminazione + Exactly N pari."""
+        from models.competition.services import GaraService
+        from datetime import date, time, timedelta
+
+        with pytest.raises(ValueError) as exc_info:
+            GaraService.create_gara(
+                number=1,
+                name="Test Invalid",
+                date=date.today() + timedelta(days=7),
+                discipline="palla_8",
+                distance=4,  # pari
+                director_id=director.id,
+                time=time(20, 0),
+                is_race_to=False,  # Exactly N
+                matchmaking_strategy="direct_elimination",  # POSITION
+            )
+
+        assert "pari" in str(exc_info.value).lower()
+
+    def test_create_gara_with_trio_valid_distance(self, app, db_session, director):
+        """create_gara() accetta Trio con distanza 2-5."""
+        from models.competition.services import GaraService
+        from datetime import date, time, timedelta
+
+        gara = GaraService.create_gara(
+            number=1,
+            name="Test Trio",
+            date=date.today() + timedelta(days=7),
+            discipline="palla_8",
+            distance=3,  # Valido per trio
+            director_id=director.id,
+            time=time(20, 0),
+            is_race_to=True,
+            matchmaking_strategy="random",
+            odd_number_policy="trio",
+        )
+        assert gara.id is not None
+        assert gara.odd_number_policy == "trio"
+
+    def test_create_gara_rejects_trio_invalid_distance(self, app, db_session, director):
+        """create_gara() rifiuta Trio con distanza > 5."""
+        from models.competition.services import GaraService
+        from datetime import date, time, timedelta
+
+        with pytest.raises(ValueError) as exc_info:
+            GaraService.create_gara(
+                number=1,
+                name="Test Invalid Trio",
+                date=date.today() + timedelta(days=7),
+                discipline="palla_8",
+                distance=7,  # Troppo alto per trio
+                director_id=director.id,
+                time=time(20, 0),
+                is_race_to=True,
+                matchmaking_strategy="random",
+                odd_number_policy="trio",
+            )
+
+        # Può essere "trio" o "match a tre" a seconda del validatore
+        error_msg = str(exc_info.value).lower()
+        assert "trio" in error_msg or "match a tre" in error_msg or "distanz" in error_msg

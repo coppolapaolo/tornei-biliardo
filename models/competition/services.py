@@ -102,10 +102,26 @@ class GaraService:
                 if hasattr(gara, key):
                     setattr(gara, key, value)
 
-        # Valida la configurazione
+        # Valida la configurazione matchmaking
         errors = gara.validate_strategy_configuration()
         if errors:
             raise ValueError(f"Configurazione non valida: {', '.join(errors)}")
+
+        # Valida la configurazione classificazione (RACK/WINS/POSITION)
+        from models.competition.validators import validate_gara
+
+        classification_errors, classification_warnings = validate_gara(gara)
+        if classification_errors:
+            raise ValueError(
+                f"Configurazione classificazione non valida: {', '.join(classification_errors)}"
+            )
+        # Warnings vengono loggati ma non bloccano
+        if classification_warnings:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            for warning in classification_warnings:
+                logger.warning(f"Gara config warning: {warning}")
 
         db.session.add(gara)
         return gara
@@ -151,6 +167,22 @@ class GaraService:
             from datetime import datetime
 
             gara.time = datetime.strptime(kwargs["time_str"], "%H:%M").time()
+
+        # Valida la configurazione classificazione dopo le modifiche
+        from models.competition.validators import validate_gara
+
+        classification_errors, classification_warnings = validate_gara(gara)
+        if classification_errors:
+            raise ValueError(
+                f"Configurazione classificazione non valida: {', '.join(classification_errors)}"
+            )
+        # Warnings vengono loggati ma non bloccano
+        if classification_warnings:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            for warning in classification_warnings:
+                logger.warning(f"Gara config warning (update): {warning}")
 
         return gara
 
