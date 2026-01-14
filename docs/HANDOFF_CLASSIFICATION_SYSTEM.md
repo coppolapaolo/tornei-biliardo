@@ -103,13 +103,26 @@ errors, warnings = validate_gara(gara, classification_system=ClassificationSyste
 
 **Test**: 56 test in `tests/new/unit/test_gara_validation.py`
 
+### Integrazione GaraService (completato 2026-01-14)
+
+La validazione è integrata in `GaraService.create_gara()` e `update_gara()`:
+- **Errori** → bloccano creazione/modifica (raise ValueError)
+- **Warning** → loggati ma non bloccano
+
+```python
+# In services.py
+from models.competition.validators import validate_gara
+
+classification_errors, classification_warnings = validate_gara(gara)
+if classification_errors:
+    raise ValueError(f"Configurazione classificazione non valida: {', '.join(classification_errors)}")
+```
+
+**Test integrazione**: 6 test aggiuntivi (totale 62 test)
+
 ---
 
 ## Cosa NON È Stato Fatto
-
-### Integrazione GaraService
-- Chiamare `validate_gara()` in `GaraService.create_gara()` e `update_gara()`
-- Decidere se bloccare o solo warning per configurazioni problematiche
 
 ### UI Wizard
 - Aggiornare wizard campionato/gara per nascondere opzioni incompatibili
@@ -145,11 +158,11 @@ errors, warnings = validate_gara(gara, classification_system=ClassificationSyste
 
 ## Come Riprendere il Lavoro
 
-### Per integrare validazione in GaraService:
+### ~~Per integrare validazione in GaraService~~ ✅ COMPLETATO
 1. ~~Leggere `docs/CLASSIFICATION_SYSTEM.md` sezione 9~~ ✅
 2. ~~Creare `models/competition/validators.py`~~ ✅
-3. **TODO**: Integrare in `GaraService.create_gara()` e `update_gara()`
-4. ~~Aggiungere test~~ ✅ (56 test)
+3. ~~Integrare in `GaraService.create_gara()` e `update_gara()`~~ ✅
+4. ~~Aggiungere test~~ ✅ (62 test totali)
 
 ### Per implementare opzione NO:
 1. Leggere `docs/CLASSIFICATION_SYSTEM.md` sezione 3.5
