@@ -18,7 +18,7 @@ from models.status_enum import (
     MatchStatus,
     Discipline,
 )
-from models.classification.models import RoundClassification
+from models.classification.models import RoundClassification, GaraClassification
 from models.classification.services import RoundClassificationService
 from models.competition.spareggio_service import SpareggioService
 
@@ -186,6 +186,14 @@ def gara_detail(gara_id):
     current_round_classification = None
     latest_round_with_classification = None
 
+    # Check if SSR has been applied (positions adjusted for tiebreakers)
+    # If so, skip recalculation to preserve SSR-corrected positions
+    # Just check if any SSR score exists, regardless of gara status
+    ssr_has_been_applied = GaraClassification.query.filter(
+        GaraClassification.gara_id == gara_id,
+        GaraClassification.spot_shot_wins.isnot(None)
+    ).first() is not None
+
     if gara.current_round > 0:
         # For Random strategy: show overall classification if ANY matches are completed
         # For other strategies: show classification only for completed rounds
@@ -201,9 +209,13 @@ def gara_detail(gara_id):
                 max_round = db.session.query(func.max(Match.round_number)).filter(
                     Match.gara_id == gara_id
                 ).scalar() or gara.current_round
-                RoundClassification.calculate_classification_after_round(
-                    gara_id, max_round
-                )
+
+                # Skip recalculation if SSR has been applied to preserve corrected positions
+                if not ssr_has_been_applied:
+                    RoundClassification.calculate_classification_after_round(
+                        gara_id, max_round
+                    )
+
                 classification = (
                     RoundClassification.query.filter_by(
                         gara_id=gara_id, round_number=max_round
@@ -232,14 +244,16 @@ def gara_detail(gara_id):
             # Cerca la classificazione del turno completato più recente
             for round_num in range(gara.current_round, 0, -1):
                 if is_round_completed(round_num):
-                    # SEMPRE ricalcola la classificazione per garantire dati
-                    # aggiornati. Necessario perché i risultati potrebbero essere
-                    # stati modificati dopo il calcolo iniziale
-                    RoundClassification.calculate_classification_after_round(
-                        gara_id, round_num
-                    )
+                    # Skip recalculation if SSR has been applied to preserve corrected positions
+                    if not ssr_has_been_applied:
+                        # SEMPRE ricalcola la classificazione per garantire dati
+                        # aggiornati. Necessario perché i risultati potrebbero essere
+                        # stati modificati dopo il calcolo iniziale
+                        RoundClassification.calculate_classification_after_round(
+                            gara_id, round_num
+                        )
 
-                    # Carica la classificazione appena ricalcolata
+                    # Carica la classificazione
                     classification = (
                         RoundClassification.query.filter_by(
                             gara_id=gara_id, round_number=round_num
@@ -312,9 +326,9 @@ def gara_detail(gara_id):
         # Get all SSR groups (resolved and unresolved)
         ssr_groups = SpareggioService.get_all_ssr_groups(gara_id)
 
-        # Check if there's any SSR data to display
+        # Check if there's any SSR data to display (0 is a valid score)
         has_ssr_data = any(
-            any(p['current_ssr_score'] > 0 for p in group['players'])
+            any(p['current_ssr_score'] is not None for p in group['players'])
             for group in ssr_groups
         )
 
@@ -327,11 +341,11 @@ def gara_detail(gara_id):
             GaraStatus.AWAITING_SSR.value
         ]
 
-    # Build SSR scores map for classification display
+    # Build SSR scores map for classification display (0 is a valid score)
     ssr_scores_map = {}
     for group in ssr_groups:
         for player in group['players']:
-            if player['current_ssr_score'] > 0:
+            if player['current_ssr_score'] is not None:
                 ssr_scores_map[player['user_id']] = player['current_ssr_score']
 
     return render_template(

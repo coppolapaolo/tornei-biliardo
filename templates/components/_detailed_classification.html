@@ -71,10 +71,10 @@
                                         {% endif %}
                                     {% endif %}
                                 </td>
-                                {% if ssr_scores_map %}
+                                {% if ssr_scores_map is defined and ssr_scores_map %}
                                 <td class="text-center">
                                     {% set ssr_score = ssr_scores_map.get(player_class.user_id) %}
-                                    {% if ssr_score %}
+                                    {% if ssr_score is not none %}
                                         <span class="badge bg-warning text-dark" title="{{ _('Punteggio Spot Shot Rally') }}">{{ ssr_score }}</span>
                                     {% else %}
                                         <span class="text-muted">-</span>

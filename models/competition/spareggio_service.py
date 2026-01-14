@@ -87,7 +87,7 @@ class SpareggioService:
                         )
                         .all()
                     )
-                    ssr_scores = {gc.user_id: gc.spot_shot_wins or 0 for gc in existing_gara_class}
+                    ssr_scores = {gc.user_id: gc.spot_shot_wins for gc in existing_gara_class}
 
                     # Build player list with SSR scores
                     players = []
@@ -96,13 +96,16 @@ class SpareggioService:
                         players.append({
                             'user_id': c.user_id,
                             'username': user.username if user else f"User {c.user_id}",
-                            'current_ssr_score': ssr_scores.get(c.user_id, 0)
+                            'current_ssr_score': ssr_scores.get(c.user_id)  # None if not entered
                         })
 
                     # Check if this tiebreaker is already resolved
-                    # (all SSR scores must be different - 0 is a valid score)
+                    # All players must have a score AND all scores must be different
+                    # 0 is a valid score, None means not entered
                     scores = [p['current_ssr_score'] for p in players]
-                    is_resolved = len(scores) == len(set(scores))
+                    all_scores_entered = all(s is not None for s in scores)
+                    all_scores_different = len(scores) == len(set(scores))
+                    is_resolved = all_scores_entered and all_scores_different
 
                     if not is_resolved:
                         tiebreaker_groups.append({
@@ -193,7 +196,7 @@ class SpareggioService:
                     )
                     .all()
                 )
-                ssr_scores = {gc.user_id: gc.spot_shot_wins or 0 for gc in existing_gara_class}
+                ssr_scores = {gc.user_id: gc.spot_shot_wins for gc in existing_gara_class}
 
                 # Build player list with SSR scores
                 players = []
@@ -202,7 +205,7 @@ class SpareggioService:
                     players.append({
                         'user_id': c.user_id,
                         'username': user.username if user else f"User {c.user_id}",
-                        'current_ssr_score': ssr_scores.get(c.user_id, 0)
+                        'current_ssr_score': ssr_scores.get(c.user_id)  # None if not entered
                     })
 
                 all_groups.append({
@@ -457,12 +460,18 @@ class SpareggioService:
 
         final_round = gara.current_round or gara.rounds_count
 
+        # Expire all to ensure we get fresh data from DB
+        db.session.expire_all()
+
         # Get all round classifications
         round_classifications = (
             db.session.query(RoundClassification)
             .filter_by(gara_id=gara_id, round_number=final_round)
             .all()
         )
+
+        # Build a map for quick lookup
+        round_class_map = {rc.user_id: rc for rc in round_classifications}
 
         # Get existing gara classifications (with SSR scores)
         existing_gara_class = {
@@ -474,18 +483,20 @@ class SpareggioService:
         player_data = []
         for rc in round_classifications:
             gc = existing_gara_class.get(rc.user_id)
-            ssr_score = gc.spot_shot_wins if gc else 0
+            # SSR score: None means not entered, treat as -1 for sorting (lowest)
+            ssr_score = gc.spot_shot_wins if gc and gc.spot_shot_wins is not None else -1
             player_data.append({
                 'user_id': rc.user_id,
                 'rack_totali': rc.rack_difference,
-                'ssr_score': ssr_score or 0,
+                'ssr_score': ssr_score,
                 'matches_won': rc.matches_won,
             })
 
         # Sort by rack_totali DESC, then ssr_score DESC
+        # -1 (not entered) will sort last among same rack_totali
         player_data.sort(key=lambda x: (-x['rack_totali'], -x['ssr_score']))
 
-        # Update/create GaraClassification with correct positions
+        # Update/create GaraClassification and RoundClassification with correct positions
         for position, data in enumerate(player_data, 1):
             gara_class = existing_gara_class.get(data['user_id'])
 
@@ -500,5 +511,10 @@ class SpareggioService:
                 db.session.add(gara_class)
 
             gara_class.position = position
+
+            # Also update RoundClassification position so UI shows correct ordering
+            round_class = round_class_map.get(data['user_id'])
+            if round_class:
+                round_class.position = position
 
         return True, "Classifica finale aggiornata"

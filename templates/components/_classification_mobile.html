@@ -1,6 +1,7 @@
 {# templates/components/_classification_mobile.html #}
 {# Mobile-friendly classification with compact/full toggle #}
 {# Expects: classification, round_number #}
+{# Optional: ssr_scores_map (from parent context) #}
 
 {% if classification %}
 <div class="card mt-3">
@@ -32,6 +33,13 @@
             </td>
             <td><strong>{{ entry.user.username }}</strong></td>
             <td class="text-end">
+              {# Show SSR badge first (left), then rack (right) for alignment #}
+              {% if ssr_scores_map is defined and ssr_scores_map %}
+                {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
+                {% if ssr_score is not none %}
+                <span class="badge bg-warning text-dark me-1" title="SSR">{{ ssr_score }}</span>
+                {% endif %}
+              {% endif %}
               <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
             </td>
           </tr>
@@ -64,7 +72,16 @@
             {% endif %}
             <strong class="ms-2">{{ entry.user.username }}</strong>
           </div>
-          <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
+          <div class="text-end">
+            {# Show SSR badge first (left), then rack (right) for alignment #}
+            {% if ssr_scores_map is defined and ssr_scores_map %}
+              {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
+              {% if ssr_score is not none %}
+              <span class="badge bg-warning text-dark me-1" title="SSR">{{ ssr_score }}</span>
+              {% endif %}
+            {% endif %}
+            <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
+          </div>
         </div>
         <div class="small text-muted mt-1 ms-4">
           {% if entry.previous_position %}
@@ -78,7 +95,7 @@
           <span class="text-muted">=</span>
           {% endif %}
           {% else %}
-          {{ _('Pos. Prec:') }} —
+          {{ _('Pos. Prec:') }} — <span class="text-muted">=</span>
           {% endif %}
         </div>
       </div>

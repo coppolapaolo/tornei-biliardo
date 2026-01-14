@@ -70,9 +70,31 @@
 </div>
 {% endif %}
 
+{# Determine gara phase for section ordering #}
+{% set is_ssr_phase = gara.status == 'awaiting_ssr' %}
+{% set show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data) %}
+{% set is_gara_ending = (gara.get_real_status() == 'campionato_completed' and not has_unresolved_tiebreakers) or (has_ssr_data and not has_unresolved_tiebreakers) %}
+{% set has_scores = current_round_classification and (current_round_classification|selectattr('rack_difference', 'ne', 0)|list|length > 0 or current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0) %}
+
 {# Sezione Partite - adattiva #}
 <div class="row">
   <div class="col-md-8">
+    {# === MOBILE: Show Classification FIRST when gara is ending (SSR phase or completed) === #}
+    {% if (is_ssr_phase or is_gara_ending) and has_scores %}
+    <div class="d-md-none mb-3">
+      {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+      {% include "components/_classification_mobile.html" %}
+      {% endwith %}
+    </div>
+    {% endif %}
+
+    {# === MOBILE: Show SSR section when in SSR phase (after classification) === #}
+    {% if show_ssr_section %}
+    <div class="d-md-none mb-3">
+      {% include "components/_ssr_section.html" %}
+    </div>
+    {% endif %}
+
     {# === MOBILE VIEW (< 768px) === #}
     <div class="d-md-none">
       {% include "components/_match_cards_mobile.html" %}
@@ -92,14 +114,14 @@
       {% endif %}
     </div>
 
-    {# SSR (Spot Shot Rally) Section - visible when awaiting_ssr or has SSR data #}
-    {% if gara.status == 'awaiting_ssr' or (ssr_groups and has_ssr_data) %}
-    <div class="card mt-4">
+    {# SSR (Spot Shot Rally) Section - DESKTOP only here (mobile shown above) #}
+    {% if show_ssr_section %}
+    <div class="card mt-4 d-none d-md-block">
       <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
           <i class="fas fa-balance-scale"></i> {{ _('Spot Shot Rally (SSR)') }}
         </h5>
-        {% if gara.status == 'awaiting_ssr' %}
+        {% if has_unresolved_tiebreakers %}
         <span class="badge bg-dark">{{ _('In attesa di punteggi') }}</span>
         {% else %}
         <span class="badge bg-success">{{ _('Completato') }}</span>
@@ -136,11 +158,11 @@
                                class="form-control form-control-sm text-center ssr-group-input"
                                data-user-id="{{ player.user_id }}"
                                data-group-position="{{ group.position }}"
-                               value="{{ player.current_ssr_score if player.current_ssr_score else '' }}"
+                               value="{{ player.current_ssr_score if player.current_ssr_score is not none else '' }}"
                                min="0"
                                style="width: 80px; display: inline-block;">
                         {% else %}
-                          {% if player.current_ssr_score %}
+                          {% if player.current_ssr_score is not none %}
                           <span class="badge bg-warning text-dark">{{ player.current_ssr_score }}</span>
                           {% else %}
                           <span class="text-muted">-</span>
@@ -175,10 +197,8 @@
   </div>
 
   <div class="col-md-4">
-    {# Check if there are actual scores (at least one entry with rack_difference != 0 or matches_won > 0) #}
-    {% set has_scores = current_round_classification and (current_round_classification|selectattr('rack_difference', 'ne', 0)|list|length > 0 or current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0) %}
-
-    {# === MOBILE: Classification with toggle === #}
+    {# === MOBILE: Classification with toggle (only if NOT already shown at top) === #}
+    {% if not is_ssr_phase and not is_gara_ending %}
     <div class="d-md-none">
       {% if has_scores %}
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
@@ -186,6 +206,7 @@
       {% endwith %}
       {% endif %}
     </div>
+    {% endif %}
 
     {# === DESKTOP: Detailed classification === #}
     <div class="d-none d-md-block">

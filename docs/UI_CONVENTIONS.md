@@ -501,6 +501,40 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 
 ---
 
+## Ordine Dinamico Sezioni (Mobile)
+
+### Gara Detail - Ordine Sezioni per Fase
+
+Su mobile, le sezioni vengono riordinate in base alla fase della gara per mostrare prima il contenuto più rilevante:
+
+| Fase Gara | Ordine Sezioni Mobile |
+|-----------|----------------------|
+| In corso (giocando) | Partite → Classifica (sidebar) |
+| Fase SSR (spareggi) | **Classifica → SSR → Partite** |
+| Gara terminabile | **Classifica → Partite** |
+
+**Logica implementativa:**
+- `is_ssr_phase`: gara in stato `awaiting_ssr`
+- `is_gara_ending`: tutti i turni completati e nessun parimerito da risolvere, oppure SSR completato
+- Quando attiva fase finale, la Classifica diventa la sezione principale
+
+### Badge Classifica Mobile con SSR
+
+Quando sono presenti punteggi SSR, i badge sono ordinati:
+1. **SSR** (giallo, a sinistra) - solo per giocatori con punteggio
+2. **Rack** (grigio, a destra) - sempre presente, allineato
+
+```html
+<td class="text-end">
+  {% if ssr_score is not none %}
+  <span class="badge bg-warning text-dark me-1">{{ ssr_score }}</span>
+  {% endif %}
+  <span class="badge bg-secondary">{{ rack_difference }}</span>
+</td>
+```
+
+---
+
 ## Changelog Decisioni
 
 | Data | Decisione | Motivazione |
@@ -514,6 +548,8 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 | 2025-12-28 | Titoli context-aware nei componenti | "Le mie Statistiche" vs "Statistiche" in base a chi visualizza |
 | 2026-01-11 | Sistema notifiche Bootstrap (Toast/Modal) | Sostituisce `alert()` nativi per UX migliore. Toast per feedback, Modal per conferme |
 | 2026-01-11 | Migrazione completa `confirm()` → `showConfirm()` | 67 chiamate migrate in 36 file. Helper: `confirmSubmit()`, `confirmLink()`, `confirmAction()` |
+| 2026-01-14 | Ordine dinamico sezioni mobile gara | Sezioni attive mostrate in alto: Classifica → SSR → Partite quando gara in fase finale |
+| 2026-01-14 | SSR badge a sinistra di rack in classifica mobile | Per mantenere allineamento rack a destra per tutti i giocatori |
 
 ---
 
