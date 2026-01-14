@@ -170,30 +170,38 @@ class TestTableAssignmentReassign:
         assert "Nessuna modifica" in message
         assert swapped_id is None
 
-    def test_automatic_swap_when_table_occupied_same_round(
+    def test_automatic_swap_when_table_occupied_by_playing_match(
         self, db_session, gara, players
     ):
-        """Test automatic swap when new table is occupied by another match in same round."""
-        # Match 1: has table "1"
+        """Test automatic swap when new table is occupied by a PLAYING match.
+
+        Only PLAYING matches physically occupy a table. When assigning a table
+        that's occupied by a PLAYING match, the occupying match is evicted.
+        """
+        from models.status_enum import MatchStatus
+
+        # Match 1: PLAYING with table "1"
         match1 = Match(
             gara_id=gara.id,
             round_number=1,
             player1_id=players[0].id,
             player2_id=players[1].id,
             table_assignment="1",
+            status=MatchStatus.PLAYING.value,
         )
-        # Match 2: has table "2"
+        # Match 2: PLAYING with table "2"
         match2 = Match(
             gara_id=gara.id,
             round_number=1,
             player1_id=players[2].id,
             player2_id=players[3].id,
             table_assignment="2",
+            status=MatchStatus.PLAYING.value,
         )
         db_session.add_all([match1, match2])
         db_session.commit()
 
-        # Reassign match1 to table "2" (occupied by match2)
+        # Reassign match1 to table "2" (occupied by PLAYING match2)
         success, message, swapped_id = TableAssignmentService.reassign_table(
             match1.id, "2"
         )
@@ -208,11 +216,17 @@ class TestTableAssignmentReassign:
         assert match1.table_assignment == "2"
         assert match2.table_assignment == "1"
 
-    def test_automatic_swap_with_match_without_table(
+    def test_eviction_when_assigning_to_playing_match_table(
         self, db_session, gara, players
     ):
-        """Test swap when match without table is assigned to occupied table."""
-        # Match 1: no table
+        """Test eviction when assigning a table that's occupied by a PLAYING match.
+
+        When a PENDING match is assigned a table occupied by a PLAYING match,
+        the PLAYING match is evicted (loses its table).
+        """
+        from models.status_enum import MatchStatus
+
+        # Match 1: PENDING, no table
         match1 = Match(
             gara_id=gara.id,
             round_number=1,
@@ -220,18 +234,19 @@ class TestTableAssignmentReassign:
             player2_id=players[1].id,
             table_assignment=None,
         )
-        # Match 2: has table "1"
+        # Match 2: PLAYING with table "1"
         match2 = Match(
             gara_id=gara.id,
             round_number=1,
             player1_id=players[2].id,
             player2_id=players[3].id,
             table_assignment="1",
+            status=MatchStatus.PLAYING.value,
         )
         db_session.add_all([match1, match2])
         db_session.commit()
 
-        # Assign match1 to table "1" (occupied by match2)
+        # Assign match1 to table "1" (occupied by PLAYING match2)
         success, message, swapped_id = TableAssignmentService.reassign_table(
             match1.id, "1"
         )
@@ -246,15 +261,22 @@ class TestTableAssignmentReassign:
         assert match1.table_assignment == "1"
         assert match2.table_assignment is None
 
-    def test_cross_round_table_sharing_allowed(self, db_session, gara, players):
-        """Test that same table can be assigned to matches in different rounds."""
-        # Match in round 1: has table "1"
+    def test_non_playing_matches_can_share_table_assignments(
+        self, db_session, gara, players
+    ):
+        """Test that non-PLAYING matches can share table assignments.
+
+        PENDING/COMPLETED matches don't physically occupy tables, so they can
+        share table assignments for scheduling/historical purposes.
+        """
+        # Match in round 1: PENDING (scheduled for table "1")
         match_r1 = Match(
             gara_id=gara.id,
             round_number=1,
             player1_id=players[0].id,
             player2_id=players[1].id,
             table_assignment="1",
+            # status defaults to PENDING
         )
         # Match in round 2: no table yet
         match_r2 = Match(
@@ -267,20 +289,61 @@ class TestTableAssignmentReassign:
         db_session.add_all([match_r1, match_r2])
         db_session.commit()
 
-        # Assign match_r2 to table "1" (same as match_r1, but different round)
+        # Assign match_r2 to table "1" (same as match_r1, but R1 is PENDING)
         success, message, swapped_id = TableAssignmentService.reassign_table(
             match_r2.id, "1"
         )
 
         assert success is True
         assert "Tavolo assegnato" in message
-        assert swapped_id is None  # No swap because different rounds
+        assert swapped_id is None  # No eviction because match_r1 is not PLAYING
 
         # Verify both matches have table "1"
         match_r1 = db_session.get(Match, match_r1.id)
         match_r2 = db_session.get(Match, match_r2.id)
         assert match_r1.table_assignment == "1"
         assert match_r2.table_assignment == "1"
+
+    def test_playing_match_evicted_across_rounds(self, db_session, gara, players):
+        """Test that a PLAYING match is evicted even if in a different round.
+
+        A table can only host ONE match at a time physically, regardless of round.
+        """
+        from models.status_enum import MatchStatus
+
+        # Match in round 1: PLAYING on table "1"
+        match_r1 = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=players[0].id,
+            player2_id=players[1].id,
+            table_assignment="1",
+            status=MatchStatus.PLAYING.value,
+        )
+        # Match in round 2: wants table "1"
+        match_r2 = Match(
+            gara_id=gara.id,
+            round_number=2,
+            player1_id=players[2].id,
+            player2_id=players[3].id,
+            table_assignment=None,
+        )
+        db_session.add_all([match_r1, match_r2])
+        db_session.commit()
+
+        # Assign match_r2 to table "1" (occupied by PLAYING match_r1)
+        success, message, swapped_id = TableAssignmentService.reassign_table(
+            match_r2.id, "1"
+        )
+
+        assert success is True
+        assert swapped_id == match_r1.id  # PLAYING match was evicted
+
+        # Verify: match_r2 gets table, match_r1 loses it
+        match_r1 = db_session.get(Match, match_r1.id)
+        match_r2 = db_session.get(Match, match_r2.id)
+        assert match_r2.table_assignment == "1"
+        assert match_r1.table_assignment is None
 
     def test_round_locking_prevents_reassignment(self, db_session, gara, players):
         """Test that round locking prevents table reassignment."""

@@ -268,10 +268,10 @@ class TableAssignmentService:
 
         Business Rules:
         - Validates round locking before allowing reassignment
-        - If new_table is occupied by another match in same round → other match table is removed
+        - If new_table is occupied by another PLAYING match → other match loses table (eviction)
         - If new_table is free → simple assignment
         - If new_table is None → removes table assignment
-        - Cross-round table sharing is allowed (same table, different rounds)
+        - A table can only host ONE playing match at a time (physical constraint)
 
         Args:
             match_id: ID of the match to reassign
@@ -326,12 +326,13 @@ class TableAssignmentService:
         if old_table == new_table:
             return True, "Nessuna modifica necessaria", None
 
-        # Case 3: Check if new_table is occupied in SAME round
+        # Case 3: Check if new_table is occupied by ANY PLAYING match in same gara
+        # (a table can only host one playing match at a time - physical constraint)
         occupying_match = (
             Match.query.filter_by(
                 gara_id=match.gara_id,
-                round_number=match.round_number,
                 table_assignment=new_table,
+                status=MatchStatus.PLAYING.value,
             )
             .filter(Match.id != match_id)
             .first()

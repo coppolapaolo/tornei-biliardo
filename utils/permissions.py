@@ -197,7 +197,12 @@ def rack_manager_required(f):
 
 
 def trio_manager_required(f):
-    """Accesso a admin / direttore per trio."""
+    """Accesso a admin / direttore per trio.
+
+    Supports both standalone garas and campionato garas by using
+    PermissionChecker.can_manage_competition which handles both cases.
+    """
+    from models.user.permissions import PermissionChecker
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -205,12 +210,13 @@ def trio_manager_required(f):
 
         trio_id = kwargs.get("trio_id")
         trio = TrioMatch.query.get_or_404(trio_id)
-        campionato_id = trio.match.gara.campionato_id
+        gara_id = trio.match.gara_id
 
-        def _get_tid(**_ignored):
-            return campionato_id
+        # Use gara-level permission check which handles both standalone and campionato garas
+        if not PermissionChecker.can_manage_competition(current_user, gara_id):
+            abort(403)
 
-        return campionato_manager_required(_get_tid)(f)(*args, **kwargs)
+        return f(*args, **kwargs)
 
     return decorated_function
 
