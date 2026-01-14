@@ -41,13 +41,13 @@
           {% set player_display = match.player1.username ~ ' vs ' ~ (match.player2.username if not match.is_bye else _('Bye')) %}
         {% endif %}
         {% if match.table_assignment %}
-        <span class="badge bg-primary" style="cursor: pointer; min-height: 32px; line-height: 20px;"
+        <span class="badge bg-primary d-inline-flex align-items-center" style="cursor: pointer; min-height: 44px;"
               data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
               onclick='openTableAssignment({{ match.id }}, {{ match.table_assignment|tojson }}, {{ player_display|tojson }}, "")'>
           <i class="fas fa-table"></i> {{ match.table_assignment }}
         </span>
         {% else %}
-        <span class="badge bg-warning text-dark" style="cursor: pointer; min-height: 32px; line-height: 20px;"
+        <span class="badge bg-warning text-dark d-inline-flex align-items-center" style="cursor: pointer; min-height: 44px;"
               data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
               onclick='openTableAssignment({{ match.id }}, null, {{ player_display|tojson }}, "")'>
           <i class="fas fa-plus-circle"></i> {{ _('Assegna') }}
