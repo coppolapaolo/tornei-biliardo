@@ -368,6 +368,12 @@ Same logic as _gara_matches.html but renders cards.
 **Files:**
 - Create: `templates/components/_classification_mobile.html`
 
+**Note:** Il model `RoundClassification` usa questi attributi:
+- `entry.user.username` (non `entry.username`) - relazione a User
+- `entry.rack_difference` (non `entry.rack_totali`)
+- `entry.previous_position` (non `entry.posizione_precedente`)
+- `movimento` va calcolato: `entry.previous_position - entry.position`
+
 **Step 1: Create the classification template**
 
 Create `templates/components/_classification_mobile.html`:
@@ -405,9 +411,9 @@ Create `templates/components/_classification_mobile.html`:
               <span class="text-muted">{{ loop.index }}°</span>
               {% endif %}
             </td>
-            <td><strong>{{ entry.username }}</strong></td>
+            <td><strong>{{ entry.user.username }}</strong></td>
             <td class="text-end">
-              <span class="badge bg-secondary">{{ entry.rack_totali }}</span>
+              <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
             </td>
           </tr>
           {% endfor %}
@@ -437,25 +443,23 @@ Create `templates/components/_classification_mobile.html`:
             {% else %}
             <span class="text-muted">{{ loop.index }}°</span>
             {% endif %}
-            <strong class="ms-2">{{ entry.username }}</strong>
+            <strong class="ms-2">{{ entry.user.username }}</strong>
           </div>
-          <span class="badge bg-secondary">{{ entry.rack_totali }}</span>
+          <span class="badge bg-secondary">{{ entry.rack_difference }}</span>
         </div>
         <div class="small text-muted mt-1 ms-4">
-          {% if entry.posizione_precedente %}
-          {{ _('Pos. Prec:') }} {{ entry.posizione_precedente }}°
-          {% if entry.movimento > 0 %}
-          <span class="text-success"><i class="fas fa-arrow-up"></i> {{ entry.movimento }}</span>
-          {% elif entry.movimento < 0 %}
-          <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ entry.movimento|abs }}</span>
+          {% if entry.previous_position %}
+          {{ _('Pos. Prec:') }} {{ entry.previous_position }}°
+          {% set movimento = entry.previous_position - entry.position %}
+          {% if movimento > 0 %}
+          <span class="text-success"><i class="fas fa-arrow-up"></i> +{{ movimento }}</span>
+          {% elif movimento < 0 %}
+          <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ movimento }}</span>
           {% else %}
           <span class="text-muted">=</span>
           {% endif %}
           {% else %}
           {{ _('Pos. Prec:') }} —
-          {% endif %}
-          {% if entry.ssr_score %}
-          · SSR: {{ entry.ssr_score }}
           {% endif %}
         </div>
       </div>
@@ -534,13 +538,21 @@ In `templates/gara_detail.html`, find the matches section (around line 57-69) an
 
 **Step 2: Add mobile classification in sidebar**
 
-Find the classification section (around line 152-158) and add mobile version:
+Find the classification section and add mobile version.
+
+**IMPORTANTE:** La classifica deve apparire SOLO se ci sono punteggi effettivi (non tutti a zero):
 
 ```html
   <div class="col-md-4">
+    {# Check if there are actual scores #}
+    {% set has_scores = current_round_classification and (
+        current_round_classification|selectattr('rack_difference', 'ne', 0)|list|length > 0 or
+        current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0
+    ) %}
+
     {# === MOBILE: Classification appears here on mobile === #}
     <div class="d-md-none">
-      {% if current_round_classification %}
+      {% if has_scores %}
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_classification_mobile.html" %}
       {% endwith %}
@@ -549,7 +561,7 @@ Find the classification section (around line 152-158) and add mobile version:
 
     {# === DESKTOP: Original classification === #}
     <div class="d-none d-md-block">
-      {% if current_round_classification %}
+      {% if has_scores %}
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_detailed_classification.html" %}
       {% endwith %}
@@ -558,6 +570,10 @@ Find the classification section (around line 152-158) and add mobile version:
 
     {# Iscrizioni... #}
 ```
+
+**Test:** `tests/new/integration/test_classification_display.py` contiene 2 test per questa logica:
+- `test_classification_not_shown_when_zero_scores`
+- `test_classification_shown_when_at_least_one_score`
 
 **Step 3: Make collapsible sections for mobile**
 
@@ -629,28 +645,63 @@ git commit -m "fix(mobile): refinements from visual testing"
 
 ---
 
-## Task 6: Add Collapsible Sections (Optional Enhancement)
+## Task 6: Add Collapsible Sections ✅ COMPLETATO
 
 **Files:**
 - Modify: `templates/gara_detail.html`
-- Modify: `templates/components/_gara_info.html`
-- Modify: `templates/components/_gara_inscriptions.html`
 
-This task makes Info Gara and Iscritti collapsible on mobile. Can be implemented in a follow-up PR if needed.
+**Implementato:**
+- Info Gara e Iscritti sono collassabili su mobile (solo `d-md-none`)
+- Management appare PRIMA delle partite su mobile (usando Bootstrap order utilities)
+- CSS animation per icona chevron che ruota con `aria-expanded`
+
+```html
+{# CSS per animazione collapse #}
+<style>
+  .collapse-icon { transition: transform 0.2s ease; }
+  [aria-expanded="true"] .collapse-icon { transform: rotate(180deg); }
+</style>
+
+{# Sezione collassabile mobile #}
+<div class="d-md-none">
+  <div class="card mb-3">
+    <div class="card-header" data-bs-toggle="collapse" data-bs-target="#infoGaraCollapse">
+      <i class="fas fa-chevron-down collapse-icon"></i> Info Gara
+    </div>
+    <div id="infoGaraCollapse" class="collapse">
+      {% include "components/_gara_info.html" %}
+    </div>
+  </div>
+</div>
+```
+
+**Layout mobile:**
+1. Sidebar (Gestione) - `order-1`
+2. Partite (cards)
+3. Classifica (se has_scores)
+4. Info Gara [+] collassato
+5. Iscritti [+] collassato
 
 ---
 
 ## Summary
 
-| Task | Description | Files |
-|------|-------------|-------|
-| 1 | Single match card component | `_match_card.html` |
-| 2 | Cards container | `_match_cards_mobile.html` |
-| 3 | Mobile classification | `_classification_mobile.html` |
-| 4 | Integration in gara_detail | `gara_detail.html` |
-| 5 | Visual testing | - |
-| 6 | Collapsible sections (optional) | Multiple |
+| Task | Description | Files | Status |
+|------|-------------|-------|--------|
+| 1 | Single match card component | `_match_card.html` | ✅ |
+| 2 | Cards container | `_match_cards_mobile.html` | ✅ |
+| 3 | Mobile classification | `_classification_mobile.html` | ✅ |
+| 4 | Integration in gara_detail | `gara_detail.html` | ✅ |
+| 5 | Visual testing | - | ✅ |
+| 6 | Collapsible sections | `gara_detail.html` | ✅ |
 
-**Estimated commits:** 5-6
+**Commits effettuati:** 8
 
-**Testing approach:** Manual visual testing in browser with DevTools mobile view.
+**Testing:**
+- Manual visual testing in browser with DevTools mobile view
+- `tests/new/integration/test_classification_display.py` - 2 test automatici per visibilità classifica
+
+**Fix applicati durante implementazione:**
+- Attributi model corretti (`entry.user.username`, `entry.rack_difference`, `entry.previous_position`)
+- Classifica visibile solo con punteggi effettivi (`has_scores` condition)
+- Touch target 44px per badge tavolo
