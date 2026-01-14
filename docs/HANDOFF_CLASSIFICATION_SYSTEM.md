@@ -120,6 +120,26 @@ if classification_errors:
 
 **Test integrazione**: 6 test aggiuntivi (totale 62 test)
 
+### Model Updates (completato 2026-01-14)
+
+Aggiunti campi per esplicitare il sistema di classificazione:
+
+```python
+# models/competition/models.py
+class Gara:
+    classification_system = db.Column(db.String(10), default="WINS")  # RACK, WINS, POSITION
+
+# models/campionato/models.py
+class Campionato:
+    default_classification_system = db.Column(db.String(10), default="WINS")
+```
+
+**Migrazione**: `migrations/add_classification_system_field.py`
+- SQLite: Eseguita automaticamente
+- PostgreSQL: Da eseguire in produzione
+
+**Test**: 3 test aggiuntivi (totale 65 test validazione)
+
 ---
 
 ## Cosa NON È Stato Fatto
@@ -136,10 +156,10 @@ if classification_errors:
 - Implementare logica che mette in lista attesa chi rende dispari
 - Gestire promozione automatica quando arriva altro giocatore
 
-### Model Updates
-- Aggiungere campo `classification_system` a Gara/Campionato se non esiste
-- Aggiungere campo `odd_handling` con nuove opzioni
-- Aggiungere configurazione spareggi
+### ~~Model Updates~~ ✅ COMPLETATO
+- ~~Aggiungere campo `classification_system` a Gara/Campionato~~ ✅
+- Aggiungere campo `odd_handling` con nuove opzioni (opzionale, per opzione NO)
+- Aggiungere configurazione spareggi (già esistente: tiebreaker_*)
 
 ---
 
