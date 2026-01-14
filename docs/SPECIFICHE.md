@@ -28,9 +28,15 @@ I **player** si iscrivono/disiscrivono alle **gare**, quando le iscrizioni sono 
 Una **gara** si svolge in una **sala biliardi** con una data e ora di inizio. 
 La **gara** ha un numero minimo e massimo di iscritti (opzionali) e una quota di iscrizione in euro.
 Una **gara** con un masssimo di iscritti ha anche una **lista di attesa**. I giocatori che si iscrivono alla **gara** dopo che il massimo numero è stato raggiunto vengono messi in coda. Se uno degli iscritti si disiscrive, viene iscritto il primo della lista d'attesa e gli viene inviata una notifica. 
-Una gara ha una **strategia di abbinamento** tra turni, una policy per definire l'abbinamento del primo turno (ad esempio casuale oppure sulla base della classifica) e una policy per la gestione del numero dispari di giocatori (con X o con trii). Tutti questi valori hanno un default che dipende dal campionato a cui appartiene la gara.
+Una gara ha una **strategia di abbinamento** tra turni, una policy per definire l'abbinamento del primo turno (ad esempio casuale oppure sulla base della classifica) e una policy per la gestione del numero dispari di giocatori (NO, Bye, Bye+Challenge, Bye+N rack, o Trio). Tutti questi valori hanno un default che dipende dal campionato a cui appartiene la gara.
+
+Una gara ha un **sistema di classifica** che può essere RACK (rack totali vinti), WINS (match vinti + differenza rack) o POSITION (punti per posizione nel tabellone). Il sistema di classifica determina i vincoli sulle altre opzioni (distanza, multi-set, gestione dispari). Vedi [CLASSIFICATION_SYSTEM.md](CLASSIFICATION_SYSTEM.md) per i dettagli completi.
 Una gara ha una **classifica** finale con un eventuale meccanismo per definire gli spareggi. Ad esempio una gara potrebbe definire gli spareggi solo per le prime tre posizioni con uno "_spot shot rally_": se nelle prime tre posizioni ci sono 2 o più giocatori pari merito, allora si affrontano in una **challenge** di tipo spot shot. Un altro tipo di spareggio potrebbe essere un match con un solo rack. 
-Ua **gara** ha una **policy per il forfait** il cui valore di default è definito dal campionato. La policy definisce come trattare un giocatore che ha dichiarato forfait negli abbinamenti e nei match successivi. La policy può essere _exclude_ e in questo caso il giocatore viene eliminato dagli abbinamenti (ma non dalla classifica), oppure _forfait_ e quindi il giocatore rimane negli abbinamenti e fa vincere per forfait i giocatori che capitano con lui.
+Una **gara** ha una **policy per il forfait** il cui valore di default è definito dal campionato. La policy definisce come trattare un giocatore che ha dichiarato forfait negli abbinamenti e nei match successivi:
+- **EXCLUDE**: il giocatore viene eliminato dagli abbinamenti futuri (ma resta in classifica con i punti accumulati). Se questo cambia la parità dei giocatori, si applica la gestione dispari configurata.
+- **FORFEIT**: il giocatore rimane negli abbinamenti e fa vincere per forfait i giocatori che capitano con lui (con rack pieni fino alla distanza).
+
+Nel match in cui avviene il forfait, l'avversario vince tutti i rack rimanenti fino alla distanza. Nel trio, gli altri due giocatori vincono i rack rimanenti.
 
 ### Turno
 
@@ -58,17 +64,25 @@ Ad esempio la strategia di _eliminazione diretta_ seleziona casualmente il numer
 La strategia di abbinamento _amalfi_ con classifiche basate su (match vinti, differenza rack vinti-persi) nel caso in cui i giocatori siano dispari abbina un giocatore alla X assegnando il match vinto, ma con zero differenza punti. In questo modo chi ottiene la X con l'abbinamento ottiene in classifica un posizionamento migliore di tuttii perdenti e peggiore di tutti i vincenti. 
 Una variante, sempre per _amalfi_ consiste nel gestire la X con una challenge che possa dare un punteggio da zero alla massima differenza rack raggiungibile in quella gara. In questo modo il giocatore abbinato con la X, invece di stare fermo il turno, gioca la challenge e in classifica ottiene il match vinto e un differenza rack pari al punteggio nella challenge. 
 
-Se la **strategia di abbinamento _casuale_** è abbinata a classifiche basate solo sulla differenza rack, allora in caso di numero dispari di giocatori è possible evitare la X e gesitre il numero dispari aggiungendo alle coppie di giocatori un trio. 
-I giocatori nel trio giocano uno o più mini gironi all'italiana (round robin) in cui tutti giocano con gli altri un solo rack. Il punteggi che ottengono alla fine del trio è pari a 1+numero di rack vinti. Questo abbinamento à possibile solo per le distanze da 3 a 7 con il seguente schema:
-| Distanza | mini gironi | rack giocati da ogni giocatore | rack totali | punteggio |
+Se il numero di giocatori è dispari, si può gestire con diverse opzioni:
+- **NO**: i giocatori che rendono dispari vanno in lista d'attesa fino a quando non si iscrive un altro giocatore
+- **Bye**: un giocatore salta il turno (solo per sistema WINS: ottiene 1 vittoria, 0 diff rack)
+- **Bye+Challenge**: un giocatore esegue una challenge che determina il suo punteggio
+- **Bye+N rack**: un giocatore ottiene automaticamente N rack (solo per sistema RACK)
+- **Trio**: tre giocatori giocano insieme mini gironi
+
+Il **trio** è possibile solo per le distanze da 2 a 5. I giocatori nel trio giocano uno o più mini gironi all'italiana (round robin) in cui tutti giocano con gli altri un solo rack:
+
+| Distanza | mini gironi | rack giocati da ogni giocatore | rack totali | punteggio (RACK) |
 | --- | --- | ---| ---| --- |
+| 2 | 1 | 2 | 3 | rack vinti |
 | 3 | 1 | 2 | 3 | 1 + rack vinti |
 | 4 | 2 | 4 | 6 | rack vinti |
 | 5 | 2 | 4 | 6 | 1 + rack vinti |
-| 6 | 3 | 6 | 9 | rack vinti |
-| 7 | 3 | 6 | 9 | 1 + rack vinti |
 
-Per la distanza oltre al 7 i rack totali da giocare diventano troppi rispetto a quelli che giocano le coppie e quindi il trio allungherebbe troppo i tempi della gara. Per questo motivo la app limita la possibilità di scegliere questa opzione solo fino a distanza 7.
+Per il sistema WINS, nel trio vince chi ha il punteggio più alto (1 vittoria), gli altri ottengono 0 vittorie. Se c'è pareggio, tutti ottengono 0 vittorie. La differenza rack è sempre calcolata dai risultati effettivi.
+
+Per distanze superiori a 5, i rack totali da giocare diventano troppi rispetto a quelli che giocano le coppie e quindi il trio allungherebbe troppo i tempi della gara.
 ### Gare amalfi
 
 Una gara **amalfi** è una gara in cui non c'è eliminazione e tutti i giocatori giocano lo stesso numero di turni.
@@ -81,7 +95,16 @@ Amalfi abbina ad ogni turno i giocatori partendo dalla classifica precedente e s
 Un **match** è una parte di una gara. È formato da uno o più **set**.
 Il **match** ha una regola di inizio che può essere "primo giocatore" oppure "acchitto". Si gioca con "break continuo" o "break alternato". Entrambi questi valori hanno un default che dipende da quello che è impostato nella gara a cui appartiene il match. 
 Il **match** ha una distanza (numero di **set** necessari per vincere un match). Di solito il set è uno solo e quindi si definisce la distanza come numero di rack necessari per vincere, ma possono essere anche più set e in questo caso vince il match il giocatore che vince per primo il numero di set prefissato (la distanza del match).  La distanza di default viene definito dalla gara a cui appartiene il match.
-La distanza del **set** è il numero di **rack** che devono essere vinti per aggiudicarsi il set. La distanza può essere "al meglio di" oppure "esatto numero". Nel primo caso vince il giocatore che per primo vince un numero di triangoli (rack) pari alla distanza del set. Nel secondo caso, possibile solo se la distanza è dispari, si giocano un numero di rack pari alla distanza e si aggiudica il set il giocatore che ha vinto più rack. Il valore di default per la distanza dei set sia il fatto che siano o meno "al meglio di" viene dalla gara a cui appartiene il match.
+La distanza del **set** è il numero di **rack** che devono essere vinti per aggiudicarsi il set. La distanza può essere:
+- **"Race to N"** (al meglio di): vince il giocatore che per primo vince N rack. Produce sempre un vincitore.
+- **"Exactly N"** (esatto numero): si giocano esattamente N rack, vince chi ne ha vinti di più. Se N è pari, sono possibili pareggi (gestiti con 0 vittorie e 0 diff rack per entrambi nel sistema WINS).
+
+Il tipo di distanza ha implicazioni sul sistema di classifica:
+- Sistema RACK: preferisce "Exactly N" (tutti giocano lo stesso numero di rack). "Race to N" è permesso con warning.
+- Sistema WINS: preferisce "Race to N" o "Exactly N dispari" (serve un vincitore). "Exactly N pari" ammette pareggi.
+- Sistema POSITION: richiede "Race to N" o "Exactly N dispari" (serve sempre un vincitore).
+
+Il valore di default per la distanza dei set viene dalla gara a cui appartiene il match.
 Di solito la disciplina dei rack che compongono un set è la stessa, ma una variante prevede che la distanza sia da coprire con più discipline diverse. Ad esempio vince chi arriva prima a 7, ma i primi 5 rack sono a palla 8 e gli altri a palla 9.
 Un'altra variante, che si accompagna al break continuo per il set (il giocatore che vince il rack è lo stesso che apre il successivo), prevede che chi spacca decide la disciplina tra un predeterminato insieme di discipline possibili (ad esempio un match al 5, break continuo, scelta tra palla 8 o palla 9).
 
@@ -106,6 +129,15 @@ Un **rack** è relativo ad una disciplina come, ad esempio, "palla 8", "palla 9"
 ### Classifica
 
 Una **classifica** può essere collegata ad un turno, una **gara** o ad un **campionato**.
+
+Esistono tre sistemi di classifica:
+- **RACK**: ordina per rack totali vinti (decrescente), poi spareggio
+- **WINS**: ordina per match vinti (decrescente), poi differenza rack (decrescente), poi spareggio
+- **POSITION**: assegna punti per posizione nel tabellone (solo per gare a eliminazione)
+
+Tutte le gare di un campionato devono usare lo stesso sistema di classifica. La classifica del campionato aggrega sommando le classifiche delle singole gare.
+
+Per i dettagli completi sul sistema di classificazione, vincoli e combinazioni valide, vedi [CLASSIFICATION_SYSTEM.md](CLASSIFICATION_SYSTEM.md).
 
 ### Playoff
 
