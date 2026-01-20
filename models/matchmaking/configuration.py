@@ -338,6 +338,10 @@ class StrategyConfiguration:
 
 
 # Strategy constraints definition
+# compatible_classification_systems: which campionato classification systems work with this strategy
+#   - WINS: ranking by match wins, then rack difference
+#   - RACK: ranking by total racks won
+#   - POSITION: ranking by bracket position (elimination formats only)
 STRATEGY_CONSTRAINTS = {
     MatchmakingStrategy.ROUND_ROBIN: {
         "first_round_policies": ["random"],
@@ -346,6 +350,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": False,
         "anti_rematch_required": False,
         "description": "Girone all'italiana: tutti contro tutti",
+        "compatible_classification_systems": ["WINS", "RACK"],
     },
     MatchmakingStrategy.DIRECT_ELIMINATION: {
         "first_round_policies": ["random", "rating", "classification"],
@@ -354,6 +359,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": False,
         "anti_rematch_required": False,
         "description": "Eliminazione diretta: chi perde è eliminato",
+        "compatible_classification_systems": ["POSITION"],
     },
     MatchmakingStrategy.DOUBLE_KNOCKOUT: {
         "first_round_policies": ["random", "rating", "classification"],
@@ -362,6 +368,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": False,
         "anti_rematch_required": False,
         "description": "Doppia eliminazione: due sconfitte per essere eliminati",
+        "compatible_classification_systems": ["POSITION"],
     },
     MatchmakingStrategy.AMALFI: {
         "first_round_policies": ["random", "rating", "classification"],
@@ -370,6 +377,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": True,
         "anti_rematch_required": True,
         "description": "Sistema Amalfi: abbinamenti dinamici con anti-reincontro",
+        "compatible_classification_systems": ["WINS", "RACK"],
     },
     MatchmakingStrategy.RANDOM: {
         "first_round_policies": ["random"],
@@ -378,8 +386,53 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": True,
         "anti_rematch_required": False,
         "description": "Abbinamenti casuali con anti-reincontro",
+        "compatible_classification_systems": ["WINS", "RACK"],
     },
 }
+
+
+def get_strategies_for_classification_system(
+    classification_system: str,
+) -> List[str]:
+    """Derive list of compatible matchmaking strategies for a classification system.
+
+    Inverts the STRATEGY_CONSTRAINTS mapping to get strategies by classification.
+    This is derived dynamically to maintain single source of truth.
+
+    Args:
+        classification_system: One of 'WINS', 'RACK', 'POSITION'
+
+    Returns:
+        List of strategy values (e.g., ['amalfi', 'random']) compatible
+        with this classification system
+    """
+    compatible = []
+    for strategy, constraints in STRATEGY_CONSTRAINTS.items():
+        if classification_system in constraints.get(
+            "compatible_classification_systems", []
+        ):
+            compatible.append(strategy.value)
+    return compatible
+
+
+def get_classification_compatibility_map() -> Dict[str, List[str]]:
+    """Build complete mapping of classification systems to compatible strategies.
+
+    Derives the inverse map from STRATEGY_CONSTRAINTS for use in UI components.
+    Called once per request, result can be passed to templates.
+
+    Returns:
+        Dict mapping classification system names to lists of strategy values.
+        Example: {'WINS': ['amalfi', 'random'], 'POSITION': ['direct_elimination']}
+    """
+    all_systems = set()
+    for constraints in STRATEGY_CONSTRAINTS.values():
+        all_systems.update(constraints.get("compatible_classification_systems", []))
+
+    return {
+        system: get_strategies_for_classification_system(system)
+        for system in sorted(all_systems)
+    }
 
 
 def calculate_rounds_for_strategy(

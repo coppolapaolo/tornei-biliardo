@@ -19,7 +19,11 @@ from models import (
     Campionato,
 )
 from models.location.models import BilliardHall
-from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
+from models.matchmaking.configuration import (
+    MatchmakingStrategy,
+    OddNumberPolicy,
+    get_classification_compatibility_map,
+)
 from utils import (
     campionato_manager_required,
     admin_required,
@@ -67,6 +71,7 @@ def wizard_start():
             (MatchmakingStrategy.AMALFI.value, "Amalfi"),
             (MatchmakingStrategy.RANDOM.value, "Random"),
         ],
+        classification_compatibility=get_classification_compatibility_map(),
     )
 
 

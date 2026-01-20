@@ -89,7 +89,7 @@
                             <label for="campionato_type" class="form-label">{{ _("Strategia Abbinamento") }} *</label>
                             <select class="form-select form-select-lg" id="campionato_type" name="campionato_type" required>
                                 {% for value, label in matchmaking_strategies %}
-                                <option value="{{ value }}" data-systems="{{ matchmaking_systems.get(value, 'WINS,RACK')|default('WINS,RACK') }}">{{ label }}</option>
+                                <option value="{{ value }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
                             <div class="mt-2">
@@ -209,12 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const descAmalfi = document.getElementById('type-description-amalfi');
     const descRandom = document.getElementById('type-description-random');
 
-    // Compatibility matrix: which matchmaking strategies are valid for each classification system
-    const validMatchmaking = {
-        'WINS': ['amalfi', 'random'],
-        'RACK': ['amalfi', 'random'],
-        'POSITION': ['elimination', 'double_ko']  // Not implemented yet
-    };
+    // Compatibility matrix: derived from backend (single source of truth)
+    const validMatchmaking = {{ classification_compatibility|tojson }};
 
     function updateClassificationDescription() {
         const system = classificationSelect.value;
