@@ -59,20 +59,27 @@
                 <small class="text-muted">{{ _("Abilita sfide individuali tra giocatori durante il campionato") }}</small>
             </div>
 
-            <!-- Sistema di Punteggio -->
+            <!-- Sistema di Classifica -->
             <div class="mb-4">
-                <label for="scoring_policy" class="form-label">{{ _("Sistema di Punteggio") }}</label>
-                <select class="form-select" id="scoring_policy" name="scoring_policy">
-                    <option value="classic" {% if campionato.scoring_policy == "classic" %}selected{% endif %}>
-                        {{ _("Classico (Vittorie > Differenza rack > Ordine precedente)") }}
+                <label for="default_classification_system" class="form-label">{{ _("Sistema di Classifica") }}</label>
+                <select class="form-select" id="default_classification_system" name="default_classification_system">
+                    <option value="WINS" {% if campionato.default_classification_system == "WINS" %}selected{% endif %}>
+                        {{ _("Vittorie (match vinti → diff rack)") }}
                     </option>
-                    <option value="fargo" {% if campionato.scoring_policy == "fargo" %}selected{% endif %}>
-                        {{ _("Fargo Rating (Rating > Vittorie > Differenza rack)") }}
-                    </option>
-                    <option value="elo" {% if campionato.scoring_policy == "elo" %}selected{% endif %}>
-                        {{ _("Elo Rating (Rating > Vittorie > Differenza rack)") }}
+                    <option value="RACK" {% if campionato.default_classification_system == "RACK" %}selected{% endif %}>
+                        {{ _("Rack Totali (rack accumulati)") }}
                     </option>
                 </select>
+                <div class="mt-2">
+                    <div id="class-description-WINS" class="alert alert-info py-2 mb-0 small {% if campionato.default_classification_system != 'WINS' %}d-none{% endif %}">
+                        <i class="fas fa-trophy"></i>
+                        {{ _("Ordina per: Vittorie → Differenza rack → Ordine precedente") }}
+                    </div>
+                    <div id="class-description-RACK" class="alert alert-info py-2 mb-0 small {% if campionato.default_classification_system != 'RACK' %}d-none{% endif %}">
+                        <i class="fas fa-list-ol"></i>
+                        {{ _("Ordina per: Rack totali accumulati") }}
+                    </div>
+                </div>
             </div>
 
             <hr class="my-4">
@@ -205,6 +212,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     typeSelect.addEventListener('change', updateTypeDescription);
+
+    // Toggle classification system descriptions
+    const classificationSelect = document.getElementById('default_classification_system');
+    const classDescWINS = document.getElementById('class-description-WINS');
+    const classDescRACK = document.getElementById('class-description-RACK');
+
+    function updateClassificationDescription() {
+        const system = classificationSelect.value;
+        classDescWINS.classList.toggle('d-none', system !== 'WINS');
+        classDescRACK.classList.toggle('d-none', system !== 'RACK');
+    }
+
+    classificationSelect.addEventListener('change', updateClassificationDescription);
 
     // Toggle odd policy descriptions
     const policySelect = document.getElementById('default_odd_policy');

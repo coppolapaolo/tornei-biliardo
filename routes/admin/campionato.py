@@ -24,6 +24,7 @@ from models.matchmaking.configuration import (
     OddNumberPolicy,
     get_classification_compatibility_map,
 )
+from models.competition.constants import DEFAULT_DISTANCE
 from utils import (
     campionato_manager_required,
     admin_required,
@@ -431,6 +432,7 @@ def campionato_detail(campionato_id):
         general_classification=general_classification,
         last_completed_gara_number=last_completed_gara_number,
         verified_venues=verified_venues,
+        default_distance=DEFAULT_DISTANCE,
     )
 
 
@@ -478,7 +480,9 @@ def edit_campionato(campionato_id):
                 campionato_type=request.form.get("campionato_type", "amalfi"),
                 planned_gare_count=planned_gare_count,
                 challenge_mode="challenge_mode" in request.form,
-                scoring_policy=request.form.get("scoring_policy", "classic"),
+                default_classification_system=request.form.get(
+                    "default_classification_system", "WINS"
+                ),
                 # Step 2 fields - Default gare settings
                 default_venue_id=default_venue_id,
                 default_entry_fee=default_entry_fee,
