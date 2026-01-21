@@ -232,6 +232,30 @@ When using `|tojson` in HTML onclick attributes, **use single quotes for the att
 
 **Why**: `|tojson` always produces JSON strings with double quotes. Using single quotes for the onclick attribute avoids quote conflicts.
 
+### 9. Sequential Date Validation for Campionato Gare
+Gare within a campionato must have dates in chronological order by `number`:
+
+```python
+# ✅ CORRECT - Gara 2 after Gara 1
+gara1.date = date(2026, 1, 15)  # number=1
+gara2.date = date(2026, 1, 22)  # number=2
+
+# ❌ WRONG - Gara 2 before Gara 1 raises ValueError
+gara1.date = date(2026, 1, 22)  # number=1
+gara2.date = date(2026, 1, 15)  # number=2 → raises ValueError
+
+# Same-day gare are allowed if time is sequential
+gara1.date, gara1.time = date(2026, 1, 15), time(14, 0)  # number=1
+gara2.date, gara2.time = date(2026, 1, 15), time(18, 0)  # number=2 → OK
+```
+
+**Rules**:
+- Gara N must have date/time `>=` the gara with highest number `< N`
+- Gara N must have date/time `<=` the gara with lowest number `> N`
+- Standalone gare (no campionato) have no sequential validation
+
+See `docs/adr/ADR-016-gara-sequential-date-validation.md` for details.
+
 ---
 
 ## Architecture
@@ -335,6 +359,7 @@ pytest tests/new/ -n auto
 | `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
 | `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |
 | `onclick="func({{ x\|tojson }})"` | `onclick='func({{ x\|tojson }})'` (single quotes) |
+| Gara N with date before gara N-1 | Ensure date/time is sequential by number (ADR-016) |
 
 ---
 

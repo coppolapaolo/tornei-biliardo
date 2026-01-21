@@ -347,14 +347,18 @@ def create_gara():
 
     # Campi base
     name = request.form.get("name", f"Gara {number}")
-    # Support both date and datetime-local formats
+    # Support both date and datetime-local formats (for backward compatibility)
     date_str = request.form["date"]
     if "T" in date_str:
         # datetime-local format: YYYY-MM-DDTHH:MM
-        date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M").date()
+        parsed_datetime = datetime.strptime(date_str, "%Y-%m-%dT%H:%M")
+        date = parsed_datetime.date()
+        gara_time = parsed_datetime.time()
     else:
-        # date format: YYYY-MM-DD
+        # date format: YYYY-MM-DD (with separate time field)
         date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        time_str = request.form.get("time", "20:00")
+        gara_time = datetime.strptime(time_str, "%H:%M").time()
 
     # Nuovi campi
     location = request.form.get("location", "").strip()
@@ -402,38 +406,45 @@ def create_gara():
     # (when using rack-based classification, ties are acceptable)
     # No need to force is_race_to=True for trio
 
-    gara = GaraService.create_gara(
-        campionato_id=campionato_id,
-        number=number,
-        name=name,
-        date=date,
-        billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
-        location=location,  # String for backward compat/display cache
-        description=description,
-        rounds_count=rounds_count,
-        min_participants=min_participants,
-        max_participants=max_participants,
-        entry_fee=entry_fee,
-        discipline=discipline,
-        distance=distance,
-        is_race_to=is_race_to,
-        withdraw_policy=withdraw_policy,
-        matchmaking_strategy=matchmaking_strategy,
-        first_round_policy=first_round_policy,
-        anti_rematch_enabled=anti_rematch,
-        odd_number_policy=odd_policy,
-        tiebreaker_enabled=tiebreaker_enabled,
-        tiebreaker_until_position=tiebreaker_until_position,
-    )
+    try:
+        gara = GaraService.create_gara(
+            campionato_id=campionato_id,
+            number=number,
+            name=name,
+            date=date,
+            time=gara_time,
+            billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
+            location=location,  # String for backward compat/display cache
+            description=description,
+            rounds_count=rounds_count,
+            min_participants=min_participants,
+            max_participants=max_participants,
+            entry_fee=entry_fee,
+            discipline=discipline,
+            distance=distance,
+            is_race_to=is_race_to,
+            withdraw_policy=withdraw_policy,
+            matchmaking_strategy=matchmaking_strategy,
+            first_round_policy=first_round_policy,
+            anti_rematch_enabled=anti_rematch,
+            odd_number_policy=odd_policy,
+            tiebreaker_enabled=tiebreaker_enabled,
+            tiebreaker_until_position=tiebreaker_until_position,
+        )
 
-    # Set gara-specific available tables
-    if available_tables:
-        gara.set_available_tables(available_tables)
+        # Set gara-specific available tables
+        if available_tables:
+            gara.set_available_tables(available_tables)
 
-    flash(f"Gara {number} creata con successo!")
-    return redirect(
-        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-    )
+        flash(f"Gara {number} creata con successo!")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+    except ValueError as e:
+        flash(str(e), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
 
 
 @competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])

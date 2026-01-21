@@ -38,6 +38,78 @@ class GaraService:
     """Operazioni di business su Gara (creazione, query, validazione, transizioni)."""
 
     # -----------------------------
+    # HELPER METHODS
+    # -----------------------------
+    @staticmethod
+    def _validate_sequential_date(
+        campionato_id: int,
+        number: int,
+        gara_date,
+        gara_time,
+    ) -> None:
+        """Valida che data/ora siano coerenti con le gare adiacenti nel campionato.
+
+        La gara N deve avere:
+        - data/ora >= gara con numero più alto < N (se esiste)
+        - data/ora <= gara con numero più basso > N (se esiste)
+
+        Args:
+            campionato_id: ID del campionato
+            number: Numero della gara da creare
+            gara_date: Data della gara
+            gara_time: Ora della gara
+
+        Raises:
+            ValueError: Se la data/ora viola i vincoli sequenziali
+        """
+        from datetime import datetime, time as time_type
+
+        # Default time se non specificato
+        if gara_time is None:
+            gara_time = time_type(20, 0)
+
+        # Combina data e ora per confronto
+        gara_datetime = datetime.combine(gara_date, gara_time)
+
+        # Trova gara precedente (max number < N)
+        prev_gara = (
+            Gara.query.filter(
+                Gara.campionato_id == campionato_id,
+                Gara.number < number,
+            )
+            .order_by(Gara.number.desc())
+            .first()
+        )
+
+        if prev_gara:
+            prev_time = prev_gara.time or time_type(20, 0)
+            prev_datetime = datetime.combine(prev_gara.date, prev_time)
+            if gara_datetime < prev_datetime:
+                raise ValueError(
+                    f"La data/ora della gara {number} deve essere successiva "
+                    f"alla gara {prev_gara.number} ({prev_gara.date} {prev_time})"
+                )
+
+        # Trova gara successiva (min number > N)
+        next_gara = (
+            Gara.query.filter(
+                Gara.campionato_id == campionato_id,
+                Gara.number > number,
+            )
+            .order_by(Gara.number.asc())
+            .first()
+        )
+
+        if next_gara:
+            next_time = next_gara.time or time_type(20, 0)
+            next_datetime = datetime.combine(next_gara.date, next_time)
+            if gara_datetime > next_datetime:
+                raise ValueError(
+                    f"La data/ora della gara {number} deve essere precedente "
+                    f"alla gara {next_gara.number} ({next_gara.date} {next_time})"
+                )
+
+    # -----------------------------
     # CREAZIONE / QUERY DI SUPPORTO
     # -----------------------------
     @staticmethod
@@ -67,6 +139,16 @@ class GaraService:
 
         if isinstance(date, date_type) and date < date_type.today():
             raise ValueError("Data della gara non può essere nel passato")
+
+        # Validazione date sequenziali (solo per gare di campionato)
+        if campionato_id:
+            gara_time = kwargs.get("time")
+            GaraService._validate_sequential_date(
+                campionato_id=campionato_id,
+                number=number,
+                gara_date=date,
+                gara_time=gara_time,
+            )
 
         # Validazione time - obbligatorio (defaults to 20:00 if missing for backward compatibility/tests)
         if "time" not in kwargs or kwargs["time"] is None:

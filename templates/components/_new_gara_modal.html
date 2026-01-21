@@ -69,8 +69,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="date" class="form-label">Data e Ora <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" class="form-control" name="date" id="create_date" required>
+                                    <label for="date" class="form-label">Data <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="date" id="create_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="time" class="form-label">Ora <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" name="time" id="create_time" value="20:00" required>
+                                    <small class="text-muted" id="time_prefill_hint" style="display: none;">
+                                        <i class="fas fa-magic"></i> Ora copiata dalla gara precedente
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -412,6 +421,51 @@
         const gameModeText = document.getElementById('create-game-mode-text');
         const oddPolicySelect = document.getElementById('create_odd_number_policy');
         const trioWarning = document.getElementById('create_trio_warning');
+        const numberSelect = document.getElementById('create_number');
+        const timeInput = document.getElementById('create_time');
+        const timePrefillHint = document.getElementById('time_prefill_hint');
+
+        // Existing gare data for time pre-fill (number -> time)
+        const existingGareTime = {
+            {% for gara in provas %}
+            {{ gara.number }}: {{ (gara.time.strftime('%H:%M') if gara.time else '20:00')|tojson }},
+            {% endfor %}
+        };
+
+        // Pre-fill time from previous gara when number changes
+        function prefillTimeFromPreviousGara() {
+            if (!numberSelect || !timeInput) return;
+
+            const selectedNumber = parseInt(numberSelect.value) || 1;
+
+            // Find the previous gara (max number < selectedNumber)
+            let prevGaraNumber = null;
+            for (const num of Object.keys(existingGareTime).map(Number).sort((a, b) => b - a)) {
+                if (num < selectedNumber) {
+                    prevGaraNumber = num;
+                    break;
+                }
+            }
+
+            // Pre-fill time if previous gara exists and selected number > 1
+            if (prevGaraNumber && selectedNumber > 1) {
+                timeInput.value = existingGareTime[prevGaraNumber];
+                if (timePrefillHint) timePrefillHint.style.display = 'block';
+            } else {
+                // Reset to default for first gara
+                if (selectedNumber === 1) {
+                    timeInput.value = '20:00';
+                }
+                if (timePrefillHint) timePrefillHint.style.display = 'none';
+            }
+        }
+
+        // Listen for number selection changes
+        if (numberSelect) {
+            numberSelect.addEventListener('change', prefillTimeFromPreviousGara);
+            // Initial call on page load
+            prefillTimeFromPreviousGara();
+        }
 
         // Update wizard UI
         function updateWizardUI() {

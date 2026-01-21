@@ -119,6 +119,7 @@ if lock == RoundLockStatus.LOCKED:
 - **Do not hard-delete inscriptions** - Use soft delete/withdraw mechanisms
 - **Do not modify locked rounds** - Check `get_round_lock_status()` first
 - **Do not confuse Random strategy** - Creates ALL rounds at startup, others create one at a time
+- **Do not create gare with non-sequential dates** - Gara N must have date/time >= gara N-1 (ADR-016)
 
 ---
 
