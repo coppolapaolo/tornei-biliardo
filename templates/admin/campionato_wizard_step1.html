@@ -209,6 +209,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const descAmalfi = document.getElementById('type-description-amalfi');
     const descRandom = document.getElementById('type-description-random');
 
+    // Playoff checkboxes
+    const playoffEliteCheckbox = document.getElementById('playoff_elite_enabled');
+    const playoffAcademyCheckbox = document.getElementById('playoff_academy_enabled');
+    const playoffAcademyCard = playoffAcademyCheckbox.closest('.card');
+
     // Compatibility matrix: derived from backend (single source of truth)
     const validMatchmaking = {{ classification_compatibility|tojson }};
 
@@ -252,9 +257,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     typeSelect.addEventListener('change', updateTypeDescription);
 
+    // Playoff Elite → Academy dependency
+    function updatePlayoffAcademyState() {
+        const eliteEnabled = playoffEliteCheckbox.checked;
+        // Academy only exists if Elite exists
+        if (!eliteEnabled) {
+            playoffAcademyCheckbox.checked = false;
+            playoffAcademyCheckbox.disabled = true;
+            playoffAcademyCard.classList.add('opacity-50');
+        } else {
+            playoffAcademyCheckbox.disabled = false;
+            playoffAcademyCard.classList.remove('opacity-50');
+        }
+    }
+
+    playoffEliteCheckbox.addEventListener('change', updatePlayoffAcademyState);
+
     // Initial state
     updateClassificationDescription();
     updateMatchmakingOptions();
+    updatePlayoffAcademyState();
 });
 </script>
 {% endblock %}

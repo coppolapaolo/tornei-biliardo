@@ -202,7 +202,8 @@
                 <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary w-100 mb-2">
                     <i class="fas fa-arrow-left"></i> Torna alla Gara
                 </a>
-                {% if gara.matchmaking_strategy == 'random' %}
+                {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+                {% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
                     <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
                         <i class="fas fa-cog"></i> Gestisci Challenge
                     </button>
@@ -213,7 +214,8 @@
 </div>
 
 <!-- Challenge Management Modal (se necessario) -->
-{% if gara.matchmaking_strategy == 'random' %}
+{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+{% if gara.matchmaking_strategy == 'random' and challenge_enabled %}
 {% include "components/_challenge_management_modal.html" %}
 {% endif %}
 {% endblock %}

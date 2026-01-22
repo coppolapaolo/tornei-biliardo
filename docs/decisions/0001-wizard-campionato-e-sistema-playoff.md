@@ -78,7 +78,12 @@ class Campionato(db.Model):
 
 ### 4. Architettura Playoff
 
-I playoff sono implementati come **gare speciali** con iscrizione su invito:
+I playoff sono implementati come **gare speciali** con iscrizione su invito.
+
+**Regola di dipendenza Elite-Academy:**
+- Il **Playoff Academy** esiste solo se è abilitato il **Playoff Elite**
+- Nel wizard, disabilitando Elite si disabilita automaticamente Academy
+- Motivo: Academy è per i "classificati successivi" (positions N+1 a M), il che presuppone che Elite occupi le posizioni 1-N
 
 ```
 PlayoffConfiguration (criteri qualificazione)
