@@ -499,6 +499,91 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 <div class="d-md-none">...</div>
 ```
 
+### Tabelle Responsive (Mobile Card Pattern)
+
+Le tabelle con molte colonne devono essere sostituite da card su mobile per garantire leggibilità e usabilità.
+
+**Pattern:**
+```html
+{# === DESKTOP VIEW (≥768px): Table === #}
+<div class="table-responsive d-none d-md-block">
+    <table class="table table-striped">...</table>
+</div>
+
+{# === MOBILE VIEW (<768px): Cards === #}
+<div class="d-md-none">
+    {% for item in items %}
+    <div class="card mb-3 border-{{ status_color }}" style="border-width: 2px;">
+        <div class="card-header py-2">...</div>
+        <div class="card-body py-2">...</div>
+        <div class="card-footer py-2">
+            <div class="d-flex gap-2">
+                <a class="btn btn-primary btn-sm flex-grow-1" style="min-height: 44px;">...</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+```
+
+**Convenzioni card mobile:**
+- Border colorato (`border-width: 2px`) in base allo stato
+- Padding ridotto (`py-2`) per compattezza
+- Bottoni con `min-height: 44px` per touch target adeguato
+- Footer con `d-flex gap-2` per bottoni in riga
+
+**File che usano questo pattern:**
+- `_campionato_garas.html` - Lista gare del campionato
+- `_match_cards_mobile.html` - Partite della gara
+
+### Mobile Form Input Sizing
+
+Gli input su mobile devono essere sufficientemente larghi per facilitare l'inserimento:
+
+| Tipo Input | Larghezza Minima | Esempio |
+|------------|------------------|---------|
+| Numero (score/racks) | `80px` | Input SSR, punteggi |
+| Select compatto | `auto` | Toggle vista classifica |
+| Testo breve | `100%` | Nomi, date |
+
+```html
+<!-- Input numerico mobile-friendly -->
+<input type="number" class="form-control form-control-sm text-center"
+       style="width: 80px; display: inline-block;">
+```
+
+### Modal Fullscreen Mobile
+
+I modali frequentemente usati su mobile devono avere `modal-fullscreen-sm-down` per occupare tutto lo schermo su dispositivi piccoli (`<576px`).
+
+**Modali con fullscreen mobile:**
+- Quick Result Modal (`#quickResultModal`)
+- Table Assignment Modal (`#tableAssignmentModal`)
+- SSR Modal (`#ssrModal`)
+- Open Inscriptions Modal (`#openInscriptionsModal`)
+- Modify Dates Modal (`#modifyDatesModal`)
+
+```html
+<!-- Modal con fullscreen su mobile -->
+<div class="modal fade" id="myModal" tabindex="-1">
+  <div class="modal-dialog modal-fullscreen-sm-down">
+    ...
+  </div>
+</div>
+
+<!-- Con centramento desktop -->
+<div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+```
+
+**Quando usare:**
+- Modali con form di input
+- Modali usati frequentemente durante gestione gara
+- Modali con contenuto che richiede scroll su mobile
+
+**Quando NON usare:**
+- Modali già `modal-lg` o `modal-xl` (troppo contenuto)
+- Modali di conferma semplice (pochi elementi)
+
 ---
 
 ## Ordine Dinamico Sezioni (Mobile)
@@ -584,6 +669,9 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-01-14 | SSR badge a sinistra di rack in classifica mobile | Per mantenere allineamento rack a destra per tutti i giocatori |
 | 2026-01-22 | SSR sub-phases mobile layout | Distingue `ssr_needs_input` (SSR first, Management collapsed) da `ssr_ready_to_terminate` (Classifica first, Termina Gara prominent) |
 | 2026-01-22 | Directors section at bottom during SSR | Sezione Direttori spostata in fondo (collapsible) durante fase SSR - non rilevante per azione corrente |
+| 2026-01-22 | Tabelle responsive con card mobile | `_campionato_garas.html` ora usa card su mobile invece di tabella - migliora leggibilità e touch target |
+| 2026-01-22 | Input SSR min-width 80px | Aumentato da 70px a 80px per facilitare inserimento su mobile |
+| 2026-01-22 | Modal fullscreen mobile | Aggiunto `modal-fullscreen-sm-down` a 5 modali director: Quick Result, Table Assignment, SSR, Open Inscriptions, Modify Dates |
 
 ---
 

@@ -2,13 +2,14 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5><i class="fas fa-list"></i> Gare del Campionato</h5>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProvaModal">
-            <i class="fas fa-plus"></i> Nuova Gara
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newProvaModal">
+            <i class="fas fa-plus"></i><span class="d-none d-sm-inline ms-1">Nuova Gara</span>
         </button>
     </div>
     <div class="card-body">
         {% if provas %}
-            <div class="table-responsive">
+            {# === DESKTOP VIEW (≥768px): Table === #}
+            <div class="table-responsive d-none d-md-block">
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -86,6 +87,102 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            {# === MOBILE VIEW (<768px): Cards === #}
+            <div class="d-md-none">
+                {% for gara in provas %}
+                {% set status_class = 'border-secondary' %}
+                {% if gara.status == 'playing' %}{% set status_class = 'border-primary' %}
+                {% elif gara.status == 'completed' %}{% set status_class = 'border-success' %}
+                {% elif gara.status == 'inscription' %}{% set status_class = 'border-info' %}
+                {% elif gara.status == 'awaiting_ssr' %}{% set status_class = 'border-warning' %}
+                {% endif %}
+                <div class="card mb-3 {{ status_class }}" style="border-width: 2px;">
+                    {# Header: Numero gara + Stato #}
+                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Gara {{ gara.number }}</strong>
+                            {% if gara.name and gara.name != ('Gara ' ~ gara.number) %}
+                            <small class="text-muted d-block">{{ gara.name }}</small>
+                            {% endif %}
+                        </div>
+                        {{ status_badge(gara, 'gara') }}
+                    </div>
+
+                    {# Body: Info principali #}
+                    <div class="card-body py-2">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-calendar me-1"></i>{{ gara.date|date_local }}
+                                </small>
+                                {% if gara.location %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ gara.location }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="d-block">
+                                    <i class="fas fa-8-ball me-1 text-muted"></i>{{ gara.discipline|replace('_',' ')|title }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    {{ gara|format_distance_short }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                            <small>
+                                {% if gara.entry_fee > 0 %}
+                                <span class="badge bg-secondary">€{{ "%.2f"|format(gara.entry_fee) }}</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark">Gratuita</span>
+                                {% endif %}
+                            </small>
+                            <small>
+                                <i class="fas fa-users text-muted me-1"></i>
+                                <span class="badge bg-info">{{ gara.get_active_inscriptions_count() }}</span>
+                                {% if gara.max_participants %}/{{ gara.max_participants }}{% endif %}
+                                {% if gara.get_waitlist_count() > 0 %}
+                                <span class="text-warning ms-1">
+                                    <i class="fas fa-clock"></i> +{{ gara.get_waitlist_count() }}
+                                </span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+                    {# Footer: Azioni #}
+                    <div class="card-footer py-2">
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
+                               class="btn btn-primary btn-sm flex-grow-1" style="min-height: 44px;">
+                                <i class="fas fa-eye"></i> Dettagli
+                            </a>
+                            {% if gara.can_be_modified() %}
+                            <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}"
+                               class="btn btn-warning btn-sm" style="min-height: 44px;">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                            {% if gara.can_be_deleted() and not current_user.is_admin %}
+                            <button class="btn btn-danger btn-sm" style="min-height: 44px;"
+                                    onclick="deleteProva({{ gara.id }}, {{ gara.number }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                            {% if current_user.is_admin %}
+                            <button class="btn btn-danger btn-sm" style="min-height: 44px;"
+                                    onclick="showSoftDeleteModal('gara', {{ gara.id }}, '{{ gara.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=gara.id) }}')"
+                                    title="{{ _('Elimina') }}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         {% else %}
             <div class="alert alert-info text-center">
