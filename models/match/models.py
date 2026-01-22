@@ -584,34 +584,6 @@ class Rack(db.Model):
     added_by = db.relationship("User", foreign_keys=[added_by_id])
     removed_by = db.relationship("User", foreign_keys=[removed_by_id])
 
-    def can_be_removed(self, current_user_id):
-        """Verifica se il rack può essere rimosso"""
-        if self.validated_by_admin:
-            return False
-        return self.reported_by_id == current_user_id
-
-    def can_be_confirmed(self, current_user_id):
-        """Verifica se il rack può essere confermato"""
-        if self.confirmed_by_player or self.validated_by_admin:
-            return False
-        # Solo l'altro giocatore può confermare
-        if self.match.player1_id == current_user_id:
-            return self.match.player2_id == self.reported_by_id
-        elif self.match.player2_id == current_user_id:
-            return self.match.player1_id == self.reported_by_id
-        return False
-
-    def can_remove_confirmation(self, current_user_id):
-        """Verifica se la conferma può essere rimossa"""
-        if not self.confirmed_by_player or self.validated_by_admin:
-            return False
-        # Solo chi ha confermato può rimuovere la conferma
-        if self.match.player1_id == current_user_id:
-            return self.match.player2_id == self.reported_by_id
-        elif self.match.player2_id == current_user_id:
-            return self.match.player1_id == self.reported_by_id
-        return False
-
     def __repr__(self):
         return f"<Rack {self.rack_number} (Match {self.match_id})>"
 

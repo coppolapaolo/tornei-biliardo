@@ -61,7 +61,6 @@ from .permissions import (
     player_required,
     match_player_required,
     trio_player_required,
-    rack_player_required,
     inscription_owner_required,
     challenge_player_required,
     challenge_attempt_player_required,

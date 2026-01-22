@@ -14,7 +14,7 @@ Usage:
 Decorator Categories:
     - Role-based: admin_required, director_required, player_only
     - Entity ownership: inscription_owner_required, challenge_attempt_player_required
-    - Match participation: match_player_required, rack_player_required
+    - Match participation: match_player_required, trio_player_required
     - Management: campionato_manager_required, gara_manager_required, venue_manager_required
 """
 
@@ -323,32 +323,6 @@ def trio_player_required(f):
     return decorated_function
 
 
-def rack_player_required(f):
-    """Permette l'accesso solo ai giocatori del rack specificato."""
-
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        from models import Rack  # Local import to avoid circular dependency
-
-        rack_id = kwargs.get("rack_id")
-        if not rack_id:
-            abort(400)  # Bad request if rack_id is missing
-
-        # Check if user is a player in the match associated with this rack
-        rack = Rack.query.get(rack_id)
-        if not rack:
-            abort(404)
-
-        match = rack.match
-        if current_user.id not in [match.player1_id, match.player2_id]:
-            flash("Non sei un giocatore di questa partita.", "error")
-            return redirect(url_for("dashboard.dashboard"))
-
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
 def inscription_owner_required(f):
     """Permette l'accesso solo al proprietario dell'iscrizione specificata."""
 
@@ -513,7 +487,6 @@ __all__ = [
     "player_required",
     "match_player_required",
     "trio_player_required",
-    "rack_player_required",
     "inscription_owner_required",
     "challenge_player_required",
     "challenge_attempt_player_required",
