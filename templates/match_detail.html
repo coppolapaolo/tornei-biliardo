@@ -52,14 +52,13 @@
                 <div class="card-body">
                     {% include "components/_match_score.html" %}
 
-                    {# Admin/Director Controls - Advanced Interface #}
-                    {% if user_can_manage %}
-                    {% include "components/_match_admin_controls.html" %}
-                    {% endif %}
-
-                    {# Player Controls - Simplified Interface #}
-                    {% if user_is_player and not user_can_manage %}
+                    {# Player Controls - Simplified Interface (priority for fairness) #}
+                    {# Directors who are players in this match use player interface #}
+                    {% if user_is_player %}
                     {% include "components/_match_rack_input.html" %}
+                    {% elif user_can_manage %}
+                    {# Admin/Director Controls - Only for matches where they are NOT a player #}
+                    {% include "components/_match_admin_controls.html" %}
                     {% endif %}
 
 
@@ -124,11 +123,11 @@
     // TRIO MATCH - Add rack win for trio matches
     {% if match.is_trio and match.trio_match %}
     function addTrioRackWin(winnerId) {
-        // Use admin endpoint for managers, player endpoint for players
-        {% if user_can_manage %}
-        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/add_rack`;
-        {% else %}
+        // Player endpoint has priority (fairness: directors who are players use player flow)
+        {% if user_is_player %}
         const trioEndpoint = `/player/match/{{ match.id }}/trio/add_rack`;
+        {% elif user_can_manage %}
+        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/add_rack`;
         {% endif %}
 
         fetch(trioEndpoint, {
@@ -153,11 +152,11 @@
     }
 
     function removeTrioLastRack() {
-        // Use admin endpoint for managers, player endpoint for players
-        {% if user_can_manage %}
-        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/remove_rack`;
-        {% else %}
+        // Player endpoint has priority (fairness: directors who are players use player flow)
+        {% if user_is_player %}
         const trioEndpoint = `/player/match/{{ match.id }}/trio/remove_rack`;
+        {% elif user_can_manage %}
+        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/remove_rack`;
         {% endif %}
 
         fetch(trioEndpoint, {
@@ -182,11 +181,11 @@
     }
 
     function confirmTrioResult() {
-        // Use admin endpoint for managers, player endpoint for players
-        {% if user_can_manage %}
-        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/confirm`;
-        {% else %}
+        // Player endpoint has priority (fairness: directors who are players use player flow)
+        {% if user_is_player %}
         const trioEndpoint = `/player/match/{{ match.id }}/trio/confirm`;
+        {% elif user_can_manage %}
+        const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/confirm`;
         {% endif %}
 
         fetch(trioEndpoint, {
@@ -212,11 +211,11 @@
 
     function declareForfeit(playerId) {
         showConfirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")|tojson }}, () => {
-            // Use admin endpoint for managers, player endpoint for players
-        {% if user_can_manage %}
-        const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
-        {% else %}
+            // Player endpoint has priority (fairness: directors who are players use player flow)
+        {% if user_is_player %}
         const forfeitEndpoint = `/player/match/{{ match.id }}/trio/forfeit`;
+        {% elif user_can_manage %}
+        const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
         {% endif %}
 
         fetch(forfeitEndpoint, {
