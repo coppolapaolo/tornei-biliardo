@@ -15,13 +15,7 @@ from .models import Classification, RoundClassification, GaraClassification, Pla
 from models.competition.models import Inscription
 from models.user.models import User
 from ..caching import cached, cache_invalidate, cache_manager
-from ..optimization import optimized_query, bulk_load_relationships
-from ..scoring.policies import ScoringPolicy
-from ..scoring.strategies import (
-    ClassicScoringPolicy,
-    FargoRatingScoringPolicy,
-    EloRatingScoringPolicy,
-)
+from ..optimization import optimized_query
 from ..transaction import transactional
 
 # Strategy pattern imports
@@ -35,14 +29,40 @@ class ClassificationService:
     """Service for managing campionato classifications with caching and optimization."""
 
     @staticmethod
-    def _get_scoring_policy(campionato) -> ScoringPolicy:
-        """Get the appropriate scoring policy for a campionato."""
-        policy_map = {
-            "classic": ClassicScoringPolicy(),
-            "fargo": FargoRatingScoringPolicy(),
-            "elo": EloRatingScoringPolicy(),
+    def _get_campionato_strategy(campionato_type: str):
+        """Get the appropriate classification strategy for a campionato type."""
+        strategy_map = {
+            "amalfi": "amalfi_campionato",
+            "random": "random_campionato",
         }
-        return policy_map.get(campionato.scoring_policy, ClassicScoringPolicy())
+        strategy_name = strategy_map.get(campionato_type, "amalfi_campionato")
+        registry = get_classification_registry()
+        return registry.get(strategy_name)
+
+    @staticmethod
+    def _count_gare_played(campionato_id: int) -> Dict[int, int]:
+        """Count how many gare each player participated in.
+
+        Returns:
+            Dict mapping player_id -> number of gare played
+        """
+        from models.competition.models import Gara
+
+        gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
+        player_gare: Dict[int, set] = {}
+
+        for gara in gare:
+            completed_matches = [
+                m for m in gara.matches
+                if m.status == "completed" and not m.is_bye
+            ]
+            for match in completed_matches:
+                if match.player1_id:
+                    player_gare.setdefault(match.player1_id, set()).add(gara.id)
+                if match.player2_id:
+                    player_gare.setdefault(match.player2_id, set()).add(gara.id)
+
+        return {pid: len(gare_ids) for pid, gare_ids in player_gare.items()}
 
     @staticmethod
     @cached(
@@ -56,76 +76,42 @@ class ClassificationService:
         Update overall campionato classification based on all completed provas.
         Results are cached for 5 minutes and invalidated on campionato changes.
 
+        Uses ScoreAggregator for data collection and classification strategies
+        for ranking, ensuring consistent use of PlayerScore value objects.
+
         Args:
             campionato_id: ID of the campionato
 
         Returns:
             List of updated Classification objects
         """
-        from models.competition.models import Gara
         from models.campionato.models import Campionato
 
-        # Get campionato to determine scoring policy
+        # Get campionato to determine strategy
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise ValueError(f"Campionato {campionato_id} not found")
 
-        # Get scoring policy based on campionato configuration
-        scoring_policy = ClassificationService._get_scoring_policy(campionato)
+        # Use ScoreAggregator to collect PlayerScore objects
+        aggregator = ScoreAggregator()
+        scores = aggregator.aggregate_campionato_scores(campionato_id)
 
-        # Get all provas for this campionato with optimized loading
-        gare_query = db.session.query(Gara).filter_by(campionato_id=campionato_id)
-        gare = bulk_load_relationships(
-            gare_query, Gara.matches, Gara.inscriptions
-        ).all()
+        if not scores:
+            return []
 
-        # Get all players in the campionato
-        player_ids = set()
-        match_results = []
-
-        print(
-            f"DEBUG ClassificationService: Processing {len(gare)} gare for campionato {campionato_id}"
+        # Get classification strategy based on campionato type
+        strategy = ClassificationService._get_campionato_strategy(
+            campionato.campionato_type
         )
 
-        for gara in gare:
-            # Get completed matches - already loaded via selectinload
-            matches = [
-                match
-                for match in gara.matches
-                if match.status == "completed" and not match.is_bye
-            ]
-            print(
-                f"DEBUG ClassificationService: Gara {gara.id} has {len(matches)} completed non-bye matches"
-            )
-
-            # Collect player IDs and match results
-            for match in matches:
-                player_ids.add(match.player1_id)
-                player_ids.add(match.player2_id)
-                match_results.append(
-                    {
-                        "player1_id": match.player1_id,
-                        "player2_id": match.player2_id,
-                        "player1_score": match.player1_score,
-                        "player2_score": match.player2_score,
-                    }
-                )
-
-        print(
-            f"DEBUG ClassificationService: Collected {len(player_ids)} unique players and {len(match_results)} match results"
+        # Calculate classification using strategy
+        result = strategy.calculate(
+            scores,
+            context={"campionato_id": campionato_id},
         )
 
-        # Get player objects
-        players = db.session.query(User).filter(User.id.in_(player_ids)).all()
-        print(
-            f"DEBUG ClassificationService: Found {len(players)} players for IDs {player_ids}"
-        )
-
-        # Calculate standings using scoring policy
-        standings = scoring_policy.calculate_standings(players, match_results)
-        print(
-            f"DEBUG ClassificationService: Scoring policy returned {len(standings)} standings"
-        )
+        # Count gare played per player
+        gare_played_map = ClassificationService._count_gare_played(campionato_id)
 
         # Batch load existing classifications to avoid N+1
         existing_classifications = {
@@ -134,17 +120,11 @@ class ClassificationService:
             .filter_by(campionato_id=campionato_id)
             .all()
         }
-        print(
-            f"DEBUG ClassificationService: Found {len(existing_classifications)} existing classifications"
-        )
 
-        # Update or create Classification records
+        # Update or create Classification records from strategy result
         classifications = []
-        print(
-            f"DEBUG ClassificationService: About to process {len(standings)} standings"
-        )
-        for position, (player, score_data) in enumerate(standings, 1):
-            player_id = player.id
+        for entry in result.entries:
+            player_id = entry.player_id
             classification = existing_classifications.get(player_id)
 
             if not classification:
@@ -152,39 +132,18 @@ class ClassificationService:
                     campionato_id=campionato_id, user_id=player_id
                 )
 
-            classification.position = position
-            # Extract stats from score_data based on the scoring policy used
-            if isinstance(score_data, dict) and "matches_won" in score_data:
-                # Classic scoring policy
-                classification.total_matches_won = score_data["matches_won"]
-                classification.total_point_difference = score_data["rack_diff"]
-                classification.gare_played = len(score_data.get("gare_played", []))
-            else:
-                # For other policies, use default values
-                classification.total_matches_won = getattr(score_data, "wins", 0) or 0
-                classification.total_point_difference = (
-                    getattr(score_data, "rack_diff", 0) or 0
-                )
-                classification.gare_played = 0
+            classification.position = entry.position
+            classification.total_matches_won = entry.score.matches_won
+            classification.total_point_difference = entry.score.rack_difference
+            classification.gare_played = gare_played_map.get(player_id, 0)
 
             db.session.add(classification)
             classifications.append(classification)
-            print(
-                f"DEBUG ClassificationService: Created classification for user {player_id} at position {position}"
-            )
-
-        print(
-            f"DEBUG ClassificationService: About to commit {len(classifications)} classifications"
-        )
 
         try:
             db.session.commit()
-            print(
-                f"DEBUG ClassificationService: Commit completed, returning {len(classifications)} classifications"
-            )
         except Exception as e:
             db.session.rollback()
-            print(f"DEBUG ClassificationService: Commit failed, rolling back: {str(e)}")
             raise
 
         return classifications
