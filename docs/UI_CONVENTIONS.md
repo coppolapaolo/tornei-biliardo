@@ -503,20 +503,52 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 
 ## Ordine Dinamico Sezioni (Mobile)
 
-### Gara Detail - Ordine Sezioni per Fase
+### Gara Detail - Ordine Sezioni per Fase (Director View)
 
-Su mobile, le sezioni vengono riordinate in base alla fase della gara per mostrare prima il contenuto più rilevante:
+Su mobile, le sezioni vengono riordinate in base alla fase della gara per mostrare prima il contenuto più rilevante per l'azione corrente. Il principio guida è: **l'azione principale della fase deve essere immediatamente visibile**.
 
-| Fase Gara | Ordine Sezioni Mobile |
-|-----------|----------------------|
-| In corso (giocando) | Partite → Classifica (sidebar) |
-| Fase SSR (spareggi) | **Classifica → SSR → Partite** |
-| Gara terminabile | **Classifica → Partite** |
+| Fase Gara | Ordine Sezioni Mobile | Rationale |
+|-----------|----------------------|-----------|
+| Setup/Iscrizioni | Management → Info | Director configura la gara |
+| In corso (giocando) | Management → Partite → Classifica | Director gestisce i match |
+| **SSR - Da inserire** | **SSR → Classifica → Management (collapsed) → Partite → Directors (bottom)** | Azione: inserire punteggi spareggio |
+| **SSR - Pronto per terminare** | **Classifica → Management (Termina Gara) → Partite → SSR** | Azione: confermare termine gara |
+| Gara completata | Classifica → Partite | Consultazione risultati |
 
-**Logica implementativa:**
-- `is_ssr_phase`: gara in stato `awaiting_ssr`
-- `is_gara_ending`: tutti i turni completati e nessun parimerito da risolvere, oppure SSR completato
-- Quando attiva fase finale, la Classifica diventa la sezione principale
+### SSR Sub-Phases (Dettaglio)
+
+La fase SSR (`gara.status == 'awaiting_ssr'`) ha due sotto-stati con layout diversi:
+
+#### Phase A: `ssr_needs_input` (parimerito da risolvere)
+```
+has_unresolved_tiebreakers = True
+```
+**Priorità UX**: Il director deve inserire i punteggi SSR.
+- SSR section **in alto** (form di input)
+- Classifica sotto (mostra chi è in parimerito)
+- Management **collassato** (meno importante)
+- Directors section **in fondo** (non rilevante in questa fase)
+
+#### Phase B: `ssr_ready_to_terminate` (spareggi risolti)
+```
+has_unresolved_tiebreakers = False
+```
+**Priorità UX**: Il director deve confermare il termine della gara.
+- Classifica **in alto** (mostra la classifica finale)
+- Management **espanso** con pulsante "Termina Gara" prominente (verde, btn-lg)
+- Partite (consultazione)
+- SSR section **in basso** (read-only, mostra punteggi inseriti)
+
+### Variabili Template
+
+```jinja2
+{% set is_ssr_phase = gara.status == 'awaiting_ssr' %}
+{% set ssr_needs_input = is_ssr_phase and has_unresolved_tiebreakers %}
+{% set ssr_ready_to_terminate = is_ssr_phase and not has_unresolved_tiebreakers %}
+{% set is_gara_ending = (gara.get_real_status() == 'campionato_completed' and not has_unresolved_tiebreakers) or (has_ssr_data and not has_unresolved_tiebreakers) %}
+```
+
+**Principio generale**: L'interfaccia si adatta alla fase mostrando prima la sezione con l'azione richiesta, minimizzando lo scroll per completare il task principale.
 
 ### Badge Classifica Mobile con SSR
 
@@ -550,6 +582,8 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-01-11 | Migrazione completa `confirm()` → `showConfirm()` | 67 chiamate migrate in 36 file. Helper: `confirmSubmit()`, `confirmLink()`, `confirmAction()` |
 | 2026-01-14 | Ordine dinamico sezioni mobile gara | Sezioni attive mostrate in alto: Classifica → SSR → Partite quando gara in fase finale |
 | 2026-01-14 | SSR badge a sinistra di rack in classifica mobile | Per mantenere allineamento rack a destra per tutti i giocatori |
+| 2026-01-22 | SSR sub-phases mobile layout | Distingue `ssr_needs_input` (SSR first, Management collapsed) da `ssr_ready_to_terminate` (Classifica first, Termina Gara prominent) |
+| 2026-01-22 | Directors section at bottom during SSR | Sezione Direttori spostata in fondo (collapsible) durante fase SSR - non rilevante per azione corrente |
 
 ---
 

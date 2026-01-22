@@ -87,6 +87,7 @@ class StatusPresenter:
             GaraStatus.SETUP.value: ("bg-warning", _("Setup")),
             GaraStatus.INSCRIPTION.value: ("bg-info", _("Iscrizioni Aperte")),
             GaraStatus.PLAYING.value: ("bg-success", _("In Corso")),
+            GaraStatus.AWAITING_SSR.value: ("bg-warning", _("Spareggi")),
             GaraStatus.COMPLETED.value: ("bg-dark", _("Completata")),
         }
         return mapping.get(s, ("bg-secondary", "Sconosciuto"))

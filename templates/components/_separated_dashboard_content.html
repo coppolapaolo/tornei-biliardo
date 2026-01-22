@@ -162,15 +162,15 @@
 <div class="mb-4">
   <h4><i class="fas fa-bullseye text-primary"></i> Gare</h4>
   {% set available_garas = [] %}
-  
-  {# Raccogli tutte le gare interessanti (iscrizioni aperte, in corso, o round completato) #}
+
+  {# Raccogli gare attive (escluse completate - quelle vanno nello storico) #}
   {% for item in vm.unified_items %}
-    {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
+    {% if item.type == 'gara' and item.entity.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, 'inscription_closed', GaraStatus.PLAYING.value, 'round_completed', GaraStatus.AWAITING_SSR.value, 'campionato_completed'] %}
       {% set _void = available_garas.append(item) %}
     {% elif item.type == 'campionato' %}
-      {# Aggiungi le gare del campionato interessanti #}
+      {# Aggiungi le gare del campionato attive #}
       {% for gara in item.entity.gare %}
-        {% if gara.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, GaraStatus.PLAYING.value, 'round_completed', GaraStatus.COMPLETED.value, 'campionato_completed'] %}
+        {% if gara.get_real_status() in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, 'inscription_closed', GaraStatus.PLAYING.value, 'round_completed', GaraStatus.AWAITING_SSR.value, 'campionato_completed'] %}
           {% set _void = available_garas.append({
             'type': 'gara',
             'id': gara.id,
@@ -247,6 +247,13 @@
                       <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
                     {% endif %}
                     <span class="badge bg-warning">In Corso</span>
+                  {% elif item.entity.get_real_status() == GaraStatus.AWAITING_SSR.value %}
+                    {% if ns.user_inscribed and not ns.is_waitlist %}
+                      <span class="badge bg-primary me-1">Iscritto</span>
+                    {% elif ns.is_waitlist %}
+                      <span class="badge bg-warning me-1">Lista d'attesa #{{ ns.waitlist_position }}</span>
+                    {% endif %}
+                    <span class="badge bg-warning">Spareggi</span>
                   {% elif item.entity.get_real_status() == GaraStatus.SETUP.value %}
                     <span class="badge bg-secondary">In Preparazione</span>
                   {% elif ns.user_inscribed and not ns.is_waitlist %}
@@ -422,15 +429,29 @@
                     {% endif %}
                   {% endif %}
                   
+                {% elif item.entity.get_real_status() == GaraStatus.AWAITING_SSR.value %}
+                  {# Gara in fase spareggi - mostra pulsante gestione #}
+                  {% if item.can_manage %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
+                       class="btn btn-warning btn-sm w-100">
+                      <i class="fas fa-balance-scale"></i> Gestisci Spareggi
+                    </a>
+                  {% elif item.can_view_details %}
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
+                       class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-eye"></i> Dettagli
+                    </a>
+                  {% endif %}
+
                 {% elif item.entity.get_real_status() == GaraStatus.SETUP.value %}
                   {# Gara in setup - solo dettagli per chi può gestirla #}
                   {% if item.can_manage %}
-                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" 
+                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}"
                        class="btn btn-outline-primary btn-sm w-100">
                       <i class="fas fa-cog"></i> Gestisci
                     </a>
                   {% endif %}
-                  
+
                 {% else %}
                   {# Gara con iscrizioni aperte - route unificata si adatta automaticamente #}
                   {% if item.can_view_details %}

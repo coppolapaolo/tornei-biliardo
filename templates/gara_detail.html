@@ -25,6 +25,70 @@
 {# Header comune a tutti gli utenti #}
 {% include "components/_gara_header.html" %}
 
+{# Determine gara phase for section ordering - needed early for mobile layout decisions #}
+{% set is_ssr_phase = gara.status == 'awaiting_ssr' %}
+{% set show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data) %}
+{% set is_gara_ending = (gara.get_real_status() == 'campionato_completed' and not has_unresolved_tiebreakers) or (has_ssr_data and not has_unresolved_tiebreakers) %}
+{% set has_scores = current_round_classification and (current_round_classification|selectattr('rack_difference', 'ne', 0)|list|length > 0 or current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0) %}
+
+{# === SSR SUB-PHASES for mobile layout === #}
+{# Phase A: SSR with unresolved tiebreakers - need to enter scores #}
+{% set ssr_needs_input = is_ssr_phase and has_unresolved_tiebreakers %}
+{# Phase B: SSR resolved, ready to terminate - scores entered, show terminate button #}
+{% set ssr_ready_to_terminate = is_ssr_phase and not has_unresolved_tiebreakers %}
+
+{# ============================================================== #}
+{# MOBILE SSR LAYOUT - Phase A: Unresolved tiebreakers            #}
+{# Order: 1. SSR (enter scores) 2. Classification 3. Management   #}
+{# ============================================================== #}
+{% if ssr_needs_input and user_can_manage %}
+<div class="d-md-none mb-3">
+  {% include "components/_ssr_section.html" %}
+</div>
+{% if has_scores %}
+<div class="d-md-none mb-3">
+  {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+  {% include "components/_classification_mobile.html" %}
+  {% endwith %}
+</div>
+{% endif %}
+{% endif %}
+
+{# ============================================================== #}
+{# MOBILE SSR LAYOUT - Phase B: Ready to terminate                #}
+{# Order: 1. Classification 2. Management (terminate) 3. SSR      #}
+{# ============================================================== #}
+{% if ssr_ready_to_terminate and user_can_manage %}
+{# Classification FIRST - shows final standings #}
+{% if has_scores %}
+<div class="d-md-none mb-3">
+  {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+  {% include "components/_classification_mobile.html" %}
+  {% endwith %}
+</div>
+{% endif %}
+{# Management SECOND - prominent terminate button #}
+<div class="d-md-none mb-3">
+  <div class="card border-success">
+    <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-flag-checkered text-success"></i> {{ _('Completa Gara') }}</h5>
+      {{ status_badge(gara, 'gara') }}
+    </div>
+    <div class="card-body">
+      <div class="alert alert-success p-2 mb-2">
+        <small><i class="fas fa-check-circle"></i> {{ _('Tutti gli spareggi risolti! Classifica finale pronta.') }}</small>
+      </div>
+      <button class="btn btn-success btn-lg w-100" onclick="terminateGara({{ gara.id }})">
+        <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
+      </button>
+      <small class="text-muted d-block text-center mt-2">
+        <i class="fas fa-info-circle"></i> {{ _('Conferma la conclusione e blocca le modifiche') }}
+      </small>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {# Row principale: Sidebar + Info (ordine invertito su mobile) #}
 <div class="row mb-4">
   {# MOBILE: Sidebar FIRST (order-1), Info HIDDEN (moved to bottom) #}
@@ -41,8 +105,43 @@
   <div class="col-md-4 order-1 order-md-2">
     {# SIDEBAR ADATTIVA in base ai permessi #}
     {% if user_can_manage %}
-    {# Admin/Director con permessi di gestione #}
-    {% include "components/_gara_management.html" %}
+      {# Admin/Director con permessi di gestione #}
+      {# MOBILE SSR PHASE A (needs input): Management is collapsible and collapsed #}
+      {% if ssr_needs_input %}
+      <div class="d-md-none">
+        <div class="card mb-3">
+          <div class="card-header py-2 d-flex justify-content-between align-items-center"
+               role="button" data-bs-toggle="collapse" data-bs-target="#mobileManagementCollapse"
+               aria-expanded="false" aria-controls="mobileManagementCollapse" style="cursor: pointer;">
+            <h5 class="mb-0"><i class="fas fa-cog"></i> {{ _('Gestione') }}</h5>
+            <div>
+              {{ status_badge(gara, 'gara') }}
+              <i class="fas fa-chevron-down collapse-icon ms-2"></i>
+            </div>
+          </div>
+          <div id="mobileManagementCollapse" class="collapse">
+            <div class="card-body">
+              <div class="alert alert-warning p-2 mb-2">
+                <small><strong><i class="fas fa-balance-scale"></i> {{ _('Fase Spareggio (SSR)') }}</strong></small>
+              </div>
+              <small class="text-muted d-block text-center mb-2">
+                <i class="fas fa-info-circle"></i> {{ _('Inserisci i punteggi SSR nella sezione sopra') }}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-none d-md-block">
+        {% include "components/_gara_management.html" %}
+      </div>
+      {# MOBILE SSR PHASE B (ready to terminate): Management already shown above, hide here #}
+      {% elif ssr_ready_to_terminate %}
+      <div class="d-none d-md-block">
+        {% include "components/_gara_management.html" %}
+      </div>
+      {% else %}
+      {% include "components/_gara_management.html" %}
+      {% endif %}
     {% elif user_inscription %}
     {# Player iscritto #}
     {% include "components/_player_inscription_info.html" %}
@@ -53,14 +152,23 @@
   </div>
 </div>
 
-{# Sezioni Admin/Director (solo se può gestire) #}
+{# Sezioni Admin/Director (solo se può gestire) - DESKTOP or non-SSR mobile #}
 {% if user_can_manage %}
-<!-- Directors Management -->
+{# Directors: on desktop always here, on mobile SSR phase moved to bottom #}
+{% if not is_ssr_phase %}
 <div class="row mb-4">
   <div class="col-12">
     {% include "components/_gara_directors.html" %}
   </div>
 </div>
+{% else %}
+{# DESKTOP ONLY during SSR phase #}
+<div class="row mb-4 d-none d-md-block">
+  <div class="col-12">
+    {% include "components/_gara_directors.html" %}
+  </div>
+</div>
+{% endif %}
 
 <!-- Gestione Turni Section -->
 <div class="row mb-4">
@@ -70,17 +178,12 @@
 </div>
 {% endif %}
 
-{# Determine gara phase for section ordering #}
-{% set is_ssr_phase = gara.status == 'awaiting_ssr' %}
-{% set show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data) %}
-{% set is_gara_ending = (gara.get_real_status() == 'campionato_completed' and not has_unresolved_tiebreakers) or (has_ssr_data and not has_unresolved_tiebreakers) %}
-{% set has_scores = current_round_classification and (current_round_classification|selectattr('rack_difference', 'ne', 0)|list|length > 0 or current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0) %}
-
 {# Sezione Partite - adattiva #}
 <div class="row">
   <div class="col-md-8">
     {# === MOBILE: Show Classification FIRST when gara is ending (SSR phase or completed) === #}
-    {% if (is_ssr_phase or is_gara_ending) and has_scores %}
+    {# Skip if already shown above for SSR phase with user_can_manage #}
+    {% if (is_ssr_phase or is_gara_ending) and has_scores and not (is_ssr_phase and user_can_manage) %}
     <div class="d-md-none mb-3">
       {% with classification=current_round_classification, round_number=latest_round_with_classification %}
       {% include "components/_classification_mobile.html" %}
@@ -88,8 +191,9 @@
     </div>
     {% endif %}
 
-    {# === MOBILE: Show SSR section when in SSR phase (after classification) === #}
-    {% if show_ssr_section %}
+    {# === MOBILE: Show SSR section BEFORE matches only when needing input (non-director) === #}
+    {# For ssr_ready_to_terminate (director), SSR is shown AFTER matches #}
+    {% if show_ssr_section and not (is_ssr_phase and user_can_manage) %}
     <div class="d-md-none mb-3">
       {% include "components/_ssr_section.html" %}
     </div>
@@ -99,6 +203,13 @@
     <div class="d-md-none">
       {% include "components/_match_cards_mobile.html" %}
     </div>
+
+    {# === MOBILE SSR PHASE B: Show SSR AFTER matches (read-only summary) === #}
+    {% if ssr_ready_to_terminate and user_can_manage %}
+    <div class="d-md-none mb-3">
+      {% include "components/_ssr_section.html" %}
+    </div>
+    {% endif %}
 
     {# === DESKTOP VIEW (>= 768px) === #}
     <div class="d-none d-md-block">
@@ -316,6 +427,25 @@
             {% else %}
             <p class="text-muted small mb-0">{{ _('Nessun iscritto') }}</p>
             {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {# === MOBILE SSR PHASE: Directors section at the very bottom === #}
+      {% if is_ssr_phase and user_can_manage %}
+      <div class="card mt-3">
+        <div class="card-header py-2" role="button" data-bs-toggle="collapse" data-bs-target="#mobileDirectorsCollapse" aria-expanded="false" aria-controls="mobileDirectorsCollapse" style="cursor: pointer;">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-user-tie"></i> {{ _('Direttori di Gara') }}
+            </h6>
+            <i class="fas fa-chevron-down collapse-icon"></i>
+          </div>
+        </div>
+        <div id="mobileDirectorsCollapse" class="collapse">
+          <div class="card-body py-2">
+            {% include "components/_gara_directors.html" %}
           </div>
         </div>
       </div>
@@ -784,7 +914,9 @@
 
   function saveSsrGroup(garaId, groupPosition) {
     // Collect scores for this specific group
-    const inputs = document.querySelectorAll(`.ssr-group-input[data-group-position="${groupPosition}"]`);
+    // Filter to only VISIBLE inputs (avoid duplicate mobile/desktop inputs)
+    const allInputs = document.querySelectorAll(`.ssr-group-input[data-group-position="${groupPosition}"]`);
+    const inputs = Array.from(allInputs).filter(input => input.offsetParent !== null);
     const scores = {};
     let hasErrors = false;
 

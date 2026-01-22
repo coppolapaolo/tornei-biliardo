@@ -384,6 +384,7 @@ class Gara(SoftDeleteMixin, db.Model):
             },
             "ready_to_start": {"class": "bg-primary", "text": "Pronta per Iniziare"},
             GaraStatus.PLAYING.value: {"class": "bg-success", "text": "In Corso"},
+            GaraStatus.AWAITING_SSR.value: {"class": "bg-warning", "text": "Spareggi"},
             GaraStatus.COMPLETED.value: {"class": "bg-dark", "text": "Completata"},
             "round_completed": {"class": "bg-info", "text": "Turno Completato"},
             "campionato_completed": {"class": "bg-dark", "text": "Gara Completata"},
