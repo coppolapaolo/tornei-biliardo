@@ -243,15 +243,29 @@ class RoundClassification(db.Model):
         for player_id, stats in player_stats.items():
             stats["rack_difference"] = stats["rack_won"] - stats["rack_lost"]
 
+        # Load SSR scores from GaraClassification if available (for tiebreaking)
+        ssr_scores: dict[int, int] = {}
+        if gara.matchmaking_strategy == "random":
+            existing_gara_class = (
+                db.session.query(GaraClassification)
+                .filter_by(gara_id=gara_id)
+                .all()
+            )
+            for gc in existing_gara_class:
+                if gc.spot_shot_wins is not None:
+                    ssr_scores[gc.user_id] = gc.spot_shot_wins
+
         # Sort players by classification criteria based on strategy
         if gara.matchmaking_strategy == "random":
-            # For Random strategy: order by total racks won (descending), then rack difference, then player ID
+            # For Random strategy: order by total racks won, then SSR score, then rack difference
+            # SSR score of -1 means not entered (sorts last among same racks)
             sorted_players = sorted(
                 player_stats.items(),
                 key=lambda x: (
                     -x[1]["rack_won"],  # Primary: total racks won
-                    -x[1]["rack_difference"],  # Secondary: rack difference
-                    x[0],  # Tertiary: player ID for stability
+                    -ssr_scores.get(x[0], -1),  # Secondary: SSR score (tiebreaker)
+                    -x[1]["rack_difference"],  # Tertiary: rack difference
+                    x[0],  # Quaternary: player ID for stability
                 ),
             )
         else:
