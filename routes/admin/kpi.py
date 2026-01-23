@@ -97,6 +97,11 @@ def index():
     elif tab == "features":
         context["feature_usage"] = KpiService.get_feature_usage(date_range)
 
+    elif tab == "business":
+        context["directors"] = KpiService.get_director_performance()
+        context["community"] = KpiService.get_community_health()
+        context["power_users"] = KpiService.get_power_users()
+
     return render_template("admin/kpi.html", **context)
 
 

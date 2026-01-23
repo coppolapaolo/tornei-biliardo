@@ -149,6 +149,12 @@
             <i class="bi bi-puzzle"></i> {{ _('Features') }}
         </a>
     </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link {% if active_tab == 'business' %}active{% endif %}"
+           href="{{ tab_url('business') }}">
+            <i class="bi bi-briefcase"></i> {{ _('Business & Community') }}
+        </a>
+    </li>
 </ul>
 
 <!-- Alert Container -->
@@ -529,6 +535,134 @@
                 <p class="text-muted mt-2">{{ _('Nessun dato di utilizzo disponibile') }}</p>
             </div>
             {% endif %}
+        </div>
+    </div>
+    {% elif active_tab == 'business' %}
+    <!-- BUSINESS & COMMUNITY TAB -->
+    <div class="row g-4 mb-4">
+        <!-- Community Health Cards -->
+        <div class="col-md-3">
+            <div class="card kpi-card h-100 border-info">
+                <div class="card-body text-center">
+                    <div class="metric-value text-info">{{ community.stickiness }}%</div>
+                    <div class="metric-label"><i class="bi bi-magnet"></i> Stickiness</div>
+                    <small class="text-muted">DAU / MAU Ratio</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card h-100 border-success">
+                <div class="card-body text-center">
+                    <div class="metric-value text-success">{{ community.virality_score }}%</div>
+                    <div class="metric-label"><i class="bi bi-share"></i> Viralità</div>
+                    <small class="text-muted">Partite New vs Vet</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card h-100 border-danger">
+                <div class="card-body text-center">
+                    <div class="metric-value text-danger">{{ community.churn_rate }}%</div>
+                    <div class="metric-label"><i class="bi bi-door-open"></i> Churn Mese</div>
+                    <small class="text-muted">{{ community.churn_count }} utenti persi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card h-100 bg-light">
+                <div class="card-body text-center">
+                    <div class="metric-value">{{ power_users|length }}</div>
+                    <div class="metric-label"><i class="bi bi-lightning-fill text-warning"></i> Power Users</div>
+                    <small class="text-muted">Top 10% activity</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Directors Table -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> {{ _('Performance Directors') }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ _('Director') }}</th>
+                                    <th class="text-center">{{ _('Gare Gestite') }}</th>
+                                    <th class="text-center">{{ _('Saturazione Avg') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in directors %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-secondary text-white me-2" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                {{ d.director_name[:1].upper() }}
+                                            </div>
+                                            <strong>{{ d.director_name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">{{ d.total_garas }}</span>
+                                        {% if d.completed_garas > 0 %}
+                                        <small class="text-muted ms-1">({{ d.completed_garas }} complete)</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if d.avg_saturation >= 90 %}
+                                            <span class="badge bg-success">{{ d.avg_saturation }}%</span>
+                                        {% elif d.avg_saturation >= 70 %}
+                                            <span class="badge bg-info">{{ d.avg_saturation }}%</span>
+                                        {% elif d.avg_saturation >= 50 %}
+                                            <span class="badge bg-warning text-dark">{{ d.avg_saturation }}%</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ d.avg_saturation }}%</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">
+                                        {{ _('Nessun dato director disponibile') }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Power Users List -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> {{ _('Power Users (30gg)') }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for u in power_users %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-dark rounded-pill me-2">{{ loop.index }}</span>
+                                <strong>{{ u.username }}</strong>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ u.match_count }} match</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-center text-muted py-3">
+                            {{ _('Nessun dato disponibile') }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
     {% endif %}

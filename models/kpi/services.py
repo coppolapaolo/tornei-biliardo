@@ -109,14 +109,14 @@ class KpiService:
         """Get total registered users (excluding deleted)."""
         from ..user.models import User
 
-        return User.query.filter_by(is_deleted=False).count()
+        return User.query.filter(User.deleted_at.is_(None)).count()
 
     @staticmethod
     def get_new_users(date_range: Optional[DateRange]) -> int:
         """Get count of new users in date range."""
         from ..user.models import User
 
-        filters = [User.is_deleted == False]  # noqa: E712
+        filters = [User.deleted_at.is_(None)]  # noqa: E712
         filters.extend(_build_date_filters(func.date(User.created_at), date_range))
         return User.query.filter(and_(*filters)).count()
 
@@ -136,7 +136,7 @@ class KpiService:
         """Get daily registration counts for charting."""
         from ..user.models import User
 
-        filters = [User.is_deleted == False]  # noqa: E712
+        filters = [User.deleted_at.is_(None)]  # noqa: E712
         filters.extend(_build_date_filters(func.date(User.created_at), date_range))
 
         results = (
@@ -160,7 +160,7 @@ class KpiService:
         from ..user.models import User
         from ..match.models import Match
 
-        total_users = User.query.filter_by(is_deleted=False).count()
+        total_users = User.query.filter(User.deleted_at.is_(None)).count()
         if total_users == 0:
             return 0.0
 
@@ -209,7 +209,7 @@ class KpiService:
         for (pid,) in players_as_p2:
             player_ids.add(pid)
 
-        total_users = User.query.filter_by(is_deleted=False).count()
+        total_users = User.query.filter(User.deleted_at.is_(None)).count()
         return total_users - len(player_ids)
 
     # ========== RETENTION METRICS ==========
@@ -277,7 +277,7 @@ class KpiService:
         # Users registered before cutoff_registration
         eligible_users = User.query.filter(
             and_(
-                User.is_deleted == False,  # noqa: E712
+                User.deleted_at.is_(None),
                 User.created_at <= cutoff_registration,
             )
         ).all()
@@ -543,7 +543,7 @@ class KpiService:
 
         # Check last registration
         last_user = (
-            User.query.filter_by(is_deleted=False)
+            User.query.filter(User.deleted_at.is_(None))
             .order_by(User.created_at.desc())
             .first()
         )
@@ -604,3 +604,256 @@ class KpiService:
             FeatureName.DRILL_START: "Avvio drill",
         }
         return labels.get(feature, feature.value)
+    # ========== BUSINESS & COMMUNITY KPIs ==========
+
+    @staticmethod
+    def get_director_performance() -> List[Dict[str, Any]]:
+        """
+        Get performance metrics for tournament directors.
+        Metrics:
+        - Volume: Number of Garas managed
+        - Saturation: Avg (Inscriptions / Max Participants) * 100
+        """
+        from ..user.models import User, DirectorAssignment
+        from ..competition.models import Gara, Inscription
+
+        # 1. Get all users who are directors (or admins acting as directors)
+        # We look for explicit assignments or admins who created garas
+        # For simplicity in this iteration, we focus on users with 'director' role
+        # or who have entries in DirectorAssignment
+        
+        # Get active director assignments
+        assignments = DirectorAssignment.query.all()
+        director_ids = set(a.user_id for a in assignments)
+        
+        # Also include anyone who is a director_id on a Gara (direct link)
+        garas_with_directors = Gara.query.filter(Gara.director_id.isnot(None)).all()
+        for g in garas_with_directors:
+            if g.director_id:
+                director_ids.add(g.director_id)
+                
+        results = []
+        
+        for d_id in director_ids:
+            director = User.query.get(d_id)
+            if not director:
+                continue
+                
+            # Find garas managed by this director
+            # 1. Direct assignment
+            managed_garas = Gara.query.filter_by(director_id=d_id).all()
+            
+            # 2. Assignment via Campionato (simplified for now: if assigned to Campionato, manages all its garas)
+            camp_assignments = DirectorAssignment.query.filter_by(
+                user_id=d_id, entity_type="campionato"
+            ).all()
+            
+            for ca in camp_assignments:
+                if ca.campionato:
+                    managed_garas.extend(ca.campionato.gare)
+                    
+            # 3. Assignment via Gara (explicit)
+            gara_assignments = DirectorAssignment.query.filter_by(
+                user_id=d_id, entity_type="gara"
+            ).all()
+            
+            for ga in gara_assignments:
+                if ga.gara and ga.gara not in managed_garas:
+                    managed_garas.append(ga.gara)
+            
+            # De-duplicate
+            managed_garas = list(set(managed_garas))
+            
+            if not managed_garas:
+                continue
+                
+            # Calculate metrics
+            total_garas = len(managed_garas)
+            completed_garas = sum(1 for g in managed_garas if g.status == "completed")
+            
+            # Saturation
+            saturation_sum = 0.0
+            saturation_count = 0
+            
+            for g in managed_garas:
+                if g.max_participants and g.max_participants > 0:
+                    insc_count = len(g.inscriptions)
+                    saturation = min((insc_count / g.max_participants) * 100, 100.0)
+                    saturation_sum += saturation
+                    saturation_count += 1
+            
+            avg_saturation = (
+                round(saturation_sum / saturation_count, 1) if saturation_count > 0 else 0.0
+            )
+            
+            results.append({
+                "director_id": director.id,
+                "director_name": director.username,
+                "total_garas": total_garas,
+                "completed_garas": completed_garas,
+                "avg_saturation": avg_saturation
+            })
+            
+        # Sort by best saturation
+        results.sort(key=lambda x: x["avg_saturation"], reverse=True)
+        return results
+
+    @staticmethod
+    def get_community_health() -> Dict[str, Any]:
+        """
+        Get community health metrics: Stickiness, Virality, Churn.
+        """
+        from ..match.models import Match
+        
+        # 1. Stickiness: DAU / MAU
+        dau = KpiService.get_dau()
+        mau = KpiService.get_mau()
+        stickiness = round((dau / mau * 100), 1) if mau > 0 else 0.0
+        
+        # 2. Real Churn: Users active last month (30-60d ago) but NOT active this month (0-30d)
+        today = datetime.utcnow()
+        thirty_days_ago = today - timedelta(days=30)
+        sixty_days_ago = today - timedelta(days=60)
+        
+        # Users active 30-60 days ago
+        active_last_month = (
+            db.session.query(Match.player1_id)
+            .filter(
+                Match.updated_at >= sixty_days_ago,
+                Match.updated_at < thirty_days_ago,
+                Match.status == "completed"
+            )
+            .union(
+                db.session.query(Match.player2_id)
+                .filter(
+                    Match.updated_at >= sixty_days_ago,
+                    Match.updated_at < thirty_days_ago,
+                    Match.status == "completed"
+                )
+            ).distinct().all()
+        )
+        prev_active_ids = {r[0] for r in active_last_month if r[0]}
+        
+        # Users active last 30 days
+        active_this_month = (
+            db.session.query(Match.player1_id)
+            .filter(
+                Match.updated_at >= thirty_days_ago,
+                Match.status == "completed"
+            )
+            .union(
+                db.session.query(Match.player2_id)
+                .filter(
+                    Match.updated_at >= thirty_days_ago,
+                    Match.status == "completed"
+                )
+            ).distinct().all()
+        )
+        curr_active_ids = {r[0] for r in active_this_month if r[0]}
+        
+        # Churned = In PREV but Not in CURR
+        churned_count = len(prev_active_ids - curr_active_ids)
+        churn_rate = (
+            round((churned_count / len(prev_active_ids) * 100), 1)
+            if len(prev_active_ids) > 0
+            else 0.0
+        )
+        
+        # 3. Virality: % of matches between New (<30d) and Vet (>30d) users
+        # Sample last 100 matches for performance
+        recent_matches = Match.query.filter_by(status="completed").order_by(Match.updated_at.desc()).limit(100).all()
+        
+        viral_matches = 0
+        total_sample = 0
+        
+        for m in recent_matches:
+            if not m.player1 or not m.player2:
+                continue
+                
+            p1_age = (m.updated_at - m.player1.created_at).days
+            p2_age = (m.updated_at - m.player2.created_at).days
+            
+            is_p1_new = p1_age <= 30
+            is_p2_new = p2_age <= 30
+            
+            # Virality condition: One new, One old
+            if (is_p1_new and not is_p2_new) or (not is_p1_new and is_p2_new):
+                viral_matches += 1
+            
+            total_sample += 1
+            
+        virality_score = (
+            round((viral_matches / total_sample * 100), 1)
+            if total_sample > 0
+            else 0.0
+        )
+            
+        return {
+            "stickiness": stickiness,
+            "churn_count": churned_count,
+            "churn_rate": churn_rate,
+            "virality_score": virality_score
+        }
+
+    @staticmethod
+    def get_power_users(limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Get top users by activity in the last 30 days.
+        """
+        from ..user.models import User
+        from ..match.models import Match
+        
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        # Count matches as P1
+        p1_counts = (
+            db.session.query(
+                Match.player1_id.label("user_id"),
+                func.count(Match.id).label("count")
+            )
+            .filter(
+                Match.updated_at >= thirty_days_ago,
+                Match.status == "completed"
+            )
+            .group_by(Match.player1_id)
+            .all()
+        )
+        
+        # Count matches as P2
+        p2_counts = (
+            db.session.query(
+                Match.player2_id.label("user_id"),
+                func.count(Match.id).label("count")
+            )
+            .filter(
+                Match.updated_at >= thirty_days_ago,
+                Match.status == "completed"
+            )
+            .group_by(Match.player2_id)
+            .all()
+        )
+        
+        # Merge counts
+        user_counts = {}
+        for r in p1_counts:
+            if r.user_id:
+                user_counts[r.user_id] = user_counts.get(r.user_id, 0) + r.count
+                
+        for r in p2_counts:
+            if r.user_id:
+                user_counts[r.user_id] = user_counts.get(r.user_id, 0) + r.count
+                
+        # Sort and get top N
+        sorted_users = sorted(user_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
+        
+        results = []
+        for uid, count in sorted_users:
+            user = User.query.get(uid)
+            if user:
+                results.append({
+                    "user_id": uid,
+                    "username": user.username,
+                    "match_count": count
+                })
+                
+        return results

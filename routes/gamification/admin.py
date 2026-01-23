@@ -373,7 +373,7 @@ def admin_xp_management():
     ).limit(50).all()
 
     # Get users for dropdown
-    users = User.query.filter_by(is_deleted=False).order_by(User.username).all()
+    users = User.query.filter(User.deleted_at.is_(None)).order_by(User.username).all()
 
     return render_template(
         "gamification/admin/xp_management.html",
@@ -541,7 +541,7 @@ def admin_api_user_search():
 
     users = User.query.filter(
         User.username.ilike(f"%{query}%"),  # type: ignore[union-attr]
-        User.is_deleted == False  # noqa: E712
+        User.deleted_at.is_(None)
     ).limit(10).all()
 
     return jsonify([
