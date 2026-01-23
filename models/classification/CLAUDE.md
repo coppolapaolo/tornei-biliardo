@@ -54,9 +54,9 @@ Per-round standings within a gara. Used by matchmaking for pairing.
 **Fields:** `gara_id`, `round_number`, `user_id`, `position`, `matches_won`, `racks_won`, `racks_lost`, `point_difference`
 
 ### GaraClassification
-Final rankings for a completed gara.
+Final rankings for a completed gara. Includes SSR tiebreaker scores.
 
-**Fields:** `gara_id`, `user_id`, `final_position`, `total_matches_won`, `total_racks_won`, `total_racks_lost`
+**Fields:** `gara_id`, `user_id`, `position`, `matches_won`, `racks_won`, `racks_lost`, `rack_difference`, `spot_shot_wins`
 
 ### PlayerEncounter
 Tracks player matchups for anti-rematch logic.
@@ -104,11 +104,20 @@ result = strategy.calculate(gara, round_number)
 
 ## Tiebreaker Resolution
 
-When players have equal scores, tiebreaker order:
-1. Point difference (racks won - racks lost)
-2. Head-to-head result
-3. Total racks won
-4. Initial inscription order (random)
+Tiebreaker order depends on strategy:
+
+### Random Strategy
+1. Total racks won
+2. **SSR (Spot Shot Rally)** - loaded from `GaraClassification.spot_shot_wins`
+3. Rack difference (racks won - racks lost)
+4. Player ID (stability)
+
+### Amalfi Strategy
+1. Matches won
+2. Rack difference (racks won - racks lost)
+3. Head-to-head result
+4. Total racks won
+5. Initial inscription order
 
 ---
 
