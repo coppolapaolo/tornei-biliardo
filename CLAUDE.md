@@ -32,6 +32,9 @@ black . && flake8
 pybabel extract -F babel.cfg -o messages.pot .  # Extract new strings
 pybabel update -i messages.pot -d translations  # Update catalogs
 pybabel compile -d translations                 # Compile translations
+
+# Documentation
+python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 ```
 
 ### Key Files & Locations
@@ -365,6 +368,7 @@ pytest tests/new/ -n auto
 
 ## Additional Documentation
 
+- **[docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)**: Auto-generated database schema (tables, columns, FKs) - regenerate with `python scripts/generate_schema_docs.py`
 - **[models/CLAUDE.md](models/CLAUDE.md)**: Complete model reference with all fields and methods
 - **[routes/CLAUDE.md](routes/CLAUDE.md)**: Route handlers and API endpoints
 - **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy and test organization
