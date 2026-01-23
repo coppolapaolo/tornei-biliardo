@@ -307,6 +307,58 @@ def reset_match(match_id):
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
 
+@match_bp.route("/<int:match_id>/update-times", methods=["POST"])
+@login_required
+@match_manager_required
+def update_match_times(match_id):
+    """Update match start and end times (admin/director).
+
+    Request JSON:
+        {
+            "start_time": "14:30",  // HH:MM format, optional
+            "end_time": "16:45"     // HH:MM format, optional
+        }
+
+    Response JSON:
+        Success: {"success": true, "message": "Orari aggiornati"}
+        Error: {"success": false, "error": "..."}
+    """
+    from models.match.services import MatchService
+
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "Dati mancanti"}), 400
+
+        start_time = data.get("start_time")
+        end_time = data.get("end_time")
+
+        if not start_time and not end_time:
+            return jsonify({
+                "success": False,
+                "error": "Specificare almeno un orario"
+            }), 400
+
+        MatchService.update_times(
+            match_id=match_id,
+            start_time_str=start_time,
+            end_time_str=end_time
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Orari aggiornati con successo"
+        })
+
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Errore durante l'aggiornamento: {str(e)}"
+        }), 500
+
+
 @match_bp.route("/<int:match_id>/assign-table", methods=["POST"])
 @login_required
 @match_manager_required

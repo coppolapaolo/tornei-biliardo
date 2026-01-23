@@ -387,7 +387,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
 
     # Results
     started_at = db.Column(db.DateTime, nullable=True)
-    completed_at = db.Column(db.DateTime, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)  # Renamed from completed_at
     # Scores: racks won (single-set) or sets won (multi-set)
     # See distance_config property for winning threshold logic
     player1_score = db.Column(db.Integer, nullable=False, default=0)
@@ -545,7 +545,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             raise ValueError("Match is not in progress")
 
         self.status = MatchStatus.COMPLETED
-        self.completed_at = datetime.utcnow()
+        self.ended_at = datetime.utcnow()
         self.winner_id = winner_id
 
     def cancel_match(self, reason: Optional[str] = None) -> None:

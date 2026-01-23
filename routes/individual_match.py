@@ -478,6 +478,68 @@ def cancel_match(match_id):
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
+@individual_match_bp.route("/matches/<int:match_id>/update-times", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def update_match_times(match_id):
+    """Update individual match start and end times (proposer/admin only).
+
+    Request JSON:
+        {
+            "started_at": "2026-01-23T14:30:00",  // ISO format, optional
+            "ended_at": "2026-01-23T16:45:00"     // ISO format, optional
+        }
+
+    Response JSON:
+        Success: {"success": true, "message": "Orari aggiornati"}
+        Error: {"success": false, "error": "..."}
+    """
+    try:
+        data = request.get_json() if request.is_json else request.form
+        if not data:
+            return jsonify({"success": False, "error": "Dati mancanti"}), 400
+
+        started_at_str = data.get("started_at")
+        ended_at_str = data.get("ended_at")
+
+        if not started_at_str and not ended_at_str:
+            return jsonify({
+                "success": False,
+                "error": "Specificare almeno un orario"
+            }), 400
+
+        # Parse ISO datetime strings
+        started_at = None
+        ended_at = None
+        if started_at_str:
+            started_at = datetime.fromisoformat(started_at_str.replace("Z", "+00:00"))
+        if ended_at_str:
+            ended_at = datetime.fromisoformat(ended_at_str.replace("Z", "+00:00"))
+
+        IndividualMatchService.update_times(
+            match_id=match_id,
+            started_at=started_at,
+            ended_at=ended_at,
+            user_id=current_user.id
+        )
+
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "message": "Orari aggiornati con successo"
+            })
+        else:
+            flash("Orari aggiornati con successo!", "success")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        error_msg = str(e)
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
 @individual_match_bp.route("/availability", methods=["GET", "POST"])
 @RoleRequirement.player_or_director_required
 def manage_availability():

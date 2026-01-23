@@ -97,6 +97,90 @@ class MatchService:
         return MatchStateService.to_completed(match_id)
 
     @staticmethod
+    @transactional(domain="match")
+    def update_times(
+        match_id: int,
+        start_time_str: Optional[str] = None,
+        end_time_str: Optional[str] = None,
+    ) -> Match:
+        """Update match start and end times.
+
+        Times are provided as HH:MM strings. The method infers the correct date
+        based on the gara's date and time, handling midnight crossings.
+
+        Date inference logic:
+        - started_at: If start_time < gara.time → next day
+        - ended_at: If end_time <= start_time → next day from started_at
+
+        Args:
+            match_id: ID of the match to update
+            start_time_str: Start time in "HH:MM" format (optional)
+            end_time_str: End time in "HH:MM" format (optional)
+
+        Returns:
+            The updated Match object
+
+        Raises:
+            ValueError: If match not found or times are invalid
+        """
+        from datetime import time as datetime_time, timedelta
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} non trovato")
+
+        gara = match.gara
+        if not gara:
+            raise ValueError("Match senza gara associata non supportato per update_times")
+
+        gara_date = gara.date
+        gara_time = gara.time or datetime_time(0, 0)
+
+        # Parse start_time and calculate started_at
+        if start_time_str:
+            try:
+                parts = start_time_str.split(":")
+                start_time = datetime_time(int(parts[0]), int(parts[1]))
+            except (ValueError, IndexError):
+                raise ValueError(f"Formato ora non valido: {start_time_str}")
+
+            # If start_time < gara.time → next day
+            if start_time < gara_time:
+                start_date = gara_date + timedelta(days=1)
+            else:
+                start_date = gara_date
+
+            match.started_at = datetime.combine(start_date, start_time)
+
+        # Parse end_time and calculate ended_at
+        if end_time_str:
+            try:
+                parts = end_time_str.split(":")
+                end_time = datetime_time(int(parts[0]), int(parts[1]))
+            except (ValueError, IndexError):
+                raise ValueError(f"Formato ora non valido: {end_time_str}")
+
+            # Base date is started_at.date() if available, else gara.date
+            if match.started_at:
+                base_date = match.started_at.date()
+                # Get start_time for comparison
+                start_time_for_cmp = match.started_at.time()
+            else:
+                base_date = gara_date
+                start_time_for_cmp = gara_time
+
+            # If end_time <= start_time → next day
+            if end_time <= start_time_for_cmp:
+                end_date = base_date + timedelta(days=1)
+            else:
+                end_date = base_date
+
+            match.ended_at = datetime.combine(end_date, end_time)
+
+        db.session.add(match)
+        return match
+
+    @staticmethod
     def add_rack_to_completed_match(
         match_id: int,
         rack_number: int,

@@ -370,7 +370,7 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
 
         Expected behavior:
         - Updates match status to COMPLETED
-        - Sets completed_at timestamp
+        - Sets ended_at timestamp
         - Sets winner_id
         - Handles transaction internally (commit at line 684)
         """
@@ -403,7 +403,7 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
             db_match = db.session.get(IndividualMatch, individual_match.id)
             assert db_match is not None
             assert db_match.status == MatchStatus.COMPLETED
-            assert db_match.completed_at is not None
+            assert db_match.ended_at is not None
             assert db_match.winner_id == winner_id
 
     def test_cancel_match_transaction_behavior(self, app, test_match_phase2):

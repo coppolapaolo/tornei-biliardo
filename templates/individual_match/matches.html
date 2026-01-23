@@ -158,10 +158,10 @@
                                 {% endif %}
                             </div>
                         </div>
-                        {% if match.completed_at or match.started_at %}
+                        {% if match.ended_at or match.started_at %}
                         <div class="card-footer text-muted text-center small">
-                            {% if match.completed_at %}
-                            Completato il {{ match.completed_at|date_local }}
+                            {% if match.ended_at %}
+                            Completato il {{ match.ended_at|date_local }}
                             {% elif match.started_at %}
                             Iniziato il {{ match.started_at|date_local }}
                             {% endif %}

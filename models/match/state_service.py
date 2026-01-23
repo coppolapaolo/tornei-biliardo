@@ -7,6 +7,8 @@ Handles all state transitions: pending → playing → completed.
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from models.base import db
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
@@ -63,6 +65,11 @@ class MatchStateService:
             )
 
         match.status = MatchStatus.PLAYING.value
+
+        # Auto-set started_at if not already manually set
+        if match.started_at is None:
+            match.started_at = datetime.utcnow()
+
         db.session.add(match)
         return match
 
@@ -96,6 +103,11 @@ class MatchStateService:
             )
 
         match.status = MatchStatus.COMPLETED.value
+
+        # Auto-set ended_at if not already manually set
+        if match.ended_at is None:
+            match.ended_at = datetime.utcnow()
+
         db.session.add(match)
 
         # Post-completion side effects

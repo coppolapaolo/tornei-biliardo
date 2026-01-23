@@ -118,6 +118,29 @@
             <i class="fas fa-undo"></i> {{ _('Reset Partita') }}
         </button>
         {% endif %}
+
+        {# Time editing section for statistics #}
+        <div class="mt-3 pt-3 border-top">
+            <h6><i class="fas fa-clock"></i> {{ _('Tempi Partita') }}</h6>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label small">{{ _('Inizio') }}</label>
+                    <input type="time" class="form-control form-control-sm" id="matchStartTime"
+                        value="{{ match.started_at.strftime('%H:%M') if match.started_at else '' }}">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small">{{ _('Fine') }}</label>
+                    <input type="time" class="form-control form-control-sm" id="matchEndTime"
+                        value="{{ match.ended_at.strftime('%H:%M') if match.ended_at else '' }}">
+                </div>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="updateMatchTimes({{ match.id }})">
+                <i class="fas fa-save"></i> {{ _('Aggiorna Tempi') }}
+            </button>
+            <small class="text-muted d-block mt-1">
+                <i class="fas fa-info-circle"></i> {{ _('Inserisci solo orario, il giorno viene inferito dalla data della gara') }}
+            </small>
+        </div>
     </div>
 </div>
 
@@ -206,4 +229,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+/**
+ * Updates match start and end times.
+ * @param {number} matchId - The match ID
+ */
+function updateMatchTimes(matchId) {
+    const startTime = document.getElementById('matchStartTime').value;
+    const endTime = document.getElementById('matchEndTime').value;
+
+    if (!startTime && !endTime) {
+        showError({{ _("Inserisci almeno un orario")|tojson }});
+        return;
+    }
+
+    const data = {};
+    if (startTime) data.start_time = startTime;
+    if (endTime) data.end_time = endTime;
+
+    fetch(`/admin/match/${matchId}/update-times`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess({{ _("Tempi aggiornati con successo")|tojson }});
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante l'aggiornamento dei tempi")|tojson }});
+    });
+}
 </script>

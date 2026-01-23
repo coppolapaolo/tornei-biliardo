@@ -65,6 +65,10 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
 
+    # Time tracking for statistics
+    started_at = db.Column(db.DateTime, nullable=True)  # Set when match starts playing
+    ended_at = db.Column(db.DateTime, nullable=True)  # Set when match completes
+
     # Table assignment for venue management
     table_assignment = db.Column(
         db.String(10), nullable=True

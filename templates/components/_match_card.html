@@ -164,13 +164,13 @@
               {% set trio = match.trio_match %}
               <button class="btn btn-warning flex-grow-1" style="min-height: 44px;"
                       data-bs-toggle="modal" data-bs-target="#quickResultModal"
-                      onclick='openQuickResultTrio({{ match.id }}, {{ trio.id }}, {{ trio.player1.username|tojson }}, {{ trio.player2.username|tojson }}, {{ trio.player3.username|tojson }}, {{ trio.player1_racks }}, {{ trio.player2_racks }}, {{ trio.player3_racks }})'>
+                      onclick='openQuickResultTrio({{ match.id }}, {{ trio.id }}, {{ trio.player1.username|tojson }}, {{ trio.player2.username|tojson }}, {{ trio.player3.username|tojson }}, {{ trio.player1_racks }}, {{ trio.player2_racks }}, {{ trio.player3_racks }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }})'>
                 <i class="fas fa-tachometer-alt"></i> {{ _('Risultato') }}
               </button>
             {% else %}
               <button class="btn btn-warning flex-grow-1" style="min-height: 44px;"
                       data-bs-toggle="modal" data-bs-target="#quickResultModal"
-                      onclick='openQuickResult({{ match.id }}, {{ match.player1.username|tojson }}, {{ match.player2.username|tojson }}, {{ match.player1_score }}, {{ match.player2_score }})'>
+                      onclick='openQuickResult({{ match.id }}, {{ match.player1.username|tojson }}, {{ match.player2.username|tojson }}, {{ match.player1_score }}, {{ match.player2_score }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }})'>
                 <i class="fas fa-tachometer-alt"></i> {{ _('Risultato') }}
               </button>
             {% endif %}

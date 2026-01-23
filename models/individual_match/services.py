@@ -303,6 +303,54 @@ class IndividualMatchService:
             invitation_id
         )
 
+    # ========== Match Time Methods ==========
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def update_times(
+        match_id: int,
+        started_at: Optional[datetime] = None,
+        ended_at: Optional[datetime] = None,
+        user_id: Optional[int] = None,
+    ) -> IndividualMatch:
+        """Update individual match start and end times.
+
+        Permission: proposer or admin can edit.
+
+        Args:
+            match_id: ID of the individual match
+            started_at: New start datetime (if provided)
+            ended_at: New end datetime (if provided)
+            user_id: User making the change (for permission check)
+
+        Returns:
+            Updated IndividualMatch
+
+        Raises:
+            ValueError: If match not found or user lacks permission
+        """
+        match = db.session.get(IndividualMatch, match_id)
+        if not match:
+            raise ValueError(f"IndividualMatch {match_id} not found")
+
+        # Permission check: proposer or admin
+        if user_id:
+            from ..user.models import User
+            user = db.session.get(User, user_id)
+            proposal = match.proposal
+            is_proposer = proposal and proposal.proposer_id == user_id
+            is_admin = user and user.is_admin
+            if not (is_proposer or is_admin):
+                raise ValueError("Solo il proponente o un admin può modificare gli orari")
+
+        if started_at is not None:
+            match.started_at = started_at
+
+        if ended_at is not None:
+            match.ended_at = ended_at
+
+        return match
+
     # ========== Match Lifecycle Methods (delegate to MatchLifecycleService) ==========
 
     @staticmethod

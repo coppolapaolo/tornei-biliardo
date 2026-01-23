@@ -325,9 +325,9 @@
                         <dd class="col-sm-7">{{ match.started_at|datetime_local }}</dd>
                         {% endif %}
 
-                        {% if match.completed_at %}
+                        {% if match.ended_at %}
                         <dt class="col-sm-5">Completato:</dt>
-                        <dd class="col-sm-7">{{ match.completed_at|datetime_local }}</dd>
+                        <dd class="col-sm-7">{{ match.ended_at|datetime_local }}</dd>
                         {% endif %}
                     </dl>
                 </div>
@@ -362,6 +362,33 @@
                     </div>
                 </div>
             </div>
+
+            {# Time editing section - visible to proposer or admin #}
+            {% set is_proposer = match.proposal and match.proposal.proposer_id == current_user.id %}
+            {% if is_proposer or current_user.is_admin %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Modifica Tempi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">Inizio</label>
+                            <input type="datetime-local" class="form-control form-control-sm" id="individualStartTime"
+                                value="{{ match.started_at.strftime('%Y-%m-%dT%H:%M') if match.started_at else '' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Fine</label>
+                            <input type="datetime-local" class="form-control form-control-sm" id="individualEndTime"
+                                value="{{ match.ended_at.strftime('%Y-%m-%dT%H:%M') if match.ended_at else '' }}">
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="updateIndividualMatchTimes({{ match.id }})">
+                        <i class="fas fa-save"></i> Aggiorna Tempi
+                    </button>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Match Rules -->
             <div class="card">
@@ -492,6 +519,44 @@
                 console.error('Error:', error);
                 showError('Errore durante il rifiuto');
             });
+        });
+    }
+
+    function updateIndividualMatchTimes(matchId) {
+        const startTimeInput = document.getElementById('individualStartTime');
+        const endTimeInput = document.getElementById('individualEndTime');
+
+        const startedAt = startTimeInput ? startTimeInput.value : '';
+        const endedAt = endTimeInput ? endTimeInput.value : '';
+
+        if (!startedAt && !endedAt) {
+            showError('Inserisci almeno un orario');
+            return;
+        }
+
+        const data = {};
+        if (startedAt) data.started_at = startedAt;
+        if (endedAt) data.ended_at = endedAt;
+
+        fetch(`/match/matches/${matchId}/update-times`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccess('Tempi aggiornati con successo');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showError('Errore: ' + (data.error || 'Errore sconosciuto'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Errore durante l\'aggiornamento dei tempi');
         });
     }
 </script>

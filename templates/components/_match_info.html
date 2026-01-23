@@ -34,7 +34,19 @@
         {% else %}
             <p><strong>Tavolo:</strong> <span class="text-muted">Non assegnato</span></p>
         {% endif %}
-        
+
+        {# Match timing for statistics #}
+        {% if match.started_at or match.ended_at %}
+        <hr>
+        <h6 class="text-muted">Tempi</h6>
+            {% if match.started_at %}
+            <p><strong>Inizio:</strong> {{ match.started_at|time_local }}</p>
+            {% endif %}
+            {% if match.ended_at %}
+            <p><strong>Fine:</strong> {{ match.ended_at|time_local }}</p>
+            {% endif %}
+        {% endif %}
+
         {% if debug_info.debug_mode %}
             <hr>
             <h6 class="text-muted">DEBUG Info:</h6>
