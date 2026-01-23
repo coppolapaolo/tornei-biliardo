@@ -799,13 +799,16 @@ class KpiService:
     def get_power_users(limit: int = 10) -> List[Dict[str, Any]]:
         """
         Get top users by activity in the last 30 days.
+
+        Counts both regular matches (player1_id/player2_id on Match)
+        and trio matches (player1_id/player2_id/player3_id on TrioMatch).
         """
         from ..user.models import User
-        from ..match.models import Match
-        
+        from ..match.models import Match, TrioMatch
+
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-        
-        # Count matches as P1
+
+        # Count regular matches (is_trio=False) as P1
         p1_counts = (
             db.session.query(
                 Match.player1_id.label("user_id"),
@@ -813,13 +816,14 @@ class KpiService:
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed"
+                Match.status == "completed",
+                Match.is_trio == False,  # noqa: E712
             )
             .group_by(Match.player1_id)
             .all()
         )
-        
-        # Count matches as P2
+
+        # Count regular matches (is_trio=False) as P2
         p2_counts = (
             db.session.query(
                 Match.player2_id.label("user_id"),
@@ -827,25 +831,71 @@ class KpiService:
             )
             .filter(
                 Match.updated_at >= thirty_days_ago,
-                Match.status == "completed"
+                Match.status == "completed",
+                Match.is_trio == False,  # noqa: E712
             )
             .group_by(Match.player2_id)
             .all()
         )
-        
-        # Merge counts
-        user_counts = {}
-        for r in p1_counts:
-            if r.user_id:
-                user_counts[r.user_id] = user_counts.get(r.user_id, 0) + r.count
-                
-        for r in p2_counts:
-            if r.user_id:
-                user_counts[r.user_id] = user_counts.get(r.user_id, 0) + r.count
-                
+
+        # Count trio matches - player1
+        trio_p1_counts = (
+            db.session.query(
+                TrioMatch.player1_id.label("user_id"),
+                func.count(TrioMatch.id).label("count")
+            )
+            .join(Match, Match.id == TrioMatch.match_id)
+            .filter(
+                Match.updated_at >= thirty_days_ago,
+                Match.status == "completed",
+                Match.is_trio == True,  # noqa: E712
+            )
+            .group_by(TrioMatch.player1_id)
+            .all()
+        )
+
+        # Count trio matches - player2
+        trio_p2_counts = (
+            db.session.query(
+                TrioMatch.player2_id.label("user_id"),
+                func.count(TrioMatch.id).label("count")
+            )
+            .join(Match, Match.id == TrioMatch.match_id)
+            .filter(
+                Match.updated_at >= thirty_days_ago,
+                Match.status == "completed",
+                Match.is_trio == True,  # noqa: E712
+            )
+            .group_by(TrioMatch.player2_id)
+            .all()
+        )
+
+        # Count trio matches - player3
+        trio_p3_counts = (
+            db.session.query(
+                TrioMatch.player3_id.label("user_id"),
+                func.count(TrioMatch.id).label("count")
+            )
+            .join(Match, Match.id == TrioMatch.match_id)
+            .filter(
+                Match.updated_at >= thirty_days_ago,
+                Match.status == "completed",
+                Match.is_trio == True,  # noqa: E712
+            )
+            .group_by(TrioMatch.player3_id)
+            .all()
+        )
+
+        # Merge all counts
+        user_counts: Dict[int, int] = {}
+        for counts in [p1_counts, p2_counts, trio_p1_counts, trio_p2_counts, trio_p3_counts]:
+            for r in counts:
+                if r.user_id:
+                    user_counts[r.user_id] = user_counts.get(r.user_id, 0) + r.count
+
         # Sort and get top N
         sorted_users = sorted(user_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
-        
+
         results = []
         for uid, count in sorted_users:
             user = User.query.get(uid)
@@ -855,5 +905,5 @@ class KpiService:
                     "username": user.username,
                     "match_count": count
                 })
-                
+
         return results

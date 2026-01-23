@@ -13,7 +13,7 @@ from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import joinedload
 
 from models.base import db
-from models.match.models import Match
+from models.match.models import Match, TrioMatch
 from models.competition.models import Gara, Inscription
 from models.campionato.models import Campionato
 from models.user.models import User
@@ -102,22 +102,40 @@ class PlayerHistoryService:
         """
         # Base query - completed matches where user participated
         # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
+        # Also outerjoin TrioMatch to include trio matches where user is one of 3 players
         query = (
             db.session.query(Match)
             .outerjoin(Gara, Gara.id == Match.gara_id)
             .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
+            .outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
             .filter(
                 Match.status == MatchStatus.COMPLETED.value,
                 Match.is_bye == False,  # noqa: E712
                 or_(
-                    Match.player1_id == user_id,
-                    Match.player2_id == user_id,
+                    # Regular matches (not trio)
+                    and_(
+                        Match.is_trio == False,  # noqa: E712
+                        or_(
+                            Match.player1_id == user_id,
+                            Match.player2_id == user_id,
+                        ),
+                    ),
+                    # Trio matches - check all 3 player positions
+                    and_(
+                        Match.is_trio == True,  # noqa: E712
+                        or_(
+                            TrioMatch.player1_id == user_id,
+                            TrioMatch.player2_id == user_id,
+                            TrioMatch.player3_id == user_id,
+                        ),
+                    ),
                 ),
             )
             .options(
                 joinedload(Match.player1),
                 joinedload(Match.player2),
                 joinedload(Match.gara).joinedload(Gara.campionato),
+                joinedload(Match.trio_match),
             )
         )
 
@@ -134,22 +152,40 @@ class PlayerHistoryService:
 
         # Re-run query for pagination (SQLAlchemy pagination needs fresh query)
         # Use outerjoin for Gara to include standalone matches (gara_id = NULL)
+        # Also outerjoin TrioMatch to include trio matches
         query = (
             db.session.query(Match)
             .outerjoin(Gara, Gara.id == Match.gara_id)
             .outerjoin(Campionato, Campionato.id == Gara.campionato_id)
+            .outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
             .filter(
                 Match.status == MatchStatus.COMPLETED.value,
                 Match.is_bye == False,  # noqa: E712
                 or_(
-                    Match.player1_id == user_id,
-                    Match.player2_id == user_id,
+                    # Regular matches (not trio)
+                    and_(
+                        Match.is_trio == False,  # noqa: E712
+                        or_(
+                            Match.player1_id == user_id,
+                            Match.player2_id == user_id,
+                        ),
+                    ),
+                    # Trio matches - check all 3 player positions
+                    and_(
+                        Match.is_trio == True,  # noqa: E712
+                        or_(
+                            TrioMatch.player1_id == user_id,
+                            TrioMatch.player2_id == user_id,
+                            TrioMatch.player3_id == user_id,
+                        ),
+                    ),
                 ),
             )
             .options(
                 joinedload(Match.player1),
                 joinedload(Match.player2),
                 joinedload(Match.gara).joinedload(Gara.campionato),
+                joinedload(Match.trio_match),
             )
         )
         query = PlayerHistoryService._apply_match_filters(query, user_id, filters)
@@ -224,20 +260,42 @@ class PlayerHistoryService:
 
     @staticmethod
     def _calculate_match_stats(matches: List[Match], user_id: int) -> MatchStats:
-        """Calculate aggregated stats for filtered matches."""
+        """Calculate aggregated stats for filtered matches.
+
+        Handles both regular 2-player matches and trio matches.
+        For trio matches, 'lost' only counts if someone else won (not ties).
+        """
         total = len(matches)
         won = sum(1 for m in matches if m.winner_id == user_id)
-        lost = total - won
+        # For losses: count matches where someone else won (not ties, not wins)
+        lost = sum(
+            1 for m in matches
+            if m.winner_id is not None and m.winner_id != user_id
+        )
 
         racks_won = 0
         racks_lost = 0
         for m in matches:
-            if m.player1_id == user_id:
-                racks_won += m.player1_score or 0
-                racks_lost += m.player2_score or 0
+            if m.is_trio and m.trio_match:
+                # Trio match: find user's racks and sum opponents' racks
+                trio = m.trio_match
+                if trio.player1_id == user_id:
+                    racks_won += trio.player1_racks or 0
+                    racks_lost += (trio.player2_racks or 0) + (trio.player3_racks or 0)
+                elif trio.player2_id == user_id:
+                    racks_won += trio.player2_racks or 0
+                    racks_lost += (trio.player1_racks or 0) + (trio.player3_racks or 0)
+                elif trio.player3_id == user_id:
+                    racks_won += trio.player3_racks or 0
+                    racks_lost += (trio.player1_racks or 0) + (trio.player2_racks or 0)
             else:
-                racks_won += m.player2_score or 0
-                racks_lost += m.player1_score or 0
+                # Regular 2-player match
+                if m.player1_id == user_id:
+                    racks_won += m.player1_score or 0
+                    racks_lost += m.player2_score or 0
+                else:
+                    racks_won += m.player2_score or 0
+                    racks_lost += m.player1_score or 0
 
         return MatchStats(
             total_matches=total,

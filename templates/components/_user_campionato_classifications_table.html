@@ -3,24 +3,34 @@
 {% if classifications %}
     <div class="card">
         <div class="card-header">
-            <h5><i class="fas fa-trophy"></i> Classifiche per Campionato</h5>
+            <h5><i class="fas fa-trophy"></i> {{ _("Classifiche per Campionato") }}</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-sm">
                     <thead>
                         <tr>
-                            <th>Campionato</th>
-                            <th>Posizione</th>
-                            <th>Partite Vinte</th>
-                            <th>Diff. Punti</th>
-                            <th>Gare Giocate</th>
+                            <th>{{ _("Campionato") }}</th>
+                            <th>{{ _("Posizione") }}</th>
+                            <th>{{ _("Partite Vinte") }}</th>
+                            <th title="{{ _('Rack vinti - rack persi') }}">{{ _("Diff. Rack") }}</th>
+                            <th>{{ _("Gare Giocate") }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for classification in classifications %}
+                            {# Get classification system from campionato #}
+                            {% set class_system = classification.campionato.default_classification_system|default('WINS') %}
                             <tr>
-                                <td>{{ classification.campionato.name }}</td>
+                                <td>
+                                    {{ classification.campionato.name }}
+                                    {# Show badge for classification system #}
+                                    {% if class_system == 'RACK' %}
+                                        <span class="badge bg-info ms-1" title="{{ _('Classifica basata su rack') }}">
+                                            <i class="fas fa-layer-group"></i>
+                                        </span>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <strong>{{ classification.position }}°</strong>
                                 </td>
@@ -34,7 +44,7 @@
                                         <span class="text-muted">0</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ classification.provas_played }}</td>
+                                <td>{{ classification.gare_played }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

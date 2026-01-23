@@ -169,13 +169,36 @@ class UserStatsService:
             - Only includes completed matches
             - Ordered by most recent first (updated_at desc)
             - Includes matches where user was either player1 or player2
+            - Includes trio matches where user was any of the 3 players
         """
-        from models.match.models import Match
+        from models.match.models import Match, TrioMatch
         from models.status_enum import MatchStatus
 
+        # Use outerjoin to include trio matches
+        # For regular matches: check player1_id or player2_id
+        # For trio matches: check TrioMatch.player1_id/player2_id/player3_id
         matches = (
-            Match.query.filter(
-                db.or_(Match.player1_id == user_id, Match.player2_id == user_id),
+            Match.query.outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
+            .filter(
+                db.or_(
+                    # Regular matches (not trio)
+                    db.and_(
+                        Match.is_trio == False,  # noqa: E712
+                        db.or_(
+                            Match.player1_id == user_id,
+                            Match.player2_id == user_id,
+                        ),
+                    ),
+                    # Trio matches - check all 3 player positions
+                    db.and_(
+                        Match.is_trio == True,  # noqa: E712
+                        db.or_(
+                            TrioMatch.player1_id == user_id,
+                            TrioMatch.player2_id == user_id,
+                            TrioMatch.player3_id == user_id,
+                        ),
+                    ),
+                ),
                 Match.status == MatchStatus.COMPLETED.value,
             )
             .order_by(Match.updated_at.desc())

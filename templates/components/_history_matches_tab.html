@@ -78,13 +78,20 @@
     <div class="card-body">
         {% if match_pagination and match_pagination.items %}
             {% for match in match_pagination.items %}
-                {% set is_player1 = match.player1_id == current_user.id %}
-                {% set opponent = match.player2 if is_player1 else match.player1 %}
-                {% set my_score = match.player1_score if is_player1 else match.player2_score %}
-                {% set opp_score = match.player2_score if is_player1 else match.player1_score %}
-                {% set is_winner = match.winner_id == current_user.id %}
+                {# Handle trio matches differently #}
+                {% if match.is_trio and match.trio_match %}
+                    {% set trio = match.trio_match %}
+                    {% set is_winner = match.winner_id == current_user.id %}
+                    {% set is_tie = match.winner_id is none %}
+                {% else %}
+                    {% set is_player1 = match.player1_id == current_user.id %}
+                    {% set opponent = match.player2 if is_player1 else match.player1 %}
+                    {% set my_score = match.player1_score if is_player1 else match.player2_score %}
+                    {% set opp_score = match.player2_score if is_player1 else match.player1_score %}
+                    {% set is_winner = match.winner_id == current_user.id %}
+                {% endif %}
 
-                <div class="card mb-2 {{ 'border-success' if is_winner else 'border-danger' }}">
+                <div class="card mb-2 {{ 'border-success' if is_winner else ('border-secondary' if match.is_trio and match.winner_id is none else 'border-danger') }}">
                     <div class="card-body py-2">
                         <div class="row align-items-center">
                             <!-- Date and Competition -->
@@ -111,17 +118,44 @@
                                 </small>
                             </div>
 
-                            <!-- Opponent -->
+                            <!-- Opponent (or Trio players) -->
                             <div class="col-md-2">
-                                <span class="text-muted">vs</span>
-                                <strong>{{ opponent.username if opponent else 'Bye' }}</strong>
+                                {% if match.is_trio and match.trio_match %}
+                                    {# Trio match: show other 2 players #}
+                                    {% set trio = match.trio_match %}
+                                    {% set other_players = [] %}
+                                    {% if trio.player1_id != current_user.id %}
+                                        {% set _void = other_players.append(trio.player1.username) %}
+                                    {% endif %}
+                                    {% if trio.player2_id != current_user.id %}
+                                        {% set _void = other_players.append(trio.player2.username) %}
+                                    {% endif %}
+                                    {% if trio.player3_id != current_user.id %}
+                                        {% set _void = other_players.append(trio.player3.username) %}
+                                    {% endif %}
+                                    <span class="text-primary" title="{{ _('Trio') }}">
+                                        <i class="fas fa-users me-1"></i>
+                                    </span>
+                                    <strong>{{ other_players|join(' • ') }}</strong>
+                                {% else %}
+                                    <span class="text-muted">vs</span>
+                                    <strong>{{ opponent.username if opponent else 'Bye' }}</strong>
+                                {% endif %}
                             </div>
 
                             <!-- Score -->
                             <div class="col-md-2 text-center">
-                                <span class="badge {{ 'bg-success' if is_winner else 'bg-danger' }} fs-6">
-                                    {{ my_score }} - {{ opp_score }}
-                                </span>
+                                {% if match.is_trio and match.trio_match %}
+                                    {# Trio: show all 3 scores #}
+                                    {% set trio = match.trio_match %}
+                                    <span class="badge {{ 'bg-success' if is_winner else ('bg-secondary' if match.winner_id is none else 'bg-danger') }} fs-6">
+                                        {{ trio.player1_racks }} - {{ trio.player2_racks }} - {{ trio.player3_racks }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge {{ 'bg-success' if is_winner else 'bg-danger' }} fs-6">
+                                        {{ my_score }} - {{ opp_score }}
+                                    </span>
+                                {% endif %}
                             </div>
 
                             <!-- Discipline -->
