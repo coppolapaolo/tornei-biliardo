@@ -259,6 +259,52 @@ gara2.date, gara2.time = date(2026, 1, 15), time(18, 0)  # number=2 → OK
 
 See `docs/adr/ADR-016-gara-sequential-date-validation.md` for details.
 
+### 10. Migration Naming Convention
+New migrations use date-prefixed naming:
+
+```bash
+# Create new migration file
+touch migrations/20260125_description.py
+```
+
+Migration files must:
+- Define `migration_name` variable for tracking
+- Be idempotent (safe to run multiple times)
+- Use `op.execute()` for raw SQL on SQLite
+
+### 11. Email Service (Flask-Mail)
+Use `EmailService` for all email sending:
+
+```python
+from models.shared.email_service import EmailService
+
+email_service = EmailService()
+email_service.send_email(
+    to=user.email,
+    subject=_("Subject"),
+    template="email/template.html",
+    **template_context
+)
+```
+
+Configuration via environment: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
+See `docs/AUTHENTICATION.md` for full setup.
+
+### 12. Gamification Frontend Bridge
+Domain events trigger toast notifications via the frontend bridge:
+
+```python
+from models.gamification.frontend_bridge import flash_gamification_event, GamificationEventType
+
+flash_gamification_event(GamificationEventType.XP, {
+    "amount": 50,
+    "title": _("XP Guadagnati!"),
+    "subtitle": _("Continua così!")
+})
+```
+
+See `docs/GAMIFICATION_V2.md` for event types and animation system.
+
 ---
 
 ## Architecture
@@ -338,7 +384,7 @@ set.distance = 5  # Each set is race to 5 racks
 # Before every commit:
 black . && flake8
 pyright
-pytest tests/new/ -n auto
+pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 ```
 
 ### Testing Requirements
@@ -346,6 +392,14 @@ pytest tests/new/ -n auto
 - Test isolation: use `db_session.get()` not `refresh()`
 - Legacy tests (`tests/legacy/`) are not maintained
 - Unit tests: `-n auto` OK; Integration tests: `-n 4` (SQLite concurrency)
+- **EventBus isolation**: Never clear `EventBus._handlers = {}` in tests - preserve and restore:
+  ```python
+  @pytest.fixture(autouse=True)
+  def preserve_handlers():
+      original = {k: list(v) for k, v in EventBus._handlers.items()}
+      yield
+      EventBus._handlers = original
+  ```
 
 ---
 
@@ -363,12 +417,16 @@ pytest tests/new/ -n auto
 | `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |
 | `onclick="func({{ x\|tojson }})"` | `onclick='func({{ x\|tojson }})'` (single quotes) |
 | Gara N with date before gara N-1 | Ensure date/time is sequential by number (ADR-016) |
+| `EventBus._handlers = {}` in tests | Preserve and restore handlers (breaks notifications/gamification) |
+| Manual SMTP sending | Use `EmailService` for all emails |
 
 ---
 
 ## Additional Documentation
 
 - **[docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)**: Auto-generated database schema (tables, columns, FKs) - regenerate with `python scripts/generate_schema_docs.py`
+- **[docs/AUTHENTICATION.md](docs/AUTHENTICATION.md)**: Email verification, password reset, Flask-Mail setup
+- **[docs/GAMIFICATION_V2.md](docs/GAMIFICATION_V2.md)**: Frontend bridge, toast notifications, mascot system
 - **[models/CLAUDE.md](models/CLAUDE.md)**: Complete model reference with all fields and methods
 - **[routes/CLAUDE.md](routes/CLAUDE.md)**: Route handlers and API endpoints
 - **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy and test organization
