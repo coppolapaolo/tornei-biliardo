@@ -84,6 +84,45 @@ class TableAssignmentService:
         return gara.get_available_tables()
 
     @staticmethod
+    def _get_free_tables(gara_id: int) -> List[str]:
+        """Get list of tables that are currently free (not assigned to PLAYING matches).
+
+        A table is "free" if:
+        1. It's in the gara's configured available tables list
+        2. It's NOT currently assigned to any PLAYING match in this gara
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            List of table names that are currently available for assignment
+        """
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            return []
+
+        all_tables = set(gara.get_available_tables())
+        if not all_tables:
+            return []
+
+        # Find tables currently assigned to PLAYING matches
+        occupied_tables = set(
+            row[0]
+            for row in db.session.query(Match.table_assignment)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status == MatchStatus.PLAYING.value,
+                Match.table_assignment.isnot(None),
+            )
+            .all()
+        )
+
+        # Return tables that are configured but not occupied
+        return list(all_tables - occupied_tables)
+
+    @staticmethod
     @transactional(domain="match")
     def assign_tables_to_round(gara_id: int, round_number: int) -> int:
         """Assign tables to all pending matches in a round.
@@ -191,14 +230,80 @@ class TableAssignmentService:
 
     @staticmethod
     @transactional(domain="match")
-    def release_and_reassign_table(match_id: int) -> Optional[Match]:
-        """Release table from completed match and reassign to first eligible waiting match.
+    def assign_available_tables(gara_id: int) -> int:
+        """Assign all free tables to eligible pending matches.
 
-        This method:
+        This is the core "pull" strategy method. It:
+        1. Gets all tables that are configured but not assigned to PLAYING matches
+        2. Gets all PENDING matches (excluding byes), ordered by round + ID
+        3. For each pending match where both players are free, assigns a free table
+
+        This method should be called after any match completes to ensure
+        freed tables are reassigned, even if they couldn't be assigned immediately
+        when they were first freed.
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            Number of matches that received table assignments
+        """
+        from models.match.services import MatchService
+
+        # Get all currently free tables
+        free_tables = TableAssignmentService._get_free_tables(gara_id)
+        if not free_tables:
+            return 0
+
+        # Get pending matches without table (exclude bye matches)
+        # Order by round_number, then match.id for consistent assignment
+        pending_matches = (
+            Match.query.filter_by(
+                gara_id=gara_id,
+                table_assignment=None,
+                status=MatchStatus.PENDING.value,
+            )
+            .filter(Match.is_bye == False)  # noqa: E712
+            .order_by(Match.round_number, Match.id)
+            .all()
+        )
+
+        assigned_count = 0
+        table_index = 0
+
+        for waiting_match in pending_matches:
+            if table_index >= len(free_tables):
+                break  # No more free tables
+
+            # Check if both players are free
+            player1_busy = TableAssignmentService._is_player_busy(
+                gara_id, waiting_match.player1_id
+            )
+            player2_busy = TableAssignmentService._is_player_busy(
+                gara_id, waiting_match.player2_id
+            )
+
+            if not player1_busy and not player2_busy:
+                # Both players are free - assign table
+                waiting_match.table_assignment = free_tables[table_index]
+                waiting_match.status = MatchStatus.PLAYING.value
+                db.session.add(waiting_match)
+                assigned_count += 1
+                table_index += 1
+
+        return assigned_count
+
+    @staticmethod
+    @transactional(domain="match")
+    def release_and_reassign_table(match_id: int) -> Optional[Match]:
+        """Release table from completed match and reassign free tables to waiting matches.
+
+        This method uses a "pull" strategy:
         1. Removes the table from the completed match
-        2. Finds the first pending match where BOTH players are free
-        3. Assigns the freed table to the waiting match
-        4. Transitions the waiting match to PLAYING status
+        2. Calls assign_available_tables() to assign ALL free tables to eligible matches
+
+        This ensures that tables "lost" in previous completions (when no eligible
+        match existed) are recovered when players become available.
 
         Business Rule: A match can only receive a table if BOTH players are not
         currently playing in another match. This prevents a player from being
@@ -208,10 +313,8 @@ class TableAssignmentService:
             match_id: ID of the completed match
 
         Returns:
-            The match that received the freed table (now PLAYING), or None if no eligible match
+            The first match that received a table (now PLAYING), or None if no eligible match
         """
-        from models.match.services import MatchService
-
         completed_match = db.session.get(Match, match_id)
         if not completed_match:
             raise ValueError(f"Match {match_id} not found")
@@ -219,43 +322,30 @@ class TableAssignmentService:
         if completed_match.status != MatchStatus.COMPLETED.value:
             raise ValueError("Can only release tables from completed matches")
 
-        if not completed_match.table_assignment:
-            return None  # No table to release
+        # Store gara_id before potentially clearing table
+        gara_id = completed_match.gara_id
 
-        freed_table = completed_match.table_assignment
+        # Remove table from completed match (if any)
+        if completed_match.table_assignment:
+            completed_match.table_assignment = None
+            db.session.add(completed_match)
 
-        # Remove table from completed match
-        completed_match.table_assignment = None
-        db.session.add(completed_match)
+        # Use pull strategy: assign ALL available tables to eligible matches
+        # This recovers any tables that were "lost" in previous completions
+        assigned_count = TableAssignmentService.assign_available_tables(gara_id)
 
-        # Find pending matches without table (exclude bye matches)
-        # Order by round_number, then match.id for consistent assignment
-        pending_matches = (
-            Match.query.filter_by(
-                gara_id=completed_match.gara_id,
-                table_assignment=None,
-                status=MatchStatus.PENDING.value,
+        if assigned_count > 0:
+            # Return the first match that was assigned (for backwards compatibility)
+            first_assigned = (
+                Match.query.filter_by(
+                    gara_id=gara_id,
+                    status=MatchStatus.PLAYING.value,
+                )
+                .filter(Match.table_assignment.isnot(None))
+                .order_by(Match.round_number, Match.id)
+                .first()
             )
-            .filter(Match.is_bye == False)  # noqa: E712
-            .order_by(Match.round_number, Match.id)
-            .all()
-        )
-
-        # Find first match where BOTH players are free
-        for waiting_match in pending_matches:
-            player1_busy = TableAssignmentService._is_player_busy(
-                completed_match.gara_id, waiting_match.player1_id
-            )
-            player2_busy = TableAssignmentService._is_player_busy(
-                completed_match.gara_id, waiting_match.player2_id
-            )
-
-            if not player1_busy and not player2_busy:
-                # Both players are free - assign table
-                waiting_match.table_assignment = freed_table
-                waiting_match.status = MatchStatus.PLAYING.value
-                db.session.add(waiting_match)
-                return waiting_match
+            return first_assigned
 
         return None
 

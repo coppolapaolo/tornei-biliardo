@@ -274,9 +274,11 @@ class TestTableAssignmentTDD:
         # Act
         TableAssignmentService.release_and_reassign_table(match_r1.id)
 
-        # Assert - Round 2 match SHOULD get the table (cross-round assignment)
+        # Assert - Round 2 match SHOULD get a table (cross-round assignment)
         db_session.refresh(match_r2)
-        assert match_r2.table_assignment == "Tavolo A"
+        # With pull strategy, we can't guarantee WHICH table gets assigned,
+        # only that ONE of the available tables is assigned
+        assert match_r2.table_assignment in ["Tavolo A", "Tavolo B", "Tavolo C"]
         assert match_r2.status == MatchStatus.PLAYING.value
 
         # Completed match should have table released
@@ -304,3 +306,121 @@ class TestTableAssignmentTDD:
         """
         count = TableAssignmentService.get_available_tables_count("Ghost Venue")
         assert count is None
+
+    def test_lost_table_recovered_when_players_free(
+        self, db_session, gara_with_venue, players
+    ):
+        """
+        TEST 8: Tables should NOT be lost when no eligible match exists
+
+        This test verifies the fix for the bug where tables were "lost" when:
+        1. A match completes and frees its table
+        2. But no pending match is eligible (players busy)
+        3. The table was removed from completed match but never reassigned
+
+        Scenario:
+        - 2 tables: "Tavolo A", "Tavolo B"
+        - Match 1: A vs B (playing on Tavolo A)
+        - Match 2: C vs D (playing on Tavolo B)
+        - Match 3: A vs C (pending - both busy!)
+        - Match 4: B vs D (pending - both busy!)
+
+        When Match 1 completes:
+        - Tavolo A is freed
+        - Match 3 can't use it (A is free but C is still playing)
+        - Match 4 can't use it (B is free but D is still playing)
+        - OLD BUG: Tavolo A is "lost"
+
+        When Match 2 completes:
+        - Tavolo B is freed
+        - NOW both A and C are free → Match 3 should get a table
+        - NOW both B and D are free → Match 4 should get a table
+        - With pull strategy, BOTH freed tables should be used
+        """
+        # Setup: Create 4 players (A, B, C, D)
+        player_a, player_b, player_c, player_d = players[0], players[1], players[2], players[3]
+
+        # Limit available tables to 2
+        gara_with_venue.set_available_tables(["Tavolo A", "Tavolo B"])
+        db_session.commit()
+
+        # Match 1: A vs B (playing on Tavolo A)
+        match1 = Match(
+            gara_id=gara_with_venue.id,
+            round_number=1,
+            player1_id=player_a.id,
+            player2_id=player_b.id,
+            status=MatchStatus.PLAYING.value,
+            table_assignment="Tavolo A",
+        )
+        db_session.add(match1)
+
+        # Match 2: C vs D (playing on Tavolo B)
+        match2 = Match(
+            gara_id=gara_with_venue.id,
+            round_number=1,
+            player1_id=player_c.id,
+            player2_id=player_d.id,
+            status=MatchStatus.PLAYING.value,
+            table_assignment="Tavolo B",
+        )
+        db_session.add(match2)
+
+        # Match 3: A vs C (pending - cross-pairing, BOTH busy!)
+        match3 = Match(
+            gara_id=gara_with_venue.id,
+            round_number=2,
+            player1_id=player_a.id,
+            player2_id=player_c.id,
+            status=MatchStatus.PENDING.value,
+            table_assignment=None,
+        )
+        db_session.add(match3)
+
+        # Match 4: B vs D (pending - cross-pairing, BOTH busy!)
+        match4 = Match(
+            gara_id=gara_with_venue.id,
+            round_number=2,
+            player1_id=player_b.id,
+            player2_id=player_d.id,
+            status=MatchStatus.PENDING.value,
+            table_assignment=None,
+        )
+        db_session.add(match4)
+        db_session.commit()
+
+        # Act 1: Complete Match 1 (A vs B) - frees A and B
+        match1.status = MatchStatus.COMPLETED.value
+        match1.winner_id = player_a.id
+        db_session.commit()
+
+        result1 = TableAssignmentService.release_and_reassign_table(match1.id)
+
+        # Assert 1: No match should get the table (C and D still busy)
+        db_session.refresh(match3)
+        db_session.refresh(match4)
+        assert result1 is None, "No match should be eligible yet"
+        assert match3.table_assignment is None
+        assert match4.table_assignment is None
+
+        # Act 2: Complete Match 2 (C vs D) - frees C and D
+        match2.status = MatchStatus.COMPLETED.value
+        match2.winner_id = player_c.id
+        db_session.commit()
+
+        result2 = TableAssignmentService.release_and_reassign_table(match2.id)
+
+        # Assert 2: NOW both pending matches should have tables!
+        db_session.refresh(match3)
+        db_session.refresh(match4)
+
+        # With pull strategy, BOTH tables should be recovered
+        assert match3.table_assignment is not None, "Match 3 should have a table"
+        assert match3.status == MatchStatus.PLAYING.value
+        assert match4.table_assignment is not None, "Match 4 should have a table"
+        assert match4.status == MatchStatus.PLAYING.value
+
+        # Verify both tables are in use
+        assigned_tables = {match3.table_assignment, match4.table_assignment}
+        assert assigned_tables == {"Tavolo A", "Tavolo B"}
+
