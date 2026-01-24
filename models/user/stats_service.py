@@ -59,15 +59,39 @@ class UserStatsService:
             raise ValueError("User not found")
 
         # Import models needed for statistics
-        from models.match.models import Match
+        from models.match.models import Match, TrioMatch
         from models.competition.models import Inscription
         from models.status_enum import MatchStatus
 
-        # Calculate completed match statistics (excludes pending/playing matches)
-        total_matches = Match.query.filter(
-            db.or_(Match.player1_id == user_id, Match.player2_id == user_id),
-            Match.status == MatchStatus.COMPLETED.value,
-        ).count()
+        # Calculate completed match statistics (includes trio matches)
+        # Regular matches: check player1_id or player2_id
+        # Trio matches: also check TrioMatch.player3_id
+        total_matches = (
+            Match.query.outerjoin(TrioMatch, Match.id == TrioMatch.match_id)
+            .filter(
+                db.or_(
+                    # Regular matches (not trio)
+                    db.and_(
+                        Match.is_trio == False,  # noqa: E712
+                        db.or_(
+                            Match.player1_id == user_id,
+                            Match.player2_id == user_id,
+                        ),
+                    ),
+                    # Trio matches - check all 3 player positions
+                    db.and_(
+                        Match.is_trio == True,  # noqa: E712
+                        db.or_(
+                            TrioMatch.player1_id == user_id,
+                            TrioMatch.player2_id == user_id,
+                            TrioMatch.player3_id == user_id,
+                        ),
+                    ),
+                ),
+                Match.status == MatchStatus.COMPLETED.value,
+            )
+            .count()
+        )
 
         won_matches = Match.query.filter(
             Match.winner_id == user_id, Match.status == MatchStatus.COMPLETED.value
@@ -90,18 +114,56 @@ class UserStatsService:
     @staticmethod
     @read_only(domain="user")
     def get_user_statistics(user_id: int) -> Dict[str, Any]:
-        """Get detailed user statistics (convenience alias).
+        """Get detailed user statistics for player profile page.
 
-        This is an alias for get_user_stats() to provide alternative naming.
-        See get_user_stats() for complete documentation.
+        Returns statistics expected by _user_general_stats.html template:
+        - tournaments_played: Count of distinct campionati with completed gare
+        - provas_played: Count of gare (provas) user has inscriptions for
+        - won_matches: Count of matches won
+        - win_percentage: Win rate as percentage
 
         Args:
             user_id: ID of user to get statistics for
 
         Returns:
-            Dict[str, Any]: Complete user statistics
+            Dict[str, Any]: Complete user statistics for profile display
         """
-        return UserStatsService.get_user_stats(user_id)
+        # Get base stats
+        base_stats = UserStatsService.get_user_stats(user_id)
+
+        # Import additional models for extended stats
+        from models.competition.models import Inscription, Gara
+        from models.status_enum import GaraStatus
+
+        # Count distinct campionati the user participated in (via completed gare)
+        tournaments_played = (
+            db.session.query(func.count(func.distinct(Gara.campionato_id)))
+            .join(Inscription, Inscription.gara_id == Gara.id)
+            .filter(
+                Inscription.user_id == user_id,
+                Gara.status == GaraStatus.COMPLETED.value,
+            )
+            .scalar()
+            or 0
+        )
+
+        # Count gare (provas) where user is inscribed
+        provas_played = (
+            db.session.query(func.count(Inscription.id))
+            .join(Gara, Gara.id == Inscription.gara_id)
+            .filter(
+                Inscription.user_id == user_id,
+                Gara.status == GaraStatus.COMPLETED.value,
+            )
+            .scalar()
+            or 0
+        )
+
+        return {
+            **base_stats,
+            "tournaments_played": tournaments_played,
+            "provas_played": provas_played,
+        }
 
     @staticmethod
     @read_only(domain="user")
@@ -113,12 +175,12 @@ class UserStatsService:
 
         Row Structure:
             - User: User model instance
-            - total_matches: Count of completed matches
             - total_inscriptions: Count of tournament registrations
+            - total_matches: Count of completed matches
             - won_matches: Count of matches won
 
         Performance:
-            - Uses single query with joins and aggregation
+            - Uses subqueries to avoid cartesian product issues
             - More efficient than individual user stat queries
             - Useful for leaderboards and user listings
         """
@@ -126,28 +188,122 @@ class UserStatsService:
         from models.competition.models import Inscription
         from models.status_enum import MatchStatus
 
-        # Efficient single-query aggregation with outer joins to include all users
-        # Uses LEFT OUTER JOINs to ensure users without matches/inscriptions are included
-        # Excludes admin user (special system user as per SPECIFICHE.md)
+        # Subquery for inscription counts per user
+        inscription_subq = (
+            db.session.query(
+                Inscription.user_id.label("user_id"),
+                func.count(Inscription.id).label("total_inscriptions"),
+            )
+            .group_by(Inscription.user_id)
+            .subquery()
+        )
+
+        # Subquery for match counts per user (as player1 or player2)
+        match_subq = (
+            db.session.query(
+                db.case(
+                    (Match.player1_id.isnot(None), Match.player1_id),
+                    else_=Match.player2_id,
+                ).label("user_id"),
+                func.count(Match.id).label("total_matches"),
+                func.sum(
+                    db.case(
+                        (Match.winner_id == Match.player1_id, 1),
+                        else_=0,
+                    )
+                ).label("won_as_p1"),
+            )
+            .filter(Match.status == MatchStatus.COMPLETED.value)
+            .group_by("user_id")
+            .subquery()
+        )
+
+        # Separate subquery for player2 matches
+        match_subq_p2 = (
+            db.session.query(
+                Match.player2_id.label("user_id"),
+                func.count(Match.id).label("total_matches"),
+                func.sum(
+                    db.case(
+                        (Match.winner_id == Match.player2_id, 1),
+                        else_=0,
+                    )
+                ).label("won_as_p2"),
+            )
+            .filter(
+                Match.status == MatchStatus.COMPLETED.value,
+                Match.player2_id.isnot(None),
+            )
+            .group_by(Match.player2_id)
+            .subquery()
+        )
+
+        # Subquery for player1 matches
+        match_subq_p1 = (
+            db.session.query(
+                Match.player1_id.label("user_id"),
+                func.count(Match.id).label("total_matches"),
+                func.sum(
+                    db.case(
+                        (Match.winner_id == Match.player1_id, 1),
+                        else_=0,
+                    )
+                ).label("won_as_p1"),
+            )
+            .filter(
+                Match.status == MatchStatus.COMPLETED.value,
+                Match.player1_id.isnot(None),
+            )
+            .group_by(Match.player1_id)
+            .subquery()
+        )
+
+        # Subquery for trio player3 matches
+        from models.match.models import TrioMatch
+
+        match_subq_p3 = (
+            db.session.query(
+                TrioMatch.player3_id.label("user_id"),
+                func.count(TrioMatch.id).label("total_matches"),
+                func.sum(
+                    db.case(
+                        (Match.winner_id == TrioMatch.player3_id, 1),
+                        else_=0,
+                    )
+                ).label("won_as_p3"),
+            )
+            .join(Match, Match.id == TrioMatch.match_id)
+            .filter(
+                Match.status == MatchStatus.COMPLETED.value,
+                TrioMatch.player3_id.isnot(None),
+            )
+            .group_by(TrioMatch.player3_id)
+            .subquery()
+        )
+
+        # Main query joining user with subqueries
         users_with_stats = (
             db.session.query(
                 User,
-                func.count(Match.id).label("total_matches"),
-                func.count(Inscription.id).label("total_inscriptions"),
-                func.sum(db.case((Match.winner_id == User.id, 1), else_=0)).label(
-                    "won_matches"
+                func.coalesce(inscription_subq.c.total_inscriptions, 0).label(
+                    "total_inscriptions"
                 ),
+                (
+                    func.coalesce(match_subq_p1.c.total_matches, 0)
+                    + func.coalesce(match_subq_p2.c.total_matches, 0)
+                    + func.coalesce(match_subq_p3.c.total_matches, 0)
+                ).label("total_matches"),
+                (
+                    func.coalesce(match_subq_p1.c.won_as_p1, 0)
+                    + func.coalesce(match_subq_p2.c.won_as_p2, 0)
+                    + func.coalesce(match_subq_p3.c.won_as_p3, 0)
+                ).label("won_matches"),
             )
             .filter(User.role != "admin")  # Exclude special admin user
-            .outerjoin(
-                Match,
-                db.and_(
-                    db.or_(Match.player1_id == User.id, Match.player2_id == User.id),
-                    Match.status == MatchStatus.COMPLETED.value,
-                ),
-            )
-            .outerjoin(Inscription, Inscription.user_id == User.id)
-            .group_by(User.id)
+            .outerjoin(inscription_subq, inscription_subq.c.user_id == User.id)
+            .outerjoin(match_subq_p1, match_subq_p1.c.user_id == User.id)
+            .outerjoin(match_subq_p2, match_subq_p2.c.user_id == User.id)
+            .outerjoin(match_subq_p3, match_subq_p3.c.user_id == User.id)
             .all()
         )
 
