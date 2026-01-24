@@ -239,6 +239,22 @@
                 {% endif %}
             </a>
 
+            <!-- Gamification Badge (Always Visible) -->
+            {% if current_user.is_authenticated and gamification_context and gamification_context.progress %}
+            <div class="d-flex align-items-center ms-auto me-3">
+                <a href="{{ url_for('gamification.dashboard') }}" class="text-decoration-none"
+                    title="{{ _('Livello') }} {{ gamification_context.progress.current_level }}">
+                    <div
+                        class="badge bg-light text-primary border border-primary d-flex align-items-center gap-2 py-1 px-2 rounded-pill">
+                        <i class="fas fa-trophy text-warning"></i>
+                        <span class="fw-bold">{{ gamification_context.progress.current_level }}</span>
+                        <span class="small text-muted d-none d-sm-inline">{{ gamification_context.progress.current_xp }}
+                            XP</span>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -409,9 +425,12 @@
     </nav>
 
     <main class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        {% for category, message in messages %}
+        {# Fetch ALL messages once to avoid consumption issues #}
+        {% set all_messages = get_flashed_messages(with_categories=True) %}
+
+        {% if all_messages %}
+        {% for category, message in all_messages %}
+        {% if category != 'gamification_event' %}
         {% if category == 'error' %}
         {% set alert_class = 'alert-danger' %}
         {% elif category == 'success' %}
@@ -425,9 +444,9 @@
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+        {% endif %}
         {% endfor %}
         {% endif %}
-        {% endwith %}
 
         {% block content %}{% endblock %}
     </main>
@@ -578,6 +597,29 @@
         }
     </script>
     {% endif %}
+
+    <!-- Gamification Bridge: Consumes events from Flask flash and triggers JS animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if all_messages %}
+            {% for category, message in all_messages %}
+            {% if category == 'gamification_event' %}
+            try {
+                const eventData = {{ message| safe
+            }};
+        setTimeout(() => {
+            if (window.showGamificationEvent) {
+                window.showGamificationEvent(eventData.type, eventData.data);
+            }
+        }, {{ loop.index0 * 500 + 500 }});
+                        } catch (e) {
+            console.error("Error processing gamification event:", e);
+        }
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

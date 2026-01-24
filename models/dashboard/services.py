@@ -157,6 +157,9 @@ class DashboardVM:
         None  # Player progress on challenges
     )
 
+    # Gamification
+    gamification_stats: Optional[dict[str, Any]] = None  # {level, xp, next_level_xp, streaks}
+
 
 # -----------------------
 # Service
@@ -893,6 +896,7 @@ class DashboardService:
             match_proposals=individual_sections["match_proposals"],
             individual_matches=individual_sections["individual_matches"],
             match_opportunities=individual_sections["match_opportunities"],
+            gamification_stats=DashboardService._build_gamification_stats(user_id),
         )
 
     # ---- PLAYER -------------------------------------------------------
@@ -1008,7 +1012,25 @@ class DashboardService:
             match_opportunities=individual_sections["match_opportunities"],
             available_challenges=challenge_sections["available_challenges"],
             player_challenge_progress=challenge_sections["player_challenge_progress"],
+            gamification_stats=DashboardService._build_gamification_stats(user_id),
         )
+
+    @staticmethod
+    def _build_gamification_stats(user_id: int) -> dict[str, Any]:
+        """Build gamification stats for dashboard widget."""
+        from ..gamification.level_service import LevelService
+        from ..gamification.streak_service import StreakService
+        
+        try:
+            progress = LevelService.get_level_progress(user_id)
+            streaks = StreakService.get_all_streaks(user_id)
+            
+            return {
+                "progress": progress,
+                "streaks": streaks
+            }
+        except Exception:
+            return None
 
     @staticmethod
     def for_guest() -> DashboardVM:

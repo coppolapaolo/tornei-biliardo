@@ -156,7 +156,7 @@ class GamificationToast {
     showQuest(questName, description = '') {
         const toast = this.createToast('quest', {
             mascotImage: MASCOT_IMAGES.quest,
-            title: 'NUOVA QUEST!',
+            title: 'QUEST COMPLETATA!',
             contentType: 'text',
             contentValue: questName,
             subtitle: description
@@ -167,14 +167,16 @@ class GamificationToast {
     /**
      * Show welcome notification
      * @param {string} username - User's name
+     * @param {string} title - Custom title (optional)
+     * @param {string} subtitle - Custom subtitle (optional)
      */
-    showWelcome(username = '') {
+    showWelcome(username = '', title = '', subtitle = '') {
         const toast = this.createToast('welcome', {
             mascotImage: MASCOT_IMAGES.welcome,
-            title: 'BENTORNATO!',
+            title: title || 'BENTORNATO!',
             contentType: 'text',
             contentValue: username ? `Ciao ${username}!` : 'Ciao!',
-            subtitle: 'Pronto per giocare?'
+            subtitle: subtitle || 'Pronto per giocare?'
         });
         this.queueToast(toast, 3000);
     }
@@ -539,7 +541,7 @@ class ProgressBarAnimation {
 let gamificationToast = null;
 
 // Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     gamificationToast = new GamificationToast();
 
     // Expose to window for console access
@@ -563,22 +565,22 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initGamificationEventListeners() {
     // Listen for custom events dispatched from server responses
-    document.addEventListener('gamification:xp', function(e) {
+    document.addEventListener('gamification:xp', function (e) {
         const { amount, reason } = e.detail;
         gamificationToast.showXPGain(amount, reason);
     });
 
-    document.addEventListener('gamification:levelup', function(e) {
+    document.addEventListener('gamification:levelup', function (e) {
         const { level, title } = e.detail;
         gamificationToast.showLevelUp(level, title);
     });
 
-    document.addEventListener('gamification:achievement', function(e) {
+    document.addEventListener('gamification:achievement', function (e) {
         const { name, description, rarity, icon } = e.detail;
         gamificationToast.showAchievement(name, description, rarity, icon);
     });
 
-    document.addEventListener('gamification:streak', function(e) {
+    document.addEventListener('gamification:streak', function (e) {
         const { count, type, hasFreeze } = e.detail;
         gamificationToast.showStreak(count, type, hasFreeze);
     });
@@ -618,7 +620,7 @@ function showGamificationEvent(type, data) {
             gamificationToast.showQuest(data.name, data.description);
             break;
         case 'welcome':
-            gamificationToast.showWelcome(data.username);
+            gamificationToast.showWelcome(data.username, data.title, data.subtitle);
             break;
     }
 }

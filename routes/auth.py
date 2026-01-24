@@ -1,6 +1,7 @@
 # routes/auth.py - Route di autenticazione
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
+from flask_babel import gettext as _
 from models.user.services import UserService
 
 auth_bp = Blueprint("auth", __name__)
@@ -18,6 +19,18 @@ def login():
 
         if user:
             login_user(user)
+            
+            # Gamification: Welcome message
+            try:
+                from models.gamification.frontend_bridge import flash_gamification_event, GamificationEventType
+                flash_gamification_event(GamificationEventType.WELCOME, {
+                    "username": user.username,
+                    "title": _("Che piacere rivederti!"),
+                    "subtitle": _("Tutto pronto per giocare?")
+                })
+            except ImportError:
+                pass  # Gamification module might be disabled
+
             return redirect(url_for("dashboard.dashboard"))
         else:
             flash("Username o password errati. Error.", "error")

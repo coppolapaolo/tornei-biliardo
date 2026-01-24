@@ -128,6 +128,23 @@ def create_app(config_name=None):
             "get_locale": get_locale,
         }
 
+    # Context processor per gamification
+    @app.context_processor
+    def inject_gamification():
+        """Inject gamification stats into all templates for navbar badge."""
+        stats = None
+        if current_user.is_authenticated:
+            try:
+                from models.gamification.level_service import LevelService
+                # Use cached or lightweight query if possible used in every request
+                # For now using the service which does querying
+                progress = LevelService.get_level_progress(current_user.id)
+                stats = {"progress": progress}
+            except Exception:
+                pass
+        
+        return {"gamification_context": stats}
+
     # Context processor per enum
     @app.context_processor
     def inject_enums():
@@ -177,6 +194,8 @@ def create_app(config_name=None):
     from models.gamification import notification_handlers  # noqa: F401
     # Register SSE bridge - routes domain events to SSE for real-time updates
     from routes import sse_bridge  # noqa: F401
+    # Register gamification frontend bridge - pipes events to flash messages for UI
+    from models.gamification import frontend_bridge  # noqa: F401
 
     # Inizializzazione database per applicazione normale (non testing)
     if not app.config.get("TESTING", False):

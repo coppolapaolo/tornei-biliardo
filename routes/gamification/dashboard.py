@@ -220,34 +220,40 @@ def leaderboards():
     - Streak leaderboard (longest current streaks)
     """
     # Get leaderboard type from query param (default: xp)
-    leaderboard_type = request.args.get("type", "xp")
+    leaderboard_type_str = request.args.get("type", "xp")
     limit = min(int(request.args.get("limit", 20)), 100)
 
-    # Get XP leaderboard (all-time)
-    xp_leaderboard = UserLevel.query.order_by(
-        UserLevel.total_xp.desc()
-    ).limit(limit).all()
+    from models.gamification.leaderboard_service import LeaderboardService
+    from models.gamification.models import LeaderboardType
 
-    # Get level leaderboard
-    level_leaderboard = UserLevel.query.order_by(
-        UserLevel.current_level.desc(),
-        UserLevel.total_xp.desc()
-    ).limit(limit).all()
-
-    # Get streak leaderboard (weekly activity streaks)
-    streak_leaderboard = StreakTracker.query.filter_by(
-        streak_type=StreakType.WEEKLY_ACTIVITY
-    ).order_by(
-        StreakTracker.current_streak.desc()
-    ).limit(limit).all()
+    # Map string type to enum
+    type_map = {
+        "xp": LeaderboardType.XP_ALL_TIME,
+        "level": LeaderboardType.LEVEL_HIGHEST,
+        "streak": LeaderboardType.STREAK_CURRENT
+    }
+    
+    # Get all leaderboards for the view to allow switching without reload (or just active one)
+    # Ideally for HTMX we'd fetch only one. For now fetch all 3 major ones.
+    
+    xp_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.XP_ALL_TIME, limit)
+    level_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.LEVEL_HIGHEST, limit)
+    streak_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.STREAK_CURRENT, limit)
 
     track_leaderboard_view()  # KPI tracking
+    
+    # Check if we should render partial (for tabs)
+    if request.headers.get("HX-Request"):
+        template_name = f"gamification/partials/leaderboard_{leaderboard_type_str}.html"
+        # Since we don't have partials yet, stick to full render or create logic later
+        pass
+
     return render_template(
         "gamification/leaderboards.html",
         xp_leaderboard=xp_leaderboard,
         level_leaderboard=level_leaderboard,
         streak_leaderboard=streak_leaderboard,
-        active_tab=leaderboard_type,
+        active_tab=leaderboard_type_str,
         page_title=_("Classifiche")
     )
 

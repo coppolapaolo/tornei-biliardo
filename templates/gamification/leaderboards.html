@@ -3,230 +3,246 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row mb-4">
+    <!-- Header -->
+    <div class="row mb-5 text-center">
         <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
-                    <li class="breadcrumb-item active">{{ _('Classifiche') }}</li>
-                </ol>
-            </nav>
-            <h1 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>{{ page_title }}</h1>
-            <p class="text-muted">{{ _('I migliori giocatori della community') }}</p>
+            <h1 class="display-4 fw-bold text-gradient">
+                <i class="fas fa-trophy text-warning me-3"></i>{{ page_title }}
+            </h1>
+            <p class="lead text-muted">{{ _('I campioni della community') }}</p>
         </div>
     </div>
 
-    <!-- Leaderboard Tabs -->
-    <ul class="nav nav-tabs mb-4" id="leaderboardTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if active_tab == 'xp' %}active{% endif %}"
-                    id="xp-tab" data-bs-toggle="tab" data-bs-target="#xp"
-                    type="button" role="tab" aria-controls="xp" aria-selected="{% if active_tab == 'xp' %}true{% else %}false{% endif %}">
-                <i class="fas fa-star text-warning me-1"></i>{{ _('XP Totali') }}
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills justify-content-center mb-5" id="leaderboardTabs" role="tablist">
+        <li class="nav-item mx-2" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'xp' %}active{% endif %}" id="xp-tab"
+                data-bs-toggle="tab" data-bs-target="#xp" type="button" role="tab">
+                <i class="fas fa-star me-2"></i>{{ _('XP Totali') }}
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if active_tab == 'level' %}active{% endif %}"
-                    id="level-tab" data-bs-toggle="tab" data-bs-target="#level"
-                    type="button" role="tab" aria-controls="level" aria-selected="{% if active_tab == 'level' %}true{% else %}false{% endif %}">
-                <i class="fas fa-level-up-alt text-primary me-1"></i>{{ _('Livello') }}
+        <li class="nav-item mx-2" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'level' %}active{% endif %}"
+                id="level-tab" data-bs-toggle="tab" data-bs-target="#level" type="button" role="tab">
+                <i class="fas fa-level-up-alt me-2"></i>{{ _('Livello') }}
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if active_tab == 'streak' %}active{% endif %}"
-                    id="streak-tab" data-bs-toggle="tab" data-bs-target="#streak"
-                    type="button" role="tab" aria-controls="streak" aria-selected="{% if active_tab == 'streak' %}true{% else %}false{% endif %}">
-                <i class="fas fa-fire text-danger me-1"></i>{{ _('Streak') }}
+        <li class="nav-item mx-2" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'streak' %}active{% endif %}"
+                id="streak-tab" data-bs-toggle="tab" data-bs-target="#streak" type="button" role="tab">
+                <i class="fas fa-fire me-2"></i>{{ _('Streak') }}
             </button>
         </li>
     </ul>
 
     <div class="tab-content" id="leaderboardTabsContent">
-        <!-- XP Leaderboard -->
-        <div class="tab-pane fade {% if active_tab == 'xp' %}show active{% endif %}" id="xp" role="tabpanel" aria-labelledby="xp-tab">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>{{ _('Classifica XP Totali') }}</h5>
-                </div>
-                <div class="card-body p-0">
-                    {% if xp_leaderboard %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 60px;" class="text-center">#</th>
-                                    <th>{{ _('Giocatore') }}</th>
-                                    <th class="text-center">{{ _('Livello') }}</th>
-                                    <th class="text-end">{{ _('XP Totali') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in xp_leaderboard %}
-                                <tr class="{% if current_user.is_authenticated and entry.user_id == current_user.id %}table-primary{% endif %}">
-                                    <td class="text-center">
-                                        {% if loop.index == 1 %}
-                                        <i class="fas fa-trophy text-warning fs-5"></i>
-                                        {% elif loop.index == 2 %}
-                                        <i class="fas fa-medal text-secondary fs-5"></i>
-                                        {% elif loop.index == 3 %}
-                                        <i class="fas fa-award text-danger fs-5"></i>
-                                        {% else %}
-                                        <span class="text-muted">{{ loop.index }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <strong>{{ entry.user.username if entry.user else _('Utente') }}</strong>
-                                        {% if current_user.is_authenticated and entry.user_id == current_user.id %}
-                                        <span class="badge bg-primary ms-1">{{ _('Tu') }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-info">Lv. {{ entry.current_level }}</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <strong class="text-warning">{{ entry.total_xp|default(0)|int }}</strong> XP
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+
+        <!-- MACRO: Podium & List -->
+        {% macro render_leaderboard(entries, type_label, unit_label, icon_class) %}
+        {% if entries %}
+        <!-- Top 3 Podium -->
+        <div class="row g-4 mb-5 justify-content-center align-items-end">
+            <!-- 2nd Place -->
+            {% if entries|length > 1 %}
+            <div class="col-10 col-md-4 order-2 order-md-1">
+                <div class="card border-0 shadow-lg podium-card silver">
+                    <div class="card-body text-center py-4">
+                        <div class="position-relative d-inline-block mb-3">
+                            <i class="fas fa-user-circle fa-4x text-secondary"></i>
+                            <span
+                                class="position-absolute bottom-0 end-0 badge rounded-pill bg-secondary border border-2 border-white">2</span>
+                        </div>
+                        <h4 class="fw-bold mb-1 text-truncate">{{ entries[1].user.username }}</h4>
+                        <div class="display-6 fw-bold text-secondary mb-0">{{ entries[1].score|int }}</div>
+                        <small class="text-uppercase text-muted">{{ unit_label }}</small>
                     </div>
-                    {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-users fa-3x mb-3"></i>
-                        <p class="mb-0">{{ _('Nessun giocatore in classifica ancora.') }}</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
+            {% endif %}
+
+            <!-- 1st Place -->
+            {% if entries|length > 0 %}
+            <div class="col-10 col-md-4 order-1 order-md-2">
+                <div class="card border-0 shadow-lg podium-card gold transform-scale-110">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-crown fa-3x text-warning mb-2 d-block"></i>
+                            <div class="position-relative d-inline-block">
+                                <i class="fas fa-user-circle fa-6x text-warning"></i>
+                                <span
+                                    class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-2 border-white">1</span>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-1 text-truncate">{{ entries[0].user.username }}</h3>
+                        <div class="display-5 fw-bold text-warning mb-0">{{ entries[0].score|int }}</div>
+                        <small class="text-uppercase text-muted fw-bold">{{ unit_label }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 3rd Place -->
+            {% if entries|length > 2 %}
+            <div class="col-10 col-md-4 order-3 order-md-3">
+                <div class="card border-0 shadow-lg podium-card bronze">
+                    <div class="card-body text-center py-4">
+                        <div class="position-relative d-inline-block mb-3">
+                            <i class="fas fa-user-circle fa-4x text-bronze"></i>
+                            <span
+                                class="position-absolute bottom-0 end-0 badge rounded-pill bg-bronze border border-2 border-white">3</span>
+                        </div>
+                        <h4 class="fw-bold mb-1 text-truncate">{{ entries[2].user.username }}</h4>
+                        <div class="display-6 fw-bold text-bronze mb-0">{{ entries[2].score|int }}</div>
+                        <small class="text-uppercase text-muted">{{ unit_label }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Level Leaderboard -->
-        <div class="tab-pane fade {% if active_tab == 'level' %}show active{% endif %}" id="level" role="tabpanel" aria-labelledby="level-tab">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-level-up-alt me-2"></i>{{ _('Classifica per Livello') }}</h5>
-                </div>
-                <div class="card-body p-0">
-                    {% if level_leaderboard %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 60px;" class="text-center">#</th>
-                                    <th>{{ _('Giocatore') }}</th>
-                                    <th class="text-center">{{ _('Livello') }}</th>
-                                    <th class="text-end">{{ _('XP nel Livello') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in level_leaderboard %}
-                                <tr class="{% if current_user.is_authenticated and entry.user_id == current_user.id %}table-primary{% endif %}">
-                                    <td class="text-center">
-                                        {% if loop.index == 1 %}
-                                        <i class="fas fa-crown text-warning fs-5"></i>
-                                        {% elif loop.index == 2 %}
-                                        <i class="fas fa-medal text-secondary fs-5"></i>
-                                        {% elif loop.index == 3 %}
-                                        <i class="fas fa-award text-danger fs-5"></i>
-                                        {% else %}
-                                        <span class="text-muted">{{ loop.index }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <strong>{{ entry.user.username if entry.user else _('Utente') }}</strong>
-                                        {% if current_user.is_authenticated and entry.user_id == current_user.id %}
-                                        <span class="badge bg-primary ms-1">{{ _('Tu') }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-primary fs-6">{{ entry.current_level }}</span>
-                                    </td>
-                                    <td class="text-end">
-                                        {{ entry.current_xp|default(0)|int }} XP
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-users fa-3x mb-3"></i>
-                        <p class="mb-0">{{ _('Nessun giocatore in classifica ancora.') }}</p>
-                    </div>
-                    {% endif %}
-                </div>
+        <!-- Rest of the List (4+) -->
+        {% if entries|length > 3 %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold text-muted">{{ _('La rincorsa') }}</h5>
             </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4" style="width: 80px;">#</th>
+                            <th>{{ _('Giocatore') }}</th>
+                            <th class="text-end pe-4">{{ unit_label }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries[3:] %}
+                        <tr
+                            class="{% if current_user.is_authenticated and entry.user.id == current_user.id %}table-active-highlight{% endif %}">
+                            <td class="ps-4 fw-bold text-muted">{{ entry.rank }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle fa-lg text-muted me-3"></i>
+                                    <span class="fw-bold">{{ entry.user.username }}</span>
+                                    {% if current_user.is_authenticated and entry.user.id == current_user.id %}
+                                    <span class="badge bg-primary ms-2">{{ _('Tu') }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-end pe-4 fw-bold font-monospace fs-5">
+                                {{ entry.score|int }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-3"><i class="{{ icon_class }} fa-4x text-muted opacity-50"></i></div>
+            <h4 class="text-muted">{{ _('Nessun dato disponibile') }}</h4>
+            <p class="text-muted">{{ _('Gioca qualche partita per apparire qui!') }}</p>
+        </div>
+        {% endif %}
+        {% endmacro %}
+
+        <!-- XP Tab -->
+        <div class="tab-pane fade {% if active_tab == 'xp' %}show active{% endif %}" id="xp" role="tabpanel">
+            {{ render_leaderboard(xp_leaderboard, 'XP Totali', 'XP', 'fas fa-star') }}
         </div>
 
-        <!-- Streak Leaderboard -->
-        <div class="tab-pane fade {% if active_tab == 'streak' %}show active{% endif %}" id="streak" role="tabpanel" aria-labelledby="streak-tab">
-            <div class="card">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>{{ _('Classifica Streak') }}</h5>
-                </div>
-                <div class="card-body p-0">
-                    {% if streak_leaderboard %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 60px;" class="text-center">#</th>
-                                    <th>{{ _('Giocatore') }}</th>
-                                    <th class="text-center">{{ _('Streak Attuale') }}</th>
-                                    <th class="text-end">{{ _('Record') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in streak_leaderboard %}
-                                <tr class="{% if current_user.is_authenticated and entry.user_id == current_user.id %}table-danger{% endif %}">
-                                    <td class="text-center">
-                                        {% if loop.index == 1 %}
-                                        <i class="fas fa-fire text-danger fs-4"></i>
-                                        {% elif loop.index == 2 %}
-                                        <i class="fas fa-fire text-orange fs-5"></i>
-                                        {% elif loop.index == 3 %}
-                                        <i class="fas fa-fire text-warning fs-5"></i>
-                                        {% else %}
-                                        <span class="text-muted">{{ loop.index }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <strong>{{ entry.user.username if entry.user else _('Utente') }}</strong>
-                                        {% if current_user.is_authenticated and entry.user_id == current_user.id %}
-                                        <span class="badge bg-danger ms-1">{{ _('Tu') }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-danger fs-6">
-                                            <i class="fas fa-fire me-1"></i>{{ entry.current_streak }}
-                                        </span>
-                                        {{ _('settimane') }}
-                                    </td>
-                                    <td class="text-end text-muted">
-                                        {{ entry.longest_streak }} {{ _('settimane') }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-fire-alt fa-3x mb-3"></i>
-                        <p class="mb-0">{{ _('Nessuna streak attiva ancora. Inizia a giocare!') }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+        <!-- Level Tab -->
+        <div class="tab-pane fade {% if active_tab == 'level' %}show active{% endif %}" id="level" role="tabpanel">
+            {{ render_leaderboard(level_leaderboard, 'Livello', 'Livello', 'fas fa-level-up-alt') }}
         </div>
+
+        <!-- Streak Tab -->
+        <div class="tab-pane fade {% if active_tab == 'streak' %}show active{% endif %}" id="streak" role="tabpanel">
+            {{ render_leaderboard(streak_leaderboard, 'Streak Attuale', 'Settimane', 'fas fa-fire') }}
+        </div>
+
     </div>
 </div>
 
 <style>
-.text-orange {
-    color: #fd7e14 !important;
-}
+    /* Custom Styles for Leaderboard */
+    .text-gradient {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .podium-card {
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .podium-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .podium-card.gold {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border: 2px solid #fbbf24 !important;
+    }
+
+    .podium-card.silver {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 2px solid #94a3b8 !important;
+    }
+
+    .podium-card.bronze {
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        border: 2px solid #fdba74 !important;
+        --bs-text-bronze: #c2410c;
+    }
+
+    .text-bronze,
+    .bg-bronze {
+        color: #c2410c;
+        background-color: #ffedd5;
+    }
+
+    .bg-bronze {
+        background-color: #c2410c;
+        color: white;
+    }
+
+    .transform-scale-110 {
+        transform: scale(1.1);
+        z-index: 10;
+    }
+
+    .transform-scale-110:hover {
+        transform: scale(1.15);
+        /* Maintain scale on hover + lift */
+    }
+
+    .table-active-highlight {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        border-left: 4px solid #3b82f6;
+    }
+
+    /* Nav Pills Customization */
+    .nav-pills .nav-link {
+        color: #64748b;
+        background-color: #f1f5f9;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+    }
+
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: #e2e8f0;
+        transform: translateY(-2px);
+    }
 </style>
 {% endblock %}
