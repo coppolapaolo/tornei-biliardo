@@ -6,54 +6,17 @@
             <h5><i class="fas fa-trophy"></i> {% if is_own_profile %}{{ _("Le mie Classifiche") }}{% else %}{{ _("Classifiche") }}{% endif %}</h5>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ _("Campionato") }}</th>
-                            <th>{{ _("Posizione") }}</th>
-                            <th>{{ _("Partite Vinte") }}</th>
-                            <th title="{{ _('Rack vinti - rack persi') }}">{{ _("Diff. Rack") }}</th>
-                            <th>{{ _("Gare Giocate") }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for classification in classifications %}
-                            {# Get classification system from campionato #}
-                            {% set class_system = classification.campionato.default_classification_system|default('WINS') %}
-                            <tr>
-                                <td>
-                                    {{ classification.campionato.name }}
-                                    {# Show badge for classification system #}
-                                    {% if class_system == 'RACK' %}
-                                        <span class="badge bg-info ms-1" title="{{ _('Classifica basata su rack') }}">
-                                            <i class="fas fa-layer-group"></i>
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if classification.position <= 3 %}
-                                        <strong class="text-warning">{{ classification.position }}°</strong>
-                                        {% if classification.position == 1 %}🥇{% elif classification.position == 2 %}🥈{% elif classification.position == 3 %}🥉{% endif %}
-                                    {% else %}
-                                        <strong>{{ classification.position }}°</strong>
-                                    {% endif %}
-                                </td>
-                                <td>{{ classification.total_matches_won }}</td>
-                                <td>
-                                    {% if classification.total_point_difference > 0 %}
-                                        <span class="text-success">+{{ classification.total_point_difference }}</span>
-                                    {% elif classification.total_point_difference < 0 %}
-                                        <span class="text-danger">{{ classification.total_point_difference }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ classification.gare_played }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="d-flex flex-wrap gap-2">
+                {% for classification in classifications %}
+                    <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=classification.campionato_id) }}"
+                       class="btn btn-outline-primary d-flex align-items-center gap-2"
+                       title="{{ _('Vedi classifica completa') }}">
+                        <span>{{ classification.campionato.name }}</span>
+                        <span class="badge bg-primary">
+                            {{ classification.position }}°{% if classification.position == 1 %} 🥇{% elif classification.position == 2 %} 🥈{% elif classification.position == 3 %} 🥉{% endif %}
+                        </span>
+                    </a>
+                {% endfor %}
             </div>
         </div>
     </div>
