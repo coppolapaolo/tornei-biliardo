@@ -44,10 +44,29 @@
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 | `deleted_at` | DATETIME | YES |  |  |  |
+| `is_verified` | BOOLEAN | NO |  | False |  |
 
 **Constraints:**
 - UNIQUE(email)
 - UNIQUE(username)
+
+### user_token
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `user_id` | INTEGER | NO | FK→user.id |  |  |
+| `token` | VARCHAR(100) | NO | UQ |  |  |
+| `token_type` | VARCHAR(20) | NO |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `expires_at` | DATETIME | NO |  |  |  |
+| `is_used` | BOOLEAN | NO |  | False |  |
+
+**Constraints:**
+- UNIQUE(token)
+
+**Foreign Keys:**
+- `user_id` → `user.id` (ON DELETE NO ACTION)
 
 ### director_assignment
 

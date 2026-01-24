@@ -19,7 +19,16 @@ class Config:
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME") or "admin"
     ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL") or "admin@nowhere.it"
     ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or "admin123"
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or "admin123"
     ADMIN_PASSWORD_REQUIRED = False
+
+    # Email Service (SMTP)
+    MAIL_SERVER = os.environ.get("MAIL_SERVER") or "smtp.gmail.com"
+    MAIL_PORT = int(os.environ.get("MAIL_PORT") or 587)
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() in ("1", "true", "yes")
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER") or f"Campionato Biliardo <{MAIL_USERNAME}>"
 
     # App Info
     APP_NAME = "Campionato Biliardo"

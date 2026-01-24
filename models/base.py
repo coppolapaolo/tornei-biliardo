@@ -19,6 +19,15 @@ from datetime import datetime
 # This is required because transaction/manager.py imports db
 db = SQLAlchemy()
 
+# Initialize Flask-Mail
+try:
+    from flask_mail import Mail
+    mail = Mail()
+except ImportError:
+    mail = None
+    import logging
+    logging.warning("Flask-Mail not installed. Email features will be disabled.")
+
 # Import transactional decorator - now db is available when transaction/manager imports it
 try:
     from .transaction.manager import transactional

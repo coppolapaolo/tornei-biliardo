@@ -4,6 +4,9 @@ from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
 import logging
+from dotenv import load_dotenv
+
+load_dotenv(".envrc")  # Load environment variables from .env file
 
 # Import configurazioni e modelli
 from config import config
@@ -42,6 +45,9 @@ def create_app(config_name=None):
 
     # Inizializza estensioni
     db.init_app(app)
+    from models.base import mail
+    if mail:
+        mail.init_app(app)
 
     register_soft_delete_filters(SASession)
 

@@ -11,6 +11,9 @@ from models.base import db
 from models.user.models import User
 from models.user.role_enum import UserRole
 from models.transaction.manager import transactional, read_only
+from models.user.tokens import UserToken
+from models.shared.email_service import EmailService
+from flask import request  # For base_url
 
 
 class UserProfileService:
@@ -114,7 +117,22 @@ class UserProfileService:
         )
         user.set_password(password)
 
+        user.set_password(password)
+        
+        # New users are not verified by default (except admin for bootstrapping if needed, but let's keep consistent)
+        user.is_verified = False
+
         db.session.add(user)
+        db.session.flush() # Need ID for token
+
+        # Send verification email
+        try:
+            token = UserToken.create_token(user.id, "verification")
+            EmailService.send_verification_email(user, token, request.host_url.rstrip("/"))
+        except Exception:
+            # Don't block registration if email fails, but log it (logging setup assumed)
+            pass
+
         return user
 
     @staticmethod
@@ -414,3 +432,103 @@ class UserProfileService:
             "matches": matches,
             "classifications": classifications,
         }
+
+    @staticmethod
+    @transactional(domain="user")
+    def request_verification_email(user: User) -> bool:
+        """Request a new verification email for an existing user.
+
+        Args:
+            user: User instance to send verification email to
+
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        if user.is_verified:
+            return False
+            
+        try:
+            token = UserToken.create_token(user.id, "verification")
+            # request.host_url requires Flask request context, usually available in service call from route
+            EmailService.send_verification_email(user, token, request.host_url.rstrip("/"))
+            return True
+        except Exception:
+            # Helper to log exception would be good here
+            return False
+
+    @staticmethod
+    @transactional(domain="user")
+    def verify_email(token_str: str) -> bool:
+        """Verify user email using token.
+
+        Args:
+            token_str: Verification token string
+
+        Returns:
+            bool: True if verified successfully, False otherwise
+        """
+        token = UserToken.query.filter_by(token=token_str, token_type="verification").first()
+        if not token or not token.is_valid():
+            return False
+
+        user = db.session.get(User, token.user_id)
+        if not user:
+            return False
+
+        user.is_verified = True
+        token.mark_as_used()
+        return True
+
+    @staticmethod
+    @transactional(domain="user")
+    def request_password_reset(email: str) -> bool:
+        """Request password reset for user.
+
+        Args:
+            email: User email
+
+        Returns:
+            bool: True if request processed (even if user not found, for security), False on error
+        """
+        user = UserProfileService.get_user_by_email(email)
+        if not user:
+            return True  # Return True to prevent user enumeration
+
+        try:
+            token = UserToken.create_token(user.id, "password_reset")
+            EmailService.send_password_reset_email(user, token, request.host_url.rstrip("/"))
+        except Exception:
+            return False
+            
+        return True
+
+    @staticmethod
+    @transactional(domain="user")
+    def reset_password_with_token(token_str: str, new_password: str) -> bool:
+        """Reset password using token.
+
+        Args:
+            token_str: Reset token string
+            new_password: New password
+
+        Returns:
+            bool: True if success, False otherwise
+        """
+        token = UserToken.query.filter_by(token=token_str, token_type="password_reset").first()
+        if not token or not token.is_valid():
+            return False
+
+        user = db.session.get(User, token.user_id)
+        if not user:
+            return False
+
+        if len(new_password.strip()) < 6:
+            raise ValueError("Password must be at least 6 characters")
+
+        user.set_password(new_password)
+        token.mark_as_used()
+        
+        # Invalidate other sessions/tokens if needed (optional)
+        
+        return True
+

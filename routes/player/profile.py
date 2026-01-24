@@ -388,6 +388,29 @@ def edit_profile():
     return render_template("player/profile_edit.html", user=current_user)
 
 
+@player_bp.route("/profile/verify-email", methods=["POST"])
+@login_required
+@player_only
+def request_verification_email():
+    """Richiede l'invio di una nuova email di verifica."""
+    if current_user.is_verified:
+        flash("La tua email è già verificata.", "info")
+        return redirect(url_for("player.edit_profile"))
+
+    from models.user.profile_service import UserProfileService
+    
+    try:
+        # Use existing service method to generate token and send email
+        if UserProfileService.request_verification_email(current_user):
+            flash("Email di verifica inviata. Controlla la tua casella di posta.", "success")
+        else:
+            flash("Impossibile inviare l'email. Riprova più tardi.", "error")
+    except Exception as e:
+        flash(f"Errore durante l'invio: {str(e)}", "error")
+
+    return redirect(url_for("player.edit_profile"))
+
+
 @player_bp.route("/profile/change_password", methods=["POST"])
 @login_required
 @player_only

@@ -43,6 +43,9 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         EncryptedString(200), unique=True, nullable=True
     )  # Encrypted personal data
     password_hash = db.Column(db.String(120), nullable=False)
+    
+    # Verification status
+    is_verified = db.Column(db.Boolean, default=False, nullable=False)
 
     role = db.Column(db.String(20), nullable=False, default="player")
     # admin|director|player
