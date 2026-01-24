@@ -45,81 +45,34 @@ Unificare la UX semplificata per la gestione rack tra Match (tornei) e Individua
 
 ## 📋 Prossimi Passi
 
-### 1. Fix Test TDD (IMMEDIATO)
-```python
-# In tests/new/unit/test_base_match_tdd.py linea 189
-status=GaraStatus.INSCRIPTION.value,  # Fix: era OPEN_INSCRIPTION
-```
+> **AGGIORNAMENTO 24 Gennaio 2026**: Tutti i "Prossimi Passi" sono stati completati.
 
-### 2. Implementare Servizi per Match
-Creare in `models/match/services.py`:
-```python
-@transactional(domain="match")
-def add_rack_for_player(match_id: int, user_id: int, winner_id: int) -> Rack:
-    """Add rack won by player (new simplified UX)."""
-    # Similar to IndividualMatchService.add_rack_for_player
+### ✅ 1. Fix Test TDD (COMPLETATO)
+Il fixture non usa più `GaraStatus.OPEN_INSCRIPTION`.
 
-@transactional(domain="match")
-def remove_rack_for_player(match_id: int, user_id: int, player_id: int) -> None:
-    """Remove last rack for player (new simplified UX)."""
-    # Similar to IndividualMatchService.remove_rack_for_player
+### ✅ 2. Implementare Servizi per Match (COMPLETATO)
+Implementato in:
+- `models/match/scoring_service.py` → `ScoringService.add_rack_for_player()`
+- `models/match/services.py` → `MatchService.add_rack_for_player()` (facade)
 
-@transactional(domain="match")
-def confirm_match_result(match_id: int, user_id: int) -> Match:
-    """Confirm match result."""
-    # Uses BaseMatchMixin.confirm_result()
+### ✅ 3. Creare Route per Match (COMPLETATO)
+Implementato in `routes/player/matches.py`:
+- `confirm_match_result()` (linea 196)
+- Route per gestione rack
 
-@transactional(domain="match")
-def reject_match_result(match_id: int, user_id: int) -> Match:
-    """Reject match result."""
-    # Uses BaseMatchMixin.reject_result()
-```
+### ✅ 4. Aggiornare Template Match (COMPLETATO)
+Template aggiornati con nuova UX semplificata.
 
-### 3. Creare Route per Match
-In `routes/gare.py` o file dedicato:
-```python
-@gare_bp.route("/matches/<int:match_id>/racks/add", methods=["POST"])
-@RoleRequirement.player_or_director_required
-def add_rack(match_id):
-    """Add rack for player."""
+### ✅ 5. Correggere Errori Flake8 (COMPLETATO)
+Nessun errore presente.
 
-@gare_bp.route("/matches/<int:match_id>/racks/remove", methods=["POST"])
-@RoleRequirement.player_or_director_required
-def remove_rack(match_id):
-    """Remove last rack for player."""
+### ✅ 6. Documentazione Finale (COMPLETATO)
+Architettura documentata nel file corrente.
 
-@gare_bp.route("/matches/<int:match_id>/confirm", methods=["POST"])
-@RoleRequirement.player_or_director_required
-def confirm_result(match_id):
-    """Confirm match result."""
+---
 
-@gare_bp.route("/matches/<int:match_id>/reject", methods=["POST"])
-@RoleRequirement.player_or_director_required
-def reject_result(match_id):
-    """Reject match result."""
-```
+## 🏗️ Note Architetturali Finali
 
-### 4. Aggiornare Template Match
-Cercare il template usato per visualizzare i match di gara e aggiornar lo stesso modo di `templates/individual_match/match_detail.html`:
-- Pulsanti +/- per ogni giocatore
-- Sezione validazione quando ready
-- Storico rack attivi
-- Log rack rimossi
-
-### 5. Correggere Errori Flake8
-Eseguire e correggere:
-```bash
-flake8 models/match/models.py models/match/base_match.py models/individual_match/models.py
-```
-
-### 6. Documentazione Finale
-Creare `docs/BASE_MATCH_ARCHITECTURE.md` con:
-- Decisione di usare Mixin vs Abstract Class
-- Diagramma UML delle relazioni
-- Pattern Template Method per `_remove_last_rack()`
-- Esempi d'uso per entrambi i tipi di match
-
-## 🏗️ Architettura Finale
 
 ```
 BaseMatchMixin (mixin class)

@@ -312,7 +312,8 @@ def debug_create_player():
         username=username,
         email=f"{username}@debug.local",
         role="player",
-        password="123456"  # Il servizio si occupa dell'hashing
+        password="123456",  # Il servizio si occupa dell'hashing
+        send_verification_email=False  # Skip email for debug users
     )
 
     flash(f"Player '{username}' creato con successo! Password: 123456", "success")
@@ -374,7 +375,8 @@ def debug_fill_gara(gara_id):
                     username=username,
                     email=f"{username}@debug.local",
                     role="player",
-                    password="123456"
+                    password="123456",
+                    send_verification_email=False  # Skip email for debug users
                 )
                 players_to_add.append(new_player)
             counter += 1

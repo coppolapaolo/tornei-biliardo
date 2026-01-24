@@ -79,9 +79,12 @@ class UserService:
         password: str,
         role: str = "player",
         phone: Optional[str] = None,
+        send_verification_email: bool = True,
     ) -> User:
         """Delegate to UserProfileService for user creation."""
-        return UserProfileService.create_user(username, email, password, role, phone)
+        return UserProfileService.create_user(
+            username, email, password, role, phone, send_verification_email
+        )
 
     @staticmethod
     def update_user(user_id: int, **kwargs) -> User:

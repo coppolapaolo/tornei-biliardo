@@ -44,6 +44,7 @@ class UserProfileService:
         password: str,
         role: str = "player",
         phone: Optional[str] = None,
+        send_verification_email: bool = True,
     ) -> User:
         """Create new user with validation and proper transaction management.
 
@@ -123,17 +124,50 @@ class UserProfileService:
         user.is_verified = False
 
         db.session.add(user)
-        db.session.flush() # Need ID for token
-
-        # Send verification email
-        try:
+        db.session.flush()  # Need ID for token
+        
+        if send_verification_email:
+            # Create verification token (saved in same transaction)
             token = UserToken.create_token(user.id, "verification")
-            EmailService.send_verification_email(user, token, request.host_url.rstrip("/"))
-        except Exception:
-            # Don't block registration if email fails, but log it (logging setup assumed)
-            pass
+            
+            # Store data for post-commit email sending
+            # The caller should call send_pending_verification_email() after this returns
+            user._pending_verification_email = {
+                'token': token,
+                'base_url': request.host_url.rstrip("/")
+            }
 
         return user
+
+    @staticmethod
+    def send_pending_verification_email(user: User) -> bool:
+        """Send verification email for a user that was just created.
+        
+        This method should be called AFTER the transaction that created the user
+        has been committed, to avoid holding database locks during email sending.
+        
+        Args:
+            user: User instance with _pending_verification_email attribute set
+            
+        Returns:
+            bool: True if email sent successfully, False otherwise
+        """
+        pending_data = getattr(user, '_pending_verification_email', None)
+        if not pending_data:
+            return False
+            
+        try:
+            EmailService.send_verification_email(
+                user, 
+                pending_data['token'], 
+                pending_data['base_url']
+            )
+            # Clean up the temporary attribute
+            delattr(user, '_pending_verification_email')
+            return True
+        except Exception:
+            # Don't block if email fails, but log it
+            return False
 
     @staticmethod
     @transactional(domain="user")

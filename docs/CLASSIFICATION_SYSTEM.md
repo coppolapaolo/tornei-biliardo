@@ -544,4 +544,5 @@ Riepilogo di tutte le combinazioni valide.
 
 ## Changelog
 
-- **2024-XX-XX**: Creazione documento con specifiche complete del sistema di classificazione.
+- **2025-10-XX**: Creazione documento con specifiche complete del sistema di classificazione.
+- **2026-01-24**: Verificato allineamento con codebase.
