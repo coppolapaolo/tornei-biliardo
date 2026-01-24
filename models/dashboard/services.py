@@ -1030,7 +1030,7 @@ class DashboardService:
                 "streaks": streaks
             }
         except Exception:
-            return None
+            return {}
 
     @staticmethod
     def for_guest() -> DashboardVM:
