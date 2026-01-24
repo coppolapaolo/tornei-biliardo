@@ -6,16 +6,17 @@
     </div>
     <div class="card-body">
         {% if matches %}
-            <div class="table-responsive">
+            {# === DESKTOP VIEW (≥768px): Table === #}
+            <div class="table-responsive d-none d-md-block">
                 <table class="table table-sm">
                     <thead>
                         <tr>
-                            <th>Campionato</th>
-                            <th>Gara</th>
-                            <th>Turno</th>
-                            <th>Avversario</th>
-                            <th>Risultato</th>
-                            <th>Esito</th>
+                            <th>{{ _("Campionato") }}</th>
+                            <th>{{ _("Gara") }}</th>
+                            <th>{{ _("Turno") }}</th>
+                            <th>{{ _("Avversario") }}</th>
+                            <th>{{ _("Risultato") }}</th>
+                            <th>{{ _("Esito") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -30,7 +31,7 @@
                                 </td>
                                 <td>
                                     {% if match.gara.campionato %}
-                                        Gara {{ match.gara.number }}
+                                        {{ _("Gara") }} {{ match.gara.number }}
                                     {% else %}
                                         {{ match.gara.name }}
                                     {% endif %}
@@ -40,10 +41,8 @@
                                     {% if match.is_bye %}
                                         <em class="text-muted">Bye</em>
                                     {% elif match.is_trio and match.trio_match %}
-                                        {# Trio match: show all 3 players except current user #}
                                         {% set trio = match.trio_match %}
                                         {% set other_players = [] %}
-                                        {# Note: use _void instead of _ to avoid shadowing translation function #}
                                         {% if trio.player1_id != user.id %}
                                             {% set _void = other_players.append(trio.player1.username) %}
                                         {% endif %}
@@ -66,7 +65,6 @@
                                 </td>
                                 <td>
                                     {% if match.is_trio and match.trio_match %}
-                                        {# Trio match: show all 3 scores #}
                                         {% set trio = match.trio_match %}
                                         <span class="badge bg-info">
                                             {{ trio.player1_racks }} - {{ trio.player2_racks }} - {{ trio.player3_racks }}
@@ -81,7 +79,6 @@
                                     {% if match.is_bye %}
                                         <span class="badge bg-info">Bye</span>
                                     {% elif match.is_trio and match.trio_match %}
-                                        {# Trio match: check if user won #}
                                         {% if match.winner_id == user.id %}
                                             <span class="badge bg-success">{{ _('Vittoria') }}</span>
                                         {% elif match.winner_id is none %}
@@ -90,15 +87,88 @@
                                             <span class="badge bg-danger">{{ _('Sconfitta') }}</span>
                                         {% endif %}
                                     {% elif match.winner_id == user.id %}
-                                        <span class="badge bg-success">Vittoria</span>
+                                        <span class="badge bg-success">{{ _("Vittoria") }}</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Sconfitta</span>
+                                        <span class="badge bg-danger">{{ _("Sconfitta") }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            {# === MOBILE VIEW (<768px): Cards === #}
+            <div class="d-md-none">
+                {% for match in matches %}
+                    {# Determine outcome for border color #}
+                    {% if match.is_bye %}
+                        {% set border_color = 'info' %}
+                    {% elif match.winner_id == user.id %}
+                        {% set border_color = 'success' %}
+                    {% elif match.winner_id is none %}
+                        {% set border_color = 'secondary' %}
+                    {% else %}
+                        {% set border_color = 'danger' %}
+                    {% endif %}
+
+                    <div class="card mb-2 border-{{ border_color }}" style="border-width: 2px;">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="flex-grow-1">
+                                    {# Opponent name - prominent #}
+                                    <div class="fw-bold">
+                                        {% if match.is_bye %}
+                                            <em class="text-muted">Bye</em>
+                                        {% elif match.is_trio and match.trio_match %}
+                                            {% set trio = match.trio_match %}
+                                            {% set other_players = [] %}
+                                            {% if trio.player1_id != user.id %}
+                                                {% set _void = other_players.append(trio.player1.username) %}
+                                            {% endif %}
+                                            {% if trio.player2_id != user.id %}
+                                                {% set _void = other_players.append(trio.player2.username) %}
+                                            {% endif %}
+                                            {% if trio.player3_id != user.id %}
+                                                {% set _void = other_players.append(trio.player3.username) %}
+                                            {% endif %}
+                                            <i class="fas fa-users me-1 text-primary"></i>{{ other_players|join(' • ') }}
+                                        {% else %}
+                                            {% if match.player1_id == user.id %}
+                                                {{ match.player2.username }}
+                                            {% else %}
+                                                {{ match.player1.username }}
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    {# Context info - smaller #}
+                                    <small class="text-muted">
+                                        {% if match.gara.campionato %}
+                                            {{ match.gara.campionato.name }} • {{ _("Gara") }} {{ match.gara.number }} • T{{ match.round_number }}
+                                        {% else %}
+                                            {{ match.gara.name }} • T{{ match.round_number }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                {# Score badge - right aligned #}
+                                <div class="text-end ms-2">
+                                    {% if match.is_trio and match.trio_match %}
+                                        {% set trio = match.trio_match %}
+                                        <span class="badge bg-{{ border_color }} fs-6">
+                                            {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
+                                        </span>
+                                    {% elif match.is_bye %}
+                                        <span class="badge bg-info fs-6">Bye</span>
+                                    {% else %}
+                                        <span class="badge bg-{{ border_color }} fs-6">
+                                            {{ match.player1_score }} - {{ match.player2_score }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         {% else %}
             <div class="alert alert-info text-center">

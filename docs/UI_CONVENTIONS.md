@@ -17,8 +17,9 @@ Questa documentazione raccoglie le convenzioni UI del progetto per mantenere coe
 7. [Layout e Spacing](#layout-e-spacing)
 8. [Typography](#typography)
 9. [Form](#form-conventions)
-10. [Responsive](#responsive-breakpoints)
-11. [Changelog Decisioni](#changelog-decisioni)
+10. [**Mobile-First Design**](#mobile-first-design) ⭐
+11. [Responsive](#responsive-breakpoints)
+12. [Changelog Decisioni](#changelog-decisioni)
 
 ---
 
@@ -479,6 +480,320 @@ Per impostazioni ON/OFF usare Bootstrap form-switch:
 
 ---
 
+## Mobile-First Design
+
+### Principio Fondamentale
+
+**Mobile-First** significa progettare PRIMA per schermi piccoli, poi aggiungere complessità per schermi più grandi. Non è "adattare il desktop al mobile".
+
+```css
+/* ✅ CORRETTO: Mobile-first */
+.element { /* stili mobile di default */ }
+@media (min-width: 768px) { /* aggiunte per tablet+ */ }
+
+/* ❌ SBAGLIATO: Desktop-first */
+.element { /* stili desktop */ }
+@media (max-width: 767px) { /* fix per mobile */ }
+```
+
+---
+
+### Header e Titoli Pagina
+
+#### ❌ DA EVITARE: Titolo e bottoni affiancati
+
+```html
+<!-- SBAGLIATO: Su mobile il titolo viene schiacciato -->
+<div class="d-flex justify-content-between">
+    <h1>Il mio Profilo</h1>
+    <div>
+        <a class="btn">Azione 1</a>
+        <a class="btn">Azione 2</a>
+    </div>
+</div>
+```
+
+#### ✅ CORRETTO: Layout impilato su mobile, affiancato su desktop
+
+```html
+<!-- CORRETTO: Stack su mobile, flex su desktop -->
+<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center mb-3">
+    <h1 class="mb-2 mb-md-0">Il mio Profilo</h1>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary btn-sm">Azione 1</a>
+        <a class="btn btn-outline-secondary btn-sm">Azione 2</a>
+    </div>
+</div>
+```
+
+**Regole header:**
+- Titolo sempre a larghezza piena su mobile
+- Bottoni sotto il titolo su mobile, a destra su desktop
+- Usare `flex-column flex-md-row` per lo switch
+- Gap tra bottoni con `gap-2` invece di `me-2` (più flessibile)
+
+---
+
+### Azioni Distruttive (Elimina, Annulla, etc.)
+
+#### ❌ DA EVITARE: Bottone elimina prominente nell'header
+
+```html
+<!-- SBAGLIATO: Azione pericolosa troppo visibile e accessibile -->
+<div class="d-flex gap-2">
+    <a class="btn btn-outline-primary">Dashboard</a>
+    <a class="btn btn-outline-danger">Elimina Account</a>  <!-- PERICOLOSO! -->
+</div>
+```
+
+#### ✅ CORRETTO: Azioni distruttive separate e protette
+
+```html
+<!-- CORRETTO: Azioni distruttive in fondo alla pagina o in sezione dedicata -->
+<div class="card border-danger mt-4">
+    <div class="card-header bg-danger text-white">
+        <i class="fas fa-exclamation-triangle"></i> Zona Pericolosa
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Queste azioni sono irreversibili.</p>
+        <button class="btn btn-outline-danger"
+                onclick="return confirmAction('Sei sicuro?', () => {...})">
+            <i class="fas fa-trash"></i> Elimina Account
+        </button>
+    </div>
+</div>
+```
+
+**Regole azioni distruttive:**
+- MAI nell'header o accanto a bottoni di navigazione
+- Posizionare in fondo alla pagina
+- Usare card con `border-danger` per evidenziare la zona
+- Sempre richiedere conferma con `confirmAction()` o `showConfirm()`
+- Preferire `btn-outline-danger` a `btn-danger` (meno invitante al click)
+
+---
+
+### Tabelle su Mobile
+
+#### ❌ DA EVITARE: Tabella che tronca contenuto
+
+```html
+<!-- SBAGLIATO: Colonne troncate, illeggibili -->
+<table class="table">
+    <tr><th>Campionato</th><th>Gara</th><th>Turno</th><th>Avversario</th><th>Risultato</th></tr>
+    <!-- Su mobile "Risultato" diventa "Risul" -->
+</table>
+```
+
+#### ✅ CORRETTO: Tabella desktop + Card mobile
+
+```html
+<!-- Desktop: tabella normale -->
+<div class="d-none d-md-block">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Campionato</th>
+                <th>Gara</th>
+                <th>Turno</th>
+                <th>Avversario</th>
+                <th>Risultato</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for match in matches %}
+            <tr>...</tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Mobile: card impilate -->
+<div class="d-md-none">
+    {% for match in matches %}
+    <div class="card mb-2">
+        <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ match.opponent }}</strong>
+                    <br><small class="text-muted">{{ match.campionato }} - {{ match.gara }}</small>
+                </div>
+                <span class="badge bg-{{ 'success' if match.won else 'danger' }} fs-6">
+                    {{ match.score }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+```
+
+**Regole tabelle:**
+- Se più di 4 colonne: usare pattern table+card
+- `d-none d-md-block` per tabella (visibile solo ≥768px)
+- `d-md-none` per card (visibili solo <768px)
+- Card mobile: info essenziali, layout compatto
+- Badge per risultati invece di colonna dedicata
+
+---
+
+### Touch Target e Bottoni
+
+#### ❌ DA EVITARE: Bottoni troppo piccoli o ravvicinati
+
+```html
+<!-- SBAGLIATO: Touch target insufficiente -->
+<a class="btn btn-sm" style="padding: 2px 5px;">X</a>
+<a class="btn btn-sm" style="padding: 2px 5px;">✓</a>
+```
+
+#### ✅ CORRETTO: Touch target minimo 44x44px
+
+```html
+<!-- CORRETTO: Touch target adeguato -->
+<a class="btn btn-outline-danger btn-sm" style="min-height: 44px; min-width: 44px;">
+    <i class="fas fa-times"></i>
+</a>
+```
+
+**Regole touch target:**
+- Minimo **44x44 pixel** per tutti gli elementi interattivi
+- Distanza minima **8px** tra bottoni adiacenti (usare `gap-2`)
+- Bottoni icon-only: aggiungere `min-width: 44px; min-height: 44px`
+- Link in liste: padding verticale sufficiente (`py-3`)
+
+---
+
+### Statistiche e Metriche
+
+#### ❌ DA EVITARE: Lista verticale infinita
+
+```html
+<!-- SBAGLIATO: Troppo scroll verticale -->
+<div class="text-center">
+    <h2>1</h2><p>Campionati</p>
+    <h2>2</h2><p>Gare</p>
+    <h2>4</h2><p>Vittorie</p>
+    <h2>80%</h2><p>Win Rate</p>
+    <!-- ...continua... -->
+</div>
+```
+
+#### ✅ CORRETTO: Griglia 2x2 su mobile
+
+```html
+<!-- CORRETTO: Griglia compatta -->
+<div class="row g-2 text-center">
+    <div class="col-6">
+        <div class="card h-100">
+            <div class="card-body py-2">
+                <h3 class="text-primary mb-0">1</h3>
+                <small class="text-muted">Campionati</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="card h-100">
+            <div class="card-body py-2">
+                <h3 class="text-primary mb-0">2</h3>
+                <small class="text-muted">Gare</small>
+            </div>
+        </div>
+    </div>
+    <!-- altre metriche -->
+</div>
+```
+
+**Regole statistiche:**
+- Griglia **2 colonne su mobile** (`col-6`), 3-4 su desktop
+- Card compatte con `py-2`
+- Numeri grandi, label piccole (`small`)
+- `h-100` per altezza uniforme
+
+---
+
+### Form e Input
+
+#### ❌ DA EVITARE: Input troppo stretti
+
+```html
+<!-- SBAGLIATO: Input numerico troppo stretto -->
+<input type="number" style="width: 50px;">
+```
+
+#### ✅ CORRETTO: Input con larghezza minima adeguata
+
+```html
+<!-- CORRETTO: Larghezza minima per usabilità -->
+<input type="number" class="form-control form-control-sm text-center"
+       style="width: 80px; min-width: 80px;">
+```
+
+**Regole form:**
+- Input numerici: minimo **80px** larghezza
+- Select: larghezza automatica o 100%
+- Label sempre sopra l'input su mobile (non a fianco)
+- Usare `form-control-lg` per input principali su mobile
+
+---
+
+### Navigazione e Menu
+
+#### ❌ DA EVITARE: Troppi bottoni inline
+
+```html
+<!-- SBAGLIATO: Bottoni che wrappano male -->
+<div>
+    <a class="btn">Home</a>
+    <a class="btn">Profilo</a>
+    <a class="btn">Impostazioni</a>
+    <a class="btn">Notifiche</a>
+    <a class="btn">Logout</a>
+</div>
+```
+
+#### ✅ CORRETTO: Max 2-3 azioni visibili, resto in menu
+
+```html
+<!-- CORRETTO: Azioni principali + menu overflow -->
+<div class="d-flex gap-2">
+    <a class="btn btn-primary">Azione Principale</a>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item">Impostazioni</a></li>
+            <li><a class="dropdown-item">Notifiche</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger">Logout</a></li>
+        </ul>
+    </div>
+</div>
+```
+
+**Regole navigazione:**
+- Max **2-3 bottoni visibili** su mobile
+- Usare **dropdown menu** per azioni secondarie
+- Icona `fa-ellipsis-v` (tre puntini) per menu overflow
+- Azioni distruttive sempre in fondo al menu con `text-danger`
+
+---
+
+### Checklist Mobile-First
+
+Prima di committare qualsiasi template, verificare:
+
+- [ ] **Header**: titolo e bottoni si impilano su mobile?
+- [ ] **Tabelle**: hanno versione card per mobile?
+- [ ] **Touch target**: tutti i bottoni sono almeno 44x44px?
+- [ ] **Azioni distruttive**: sono separate e richiedono conferma?
+- [ ] **Form**: input hanno larghezza adeguata?
+- [ ] **Scroll**: la pagina non richiede scroll orizzontale?
+- [ ] **Contenuto critico**: visibile senza scroll su mobile?
+
+---
+
 ## Responsive Breakpoints
 
 ### Comportamento Standard
@@ -672,6 +987,7 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-01-22 | Tabelle responsive con card mobile | `_campionato_garas.html` ora usa card su mobile invece di tabella - migliora leggibilità e touch target |
 | 2026-01-22 | Input SSR min-width 80px | Aumentato da 70px a 80px per facilitare inserimento su mobile |
 | 2026-01-22 | Modal fullscreen mobile | Aggiunto `modal-fullscreen-sm-down` a 5 modali director: Quick Result, Table Assignment, SSR, Open Inscriptions, Modify Dates |
+| 2026-01-24 | Sezione Mobile-First Design | Linee guida complete DO/DON'T per interfacce mobile-first: header layout, azioni distruttive, tabelle responsive, touch target, statistiche, form, navigazione |
 
 ---
 
