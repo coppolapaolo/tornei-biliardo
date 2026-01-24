@@ -88,6 +88,38 @@
         </form>
       </div>
     </div>
+
+    {# GDPR Export Section #}
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5><i class="fas fa-download"></i> {{ _("Esporta i Tuoi Dati") }}</h5>
+        <small class="text-muted">{{ _("Scarica una copia di tutti i tuoi dati personali (GDPR Art. 20).") }}</small>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">{{ _("L'export include:") }}</p>
+        <ul class="mb-3">
+          <li>{{ _("Dati del tuo account (username, email, telefono)") }}</li>
+          <li>{{ _("Tutte le partite giocate e i risultati") }}</li>
+          <li>{{ _("Iscrizioni a gare e tornei") }}</li>
+          <li>{{ _("Classifiche e posizioni") }}</li>
+          <li>{{ _("Challenge completate") }}</li>
+          <li>{{ _("Dati di gamification (livello, XP, achievement, streak)") }}</li>
+        </ul>
+
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          {{ _("La generazione dell'archivio avviene in background. Riceverai una notifica quando sarà pronto per il download.") }}
+          {{ _("Il link di download sarà valido per 24 ore.") }}
+        </div>
+
+        <form method="POST" action="{{ url_for('player.request_gdpr_export') }}">
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="fas fa-file-archive me-1"></i> {{ _("Richiedi Export GDPR") }}
+          </button>
+        </form>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}

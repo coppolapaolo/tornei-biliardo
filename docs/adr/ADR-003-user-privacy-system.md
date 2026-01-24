@@ -156,15 +156,49 @@ if match.player1_id != user_id and match.player2_id != user_id:
 
 **Regression Test**: `tests/new/integration/test_gara_inscriptions_visibility_regression.py`
 
+## GDPR Data Export (2026-01-24)
+
+### Contesto
+
+Per conformità al GDPR Art. 20 (Diritto alla portabilità dei dati), è stato implementato l'export completo dei dati personali dell'utente.
+
+### Implementazione
+
+**Flusso:**
+1. Utente richiede export da `/player/privacy-settings`
+2. Background thread genera JSON zippato
+3. Notifica + SSE event quando pronto
+4. Link di download valido 24 ore
+
+**Dati esportati:**
+- Account (username, email, phone, role, ratings)
+- Privacy settings
+- Iscrizioni a gare
+- Partite giocate (con risultati)
+- Classifiche campionati
+- Challenge completate
+- Gamification (livello, XP, achievement, streak, transazioni)
+
+**Sicurezza:**
+- Validazione ownership del file (filename inizia con user_id)
+- Path traversal prevention (reject slashes in filename)
+- Auto-cleanup file dopo 24 ore
+- Rate limiting (max 1 export ogni 5 minuti)
+
+**File:**
+- `routes/player/profile.py` - Endpoints `request_gdpr_export`, `download_gdpr_export`
+- `instance/gdpr_exports/` - Directory temporanea per file ZIP
+
 ## Riferimenti
 
 - File correlati:
   - `models/user/privacy_models.py`
   - `models/user/privacy_service.py`
-  - `routes/player.py` (linee 800-940)
+  - `routes/player/profile.py`
   - `routes/admin/competition.py` (linee 702-710, fix inscriptions)
   - `templates/player/profile.html`
   - `templates/player/privacy_settings.html`
 - Migration: `migrations/add_user_privacy_settings.py`
 - Tests: `tests/new/unit/test_privacy_service.py` (23 tests)
 - Regression Tests: `tests/new/integration/test_gara_inscriptions_visibility_regression.py` (5 tests)
+- GDPR Export Tests: `tests/new/integration/test_gdpr_export.py` (9 tests)
