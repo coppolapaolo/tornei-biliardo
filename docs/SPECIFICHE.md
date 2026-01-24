@@ -169,7 +169,15 @@ L'utente si registra scegliendo uno username (case sensitive, unico), email, tel
 
 #### Login
 
-Inserisce userid e password del proprio account. 
+Inserisce userid e password del proprio account. Gli utenti devono verificare la propria email per attivare completamente tutte le funzionalità dell'account (invio email, notifiche avanzate).
+
+#### Verifica Email
+
+Dopo la registrazione, il sistema invia un'email automatica con un link di verifica. L'utente può anche richiedere l'invio di un nuovo link dal proprio profilo. Lo stato di verifica è tracciato tramite il campo `is_verified`.
+
+#### Recupero Password
+
+Se un utente dimentica la propria password, può richiederne il reset fornendo l'email. Riceverà un link sicuro e temporaneo per impostare una nuova password.
 
 #### Vista complessiva
 
