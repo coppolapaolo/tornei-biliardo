@@ -322,70 +322,60 @@ def debug_create_player():
 
 @main_bp.route("/debug/fill_gara/<int:gara_id>")
 def debug_fill_gara(gara_id):
-    """Riempie una gara fino al minimo di partecipanti - SOLO in modalità debug"""
+    """Riempie una gara iscrivendo tutti i player*, mario e pino - SOLO in modalità debug"""
     if not Config.DEBUG_MODE:
         return "Funzione non disponibile in produzione", 403
 
     from models.user.models import User
     from models.competition.models import Inscription
-    from werkzeug.security import generate_password_hash
+    from sqlalchemy import or_
 
     gara = Gara.query.get_or_404(gara_id)
 
     # Conta iscritti attuali
     current_inscriptions = Inscription.query.filter_by(gara_id=gara_id).count()
 
-    if current_inscriptions >= gara.min_participants:
-        flash(
-            f"La gara ha già {current_inscriptions} iscritti (min: {gara.min_participants})",
-            "info",
-        )
-        return redirect(request.referrer or url_for("dashboard.dashboard"))
-
-    # Calcola quanti giocatori servono
-    needed = gara.min_participants - current_inscriptions
-
-    # Trova giocatori esistenti non iscritti
+    # Trova giocatori player*, mario e pino esistenti non iscritti
     existing_player_ids = db.session.query(Inscription.user_id).filter_by(
         gara_id=gara_id
     )
     available_players = (
         User.query.filter(User.role == "player")
+        .filter(or_(
+            User.username.like("player%"),  # Utenti player*
+            User.username.in_(["mario", "pino"])  # mario e pino
+        ))
         .filter(User.deleted_at.is_(None))
         .filter(~User.id.in_(existing_player_ids))
-        .limit(needed)
         .all()
     )
 
-    # Se non ci sono abbastanza giocatori esistenti, creane di nuovi
-    players_to_add = []
-    players_to_add.extend(available_players)
+    if not available_players:
+        flash(
+            f"Nessun player*, mario o pino disponibile da iscrivere. Iscritti attuali: {current_inscriptions}",
+            "info",
+        )
+        return redirect(request.referrer or url_for("dashboard.dashboard"))
 
-    if len(available_players) < needed:
-        # Trova il prossimo numero per i nuovi player
-        from models.user.services import UserService
-
-        counter = 1
-        while len(players_to_add) < needed:
-            username = f"player{counter}"
-            existing = User.query.filter_by(username=username).first()
-            if not existing:
-                # Crea nuovo player usando il servizio
-                new_player = UserService.create_user(
-                    username=username,
-                    email=f"{username}@debug.local",
-                    role="player",
-                    password="123456",
-                    send_verification_email=False  # Skip email for debug users
-                )
-                players_to_add.append(new_player)
-            counter += 1
+    # Se c'è un limite max_participants, rispettalo
+    if gara.max_participants and gara.max_participants > 0:
+        slots_available = gara.max_participants - current_inscriptions
+        if slots_available <= 0:
+            flash(
+                f"La gara ha già raggiunto il massimo di {gara.max_participants} iscritti",
+                "info",
+            )
+            return redirect(request.referrer or url_for("dashboard.dashboard"))
+        players_to_add = available_players[:slots_available]
+    else:
+        # Nessun limite: iscrivi tutti i player disponibili
+        players_to_add = available_players
 
     # Iscrive i giocatori alla gara usando il servizio
     from models.competition.inscription_service import InscriptionService
 
     new_inscriptions = 0
-    for player in players_to_add[:needed]:
+    for player in players_to_add:
         inscription = InscriptionService.inscribe_user(player.id, gara_id)
         if inscription:
             new_inscriptions += 1
