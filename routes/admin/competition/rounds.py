@@ -138,9 +138,9 @@ def terminate_gara(gara_id):
                     "success": False,
                     "needs_tiebreaker": True,
                     "tiebreakers": tiebreakers,
-                    "message": "Ci sono parimerito nei primi 3 posti. Usa 'Avvia SSR' per inserire i punteggi."
+                    "message": f"Ci sono parimerito nelle prime {gara.tiebreaker_until_position or 3} posizioni. Usa 'Avvia SSR' per inserire i punteggi."
                 })
-            flash("Ci sono parimerito nei primi 3 posti. Usa 'Avvia SSR' per inserire i punteggi.", "warning")
+            flash(f"Ci sono parimerito nelle prime {gara.tiebreaker_until_position or 3} posizioni. Usa 'Avvia SSR' per inserire i punteggi.", "warning")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # No tiebreakers or all resolved - complete the gara

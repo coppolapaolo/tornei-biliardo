@@ -699,11 +699,11 @@ class Gara(SoftDeleteMixin, db.Model):
 
     def get_podium(self):
         """
-        Restituisce il podio (top 3) della classifica finale.
+        Restituisce il podio (top positions) della classifica finale in base a tiebreaker_until_position.
 
         Returns:
             List[dict]: Lista di dizionari con 'position', 'user', 'username'
-                        per i primi 3 classificati. Lista vuota se la gara
+                        per i premiati. Lista vuota se la gara
                         non è completata o non ha classifiche.
         """
         if self.status != GaraStatus.COMPLETED.value:
@@ -712,11 +712,14 @@ class Gara(SoftDeleteMixin, db.Model):
         try:
             from models.classification.services import RoundClassificationService
 
+            # Use tiebreaker_until_position to define the podium size
+            limit = self.tiebreaker_until_position or 3
+
             standings = RoundClassificationService.get_round_standings(
                 self.id, self.rounds_count
             )
             podium = []
-            for rc in standings[:3]:
+            for rc in standings[:limit]:
                 podium.append(
                     {
                         "position": rc.position,

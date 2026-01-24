@@ -39,6 +39,13 @@ class SpareggioService:
         if not gara:
             return []
 
+        # Check if tiebreaker is enabled for this gara
+        if not gara.tiebreaker_enabled:
+            return []
+
+        # Get the position limit for tiebreakers (default to 3 if not set)
+        tiebreaker_limit = gara.tiebreaker_until_position or 3
+
         # Get final round classification
         final_round = gara.current_round or gara.rounds_count
         classifications = (
@@ -70,14 +77,14 @@ class SpareggioService:
         for rack_count in sorted_rack_counts:
             group = groups_by_racks[rack_count]
 
-            # Check if this group includes any position <= 3
-            if current_position <= 3 and len(group) > 1:
-                # Check if any player in this group is in top 3
-                # (position would be <= 3 based on current_position)
+            # Check if this group includes any position within tiebreaker limit
+            if current_position <= tiebreaker_limit and len(group) > 1:
+                # Check if any player in this group is within the tiebreaker limit
+                # (position would be <= tiebreaker_limit based on current_position)
                 end_position = current_position + len(group) - 1
 
-                # If the group spans into top 3, it needs a tiebreaker
-                if current_position <= 3:
+                # If the group spans into top positions, it needs a tiebreaker
+                if current_position <= tiebreaker_limit:
                     # Check existing SSR scores to see if already resolved
                     existing_gara_class = (
                         db.session.query(GaraClassification)
@@ -116,8 +123,8 @@ class SpareggioService:
 
             current_position += len(group)
 
-            # Stop if we've passed position 3
-            if current_position > 3:
+            # Stop if we've passed the tiebreaker position limit
+            if current_position > tiebreaker_limit:
                 break
 
         return tiebreaker_groups
@@ -155,6 +162,13 @@ class SpareggioService:
         if not gara:
             return []
 
+        # Check if tiebreaker is enabled for this gara
+        if not gara.tiebreaker_enabled:
+            return []
+
+        # Get the position limit for tiebreakers (default to 3 if not set)
+        tiebreaker_limit = gara.tiebreaker_until_position or 3
+
         # Get final round classification
         final_round = gara.current_round or gara.rounds_count
         classifications = (
@@ -185,8 +199,8 @@ class SpareggioService:
         for rack_count in sorted_rack_counts:
             group = groups_by_racks[rack_count]
 
-            # Check if this group includes any position <= 3 AND has multiple players
-            if current_position <= 3 and len(group) > 1:
+            # Check if this group includes any position within tiebreaker limit AND has multiple players
+            if current_position <= tiebreaker_limit and len(group) > 1:
                 # Get existing SSR scores
                 existing_gara_class = (
                     db.session.query(GaraClassification)
@@ -216,8 +230,8 @@ class SpareggioService:
 
             current_position += len(group)
 
-            # Stop if we've passed position 3
-            if current_position > 3:
+            # Stop if we've passed the tiebreaker position limit
+            if current_position > tiebreaker_limit:
                 break
 
         return all_groups

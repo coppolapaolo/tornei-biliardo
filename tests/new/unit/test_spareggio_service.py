@@ -67,6 +67,8 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
         mock_db.session.query.return_value.filter_by.return_value.order_by.return_value.all.return_value = []
 
@@ -79,6 +81,8 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
 
         # Create mock classifications with no ties in top 3
@@ -113,6 +117,8 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
 
         # Create mock classifications with tie for 1st place
@@ -150,6 +156,8 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
         mock_db.session.get.return_value = mock_gara
 
         # Create mock classifications with tie for 3rd place
