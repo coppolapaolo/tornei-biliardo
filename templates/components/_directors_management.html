@@ -1,13 +1,24 @@
 <!-- Generic Directors Management Macro -->
 {% macro directors_management(entity, add_director_route, remove_director_route, entity_id_param='campionato_id',
-show_admin_management=False, show_director_management=False, users=[], can_manage_directors=False, current_user=None) %}
-{% if (show_admin_management or show_director_management) and (entity.directors or users) %}
+show_admin_management=False, show_director_management=False, users=[], can_manage_directors=False, current_user=None, inherited_directors=[]) %}
+{% if (show_admin_management or show_director_management) and (entity.directors or users or inherited_directors) %}
 <div class="card m-3">
     <div class="card-header">
         <h6><i class="fas fa-users"></i> {{ _('Direttori di gara') }}</h6>
     </div>
     <div class="card-body">
         <ul class="list-group">
+            {# Show inherited directors from campionato first (read-only) #}
+            {% for dir_user in inherited_directors %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    {{ dir_user.username }}
+                    <span class="badge bg-secondary ms-2">{{ _('Direttore campionato') }}</span>
+                </span>
+                {# No remove button - inherited directors are managed at campionato level #}
+            </li>
+            {% endfor %}
+            {# Show gara-specific directors #}
             {% for dir_user in entity.directors %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 {{ dir_user.username }}

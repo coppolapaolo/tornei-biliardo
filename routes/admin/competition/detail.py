@@ -99,6 +99,7 @@ def gara_detail(gara_id):
     show_admin_management = False
     show_director_management = False
     match_can_modify = {}
+    inherited_directors = []
 
     # Carica iscrizioni per TUTTI gli utenti (visibili nel template)
     from models.user.models import User, DirectorAssignment
@@ -109,6 +110,12 @@ def gara_detail(gara_id):
         .order_by(User.username)
         .all()
     )
+
+    # Load inherited directors from campionato (if gara belongs to one)
+    inherited_director_ids = []
+    if gara.campionato_id and gara.campionato:
+        inherited_directors = list(gara.campionato.directors)
+        inherited_director_ids = [d.id for d in inherited_directors]
 
     if user_can_manage:
 
@@ -127,6 +134,9 @@ def gara_detail(gara_id):
         if gara.is_standalone and gara.director_id:
             assigned_director_ids.append(gara.director_id)
 
+        # Combine gara directors and inherited directors to exclude from dropdown
+        excluded_director_ids = set(assigned_director_ids) | set(inherited_director_ids)
+
         # Get available users for director selection
         query = (
             User.query.filter(User.role == "director")
@@ -134,8 +144,8 @@ def gara_detail(gara_id):
             .filter(User.id != current_user.id)
         )
 
-        if assigned_director_ids:
-            query = query.filter(~User.id.in_(assigned_director_ids))
+        if excluded_director_ids:
+            query = query.filter(~User.id.in_(excluded_director_ids))
 
         users = query.order_by(User.username).all()
 
@@ -357,6 +367,7 @@ def gara_detail(gara_id):
         matches=matches,
         all_matches=all_matches,
         users=users,
+        inherited_directors=inherited_directors,
         can_manage_directors=can_manage_directors,
         show_admin_management=show_admin_management,
         show_director_management=show_director_management,

@@ -5,6 +5,7 @@
     'show_director_management': show_director_management,
     'users': users,
     'can_manage_directors': can_manage_directors,
-    'current_user': current_user
+    'current_user': current_user,
+    'inherited_directors': inherited_directors|default([])
 } %}
 {{ directors_management(gara, 'admin.competition.add_director', 'admin.competition.remove_director', 'gara_id', **ctx) }}
