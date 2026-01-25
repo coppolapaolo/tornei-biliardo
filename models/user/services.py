@@ -234,9 +234,9 @@ class UserService:
         # Normalize username
         username_normalized = username.strip()
 
-        # Find user by username (case insensitive)
+        # Find user by username (case sensitive)
         user = User.query.filter(
-            func.lower(User.username) == func.lower(username_normalized)
+            User.username == username_normalized
         ).first()
 
         # Check if user exists and password is correct
@@ -257,7 +257,7 @@ class UserService:
             User if found, None otherwise
         """
         return User.query.filter(
-            func.lower(User.username) == func.lower(username.strip())
+            User.username == username.strip()
         ).first()
 
     @staticmethod

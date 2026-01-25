@@ -64,7 +64,7 @@ class UserProfileService:
 
         Business Rules:
             - Only one active admin allowed in the system
-            - Username must be unique (case-insensitive)
+            - Username must be unique (case-sensitive)
             - Email must be unique across all users
             - Password must be at least 6 characters
         """
@@ -88,15 +88,19 @@ class UserProfileService:
         if not username or not username.strip():
             raise ValueError("Username is required")
 
+        # Block 'admin' variants
+        if username.strip().lower() == "admin":
+            raise ValueError("Lo username 'admin' (e le sue varianti) è riservato al sistema.")
+
         if not email or not email.strip():
             raise ValueError("Email is required")
 
         if not password or len(password.strip()) < 6:
             raise ValueError("Password must be at least 6 characters")
 
-        # Check for existing username (case insensitive)
+        # Check for existing username (case sensitive)
         existing_user = User.query.filter(
-            func.lower(User.username) == func.lower(username.strip())
+            User.username == username.strip()
         ).first()
         if existing_user:
             raise ValueError(f"Username '{username}' already exists")
@@ -201,6 +205,11 @@ class UserProfileService:
         # Validate username uniqueness if being updated
         if "username" in kwargs:
             new_username = kwargs["username"].strip()
+            
+            # Block 'admin' variants
+            if new_username.lower() == "admin":
+                raise ValueError("Lo username 'admin' (e le sue varianti) è riservato al sistema.")
+                
             existing_user = User.query.filter(
                 User.username == new_username, User.id != user_id
             ).first()
@@ -306,7 +315,7 @@ class UserProfileService:
             return None
 
         user = User.query.filter(
-            func.lower(User.username) == func.lower(username.strip())
+            User.username == username.strip()
         ).first()
         if user and user.check_password(password):
             return user
@@ -331,7 +340,7 @@ class UserProfileService:
         if not username:
             return None
         return User.query.filter(
-            func.lower(User.username) == func.lower(username.strip())
+            User.username == username.strip()
         ).first()
 
     @staticmethod
