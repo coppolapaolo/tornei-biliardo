@@ -682,15 +682,82 @@
 {% endblock %}
 
 {% block scripts %}
-{% if user_can_manage %}
+<script type="application/json" id="gara-config">
+  {
+    "gara": {
+      "id": {{ gara.id }},
+      "number": {{ gara.number }},
+      "tiebreakerUntilPosition": {{ gara.tiebreaker_until_position or 3 }},
+      "campionatoId": {{ gara.campionato_id | tojson }},
+      "discipline": {{ gara.discipline | tojson }},
+      "distance": {{ gara.distance }},
+      "isRaceTo": {{ (not gara.is_race_to) | tojson }},
+      "isMultiSet": {{ gara.is_multi_set | tojson }},
+      "matchDistance": {{ gara.match_distance or 2 }},
+      "isRaceToSets": {{ (gara.is_race_to_sets is not defined or gara.is_race_to_sets) | tojson }},
+      "dateIso": {{ gara.date.isoformat() | tojson }},
+      "timeIso": {{ (gara.time.isoformat() if gara.time else "20:00:00") | tojson }},
+      "inscriptionStart": {{ (gara.inscription_start.isoformat() if gara.inscription_start else None) | tojson }},
+      "inscriptionEnd": {{ (gara.inscription_end.isoformat() if gara.inscription_end else None) | tojson }}
+    },
+    "availableTables": {{ available_tables | tojson }},
+    "i18n": {
+      "confirmStartRandom": {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }},
+      "confirmStartStandard": {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }},
+      "confirmCancelFirstRound": {{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") | tojson }},
+      "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
+      "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
+      "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=gara.tiebreaker_until_position or 3) | tojson }},
+      "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmDeleteGara": {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmCancelGara": {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmResetMatch": {{ _("Sei sicuro di voler resettare questa partita?") | tojson }},
+      "confirmResetTrio": {{ _("Sei sicuro di voler resettare questo trio?") | tojson }},
+      "confirmValidate": {{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.") | tojson }},
+      "errorTitle": {{ _("Errore:") | tojson }},
+      "errorCancel": {{ _("Errore durante la cancellazione:") | tojson }},
+      "errorTermination": {{ _("Errore durante la terminazione:") | tojson }},
+      "errorTerminationWait": {{ _("Errore durante la terminazione della gara") | tojson }},
+      "errorSsrStart": {{ _("Errore durante l'avvio della fase SSR") | tojson }},
+      "errorSsrSave": {{ _("Errore durante il salvataggio dei punteggi") | tojson }},
+      "errorReset": {{ _("Errore durante il reset:") | tojson }},
+      "errorDelete": {{ _("Errore durante l'eliminazione della gara: ") | tojson }},
+      "errorNetworkDelete": {{ _("Errore di rete durante l'eliminazione") | tojson }},
+      "errorNetworkRound": {{ _("Errore di rete durante l'avvio del turno") | tojson }},
+      "errorRound": {{ _("Errore durante l'avvio del turno:")| tojson }},
+      "errorCreateRound": {{ _("Errore di rete durante la creazione del turno") | tojson }},
+      "errorQuickResult": {{ _("Errore durante l'impostazione del risultato") | tojson }},
+      "errorResetMatch": {{ _("Errore durante il reset") | tojson }},
+      "errorResetTrio": {{ _("Errore durante il reset del trio") | tojson }},
+      "errorValidation": {{ _("Errore:") | tojson }},
+      "errorValidationWait": {{ _("Errore durante la validazione") | tojson }},
+      "errorTableNetwork": {{ _("Errore di rete durante l'operazione sul tavolo") | tojson }},
+      "errorSsrScoreFormat": {{ _("Tutti i punteggi devono essere numeri interi non negativi") | tojson }},
+      "errorSsrDuplicates": {{ _("I punteggi devono essere tutti diversi per risolvere il parimerito") | tojson }},
+      "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
+      "errorSsrGroupDuplicates": {{ _("I punteggi devono essere diversi all'interno del gruppo") | tojson }},
+      "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
+      "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
+      "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
+      "tieFor": {{ _("Pari merito per il") | tojson }},
+      "place": {{ _("posto") | tojson }},
+      "ssrPoints": {{ _("Punti SSR") | tojson }},
+      "swapTitle": {{ _("Click per scambiare con match occupante") | tojson }}
+    }
+  }
+</script>
+
 <script>
+  const GARA_CONFIG = JSON.parse(document.getElementById('gara-config').textContent);
+
+  {% if user_can_manage %}
   // JavaScript functions per admin/director (tutto il codice JavaScript da admin/gara_detail.html)
   function startFirstRound(provaId, strategy) {
     let message;
     if (strategy === 'random') {
-      message = {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }};
+      message = GARA_CONFIG.i18n.confirmStartRandom;
     } else {
-      message = {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }};
+      message = GARA_CONFIG.i18n.confirmStartStandard;
     }
 
     showConfirm(message, () => {
@@ -703,7 +770,7 @@
   }
 
   function cancelFirstRound(provaId) {
-    showConfirm({{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.")| tojson }}, () => {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelFirstRound, () => {
       fetch(`/admin/gara/${provaId}/cancel_first_round`, {
         method: 'POST',
         headers: {
@@ -714,15 +781,15 @@
           location.reload();
         } else {
           response.text().then(text => {
-            showError({{ _("Errore durante la cancellazione:")| tojson }} + ' ' + text);
-    });
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+          });
         }
       });
     });
   }
 
   function cancelCurrentRound(provaId) {
-    showConfirm({{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.")| tojson }}, () => {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelCurrentRound, () => {
       fetch(`/admin/gara/${provaId}/cancel_current_round`, {
         method: 'POST',
         headers: {
@@ -733,15 +800,15 @@
           location.reload();
         } else {
           response.text().then(text => {
-            showError({{ _("Errore durante la cancellazione:")| tojson }} + ' ' + text);
-    });
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+          });
         }
       });
     });
   }
 
   function terminateGara(garaId) {
-    showConfirm({{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.")| tojson }}, () => {
+    showConfirm(GARA_CONFIG.i18n.confirmTerminate, () => {
       fetch(`/admin/gara/${garaId}/terminate`, {
         method: 'POST',
         headers: {
@@ -754,23 +821,21 @@
             location.reload();
           } else if (data.needs_tiebreaker) {
             // Show message to use SSR workflow instead
-            showInfo(data.message || {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi")| tojson }});
+            showInfo(data.message || GARA_CONFIG.i18n.infoSsrStart);
           } else {
-            showError({{ _("Errore durante la terminazione:")| tojson }} + ' ' + (data.error || data.message));
+            showError(GARA_CONFIG.i18n.errorTermination + ' ' + (data.error || data.message));
           }
         })
-        .catch (error => {
+        .catch(error => {
           console.error('Error:', error);
-            showError({{ _("Errore durante la terminazione della gara")| tojson }});
+          showError(GARA_CONFIG.i18n.errorTerminationWait);
         });
     });
   }
 
   function startSsr(garaId) {
-    console.log('startSsr called with garaId:', garaId);
-    console.log('showConfirm function exists:', typeof showConfirm);
-    showConfirm({{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos = gara.tiebreaker_until_position or 3)| tojson }}, () => {
-      console.log('Confirm callback triggered, making fetch request to /admin/gara/' + garaId + '/start_ssr');
+    const confirmMsg = GARA_CONFIG.i18n.confirmStartSsr;
+    showConfirm(confirmMsg, () => {
       fetch(`/admin/gara/${garaId}/start_ssr`, {
         method: 'POST',
         headers: {
@@ -778,20 +843,16 @@
           'X-Requested-With': 'XMLHttpRequest'
         }
       }).then(response => {
-        console.log('Fetch response status:', response.status);
         return response.json();
       }).then(data => {
-        console.log('Response data:', data);
         if (data.success) {
-          console.log('Success! Reloading page...');
           location.reload();
         } else {
-          console.log('Error in response:', data.error || data.message);
-          showError({{ _("Errore:")| tojson }} + ' ' + (data.error || data.message));
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
         }
-      }).catch (error => {
+      }).catch(error => {
         console.error('Fetch error:', error);
-          showError({{ _("Errore durante l'avvio della fase SSR")| tojson }});
+        showError(GARA_CONFIG.i18n.errorSsrStart);
       });
     });
   }
@@ -810,74 +871,69 @@
     }
 
     const positionIcons = { 1: 'text-warning', 2: 'text-secondary', 3: 'text-danger' };
-    const i18n = {
-      tieFor: {{ _("Pari merito per il") | tojson
-  }},
-  place: { { _("posto") | tojson } },
-  ssrPoints: { { _("Punti SSR") | tojson } }
-    };
+    const i18n = GARA_CONFIG.i18n;
 
-  // Build UI for each tiebreaker group using safe DOM methods
-  tiebreakers.forEach(function (group) {
-    const groupDiv = document.createElement('div');
-    groupDiv.className = 'mb-4';
+    // Build UI for each tiebreaker group using safe DOM methods
+    tiebreakers.forEach(function (group) {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'mb-4';
 
-    // Header
-    const header = document.createElement('h6');
-    header.className = 'border-bottom pb-2 mb-3';
+      // Header
+      const header = document.createElement('h6');
+      header.className = 'border-bottom pb-2 mb-3';
 
-    const trophy = document.createElement('i');
-    trophy.className = 'fas fa-trophy ' + (positionIcons[group.position] || '');
-    header.appendChild(trophy);
+      const trophy = document.createElement('i');
+      trophy.className = 'fas fa-trophy ' + (positionIcons[group.position] || '');
+      header.appendChild(trophy);
 
-    const headerText = document.createTextNode(' ' + i18n.tieFor + ' ' + group.position + '° ' + i18n.place + ' ');
-    header.appendChild(headerText);
+      const headerText = document.createTextNode(' ' + i18n.tieFor + ' ' + group.position + '° ' + i18n.place + ' ');
+      header.appendChild(headerText);
 
-    const rackInfo = document.createElement('small');
-    rackInfo.className = 'text-muted';
-    rackInfo.textContent = '(' + group.rack_totali + ' rack)';
-    header.appendChild(rackInfo);
+      const rackInfo = document.createElement('small');
+      rackInfo.className = 'text-muted';
+      rackInfo.textContent = '(' + group.rack_totali + ' rack)';
+      header.appendChild(rackInfo);
 
-    groupDiv.appendChild(header);
+      groupDiv.appendChild(header);
 
-    // Player inputs
-    group.players.forEach(function (player) {
-      const row = document.createElement('div');
-      row.className = 'row mb-2 align-items-center';
+      // Player inputs
+      group.players.forEach(function (player) {
+        const row = document.createElement('div');
+        row.className = 'row mb-2 align-items-center';
 
-      const nameCol = document.createElement('div');
-      nameCol.className = 'col-6';
-      const nameStrong = document.createElement('strong');
-      nameStrong.textContent = player.username;
-      nameCol.appendChild(nameStrong);
+        const nameCol = document.createElement('div');
+        nameCol.className = 'col-6';
+        const nameStrong = document.createElement('strong');
+        nameStrong.textContent = player.username;
+        nameCol.appendChild(nameStrong);
 
-      const inputCol = document.createElement('div');
-      inputCol.className = 'col-6';
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.className = 'form-control ssr-score-input';
-      input.name = 'ssr_' + player.user_id;
-      input.dataset.userId = player.user_id;
-      input.min = '0';
-      input.step = '1';
-      input.placeholder = i18n.ssrPoints;
-      input.required = true;
-      if (player.current_ssr_score != null) {
-        input.value = player.current_ssr_score;
-      }
-      inputCol.appendChild(input);
+        const inputCol = document.createElement('div');
+        inputCol.className = 'col-6';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'form-control ssr-score-input';
+        input.name = 'ssr_' + player.user_id;
+        input.dataset.userId = player.user_id;
+        input.min = '0';
+        input.step = '1';
+        input.placeholder = i18n.ssrPoints;
+        input.required = true;
+        if (player.current_ssr_score != null) {
+          input.value = player.current_ssr_score;
+        }
+        inputCol.appendChild(input);
 
-      row.appendChild(nameCol);
-      row.appendChild(inputCol);
-      groupDiv.appendChild(row);
+        row.appendChild(nameCol);
+        row.appendChild(inputCol);
+        groupDiv.appendChild(row);
+      });
+
+      groupsContainer.appendChild(groupDiv);
     });
 
-    groupsContainer.appendChild(groupDiv);
-  });
-
-  // Show modal
-  const bsModal = new bootstrap.Modal(modal);
-  bsModal.show();
+    // Show modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
   }
 
   function submitSsrScores() {
@@ -903,43 +959,43 @@
     });
 
     if (hasErrors) {
-      showError({{ _("Tutti i punteggi devono essere numeri interi non negativi")| tojson }});
-  return;
+      showError(GARA_CONFIG.i18n.errorSsrScoreFormat);
+      return;
     }
 
-  // Check for duplicates within each group
-  const scoreValues = Object.values(scores);
-  if (new Set(scoreValues).size !== scoreValues.length) {
-    showError({{ _("I punteggi devono essere tutti diversi per risolvere il parimerito")| tojson }});
-  return;
+    // Check for duplicates within each group
+    const scoreValues = Object.values(scores);
+    if (new Set(scoreValues).size !== scoreValues.length) {
+      showError(GARA_CONFIG.i18n.errorSsrDuplicates);
+      return;
     }
 
-  // Submit scores
-  fetch(`/admin/gara/${garaId}/save_ssr_scores`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest'
-    },
-    body: JSON.stringify({ scores: scores })
-  }).then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Close modal and reload
-        const modal = bootstrap.Modal.getInstance(document.getElementById('ssrModal'));
-        if (modal) modal.hide();
-        location.reload();
-      } else if (data.needs_tiebreaker) {
-        // Still have unresolved tiebreakers - update modal
-        showSsrModal(garaId, data.tiebreakers);
-        showInfo(data.message);
-      } else {
-        showError({{ _("Errore:")| tojson }} + ' ' + (data.error || data.message));
-      }
-    }).catch (error => {
-    console.error('Error:', error);
-      showError({{ _("Errore durante il salvataggio dei punteggi")| tojson }});
-    });
+    // Submit scores
+    fetch(`/admin/gara/${garaId}/save_ssr_scores`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ scores: scores })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal and reload
+          const modal = bootstrap.Modal.getInstance(document.getElementById('ssrModal'));
+          if (modal) modal.hide();
+          location.reload();
+        } else if (data.needs_tiebreaker) {
+          // Still have unresolved tiebreakers - update modal
+          showSsrModal(garaId, data.tiebreakers);
+          showInfo(data.message);
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorSsrSave);
+      });
   }
 
   function saveSsrGroup(garaId, groupPosition) {
@@ -964,48 +1020,48 @@
     });
 
     if (hasErrors) {
-      showError({{ _("I punteggi devono essere numeri interi non negativi")| tojson }});
+      showError(GARA_CONFIG.i18n.errorSsrGroupScores);
       return;
     }
 
-  // Check for duplicates within this group
-  const scoreValues = Object.values(scores);
-  if (new Set(scoreValues).size !== scoreValues.length) {
-    showError({{ _("I punteggi devono essere diversi all'interno del gruppo")| tojson }});
-  return;
+    // Check for duplicates within this group
+    const scoreValues = Object.values(scores);
+    if (new Set(scoreValues).size !== scoreValues.length) {
+      showError(GARA_CONFIG.i18n.errorSsrGroupDuplicates);
+      return;
     }
 
-  // Submit scores for this group
-  fetch(`/admin/gara/${garaId}/save_ssr_group`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest'
-    },
-    body: JSON.stringify({
-      group_position: groupPosition,
-      scores: scores
-    })
-  }).then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showSuccess(data.message);
-        if (data.all_resolved) {
-          // All tiebreakers resolved - reload to show terminate button
-          location.reload();
+    // Submit scores for this group
+    fetch(`/admin/gara/${garaId}/save_ssr_group`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        group_position: groupPosition,
+        scores: scores
+      })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showSuccess(data.message);
+          if (data.all_resolved) {
+            // All tiebreakers resolved - reload to show terminate button
+            location.reload();
+          }
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
         }
-      } else {
-        showError({{ _("Errore:")| tojson }} + ' ' + (data.error || data.message));
-      }
-    })
-    .catch (error => {
-      console.error('Error:', error);
-      showError({{ _("Errore durante il salvataggio dei punteggi")| tojson }});
-    });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorSsrSave);
+      });
   }
 
   function resetLastRound(garaId, roundNumber) {
-    showConfirm({{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!")| tojson }}, () => {
+    showConfirm(GARA_CONFIG.i18n.confirmResetRound, () => {
       fetch(`/admin/gara/${garaId}/round/${roundNumber}/bulk_reset`, {
         method: 'POST',
         headers: {
@@ -1016,64 +1072,62 @@
           location.reload();
         } else {
           response.text().then(text => {
-            showError({{ _("Errore durante il reset:")| tojson }} + ' ' + text);
-    });
+            showError(GARA_CONFIG.i18n.errorReset + ' ' + text);
+          });
         }
       });
     });
   }
 
   function deleteProva(provaId, provaNumber) {
-    let confirmMsg = {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") | tojson
-  }};
-  confirmMsg = confirmMsg.replace('{number}', provaNumber);
-  showConfirm(confirmMsg, () => {
-    fetch(`/admin/gara/${provaId}/delete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      }
-    }).then(response => {
-      if (response.ok) {
-        {% if gara.campionato_id %}
-        window.location.href = '/admin/campionato/{{ gara.campionato_id }}';
-        {% else %}
-        window.location.href = '/dashboard';
-        {% endif %}
-      } else {
-        response.text().then(text => {
-          showError({{ _("Errore durante l'eliminazione della gara: ")| tojson }} + response.status);
-    console.error('Delete error:', text);
-  });
+    let confirmMsg = GARA_CONFIG.i18n.confirmDeleteGara;
+    confirmMsg = confirmMsg.replace('{number}', provaNumber);
+    showConfirm(confirmMsg, () => {
+      fetch(`/admin/gara/${provaId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         }
-      }).catch (err => {
-    showError({{ _("Errore di rete durante l'eliminazione")| tojson }});
-  console.error('Network error:', err);
+      }).then(response => {
+        if (response.ok) {
+          if (GARA_CONFIG.gara.campionatoId) {
+            window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
+          } else {
+            window.location.href = '/dashboard';
+          }
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorDelete + response.status);
+            console.error('Delete error:', text);
+          });
+        }
+      }).catch(err => {
+        showError(GARA_CONFIG.i18n.errorNetworkDelete);
+        console.error('Network error:', err);
       });
     });
   }
 
   function cancelProvaWithNotifications(provaId, provaNumber) {
-    let confirmMsg = {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson
-  }};
-  confirmMsg = confirmMsg.replace('{number}', provaNumber);
-  showConfirm(confirmMsg, () => {
-    fetch(`/admin/gara/${provaId}/cancel`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      }
-    }).then(response => {
-      if (response.ok) {
-        {% if gara.campionato_id %}
-        window.location.href = '/admin/campionato/{{ gara.campionato_id }}';
-        {% else %}
-        window.location.href = '/dashboard';
-        {% endif %}
-      } else {
-        response.text().then(text => {
-          showError({{ _("Errore durante la cancellazione:")| tojson }} + ' ' + text);
-  });
+    let confirmMsg = GARA_CONFIG.i18n.confirmCancelGara;
+    confirmMsg = confirmMsg.replace('{number}', provaNumber);
+    showConfirm(confirmMsg, () => {
+      fetch(`/admin/gara/${provaId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      }).then(response => {
+        if (response.ok) {
+          if (GARA_CONFIG.gara.campionatoId) {
+            window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
+          } else {
+            window.location.href = '/dashboard';
+          }
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+          });
         }
       });
     });
@@ -1103,12 +1157,7 @@
     function populateInscriptionDates() {
       if (inscriptionStartInput && inscriptionEndInput) {
         const now = new Date();
-        // Gara date and time are in ISO format (YYYY-MM-DD and HH:MM:SS)
-        // We assume they are in local time or consistent with the server
-        const garaDateStr = '{{ gara.date.isoformat() }}';
-        const garaTimeStr = '{{ gara.time.isoformat() if gara.time else "20:00:00" }}';
-        const garaStart = new Date(`${garaDateStr}T${garaTimeStr}`);
-
+        const garaStart = new Date(`${GARA_CONFIG.gara.dateIso}T${GARA_CONFIG.gara.timeIso}`);
         // End is 30 minutes before gara start
         const endTime = new Date(garaStart.getTime() - 30 * 60 * 1000);
 
@@ -1130,21 +1179,21 @@
     const modifyEndInput = document.getElementById('modify_inscription_end');
 
     if (modifyStartInput && modifyEndInput) {
-      {% if gara.inscription_start %}
-      const currentStart = new Date('{{ gara.inscription_start.isoformat() }}Z');
-      modifyStartInput.value = dateToLocalString(currentStart);
-      {% else %}
-      modifyStartInput.value = dateToLocalString(new Date());
-      {% endif %}
+      if (GARA_CONFIG.gara.inscriptionStart) {
+        const currentStart = new Date(GARA_CONFIG.gara.inscriptionStart + 'Z');
+        modifyStartInput.value = dateToLocalString(currentStart);
+      } else {
+        modifyStartInput.value = dateToLocalString(new Date());
+      }
 
-      {% if gara.inscription_end %}
-      const currentEnd = new Date('{{ gara.inscription_end.isoformat() }}Z');
-      modifyEndInput.value = dateToLocalString(currentEnd);
-      {% else %}
-      const garaDateTime = new Date('{{ gara.date.isoformat() }}T{{ gara.time.isoformat() if gara.time else "20:00:00" }}');
-      garaDateTime.setMinutes(garaDateTime.getMinutes() - 30);
-      modifyEndInput.value = dateToLocalString(garaDateTime);
-      {% endif %}
+      if (GARA_CONFIG.gara.inscriptionEnd) {
+        const currentEnd = new Date(GARA_CONFIG.gara.inscriptionEnd + 'Z');
+        modifyEndInput.value = dateToLocalString(currentEnd);
+      } else {
+        const garaDateTime = new Date(`${GARA_CONFIG.gara.dateIso}T${GARA_CONFIG.gara.timeIso}`);
+        garaDateTime.setMinutes(garaDateTime.getMinutes() - 30);
+        modifyEndInput.value = dateToLocalString(garaDateTime);
+      }
     }
 
     function addUTCFields(form, startFieldName, endFieldName) {
@@ -1189,7 +1238,7 @@
     const buttons = document.querySelectorAll('button[onclick*="startAmalfiRound"]');
     buttons.forEach(btn => btn.disabled = true);
 
-    fetch(`/admin/gara/{{ gara.id }}/amalfi/start_round/${roundNumber}`, {
+    fetch(`/admin/gara/${GARA_CONFIG.gara.id}/amalfi/start_round/${roundNumber}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -1200,15 +1249,15 @@
           location.reload();
         } else {
           response.text().then(text => {
-            showError({{ _("Errore durante l'avvio del turno:")| tojson }} + ' ' + text);
-    buttons.forEach(btn => btn.disabled = false);
-  });
+            showError(GARA_CONFIG.i18n.errorRound + ' ' + text);
+            buttons.forEach(btn => btn.disabled = false);
+          });
         }
       })
-      .catch (error => {
-    console.error('Error:', error);
-    showError({{ _("Errore di rete durante l'avvio del turno")| tojson }});
-  buttons.forEach(btn => btn.disabled = false);
+      .catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorNetworkRound);
+        buttons.forEach(btn => btn.disabled = false);
       });
   }
 
@@ -1217,7 +1266,7 @@
     buttons.forEach(btn => btn.disabled = true);
 
     // Try to load full config from new format first
-    const storedConfig = localStorage.getItem(`roundConfig_{{ gara.id }}_${roundNumber}`);
+    const storedConfig = localStorage.getItem(`roundConfig_${GARA_CONFIG.gara.id}_${roundNumber}`);
     let config;
 
     if (storedConfig) {
@@ -1232,49 +1281,49 @@
     // Fall back to defaults if no stored config
     if (!config) {
       config = {
-        discipline: '{{ gara.discipline }}',
-        distance: {{ gara.distance }},
-        exactNumber: { { 'true' if not gara.is_race_to else 'false' } },
-        isMultiSet: { { 'true' if gara.is_multi_set else 'false' } },
-        matchDistance: { { gara.match_distance or 2 } },
-        isRaceToSets: { { 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' } }
+        discipline: GARA_CONFIG.gara.discipline,
+        distance: GARA_CONFIG.gara.distance,
+        exactNumber: GARA_CONFIG.gara.isRaceTo,
+        isMultiSet: GARA_CONFIG.gara.isMultiSet,
+        matchDistance: GARA_CONFIG.gara.matchDistance,
+        isRaceToSets: GARA_CONFIG.gara.isRaceToSets
       };
     }
 
-  const formData = new URLSearchParams();
-  formData.append('discipline', config.discipline);
-  formData.append('distance', config.distance);
-  formData.append('exact_number', config.exactNumber ? '1' : '');
-  formData.append('is_multi_set', config.isMultiSet ? '1' : '');
-  formData.append('match_distance', config.matchDistance);
-  formData.append('is_race_to_sets', config.isRaceToSets ? '1' : '');
+    const formData = new URLSearchParams();
+    formData.append('discipline', config.discipline);
+    formData.append('distance', config.distance);
+    formData.append('exact_number', config.exactNumber ? '1' : '');
+    formData.append('is_multi_set', config.isMultiSet ? '1' : '');
+    formData.append('match_distance', config.matchDistance);
+    formData.append('is_race_to_sets', config.isRaceToSets ? '1' : '');
 
-  fetch(`/admin/gara/{{ gara.id }}/start_round/${roundNumber}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showSuccess(data.message + '\n' + data.details.join('\n'));
-        if (data.redirect) {
-          setTimeout(() => { window.location.href = data.redirect; }, 1500);
-        } else {
-          setTimeout(() => { location.reload(); }, 1500);
-        }
-      } else {
-        showError({ { _("Errore:")| tojson } } + ' ' + data.error);
-        buttons.forEach(btn => btn.disabled = false);
-      }
+    fetch(`/admin/gara/${GARA_CONFIG.gara.id}/start_round/${roundNumber}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData
     })
-    .catch (error => {
-      console.error('Error:', error);
-      showError({{ _("Errore di rete durante la creazione del turno")| tojson }});
-      buttons.forEach(btn => btn.disabled = false);
-    });
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showSuccess(data.message + '\n' + data.details.join('\n'));
+          if (data.redirect) {
+            setTimeout(() => { window.location.href = data.redirect; }, 1500);
+          } else {
+            setTimeout(() => { location.reload(); }, 1500);
+          }
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + data.error);
+          buttons.forEach(btn => btn.disabled = false);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorCreateRound);
+        buttons.forEach(btn => btn.disabled = false);
+      });
   }
 
   function closeInscriptions(provaId) {
@@ -1412,48 +1461,48 @@
           if (data.success) {
             return updateTimesIfProvided();
           } else {
-            throw new Error(data.error || { { _("Errore sconosciuto")| tojson } });
+            throw new Error(data.error || GARA_CONFIG.i18n.infoUnknown);
           }
         })
         .then(() => {
           bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
           location.reload();
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showError({{ _("Errore:")| tojson }} + ' ' + error.message);
-      });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + error.message);
+        });
     } else {
-    // Submit normal match result
-    const player1Score = document.getElementById('quickPlayer1Score').value;
-    const player2Score = document.getElementById('quickPlayer2Score').value;
+      // Submit normal match result
+      const player1Score = document.getElementById('quickPlayer1Score').value;
+      const player2Score = document.getElementById('quickPlayer2Score').value;
 
-    const formData = new FormData();
-    formData.append('player1_score', player1Score);
-    formData.append('player2_score', player2Score);
+      const formData = new FormData();
+      formData.append('player1_score', player1Score);
+      formData.append('player2_score', player2Score);
 
-    fetch(`/admin/match/${matchId}/set_result`, {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => {
-        if (response.ok) {
-          return updateTimesIfProvided();
-        } else {
-          throw new Error({ { _("Errore durante l'impostazione del risultato")| tojson } });
-        }
+      fetch(`/admin/match/${matchId}/set_result`, {
+        method: 'POST',
+        body: formData
       })
+        .then(response => {
+          if (response.ok) {
+            return updateTimesIfProvided();
+          } else {
+            throw new Error(GARA_CONFIG.i18n.errorQuickResult);
+          }
+        })
         .then(() => {
-    bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
-    location.reload();
-  })
-    .catch(error => {
-      console.error('Error:', error);
-      showError(error.message);
-    });
+          bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(error.message);
+        });
     }
 
-  return false;
+    return false;
   }
 
   function resetMatchQuick(matchId) {
@@ -1468,7 +1517,7 @@
           if (response.ok) {
             location.reload();
           } else {
-            showError({ { _("Errore durante il reset")| tojson } });
+            showError(GARA_CONFIG.i18n.errorResetMatch);
           }
         });
     });
@@ -1487,9 +1536,9 @@
             location.reload();
           } else {
             response.json().then(data => {
-              showError(data.error || {{ _("Errore durante il reset del trio")| tojson }});
-    }).catch (() => {
-      showError({{ _("Errore durante il reset del trio")| tojson }});
+              showError(data.error || GARA_CONFIG.i18n.errorResetTrio);
+            }).catch(() => {
+              showError(GARA_CONFIG.i18n.errorResetTrio);
             });
           }
         });
@@ -1509,12 +1558,12 @@
           if (data.success) {
             location.reload();
           } else {
-            showError({ { _("Errore:")| tojson } } + ' ' + (data.error || {{ _("Impossibile validare il risultato")| tojson }}));
+            showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || GARA_CONFIG.i18n.infoValidateImpossible));
           }
         })
-        .catch (error => {
-    console.error('Error:', error);
-    showError({{ _("Errore durante la validazione")| tojson }});
+        .catch(error => {
+          console.error('Error:', error);
+          showError(GARA_CONFIG.i18n.errorValidationWait);
         });
     });
   }
@@ -1523,7 +1572,7 @@
 
   let tableAssignmentMatchId = null;
   let tableAssignmentCurrentTable = null;
-  const availableTables = {{ available_tables| tojson | safe }};
+  const availableTables = GARA_CONFIG.availableTables;
 
   /**
    * Apre il modal di assegnazione tavolo
@@ -1578,7 +1627,7 @@
                 <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
                 <div class="table-name">${tableName}</div>
             `;
-        button.title = {{ _("Click per scambiare con match occupante") | tojson }};
+        button.title = GARA_CONFIG.i18n.swapTitle;
         button.onclick = () => selectTableFromModal(tableName);
       } else {
         // Tavolo disponibile
@@ -1647,12 +1696,12 @@
           location.reload();
         } else {
           console.error('Error from server:', data.message);
-          showError({{ _("Errore:")| tojson }} + ' ' + data.message);
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + data.message);
         }
       })
-      .catch (error => {
-    console.error('Network error:', error);
-    showError({{ _("Errore di rete durante l'operazione sul tavolo")| tojson }});
+      .catch(error => {
+        console.error('Network error:', error);
+        showError(GARA_CONFIG.i18n.errorTableNetwork);
       });
   }
 </script>
@@ -1666,80 +1715,80 @@ rounds start, inscriptions are added, or gara completes.
 {% if current_user.is_authenticated and gara.status != 'completed' %}
 <script>
   (function () {
-    const garaId = {{ gara.id }};
+    const garaId = GARA_CONFIG.gara.id;
     let eventSource = null;
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 5;
 
-  function connectSSE() {
-    if (eventSource) {
-      eventSource.close();
-    }
-
-    console.log('[SSE Gara] Connecting to /sse/gara/' + garaId);
-    eventSource = new EventSource('/sse/gara/' + garaId);
-
-    eventSource.addEventListener('connected', function (e) {
-      console.log('[SSE Gara] Connected:', e.data);
-      reconnectAttempts = 0;
-    });
-
-    // Match completed - reload to show updated scores/classification
-    eventSource.addEventListener('match_completed', function (e) {
-      console.log('[SSE Gara] Match completed:', e.data);
-      location.reload();
-    });
-
-    // Match updated (trio rack added/removed) - reload to show live scores
-    eventSource.addEventListener('match_updated', function (e) {
-      console.log('[SSE Gara] Match updated:', e.data);
-      location.reload();
-    });
-
-    // Round started - reload to show new matches
-    eventSource.addEventListener('round_started', function (e) {
-      console.log('[SSE Gara] Round started:', e.data);
-      location.reload();
-    });
-
-    // Inscription added - reload to show updated participant list
-    eventSource.addEventListener('inscription_added', function (e) {
-      console.log('[SSE Gara] Inscription added:', e.data);
-      location.reload();
-    });
-
-    // Gara completed - reload to show final results
-    eventSource.addEventListener('gara_completed', function (e) {
-      console.log('[SSE Gara] Gara completed:', e.data);
-      location.reload();
-    });
-
-    eventSource.onerror = function (e) {
-      console.error('[SSE Gara] Connection error:', e);
-      eventSource.close();
-
-      // Reconnect with exponential backoff
-      if (reconnectAttempts < maxReconnectAttempts) {
-        reconnectAttempts++;
-        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-        console.log('[SSE Gara] Reconnecting in ' + delay + 'ms (attempt ' + reconnectAttempts + ')');
-        setTimeout(connectSSE, delay);
-      } else {
-        console.log('[SSE Gara] Max reconnect attempts reached');
+    function connectSSE() {
+      if (eventSource) {
+        eventSource.close();
       }
-    };
-  }
 
-  // Start SSE connection
-  connectSSE();
+      console.log('[SSE Gara] Connecting to /sse/gara/' + garaId);
+      eventSource = new EventSource('/sse/gara/' + garaId);
 
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', function () {
-    if (eventSource) {
-      eventSource.close();
+      eventSource.addEventListener('connected', function (e) {
+        console.log('[SSE Gara] Connected:', e.data);
+        reconnectAttempts = 0;
+      });
+
+      // Match completed - reload to show updated scores/classification
+      eventSource.addEventListener('match_completed', function (e) {
+        console.log('[SSE Gara] Match completed:', e.data);
+        location.reload();
+      });
+
+      // Match updated (trio rack added/removed) - reload to show live scores
+      eventSource.addEventListener('match_updated', function (e) {
+        console.log('[SSE Gara] Match updated:', e.data);
+        location.reload();
+      });
+
+      // Round started - reload to show new matches
+      eventSource.addEventListener('round_started', function (e) {
+        console.log('[SSE Gara] Round started:', e.data);
+        location.reload();
+      });
+
+      // Inscription added - reload to show updated participant list
+      eventSource.addEventListener('inscription_added', function (e) {
+        console.log('[SSE Gara] Inscription added:', e.data);
+        location.reload();
+      });
+
+      // Gara completed - reload to show final results
+      eventSource.addEventListener('gara_completed', function (e) {
+        console.log('[SSE Gara] Gara completed:', e.data);
+        location.reload();
+      });
+
+      eventSource.onerror = function (e) {
+        console.error('[SSE Gara] Connection error:', e);
+        eventSource.close();
+
+        // Reconnect with exponential backoff
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          console.log('[SSE Gara] Reconnecting in ' + delay + 'ms (attempt ' + reconnectAttempts + ')');
+          setTimeout(connectSSE, delay);
+        } else {
+          console.log('[SSE Gara] Max reconnect attempts reached');
+        }
+      };
     }
-  });
-}) ();
+
+    // Start SSE connection
+    connectSSE();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function () {
+      if (eventSource) {
+        eventSource.close();
+      }
+    });
+  })();
 </script>
 {% endif %}
 {% endblock %}
