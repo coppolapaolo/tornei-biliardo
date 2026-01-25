@@ -1,4 +1,5 @@
 # routes/auth.py - Route di autenticazione
+import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
 from flask_babel import gettext as _
@@ -67,6 +68,18 @@ def register():
             # Let's flash message and redirect to login.
             
             flash("Registrazione completata! Controlla la tua email per verificare l'account.", "success")
+            
+            # Show welcome gamification event on the login page
+            welcome_payload = {
+                "type": "welcome",
+                "data": {
+                    "username": username,
+                    "title": _("Ti diamo il benvenuto!"),
+                    "subtitle": _("Registrazione completata con successo.")
+                }
+            }
+            flash(json.dumps(welcome_payload), category="gamification_event")
+            
             return redirect(url_for("auth.login"))
 
         except ValueError as e:

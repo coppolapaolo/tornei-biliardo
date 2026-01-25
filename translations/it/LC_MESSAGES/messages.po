@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-24 16:24+0100\n"
+"POT-Creation-Date: 2026-01-25 16:57+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -214,67 +214,20 @@ msgstr ""
 msgid "ogni set esattamente %(n)s rack"
 msgstr ""
 
-#: models/notification/templates.py:149
-msgid "Livello Comune"
-msgstr ""
-
-#: models/notification/templates.py:150
-msgid "Livello Non Comune"
-msgstr ""
-
-#: models/notification/templates.py:151
-msgid "Livello Raro"
-msgstr ""
-
-#: models/notification/templates.py:152
-msgid "Livello Epico"
-msgstr ""
-
-#: models/notification/templates.py:153
-msgid "Livello Leggendario"
-msgstr ""
-
-#: models/notification/templates.py:159
-msgid "attività"
-msgstr ""
-
-#: models/notification/templates.py:160
-msgid "partite"
-msgstr ""
-
-#: models/notification/templates.py:161
-msgid "tornei"
-msgstr ""
-
-#: models/notification/templates.py:162
-msgid "allenamenti"
-msgstr ""
-
-#: models/notification/templates.py:168
-#: templates/gamification/admin/quest_form.html:33
-#: templates/gamification/dashboard.html:179
-#: templates/gamification/quests.html:39 templates/gamification/quests.html:120
-msgid "Settimanale"
-msgstr ""
-
-#: models/notification/templates.py:169
-#: templates/gamification/admin/quest_form.html:36
-#: templates/gamification/dashboard.html:181
-#: templates/gamification/quests.html:41 templates/gamification/quests.html:121
-msgid "Mensile"
-msgstr ""
-
-#: models/notification/templates.py:170
-#: templates/gamification/admin/quest_form.html:39
-msgid "Evento Speciale"
-msgstr ""
-
-#: routes/auth.py:28
+#: routes/auth.py:30
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:29
+#: routes/auth.py:31 templates/base.html:573
 msgid "Tutto pronto per giocare?"
+msgstr ""
+
+#: routes/auth.py:77
+msgid "Ti diamo il benvenuto!"
+msgstr ""
+
+#: routes/auth.py:78
+msgid "Registrazione completata con successo."
 msgstr ""
 
 #: routes/admin/campionato.py:95 routes/admin/campionato.py:338
@@ -360,7 +313,7 @@ msgstr ""
 msgid "Milestone raggiunta: %(value)s gare completate!"
 msgstr ""
 
-#: routes/gamification/admin.py:71 templates/base.html:285
+#: routes/gamification/admin.py:71 templates/base.html:286
 #: templates/gamification/admin/dashboard.html:5
 msgid "Admin Gamification"
 msgstr ""
@@ -539,8 +492,8 @@ msgstr ""
 msgid "Milestone non trovato"
 msgstr ""
 
-#: routes/gamification/dashboard.py:51 routes/gamification/dashboard.py:175
-#: routes/gamification/dashboard.py:279 routes/gamification/dashboard.py:319
+#: routes/gamification/dashboard.py:51 routes/gamification/dashboard.py:139
+#: routes/gamification/dashboard.py:243 routes/gamification/dashboard.py:283
 msgid "Gli amministratori non partecipano alla gamification."
 msgstr ""
 
@@ -548,100 +501,100 @@ msgstr ""
 msgid "Dashboard Gamification"
 msgstr ""
 
-#: routes/gamification/dashboard.py:203
+#: routes/gamification/dashboard.py:167
 msgid "I Tuoi Achievement"
 msgstr ""
 
-#: routes/gamification/dashboard.py:257
+#: routes/gamification/dashboard.py:221
 #: templates/components/_player_campionato_classifications.html:6
 msgid "Classifiche"
 msgstr ""
 
-#: routes/gamification/dashboard.py:297
+#: routes/gamification/dashboard.py:261
 msgid "Quest Settimanali/Mensili"
 msgstr ""
 
-#: routes/gamification/dashboard.py:334
+#: routes/gamification/dashboard.py:298
 msgid "Le Tue Streak"
 msgstr ""
 
-#: routes/player/profile.py:452
+#: routes/player/profile.py:475
 msgid "Impostazioni privacy aggiornate con successo."
 msgstr ""
 
-#: routes/player/profile.py:471
+#: routes/player/profile.py:494
 msgid "Match nascosto"
 msgstr ""
 
-#: routes/player/profile.py:484
+#: routes/player/profile.py:507
 msgid "Match visibile"
 msgstr ""
 
-#: routes/player/profile.py:485
+#: routes/player/profile.py:508
 msgid "Match non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:497
+#: routes/player/profile.py:520
 msgid "Gara nascosta"
 msgstr ""
 
-#: routes/player/profile.py:510
+#: routes/player/profile.py:533
 msgid "Gara visibile"
 msgstr ""
 
-#: routes/player/profile.py:511
+#: routes/player/profile.py:534
 msgid "Gara non era nascosta"
 msgstr ""
 
-#: routes/player/profile.py:523
+#: routes/player/profile.py:546
 msgid "Campionato nascosto"
 msgstr ""
 
-#: routes/player/profile.py:536
+#: routes/player/profile.py:559
 msgid "Campionato visibile"
 msgstr ""
 
-#: routes/player/profile.py:537
+#: routes/player/profile.py:560
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:966
+#: routes/player/profile.py:1004
 msgid "Export GDPR Pronto"
 msgstr ""
 
-#: routes/player/profile.py:967
+#: routes/player/profile.py:1005
 msgid "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr ""
 
-#: routes/player/profile.py:970
+#: routes/player/profile.py:1008
 msgid "Scarica"
 msgstr ""
 
-#: routes/player/profile.py:992
+#: routes/player/profile.py:1031
 msgid "Errore Export GDPR"
 msgstr ""
 
-#: routes/player/profile.py:993
+#: routes/player/profile.py:1032
 msgid ""
 "Si è verificato un errore durante la generazione dell'archivio. Riprova "
 "più tardi."
 msgstr ""
 
-#: routes/player/profile.py:1014
+#: routes/player/profile.py:1053
 msgid ""
 "Un export è già in corso o è stato generato di recente. Controlla le "
 "notifiche."
 msgstr ""
 
-#: routes/player/profile.py:1029
+#: routes/player/profile.py:1068
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr ""
 
-#: routes/player/profile.py:1054
+#: routes/player/profile.py:1093
 msgid "Il file di export non esiste o è scaduto."
 msgstr ""
 
-#: routes/player/profile.py:1061
+#: routes/player/profile.py:1100
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr ""
 
@@ -649,7 +602,7 @@ msgstr ""
 msgid "Campionati Biliardo"
 msgstr ""
 
-#: templates/base.html:246 templates/gamification/admin/dashboard.html:105
+#: templates/base.html:247 templates/gamification/admin/dashboard.html:105
 #: templates/gamification/admin/dashboard.html:148
 #: templates/gamification/admin/level_config.html:91
 #: templates/gamification/admin/level_config.html:139
@@ -659,77 +612,72 @@ msgstr ""
 msgid "Livello"
 msgstr ""
 
-#: templates/base.html:267 templates/base.html:385
+#: templates/base.html:268 templates/base.html:380
 msgid "Sale Biliardo"
 msgstr ""
 
-#: templates/base.html:278
+#: templates/base.html:279
 msgid "Match Individuali"
 msgstr ""
 
-#: templates/base.html:291 templates/gamification/achievements.html:10
-#: templates/gamification/quests.html:10 templates/gamification/streaks.html:10
-msgid "Gamification"
-msgstr ""
-
-#: templates/base.html:298 templates/base.html:382
+#: templates/base.html:293 templates/base.html:377
 #: templates/gamification/admin/dashboard.html:106
 msgid "Utenti"
 msgstr ""
 
-#: templates/base.html:311
+#: templates/base.html:306
 msgid "Reset DB"
 msgstr ""
 
-#: templates/base.html:354
+#: templates/base.html:349
 msgid "Notifiche"
 msgstr ""
 
-#: templates/base.html:362
+#: templates/base.html:357
 msgid "Le mie Richieste Gestore"
 msgstr ""
 
-#: templates/admin/kpi.html:51 templates/base.html:369
+#: templates/admin/kpi.html:51 templates/base.html:364
 #: templates/player/history.html:17
 msgid "Dashboard"
 msgstr ""
 
-#: templates/base.html:373 templates/player/profile.html:6
+#: templates/base.html:368 templates/player/profile.html:6
 #: templates/player/profile.html:19
 msgid "Il mio Profilo"
 msgstr ""
 
-#: templates/base.html:391
+#: templates/base.html:386
 msgid "Richieste Gestore Sala"
 msgstr ""
 
-#: templates/base.html:394
+#: templates/base.html:389
 msgid "Richieste Director"
 msgstr ""
 
-#: templates/base.html:402 templates/player/profile.html:125
+#: templates/base.html:397 templates/player/profile.html:125
 msgid "Elimina Account"
 msgstr ""
 
-#: templates/base.html:410
+#: templates/base.html:405
 msgid "Logout"
 msgstr ""
 
-#: templates/base.html:416
+#: templates/base.html:411
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:419
+#: templates/base.html:414
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:547 templates/base.html:553
+#: templates/base.html:542 templates/base.html:548
 msgid "Conferma"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:14
 #: templates/admin/campionato_wizard_step1.html:183
-#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:552
+#: templates/admin/campionato_wizard_step2.html:14 templates/base.html:547
 #: templates/components/_admin_new_campionato_modal.html:28
 #: templates/components/_campionato_create_modal.html:27
 #: templates/components/_campionato_edit_form.html:191
@@ -741,9 +689,58 @@ msgstr ""
 #: templates/gamification/admin/quest_form.html:86
 #: templates/gamification/admin/streak_config.html:142
 #: templates/gamification/admin/streak_config.html:263
-#: templates/gara_detail.html:580 templates/gara_detail.html:626
-#: templates/gara_detail.html:658 templates/player/privacy_settings.html:85
+#: templates/gara_detail.html:593 templates/gara_detail.html:639
+#: templates/gara_detail.html:672 templates/player/privacy_settings.html:85
 msgid "Annulla"
+msgstr ""
+
+#: templates/base.html:563
+msgid "XP OTTENUTI"
+msgstr ""
+
+#: templates/base.html:564
+msgid "LEVEL UP!"
+msgstr ""
+
+#: templates/base.html:565
+msgid "Nuovo livello raggiunto!"
+msgstr ""
+
+#: templates/base.html:566
+msgid "NUOVO TRAGUARDO!"
+msgstr ""
+
+#: templates/base.html:567
+msgid "STREAK!"
+msgstr ""
+
+#: templates/base.html:568
+msgid "Freeze attivo"
+msgstr ""
+
+#: templates/base.html:569
+msgid "STREAK PERSA"
+msgstr ""
+
+#: templates/base.html:570
+msgid "Non mollare, riprovare!"
+msgstr ""
+
+#: templates/base.html:571
+msgid "QUEST COMPLETATA!"
+msgstr ""
+
+#: templates/base.html:572
+msgid "TI DIAMO IL BENTORNATO!"
+msgstr ""
+
+#: templates/base.html:574
+msgid "Ciao!"
+msgstr ""
+
+#: templates/base.html:575
+#, python-format
+msgid "Ciao %(username)s!"
 msgstr ""
 
 #: templates/gara_detail.html:5
@@ -769,64 +766,64 @@ msgstr ""
 msgid "Dettaglio Pubblico"
 msgstr ""
 
-#: templates/gara_detail.html:74
+#: templates/gara_detail.html:77
 msgid "Completa Gara"
 msgstr ""
 
-#: templates/gara_detail.html:79
+#: templates/gara_detail.html:82
 msgid "Tutti gli spareggi risolti! Classifica finale pronta."
 msgstr ""
 
-#: templates/components/_gara_management.html:143
-#: templates/components/_gara_management.html:178
-#: templates/components/_gara_management.html:258 templates/gara_detail.html:82
+#: templates/components/_gara_management.html:145
+#: templates/components/_gara_management.html:185
+#: templates/components/_gara_management.html:269 templates/gara_detail.html:86
 msgid "Termina Gara"
 msgstr ""
 
-#: templates/gara_detail.html:85
+#: templates/gara_detail.html:89
 msgid "Conferma la conclusione e blocca le modifiche"
 msgstr ""
 
 #: templates/components/_gara_management.html:45
 #: templates/gamification/admin/dashboard.html:49
-#: templates/gara_detail.html:116
+#: templates/gara_detail.html:120
 msgid "Gestione"
 msgstr ""
 
-#: templates/components/_gara_management.html:244
-#: templates/gara_detail.html:125
+#: templates/components/_gara_management.html:254
+#: templates/gara_detail.html:129
 msgid "Fase Spareggio (SSR)"
 msgstr ""
 
-#: templates/gara_detail.html:128
+#: templates/gara_detail.html:132
 msgid "Inserisci i punteggi SSR nella sezione sopra"
 msgstr ""
 
-#: templates/components/_ssr_section.html:9 templates/gara_detail.html:233
+#: templates/components/_ssr_section.html:9 templates/gara_detail.html:236
 msgid "Spot Shot Rally (SSR)"
 msgstr ""
 
-#: templates/components/_ssr_section.html:12 templates/gara_detail.html:236
+#: templates/components/_ssr_section.html:12 templates/gara_detail.html:239
 msgid "In attesa di punteggi"
 msgstr ""
 
-#: templates/components/_ssr_section.html:14 templates/gara_detail.html:238
+#: templates/components/_ssr_section.html:14 templates/gara_detail.html:241
 #: utils/status_ui.py:120 utils/status_ui.py:137
 msgid "Completato"
 msgstr ""
 
-#: templates/components/_ssr_section.html:22 templates/gara_detail.html:250
+#: templates/components/_ssr_section.html:22 templates/gara_detail.html:254
 #, python-format
 msgid "Parimerito per il %(pos)s° posto"
 msgstr ""
 
 #: templates/components/_ssr_section.html:28
-#: templates/gamification/leaderboards.html:114 templates/gara_detail.html:258
+#: templates/gamification/leaderboards.html:114 templates/gara_detail.html:262
 msgid "Giocatore"
 msgstr ""
 
-#: templates/components/_ssr_section.html:29 templates/gara_detail.html:259
-#: templates/gara_detail.html:804
+#: templates/components/_ssr_section.html:29 templates/gara_detail.html:263
+#: templates/gara_detail.html:744
 msgid "Punti SSR"
 msgstr ""
 
@@ -835,81 +832,81 @@ msgstr ""
 #: templates/gamification/admin/level_config.html:165
 #: templates/gamification/admin/streak_config.html:27
 #: templates/gamification/admin/streak_config.html:143
-#: templates/gara_detail.html:291 templates/player/privacy_settings.html:82
+#: templates/gara_detail.html:292 templates/player/privacy_settings.html:82
 msgid "Salva"
 msgstr ""
 
-#: templates/gara_detail.html:302
+#: templates/gara_detail.html:303
 msgid "Nessun parimerito da risolvere."
 msgstr ""
 
-#: templates/components/_gara_info.html:5 templates/gara_detail.html:353
+#: templates/components/_gara_info.html:5 templates/gara_detail.html:355
 msgid "Informazioni Gara"
 msgstr ""
 
-#: templates/components/_gara_info.html:10 templates/gara_detail.html:361
+#: templates/components/_gara_info.html:10 templates/gara_detail.html:363
 msgid "Data:"
 msgstr ""
 
-#: templates/components/_gara_info.html:12 templates/gara_detail.html:362
+#: templates/components/_gara_info.html:12 templates/gara_detail.html:365
 msgid "Turni:"
 msgstr ""
 
-#: templates/gara_detail.html:363 templates/public/campionato_detail.html:38
+#: templates/gara_detail.html:366 templates/public/campionato_detail.html:38
 msgid "Tipo:"
 msgstr ""
 
-#: templates/components/_gara_info.html:17 templates/gara_detail.html:365
+#: templates/components/_gara_info.html:17 templates/gara_detail.html:368
 msgid "Luogo:"
 msgstr ""
 
-#: templates/components/_gara_info.html:19 templates/gara_detail.html:367
+#: templates/components/_gara_info.html:19 templates/gara_detail.html:370
 msgid "Partecipanti:"
 msgstr ""
 
-#: templates/gara_detail.html:367
+#: templates/gara_detail.html:370
 msgid "min"
 msgstr ""
 
-#: templates/gara_detail.html:367
+#: templates/gara_detail.html:371
 msgid "max"
 msgstr ""
 
 #: templates/components/_gara_info.html:22
-#: templates/components/_unified_cards.html:86 templates/gara_detail.html:368
+#: templates/components/_unified_cards.html:86 templates/gara_detail.html:372
 msgid "Quota:"
 msgstr ""
 
 #: templates/components/_gara_info.html:26
-#: templates/components/_unified_cards.html:88 templates/gara_detail.html:368
+#: templates/components/_unified_cards.html:88 templates/gara_detail.html:373
 msgid "Gratuita"
 msgstr ""
 
 #: templates/components/_gara_info.html:35
 #: templates/components/_round_management.html:26
-#: templates/gara_detail.html:369
+#: templates/gara_detail.html:374
 msgid "Anti-reincontro:"
 msgstr ""
 
-#: templates/gara_detail.html:369
+#: templates/gara_detail.html:375
 msgid "Sì"
 msgstr ""
 
 #: templates/gamification/admin/streak_config.html:78
-#: templates/gara_detail.html:369
+#: templates/gara_detail.html:375
 msgid "No"
 msgstr ""
 
-#: templates/gara_detail.html:370
+#: templates/gara_detail.html:376
 msgid "Num. dispari:"
 msgstr ""
 
-#: templates/components/_gara_info.html:87 templates/gara_detail.html:373
+#: templates/components/_gara_info.html:87 templates/gara_detail.html:379
 msgid "Descrizione:"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:5
-#: templates/gara_detail.html:386
+#: templates/gara_detail.html:393
 msgid "Iscritti"
 msgstr ""
 
@@ -919,154 +916,151 @@ msgstr ""
 #: templates/components/_match_result_row.html:30
 #: templates/components/_match_result_row.html:56
 #: templates/components/_match_result_row.html:69
-#: templates/gara_detail.html:409
+#: templates/gara_detail.html:418
 msgid "Forfait"
 msgstr ""
 
-#: templates/gara_detail.html:417
+#: templates/gara_detail.html:427
 msgid "Lista Attesa"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:82
-#: templates/gara_detail.html:428
+#: templates/gara_detail.html:438
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/gara_detail.html:441
+#: templates/gara_detail.html:452
 msgid "Direttori di Gara"
 msgstr ""
 
-#: templates/gara_detail.html:491
+#: templates/gara_detail.html:502
 msgid "Imposta Risultato Rapido"
 msgstr ""
 
-#: templates/gara_detail.html:500
+#: templates/gara_detail.html:511
 msgid "Modalità:"
 msgstr ""
 
-#: templates/gara_detail.html:503
+#: templates/gara_detail.html:514
 #, python-format
 msgid "(vince chi vince %(distance)s rack)"
 msgstr ""
 
-#: templates/gara_detail.html:505
+#: templates/gara_detail.html:516
 #, python-format
 msgid "(somma rack = %(distance)s)"
 msgstr ""
 
-#: templates/gara_detail.html:515
+#: templates/gara_detail.html:526
 msgid "Trio (Round-Robin):"
 msgstr ""
 
-#: templates/gara_detail.html:517
+#: templates/gara_detail.html:528
 #, python-format
 msgid "%(gironi)s gironi, max %(max_racks)s rack per giocatore"
 msgstr ""
 
-#: templates/gara_detail.html:519
+#: templates/gara_detail.html:531
 #, python-format
 msgid "Bonus: +%(bonus)s rack equamente distribuiti"
 msgstr ""
 
-#: templates/gara_detail.html:522
+#: templates/gara_detail.html:535
 #, python-format
 msgid "Distanza %(d)s"
 msgstr ""
 
-#: templates/gara_detail.html:530 templates/gara_detail.html:544
+#: templates/gara_detail.html:543 templates/gara_detail.html:557
 msgid "Giocatore 1"
 msgstr ""
 
-#: templates/gara_detail.html:534 templates/gara_detail.html:548
+#: templates/gara_detail.html:547 templates/gara_detail.html:561
 msgid "Giocatore 2"
 msgstr ""
 
-#: templates/gara_detail.html:552
+#: templates/gara_detail.html:565
 msgid "Giocatore 3"
 msgstr ""
 
-#: templates/gara_detail.html:566
+#: templates/gara_detail.html:579
 msgid "Tempi partita (opzionale)"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:127
-#: templates/gara_detail.html:570
+#: templates/gara_detail.html:583
 msgid "Inizio"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:132
-#: templates/gara_detail.html:574
+#: templates/gara_detail.html:587
 msgid "Fine"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:42
 #: templates/components/_match_admin_controls.html:63
 #: templates/components/_match_admin_controls.html:78
-#: templates/gara_detail.html:582
+#: templates/gara_detail.html:595
 msgid "Imposta Risultato"
 msgstr ""
 
-#: templates/gara_detail.html:596
+#: templates/gara_detail.html:609
 msgid "Assegna Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:610
+#: templates/gara_detail.html:623
 msgid "Tavolo attuale:"
 msgstr ""
 
-#: templates/gara_detail.html:621
+#: templates/gara_detail.html:634
 msgid "Rimuovi Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:639
+#: templates/gara_detail.html:652
 msgid "Risolvi Spareggi"
 msgstr ""
 
-#: templates/gara_detail.html:646
+#: templates/gara_detail.html:659
+#, python-format
 msgid ""
-"Ci sono parimerito nei primi 3 posti. Inserire il punteggio finale dello "
-"Spot Shot Rally (SSR) per ogni giocatore."
-msgstr ""
-
-#: templates/gara_detail.html:647
-msgid "Punteggi più alti = posizione migliore"
+"Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio "
+"finale dello Spot Shot Rally\n"
+"          (SSR) per ogni giocatore."
 msgstr ""
 
 #: templates/gara_detail.html:661
+msgid "Punteggi più alti = posizione migliore"
+msgstr ""
+
+#: templates/gara_detail.html:675
 msgid "Conferma e Termina Gara"
 msgstr ""
 
-#: templates/gara_detail.html:677
+#: templates/gara_detail.html:705
 msgid ""
 "Sei sicuro di voler avviare la gara? Tutti i turni verranno creati "
 "contemporaneamente e le iscrizioni chiuse definitivamente."
 msgstr ""
 
-#: templates/gara_detail.html:679
+#: templates/gara_detail.html:706
 msgid ""
 "Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse"
 " definitivamente."
 msgstr ""
 
-#: templates/gara_detail.html:692
+#: templates/gara_detail.html:707
 msgid ""
 "Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite "
 "del primo turno verranno eliminate e la gara tornerà allo stato di "
 "iscrizioni."
 msgstr ""
 
-#: templates/gara_detail.html:703 templates/gara_detail.html:722
-#: templates/gara_detail.html:1061
-msgid "Errore durante la cancellazione:"
-msgstr ""
-
-#: templates/gara_detail.html:711
+#: templates/gara_detail.html:708
 msgid ""
 "Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le "
 "partite del turno verranno eliminate e si tornerà al turno precedente."
 msgstr ""
 
-#: templates/gara_detail.html:730
+#: templates/gara_detail.html:709
 msgid ""
 "Sei sicuro di voler terminare la gara?\n"
 "\n"
@@ -1074,73 +1068,16 @@ msgid ""
 " modificarli."
 msgstr ""
 
-#: templates/gara_detail.html:743
-msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
-msgstr ""
-
-#: templates/gara_detail.html:745
-msgid "Errore durante la terminazione:"
-msgstr ""
-
-#: templates/gara_detail.html:750
-msgid "Errore durante la terminazione della gara"
-msgstr ""
-
-#: templates/gara_detail.html:758
+#: templates/gara_detail.html:710
+#, python-format
 msgid ""
 "Avviare la fase di spareggio (SSR)?\n"
 "\n"
-"Dovrai inserire i punteggi per risolvere i parimerito nei primi 3 posti."
+"Dovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s"
+" posizioni."
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:221
-#: templates/components/_match_admin_controls.html:263
-#: templates/gara_detail.html:777 templates/gara_detail.html:924
-#: templates/gara_detail.html:986 templates/gara_detail.html:1255
-#: templates/gara_detail.html:1410 templates/gara_detail.html:1498
-#: templates/gara_detail.html:1636 templates/match_detail.html:145
-#: templates/match_detail.html:174 templates/match_detail.html:203
-#: templates/match_detail.html:233 templates/match_detail.html:258
-#: templates/match_detail.html:280 templates/match_detail.html:302
-#: templates/match_detail.html:324 templates/match_detail.html:348
-#: templates/match_detail.html:396 templates/match_detail.html:445
-#: templates/match_detail.html:468
-msgid "Errore:"
-msgstr ""
-
-#: templates/gara_detail.html:782
-msgid "Errore durante l'avvio della fase SSR"
-msgstr ""
-
-#: templates/gara_detail.html:802
-msgid "Pari merito per il"
-msgstr ""
-
-#: templates/gara_detail.html:803
-msgid "posto"
-msgstr ""
-
-#: templates/gara_detail.html:893
-msgid "Tutti i punteggi devono essere numeri interi non negativi"
-msgstr ""
-
-#: templates/gara_detail.html:900
-msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
-msgstr ""
-
-#: templates/gara_detail.html:929 templates/gara_detail.html:991
-msgid "Errore durante il salvataggio dei punteggi"
-msgstr ""
-
-#: templates/gara_detail.html:955
-msgid "I punteggi devono essere numeri interi non negativi"
-msgstr ""
-
-#: templates/gara_detail.html:962
-msgid "I punteggi devono essere diversi all'interno del gruppo"
-msgstr ""
-
-#: templates/gara_detail.html:996
+#: templates/gara_detail.html:711
 msgid ""
 "Sei sicuro di voler resettare l'ultimo turno?\n"
 "\n"
@@ -1150,11 +1087,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:1007
-msgid "Errore durante il reset:"
-msgstr ""
-
-#: templates/gara_detail.html:1015
+#: templates/gara_detail.html:712
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -1162,15 +1095,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:1032
-msgid "Errore durante l'eliminazione della gara: "
-msgstr ""
-
-#: templates/gara_detail.html:1037
-msgid "Errore di rete durante l'eliminazione"
-msgstr ""
-
-#: templates/gara_detail.html:1044
+#: templates/gara_detail.html:713
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler cancellare la Gara {number}?\n"
@@ -1179,76 +1104,149 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:1189
-msgid "Errore durante l'avvio del turno:"
+#: templates/gara_detail.html:714 templates/gara_detail.html:1509
+msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/gara_detail.html:1196
-msgid "Errore di rete durante l'avvio del turno"
+#: templates/gara_detail.html:715 templates/gara_detail.html:1527
+msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
-#: templates/gara_detail.html:1261
-msgid "Errore di rete durante la creazione del turno"
-msgstr ""
-
-#: templates/gara_detail.html:1267
+#: templates/gara_detail.html:716 templates/gara_detail.html:1549
+#: templates/match_detail.html:456
 msgid ""
-"Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
-" setup."
+"Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
+"assegnato alla prossima partita in attesa."
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:221
 #: templates/components/_match_admin_controls.html:263
-#: templates/gara_detail.html:1401 templates/match_detail.html:145
+#: templates/gara_detail.html:717 templates/gara_detail.html:732
+#: templates/match_detail.html:145 templates/match_detail.html:174
+#: templates/match_detail.html:203 templates/match_detail.html:233
+#: templates/match_detail.html:258 templates/match_detail.html:280
+#: templates/match_detail.html:302 templates/match_detail.html:324
+#: templates/match_detail.html:348 templates/match_detail.html:396
+#: templates/match_detail.html:445 templates/match_detail.html:468
+msgid "Errore:"
+msgstr ""
+
+#: templates/gara_detail.html:718
+msgid "Errore durante la cancellazione:"
+msgstr ""
+
+#: templates/gara_detail.html:719
+msgid "Errore durante la terminazione:"
+msgstr ""
+
+#: templates/gara_detail.html:720
+msgid "Errore durante la terminazione della gara"
+msgstr ""
+
+#: templates/gara_detail.html:721
+msgid "Errore durante l'avvio della fase SSR"
+msgstr ""
+
+#: templates/gara_detail.html:722
+msgid "Errore durante il salvataggio dei punteggi"
+msgstr ""
+
+#: templates/gara_detail.html:723
+msgid "Errore durante il reset:"
+msgstr ""
+
+#: templates/gara_detail.html:724
+msgid "Errore durante l'eliminazione della gara: "
+msgstr ""
+
+#: templates/gara_detail.html:725
+msgid "Errore di rete durante l'eliminazione"
+msgstr ""
+
+#: templates/gara_detail.html:726
+msgid "Errore di rete durante l'avvio del turno"
+msgstr ""
+
+#: templates/gara_detail.html:727
+msgid "Errore durante l'avvio del turno:"
+msgstr ""
+
+#: templates/gara_detail.html:728
+msgid "Errore di rete durante la creazione del turno"
+msgstr ""
+
+#: templates/components/_match_admin_controls.html:226
+#: templates/gara_detail.html:729
+msgid "Errore durante l'impostazione del risultato"
+msgstr ""
+
+#: templates/gara_detail.html:730 templates/match_detail.html:422
+#: templates/match_detail.html:427 templates/match_detail.html:445
+#: templates/match_detail.html:450
+msgid "Errore durante il reset"
+msgstr ""
+
+#: templates/gara_detail.html:731
+msgid "Errore durante il reset del trio"
+msgstr ""
+
+#: templates/gara_detail.html:733 templates/match_detail.html:473
+msgid "Errore durante la validazione"
+msgstr ""
+
+#: templates/gara_detail.html:734
+msgid "Errore di rete durante l'operazione sul tavolo"
+msgstr ""
+
+#: templates/gara_detail.html:735
+msgid "Tutti i punteggi devono essere numeri interi non negativi"
+msgstr ""
+
+#: templates/gara_detail.html:736
+msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
+msgstr ""
+
+#: templates/gara_detail.html:737
+msgid "I punteggi devono essere numeri interi non negativi"
+msgstr ""
+
+#: templates/gara_detail.html:738
+msgid "I punteggi devono essere diversi all'interno del gruppo"
+msgstr ""
+
+#: templates/gara_detail.html:739
+msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
+msgstr ""
+
+#: templates/components/_match_admin_controls.html:221
+#: templates/components/_match_admin_controls.html:263
+#: templates/gara_detail.html:740 templates/match_detail.html:145
 #: templates/match_detail.html:174 templates/match_detail.html:203
 #: templates/match_detail.html:233 templates/match_detail.html:258
 #: templates/match_detail.html:396
 msgid "Errore sconosciuto"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:226
-#: templates/gara_detail.html:1429
-msgid "Errore durante l'impostazione del risultato"
-msgstr ""
-
-#: templates/gara_detail.html:1446
-msgid "Sei sicuro di voler resettare questa partita?"
-msgstr ""
-
-#: templates/gara_detail.html:1457 templates/match_detail.html:422
-#: templates/match_detail.html:427 templates/match_detail.html:445
-#: templates/match_detail.html:450
-msgid "Errore durante il reset"
-msgstr ""
-
-#: templates/gara_detail.html:1464
-msgid "Sei sicuro di voler resettare questo trio?"
-msgstr ""
-
-#: templates/gara_detail.html:1476 templates/gara_detail.html:1478
-msgid "Errore durante il reset del trio"
-msgstr ""
-
-#: templates/gara_detail.html:1486 templates/match_detail.html:456
-msgid ""
-"Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
-"assegnato alla prossima partita in attesa."
-msgstr ""
-
-#: templates/gara_detail.html:1498 templates/match_detail.html:468
+#: templates/gara_detail.html:741 templates/match_detail.html:468
 msgid "Impossibile validare il risultato"
 msgstr ""
 
-#: templates/gara_detail.html:1503 templates/match_detail.html:473
-msgid "Errore durante la validazione"
+#: templates/gara_detail.html:742
+msgid "Pari merito per il"
 msgstr ""
 
-#: templates/gara_detail.html:1567
+#: templates/gara_detail.html:743
+msgid "posto"
+msgstr ""
+
+#: templates/gara_detail.html:745
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
-#: templates/gara_detail.html:1641
-msgid "Errore di rete durante l'operazione sul tavolo"
+#: templates/gara_detail.html:1330
+msgid ""
+"Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
+" setup."
 msgstr ""
 
 #: templates/admin/kpi.html:746 templates/match_detail.html:3
@@ -2279,90 +2277,102 @@ msgstr ""
 msgid "Tutte le %(total)d partite completate!"
 msgstr ""
 
-#: templates/components/_gara_management.html:135
-#: templates/components/_gara_management.html:170
+#: templates/components/_gara_management.html:136
+#: templates/components/_gara_management.html:176
 msgid "Avvia Spareggio (SSR)"
 msgstr ""
 
-#: templates/components/_gara_management.html:138
-#: templates/components/_gara_management.html:173
-msgid "Ci sono parimerito nei primi 3 posti da risolvere"
+#: templates/components/_gara_management.html:139
+#: templates/components/_gara_management.html:179
+#, python-format
+msgid ""
+"Ci sono parimerito nelle prime %(pos)d posizioni da\n"
+"                    risolvere"
 msgstr ""
 
-#: templates/components/_gara_management.html:146
-#: templates/components/_gara_management.html:181
-#: templates/components/_gara_management.html:261
+#: templates/components/_gara_management.html:148
+#: templates/components/_gara_management.html:188
 msgid "Conferma la conclusione della gara e blocca le modifiche"
 msgstr ""
 
-#: templates/components/_gara_management.html:152
+#: templates/components/_gara_management.html:155
 #, python-format
 msgid "Partite: %(completed)d/%(total)d completate"
 msgstr ""
 
-#: templates/components/_gara_management.html:155
-msgid "I giocatori avanzano automaticamente quando il loro avversario ha finito"
+#: templates/components/_gara_management.html:159
+msgid ""
+"I giocatori avanzano automaticamente quando il loro\n"
+"                    avversario ha finito"
 msgstr ""
 
-#: templates/components/_gara_management.html:164
+#: templates/components/_gara_management.html:169
 #, python-format
 msgid "Tutti i %(total)d turni completati!"
 msgstr ""
 
-#: templates/components/_gara_management.html:187
+#: templates/components/_gara_management.html:196
 msgid "Reset Ultimo Turno"
 msgstr ""
 
-#: templates/components/_gara_management.html:190
+#: templates/components/_gara_management.html:199
 #, python-format
-msgid "Azzera i risultati del turno %(num)s per correzioni"
+msgid ""
+"Azzera i risultati del turno %(num)s per\n"
+"                    correzioni"
 msgstr ""
 
-#: templates/components/_gara_management.html:194
+#: templates/components/_gara_management.html:204
 #, python-format
 msgid "Turno %(current)d/%(total)d completato"
 msgstr ""
 
-#: templates/components/_gara_management.html:201
+#: templates/components/_gara_management.html:211
 #, python-format
 msgid "Avvia Turno %(num)s"
 msgstr ""
 
-#: templates/components/_gara_management.html:206
+#: templates/components/_gara_management.html:216
 #, python-format
 msgid "Turno %(current)d/%(total)d in corso"
 msgstr ""
 
-#: templates/components/_gara_management.html:217
+#: templates/components/_gara_management.html:227
 msgid "Annulla Avvio Gara"
 msgstr ""
 
-#: templates/components/_gara_management.html:220
-#: templates/components/_gara_management.html:228
-#: templates/components/_gara_management.html:236
+#: templates/components/_gara_management.html:230
+#: templates/components/_gara_management.html:238
+#: templates/components/_gara_management.html:246
 msgid ""
 "Puoi annullare l'avvio poiché non sono ancora stati\n"
-"                    inseriti risultati"
+"                        inseriti risultati"
 msgstr ""
 
-#: templates/components/_gara_management.html:225
+#: templates/components/_gara_management.html:235
 msgid "Annulla Avvio Primo Turno"
 msgstr ""
 
-#: templates/components/_gara_management.html:233
+#: templates/components/_gara_management.html:243
 #, python-format
 msgid "Annulla Avvio Turno %(num)s"
 msgstr ""
 
-#: templates/components/_gara_management.html:250
+#: templates/components/_gara_management.html:261
 msgid "Inserisci i punteggi SSR nella sezione sottostante"
 msgstr ""
 
-#: templates/components/_gara_management.html:255
+#: templates/components/_gara_management.html:266
 msgid "Tutti gli spareggi risolti!"
 msgstr ""
 
-#: templates/components/_gara_management.html:269
+#: templates/components/_gara_management.html:272
+msgid ""
+"Conferma la conclusione della gara e blocca le\n"
+"                        modifiche"
+msgstr ""
+
+#: templates/components/_gara_management.html:281
 #: templates/components/_soft_delete_modal.html:101
 #: templates/components/_unified_cards.html:255
 #: templates/components/_unified_cards.html:261
@@ -3207,6 +3217,11 @@ msgstr ""
 msgid "Classifiche per Campionato"
 msgstr ""
 
+#: templates/gamification/achievements.html:10
+#: templates/gamification/quests.html:10 templates/gamification/streaks.html:10
+msgid "Gamification"
+msgstr ""
+
 #: templates/gamification/achievements.html:11
 #: templates/gamification/admin/achievements.html:21
 #: templates/gamification/admin/dashboard.html:62
@@ -3344,6 +3359,18 @@ msgstr ""
 
 #: templates/gamification/dashboard.html:166
 msgid "Vedi Tutte"
+msgstr ""
+
+#: templates/gamification/admin/quest_form.html:33
+#: templates/gamification/dashboard.html:179
+#: templates/gamification/quests.html:39 templates/gamification/quests.html:120
+msgid "Settimanale"
+msgstr ""
+
+#: templates/gamification/admin/quest_form.html:36
+#: templates/gamification/dashboard.html:181
+#: templates/gamification/quests.html:41 templates/gamification/quests.html:121
+msgid "Mensile"
 msgstr ""
 
 #: templates/gamification/dashboard.html:183
@@ -3896,6 +3923,10 @@ msgstr ""
 
 #: templates/gamification/admin/quest_form.html:30
 msgid "Tipo Quest"
+msgstr ""
+
+#: templates/gamification/admin/quest_form.html:39
+msgid "Evento Speciale"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:55
@@ -4558,6 +4589,301 @@ msgstr ""
 msgid "Sconosciuto"
 msgstr ""
 
+#: venv/lib/python3.9/site-packages/click/_termui_impl.py:556
+#, python-brace-format
+msgid "{editor}: Editing failed"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/_termui_impl.py:560
+#, python-brace-format
+msgid "{editor}: Editing failed: {e}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1124
+msgid "Aborted!"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1349
+#: venv/lib/python3.9/site-packages/click/core.py:1379
+#, python-brace-format
+msgid "(Deprecated) {text}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1396
+msgid "Options"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1422
+#, python-brace-format
+msgid "Got unexpected extra argument ({args})"
+msgid_plural "Got unexpected extra arguments ({args})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1438
+#, python-brace-format
+msgid "DeprecationWarning: The command {name!r} is deprecated."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1645
+msgid "Commands"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1677
+msgid "Missing command."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:1755
+#, python-brace-format
+msgid "No such command {name!r}."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:2313
+msgid "Value must be an iterable."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:2334
+#, python-brace-format
+msgid "Takes {nargs} values but 1 was given."
+msgid_plural "Takes {nargs} values but {len} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:2783
+#, python-brace-format
+msgid "env var: {var}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:2813
+msgid "(dynamic)"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:2828
+#, python-brace-format
+msgid "default: {default}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/core.py:2841
+msgid "required"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/decorators.py:457
+#, python-format
+msgid "%(prog)s, version %(version)s"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/decorators.py:520
+msgid "Show the version and exit."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/decorators.py:541
+msgid "Show this message and exit."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:49
+#: venv/lib/python3.9/site-packages/click/exceptions.py:88
+#, python-brace-format
+msgid "Error: {message}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:80
+#, python-brace-format
+msgid "Try '{command} {option}' for help."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:129
+#, python-brace-format
+msgid "Invalid value: {message}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:131
+#, python-brace-format
+msgid "Invalid value for {param_hint}: {message}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:187
+msgid "Missing argument"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:189
+msgid "Missing option"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:191
+msgid "Missing parameter"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:193
+#, python-brace-format
+msgid "Missing {param_type}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:200
+#, python-brace-format
+msgid "Missing parameter: {param_name}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:220
+#, python-brace-format
+msgid "No such option: {name}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:232
+#, python-brace-format
+msgid "Did you mean {possibility}?"
+msgid_plural "(Possible options: {possibilities})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:270
+msgid "unknown error"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/exceptions.py:277
+#, python-brace-format
+msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/parser.py:233
+#, python-brace-format
+msgid "Argument {name!r} takes {nargs} values."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/parser.py:415
+#, python-brace-format
+msgid "Option {name!r} does not take a value."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/parser.py:476
+#, python-brace-format
+msgid "Option {name!r} requires an argument."
+msgid_plural "Option {name!r} requires {nargs} arguments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.9/site-packages/click/shell_completion.py:326
+msgid "Shell completion is not supported for Bash versions older than 4.4."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/shell_completion.py:333
+msgid "Couldn't detect Bash version, shell completion is not supported."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/termui.py:158
+msgid "Repeat for confirmation"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/termui.py:174
+msgid "Error: The value you entered was invalid."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/termui.py:176
+#, python-brace-format
+msgid "Error: {e.message}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/termui.py:187
+msgid "Error: The two entered values do not match."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/termui.py:243
+msgid "Error: invalid input"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/termui.py:773
+msgid "Press any key to continue..."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:267
+#, python-brace-format
+msgid ""
+"Choose from:\n"
+"\t{choices}"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:299
+#, python-brace-format
+msgid "{value!r} is not {choice}."
+msgid_plural "{value!r} is not one of {choices}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:393
+#, python-brace-format
+msgid "{value!r} does not match the format {format}."
+msgid_plural "{value!r} does not match the formats {formats}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:415
+#, python-brace-format
+msgid "{value!r} is not a valid {number_type}."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:471
+#, python-brace-format
+msgid "{value} is not in the range {range}."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:612
+#, python-brace-format
+msgid "{value!r} is not a valid boolean."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:636
+#, python-brace-format
+msgid "{value!r} is not a valid UUID."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:826
+msgid "file"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:828
+msgid "directory"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:830
+msgid "path"
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:881
+#, python-brace-format
+msgid "{name} {filename!r} does not exist."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:890
+#, python-brace-format
+msgid "{name} {filename!r} is a file."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:898
+#, python-brace-format
+msgid "{name} {filename!r} is a directory."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:907
+#, python-brace-format
+msgid "{name} {filename!r} is not readable."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:916
+#, python-brace-format
+msgid "{name} {filename!r} is not writable."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:925
+#, python-brace-format
+msgid "{name} {filename!r} is not executable."
+msgstr ""
+
+#: venv/lib/python3.9/site-packages/click/types.py:992
+#, python-brace-format
+msgid "{len_type} values are required, but {len_value} was given."
+msgid_plural "{len_type} values are required, but {len_value} were given."
+msgstr[0] ""
+msgstr[1] ""
+
 #~ msgid "(somma deve essere %(distance)s)"
 #~ msgstr ""
 
@@ -4962,5 +5288,35 @@ msgstr ""
 #~ msgstr[1] ""
 
 #~ msgid "Next:"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Ci sono parimerito nei primi 3 "
+#~ "posti. Inserire il punteggio finale "
+#~ "dello Spot Shot Rally (SSR) per "
+#~ "ogni giocatore."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Avviare la fase di spareggio (SSR)?\n"
+#~ "\n"
+#~ "Dovrai inserire i punteggi per risolvere"
+#~ " i parimerito nei primi 3 posti."
+#~ msgstr ""
+
+#~ msgid "Ci sono parimerito nei primi 3 posti da risolvere"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "I giocatori avanzano automaticamente quando"
+#~ " il loro avversario ha finito"
+#~ msgstr ""
+
+#~ msgid "Azzera i risultati del turno %(num)s per correzioni"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Puoi annullare l'avvio poiché non sono ancora stati\n"
+#~ "                    inseriti risultati"
 #~ msgstr ""
 

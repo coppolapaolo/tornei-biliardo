@@ -555,6 +555,28 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Notifications System (Toast, Confirm Modal, Validation) -->
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
+    <!-- Gamification i18n Configuration -->
+    <script type="application/json" id="gamification-config">
+    {
+        "i18n": {
+            "xp_title": {{ _("XP OTTENUTI") | tojson }},
+            "level_up_title": {{ _("LEVEL UP!") | tojson }},
+            "level_up_subtitle": {{ _("Nuovo livello raggiunto!") | tojson }},
+            "achievement_title": {{ _("NUOVO TRAGUARDO!") | tojson }},
+            "streak_title": {{ _("STREAK!") | tojson }},
+            "streak_freeze": {{ _("Freeze attivo") | tojson }},
+            "streak_lost_title": {{ _("STREAK PERSA") | tojson }},
+            "streak_lost_subtitle": {{ _("Non mollare, riprovare!") | tojson }},
+            "quest_title": {{ _("QUEST COMPLETATA!") | tojson }},
+            "welcome_title": {{ _("TI DIAMO IL BENTORNATO!") | tojson }},
+            "welcome_subtitle": {{ _("Tutto pronto per giocare?") | tojson }},
+            "welcome_anonymous": {{ _("Ciao!") | tojson }},
+            "welcome_user": {{ _("Ciao %(username)s!", username="%(username)s") | tojson }}
+        }
+    }
+    </script>
+
     <!-- Gamification Animations JS -->
     <script src="{{ url_for('static', filename='js/gamification.js') }}"></script>
 

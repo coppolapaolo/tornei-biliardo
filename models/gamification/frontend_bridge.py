@@ -136,7 +136,7 @@ class GamificationFrontendBridge:
             return
 
         # Improved reason formatting
-        reason = "XP Guadagnati"
+        reason = "XP Ottenuti"
         if event.related_entities:
             if "match_id" in event.related_entities:
                 reason = f"Partita #{event.related_entities['match_id']}"

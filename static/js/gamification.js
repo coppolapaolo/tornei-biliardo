@@ -26,6 +26,21 @@ const MASCOT_IMAGES = {
 };
 
 // ========================================
+//   Toast Durations (ms)
+// ========================================
+
+const TOAST_DURATIONS = {
+    xp: 3000,
+    levelup: 5000,
+    achievement: 5000,
+    achievementLegendary: 7000,
+    streak: 4000,
+    streakLost: 4000,
+    quest: 4000,
+    welcome: 5000  // Increased from 3000 to 5000
+};
+
+// ========================================
 //   Toast Notification System
 // ========================================
 
@@ -34,7 +49,24 @@ class GamificationToast {
         this.container = null;
         this.queue = [];
         this.isProcessing = false;
+        this.config = this.loadConfig();
         this.init();
+    }
+
+    loadConfig() {
+        try {
+            const configElement = document.getElementById('gamification-config');
+            if (configElement) {
+                return JSON.parse(configElement.textContent);
+            }
+        } catch (e) {
+            console.error("Error loading gamification i18n config:", e);
+        }
+        return { i18n: {} };
+    }
+
+    getI18n(key, defaultValue) {
+        return this.config.i18n[key] || defaultValue;
     }
 
     init() {
@@ -56,12 +88,12 @@ class GamificationToast {
     showXPGain(amount, reason = '') {
         const toast = this.createToast('xp-gain', {
             mascotImage: MASCOT_IMAGES.xp,
-            title: 'XP GUADAGNATI',
+            title: this.getI18n('xp_title', 'XP OTTENUTI'),
             contentType: 'xp',
             contentValue: amount,
             subtitle: reason
         });
-        this.queueToast(toast, 3000);
+        this.queueToast(toast, TOAST_DURATIONS.xp);
     }
 
     /**
@@ -75,12 +107,12 @@ class GamificationToast {
 
         const toast = this.createToast('level-up', {
             mascotImage: MASCOT_IMAGES.levelup,
-            title: 'LEVEL UP!',
+            title: this.getI18n('level_up_title', 'LEVEL UP!'),
             contentType: 'level',
             contentValue: newLevel,
-            subtitle: title || 'Hai raggiunto un nuovo livello!'
+            subtitle: title || this.getI18n('level_up_subtitle', 'Hai raggiunto un nuovo livello!')
         });
-        this.queueToast(toast, 5000);
+        this.queueToast(toast, TOAST_DURATIONS.levelup);
     }
 
     /**
@@ -107,12 +139,13 @@ class GamificationToast {
         const rarityClass = rarity !== 'common' ? rarity : '';
         const toast = this.createToast(`achievement ${rarityClass}`, {
             mascotImage: mascotImage,
-            title: 'ACHIEVEMENT SBLOCCATO!',
+            title: this.getI18n('achievement_title', 'NUOVO TRAGUARDO!'),
             contentType: 'achievement',
             contentValue: name,
             subtitle: description
         });
-        this.queueToast(toast, rarity === 'legendary' ? 7000 : 5000);
+        const duration = rarity === 'legendary' ? TOAST_DURATIONS.achievementLegendary : TOAST_DURATIONS.achievement;
+        this.queueToast(toast, duration);
     }
 
     /**
@@ -124,28 +157,29 @@ class GamificationToast {
     showStreak(streakCount, streakType = 'weekly', hasFreeze = false) {
         const toast = this.createToast('streak', {
             mascotImage: MASCOT_IMAGES.streak,
-            title: 'STREAK!',
+            title: this.getI18n('streak_title', 'STREAK!'),
             contentType: 'streak',
             contentValue: streakCount,
-            subtitle: hasFreeze ? 'Freeze attivo' : '',
+            subtitle: hasFreeze ? this.getI18n('streak_freeze', 'Freeze attivo') : '',
             hasFreeze: hasFreeze
         });
-        this.queueToast(toast, 4000);
+        this.queueToast(toast, TOAST_DURATIONS.streak);
     }
 
     /**
      * Show streak lost notification
      * @param {string} message - Encouragement message
      */
-    showStreakLost(message = 'Non mollare, riprova!') {
+    showStreakLost(message = '') {
+        const msg = message || this.getI18n('streak_lost_subtitle', 'Non mollare, riprova!');
         const toast = this.createToast('streak-lost', {
             mascotImage: MASCOT_IMAGES.sad,
-            title: 'STREAK PERSA',
+            title: this.getI18n('streak_lost_title', 'STREAK PERSA'),
             contentType: 'text',
-            contentValue: message,
+            contentValue: msg,
             subtitle: ''
         });
-        this.queueToast(toast, 4000);
+        this.queueToast(toast, TOAST_DURATIONS.streakLost);
     }
 
     /**
@@ -156,12 +190,12 @@ class GamificationToast {
     showQuest(questName, description = '') {
         const toast = this.createToast('quest', {
             mascotImage: MASCOT_IMAGES.quest,
-            title: 'QUEST COMPLETATA!',
+            title: this.getI18n('quest_title', 'QUEST COMPLETATA!'),
             contentType: 'text',
             contentValue: questName,
             subtitle: description
         });
-        this.queueToast(toast, 4000);
+        this.queueToast(toast, TOAST_DURATIONS.quest);
     }
 
     /**
@@ -171,14 +205,21 @@ class GamificationToast {
      * @param {string} subtitle - Custom subtitle (optional)
      */
     showWelcome(username = '', title = '', subtitle = '') {
+        let content = '';
+        if (username) {
+            content = this.getI18n('welcome_user', 'Ciao %(username)s!').replace('%(username)s', username);
+        } else {
+            content = this.getI18n('welcome_anonymous', 'Ciao!');
+        }
+
         const toast = this.createToast('welcome', {
             mascotImage: MASCOT_IMAGES.welcome,
-            title: title || 'BENTORNATO!',
+            title: title || this.getI18n('welcome_title', 'TI DIAMO IL BENTORNATO!'),
             contentType: 'text',
-            contentValue: username ? `Ciao ${username}!` : 'Ciao!',
-            subtitle: subtitle || 'Pronto per giocare?'
+            contentValue: content,
+            subtitle: subtitle || this.getI18n('welcome_subtitle', 'Pronto per giocare?')
         });
-        this.queueToast(toast, 3000);
+        this.queueToast(toast, TOAST_DURATIONS.welcome);
     }
 
     /**
@@ -634,7 +675,7 @@ function testGamificationEffects() {
 
     // Test welcome
     setTimeout(() => {
-        showGamificationEvent('welcome', { username: 'Giocatore' });
+        showGamificationEvent('welcome', { username: 'Atleta' });
     }, 500);
 
     // Test XP gain
@@ -644,7 +685,7 @@ function testGamificationEffects() {
 
     // Test level up
     setTimeout(() => {
-        showGamificationEvent('levelup', { level: 5, title: 'Giocatore Esperto' });
+        showGamificationEvent('levelup', { level: 5, title: 'Talento del Biliardo' });
     }, 8000);
 
     // Test achievement (common)
@@ -659,7 +700,7 @@ function testGamificationEffects() {
     // Test achievement (rare) - shows surprised Chalky
     setTimeout(() => {
         showGamificationEvent('achievement', {
-            name: 'Campione Locale',
+            name: 'Star Locale',
             description: 'Hai vinto 10 partite consecutive!',
             rarity: 'rare'
         });
