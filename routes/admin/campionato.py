@@ -25,6 +25,7 @@ from models.matchmaking.configuration import (
     get_classification_compatibility_map,
 )
 from models.competition.constants import DEFAULT_DISTANCE
+from models.status_enum import Discipline
 from utils import (
     campionato_manager_required,
     admin_required,
@@ -433,6 +434,8 @@ def campionato_detail(campionato_id):
         last_completed_gara_number=last_completed_gara_number,
         verified_venues=verified_venues,
         default_distance=DEFAULT_DISTANCE,
+        discipline_choices=Discipline.get_choices(),
+        default_discipline=Discipline.NINE_BALL.value,
     )
 
 

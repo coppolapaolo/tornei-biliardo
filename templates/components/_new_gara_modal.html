@@ -174,9 +174,9 @@
                                 <div class="mb-3">
                                     <label for="discipline" class="form-label">Disciplina</label>
                                     <select class="form-control" name="discipline" id="create_discipline" required>
-                                        <option value="palla 8">Palla 8</option>
-                                        <option value="palla 9" selected>Palla 9</option>
-                                        <option value="palla 10">Palla 10</option>
+                                        {% for value, label in discipline_choices %}
+                                        <option value="{{ value }}" {% if value == default_discipline %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>

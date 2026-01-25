@@ -77,6 +77,11 @@ def _handle_venue_creation(
         if parsed_tables:
             # Use the count of tables for the venue
             number_of_tables = len(parsed_tables)
+
+            # Check if input was an explicit list vs a single number
+            # If input contains comma or non-digit chars, it's an explicit list
+            is_explicit_list = "," in tables_input.strip() or not tables_input.strip().isdigit()
+
             try:
                 # Create via LocationService first
                 new_venue = LocationService.create_billiard_hall(
@@ -84,6 +89,11 @@ def _handle_venue_creation(
                     added_by_id=current_user.id,
                     number_of_tables=number_of_tables,
                 )
+
+                # If user provided an explicit list (not just a number),
+                # save the table names on the venue for future reference
+                if is_explicit_list:
+                    new_venue.set_table_names(parsed_tables)
 
                 # Then modify to set as disabled and non-verified
                 new_venue.is_active = False
@@ -294,6 +304,7 @@ def get_strategy_constraints(strategy):
 
 @competition_bp.route("/create", methods=["POST"])
 @login_required
+@transactional(domain="competition")
 def create_gara():
     """Crea nuova gara - Aggiornata per supportare standalone"""
 
