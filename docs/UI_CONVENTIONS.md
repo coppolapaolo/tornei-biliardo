@@ -295,6 +295,28 @@ Presenti in `base.html`:
 | `onclick="return confirm('...')"` (link) | `onclick="return confirmLink(this, '...')"` |
 | `onclick="return confirm('...')"` (button) | `onclick="confirmSubmit(this.closest('form'), '...')"` + `type="button"` |
 
+### Separazione Jinja2 e JavaScript
+
+**Decisione Architetturale**: [ADR-018](adr/ADR-018-jinja2-js-separation.md)
+
+Per mantenere il codice JavaScript pulito e compatibile con i formatter, **non inserire espressioni Jinja2 `{{ ... }}` direttamente nel codice JS**.
+
+1. Centralizza dati e traduzioni in un blocco `<script type="application/json">` con un ID univoco.
+2. Leggi i dati in JS tramite `JSON.parse()`.
+3. In JS, usa esclusivamente l'oggetto risultante.
+
+```html
+<!-- ✅ CORRETTO: Dati centralizzati -->
+<script type="application/json" id="config-data">
+{ "id": {{ item.id }}, "msg": {{ _("Conferma") | tojson }} }
+</script>
+
+<script>
+const config = JSON.parse(document.getElementById('config-data').textContent);
+// ... logica JS pura ...
+</script>
+```
+
 ---
 
 ## Card Structure

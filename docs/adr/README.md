@@ -23,6 +23,7 @@ Crea un ADR quando:
 | ADR-002 | [Fix Anti-Rematch Encounter Cleanup](ADR-002-fix-anti-rematch-encounter-cleanup.md) | Accepted | 2025-12-28 |
 | ADR-003 | [User Privacy System](ADR-003-user-privacy-system.md) | Accepted | 2025-12-28 |
 | ADR-004 | [Challenge/Gara Decoupling](ADR-004-challenge-gara-decoupling.md) | Accepted | 2025-12-29 |
+| ADR-018 | [Separazione Jinja2 e JavaScript](ADR-018-jinja2-js-separation.md) | Accepted | 2026-01-25 |
 
 ## Come Creare un Nuovo ADR
 

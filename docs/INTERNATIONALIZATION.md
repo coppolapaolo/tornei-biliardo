@@ -28,20 +28,39 @@ La piattaforma utilizza **Flask-Babel** per l'internazionalizzazione.
 
 ### JavaScript
 
-Per stringhe in JavaScript nelle templates, usare la sintassi semplice:
+Per stringhe e dati in JavaScript nelle templates, **è fortemente raccomandato** l'uso di un blocco di configurazione JSON per separare la logica Jinja2 dal codice JavaScript (vedi [ADR-018](adr/ADR-018-jinja2-js-separation.md)).
+
+#### ✅ Metodo Raccomandato: JSON Configuration
+Centralizza variabili e traduzioni in un unico punto:
+
+```html
+<script type="application/json" id="gara-config">
+  {
+    "i18n": {
+      "confirm": {{ _("Sei sicuro?") | tojson }}
+    }
+  }
+</script>
+
+<script>
+  const CONFIG = JSON.parse(document.getElementById('gara-config').textContent);
+  if (confirm(CONFIG.i18n.confirm)) { ... }
+</script>
+```
+
+#### ⚠️ Metodo Deprecato: Inline Jinja2
+L'uso di Jinja2 direttamente nel codice JS è scoraggiato perché rende difficile la formattazione e può causare errori di sintassi negli IDE.
 
 ```javascript
-// ✅ Corretto
-if (confirm('{{ _("Sei sicuro?") }}')) {
-    // ...
-}
+// ❌ Deprecato (difficile da formattare)
+if (confirm('{{ _("Sei sicuro?") }}')) { ... }
 
-// ✅ Per stringhe con caratteri speciali
+// ❌ Deprecato
 alert({{ _("Messaggio") | tojson }});
 ```
 
-> [!NOTE]
-> Alcuni IDE segnalano errori sui blocchi `{% if %}` in JavaScript. Sono **falsi positivi**: Jinja2 viene processato server-side prima che JavaScript venga eseguito.
+> [!IMPORTANT]
+> Se una stringa tradotta richiede variabili Jinja2, l'interpolazione deve avvenire **dentro** il comando `_()` di Jinja2 nel blocco JSON: `{{ _("Testo %(var)s", var=valore) | tojson }}`.
 
 ### Python/Flask
 
