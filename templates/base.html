@@ -239,8 +239,9 @@
                 {% endif %}
             </a>
 
-            <!-- Gamification Badge (Always Visible) -->
-            {% if current_user.is_authenticated and gamification_context and gamification_context.progress %}
+            <!-- Gamification Badge (Always Visible for Players/Directors) -->
+            {% if current_user.is_authenticated and not current_user.is_admin and gamification_context and
+            gamification_context.progress %}
             <div class="d-flex align-items-center ms-auto me-3">
                 <a href="{{ url_for('gamification.dashboard') }}" class="text-decoration-none"
                     title="{{ _('Livello') }} {{ gamification_context.progress.current_level }}">

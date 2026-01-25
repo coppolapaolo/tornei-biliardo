@@ -226,6 +226,13 @@ class QuestService:
         if quest.status != QuestStatus.ACTIVE:
             raise ValueError(f"Quest '{quest.name}' is not active (status: {quest.status.value})")
 
+        # Skip gamification for admin users
+        from models.user.models import User
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            logger.debug(f"Skipping quest join for admin user {user_id}")
+            return None, False  # type: ignore
+
         # Check existing participation
         existing = QuestParticipation.query.filter_by(
             user_id=user_id,
@@ -283,6 +290,13 @@ class QuestService:
 
         if participation is None:
             raise ValueError(f"User {user_id} not participating in quest {quest_id}")
+
+        # Skip gamification for admin users
+        from models.user.models import User
+        user = db.session.get(User, user_id)
+        if user and user.is_admin:
+            logger.debug(f"Skipping quest progress update for admin user {user_id}")
+            return participation, False
 
         # Already completed
         if participation.is_completed:

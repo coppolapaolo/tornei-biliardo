@@ -27,7 +27,8 @@ from ..transaction.manager import (
 from models.events.base import EventBus
 from models.events.competition_events import (
     DirectorAssignmentAddedEvent,
-    DirectorAssignmentRemovedEvent
+    DirectorAssignmentRemovedEvent,
+    CampionatoCreatedEvent
 )
 
 
@@ -85,6 +86,16 @@ class TournamentService(DomainService):
                 assigned_by_id=director_id,  # Self-assignment for now
             )
             db.session.add(director_assignment)
+
+        # Publish creation event
+        if director_id:
+            event = CampionatoCreatedEvent(
+                campionato_id=campionato.id,
+                name=campionato.name,
+                creator_id=director_id,
+                campionato_type=campionato.campionato_type or "amalfi"
+            )
+            EventBus.publish(event)
 
         return campionato
 
@@ -173,6 +184,15 @@ class TournamentService(DomainService):
                 )
             )
             db.session.add(assignment)
+
+        # Publish creation event
+        event = CampionatoCreatedEvent(
+            campionato_id=campionato.id,
+            name=campionato.name,
+            creator_id=creator_user_id,
+            campionato_type=campionato.campionato_type or "amalfi"
+        )
+        EventBus.publish(event)
 
         return campionato
 

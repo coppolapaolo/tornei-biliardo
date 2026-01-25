@@ -35,6 +35,8 @@ class XPTransactionType(Enum):
     STREAK_BONUS = "streak_bonus"
     ACHIEVEMENT_UNLOCK = "achievement_unlock"
     CHALLENGE_COMPLETION = "challenge_completion"
+    GARA_CREATION = "gara_creation"
+    CAMPIONATO_CREATION = "campionato_creation"
     ADMIN_ADJUSTMENT = "admin_adjustment"
     ADMIN_GRANT = "admin_grant"  # Bonus XP granted by admin
 

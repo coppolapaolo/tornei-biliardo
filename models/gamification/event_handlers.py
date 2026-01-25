@@ -23,6 +23,8 @@ from models.events.match_events import MatchCompletedEvent
 from models.events.competition_events import (
     InscriptionCreatedEvent,
     CompetitionCompletedEvent,
+    CompetitionCreatedEvent,
+    CampionatoCreatedEvent
 )
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
@@ -60,6 +62,16 @@ class GamificationEventHandlers:
         EventBus.register_handler(
             CompetitionCompletedEvent,
             GamificationEventHandlers.handle_competition_completed_for_xp,
+            priority=10
+        )
+        EventBus.register_handler(
+            CompetitionCreatedEvent,
+            GamificationEventHandlers.handle_competition_created_for_xp,
+            priority=10
+        )
+        EventBus.register_handler(
+            CampionatoCreatedEvent,
+            GamificationEventHandlers.handle_campionato_created_for_xp,
             priority=10
         )
 
@@ -343,6 +355,36 @@ class GamificationEventHandlers:
 
         except Exception as e:
             logger.error(f"Error handling competition completed event for XP: {e}", exc_info=True)
+
+    @staticmethod
+    def handle_competition_created_for_xp(event: CompetitionCreatedEvent) -> None:
+        """Award XP for creating a competition (Gara)."""
+        try:
+            LevelService.award_xp(
+                user_id=event.creator_id,
+                xp_amount=XP_RATES[XPTransactionType.GARA_CREATION],
+                transaction_type=XPTransactionType.GARA_CREATION,
+                reason=f"Created competition {event.name}",
+                related_entities={"gara_id": event.gara_id}
+            )
+            logger.info(f"Awarded {XP_RATES[XPTransactionType.GARA_CREATION]} XP to user {event.creator_id} for creating Gara")
+        except Exception as e:
+            logger.error(f"Error handling competition created event for XP: {e}", exc_info=True)
+
+    @staticmethod
+    def handle_campionato_created_for_xp(event: CampionatoCreatedEvent) -> None:
+        """Award XP for creating a Campionato."""
+        try:
+            LevelService.award_xp(
+                user_id=event.creator_id,
+                xp_amount=XP_RATES[XPTransactionType.CAMPIONATO_CREATION],
+                transaction_type=XPTransactionType.CAMPIONATO_CREATION,
+                reason=f"Created campionato {event.name}",
+                related_entities={"campionato_id": event.campionato_id}
+            )
+            logger.info(f"Awarded {XP_RATES[XPTransactionType.CAMPIONATO_CREATION]} XP to user {event.creator_id} for creating Campionato")
+        except Exception as e:
+            logger.error(f"Error handling campionato created event for XP: {e}", exc_info=True)
 
 
 # Auto-register handlers when module is imported

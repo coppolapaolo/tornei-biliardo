@@ -30,9 +30,9 @@ from models.exceptions import InvalidTransitionError
 from models.events.base import EventBus
 from models.events.competition_events import (
     DirectorAssignmentAddedEvent,
-    DirectorAssignmentRemovedEvent
+    DirectorAssignmentRemovedEvent,
+    CompetitionCreatedEvent
 )
-
 
 class GaraService:
     """Operazioni di business su Gara (creazione, query, validazione, transizioni)."""
@@ -122,6 +122,7 @@ class GaraService:
         distance: int,
         campionato_id: Optional[int] = None,
         director_id: Optional[int] = None,
+        creator_id: Optional[int] = None,
         **kwargs,
     ) -> Gara:
         """Crea una Gara (anche standalone se `campionato_id` è None)."""
@@ -206,6 +207,31 @@ class GaraService:
                 logger.warning(f"Gara config warning: {warning}")
 
         db.session.add(gara)
+        db.session.flush()
+
+        # Publish creation event
+        actual_creator_id = creator_id or director_id
+        if actual_creator_id:
+            from models.user.models import User
+            user = db.session.get(User, actual_creator_id)
+            if user:
+                from datetime import datetime
+                event = CompetitionCreatedEvent(
+                    gara_id=gara.id,
+                    name=gara.name,
+                    creator_id=user.id,
+                    creator_name=user.username,
+                    location_id=gara.billiard_hall_id,
+                    location_name=gara.location,
+                    scheduled_time=datetime.combine(gara.date, gara.time),
+                    min_participants=gara.min_participants,
+                    max_participants=gara.max_participants,
+                    registration_deadline=gara.inscription_end,
+                    is_campionato=gara.campionato_id is not None,
+                    campionato_id=gara.campionato_id
+                )
+                EventBus.publish(event)
+
         return gara
 
     @staticmethod

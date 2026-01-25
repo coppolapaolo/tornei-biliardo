@@ -96,24 +96,10 @@ def dashboard():
 def api_level_progress():
     """
     API endpoint for real-time level progress updates.
-
-    Returns JSON with current level, XP, and progress percentage.
-    Used by AJAX to update UI after XP gain.
-
-    Response:
-    {
-        "current_level": 8,
-        "current_xp": 450,
-        "total_xp": 3500,
-        "xp_for_next_level": 600,
-        "progress_percentage": 75.0,
-        "next_unlock": {
-            "level": 10,
-            "feature": "tournament_creation",
-            "description": "Puoi creare tornei standalone"
-        }
-    }
     """
+    if current_user.is_admin:
+        return jsonify({"error": "Admin users do not participate in gamification"}), 403
+
     progress = LevelService.get_level_progress(current_user.id)
     return jsonify(progress)
 
@@ -123,32 +109,10 @@ def api_level_progress():
 def api_user_stats():
     """
     API endpoint for detailed user statistics.
-
-    Returns JSON with XP breakdown by source and recent transactions.
-
-    Response:
-    {
-        "current_level": 8,
-        "total_xp": 3500,
-        "highest_level_reached": 8,
-        "xp_by_type": {
-            "match_win": 1200,
-            "match_loss": 400,
-            "tournament_inscription": 250,
-            "tournament_completion": 1000,
-            "tournament_win": 500
-        },
-        "recent_transactions": [
-            {
-                "type": "match_win",
-                "xp_amount": 50,
-                "reason": "Won match 456",
-                "created_at": "2025-12-23T10:30:00"
-            },
-            ...
-        ]
-    }
     """
+    if current_user.is_admin:
+        return jsonify({"error": "Admin users do not participate in gamification"}), 403
+
     stats = LevelService.get_user_level_stats(current_user.id)
     return jsonify(stats)
 
@@ -344,6 +308,9 @@ def streaks():
 @login_required
 def api_achievements():
     """API endpoint for user's achievements."""
+    if current_user.is_admin:
+        return jsonify([]), 403
+
     achievements = AchievementService.get_user_achievements(
         current_user.id,
         unlocked_only=request.args.get("unlocked_only", "false").lower() == "true"
@@ -355,6 +322,9 @@ def api_achievements():
 @login_required
 def api_streaks():
     """API endpoint for user's streaks."""
+    if current_user.is_admin:
+        return jsonify({}), 403
+
     streaks = StreakService.get_all_streaks(current_user.id)
     return jsonify(streaks)
 
@@ -363,6 +333,9 @@ def api_streaks():
 @login_required
 def api_quests():
     """API endpoint for active quests with user progress."""
+    if current_user.is_admin:
+        return jsonify([]), 403
+
     quests = QuestService.get_user_quests(current_user.id, active_only=True)
     # Convert to serializable format
     result = []

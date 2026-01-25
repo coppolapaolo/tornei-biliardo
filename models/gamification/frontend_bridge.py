@@ -112,6 +112,10 @@ class GamificationFrontendBridge:
         if current_user.id != user_id:
             # Event is for another user, don't show animation to this user
             return
+
+        if current_user.is_admin:
+            # Admin users don't see gamification animations
+            return
             
         try:
             payload = {
@@ -228,6 +232,9 @@ def flash_gamification_event(event_type: str, data: Dict[str, Any]) -> None:
     Useful for events not triggered by domain events, like "Welcome".
     """
     if not has_request_context() or not current_user.is_authenticated:
+        return
+
+    if current_user.is_admin:
         return
 
     try:

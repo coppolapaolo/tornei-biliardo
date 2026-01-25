@@ -15,6 +15,31 @@ from .base import DomainEvent
 
 
 @dataclass
+class CampionatoCreatedEvent(DomainEvent):
+    """Event published when a new campionato is created."""
+
+    campionato_id: int
+    name: str
+    creator_id: int
+    campionato_type: str
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.domain = "campionato"
+
+    def get_event_type(self) -> str:
+        return "campionato.created"
+
+    def _get_event_data(self) -> Dict[str, Any]:
+        return {
+            "campionato_id": self.campionato_id,
+            "name": self.name,
+            "creator_id": self.creator_id,
+            "campionato_type": self.campionato_type
+        }
+
+
+@dataclass
 class CompetitionCreatedEvent(DomainEvent):
     """Event published when a new competition (gara) is created."""
 
