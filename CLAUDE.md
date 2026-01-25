@@ -45,6 +45,9 @@ python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 - **Template Documentation**: `templates/CLAUDE.md` - Jinja2/JS integration patterns
 
 ### CI/CD & Deployment
+
+**Production URL**: https://www.torneibiliardo.it
+
 ```bash
 # Run migrations (with tracking)
 python migrations/runner.py              # Run pending migrations
@@ -64,8 +67,8 @@ python migrations/runner.py
 - Git pull and migrations must be run manually or via scheduled task
 
 **PythonAnywhere Scheduled Task** (optional, daily on free tier):
-- Setup: Tasks → set time → `cd /home/paolocoppola/mysite && python scripts/auto_deploy.py`
-- Runs git pull, migrations, and reloads the app once per day
+- Setup: Tasks → set time → `/home/paolocoppola/mysite/venv/bin/python /home/paolocoppola/mysite/scripts/auto_deploy.py`
+- Runs git pull, pip install, migrations, and reloads the app once per day
 
 ---
 

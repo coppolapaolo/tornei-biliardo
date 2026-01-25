@@ -30,8 +30,8 @@ Una **community hub centralizzata** per tutti gli appassionati di pool americano
 ### 🔧 **Setup Locale**
 ```bash
 # Clone repository
-git clone https://github.com/coppolapaolo/campionati-biliardo.git
-cd campionati-biliardo
+git clone https://github.com/coppolapaolo/tornei-biliardo.git
+cd tornei-biliardo
 
 # Virtual environment
 python3 -m venv venv
@@ -48,7 +48,7 @@ python app.py
 
 **🌐 App disponibile su**: `http://localhost:5000`
 
-**🌐 App produzione**: `https://username.pythonanywhere.com`
+**🌐 App produzione**: https://www.torneibiliardo.it
 
 ---
 
@@ -105,7 +105,7 @@ python app.py
 - **AJAX interactions** per esperienza fluida
 
 ### **Infrastructure Scalabile**
-- **SQLite** (dev) / **PostgreSQL** (prod) per crescita
+- **SQLite** (dev e prod su PythonAnywhere)
 - **Multi-level caching** per performance community
 - **Transaction management** per operazioni complesse
 - **Comprehensive testing** per affidabilità piattaforma
@@ -196,7 +196,7 @@ pybabel compile -d translations
 ## 📞 Community & Supporto
 
 ### 🐛 **Issues e Feedback**
-- **GitHub Issues**: [Crea Issue](https://github.com/coppolapaolo/campionati-biliardo/issues)
+- **GitHub Issues**: [Crea Issue](https://github.com/coppolapaolo/tornei-biliardo/issues)
 - **Community Feedback**: Suggerimenti per migliorare l'esperienza
 - **Bug Reports**: Segnalazioni con scenario dettagliato
 
@@ -208,7 +208,7 @@ pybabel compile -d translations
 
 ### 📧 **Contatti**
 - **Email**: paolo.coppola@gmail.com
-- **Repository**: https://github.com/coppolapaolo/campionati-biliardo
+- **Repository**: https://github.com/coppolapaolo/tornei-biliardo
 
 ---
 
