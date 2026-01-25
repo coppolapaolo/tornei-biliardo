@@ -176,6 +176,7 @@ pybabel compile -d translations
 - ✅ Match proposal e coordinamento sociale
 - ✅ Gestione venue e location services
 - ✅ Challenge system per skill development
+- ✅ **Gamification V2 (ABAC)** - [Documentazione Completa](docs/adr/ADR-020-gamification-system-v2.md)
 
 ### **Prossime Fasi**: Community Expansion
 - 🔄 Sistema amicizie e network sociali
