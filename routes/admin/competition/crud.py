@@ -393,6 +393,8 @@ def create_gara():
     default_anti_rematch = campionato.default_anti_rematch if campionato.default_anti_rematch is not None else True
     default_odd_policy = campionato.default_odd_policy if campionato.default_odd_policy else "bye"
     default_first_round = "random"
+    # Inherit classification_system from campionato (fix: was using model default "WINS")
+    classification_system = campionato.default_classification_system or "WINS"
 
     anti_rematch = request.form.get("anti_rematch_enabled") == "on" if "anti_rematch_enabled" in request.form else default_anti_rematch
     odd_policy = request.form.get("odd_number_policy", default_odd_policy)
@@ -430,6 +432,7 @@ def create_gara():
             odd_number_policy=odd_policy,
             tiebreaker_enabled=tiebreaker_enabled,
             tiebreaker_until_position=tiebreaker_until_position,
+            classification_system=classification_system,
         )
 
         # Set gara-specific available tables

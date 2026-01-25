@@ -42,9 +42,19 @@
                 <label for="classification_system" class="form-label">Sistema di Classifica</label>
                 {% if gara.campionato_id %}
                 {# Gara in campionato: mostra readonly #}
-                <input type="text" class="form-control" value="{% if gara.classification_system == 'WINS' %}Vittorie{% elif gara.classification_system == 'RACK' %}Rack Totali{% else %}{{ gara.classification_system or 'WINS' }}{% endif %}" readonly disabled>
-                <input type="hidden" name="classification_system" value="{{ gara.classification_system or 'WINS' }}">
+                {% set campionato_default = gara.campionato.default_classification_system or 'WINS' %}
+                {% set gara_system = gara.classification_system or 'WINS' %}
+                {% set is_inherited = (gara_system == campionato_default) or (gara_system == 'RACKS' and campionato_default == 'RACK') %}
+                <input type="text" class="form-control" value="{% if gara_system == 'WINS' %}Vittorie{% elif gara_system in ['RACK', 'RACKS'] %}Rack Totali{% else %}{{ gara_system }}{% endif %}" readonly disabled>
+                <input type="hidden" name="classification_system" value="{{ gara_system }}">
+                {% if is_inherited %}
                 <small class="form-text text-muted">Ereditato dal campionato</small>
+                {% else %}
+                <small class="form-text text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Diverso dal campionato
+                    (default: {% if campionato_default == 'WINS' %}Vittorie{% elif campionato_default == 'RACK' %}Rack Totali{% else %}{{ campionato_default }}{% endif %})
+                </small>
+                {% endif %}
                 {% else %}
                 {# Gara standalone: select editabile #}
                 <select class="form-select" id="classification_system" name="classification_system">
