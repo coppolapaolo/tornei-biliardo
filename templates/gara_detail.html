@@ -688,20 +688,18 @@
   function startFirstRound(provaId, strategy) {
     let message;
     if (strategy === 'random') {
-      message = {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }
-    };
-  } else {
-    message = {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }
-  };
+      message = {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }};
+    } else {
+      message = {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }};
     }
 
-  showConfirm(message, () => {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/admin/gara/${provaId}/start_first_round`;
-    document.body.appendChild(form);
-    form.submit();
-  });
+    showConfirm(message, () => {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/gara/${provaId}/start_first_round`;
+      document.body.appendChild(form);
+      form.submit();
+    });
   }
 
   function cancelFirstRound(provaId) {
@@ -756,15 +754,14 @@
             location.reload();
           } else if (data.needs_tiebreaker) {
             // Show message to use SSR workflow instead
-            showInfo(data.message || {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi")| tojson }
-        });
-    } else {
-    showError({{ _("Errore durante la terminazione:")| tojson }} + ' ' + (data.error || data.message));
+            showInfo(data.message || {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi")| tojson }});
+          } else {
+            showError({{ _("Errore durante la terminazione:")| tojson }} + ' ' + (data.error || data.message));
           }
         })
         .catch (error => {
-    console.error('Error:', error);
-    showError({{ _("Errore durante la terminazione della gara")| tojson }});
+          console.error('Error:', error);
+            showError({{ _("Errore durante la terminazione della gara")| tojson }});
         });
     });
   }
@@ -783,22 +780,19 @@
       }).then(response => {
         console.log('Fetch response status:', response.status);
         return response.json();
-      })
-        .then(data => {
-          console.log('Response data:', data);
-          if (data.success) {
-            console.log('Success! Reloading page...');
-            location.reload();
-          } else {
-            console.log('Error in response:', data.error || data.message);
-            showError({{ _("Errore:")| tojson }
-        } + ' ' + (data.error || data.message));
-    }
-        })
-        .catch (error => {
-    console.error('Fetch error:', error);
-    showError({{ _("Errore durante l'avvio della fase SSR")| tojson }});
-        });
+      }).then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+          console.log('Success! Reloading page...');
+          location.reload();
+        } else {
+          console.log('Error in response:', data.error || data.message);
+          showError({{ _("Errore:")| tojson }} + ' ' + (data.error || data.message));
+        }
+      }).catch (error => {
+        console.error('Fetch error:', error);
+          showError({{ _("Errore durante l'avvio della fase SSR")| tojson }});
+      });
     });
   }
 
@@ -909,8 +903,7 @@
     });
 
     if (hasErrors) {
-      showError({{ _("Tutti i punteggi devono essere numeri interi non negativi")| tojson }
-  });
+      showError({{ _("Tutti i punteggi devono essere numeri interi non negativi")| tojson }});
   return;
     }
 
@@ -941,14 +934,12 @@
         showSsrModal(garaId, data.tiebreakers);
         showInfo(data.message);
       } else {
-        showError({{ _("Errore:")| tojson }
-    } + ' ' + (data.error || data.message));
-        }
-      })
-      .catch (error => {
+        showError({{ _("Errore:")| tojson }} + ' ' + (data.error || data.message));
+      }
+    }).catch (error => {
     console.error('Error:', error);
-    showError({{ _("Errore durante il salvataggio dei punteggi")| tojson }});
-      });
+      showError({{ _("Errore durante il salvataggio dei punteggi")| tojson }});
+    });
   }
 
   function saveSsrGroup(garaId, groupPosition) {
@@ -973,9 +964,8 @@
     });
 
     if (hasErrors) {
-      showError({{ _("I punteggi devono essere numeri interi non negativi")| tojson }
-  });
-  return;
+      showError({{ _("I punteggi devono essere numeri interi non negativi")| tojson }});
+      return;
     }
 
   // Check for duplicates within this group
@@ -1005,14 +995,13 @@
           location.reload();
         }
       } else {
-        showError({{ _("Errore:")| tojson }
-    } + ' ' + (data.error || data.message));
-        }
-      })
-      .catch (error => {
-    console.error('Error:', error);
-    showError({{ _("Errore durante il salvataggio dei punteggi")| tojson }});
-      });
+        showError({{ _("Errore:")| tojson }} + ' ' + (data.error || data.message));
+      }
+    })
+    .catch (error => {
+      console.error('Error:', error);
+      showError({{ _("Errore durante il salvataggio dei punteggi")| tojson }});
+    });
   }
 
   function resetLastRound(garaId, roundNumber) {
@@ -1244,13 +1233,12 @@
     if (!config) {
       config = {
         discipline: '{{ gara.discipline }}',
-        distance: {{ gara.distance }
-    },
-    exactNumber: { { 'true' if not gara.is_race_to else 'false' } },
-    isMultiSet: { { 'true' if gara.is_multi_set else 'false' } },
-    matchDistance: { { gara.match_distance or 2 } },
-    isRaceToSets: { { 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' } }
-  };
+        distance: {{ gara.distance }},
+        exactNumber: { { 'true' if not gara.is_race_to else 'false' } },
+        isMultiSet: { { 'true' if gara.is_multi_set else 'false' } },
+        matchDistance: { { gara.match_distance or 2 } },
+        isRaceToSets: { { 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' } }
+      };
     }
 
   const formData = new URLSearchParams();
@@ -1278,16 +1266,15 @@
           setTimeout(() => { location.reload(); }, 1500);
         }
       } else {
-        showError({{ _("Errore:")| tojson }
-    } + ' ' + data.error);
-  buttons.forEach(btn => btn.disabled = false);
-        }
-      })
-      .catch (error => {
-    console.error('Error:', error);
-    showError({{ _("Errore di rete durante la creazione del turno")| tojson }});
-  buttons.forEach(btn => btn.disabled = false);
-      });
+        showError({ { _("Errore:")| tojson } } + ' ' + data.error);
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    })
+    .catch (error => {
+      console.error('Error:', error);
+      showError({{ _("Errore di rete durante la creazione del turno")| tojson }});
+      buttons.forEach(btn => btn.disabled = false);
+    });
   }
 
   function closeInscriptions(provaId) {
@@ -1425,18 +1412,17 @@
           if (data.success) {
             return updateTimesIfProvided();
           } else {
-            throw new Error(data.error || {{ _("Errore sconosciuto")| tojson }
-        });
-    }
-  })
+            throw new Error(data.error || { { _("Errore sconosciuto")| tojson } });
+          }
+        })
         .then(() => {
-    bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
-    location.reload();
-  })
-    .catch(error => {
-      console.error('Error:', error);
-      showError({{ _("Errore:")| tojson }} + ' ' + error.message);
-        });
+          bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+          location.reload();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError({{ _("Errore:")| tojson }} + ' ' + error.message);
+      });
     } else {
     // Submit normal match result
     const player1Score = document.getElementById('quickPlayer1Score').value;
@@ -1454,10 +1440,9 @@
         if (response.ok) {
           return updateTimesIfProvided();
         } else {
-          throw new Error({{ _("Errore durante l'impostazione del risultato")| tojson }
-      });
-  }
-        })
+          throw new Error({ { _("Errore durante l'impostazione del risultato")| tojson } });
+        }
+      })
         .then(() => {
     bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
     location.reload();
@@ -1483,9 +1468,8 @@
           if (response.ok) {
             location.reload();
           } else {
-            showError({{ _("Errore durante il reset")| tojson }
-        });
-    }
+            showError({ { _("Errore durante il reset")| tojson } });
+          }
         });
     });
   }
@@ -1525,8 +1509,7 @@
           if (data.success) {
             location.reload();
           } else {
-            showError({{ _("Errore:")| tojson }
-        } + ' ' + (data.error || {{ _("Impossibile validare il risultato")| tojson }}));
+            showError({ { _("Errore:")| tojson } } + ' ' + (data.error || {{ _("Impossibile validare il risultato")| tojson }}));
           }
         })
         .catch (error => {
@@ -1595,21 +1578,20 @@
                 <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
                 <div class="table-name">${tableName}</div>
             `;
-        button.title = {{ _("Click per scambiare con match occupante") | tojson }
-      };
-      button.onclick = () => selectTableFromModal(tableName);
-    } else {
-      // Tavolo disponibile
-      button.classList.add('table-btn-available');
-      button.innerHTML = `
+        button.title = {{ _("Click per scambiare con match occupante") | tojson }};
+        button.onclick = () => selectTableFromModal(tableName);
+      } else {
+        // Tavolo disponibile
+        button.classList.add('table-btn-available');
+        button.innerHTML = `
                 <div class="table-icon"><i class="fas fa-table"></i></div>
                 <div class="table-name">${tableName}</div>
             `;
-      button.onclick = () => selectTableFromModal(tableName);
-    }
+        button.onclick = () => selectTableFromModal(tableName);
+      }
 
       tableGrid.appendChild(button);
-  });
+    });
   }
 
   /**
@@ -1665,9 +1647,8 @@
           location.reload();
         } else {
           console.error('Error from server:', data.message);
-          showError({{ _("Errore:")| tojson }
-      } + ' ' + data.message);
-  }
+          showError({{ _("Errore:")| tojson }} + ' ' + data.message);
+        }
       })
       .catch (error => {
     console.error('Network error:', error);
@@ -1685,11 +1666,10 @@ rounds start, inscriptions are added, or gara completes.
 {% if current_user.is_authenticated and gara.status != 'completed' %}
 <script>
   (function () {
-    const garaId = {{ gara.id }
-  };
-  let eventSource = null;
-  let reconnectAttempts = 0;
-  const maxReconnectAttempts = 5;
+    const garaId = {{ gara.id }};
+    let eventSource = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
 
   function connectSSE() {
     if (eventSource) {
