@@ -35,7 +35,8 @@ class Classification(db.Model, TimestampMixin):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     position = db.Column(db.Integer)
     total_matches_won = db.Column(db.Integer, default=0)
-    total_point_difference = db.Column(db.Integer, default=0)
+    total_racks_won = db.Column(db.Integer, default=0)  # For Random strategy sort key
+    total_point_difference = db.Column(db.Integer, default=0)  # = rack_difference
     gare_played = db.Column(db.Integer, default=0)
 
     # Relations

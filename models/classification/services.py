@@ -134,6 +134,7 @@ class ClassificationService:
 
             classification.position = entry.position
             classification.total_matches_won = entry.score.matches_won
+            classification.total_racks_won = entry.score.racks_won
             classification.total_point_difference = entry.score.rack_difference
             classification.gare_played = gare_played_map.get(player_id, 0)
 
