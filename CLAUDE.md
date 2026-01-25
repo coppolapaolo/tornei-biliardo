@@ -331,7 +331,7 @@ See `docs/GAMIFICATION_V2.md` for event types and animation system.
 
 ### Database
 - **Development**: SQLite (`instance/billiard_campionato.db`)
-- **Production**: PostgreSQL via DATABASE_URL
+- **Production**: SQLite on PythonAnywhere (`/home/paolocoppola/mysite/instance/billiard_campionato.db`)
 - **ORM**: SQLAlchemy with Flask-SQLAlchemy
 
 ---

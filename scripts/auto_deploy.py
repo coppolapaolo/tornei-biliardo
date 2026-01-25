@@ -16,7 +16,6 @@ Or run manually via Bash console:
 """
 
 import subprocess
-import os
 import sys
 from pathlib import Path
 
@@ -54,14 +53,28 @@ def git_pull() -> tuple:
         return False, f"Fetch failed: {output}"
 
     # Check if there are changes
-    success, local = run_command(["git", "rev-parse", "HEAD"])
-    success2, remote = run_command(["git", "rev-parse", f"{REMOTE}/{BRANCH}"])
+    _, local = run_command(["git", "rev-parse", "HEAD"])
+    _, remote = run_command(["git", "rev-parse", f"{REMOTE}/{BRANCH}"])
 
     if local == remote:
         return True, "Already up to date"
 
     # Pull changes
     success, output = run_command(["git", "pull", REMOTE, BRANCH])
+    return success, output
+
+
+def install_dependencies() -> tuple:
+    """Install/update Python dependencies."""
+    print("Installing dependencies...")
+
+    requirements = PROJECT_DIR / "requirements.txt"
+    if not requirements.exists():
+        return True, "No requirements.txt found"
+
+    success, output = run_command(
+        [sys.executable, "-m", "pip", "install", "-q", "-r", str(requirements)],
+    )
     return success, output
 
 
@@ -114,7 +127,15 @@ def main():
 
     print()
 
-    # Step 2: Run migrations
+    # Step 2: Install dependencies
+    success, output = install_dependencies()
+    print(f"Dependencies: {output}")
+    if not success:
+        print("WARNING: Dependencies installation may have failed")
+
+    print()
+
+    # Step 3: Run migrations
     success, output = run_migrations()
     print(f"Migrations: {output}")
     if not success:
@@ -122,7 +143,7 @@ def main():
 
     print()
 
-    # Step 3: Reload web app
+    # Step 4: Reload web app
     success, output = reload_webapp()
     print(f"Reload: {output}")
 
