@@ -31,7 +31,9 @@ class KpiFeatureUsage(BaseModel, TimestampMixin):
     def get_or_create(
         cls, feature_name: FeatureName, for_date: Optional[date] = None
     ) -> "KpiFeatureUsage":
-        """Get or create a feature usage record for a date."""
+        """Get or create a feature usage record for a date.
+        Handles race conditions during concurrent creation.
+        """
         if for_date is None:
             for_date = date.today()
 
@@ -40,13 +42,23 @@ class KpiFeatureUsage(BaseModel, TimestampMixin):
         ).first()
 
         if not record:
-            record = cls(
-                feature_name=feature_name.value,
-                date=for_date,
-                usage_count=0,
-                unique_users=0,
-            )
-            db.session.add(record)
+            from sqlalchemy.exc import IntegrityError
+            # Use a savepoint to protect the outer transaction
+            try:
+                with db.session.begin_nested():
+                    record = cls(
+                        feature_name=feature_name.value,
+                        date=for_date,
+                        usage_count=0,
+                        unique_users=0,
+                    )
+                    db.session.add(record)
+            except IntegrityError:
+                record = cls.query.filter_by(
+                    feature_name=feature_name.value, date=for_date
+                ).first()
+                if not record:
+                    raise
 
         return record
 
@@ -97,15 +109,25 @@ class KpiDailySnapshot(BaseModel, TimestampMixin):
 
     @classmethod
     def get_or_create(cls, for_date: Optional[date] = None) -> "KpiDailySnapshot":
-        """Get or create a daily snapshot for a date."""
+        """Get or create a daily snapshot for a date.
+        Handles race conditions during concurrent creation.
+        """
         if for_date is None:
             for_date = date.today()
 
         snapshot = cls.query.filter_by(date=for_date).first()
 
         if not snapshot:
-            snapshot = cls(date=for_date)
-            db.session.add(snapshot)
+            from sqlalchemy.exc import IntegrityError
+            # Use a savepoint to protect the outer transaction
+            try:
+                with db.session.begin_nested():
+                    snapshot = cls(date=for_date)
+                    db.session.add(snapshot)
+            except IntegrityError:
+                snapshot = cls.query.filter_by(date=for_date).first()
+                if not snapshot:
+                    raise
 
         return snapshot
 

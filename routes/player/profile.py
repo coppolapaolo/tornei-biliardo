@@ -788,15 +788,28 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
     }
 
     # 2. Privacy settings
-    privacy = PrivacyService.get_privacy_settings(user_id)
-    privacy_data = {
-        "show_email": privacy.show_email,
-        "show_phone": privacy.show_phone,
-        "show_statistics": privacy.show_statistics,
-        "show_recent_matches": privacy.show_recent_matches,
-        "show_classifications": privacy.show_classifications,
-        "show_challenge_stats": privacy.show_challenge_stats,
-    }
+    try:
+        privacy = PrivacyService.get_privacy_settings(user_id)
+        # Ensure it's not detached/expired
+        db.session.refresh(privacy)
+        privacy_data = {
+            "show_email": privacy.show_email,
+            "show_phone": privacy.show_phone,
+            "show_statistics": privacy.show_statistics,
+            "show_recent_matches": privacy.show_recent_matches,
+            "show_classifications": privacy.show_classifications,
+            "show_challenge_stats": privacy.show_challenge_stats,
+        }
+    except Exception as e:
+        current_app.logger.warning(f"Could not fetch privacy settings for user {user_id}, using defaults: {e}")
+        privacy_data = {
+            "show_email": False,
+            "show_phone": False,
+            "show_statistics": False,
+            "show_recent_matches": False,
+            "show_classifications": False,
+            "show_challenge_stats": False,
+        }
 
     # 3. Inscriptions
     inscriptions = Inscription.query.filter_by(user_id=user_id).all()
@@ -958,7 +971,9 @@ def _generate_gdpr_export(app, user_id: int, username: str) -> None:
         try:
             # Collect data
             data = _collect_user_data(user_id)
-
+            if not data:
+                raise ValueError(f"No data found for user {user_id}")
+            
             # Create export directory
             export_dir = Path(app.instance_path) / "gdpr_exports"
             export_dir.mkdir(parents=True, exist_ok=True)
@@ -1003,8 +1018,9 @@ def _generate_gdpr_export(app, user_id: int, username: str) -> None:
             )
 
         except Exception as e:
+            db.session.rollback()  # Ensure session is clean after failure
             # Log error and notify user of failure
-            current_app.logger.error(f"GDPR export failed for user {user_id}: {e}")
+            current_app.logger.error(f"GDPR export failed for user {user_id}: {e}", exc_info=True)
             try:
                 from models.notification.services import NotificationService
                 from models.notification.models import NotificationType, NotificationPriority

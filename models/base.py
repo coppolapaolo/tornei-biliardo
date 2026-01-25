@@ -292,6 +292,7 @@ class TimestampedModel(TimestampMixin, UtilityMixin, db.Model):
 def get_or_create(model_class, **kwargs):
     """
     Get existing instance or create new one if it doesn't exist.
+    Handles race conditions during concurrent creation.
 
     Args:
         model_class: The model class to query
@@ -304,9 +305,18 @@ def get_or_create(model_class, **kwargs):
     if instance:
         return instance, False
     else:
-        instance = model_class(**kwargs)
-        db.session.add(instance)
-        return instance, True
+        from sqlalchemy.exc import IntegrityError
+        # Use a savepoint to protect the outer transaction from the IntegrityError
+        try:
+            with db.session.begin_nested():
+                instance = model_class(**kwargs)
+                db.session.add(instance)
+            return instance, True
+        except IntegrityError:
+            instance = db.session.query(model_class).filter_by(**kwargs).first()
+            if not instance:
+                raise
+            return instance, False
 
 
 @transactional(domain="base")

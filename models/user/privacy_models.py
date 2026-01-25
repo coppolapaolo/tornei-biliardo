@@ -50,17 +50,28 @@ class UserPrivacySetting(BaseModel):
     def get_or_create(cls, user_id: int) -> "UserPrivacySetting":
         """Get existing settings or create with defaults.
 
+        Handles race conditions during concurrent creation.
+
         Args:
             user_id: User ID to get/create settings for
 
         Returns:
-            UserPrivacySetting instance (may be new or existing)
+            UserPrivacySetting instance
         """
         setting = cls.query.filter_by(user_id=user_id).first()
         if not setting:
-            setting = cls(user_id=user_id)
-            db.session.add(setting)
-            db.session.flush()
+            from sqlalchemy.exc import IntegrityError
+            # Use a savepoint to protect the outer transaction from the IntegrityError
+            try:
+                with db.session.begin_nested():
+                    setting = cls(user_id=user_id)
+                    db.session.add(setting)
+            except IntegrityError:
+                # If someone else created it in the meantime, fetch it
+                setting = cls.query.filter_by(user_id=user_id).first()
+                if not setting:
+                    # Should not happen if it was an IntegrityError on user_id
+                    raise
         return setting
 
     def to_dict(self) -> Dict[str, Any]:
