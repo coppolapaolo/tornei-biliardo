@@ -6,6 +6,34 @@
 This document describes the "Invisible/Signal-based" Gamification system implemented to replace the previous widget-based approach.
 
 ## Overview
+The Gamification V2 system introduces key RPG elements to increase user retention and engagement:
+- XP & Leveling
+- Achievements & Badges
+- Streaks & Activity tracking
+- **Dynamic Feature Unlocking (ABAC)**
+- **Smart Nudges**
+
+---
+
+## 2. Feature Unlocking (ABAC) & Nudges
+
+### Unlock Engine
+We moved from simple Level-based unlocks to a flexible Attribute-Based Access Control (ABAC) system.
+Features are defined in `FeatureConfig` with JSON-based rules.
+
+**Example Rule (Create Championship):**
+- **Condition Set 1**: User Role = `DIRECTOR` AND Tournaments Organized >= 3
+- **Condition Set 2**: User Level >= 50 (Legacy "Legend" status)
+
+This allows features to be unlocked via **Skill/Activity** (Metrics) OR **Status** (Level/Role).
+
+### Nudge System
+The system tracks when you *unlock* a feature vs when you *actually use it*.
+- on Login, `NudgeService` checks for **Unlocked but Unused** features.
+- If found, it triggers a "Quest-like" toast: _"Nuova possibilità! Hai sbloccato 'Tornei Diretti'. Provala subito!"_
+- Once the user performs the action, it is marked as used and the nudge stops.
+
+---
 
 The system has been redesigned to be less intrusive ("polite") and more mobile-friendly. Instead of persistent dashboard widgets taking up screen space, gamification elements are now ubiquitous but subtle.
 

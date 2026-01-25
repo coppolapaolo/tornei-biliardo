@@ -275,6 +275,13 @@ class PermissionChecker:
             or not user.is_authenticated
         ):
             return False
+            
+        # Use ABAC system (Gamification V2)
+        # This evaluates: Role (Director/Admin) OR Level (Legend) OR Metrics (Veteran)
+        if hasattr(user, "can_access"):
+             return user.can_access("create_campionato")
+             
+        # Fallback if method missing
         return user.is_admin or user.is_director
 
     @staticmethod

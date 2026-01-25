@@ -10,32 +10,34 @@
         <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
         <p><strong>Registrato:</strong> {{ user.created_at|date_local }}</p>
         {% if current_user.role == 'player' %}
-            {% set dr = current_user|attr('director_request')|default(None, true) %}
-            {% if dr %}
-            <p><strong>Richiesta Director:</strong> {{ dr | status_badge('director_request') }}</p>
-            {% else %}
-            <p><strong>Richiesta Director:</strong> <span class="text-muted">Nessuna richiesta</span></p>
-            {% endif %}
+        {% set dr = current_user|attr('director_request')|default(None, true) %}
+        {% if dr %}
+        <p><strong>Richiesta Director:</strong> {{ dr | status_badge('director_request') }}</p>
+        {% else %}
+        <p><strong>Richiesta Director:</strong> <span class="text-muted">Nessuna richiesta</span></p>
+        {% endif %}
         {% endif %}
 
         <hr>
         <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('player.edit_profile') }}">
-            <i class="fas fa-edit"></i> {{ _("Modifica contatti") }}
-        </a>
-        <a class="btn btn-sm btn-outline-info" href="{{ url_for('player.privacy_settings') }}">
-            <i class="fas fa-lock"></i> {{ _("Privacy") }}
-        </a>
-        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-            <i class="fas fa-key"></i> {{ _("Cambia password") }}
-        </button>
-        {% if current_user.role == 'player' and not current_user.director_request %}
-        <form action="{{ url_for('player.request_director') }}" method="POST" style="display: inline;">
-            <button type="submit" class="btn btn-sm btn-outline-success">
-                <i class="fas fa-user-tie"></i> Richiedi ruolo di Direttore di Gara
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('player.edit_profile') }}">
+                <i class="fas fa-edit"></i> {{ _("Modifica contatti") }}
+            </a>
+            <a class="btn btn-sm btn-outline-info" href="{{ url_for('player.privacy_settings') }}">
+                <i class="fas fa-lock"></i> {{ _("Privacy") }}
+            </a>
+            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                data-bs-target="#changePasswordModal">
+                <i class="fas fa-key"></i> {{ _("Cambia password") }}
             </button>
-        </form>
-        {% endif %}
+            {% if current_user.role == 'player' and not current_user.director_request and
+            current_user.can_access('request_director') %}
+            <form action="{{ url_for('player.request_director') }}" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-sm btn-outline-success">
+                    <i class="fas fa-user-tie"></i> Richiedi ruolo di Direttore di Gara
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
 </div>

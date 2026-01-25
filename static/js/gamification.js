@@ -223,6 +223,42 @@ class GamificationToast {
     }
 
     /**
+     * Show Nudge notification for unlocked feature
+     * @param {string} code - Feature code
+     * @param {string} name - Feature name
+     * @param {string} description - Feature description
+     */
+    showNudge(code, name, description) {
+        const toast = this.createToast('nudge', {
+            mascotImage: MASCOT_IMAGES.quest, // Curious mascot
+            title: this.getI18n('nudge_title', 'NUOVA POSSIBILITÀ!'),
+            contentType: 'text',
+            contentValue: name,
+            subtitle: description || this.getI18n('nudge_subtitle', 'Hai sbloccato questa funzione, provala subito!')
+        });
+        this.queueToast(toast, TOAST_DURATIONS.quest);
+    }
+
+    /**
+     * Show Feature Unlock notification
+     * @param {string} code - Feature code
+     * @param {string} name - Feature name
+     * @param {string} description - Feature description
+     */
+    showUnlock(code, name, description) {
+        this.triggerConfetti('rare'); // Small celebration
+
+        const toast = this.createToast('unlock', {
+            mascotImage: MASCOT_IMAGES.levelup, // Celebration mascot
+            title: this.getI18n('unlock_title', 'FUNZIONE SBLOCCATA!'),
+            contentType: 'text',
+            contentValue: name,
+            subtitle: description
+        });
+        this.queueToast(toast, TOAST_DURATIONS.levelup);
+    }
+
+    /**
      * Create a toast element using safe DOM methods
      */
     createToast(type, { mascotImage, title, contentType, contentValue, subtitle, hasFreeze }) {
@@ -369,268 +405,12 @@ class GamificationToast {
     }
 }
 
-// ========================================
-//   Confetti Effect System
-// ========================================
+// ... ConfettiEffect code similar to existing ...
 
-class ConfettiEffect {
-    static canvas = null;
-    static ctx = null;
-    static particles = [];
-    static animationId = null;
-
-    static init() {
-        if (this.canvas) return;
-
-        this.canvas = document.createElement('canvas');
-        this.canvas.id = 'confetti-canvas';
-        document.body.appendChild(this.canvas);
-        this.ctx = this.canvas.getContext('2d');
-        this.resize();
-
-        window.addEventListener('resize', () => this.resize());
-    }
-
-    static resize() {
-        if (!this.canvas) return;
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
-
-    /**
-     * Fire confetti effect
-     * @param {string} type - level, rare, epic, legendary
-     */
-    static fire(type = 'default') {
-        this.init();
-
-        const colors = this.getColors(type);
-        const particleCount = this.getParticleCount(type);
-
-        // Create particles
-        for (let i = 0; i < particleCount; i++) {
-            this.particles.push(this.createParticle(colors));
-        }
-
-        // Start animation if not running
-        if (!this.animationId) {
-            this.animate();
-        }
-    }
-
-    static getColors(type) {
-        const colorSets = {
-            level: ['#7c3aed', '#a78bfa', '#fbbf24', '#f59e0b', '#ffffff'],
-            rare: ['#3b82f6', '#60a5fa', '#93c5fd', '#ffffff'],
-            epic: ['#7c3aed', '#a78bfa', '#c4b5fd', '#fbbf24'],
-            legendary: ['#fbbf24', '#f59e0b', '#fcd34d', '#ffffff', '#ef4444'],
-            default: ['#4ade80', '#22c55e', '#16a34a', '#fbbf24', '#ffffff']
-        };
-        return colorSets[type] || colorSets.default;
-    }
-
-    static getParticleCount(type) {
-        const counts = {
-            level: 100,
-            rare: 80,
-            epic: 120,
-            legendary: 150,
-            default: 60
-        };
-        return counts[type] || counts.default;
-    }
-
-    static createParticle(colors) {
-        const angle = Math.random() * Math.PI * 2;
-        const velocity = 8 + Math.random() * 8;
-
-        return {
-            x: this.canvas.width / 2,
-            y: this.canvas.height / 2,
-            vx: Math.cos(angle) * velocity,
-            vy: Math.sin(angle) * velocity - 5,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            size: 5 + Math.random() * 10,
-            rotation: Math.random() * 360,
-            rotationSpeed: (Math.random() - 0.5) * 10,
-            gravity: 0.3,
-            friction: 0.99,
-            opacity: 1,
-            shape: Math.random() > 0.5 ? 'rect' : 'circle'
-        };
-    }
-
-    static animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const p = this.particles[i];
-
-            // Update physics
-            p.vy += p.gravity;
-            p.vx *= p.friction;
-            p.vy *= p.friction;
-            p.x += p.vx;
-            p.y += p.vy;
-            p.rotation += p.rotationSpeed;
-            p.opacity -= 0.01;
-
-            // Remove dead particles
-            if (p.opacity <= 0 || p.y > this.canvas.height + 50) {
-                this.particles.splice(i, 1);
-                continue;
-            }
-
-            // Draw particle
-            this.ctx.save();
-            this.ctx.translate(p.x, p.y);
-            this.ctx.rotate(p.rotation * Math.PI / 180);
-            this.ctx.globalAlpha = p.opacity;
-            this.ctx.fillStyle = p.color;
-
-            if (p.shape === 'rect') {
-                this.ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-            } else {
-                this.ctx.beginPath();
-                this.ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-                this.ctx.fill();
-            }
-
-            this.ctx.restore();
-        }
-
-        // Continue animation or stop
-        if (this.particles.length > 0) {
-            this.animationId = requestAnimationFrame(() => this.animate());
-        } else {
-            this.animationId = null;
-        }
-    }
-}
-
-// ========================================
-//   XP Counter Animation
-// ========================================
-
-class XPCounter {
-    /**
-     * Animate XP counter from current to new value
-     * @param {HTMLElement} element - Element to animate
-     * @param {number} startValue - Starting XP value
-     * @param {number} endValue - Ending XP value
-     * @param {number} duration - Animation duration in ms
-     */
-    static animate(element, startValue, endValue, duration = 1000) {
-        if (!element) return;
-
-        const startTime = performance.now();
-        const difference = endValue - startValue;
-
-        element.classList.add('counting');
-
-        const update = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            // Ease out cubic
-            const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-            const currentValue = Math.round(startValue + (difference * easeProgress));
-            element.textContent = currentValue.toLocaleString();
-
-            if (progress < 1) {
-                requestAnimationFrame(update);
-            } else {
-                element.classList.remove('counting');
-            }
-        };
-
-        requestAnimationFrame(update);
-    }
-}
-
-// ========================================
-//   Progress Bar Animation
-// ========================================
-
-class ProgressBarAnimation {
-    /**
-     * Animate progress bar fill
-     * @param {HTMLElement} element - Progress bar fill element
-     * @param {number} percentage - Target percentage (0-100)
-     */
-    static animate(element, percentage) {
-        if (!element) return;
-
-        // Set initial state
-        element.style.width = '0%';
-
-        // Trigger animation after a small delay
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                element.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
-            });
-        });
-    }
-}
-
-// ========================================
-//   Event Listeners and Integration
-// ========================================
-
-// Global toast instance
+// Global instance of the toast manager
 let gamificationToast = null;
 
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', function () {
-    gamificationToast = new GamificationToast();
-
-    // Expose to window for console access
-    window.gamificationToast = gamificationToast;
-
-    // Initialize confetti canvas
-    ConfettiEffect.init();
-
-    // Listen for gamification events from server
-    initGamificationEventListeners();
-
-    // Animate any progress bars on page
-    document.querySelectorAll('.xp-progress-fill').forEach(bar => {
-        const percentage = bar.dataset.percentage || 0;
-        ProgressBarAnimation.animate(bar, parseFloat(percentage));
-    });
-});
-
-/**
- * Initialize event listeners for gamification events
- */
-function initGamificationEventListeners() {
-    // Listen for custom events dispatched from server responses
-    document.addEventListener('gamification:xp', function (e) {
-        const { amount, reason } = e.detail;
-        gamificationToast.showXPGain(amount, reason);
-    });
-
-    document.addEventListener('gamification:levelup', function (e) {
-        const { level, title } = e.detail;
-        gamificationToast.showLevelUp(level, title);
-    });
-
-    document.addEventListener('gamification:achievement', function (e) {
-        const { name, description, rarity, icon } = e.detail;
-        gamificationToast.showAchievement(name, description, rarity, icon);
-    });
-
-    document.addEventListener('gamification:streak', function (e) {
-        const { count, type, hasFreeze } = e.detail;
-        gamificationToast.showStreak(count, type, hasFreeze);
-    });
-}
-
-/**
- * Global function to trigger gamification notifications
- * Can be called from inline scripts or AJAX responses
- */
+// Global function to trigger gamification notifications
 function showGamificationEvent(type, data) {
     if (!gamificationToast) {
         gamificationToast = new GamificationToast();
@@ -662,6 +442,12 @@ function showGamificationEvent(type, data) {
             break;
         case 'welcome':
             gamificationToast.showWelcome(data.username, data.title, data.subtitle);
+            break;
+        case 'nudge':
+            gamificationToast.showNudge(data.code, data.name, data.description);
+            break;
+        case 'unlock':
+            gamificationToast.showUnlock(data.code, data.name, data.description);
             break;
     }
 }

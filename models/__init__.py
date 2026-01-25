@@ -129,6 +129,10 @@ from .gamification.models import (
     QuestStatus,
     LeaderboardType,
 )
+from .gamification.feature_models import (
+    FeatureConfig,
+    UserFeatureUsage,
+)
 
 # PHASE 3.2: Cross-domain orchestration
 from .orchestration import DomainOrchestrator, OperationResult, OperationType
@@ -248,6 +252,9 @@ __all__ = [
     "QuestType",
     "QuestStatus",
     "LeaderboardType",
+    # Gamification ABAC models (Phase 4.5)
+    "FeatureConfig",
+    "UserFeatureUsage",
     # Cross-domain orchestration (Phase 3.2)
     "DomainOrchestrator",
     "OperationResult",

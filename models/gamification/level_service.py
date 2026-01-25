@@ -245,8 +245,6 @@ class LevelService:
             "next_unlock": ConfigService.get_next_unlock(user_level.current_level)
         }
 
-    @staticmethod
-    def check_unlock_eligibility(user_id: int, feature: str) -> bool:
         """
         Check if user has unlocked a specific feature.
         
@@ -258,22 +256,9 @@ class LevelService:
             
         Returns:
             True if feature is unlocked, False otherwise
-            
-        Example:
-            can_create = LevelService.check_unlock_eligibility(
-                user_id=42,
-                feature="tournament_creation"
-            )
-            if can_create:
-                # Allow tournament creation
         """
-        user_level = db.session.get(UserLevel, user_id)
-
-        if user_level is None:
-            # No level record = level 1
-            return ConfigService.is_feature_unlocked(1, feature)
-
-        return ConfigService.is_feature_unlocked(user_level.current_level, feature)
+        from models.gamification.unlock_engine import UnlockEngine
+        return UnlockEngine.check_eligibility(user_id, feature)
 
     @staticmethod
     def get_user_level_stats(user_id: int) -> Dict[str, Any]:

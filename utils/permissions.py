@@ -456,7 +456,20 @@ class UserPermissions:
     @staticmethod
     def show_director_management():
         """Check if director management UI should be shown."""
-        return current_user.is_authenticated and current_user.is_director
+        if not current_user.is_authenticated:
+            return False
+            
+        # Check standard role
+        if current_user.is_director:
+             return True
+             
+        # Check gamification features that enable management UIs
+        if hasattr(current_user, "can_access"):
+             # If user can create championship OR manage availability, show management UI
+             if current_user.can_access("create_campionato") or current_user.can_access("manage_availability"):
+                 return True
+                 
+        return False
 
     @staticmethod
     def get_default_dashboard():

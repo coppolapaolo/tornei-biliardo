@@ -263,31 +263,45 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
+                    {# Dashboard - always visible to authenticated users #}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">
+                            <i class="fas fa-home"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+
+                    {# Billiard Halls - public directory, always visible #}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.venue.venues_list') }}">
                             <i class="fas fa-building"></i> {{ _('Sale Biliardo') }}
                         </a>
                     </li>
+
+                    {# Challenge - requires do_challenge feature #}
+                    {% if current_user.can_access('do_challenge') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('challenge.challenge_catalog') }}">
                             <i class="fas fa-trophy"></i> Challenge
                         </a>
                     </li>
-                    {% if not current_user.is_admin %}
+                    {% endif %}
+
+                    {# Individual Matches - requires create_match_direct feature #}
+                    {% if current_user.can_access('create_match_direct') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('individual_match.dashboard') }}">
                             <i class="fas fa-shield-halved"></i> {{ _('Match Individuali') }}
                         </a>
                     </li>
                     {% endif %}
+
+                    {# Admin-only sections #}
                     {% if current_user.is_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('gamification.admin_dashboard') }}">
                             <i class="fas fa-cogs text-secondary"></i> {{ _('Admin Gamification') }}
                         </a>
                     </li>
-                    {% endif %}
-                    {% if current_user.is_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.user.users_list') }}">
                             <i class="fas fa-users"></i> {{ _('Utenti') }}

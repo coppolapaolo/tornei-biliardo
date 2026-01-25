@@ -58,6 +58,9 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # per utenti cancellati
     previous_username = db.Column(db.String(80), nullable=True)
 
+    # Gamification Override
+    gamification_override = db.Column(db.Boolean, default=False, nullable=False)
+
     # Relationships (string names to postpone model imports)
     inscriptions = db.relationship("Inscription", back_populates="user", lazy=True)
     match_results = db.relationship(
@@ -326,6 +329,26 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
         from models.gamification.achievement_service import AchievementService
 
         return AchievementService.has_achievement(self.id, achievement_slug)
+
+    def can_access(self, feature_code: str, context: Dict[str, Any] | None = None) -> bool:
+        """
+        Check if user can access a specific feature based on gamification rules.
+        
+        Args:
+            feature_code: Code of the feature to check (e.g., 'create_match')
+            context: Optional context for rule evaluation (e.g., location_id)
+            
+        Returns:
+            True if feature is unlocked or overridden, False otherwise.
+        """
+        if self.gamification_override:
+            return True
+            
+        if self.is_admin:
+            return True
+            
+        from models.gamification.unlock_engine import UnlockEngine
+        return UnlockEngine.check_eligibility(self.id, feature_code, context)
 
     # debug ─────────────────────────────────────────────────────────────────────
     def __repr__(self) -> str:  # pragma: no cover

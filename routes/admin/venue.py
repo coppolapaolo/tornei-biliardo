@@ -29,9 +29,15 @@ def venues_list():
     from flask_login import current_user
     # VenueManagerRequestService functionality is now in VenueManagerService
 
-    venues = BilliardHall.query.order_by(
-        BilliardHall.is_active.desc(), BilliardHall.name
-    ).all()
+    # Admin sees all venues, players only see active ones
+    if current_user.is_admin:
+        venues = BilliardHall.query.order_by(
+            BilliardHall.is_active.desc(), BilliardHall.name
+        ).all()
+    else:
+        venues = BilliardHall.query.filter_by(is_active=True).order_by(
+            BilliardHall.name
+        ).all()
 
     if current_user.is_admin:
         # Vista completa admin con statistiche, manager e richieste

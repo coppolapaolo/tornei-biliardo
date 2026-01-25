@@ -140,6 +140,8 @@ class TestLevelServiceUnlocks:
 
     def test_check_unlock_eligibility_returns_false_below_threshold(self, db_session, isolated_players):
         """Should return False when below unlock level."""
+        from models.gamification.unlock_engine import UnlockEngine
+        
         player = isolated_players[0]
 
         # Award some XP (stays at level 1)
@@ -150,15 +152,17 @@ class TestLevelServiceUnlocks:
         )
 
         # Check unlock for tournament_creation (level 10 required)
-        is_eligible = LevelService.check_unlock_eligibility(
+        is_eligible = UnlockEngine.check_eligibility(
             user_id=player.id,
-            feature="tournament_creation"
+            feature_code="tournament_creation"
         )
 
         assert is_eligible is False
 
     def test_check_unlock_eligibility_returns_true_at_threshold(self, db_session, isolated_players):
         """Should return True when at or above unlock level."""
+        from models.gamification.unlock_engine import UnlockEngine
+        
         player = isolated_players[0]
 
         # Award enough XP to reach level 10+
@@ -172,9 +176,9 @@ class TestLevelServiceUnlocks:
         )
 
         # Check unlock for tournament_creation (level 10)
-        is_eligible = LevelService.check_unlock_eligibility(
+        is_eligible = UnlockEngine.check_eligibility(
             user_id=player.id,
-            feature="tournament_creation"
+            feature_code="tournament_creation"
         )
 
         assert is_eligible is True

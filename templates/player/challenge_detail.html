@@ -25,23 +25,24 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             {% include "challenge/_challenge_detail.html" %}
-            
+
             <!-- Action Buttons -->
             <div class="row mt-4">
                 <div class="col-12 text-center">
                     <!-- Try Challenge (Players/Directors only, not Admin) -->
                     {% if not current_user.is_admin %}
-                        <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}" 
-                           class="btn btn-success btn-lg me-3">
-                            <i class="fas fa-play"></i> Prova Questa Challenge
-                        </a>
+                    <a href="{{ url_for('challenge.start_attempt', challenge_id=challenge.id) }}"
+                        class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-play"></i> Prova Questa Challenge
+                    </a>
                     {% endif %}
-                    
+
                     <!-- Delete (for creators and admins) -->
-                    {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
-                        <button class="btn btn-danger" onclick="deleteChallenge({{ challenge.id }})">
-                            <i class="fas fa-trash"></i> Elimina
-                        </button>
+                    {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id ==
+                    current_user.id) %}
+                    <button class="btn btn-danger" onclick="deleteChallenge({{ challenge.id }})">
+                        <i class="fas fa-trash"></i> Elimina
+                    </button>
                     {% endif %}
                 </div>
             </div>
@@ -51,27 +52,27 @@
 
 <script>
 
-function deleteChallenge(challengeId) {
-    showConfirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.', () => {
-        fetch(`/challenge/${challengeId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = '{{ url_for("challenge.challenge_catalog") }}';
-            } else {
-                showError('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
-            }
-        })
-        .catch(error => {
-            console.error('Error deleting challenge:', error);
-            showError('Errore di rete nell\'eliminazione della challenge');
+    function deleteChallenge(challengeId) {
+        showConfirm('Sei sicuro di voler eliminare questa challenge? Questa azione non può essere annullata.', () => {
+            fetch(`/challenge/${challengeId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '{{ url_for("challenge.challenge_catalog") }}';
+                    } else {
+                        showError('Errore nell\'eliminazione della challenge: ' + (data.error || 'Errore sconosciuto'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting challenge:', error);
+                    showError('Errore di rete nell\'eliminazione della challenge');
+                });
         });
-    });
-}
+    }
 </script>
 {% endblock %}

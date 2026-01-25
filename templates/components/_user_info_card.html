@@ -8,42 +8,67 @@
         <p><strong>Username:</strong> {{ user.username }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
         <p><strong>Telefono:</strong> {{ user.phone or 'Non specificato' }}</p>
-        <p><strong>Ruolo:</strong> 
+        <p><strong>Ruolo:</strong>
             {% if user.is_director %}
-                <span class="badge bg-secondary">Direttore di gara</span>
-                {% if current_user.is_admin %}
-                <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST"
-                      style="display: inline; margin-left: 10px;"
-                      onsubmit="return confirmSubmit(this, 'Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="fas fa-user-minus"></i> Rimuovi ruolo
-                    </button>
-                </form>
-                {% endif %}
-            {% else %}
-                <span class="badge bg-primary">Giocatore</span>
-                {% if current_user.is_admin %}
-                <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
-                      style="display: inline; margin-left: 10px;"
-                      onsubmit="return confirmSubmit(this, 'Promuovere {{ user.username }} a Direttore di Gara?')">
-                    <button type="submit" class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-user-plus"></i> Promuovi a Direttore
-                    </button>
-                </form>
-                {% endif %}
-            {% endif %}
+            <span class="badge bg-secondary">Direttore di gara</span>
+            {% if current_user.is_admin %}
+        <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST"
+            style="display: inline; margin-left: 10px;"
+            onsubmit="return confirmSubmit(this, 'Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-user-minus"></i> Rimuovi ruolo
+            </button>
+        </form>
+        {% endif %}
+        {% else %}
+        <span class="badge bg-primary">Giocatore</span>
+        {% if current_user.is_admin %}
+        <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
+            style="display: inline; margin-left: 10px;"
+            onsubmit="return confirmSubmit(this, 'Promuovere {{ user.username }} a Direttore di Gara?')">
+            <button type="submit" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-user-plus"></i> Promuovi a Direttore
+            </button>
+        </form>
+        {% endif %}
+        {% endif %}
         </p>
+
+        {# Gamification Override (Admin Only) #}
+        {% if current_user.is_admin %}
+        <p><strong>Gamification:</strong>
+            {% if user.gamification_override %}
+            <span class="badge bg-warning text-dark">
+                <i class="fas fa-unlock"></i> Override Attivo
+            </span>
+            {% else %}
+            <span class="badge bg-light text-muted">
+                <i class="fas fa-lock"></i> Regole Normali
+            </span>
+            {% endif %}
+        <form action="{{ url_for('admin.user.toggle_gamification_override', user_id=user.id) }}" method="POST"
+            style="display: inline; margin-left: 10px;"
+            onsubmit="return confirmSubmit(this, '{{ 'Disattivare' if user.gamification_override else 'Attivare' }} Override Gamification per {{ user.username }}?')">
+            <button type="submit"
+                class="btn btn-outline-{{ 'danger' if user.gamification_override else 'warning' }} btn-sm">
+                <i class="fas fa-{{ 'lock' if user.gamification_override else 'unlock' }}"></i>
+                {{ 'Disattiva' if user.gamification_override else 'Attiva' }} Override
+            </button>
+        </form>
+        </p>
+        {% endif %}
+
         <p><strong>Registrato:</strong> {{ user.created_at|datetime_local }}</p>
-        
+
         {% if debug_info.debug_mode %}
-            <hr>
-            <h6 class="text-muted">DEBUG Info:</h6>
-            <small class="text-muted">
-                User ID: {{ user.id }}<br>
-                User role: {{ user.role }}<br>
-                Total inscriptions: {{ inscriptions|length }}<br>
-                Recent matches: {{ matches|length }}
-            </small>
+        <hr>
+        <h6 class="text-muted">DEBUG Info:</h6>
+        <small class="text-muted">
+            User ID: {{ user.id }}<br>
+            User role: {{ user.role }}<br>
+            Total inscriptions: {{ inscriptions|length }}<br>
+            Recent matches: {{ matches|length }}
+        </small>
         {% endif %}
     </div>
 </div>

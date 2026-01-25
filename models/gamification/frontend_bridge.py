@@ -215,13 +215,48 @@ class GamificationFrontendBridge:
         )
 
 
+    @staticmethod
+    def handle_nudge_event(user_id: int, feature_config: Any) -> None:
+        """
+        Send nudge event to frontend.
+        feature_config is expected to be a FeatureConfig model instance.
+        """
+        # I18n should be handled by the frontend or pre-translated here.
+        # Ensure we pass keys or English text that can be translated.
+        GamificationFrontendBridge._flash_gamification_event(
+            "nudge",
+            {
+                "code": feature_config.code,
+                "name": feature_config.name,
+                "description": feature_config.description,
+                "badge": feature_config.badge_slug
+            },
+            user_id
+        )
+
+    @staticmethod
+    def handle_feature_unlock_event(user_id: int, feature_config: Any) -> None:
+        """
+        Send feature unlock event to frontend.
+        Typically triggered via manual flash or specific domain event.
+        """
+        GamificationFrontendBridge._flash_gamification_event(
+            "unlock",
+            {
+                "code": feature_config.code,
+                "name": feature_config.name,
+                "description": feature_config.description,
+                "icon": "🔓"
+            },
+            user_id
+        )
+
 def _get_achievement_description(event: AchievementUnlockedEvent) -> str:
     """Helper to get a simple description properly formatted."""
     # Ideally should fetch from DB or translation, but for animation simple is fine
     return f"+{event.xp_awarded} XP - {event.achievement_category.capitalize()}"
 
 
-# Auto-register handlers
 # Auto-register handlers
 GamificationFrontendBridge.register_all_handlers()
 

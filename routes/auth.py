@@ -30,8 +30,14 @@ def login():
                     "title": _("Che piacere rivederti!"),
                     "subtitle": _("Tutto pronto per giocare?")
                 })
-            except ImportError:
-                pass  # Gamification module might be disabled
+                
+                # Check for feature nudges (unused unlocked features)
+                from models.gamification.nudge_service import NudgeService
+                NudgeService.check_login_nudges(user.id)
+                
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(f"Gamification welcome flash failed: {e}")
 
             if not user.is_verified:
                 flash("Attenzione: il tuo account non è ancora verificato. Controlla la tua email.", "warning")

@@ -23,7 +23,8 @@
                         <div>
                             <div class="h6 mb-0">{{ _('Livello') }}</div>
                             <small class="text-muted">
-                                <span class="xp-counter" data-xp="{{ progress.total_xp }}">{{ progress.total_xp }}</span> XP totali
+                                <span class="xp-counter" data-xp="{{ progress.total_xp }}">{{ progress.total_xp
+                                    }}</span> XP totali
                             </small>
                         </div>
                     </div>
@@ -35,22 +36,14 @@
                             <small>{{ progress.progress_percentage|round(1) }}%</small>
                         </div>
                         <div class="xp-progress-bar">
-                            <div class="xp-progress-fill"
-                                 data-percentage="{{ progress.progress_percentage }}"
-                                 style="width: 0%;">
+                            <div class="xp-progress-fill" data-percentage="{{ progress.progress_percentage }}"
+                                style="width: 0%;">
                             </div>
                         </div>
                     </div>
 
-                    {% if progress.next_unlock %}
-                    <div class="alert alert-info mb-0 py-2">
-                        <small>
-                            <i class="fas fa-lock-open me-1"></i>
-                            <strong>{{ _('Prossimo sblocco al livello') }} {{ progress.next_unlock.level }}:</strong>
-                            {{ progress.next_unlock.description }}
-                        </small>
-                    </div>
-                    {% endif %}
+                    {# NOTE: next_unlock removed - old level-only system replaced by ABAC #}
+                    {# Features now unlock based on multiple conditions (level + activity) #}
                 </div>
                 <div class="card-footer bg-light">
                     <a href="{{ url_for('gamification.leaderboards') }}" class="btn btn-sm btn-outline-primary">
@@ -68,31 +61,33 @@
                 </div>
                 <div class="card-body">
                     {% if streaks %}
-                        {% for streak_type, streak_info in streaks.items() %}
-                        <div class="d-flex justify-content-between align-items-center {% if not loop.last %}mb-3 pb-3 border-bottom{% endif %}">
-                            <div>
-                                <strong>
-                                    {% if streak_type == 'weekly_activity' %}
-                                    <i class="fas fa-calendar-check text-warning me-1"></i>{{ _('Attivita Settimanale') }}
-                                    {% elif streak_type == 'weekly_match' %}
-                                    <i class="fas fa-shield-halved me-1 text-info"></i>{{ _('Partite Settimanali') }}
-                                    {% elif streak_type == 'weekly_tournament' %}
-                                    <i class="fas fa-trophy text-success me-1"></i>{{ _('Tornei Settimanali') }}
-                                    {% else %}
-                                    {{ streak_type }}
-                                    {% endif %}
-                                </strong>
-                                <br>
-                                <small class="text-muted">{{ _('Record') }}: {{ streak_info.longest_streak }} {{ _('settimane') }}</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="streak-fire {% if streak_info.current_streak >= 5 %}hot{% endif %}">🔥</span>
-                                <span class="badge bg-warning text-dark fs-5">{{ streak_info.current_streak }}</span>
-                                <br>
-                                <small class="text-muted">{{ _('settimane') }}</small>
-                            </div>
+                    {% for streak_type, streak_info in streaks.items() %}
+                    <div
+                        class="d-flex justify-content-between align-items-center {% if not loop.last %}mb-3 pb-3 border-bottom{% endif %}">
+                        <div>
+                            <strong>
+                                {% if streak_type == 'weekly_activity' %}
+                                <i class="fas fa-calendar-check text-warning me-1"></i>{{ _('Attivita Settimanale') }}
+                                {% elif streak_type == 'weekly_match' %}
+                                <i class="fas fa-shield-halved me-1 text-info"></i>{{ _('Partite Settimanali') }}
+                                {% elif streak_type == 'weekly_tournament' %}
+                                <i class="fas fa-trophy text-success me-1"></i>{{ _('Tornei Settimanali') }}
+                                {% else %}
+                                {{ streak_type }}
+                                {% endif %}
+                            </strong>
+                            <br>
+                            <small class="text-muted">{{ _('Record') }}: {{ streak_info.longest_streak }} {{
+                                _('settimane') }}</small>
                         </div>
-                        {% endfor %}
+                        <div class="text-end">
+                            <span class="streak-fire {% if streak_info.current_streak >= 5 %}hot{% endif %}">🔥</span>
+                            <span class="badge bg-warning text-dark fs-5">{{ streak_info.current_streak }}</span>
+                            <br>
+                            <small class="text-muted">{{ _('settimane') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
                     <div class="text-center text-muted py-3">
                         <i class="fas fa-fire-alt fa-2x mb-2"></i>
@@ -124,12 +119,14 @@
                     <div class="row g-3">
                         {% for ua in recent_achievements %}
                         <div class="col-md-4 col-lg-2">
-                            <div class="card h-100 text-center {% if ua.is_unlocked %}bg-light{% else %}bg-secondary bg-opacity-10{% endif %}">
+                            <div
+                                class="card h-100 text-center {% if ua.is_unlocked %}bg-light{% else %}bg-secondary bg-opacity-10{% endif %}">
                                 <div class="card-body py-3">
                                     {% set achievement = ua.achievement %}
                                     <div class="mb-2">
                                         {% if achievement.icon_path %}
-                                        <img src="{{ achievement.icon_path }}" alt="" style="width: 48px; height: 48px;">
+                                        <img src="{{ achievement.icon_path }}" alt=""
+                                            style="width: 48px; height: 48px;">
                                         {% else %}
                                         <i class="fas fa-trophy fa-2x text-warning"></i>
                                         {% endif %}
@@ -188,9 +185,8 @@
 
                                     {% if quest_info.is_participating %}
                                     <div class="progress mb-2" style="height: 8px;">
-                                        <div class="progress-bar bg-info"
-                                             role="progressbar"
-                                             style="width: {{ quest_info.progress_percentage }}%">
+                                        <div class="progress-bar bg-info" role="progressbar"
+                                            style="width: {{ quest_info.progress_percentage }}%">
                                         </div>
                                     </div>
                                     <small class="text-muted">
@@ -225,9 +221,9 @@
 </div>
 
 {# ═══════════════════════════════════════════════════════════════════════════
-   SSE: Real-time notifications for gamification events
-   User receives live notifications for XP gains, level-ups, and achievements.
-   ═══════════════════════════════════════════════════════════════════════════ #}
+SSE: Real-time notifications for gamification events
+User receives live notifications for XP gains, level-ups, and achievements.
+═══════════════════════════════════════════════════════════════════════════ #}
 {% if current_user.is_authenticated %}
 <!-- Toast container for SSE notifications -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
@@ -241,105 +237,114 @@
     </div>
 </div>
 
+<!-- JSON Configuration Block (ADR-018) -->
+<script type="application/json" id="sse-config">
+{
+    "userId": {{ current_user.id }},
+    "i18n": {
+        "xpGained": {{ _('XP Guadagnati!')|tojson }},
+        "levelUp": {{ _('Nuovo Livello!')|tojson }},
+        "achievement": {{ _('Achievement Sbloccato!')|tojson }},
+        "total": {{ _('Totale: ')|tojson }},
+        "reachedLevel": {{ _('Hai raggiunto il livello ')|tojson }}
+    }
+}
+</script>
+
 <script>
-(function() {
-    const userId = {{ current_user.id }};
-    let eventSource = null;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
+    (function () {
+        // Load configuration from JSON block
+        const SSE_CONFIG = JSON.parse(document.getElementById('sse-config').textContent);
+        const userId = SSE_CONFIG.userId;
+        const i18n = SSE_CONFIG.i18n;
 
-    // i18n strings (safe - from server)
-    const i18n = {
-        xpGained: {{ _('XP Guadagnati!')|tojson }},
-        levelUp: {{ _('Nuovo Livello!')|tojson }},
-        achievement: {{ _('Achievement Sbloccato!')|tojson }},
-        total: {{ _('Totale: ')|tojson }},
-        reachedLevel: {{ _('Hai raggiunto il livello ')|tojson }}
-    };
+        let eventSource = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
 
-    function showToast(icon, iconColor, title, message) {
-        const toastEl = document.getElementById('sseToast');
-        document.getElementById('sseToastIcon').className = 'fas ' + icon + ' ' + iconColor + ' me-2';
-        document.getElementById('sseToastTitle').textContent = title;
-        document.getElementById('sseToastBody').textContent = message;
+        function showToast(icon, iconColor, title, message) {
+            const toastEl = document.getElementById('sseToast');
+            document.getElementById('sseToastIcon').className = 'fas ' + icon + ' ' + iconColor + ' me-2';
+            document.getElementById('sseToastTitle').textContent = title;
+            document.getElementById('sseToastBody').textContent = message;
 
-        const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
-        toast.show();
-    }
-
-    function connectSSE() {
-        if (eventSource) {
-            eventSource.close();
+            const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+            toast.show();
         }
 
-        console.log('[SSE User] Connecting to /sse/user/' + userId);
-        eventSource = new EventSource('/sse/user/' + userId);
-
-        eventSource.addEventListener('connected', function(e) {
-            console.log('[SSE User] Connected:', e.data);
-            reconnectAttempts = 0;
-        });
-
-        // XP gained - show toast notification
-        eventSource.addEventListener('xp_gained', function(e) {
-            const data = JSON.parse(e.data);
-            console.log('[SSE User] XP gained:', data);
-            showToast(
-                'fa-star',
-                'text-warning',
-                i18n.xpGained,
-                '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP'
-            );
-            setTimeout(function() { location.reload(); }, 3000);
-        });
-
-        // Level up - show celebration toast
-        eventSource.addEventListener('level_up', function(e) {
-            const data = JSON.parse(e.data);
-            console.log('[SSE User] Level up:', data);
-            showToast(
-                'fa-level-up-alt',
-                'text-success',
-                i18n.levelUp,
-                i18n.reachedLevel + data.new_level + '!'
-            );
-            setTimeout(function() { location.reload(); }, 3000);
-        });
-
-        // Achievement unlocked - show celebration toast
-        eventSource.addEventListener('achievement', function(e) {
-            const data = JSON.parse(e.data);
-            console.log('[SSE User] Achievement:', data);
-            showToast(
-                'fa-trophy',
-                'text-primary',
-                i18n.achievement,
-                data.achievement_name + ' (+' + data.xp_awarded + ' XP)'
-            );
-            setTimeout(function() { location.reload(); }, 3000);
-        });
-
-        eventSource.onerror = function(e) {
-            console.error('[SSE User] Connection error:', e);
-            eventSource.close();
-
-            if (reconnectAttempts < maxReconnectAttempts) {
-                reconnectAttempts++;
-                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-                console.log('[SSE User] Reconnecting in ' + delay + 'ms');
-                setTimeout(connectSSE, delay);
+        function connectSSE() {
+            if (eventSource) {
+                eventSource.close();
             }
-        };
-    }
 
-    connectSSE();
+            console.log('[SSE User] Connecting to /sse/user/' + userId);
+            eventSource = new EventSource('/sse/user/' + userId);
 
-    window.addEventListener('beforeunload', function() {
-        if (eventSource) {
-            eventSource.close();
+            eventSource.addEventListener('connected', function (e) {
+                console.log('[SSE User] Connected:', e.data);
+                reconnectAttempts = 0;
+            });
+
+            // XP gained - show toast notification
+            eventSource.addEventListener('xp_gained', function (e) {
+                const data = JSON.parse(e.data);
+                console.log('[SSE User] XP gained:', data);
+                showToast(
+                    'fa-star',
+                    'text-warning',
+                    i18n.xpGained,
+                    '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP'
+                );
+                setTimeout(function () { location.reload(); }, 3000);
+            });
+
+            // Level up - show celebration toast
+            eventSource.addEventListener('level_up', function (e) {
+                const data = JSON.parse(e.data);
+                console.log('[SSE User] Level up:', data);
+                showToast(
+                    'fa-level-up-alt',
+                    'text-success',
+                    i18n.levelUp,
+                    i18n.reachedLevel + data.new_level + '!'
+                );
+                setTimeout(function () { location.reload(); }, 3000);
+            });
+
+            // Achievement unlocked - show celebration toast
+            eventSource.addEventListener('achievement', function (e) {
+                const data = JSON.parse(e.data);
+                console.log('[SSE User] Achievement:', data);
+                showToast(
+                    'fa-trophy',
+                    'text-primary',
+                    i18n.achievement,
+                    data.achievement_name + ' (+' + data.xp_awarded + ' XP)'
+                );
+                setTimeout(function () { location.reload(); }, 3000);
+            });
+
+            eventSource.onerror = function (e) {
+                console.error('[SSE User] Connection error:', e);
+                eventSource.close();
+
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                    console.log('[SSE User] Reconnecting in ' + delay + 'ms');
+                    setTimeout(connectSSE, delay);
+                }
+            };
         }
-    });
-})();
+
+        connectSSE();
+
+        window.addEventListener('beforeunload', function () {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    })();
 </script>
 {% endif %}
 {% endblock %}

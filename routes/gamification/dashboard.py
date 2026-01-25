@@ -15,6 +15,7 @@ from models.gamification.models import (
     Quest, QuestStatus
 )
 from models.kpi import track_achievement_view, track_leaderboard_view
+from utils import admin_required
 
 from . import gamification_bp
 

@@ -14,24 +14,20 @@
   </div>
 
   <div class="d-flex gap-2">
-    {% if current_user.is_admin or current_user.is_director %}
+    {% if current_user.is_admin or (vm.caps and vm.caps.can_create_campionato) %}
+    {# Shows primary create action #}
     {% if vm.caps and vm.caps.can_create_campionato %}
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
-      <i class="fas fa-plus"></i> {{ _('Nuovo Campionato') }}
+    <button type="button" class="btn btn-sm btn-success shadow-sm" data-bs-toggle="modal"
+      data-bs-target="#newCampionatoModal">
+      <i class="fas fa-plus-circle me-1"></i> {{ _('Nuovo Campionato') }}
     </button>
     {% endif %}
+    {% endif %}
 
-    {% if vm.caps and (vm.caps.can_create_standalone or vm.caps.can_create_campionato) %}
-    {% if current_user.is_admin %}
+    {% if vm.caps and vm.caps.can_create_standalone %}
     <a class="btn btn-success" href="{{ url_for('admin.competition.create_gara_standalone') }}">
       <i class="fas fa-plus"></i> {{ _('Nuova Gara') }}
     </a>
-    {% elif current_user.is_director %}
-    <a class="btn btn-success" href="{{ url_for('admin.competition.create_gara_standalone') }}">
-      <i class="fas fa-plus"></i> {{ _('Nuova Gara') }}
-    </a>
-    {% endif %}
-    {% endif %}
     {% endif %}
 
     {% if current_user.is_player and not current_user.is_director and not current_user.is_admin %}

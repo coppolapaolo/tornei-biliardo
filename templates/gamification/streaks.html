@@ -7,7 +7,8 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification') }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('gamification.dashboard') }}">{{ _('Gamification')
+                            }}</a></li>
                     <li class="breadcrumb-item active">{{ _('Streak') }}</li>
                 </ol>
             </nav>
@@ -20,7 +21,8 @@
     {% if primary_streak %}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-gradient border-0" style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);">
+            <div class="card bg-gradient border-0"
+                style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);">
                 <div class="card-body text-white text-center py-5">
                     <div class="display-1 fw-bold mb-2">
                         <i class="fas fa-fire me-3"></i>{{ primary_streak.current_streak }}
@@ -33,7 +35,8 @@
                     {% if primary_streak.freeze_count > 0 %}
                     <div class="mt-3">
                         <span class="badge bg-light text-dark fs-6">
-                            <i class="fas fa-snowflake me-1"></i>{{ primary_streak.freeze_count }} {{ _('freeze disponibili') }}
+                            <i class="fas fa-snowflake me-1"></i>{{ primary_streak.freeze_count }} {{ _('freeze
+                            disponibili') }}
                         </span>
                     </div>
                     {% endif %}
@@ -85,15 +88,18 @@
                         <small class="text-muted d-block mb-2">{{ _('Traguardi') }}</small>
                         <div class="d-flex justify-content-between">
                             <div class="text-center flex-fill">
-                                <i class="fas fa-medal fa-lg {% if streak_info.milestones_reached.get('4_weeks') %}text-warning{% else %}text-muted{% endif %}"></i>
+                                <i
+                                    class="fas fa-medal fa-lg {% if 4 in streak_info.milestones_reached or '4_weeks' in streak_info.milestones_reached %}text-warning{% else %}text-muted{% endif %}"></i>
                                 <br><small>4 {{ _('sett.') }}</small>
                             </div>
                             <div class="text-center flex-fill">
-                                <i class="fas fa-award fa-lg {% if streak_info.milestones_reached.get('12_weeks') %}text-info{% else %}text-muted{% endif %}"></i>
+                                <i
+                                    class="fas fa-award fa-lg {% if 12 in streak_info.milestones_reached or '12_weeks' in streak_info.milestones_reached %}text-info{% else %}text-muted{% endif %}"></i>
                                 <br><small>12 {{ _('sett.') }}</small>
                             </div>
                             <div class="text-center flex-fill">
-                                <i class="fas fa-crown fa-lg {% if streak_info.milestones_reached.get('52_weeks') %}text-success{% else %}text-muted{% endif %}"></i>
+                                <i
+                                    class="fas fa-crown fa-lg {% if 52 in streak_info.milestones_reached or '52_weeks' in streak_info.milestones_reached %}text-success{% else %}text-muted{% endif %}"></i>
                                 <br><small>52 {{ _('sett.') }}</small>
                             </div>
                         </div>
@@ -104,7 +110,8 @@
                     <div class="alert alert-light mb-0 py-2">
                         <small>
                             <i class="fas fa-flag me-1"></i>
-                            {{ _('Prossimo traguardo') }}: <strong>{{ streak_info.next_milestone }} {{ _('settimane') }}</strong>
+                            {{ _('Prossimo traguardo') }}: <strong>{{ streak_info.next_milestone }} {{ _('settimane')
+                                }}</strong>
                             ({{ streak_info.next_milestone - streak_info.current_streak }} {{ _('da raggiungere') }})
                         </small>
                     </div>
@@ -143,7 +150,8 @@
                         <li>{{ _('Ogni settimana che giochi almeno una partita, la tua streak aumenta') }}</li>
                         <li>{{ _('Raggiungi 4 settimane consecutive per sbloccare un freeze') }}</li>
                         <li>{{ _('I freeze ti permettono di saltare una settimana senza perdere la streak') }}</li>
-                        <li>{{ _('Traguardi: 4 settimane (+1 freeze), 12 settimane (+1 freeze), 52 settimane (+1 freeze)') }}</li>
+                        <li>{{ _('Traguardi: 4 settimane (+1 freeze), 12 settimane (+1 freeze), 52 settimane (+1
+                            freeze)') }}</li>
                         <li>{{ _('Massimo 3 freeze accumulabili') }}</li>
                     </ul>
                 </div>

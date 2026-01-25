@@ -1,6 +1,6 @@
 {# templates/components/_new_campionato_modal.html #}
 <!-- Modal Nuovo Campionato - Redirect to Wizard (UPDATED ADR-0001) -->
-{% if is_director %}
+{% if current_user.is_authenticated and current_user.can_access('create_campionato') %}
 <div class="modal fade" id="newTournamentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -9,7 +9,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>{{ _("Il wizard di creazione campionato ti guidera' attraverso la configurazione in due semplici passaggi:") }}</p>
+                <p>{{ _("Il wizard di creazione campionato ti guidera' attraverso la configurazione in due semplici
+                    passaggi:") }}</p>
                 <ol class="mb-4">
                     <li class="mb-2">
                         <strong>{{ _("Configurazione Base") }}</strong>

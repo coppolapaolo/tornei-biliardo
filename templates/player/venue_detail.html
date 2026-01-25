@@ -8,9 +8,9 @@
     <h1><i class="fas fa-building"></i> {{ venue.name }}</h1>
     <div>
         {% if can_manage %}
-            <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" class="btn btn-primary me-2">
-                <i class="fas fa-edit"></i> Gestisci Sala
-            </a>
+        <a href="{{ url_for('admin.venue.edit_venue', venue_id=venue.id) }}" class="btn btn-primary me-2">
+            <i class="fas fa-edit"></i> Gestisci Sala
+        </a>
         {% endif %}
         <a href="{{ url_for('admin.venue.venues_list') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Torna alle Sale
@@ -26,17 +26,17 @@
                 <h5><i class="fas fa-info-circle"></i> Informazioni Generali</h5>
                 <div>
                     {% if venue.verified %}
-                        <span class="badge bg-success">
-                            <i class="fas fa-check-circle"></i> Verificata
-                        </span>
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle"></i> Verificata
+                    </span>
                     {% elif venue.can_be_verified() %}
-                        <span class="badge bg-warning text-dark">
-                            <i class="fas fa-clock"></i> In Attesa di Verifica
-                        </span>
+                    <span class="badge bg-warning text-dark">
+                        <i class="fas fa-clock"></i> In Attesa di Verifica
+                    </span>
                     {% else %}
-                        <span class="badge bg-secondary">
-                            <i class="fas fa-info-circle"></i> Dati Incompleti
-                        </span>
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-info-circle"></i> Dati Incompleti
+                    </span>
                     {% endif %}
                 </div>
             </div>
@@ -46,10 +46,10 @@
                         <p><strong>Nome:</strong> {{ venue.name }}</p>
                         <p><strong>Indirizzo:</strong>
                             {% if venue.address %}
-                                <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}" 
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ venue.get_full_address()|urlencode }}"
                                 target="_blank"> {{ venue.address }}</a>
                             {% else %}
-                                Non specificato
+                            Non specificato
                             {% endif %}
                         </p>
                         <p><strong>Città:</strong> {{ venue.city or 'Non specificata' }}</p>
@@ -57,32 +57,32 @@
                         <p><strong>Paese:</strong> {{ venue.country }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Telefono:</strong> 
+                        <p><strong>Telefono:</strong>
                             {% if venue.phone %}
-                                <a href="tel:{{ venue.phone }}">{{ venue.phone }}</a>
+                            <a href="tel:{{ venue.phone }}">{{ venue.phone }}</a>
                             {% else %}
-                                Non specificato
+                            Non specificato
                             {% endif %}
                         </p>
-                        <p><strong>Email:</strong> 
+                        <p><strong>Email:</strong>
                             {% if venue.email %}
-                                <a href="mailto:{{ venue.email }}">{{ venue.email }}</a>
+                            <a href="mailto:{{ venue.email }}">{{ venue.email }}</a>
                             {% else %}
-                                Non specificata
+                            Non specificata
                             {% endif %}
                         </p>
-                        <p><strong>Sito Web:</strong> 
+                        <p><strong>Sito Web:</strong>
                             {% if venue.website %}
-                                <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>
+                            <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>
                             {% else %}
-                                Non specificato
+                            Non specificato
                             {% endif %}
                         </p>
-                        <p><strong>Tariffa Oraria:</strong> 
+                        <p><strong>Tariffa Oraria:</strong>
                             {% if venue.hourly_rate %}
-                                {{ venue.hourly_rate }} {{ venue.currency }}
+                            {{ venue.hourly_rate }} {{ venue.currency }}
                             {% else %}
-                                Non specificata
+                            Non specificata
                             {% endif %}
                         </p>
                     </div>
@@ -99,35 +99,35 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Numero Tavoli:</strong> {{ venue.number_of_tables or 'Non specificato' }}</p>
-                        
+
                         <p><strong>Tipi di Tavoli:</strong></p>
                         {% set table_types = stats.table_types %}
                         {% if table_types %}
-                            <ul class="list-unstyled">
-                                {% for type in table_types %}
-                                    <li><i class="fas fa-check text-success"></i> {{ type }}</li>
-                                {% endfor %}
-                            </ul>
+                        <ul class="list-unstyled">
+                            {% for type in table_types %}
+                            <li><i class="fas fa-check text-success"></i> {{ type }}</li>
+                            {% endfor %}
+                        </ul>
                         {% else %}
-                            <p class="text-muted">Non specificati</p>
+                        <p class="text-muted">Non specificati</p>
                         {% endif %}
                     </div>
                     <div class="col-md-6">
                         <p><strong>Servizi:</strong></p>
                         {% set filtered_amenities = [] %}
                         {% for amenity in stats.amenities %}
-                            {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
-                                {% set _void = filtered_amenities.append(amenity) %}
-                            {% endif %}
+                        {% if not amenity.startswith("Tavoli:") and not amenity.startswith("Foto:") %}
+                        {% set _void = filtered_amenities.append(amenity) %}
+                        {% endif %}
                         {% endfor %}
                         {% if filtered_amenities %}
-                            <ul class="list-unstyled">
-                                {% for amenity in filtered_amenities %}
-                                    <li><i class="fas fa-check text-success"></i> {{ amenity }}</li>
-                                {% endfor %}
-                            </ul>
+                        <ul class="list-unstyled">
+                            {% for amenity in filtered_amenities %}
+                            <li><i class="fas fa-check text-success"></i> {{ amenity }}</li>
+                            {% endfor %}
+                        </ul>
                         {% else %}
-                            <p class="text-muted">Non specificati</p>
+                        <p class="text-muted">Non specificati</p>
                         {% endif %}
                     </div>
                 </div>
@@ -154,14 +154,17 @@
         {% endif %}
 
         <!-- Richiesta Gestione -->
-        {% if not current_user.is_admin and not manager and not can_manage %}
+        {% if not current_user.is_admin and not manager and not can_manage and
+        current_user.can_access('request_venue_manager') %}
         <div class="card mb-4">
             <div class="card-header">
                 <h5><i class="fas fa-hand-paper"></i> Diventa Gestore</h5>
             </div>
             <div class="card-body">
-                <p class="text-muted small">Vuoi gestire questa sala? I gestori possono modificare informazioni, servizi e dettagli della sala.</p>
-                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#venueManagerRequestModal">
+                <p class="text-muted small">Vuoi gestire questa sala? I gestori possono modificare informazioni, servizi
+                    e dettagli della sala.</p>
+                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
+                    data-bs-target="#venueManagerRequestModal">
                     <i class="fas fa-hand-paper"></i> Richiedi Gestione
                 </button>
             </div>
@@ -208,21 +211,21 @@
             <div class="card-body">
                 {% set photos = [] %}
                 {% for amenity in venue.get_amenities() %}
-                    {% if amenity.startswith("Foto:") %}
-                        {% set _void = photos.append(amenity) %}
-                    {% endif %}
+                {% if amenity.startswith("Foto:") %}
+                {% set _void = photos.append(amenity) %}
+                {% endif %}
                 {% endfor %}
                 {% if photos %}
-                    {% for photo in photos %}
-                        {% set photo_path = photo.replace("Foto: ", "") %}
-                        {# Remove static/ prefix since it's already in the path #}
-                        {% set clean_path = photo_path.replace("static/", "", 1) if photo_path.startswith("static/") else photo_path %}
-                        <img src="{{ url_for('static', filename=clean_path) }}"
-                             alt="Foto {{ venue.name }}"
-                             class="img-fluid mb-2 rounded">
-                    {% endfor %}
+                {% for photo in photos %}
+                {% set photo_path = photo.replace("Foto: ", "") %}
+                {# Remove static/ prefix since it's already in the path #}
+                {% set clean_path = photo_path.replace("static/", "", 1) if photo_path.startswith("static/") else
+                photo_path %}
+                <img src="{{ url_for('static', filename=clean_path) }}" alt="Foto {{ venue.name }}"
+                    class="img-fluid mb-2 rounded">
+                {% endfor %}
                 {% else %}
-                    <p class="text-muted text-center">Nessuna foto disponibile</p>
+                <p class="text-muted text-center">Nessuna foto disponibile</p>
                 {% endif %}
             </div>
         </div>
@@ -230,7 +233,8 @@
 </div>
 
 <!-- Modal per richiesta gestore sala -->
-{% if not current_user.is_admin and not manager and not can_manage %}
+{% if not current_user.is_admin and not manager and not can_manage and current_user.can_access('request_venue_manager')
+%}
 <div class="modal fade" id="venueManagerRequestModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -245,11 +249,11 @@
                 <div class="modal-body">
                     <p>Vuoi diventare gestore di <strong>{{ venue.name }}</strong>?</p>
                     {% if manager %}
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Attenzione:</strong> Questa sala ha già un gestore ({{ manager.username }}). 
-                            La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore.
-                        </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Attenzione:</strong> Questa sala ha già un gestore ({{ manager.username }}).
+                        La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore.
+                    </div>
                     {% endif %}
                     <p>I gestori sala possono:</p>
                     <ul>
@@ -262,12 +266,13 @@
                         <i class="fas fa-info-circle"></i>
                         L'amministratore valuterà la tua richiesta specifica per questa sala.
                     </p>
-                    
+
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Motivazione{% if manager %} (importante per contenzioso){% else %} (opzionale){% endif %}</label>
-                        <textarea class="form-control" name="notes" id="notes" rows="3" 
-                                  placeholder="{% if manager %}Spiega perché dovresti gestire questa sala invece dell'attuale gestore...{% else %}Perché vuoi gestire questa sala? Hai esperienza con sale biliardo?{% endif %}"
-                                  {% if manager %}required{% endif %}></textarea>
+                        <label for="notes" class="form-label">Motivazione{% if manager %} (importante per contenzioso){%
+                            else %} (opzionale){% endif %}</label>
+                        <textarea class="form-control" name="notes" id="notes" rows="3"
+                            placeholder="{% if manager %}Spiega perché dovresti gestire questa sala invece dell'attuale gestore...{% else %}Perché vuoi gestire questa sala? Hai esperienza con sale biliardo?{% endif %}"
+                            {% if manager %}required{% endif %}></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

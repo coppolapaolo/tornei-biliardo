@@ -60,6 +60,9 @@ def db_session(app):
         # Drop and recreate all tables to ensure complete isolation
         db.drop_all()
         db.create_all()
+        
+        # Populate feature_config table with test data for ABAC
+        _populate_test_features(db)
 
         # Configure session to NOT expire objects after commit
         # This prevents DetachedInstanceError in tests
@@ -77,6 +80,54 @@ def db_session(app):
             except:
                 pass
             db.session.remove()
+
+
+def _populate_test_features(db):
+    """Populate feature_config table with test data."""
+    import json
+    from models.gamification.feature_models import FeatureConfig
+    
+    # Add essential features for tests
+    test_features = [
+        {
+            "code": "tournament_creation",
+            "name": "Creazione Tornei",
+            "description": "Test feature",
+            "rules": json.dumps([{
+                "description": "Level 10",
+                "conditions": [{"type": "LEVEL", "operator": "gte", "value": 10}]
+            }])
+        },
+        {
+            "code": "create_campionato",
+            "name": "Create Championship",
+            "description": "Test feature",
+            "rules": json.dumps([{
+                "description": "Director role",
+                "conditions": [{"type": "ROLE", "value": "DIRECTOR"}]
+            }])
+        },
+        {
+            "code": "create_match_direct",
+            "name": "Create Direct Match",
+            "description": "Test feature",
+            "rules": json.dumps([{
+                "description": "5+ matches",
+                "conditions": [
+                    {"type": "METRIC", "metric": "total_matches", "operator": "gte", "value": 5}
+                ]
+            }])
+        }
+    ]
+    
+    for feature_data in test_features:
+        feature = FeatureConfig(**feature_data, is_active=True)
+        db.session.add(feature)
+    
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
 
 
 @pytest.fixture

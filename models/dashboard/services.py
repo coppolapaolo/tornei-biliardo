@@ -498,9 +498,15 @@ class DashboardService:
         is_admin = _role_truthy(user, "is_admin")
         is_director = _role_truthy(user, "is_director")
         is_player = _role_truthy(user, "is_player")
+        can_create_campionato = False
+        if hasattr(user, "can_access"):
+             can_create_campionato = user.can_access("create_campionato")
+        else:
+             can_create_campionato = is_admin or is_director
+
         return CapabilityVM(
-            can_create_campionato=is_admin or is_director,
-            can_create_standalone=is_admin or is_director,
+            can_create_campionato=can_create_campionato,
+            can_create_standalone=is_admin or is_director, # TODO: Add feature config for this
             can_register_self=not is_admin,
             can_create_match_proposal=is_player and not is_admin,
         )

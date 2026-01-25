@@ -1,6 +1,6 @@
 {# templates/components/_managed_campionatos_card.html #}
 <!-- I miei Campionati -->
-{% if is_director %}
+{% if show_director_management %}
 <div class="card mb-4">
     <div class="card-header">
         <h5><i class="fas fa-briefcase"></i> I miei Campionati</h5>
@@ -8,10 +8,10 @@
     <div class="card-body p-2">
         {% if managed_campionatos %}
         {% for t in managed_campionatos %}
-            <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=t.id) }}"
+        <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=t.id) }}"
             class="btn btn-outline-secondary btn-sm w-100 mb-1">
             {{ t.name }}
-            </a>
+        </a>
         {% endfor %}
         {% else %}
         <div class="text-muted small text-center">Nessun campionato gestito</div>
