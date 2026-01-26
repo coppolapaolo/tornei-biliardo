@@ -2,6 +2,7 @@
 
 import pytest
 import uuid
+from unittest.mock import patch, MagicMock
 
 from models import User, Notification
 from models.user.role_enum import UserRole
@@ -551,3 +552,73 @@ class TestNotificationService:
         assert result is not None
         assert "Test Competition" in result.title
         assert result.notification_type == NotificationType.TOURNAMENT_REGISTRATION
+
+    @patch("routes.sse.emit_user_event")
+    def test_create_notification_emits_sse_event(self, mock_emit, db_session):
+        """Test that creating a notification emits an SSE event for badge update."""
+        unique_id = str(uuid.uuid4())[:8]
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
+        user.set_password("testpass123")
+        db_session.add(user)
+        db_session.commit()
+
+        from models.notification.models import NotificationType, NotificationPriority
+
+        result = NotificationService.create_notification(
+            user_id=user.id,
+            notification_type=NotificationType.MATCH_PROPOSAL,
+            title="SSE Test",
+            message="Test message for SSE",
+            priority=NotificationPriority.NORMAL,
+        )
+
+        assert result is not None
+        # Verify SSE event was emitted
+        mock_emit.assert_called_once()
+        call_args = mock_emit.call_args
+        assert call_args[0][0] == user.id  # user_id
+        assert call_args[0][1] == "notification"  # event_type
+        assert "unread_count" in call_args[0][2]  # data dict
+        assert call_args[0][2]["unread_count"] >= 1  # At least 1 unread
+
+    @patch("routes.sse.emit_user_event")
+    def test_create_notification_sse_event_includes_correct_count(
+        self, mock_emit, db_session
+    ):
+        """Test SSE event includes correct unread count after multiple notifications."""
+        unique_id = str(uuid.uuid4())[:8]
+        user = User(
+            username=f"user_{unique_id}",
+            email=f"user_{unique_id}@test.com",
+            role=UserRole.PLAYER.value,
+        )
+        user.set_password("testpass123")
+        db_session.add(user)
+        db_session.commit()
+
+        from models.notification.models import NotificationType
+
+        # Create first notification
+        NotificationService.create_notification(
+            user_id=user.id,
+            notification_type=NotificationType.MATCH_PROPOSAL,
+            title="First",
+            message="First notification",
+        )
+
+        # Create second notification
+        NotificationService.create_notification(
+            user_id=user.id,
+            notification_type=NotificationType.MATCH_PROPOSAL,
+            title="Second",
+            message="Second notification",
+        )
+
+        # Check the second call has count=2
+        assert mock_emit.call_count == 2
+        second_call = mock_emit.call_args_list[1]
+        assert second_call[0][2]["unread_count"] == 2

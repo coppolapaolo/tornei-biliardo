@@ -11,6 +11,8 @@ from __future__ import annotations
 import logging
 from typing import List, Optional, Dict, Any, Union, TYPE_CHECKING
 
+from flask_babel import _
+
 from .services import NotificationService
 from .models import NotificationType, NotificationPriority
 
@@ -328,6 +330,54 @@ class NotificationFactory:
             action_url=action_url,
             action_text=action_text,
         )
+
+    @staticmethod
+    def create_gara_inscription_notification(
+        user_id: int,
+        gara_id: int,
+        gara_name: str,
+        gara_date: str,
+        enrolled_by: str,
+    ) -> Optional[Notification]:
+        """
+        Crea notifica quando un director iscrive un utente a una gara.
+
+        Args:
+            user_id: ID dell'utente iscritto
+            gara_id: ID della gara
+            gara_name: Nome della gara
+            gara_date: Data della gara (formattata)
+            enrolled_by: Nome del director che ha iscritto l'utente
+
+        Returns:
+            Notifica creata o None se fallito
+        """
+        message = _(
+            "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s",
+            enrolled_by=enrolled_by,
+            gara_name=gara_name,
+            gara_date=gara_date,
+        )
+
+        try:
+            return NotificationService.create_notification(
+                user_id=user_id,
+                notification_type=NotificationType.TOURNAMENT_REGISTRATION,
+                title=_("Iscrizione a Gara"),
+                message=message,
+                priority=NotificationPriority.NORMAL,
+                related_entities={
+                    "gara_id": gara_id,
+                    "gara_name": gara_name,
+                    "enrolled_by": enrolled_by,
+                },
+            )
+        except Exception as e:
+            logger.error(
+                f"Failed to create gara inscription notification for user {user_id}: {e}",
+                exc_info=True
+            )
+            return None
 
     @staticmethod
     def get_notification_stats(notifications: List[Optional[Notification]]) -> Dict[str, Union[int, float]]:

@@ -111,6 +111,27 @@ def gara_detail(gara_id):
         .all()
     )
 
+    # Utenti disponibili per iscrizione da parte di director/admin
+    available_users = None
+    if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value:
+        # Verifica se la gara non è al max (o non ha max)
+        active_count = gara.get_active_inscriptions_count()
+        if gara.max_participants is None or active_count < gara.max_participants:
+            # Escludi utenti già iscritti (attivi o in waitlist)
+            inscribed_user_ids = [
+                i.user_id for i in inscriptions if not i.is_withdrawn
+            ]
+            # Escludi anche admin (non possono partecipare)
+            from models.user.role_enum import UserRole
+            available_users = (
+                User.query
+                .filter(User.deleted_at.is_(None))
+                .filter(User.role != UserRole.ADMIN.value)
+                .filter(~User.id.in_(inscribed_user_ids) if inscribed_user_ids else True)
+                .order_by(User.username)
+                .all()
+            )
+
     # Load inherited directors from campionato (if gara belongs to one)
     inherited_director_ids = []
     if gara.campionato_id and gara.campionato:
@@ -380,6 +401,7 @@ def gara_detail(gara_id):
         discipline_choices=Discipline.get_choices(),
         available_tables=available_tables,
         forfeit_user_ids=forfeit_user_ids,
+        available_users=available_users,
         # SSR (Spot Shot Rally) data
         ssr_groups=ssr_groups,
         has_ssr_data=has_ssr_data,

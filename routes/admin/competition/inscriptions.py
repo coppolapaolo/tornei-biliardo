@@ -143,6 +143,80 @@ def close_inscriptions(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
+@competition_bp.route("/<int:gara_id>/admin_inscribe", methods=["POST"])
+@login_required
+@gara_manager_required
+def admin_inscribe_user(gara_id):
+    """Iscrive un utente alla gara (solo admin/direttori)."""
+    from models.competition.inscription_service import InscriptionService
+    from models.notification.factory import NotificationFactory
+    from models.user.models import User
+    from models.competition.models import Gara
+
+    try:
+        # Verifica che la gara esista
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            flash("Gara non trovata.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Verifica che la gara sia ancora in fase di iscrizioni
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            flash(
+                "Non è possibile iscrivere utenti quando la gara non è in fase di iscrizione.",
+                "error",
+            )
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Valida user_id dal form
+        user_id_str = request.form.get("user_id")
+        if not user_id_str:
+            flash("Nessun utente selezionato.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        user_id = int(user_id_str)
+
+        # Verifica che l'utente esista
+        user = db.session.get(User, user_id)
+        if not user:
+            flash("Utente non trovato.", "error")
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+        # Esegui l'iscrizione usando il service layer
+        inscription = InscriptionService.inscribe_user(user_id, gara_id)
+
+        if inscription:
+            # Formatta la data per la notifica
+            gara_date_str = gara.date.strftime("%d/%m/%Y") if gara.date else "data da definire"
+            gara_name = gara.name or f"Gara {gara.number}"
+
+            # Crea notifica per l'utente iscritto
+            NotificationFactory.create_gara_inscription_notification(
+                user_id=user_id,
+                gara_id=gara_id,
+                gara_name=gara_name,
+                gara_date=gara_date_str,
+                enrolled_by=current_user.username,
+            )
+
+            if inscription.is_waitlist:
+                flash(
+                    f"Utente {user.username} aggiunto alla lista d'attesa (posizione {inscription.waitlist_position}).",
+                    "warning",
+                )
+            else:
+                flash(f"Utente {user.username} iscritto con successo.", "success")
+        else:
+            flash(f"Utente {user.username} già iscritto a questa gara.", "warning")
+
+    except ValueError as ve:
+        flash(f"Errore: {str(ve)}", "error")
+    except Exception as e:
+        flash(f"Errore durante l'iscrizione: {str(e)}", "error")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
 @competition_bp.route("/<int:gara_id>/admin_uninscribe/<int:user_id>", methods=["POST"])
 @login_required
 @gara_manager_required

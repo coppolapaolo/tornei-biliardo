@@ -13,6 +13,23 @@
         </h5>
     </div>
     <div class="card-body">
+        {# Form per aggiungere iscritti (solo director/admin in fase iscrizione) #}
+        {% if available_users and available_users|length > 0 %}
+        <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}" class="mb-3">
+            <div class="input-group">
+                <select name="user_id" class="form-select" required>
+                    <option value="">{{ _('Seleziona utente...') }}</option>
+                    {% for user in available_users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary" title="{{ _('Aggiungi iscritto') }}">
+                    <i class="fas fa-user-plus"></i> {{ _('Aggiungi') }}
+                </button>
+            </div>
+        </form>
+        {% endif %}
+
         {% if inscriptions %}
         <!-- Iscritti Attivi -->
         {% set active_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', false) |

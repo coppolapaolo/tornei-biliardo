@@ -283,3 +283,52 @@ class TestNotificationFactory:
         assert stats["successful"] == 3
         assert stats["failed"] == 0
         assert stats["success_rate"] == 100.0
+
+    @patch('models.notification.factory.NotificationService.create_notification')
+    def test_create_gara_inscription_notification_success(self, mock_create):
+        """Test successful gara inscription notification creation."""
+        mock_notification = MagicMock()
+        mock_create.return_value = mock_notification
+
+        result = NotificationFactory.create_gara_inscription_notification(
+            user_id=1,
+            gara_id=123,
+            gara_name="Torneo Primavera",
+            gara_date="15/03/2026",
+            enrolled_by="Director Paolo"
+        )
+
+        assert result == mock_notification
+        mock_create.assert_called_once()
+
+        call_kwargs = mock_create.call_args[1]
+        assert call_kwargs["user_id"] == 1
+        assert call_kwargs["notification_type"] == NotificationType.TOURNAMENT_REGISTRATION
+        # Title is i18n, check it's set
+        assert call_kwargs["title"] is not None
+        # Message contains key info (i18n formatted)
+        assert "Director Paolo" in call_kwargs["message"]
+        assert "Torneo Primavera" in call_kwargs["message"]
+        assert "15/03/2026" in call_kwargs["message"]
+        # No action button anymore
+        assert "action_url" not in call_kwargs or call_kwargs.get("action_url") is None
+        assert "action_text" not in call_kwargs or call_kwargs.get("action_text") is None
+        # Related entities still present
+        assert call_kwargs["related_entities"]["gara_id"] == 123
+        assert call_kwargs["related_entities"]["gara_name"] == "Torneo Primavera"
+        assert call_kwargs["related_entities"]["enrolled_by"] == "Director Paolo"
+
+    @patch('models.notification.factory.NotificationService.create_notification')
+    def test_create_gara_inscription_notification_error(self, mock_create):
+        """Test gara inscription notification creation with error."""
+        mock_create.side_effect = Exception("Service error")
+
+        result = NotificationFactory.create_gara_inscription_notification(
+            user_id=1,
+            gara_id=123,
+            gara_name="Torneo",
+            gara_date="01/01/2026",
+            enrolled_by="Director"
+        )
+
+        assert result is None

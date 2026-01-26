@@ -351,9 +351,7 @@
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
                             <i class="fas fa-user"></i> {{ current_user.username }}
-                            {% if unread_notifications_count > 0 %}
-                            <span class="badge bg-danger rounded-pill">{{ unread_notifications_count }}</span>
-                            {% endif %}
+                            <span class="badge bg-danger rounded-pill notification-badge"{% if unread_notifications_count == 0 %} style="display:none"{% endif %}>{{ unread_notifications_count }}</span>
                             {% if current_user.is_admin %}
                             <span class="badge bg-warning text-dark ms-1">Admin</span>
                             {% endif %}
@@ -361,10 +359,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('player.notifications') }}">
                                     <i class="fas fa-bell"></i> {{ _('Notifiche') }}
-                                    {% if unread_notifications_count > 0 %}
-                                    <span class="badge bg-danger rounded-pill ms-2">{{ unread_notifications_count
-                                        }}</span>
-                                    {% endif %}
+                                    <span class="badge bg-danger rounded-pill ms-2 notification-badge"{% if unread_notifications_count == 0 %} style="display:none"{% endif %}>{{ unread_notifications_count }}</span>
                                 </a></li>
                             {% if not current_user.is_admin %}
                             <li><a class="dropdown-item" href="{{ url_for('player.my_venue_requests') }}">
@@ -651,6 +646,33 @@
         {% endif %}
         });
     </script>
+
+    {% if current_user.is_authenticated %}
+    <!-- SSE Notification Badge Real-time Updates -->
+    <script>
+    (function() {
+        var userId = {{ current_user.id }};
+        var evtSource = new EventSource('/sse/user/' + userId);
+
+        evtSource.addEventListener('notification', function(e) {
+            var data = JSON.parse(e.data);
+            var badges = document.querySelectorAll('.notification-badge');
+            badges.forEach(function(badge) {
+                if (data.unread_count > 0) {
+                    badge.textContent = data.unread_count;
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        });
+
+        evtSource.onerror = function() {
+            // Reconnection is automatic by the browser
+        };
+    })();
+    </script>
+    {% endif %}
 
     {% block scripts %}{% endblock %}
 </body>

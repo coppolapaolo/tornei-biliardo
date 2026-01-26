@@ -80,6 +80,22 @@ class NotificationService:
 
         db.session.add(notification)
 
+        # Emit SSE event for real-time badge update
+        # Import here to avoid circular imports
+        from routes.sse import emit_user_event
+
+        # Count unread notifications (PENDING or SENT status)
+        new_count = (
+            Notification.query.filter_by(user_id=user_id)
+            .filter(
+                Notification.status.in_(  # type: ignore[attr-defined]
+                    [NotificationStatus.PENDING, NotificationStatus.SENT]
+                )
+            )
+            .count()
+        )
+        emit_user_event(user_id, "notification", {"unread_count": new_count})
+
         return notification
 
     @staticmethod
