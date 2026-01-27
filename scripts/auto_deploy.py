@@ -95,7 +95,8 @@ def reload_webapp() -> tuple:
     print("Reloading web app...")
 
     # On PythonAnywhere, touching the WSGI file reloads the app
-    wsgi_file = Path("/var/www/paolocoppola_pythonanywhere_com_wsgi.py")
+    # Custom domain: www.torneibiliardo.it
+    wsgi_file = Path("/var/www/www_torneibiliardo_it_wsgi.py")
 
     if wsgi_file.exists():
         try:
