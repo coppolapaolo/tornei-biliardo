@@ -404,18 +404,46 @@
       </div>
       <div id="mobileInscriptionsCollapse" class="collapse">
         <div class="card-body py-2">
+          {# Form per aggiungere iscritti (solo director/admin in fase iscrizione) #}
+          {% if user_can_manage and available_users and available_users|length > 0 %}
+          <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}" class="mb-3">
+            <div class="input-group input-group-sm">
+              <select name="user_id" class="form-select form-select-sm" required>
+                <option value="">{{ _('Seleziona utente...') }}</option>
+                {% for user in available_users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm" title="{{ _('Aggiungi iscritto') }}">
+                <i class="fas fa-user-plus"></i>
+              </button>
+            </div>
+          </form>
+          {% endif %}
+
           {% if inscriptions %}
           {% set active_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', false) |
           selectattr('is_withdrawn', 'equalto', false) | list %}
           {% if active_inscriptions %}
           <div class="small">
             {% for inscription in active_inscriptions %}
-            <div class="d-flex align-items-center py-1 {% if not loop.last %}border-bottom{% endif %}">
-              <span class="{% if inscription.is_forfeit %}text-muted text-decoration-line-through{% endif %}">
-                {{ inscription.user.username }}
-              </span>
-              {% if inscription.is_forfeit %}
-              <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
+            <div class="d-flex justify-content-between align-items-center py-1 {% if not loop.last %}border-bottom{% endif %}">
+              <div>
+                <span class="{% if inscription.is_forfeit %}text-muted text-decoration-line-through{% endif %}">
+                  {{ inscription.user.username }}
+                </span>
+                {% if inscription.is_forfeit %}
+                <i class="fas fa-ban text-secondary ms-1" title="{{ _('Forfait') }}"></i>
+                {% endif %}
+              </div>
+              {% if user_can_manage and gara.status == 'inscription' %}
+              <form class="d-inline" method="POST"
+                action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
+                onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler disiscrivere %(username)s?", username=inscription.user.username)|tojson }})'>
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="{{ _('Disiscrive utente') }}">
+                  <i class="fas fa-user-minus"></i>
+                </button>
+              </form>
               {% endif %}
             </div>
             {% endfor %}
@@ -427,9 +455,20 @@
           <h6 class="text-warning mt-2 mb-1 small"><i class="fas fa-clock"></i> {{ _('Lista Attesa') }}</h6>
           <div class="small">
             {% for inscription in waitlist %}
-            <div class="py-1 {% if not loop.last %}border-bottom{% endif %}">
-              <span class="badge bg-warning text-dark me-1">{{ inscription.waitlist_position }}</span>
-              {{ inscription.user.username }}
+            <div class="d-flex justify-content-between align-items-center py-1 {% if not loop.last %}border-bottom{% endif %}">
+              <div>
+                <span class="badge bg-warning text-dark me-1">{{ inscription.waitlist_position }}</span>
+                {{ inscription.user.username }}
+              </div>
+              {% if user_can_manage and gara.status == 'inscription' %}
+              <form class="d-inline" method="POST"
+                action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
+                onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler rimuovere %(username)s dalla lista d\'attesa?", username=inscription.user.username)|tojson }})'>
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="{{ _('Rimuove dalla lista d\'attesa') }}">
+                  <i class="fas fa-user-minus"></i>
+                </button>
+              </form>
+              {% endif %}
             </div>
             {% endfor %}
           </div>
