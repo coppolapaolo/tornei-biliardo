@@ -113,12 +113,12 @@
         <div class="mt-3 text-muted small">
             <i class="fas fa-info-circle"></i>
             {% if campionato.campionato_type|lower == 'amalfi' %}
-                Classifica generale Amalfi: ordinata per match vinti, poi per differenza rack totale.
+                {{ _("Classifica generale: ordinata per match vinti, poi per differenza rack totale.") }}
             {% elif campionato.campionato_type|lower == 'random' %}
-                Classifica generale Random: ordinata per rack totali, poi per punti spareggio (SSR).
+                {{ _("Classifica generale: ordinata per rack totali, poi per punti spareggio (SSR).") }}
             {% else %}
-                Classifica generale basata sui punti ottenuti in tutte le gare completate.
-                Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti.
+                {{ _("Classifica generale basata sui punti ottenuti in tutte le gare completate.") }}
+                {{ _("Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti.") }}
             {% endif %}
         </div>
     </div>

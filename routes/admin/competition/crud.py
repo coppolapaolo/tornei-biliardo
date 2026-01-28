@@ -451,9 +451,7 @@ def create_gara():
             gara.set_available_tables(available_tables)
 
         flash(f"Gara {number} creata con successo!")
-        return redirect(
-            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-        )
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
     except ValueError as e:
         flash(str(e), "error")
         return redirect(
