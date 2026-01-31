@@ -378,6 +378,11 @@ class ProposalService:
     @transactional(domain="individual_match")
     def accept_proposal(user_id: int, proposal_id: int) -> IndividualMatch:
         """Accept a match proposal."""
+        from flask_babel import _
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationType, NotificationPriority
+        from ..user.models import User
+
         proposal = db.session.get(MatchProposal, proposal_id)
         if proposal is None:
             from flask import abort
@@ -387,6 +392,27 @@ class ProposalService:
             raise ValueError("User cannot accept this proposal")
 
         individual_match = proposal.accept(user_id)
+
+        # Notify proposer that their proposal was accepted
+        try:
+            accepter = db.session.get(User, user_id)
+            accepter_name = accepter.username if accepter else _("Un giocatore")
+            location_text = proposal.location_display or ""
+
+            NotificationFactory.create_bulk_notification(
+                user_ids=[proposal.proposer_id],
+                notification_type=NotificationType.MATCH_ACCEPTED,
+                title=_("Proposta accettata!"),
+                message=_("%(player)s ha accettato la tua proposta di match%(location)s",
+                          player=accepter_name,
+                          location=f" a {location_text}" if location_text else ""),
+                priority=NotificationPriority.HIGH,
+                action_url=f"/match/matches/{individual_match.id}",
+                action_text=_("Vai al match"),
+            )
+        except Exception:
+            pass  # Notification failure shouldn't block acceptance
+
         return individual_match
 
     @staticmethod

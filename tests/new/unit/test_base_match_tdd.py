@@ -80,7 +80,7 @@ class TestBaseMatchValidation:
     def test_confirm_result_completes_match_when_both_confirm(
         self, db_session, sample_match
     ):
-        """Match should complete when both players confirm."""
+        """Match should be validated when both players confirm."""
         # Given: A match ready for validation
         sample_match.player1_score = 5
         sample_match.player2_score = 3
@@ -90,9 +90,9 @@ class TestBaseMatchValidation:
         sample_match.confirm_result(sample_match.player1_id)
         completed = sample_match.confirm_result(sample_match.player2_id)
 
-        # Then: Match should be completed
+        # Then: Match should be validated (bilateral confirmation complete)
         assert completed is True
-        assert sample_match.status == MatchStatus.COMPLETED.value
+        assert sample_match.status == MatchStatus.VALIDATED.value
         assert sample_match.winner_id == sample_match.player1_id
 
     def test_confirm_result_raises_for_invalid_user(self, db_session, sample_match):

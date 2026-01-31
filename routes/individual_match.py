@@ -379,6 +379,12 @@ def start_match(match_id):
     try:
         IndividualMatchService.start_match(match_id, current_user.id)
 
+        # Emit SSE event for real-time sync
+        from routes.sse import emit_individual_match_event
+        emit_individual_match_event(match_id, "match_started", {
+            "started_by": current_user.id
+        })
+
         if request.is_json:
             return jsonify({"success": True, "message": "Match started successfully"})
         else:
@@ -407,8 +413,22 @@ def add_rack(match_id):
             winner_id=int(data["winner_id"]),
         )
 
+        # Emit SSE event for real-time sync
+        from routes.sse import emit_individual_match_event
+        from models.base import db
+        match = IndividualMatch.query.get(match_id)
+        db.session.refresh(match)  # Force fresh state after @transactional commit
+        emit_individual_match_event(match_id, "rack_updated", {
+            "action": "added",
+            "rack_number": rack.rack_number,
+            "winner_id": int(data["winner_id"]),
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "is_ready_for_validation": match.is_ready_for_validation(),
+            "added_by": current_user.id,
+        })
+
         if request.is_json:
-            match = IndividualMatch.query.get(match_id)
             return jsonify(
                 {
                     "success": True,
@@ -444,8 +464,21 @@ def remove_rack(match_id):
             player_id=int(data["player_id"]),
         )
 
+        # Emit SSE event for real-time sync
+        from routes.sse import emit_individual_match_event
+        from models.base import db
+        match = IndividualMatch.query.get(match_id)
+        db.session.refresh(match)  # Force fresh state after @transactional commit
+        emit_individual_match_event(match_id, "rack_updated", {
+            "action": "removed",
+            "player_id": int(data["player_id"]),
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "is_ready_for_validation": match.is_ready_for_validation(),
+            "removed_by": current_user.id,
+        })
+
         if request.is_json:
-            match = IndividualMatch.query.get(match_id)
             return jsonify(
                 {
                     "success": True,
@@ -475,6 +508,17 @@ def confirm_result(match_id):
         match = IndividualMatchService.confirm_match_result(
             match_id=match_id, user_id=current_user.id
         )
+
+        # Emit SSE event for real-time sync
+        from routes.sse import emit_individual_match_event
+        event_type = "match_completed" if match.status.value == "completed" else "result_confirmed"
+        emit_individual_match_event(match_id, event_type, {
+            "confirmed_by": current_user.id,
+            "player1_confirmed": match.player1_confirmed,
+            "player2_confirmed": match.player2_confirmed,
+            "completed": match.status.value == "completed",
+            "winner_id": match.winner_id,
+        })
 
         if request.is_json:
             return jsonify(
@@ -514,6 +558,16 @@ def reject_result(match_id):
         match = IndividualMatchService.reject_match_result(
             match_id=match_id, user_id=current_user.id
         )
+
+        # Emit SSE event for real-time sync
+        from routes.sse import emit_individual_match_event
+        emit_individual_match_event(match_id, "rack_updated", {
+            "action": "rejected",
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "is_ready_for_validation": match.is_ready_for_validation(),
+            "rejected_by": current_user.id,
+        })
 
         if request.is_json:
             return jsonify(

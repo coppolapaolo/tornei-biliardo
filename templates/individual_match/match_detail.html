@@ -141,12 +141,28 @@
                     <h5><i class="fas fa-flag-checkered"></i> Conferma Risultato</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-center mb-3">
-                        Il match ha raggiunto la distanza. Entrambi i giocatori devono confermare il risultato finale.
-                    </p>
+                    {# Determine if current user is auto-confirmed (added the winning rack) #}
+                    {% set current_user_confirmed = (current_user.id == match.player1_id and match.player1_confirmed) or (current_user.id == match.player2_id and match.player2_confirmed) %}
+                    {% set opponent_confirmed = (current_user.id == match.player1_id and match.player2_confirmed) or (current_user.id == match.player2_id and match.player1_confirmed) %}
+                    {% set opponent_name = match.player2.username if current_user.id == match.player1_id else match.player1.username %}
 
-                    {% if current_user.id == match.player1_id %}
-                    {% if not match.player1_confirmed %}
+                    {% if current_user_confirmed and opponent_confirmed %}
+                    {# Both confirmed - match should complete (shouldn't reach here) #}
+                    <div class="alert alert-success text-center">
+                        <i class="fas fa-check-circle"></i> Entrambi i giocatori hanno confermato!
+                    </div>
+                    {% elif current_user_confirmed %}
+                    {# Current user confirmed (likely auto-confirmed by adding rack), waiting for opponent #}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-check-circle me-2"></i> Hai confermato aggiungendo l'ultimo rack.
+                        <br><i class="fas fa-hourglass-half me-1"></i> In attesa di {{ opponent_name }}...
+                    </div>
+                    {% elif opponent_confirmed %}
+                    {# Opponent already confirmed, current user needs to confirm or reject #}
+                    <p class="text-center mb-3">
+                        <i class="fas fa-check-circle text-success me-1"></i> {{ opponent_name }} ha confermato il risultato.
+                        <br>Conferma o rifiuta per finalizzare il match.
+                    </p>
                     <div class="row">
                         <div class="col-md-6">
                             <button class="btn btn-success btn-lg w-100" onclick="confirmResult()">
@@ -160,13 +176,10 @@
                         </div>
                     </div>
                     {% else %}
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-hourglass-half"></i> Hai confermato. In attesa di {{ match.player2.username
-                        }}...
-                    </div>
-                    {% endif %}
-                    {% elif current_user.id == match.player2_id %}
-                    {% if not match.player2_confirmed %}
+                    {# Neither confirmed - show confirmation buttons (fallback case) #}
+                    <p class="text-center mb-3">
+                        Il match ha raggiunto la distanza. Conferma il risultato finale.
+                    </p>
                     <div class="row">
                         <div class="col-md-6">
                             <button class="btn btn-success btn-lg w-100" onclick="confirmResult()">
@@ -179,12 +192,6 @@
                             </button>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-hourglass-half"></i> Hai confermato. In attesa di {{ match.player1.username
-                        }}...
-                    </div>
-                    {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -426,6 +433,45 @@
 {% block scripts %}
 <script>
     const matchId = {{ match.id }};
+    const currentUserId = {{ current_user.id }};
+
+    // SSE for real-time match updates
+    {% if match.status.value == 'in_progress' or match.status.value == 'scheduled' %}
+    const matchEvtSource = new EventSource('/sse/individual_match/' + matchId);
+
+    matchEvtSource.addEventListener('match_started', function(e) {
+        const data = JSON.parse(e.data);
+        // Only reload if the event was triggered by the other player
+        if (data.started_by !== currentUserId) {
+            location.reload();
+        }
+    });
+
+    matchEvtSource.addEventListener('rack_updated', function(e) {
+        const data = JSON.parse(e.data);
+        // Only reload if the event was triggered by the other player
+        if (data.added_by !== currentUserId && data.removed_by !== currentUserId && data.rejected_by !== currentUserId) {
+            location.reload();
+        }
+    });
+
+    matchEvtSource.addEventListener('result_confirmed', function(e) {
+        const data = JSON.parse(e.data);
+        if (data.confirmed_by !== currentUserId) {
+            location.reload();
+        }
+    });
+
+    matchEvtSource.addEventListener('match_completed', function(e) {
+        // Always reload when match is completed
+        location.reload();
+    });
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+        matchEvtSource.close();
+    });
+    {% endif %}
 
     function addRack(winnerId) {
         fetch(`/match/matches/${matchId}/racks/add`, {

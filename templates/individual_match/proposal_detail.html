@@ -18,6 +18,19 @@
 
     <div class="row justify-content-center">
         <div class="col-md-8">
+            {# Proposal type explanation alert #}
+            {% if proposal.proposal_type.value == 'direct' %}
+            <div class="alert alert-primary mb-3">
+                <i class="fas fa-user-friends me-2"></i>
+                <strong>Proposta Diretta</strong> - Rivolta specificamente a te
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-3">
+                <i class="fas fa-globe me-2"></i>
+                <strong>Proposta Aperta</strong> - Visibile a tutta la community
+            </div>
+            {% endif %}
+
             <div class="card border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>

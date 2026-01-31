@@ -27,7 +27,7 @@ sse_bp = Blueprint("sse", __name__, url_prefix="/sse")
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Scope types supported
-ScopeType = Literal["trio", "gara", "user"]
+ScopeType = Literal["trio", "gara", "user", "individual_match"]
 
 # Multi-scope event store
 # Structure: {scope: {scope_id: [(event_type, data, timestamp), ...]}}
@@ -35,6 +35,7 @@ _events: Dict[str, Dict[int, List[Tuple[str, dict, float]]]] = {
     "trio": defaultdict(list),
     "gara": defaultdict(list),
     "user": defaultdict(list),
+    "individual_match": defaultdict(list),
 }
 _events_lock = Lock()
 
@@ -112,6 +113,19 @@ def emit_user_event(user_id: int, event_type: str, data: dict) -> None:
         data: Event data to send to clients
     """
     emit_event("user", user_id, event_type, data)
+
+
+def emit_individual_match_event(match_id: int, event_type: str, data: dict) -> None:
+    """Emit an event for an individual match.
+
+    Called when match state changes (start, rack add/remove, confirm).
+
+    Args:
+        match_id: ID of the individual match
+        event_type: Type of event (match_started, rack_updated, result_confirmed)
+        data: Event data to send to clients
+    """
+    emit_event("individual_match", match_id, event_type, data)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -227,3 +241,18 @@ def user_stream(user_id: int):
         abort(403)
 
     return _create_sse_response("user", user_id)
+
+
+@sse_bp.route("/individual_match/<int:match_id>")
+@login_required
+def individual_match_stream(match_id: int):
+    """SSE stream for individual match updates.
+
+    Events:
+        - connected: Initial connection confirmation
+        - match_started: Match was started
+        - rack_updated: Rack added or removed
+        - result_confirmed: Player confirmed result
+        - match_completed: Both players confirmed, match finished
+    """
+    return _create_sse_response("individual_match", match_id)

@@ -59,10 +59,24 @@ class IndividualRackService:
         else:
             match.player2_score += 1
 
-        match.player1_confirmed = False
-        match.player2_confirmed = False
-        match.player1_confirmed_at = None
-        match.player2_confirmed_at = None
+        # Auto-confirm for the player who added the winning rack
+        # Only the opponent needs to explicitly confirm
+        if match.is_ready_for_validation():
+            if user_id == match.player1_id:
+                match.player1_confirmed = True
+                match.player1_confirmed_at = datetime.utcnow()
+                match.player2_confirmed = False
+                match.player2_confirmed_at = None
+            else:
+                match.player2_confirmed = True
+                match.player2_confirmed_at = datetime.utcnow()
+                match.player1_confirmed = False
+                match.player1_confirmed_at = None
+        else:
+            match.player1_confirmed = False
+            match.player2_confirmed = False
+            match.player1_confirmed_at = None
+            match.player2_confirmed_at = None
 
         return rack
 
