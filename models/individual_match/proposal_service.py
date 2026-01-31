@@ -266,42 +266,84 @@ class ProposalService:
 
     @staticmethod
     def get_user_proposals(
-        user_id: int, include_expired: bool = False
+        user_id: int, include_expired: bool = True
     ) -> Dict[str, List[MatchProposal]]:
-        """Get proposals organized by user relationship."""
+        """Get proposals organized by user relationship.
 
+        Args:
+            user_id: The user to get proposals for
+            include_expired: Whether to include expired proposals in sent/received
+                           (default True to show full history)
+
+        Returns:
+            Dict with keys matching template expectations:
+            - sent_proposals: Proposals created by this user
+            - received_proposals: Direct invitations to this user
+            - open_proposals: Open proposals from others (only PENDING, not expired)
+        """
         ProposalService._expire_pending_proposals()
 
-        query = MatchProposal.query
+        # For sent and received: show all proposals (including expired) for history
+        # User wants to see their full proposal history
+        if include_expired:
+            sent_proposals = (
+                MatchProposal.query.filter_by(proposer_id=user_id)
+                .order_by(MatchProposal.created_at.desc())
+                .all()
+            )
 
-        if not include_expired:
-            query = query.filter(
-                db.or_(
-                    db.and_(
-                        MatchProposal.status == ProposalStatus.PENDING,
-                        MatchProposal.expires_at > datetime.utcnow(),
-                    ),
-                    MatchProposal.status == ProposalStatus.ACCEPTED,
-                    MatchProposal.status == ProposalStatus.CANCELLED,
+            received_proposals = (
+                MatchProposal.query.join(
+                    ProposalInvitation,
+                    MatchProposal.id == ProposalInvitation.proposal_id,
                 )
+                .filter(ProposalInvitation.invited_user_id == user_id)
+                .order_by(MatchProposal.created_at.desc())
+                .all()
+            )
+        else:
+            # Filter to only active proposals
+            active_filter = db.or_(
+                db.and_(
+                    MatchProposal.status == ProposalStatus.PENDING,
+                    MatchProposal.expires_at > datetime.utcnow(),
+                ),
+                MatchProposal.status == ProposalStatus.ACCEPTED,
+                MatchProposal.status == ProposalStatus.CANCELLED,
             )
 
-        created = query.filter_by(proposer_id=user_id).all()
-
-        received_invitations = (
-            query.join(
-                ProposalInvitation, MatchProposal.id == ProposalInvitation.proposal_id
+            sent_proposals = (
+                MatchProposal.query.filter_by(proposer_id=user_id)
+                .filter(active_filter)
+                .order_by(MatchProposal.created_at.desc())
+                .all()
             )
-            .filter(ProposalInvitation.invited_user_id == user_id)
+
+            received_proposals = (
+                MatchProposal.query.join(
+                    ProposalInvitation,
+                    MatchProposal.id == ProposalInvitation.proposal_id,
+                )
+                .filter(ProposalInvitation.invited_user_id == user_id)
+                .filter(active_filter)
+                .order_by(MatchProposal.created_at.desc())
+                .all()
+            )
+
+        # For open proposals: always show only PENDING and not expired
+        # (users can't accept expired proposals)
+        open_proposals = (
+            MatchProposal.query.filter(
+                MatchProposal.proposal_type == ProposalType.OPEN,
+                MatchProposal.proposer_id != user_id,
+                MatchProposal.status == ProposalStatus.PENDING,
+                MatchProposal.expires_at > datetime.utcnow(),
+            )
+            .order_by(MatchProposal.created_at.desc())
             .all()
         )
 
-        available_open = query.filter(
-            MatchProposal.proposal_type == ProposalType.OPEN,
-            MatchProposal.proposer_id != user_id,
-            MatchProposal.status == ProposalStatus.PENDING,
-        ).all()
-
+        # Filter open proposals by user's eligible locations
         user_locations = {
             av.location
             for av in PlayerAvailability.query.filter_by(
@@ -322,14 +364,14 @@ class ProposalService:
         eligible_locations = user_locations.union(played_locations)
 
         if eligible_locations:
-            available_open = [
-                p for p in available_open if p.location in eligible_locations
+            open_proposals = [
+                p for p in open_proposals if p.location in eligible_locations
             ]
 
         return {
-            "created": created,
-            "received": received_invitations,
-            "available": available_open,
+            "sent_proposals": sent_proposals,
+            "received_proposals": received_proposals,
+            "open_proposals": open_proposals,
         }
 
     @staticmethod
