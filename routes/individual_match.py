@@ -27,7 +27,7 @@ from models.individual_match.services import (
     IndividualMatchService,
     MatchProposalService,
 )
-from models.individual_match.models import MatchProposal
+from models.individual_match.models import MatchProposal, ProposalType
 from models.user.permissions import RoleRequirement
 
 
@@ -104,14 +104,21 @@ def search_players():
         return jsonify([])
 
     from models.user.models import User
+    from models.gamification.models import UserLevel
 
-    # Search by username, exclude current user and deleted users
-    # Note: is_deleted is a property, deleted_at is the actual column
+    # Minimum level required for individual matches (match_proposals feature)
+    MIN_LEVEL_FOR_MATCH_PROPOSALS = 5
+
+    # Search by username, exclude current user, soft-deleted users,
+    # and users who haven't unlocked the match_proposals feature (level < 5)
     users = (
-        User.query.filter(
+        User.query.join(
+            UserLevel, User.id == UserLevel.user_id
+        ).filter(
             User.username.ilike(f"%{query}%"),
             User.id != current_user.id,
             User.deleted_at.is_(None),  # Not soft-deleted
+            UserLevel.current_level >= MIN_LEVEL_FOR_MATCH_PROPOSALS,
         )
         .order_by(User.username)
         .limit(limit)
@@ -186,8 +193,14 @@ def create_proposal():
             data["scheduled_at"].replace("Z", "+00:00")
         )
 
-        # Calculate expiration (default 24 hours before match)
-        expires_at = scheduled_at - timedelta(hours=int(data.get("expires_hours", 24)))
+        # Calculate expiration (default 1 hour before match)
+        expires_at = scheduled_at - timedelta(hours=int(data.get("expires_hours", 1)))
+
+        # Convert proposal_type string to enum
+        proposal_type_str = data.get("proposal_type", "open")
+        proposal_type = (
+            ProposalType.DIRECT if proposal_type_str == "direct" else ProposalType.OPEN
+        )
 
         # Look up BilliardHall FK from location string
         location = data["location"].strip() if data.get("location") else ""
@@ -201,7 +214,7 @@ def create_proposal():
 
         proposal_data = {
             "proposer_id": current_user.id,
-            "proposal_type": data["proposal_type"],
+            "proposal_type": proposal_type,
             "location": location,
             "billiard_hall_id": billiard_hall_id,  # FK to BilliardHall (if found)
             "scheduled_at": scheduled_at,
