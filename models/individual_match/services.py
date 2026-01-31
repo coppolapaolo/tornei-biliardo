@@ -410,23 +410,23 @@ class IndividualMatchService:
     # ========== Rack Methods (delegate to IndividualRackService) ==========
 
     @staticmethod
-    @transactional(domain="individual_match")
     def add_rack_for_player(
         match_id: int,
         user_id: int,
         winner_id: int,
     ) -> IndividualRack:
         """Add a rack won by specified player (new simplified UX)."""
+        # No @transactional here - IndividualRackService.add_rack_for_player has it
         return IndividualRackService.add_rack_for_player(match_id, user_id, winner_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def remove_rack_for_player(
         match_id: int,
         user_id: int,
         player_id: int,
     ) -> None:
         """Remove last rack won by specified player (new simplified UX)."""
+        # No @transactional here - IndividualRackService.remove_rack_for_player has it
         return IndividualRackService.remove_rack_for_player(match_id, user_id, player_id)
 
     @staticmethod

@@ -37,9 +37,11 @@ class IndividualRackService:
         if winner_id not in (match.player1_id, match.player2_id):
             raise ValueError("Invalid winner ID")
 
+        # Include ALL racks (even deleted) for max calculation
+        # because UNIQUE constraint is on (match_id, rack_number)
         max_rack = (
             db.session.query(func.max(IndividualRack.rack_number))
-            .filter_by(match_id=match_id, is_deleted=False)
+            .filter_by(match_id=match_id)
             .scalar()
         )
         rack_number = (max_rack or 0) + 1

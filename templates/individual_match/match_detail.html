@@ -399,32 +399,6 @@
                 </div>
             </div>
             {% endif %}
-
-            <!-- Match Rules -->
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-book"></i> Nuovo Sistema UX</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled small text-muted">
-                        <li><i class="fas fa-check text-success"></i> Usa i pulsanti +/- per aggiungere/rimuovere rack
-                        </li>
-                        <li><i class="fas fa-check text-success"></i> Nessuna conferma necessaria per ogni rack</li>
-                        <li><i class="fas fa-check text-success"></i> Validazione finale quando si raggiunge la distanza
-                        </li>
-                        <li><i class="fas fa-check text-success"></i> Se rifiuti, l'ultimo rack viene rimosso
-                            automaticamente</li>
-                        <li><i class="fas fa-check text-success"></i> Il log tiene traccia di tutte le operazioni</li>
-                        {% if match.is_race_to %}
-                        <li><i class="fas fa-info text-info"></i> Formato "Al N": si vince raggiungendo {{
-                            match.distance }} rack</li>
-                        {% else %}
-                        <li><i class="fas fa-info text-info"></i> Formato "esattamente": si giocano tutti i {{
-                            match.distance }} rack</li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
 </div>
