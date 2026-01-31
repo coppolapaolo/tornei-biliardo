@@ -523,19 +523,11 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
         else:
             self.player2_score += 1
 
-        # Check if match is completed
-        # Use Distance object logic for unified behavior
-        dist = self.distance_config
-        target_racks = dist.get_winning_racks()
-
-        if self.player1_score >= target_racks:
-            self.complete_match(self.player1_id)
-        elif self.player2_score >= target_racks:
-            self.complete_match(self.player2_id)
-        elif not dist.is_race_to_racks and (self.player1_score + self.player2_score >= dist.racks):
-            # Exactly N mode completed (use majority as winner for now if not already decided)
-            winner = self.player1_id if self.player1_score > self.player2_score else self.player2_id
-            self.complete_match(winner)
+        # Match no longer auto-completes when distance is reached.
+        # Instead, is_ready_for_validation() returns True and players must
+        # confirm the result via confirm_result(). When both confirm,
+        # the match transitions to VALIDATED status.
+        # This enables bilateral confirmation for casual matches.
 
         return rack
 

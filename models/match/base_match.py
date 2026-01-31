@@ -200,14 +200,15 @@ class BaseMatchMixin:
         else:
             self.winner_id = self.player1_id if winner_number == 1 else self.player2_id
 
-        # Update status - use correct enum based on type
+        # Update status to VALIDATED (bilateral confirmation complete)
+        # Use correct enum based on type
         is_tournament_match = isinstance(self.status, str)
         if is_tournament_match:
             # Match (tournament) - use string value
-            self.status = TournamentMatchStatus.COMPLETED.value
+            self.status = TournamentMatchStatus.VALIDATED.value
         else:
-            # IndividualMatch - use enum directly
-            self.status = IndividualMatchStatus.COMPLETED
+            # IndividualMatch - set to VALIDATED for bilateral confirmation
+            self.status = IndividualMatchStatus.VALIDATED
 
         if hasattr(self, "completed_at"):
             self.completed_at = datetime.utcnow()
