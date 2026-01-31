@@ -155,10 +155,11 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_enums():
         """Inject enums into all Jinja2 templates"""
-        from models.status_enum import GaraStatus
+        from models.status_enum import GaraStatus, MatchStatus
 
         return {
             "GaraStatus": GaraStatus,
+            "MatchStatus": MatchStatus,
         }
 
     # Filtri Jinja per status

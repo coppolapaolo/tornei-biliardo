@@ -30,7 +30,7 @@
                         </div>
                         <div>
                             <span
-                                class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' }} fs-6">
+                                class="badge bg-{{ 'success' if match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] else 'primary' if match.status.value == MatchStatus.IN_PROGRESS.value else 'warning' }} fs-6">
                                 {{ match.status.value.replace('_', ' ').title() }}
                             </span>
                         </div>
@@ -41,7 +41,7 @@
                         <div class="col-5">
                             <h3>{{ match.player1.username }}</h3>
                             <h1
-                                class="display-4 {% if match.winner_id == match.player1_id %}text-success{% elif match.status.value == 'completed' %}text-danger{% else %}text-primary{% endif %}">
+                                class="display-4 {% if match.winner_id == match.player1_id %}text-success{% elif match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] %}text-danger{% else %}text-primary{% endif %}">
                                 {{ match.player1_score or 0 }}
                             </h1>
                             {% if match.player1_confirmed and match.is_ready_for_validation() %}
@@ -56,7 +56,7 @@
                         <div class="col-5">
                             <h3>{{ match.player2.username }}</h3>
                             <h1
-                                class="display-4 {% if match.winner_id == match.player2_id %}text-success{% elif match.status.value == 'completed' %}text-danger{% else %}text-primary{% endif %}">
+                                class="display-4 {% if match.winner_id == match.player2_id %}text-success{% elif match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] %}text-danger{% else %}text-primary{% endif %}">
                                 {{ match.player2_score or 0 }}
                             </h1>
                             {% if match.player2_confirmed and match.is_ready_for_validation() %}
@@ -65,7 +65,7 @@
                         </div>
                     </div>
 
-                    {% if match.status.value == 'scheduled' %}
+                    {% if match.status.value == MatchStatus.SCHEDULED.value %}
                     <div class="text-center mt-3">
                         <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
                             <button type="submit" class="btn btn-success btn-lg">
@@ -75,7 +75,7 @@
                     </div>
                     {% endif %}
 
-                    {% if match.status.value == 'completed' and match.winner_id %}
+                    {% if match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] and match.winner_id %}
                     <div class="alert alert-success text-center mt-3">
                         <i class="fas fa-trophy"></i>
                         <strong>
@@ -88,7 +88,7 @@
             </div>
 
             <!-- Score Control (only if match is in progress) -->
-            {% if match.status.value == 'in_progress' %}
+            {% if match.status.value == MatchStatus.IN_PROGRESS.value %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5><i class="fas fa-calculator"></i> Gestione Punteggio</h5>
@@ -135,7 +135,7 @@
             </div>
 
             <!-- Validation Section (only if ready for validation) -->
-            {% if match.is_ready_for_validation() and match.status.value == 'in_progress' %}
+            {% if match.is_ready_for_validation() and match.status.value == MatchStatus.IN_PROGRESS.value %}
             <div class="card border-success mb-4">
                 <div class="card-header bg-success text-white">
                     <h5><i class="fas fa-flag-checkered"></i> Conferma Risultato</h5>
@@ -351,7 +351,7 @@
                             <i class="fas fa-arrow-left"></i> Torna alla Lista
                         </a>
 
-                        {% if match.status.value == 'scheduled' %}
+                        {% if match.status.value == MatchStatus.SCHEDULED.value %}
                         <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}"
                             class="d-inline">
                             <button type="button" class="btn btn-outline-danger w-100"
@@ -361,7 +361,7 @@
                         </form>
                         {% endif %}
 
-                        {% if match.status.value in ['completed', 'validated'] %}
+                        {% if match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] %}
                         <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-warning">
                             <i class="fas fa-redo"></i> {{ _("Gioca ancora") }}
                         </a>
@@ -410,7 +410,7 @@
     const currentUserId = {{ current_user.id }};
 
     // SSE for real-time match updates
-    {% if match.status.value == 'in_progress' or match.status.value == 'scheduled' %}
+    {% if match.status.value in [MatchStatus.IN_PROGRESS.value, MatchStatus.SCHEDULED.value] %}
     const matchEvtSource = new EventSource('/sse/individual_match/' + matchId);
 
     matchEvtSource.addEventListener('match_started', function(e) {
