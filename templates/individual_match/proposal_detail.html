@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Dettagli Proposta - Campionato Biliardo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.dashboard') }}">Match Individuali</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('individual_match.proposal_list') }}">Proposte</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dettaglio</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if proposal.proposer_id == current_user.id %}
+                            <i class="fas fa-paper-plane"></i> La tua proposta
+                        {% else %}
+                            <i class="fas fa-envelope"></i> Proposta di <strong>{{ proposal.proposer.username }}</strong>
+                        {% endif %}
+                        <span class="badge bg-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'secondary' if proposal.status.value == 'expired' else 'danger' }} ms-2">
+                            {% if proposal.status.value == 'pending' %}
+                                In attesa
+                            {% elif proposal.status.value == 'accepted' %}
+                                Accettata
+                            {% elif proposal.status.value == 'expired' %}
+                                Scaduta
+                            {% elif proposal.status.value == 'cancelled' %}
+                                Annullata
+                            {% endif %}
+                        </span>
+                        <span class="badge bg-{{ 'primary' if proposal.proposal_type.value == 'direct' else 'info' }} ms-1">
+                            {{ 'Diretta' if proposal.proposal_type.value == 'direct' else 'Aperta' }}
+                        </span>
+                    </div>
+                    <small class="text-muted">Creata {{ proposal.created_at|datetime_local }}</small>
+                </div>
+                <div class="card-body">
+                    <!-- Match Details -->
+                    <h4 class="card-title mb-4">
+                        <i class="fas fa-trophy text-warning"></i>
+                        {{ proposal.discipline.replace('_', ' ').title() if proposal.discipline else 'Disciplina non specificata' }}
+                    </h4>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Dettagli Match</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    <strong>Luogo:</strong> {{ proposal.location_display }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    <strong>Data/Ora:</strong> {{ proposal.scheduled_at|datetime_local }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-bullseye text-success me-2"></i>
+                                    <strong>Distanza:</strong> {{ 'Al' if proposal.is_race_to else 'Esattamente' }} {{ proposal.distance }}
+                                    {% if proposal.is_multi_set %}
+                                        set ({{ proposal.match_distance }} set per match)
+                                    {% else %}
+                                        rack
+                                    {% endif %}
+                                </li>
+                                {% if proposal.entry_fee and proposal.entry_fee > 0 %}
+                                <li class="mb-2">
+                                    <i class="fas fa-euro-sign text-warning me-2"></i>
+                                    <strong>Entry fee:</strong> €{{ "%.2f"|format(proposal.entry_fee) }}
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Informazioni</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-user text-info me-2"></i>
+                                    <strong>Proposta da:</strong> {{ proposal.proposer.username }}
+                                </li>
+                                {% if proposal.accepted_by %}
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Accettata da:</strong> {{ proposal.accepted_by.username }}
+                                    {% if proposal.accepted_at %}
+                                    <br><small class="text-muted ms-4">{{ proposal.accepted_at|datetime_local }}</small>
+                                    {% endif %}
+                                </li>
+                                {% endif %}
+                                <li class="mb-2">
+                                    <i class="fas fa-clock text-warning me-2"></i>
+                                    <strong>Scade:</strong> {{ proposal.expires_at|datetime_local }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if proposal.description %}
+                    <div class="mb-4">
+                        <h6 class="text-muted">Note</h6>
+                        <p class="fst-italic">{{ proposal.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Invitations (for direct proposals) -->
+                    {% if proposal.proposal_type.value == 'direct' and proposal.invitations %}
+                    <div class="mb-4">
+                        <h6 class="text-muted">Giocatori Invitati</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for invitation in proposal.invitations %}
+                            <span class="badge bg-{{ 'success' if invitation.status.value == 'accepted' else 'danger' if invitation.status.value == 'declined' else 'secondary' }} fs-6">
+                                <i class="fas fa-{{ 'check' if invitation.status.value == 'accepted' else 'times' if invitation.status.value == 'declined' else 'clock' }} me-1"></i>
+                                {{ invitation.invited_user.username }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Resulting match link -->
+                    {% if proposal.individual_match %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-gamepad me-2"></i>
+                        <strong>Match creato!</strong>
+                        <a href="{{ url_for('individual_match.match_detail', match_id=proposal.individual_match.id) }}" class="alert-link">
+                            Vai al match
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Torna alle proposte
+                        </a>
+
+                        <div class="d-flex gap-2">
+                            {% if proposal.status.value == 'pending' %}
+                                {% if proposal.proposer_id == current_user.id %}
+                                    <!-- Proposer can cancel -->
+                                    <form method="POST" action="{{ url_for('individual_match.cancel_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                        <button type="button" class="btn btn-outline-danger"
+                                            onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare questa proposta?')">
+                                            <i class="fas fa-times"></i> Annulla proposta
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <!-- Invitee can accept or decline -->
+                                    <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check"></i> Accetta
+                                        </button>
+                                    </form>
+                                    <button class="btn btn-outline-danger" onclick="declineProposal({{ proposal.id }})">
+                                        <i class="fas fa-times"></i> Rifiuta
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function declineProposal(proposalId) {
+    showConfirm('Sei sicuro di voler rifiutare questa proposta?', () => {
+        // In a real implementation, this would make an AJAX call to decline
+        showInfo('Funzionalità di rifiuto da implementare nel backend');
+    });
+}
+</script>
+{% endblock %}
