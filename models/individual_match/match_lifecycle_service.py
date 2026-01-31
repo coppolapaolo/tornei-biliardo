@@ -6,10 +6,12 @@ Sprint 13: IndividualMatchService decomposition
 
 from __future__ import annotations
 
-from typing import Optional
+from datetime import datetime, timedelta
+from typing import Optional, List
 
 from ..base import db
 from ..transaction.manager import transactional
+from ..status_enum import MatchStatus
 from .models import IndividualMatch, MatchProposal
 
 
@@ -135,3 +137,65 @@ class MatchLifecycleService:
             winner_id=winner_id,
             user_id=reporter_id,
         )
+
+    @staticmethod
+    def send_match_reminders(
+        hours_before: int = 2, window_minutes: int = 15
+    ) -> List[int]:
+        """Send reminder notifications for upcoming matches.
+
+        Finds matches scheduled within a time window and sends reminders
+        to both players. Designed to be called periodically (e.g., every 15 min).
+
+        Args:
+            hours_before: Hours before match to send reminder (default 2)
+            window_minutes: Time window in minutes to check (default 15)
+
+        Returns:
+            List of match IDs that received reminders
+        """
+        from flask_babel import _
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationType, NotificationPriority
+
+        now = datetime.utcnow()
+        window_start = now + timedelta(hours=hours_before)
+        window_end = window_start + timedelta(minutes=window_minutes)
+
+        # Find matches in the reminder window with status SCHEDULED
+        upcoming_matches = IndividualMatch.query.filter(
+            IndividualMatch.scheduled_at.between(window_start, window_end),
+            IndividualMatch.status == MatchStatus.SCHEDULED.value,
+        ).all()
+
+        reminded_match_ids: List[int] = []
+
+        for match in upcoming_matches:
+            # Get both player IDs
+            player_ids = [match.player1_id, match.player2_id]
+
+            # Format time for message
+            time_str = match.scheduled_at.strftime("%H:%M")
+            location_text = match.location or ""
+
+            try:
+                NotificationFactory.create_bulk_notification(
+                    user_ids=player_ids,
+                    notification_type=NotificationType.MATCH_REMINDER,
+                    title=_("Match tra 2 ore"),
+                    message=_(
+                        "Il tuo match è programmato per le %(time)s%(location)s",
+                        time=time_str,
+                        location=f" presso {location_text}" if location_text else "",
+                    ),
+                    priority=NotificationPriority.HIGH,
+                    action_url=f"/match/matches/{match.id}",
+                    action_text=_("Visualizza"),
+                    continue_on_error=True,
+                )
+                reminded_match_ids.append(match.id)
+            except Exception:
+                # Log but don't fail on notification errors
+                pass
+
+        return reminded_match_ids
