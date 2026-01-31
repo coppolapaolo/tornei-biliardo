@@ -228,3 +228,90 @@ class IndividualMatchStatisticsService:
 
         # Return in frequency order
         return [users_by_id[oid] for oid in opponent_ids if oid in users_by_id]
+
+    @staticmethod
+    def get_all_opponents(user_id: int, min_level: int = 5) -> List[User]:
+        """Get all unique opponents this player has played any match against.
+
+        Includes opponents from:
+        - Individual matches (completed/validated)
+        - Tournament/gara matches (completed/validated)
+
+        Returns users ordered alphabetically by username.
+        Filters for users who have reached minimum level for individual matches.
+
+        Args:
+            user_id: The user to find opponents for
+            min_level: Minimum gamification level required (default 5)
+
+        Returns:
+            List of User objects, ordered alphabetically by username
+        """
+        from ..gamification.models import UserLevel
+        from ..match.models import Match
+
+        # Collect opponent IDs from both match types
+        opponent_ids_set: set[int] = set()
+
+        # 1. Individual matches - opponent ID expression
+        individual_opponent_expr = case(
+            (IndividualMatch.player1_id == user_id, IndividualMatch.player2_id),
+            else_=IndividualMatch.player1_id,
+        )
+
+        individual_opponents = (
+            db.session.query(individual_opponent_expr.label("opponent_id"))
+            .filter(
+                db.or_(
+                    IndividualMatch.player1_id == user_id,
+                    IndividualMatch.player2_id == user_id,
+                ),
+                IndividualMatch.status.in_([
+                    MatchStatus.COMPLETED.value,
+                    MatchStatus.VALIDATED.value,
+                ]),
+            )
+            .distinct()
+            .all()
+        )
+        opponent_ids_set.update(oc.opponent_id for oc in individual_opponents if oc.opponent_id)
+
+        # 2. Tournament/gara matches - opponent ID expression
+        tournament_opponent_expr = case(
+            (Match.player1_id == user_id, Match.player2_id),
+            else_=Match.player1_id,
+        )
+
+        tournament_opponents = (
+            db.session.query(tournament_opponent_expr.label("opponent_id"))
+            .filter(
+                db.or_(
+                    Match.player1_id == user_id,
+                    Match.player2_id == user_id,
+                ),
+                Match.status.in_([
+                    MatchStatus.COMPLETED.value,
+                    MatchStatus.VALIDATED.value,
+                ]),
+            )
+            .distinct()
+            .all()
+        )
+        opponent_ids_set.update(oc.opponent_id for oc in tournament_opponents if oc.opponent_id)
+
+        if not opponent_ids_set:
+            return []
+
+        # Fetch users with level filter, ordered alphabetically
+        users = (
+            User.query.join(UserLevel, User.id == UserLevel.user_id)
+            .filter(
+                User.id.in_(list(opponent_ids_set)),
+                User.deleted_at.is_(None),
+                UserLevel.current_level >= min_level,
+            )
+            .order_by(User.username)
+            .all()
+        )
+
+        return users

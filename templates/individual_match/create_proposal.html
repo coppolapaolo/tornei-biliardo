@@ -2,6 +2,11 @@
 
 {% block title %}Crea Proposta di Match - Campionato Biliardo{% endblock %}
 
+{% block head_extra %}
+<!-- TomSelect for autocomplete player selection -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -143,39 +148,19 @@
                                 <!-- Player Invitations (for direct proposals) -->
                                 <div id="playerInvitations" style="display: none;">
                                     <hr>
-                                    <h5>Inviti Diretti</h5>
+                                    <h5>{{ _("Inviti Diretti") }}</h5>
 
-                                    {% if frequent_opponents and not rematch_opponent %}
-                                    <!-- Frequent Opponents Section -->
                                     <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-star text-warning"></i>
-                                            {{ _("Avversari Frequenti") }}
+                                        <label for="playerSelect" class="form-label">
+                                            <i class="fas fa-user-friends me-1"></i>
+                                            {{ _("Giocatori da invitare") }}
                                         </label>
-                                        <div class="d-flex flex-wrap gap-2" id="frequentOpponents">
-                                            {% for opponent in frequent_opponents %}
-                                            <button type="button" class="btn btn-outline-primary btn-sm frequent-opponent-btn"
-                                                data-user-id="{{ opponent.id }}"
-                                                data-username="{{ opponent.username }}"
-                                                onclick='addPlayer({{ opponent.id }}, {{ opponent.username|tojson }})'>
-                                                <i class="fas fa-user me-1"></i>{{ opponent.username }}
-                                            </button>
-                                            {% endfor %}
+                                        <select id="playerSelect" name="invited_user_ids" multiple
+                                            placeholder="{{ _('Seleziona giocatori...') }}">
+                                        </select>
+                                        <div class="form-text">
+                                            {{ _("Digita per cercare tra i giocatori con cui hai già giocato") }}
                                         </div>
-                                        <div class="form-text">{{ _("Clicca per invitare rapidamente") }}</div>
-                                    </div>
-                                    {% endif %}
-
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ _("Giocatori da invitare") }}</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" class="form-control" id="playerSearch"
-                                                placeholder="{{ _('Cerca giocatori per username...') }}" autocomplete="off">
-                                        </div>
-                                        <div class="form-text">{{ _("Inizia a digitare per cercare") }}</div>
-                                        <div id="playerSearchResults" class="mt-2 border rounded" style="max-height: 200px; overflow-y: auto;"></div>
-                                        <div id="selectedPlayers" class="mt-3"></div>
                                     </div>
                                 </div>
 
@@ -248,33 +233,79 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- TomSelect for autocomplete player selection -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 <script>
     // Internationalization strings
     const i18n = {
-        searchHint: {{ _("Inserisci almeno 2 caratteri per cercare")|tojson }},
-        searching: {{ _("Ricerca in corso...")|tojson }},
-        noResults: {{ _("Nessun giocatore trovato")|tojson }},
-        allSelected: {{ _("Tutti i giocatori trovati sono già selezionati")|tojson }},
-        add: {{ _("Aggiungi")|tojson }},
-        searchError: {{ _("Errore durante la ricerca")|tojson }},
-        selectedPlayers: {{ _("Giocatori selezionati")|tojson }},
         selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto")|tojson }},
         confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di match?")|tojson }},
         formatRaceTo: {{ _("Al {distance} (chi arriva prima a {distance} vince)")|tojson }},
-        formatExact: {{ _("Esattamente {distance} rack (vincitore per somma punti)")|tojson }}
+        formatExact: {{ _("Esattamente {distance} rack (vincitore per somma punti)")|tojson }},
+        noOpponents: {{ _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!")|tojson }},
+        loadingOpponents: {{ _("Caricamento giocatori...")|tojson }}
     };
 
-    let selectedPlayerIds = [];
+    let playerSelect = null;
+
+    // Initialize TomSelect for player selection
+    function initPlayerSelect() {
+        const selectEl = document.getElementById('playerSelect');
+        if (!selectEl || playerSelect) return;
+
+        playerSelect = new TomSelect(selectEl, {
+            plugins: ['remove_button'],
+            valueField: 'id',
+            labelField: 'username',
+            searchField: ['username'],
+            maxItems: null,
+            create: false,
+            sortField: { field: 'username', direction: 'asc' },
+            placeholder: {{ _("Seleziona giocatori...")|tojson }},
+            render: {
+                option: function(data, escape) {
+                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+                },
+                item: function(data, escape) {
+                    return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
+                },
+                no_results: function() {
+                    return '<div class="no-results p-3 text-muted">' + i18n.noOpponents + '</div>';
+                }
+            }
+        });
+
+        // Load opponents from API
+        fetch('{{ url_for("individual_match.get_opponents") }}')
+            .then(response => response.json())
+            .then(opponents => {
+                opponents.forEach(opp => {
+                    playerSelect.addOption(opp);
+                });
+                playerSelect.refreshOptions(false);
+
+                // Pre-select rematch opponent if provided
+                {% if rematch_opponent %}
+                playerSelect.addItem({{ rematch_opponent.id }});
+                {% endif %}
+            })
+            .catch(error => {
+                console.error('Error loading opponents:', error);
+            });
+    }
 
     // Show/hide player invitations based on proposal type
     document.getElementById('proposal_type').addEventListener('change', function () {
         const playerInvitations = document.getElementById('playerInvitations');
         if (this.value === 'direct') {
             playerInvitations.style.display = 'block';
+            initPlayerSelect();
         } else {
             playerInvitations.style.display = 'none';
-            selectedPlayerIds = [];
-            updateSelectedPlayers();
+            if (playerSelect) {
+                playerSelect.clear();
+            }
         }
     });
 
@@ -307,226 +338,17 @@
         }
     }
 
-    // Player search functionality
-    let searchTimeout = null;
-    let selectedPlayerUsernames = {};
-
-    // Search on input with debounce
-    document.getElementById('playerSearch').addEventListener('input', function () {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(searchPlayers, 300);
-    });
-
-    // Search on Enter key
-    document.getElementById('playerSearch').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            clearTimeout(searchTimeout);
-            searchPlayers();
-        }
-    });
-
-    function searchPlayers() {
-        const query = document.getElementById('playerSearch').value.trim();
-        const resultsDiv = document.getElementById('playerSearchResults');
-
-        // Clear previous results
-        resultsDiv.replaceChildren();
-
-        if (query.length < 2) {
-            const hint = document.createElement('small');
-            hint.className = 'text-muted';
-            hint.textContent = i18n.searchHint;
-            resultsDiv.appendChild(hint);
-            return;
-        }
-
-        // Show loading
-        const loading = document.createElement('small');
-        loading.className = 'text-muted';
-        const spinner = document.createElement('i');
-        spinner.className = 'fas fa-spinner fa-spin me-1';
-        loading.appendChild(spinner);
-        loading.appendChild(document.createTextNode(i18n.searching));
-        resultsDiv.appendChild(loading);
-
-        fetch(`{{ url_for('individual_match.search_players') }}?q=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(players => {
-                resultsDiv.replaceChildren();
-
-                if (players.length === 0) {
-                    const noResults = document.createElement('small');
-                    noResults.className = 'text-muted';
-                    noResults.textContent = i18n.noResults;
-                    resultsDiv.appendChild(noResults);
-                    return;
-                }
-
-                // Filter out already selected players
-                const availablePlayers = players.filter(p => !selectedPlayerIds.includes(p.id));
-
-                if (availablePlayers.length === 0) {
-                    const allSelected = document.createElement('small');
-                    allSelected.className = 'text-muted';
-                    allSelected.textContent = i18n.allSelected;
-                    resultsDiv.appendChild(allSelected);
-                    return;
-                }
-
-                availablePlayers.forEach(player => {
-                    const row = document.createElement('div');
-                    row.className = 'd-flex align-items-center justify-content-between p-2 border-bottom player-result';
-                    row.style.cursor = 'pointer';
-                    row.addEventListener('click', () => addPlayer(player.id, player.username));
-
-                    const info = document.createElement('div');
-                    const icon = document.createElement('i');
-                    icon.className = 'fas fa-user text-muted me-2';
-                    const name = document.createElement('strong');
-                    name.textContent = player.username;
-                    info.appendChild(icon);
-                    info.appendChild(name);
-
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn btn-sm btn-outline-success';
-                    const btnIcon = document.createElement('i');
-                    btnIcon.className = 'fas fa-plus me-1';
-                    btn.appendChild(btnIcon);
-                    btn.appendChild(document.createTextNode(i18n.add));
-
-                    row.appendChild(info);
-                    row.appendChild(btn);
-                    resultsDiv.appendChild(row);
-                });
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                resultsDiv.replaceChildren();
-                const errorMsg = document.createElement('small');
-                errorMsg.className = 'text-danger';
-                errorMsg.textContent = i18n.searchError;
-                resultsDiv.appendChild(errorMsg);
-            });
-    }
-
-    function addPlayer(playerId, username) {
-        if (selectedPlayerIds.includes(playerId)) {
-            return;
-        }
-
-        selectedPlayerIds.push(playerId);
-        selectedPlayerUsernames[playerId] = username;
-        updateSelectedPlayers();
-        updateFrequentOpponentButtons();
-
-        // Re-run search to update available players
-        searchPlayers();
-    }
-
-    function removePlayer(playerId) {
-        selectedPlayerIds = selectedPlayerIds.filter(id => id !== playerId);
-        delete selectedPlayerUsernames[playerId];
-        updateSelectedPlayers();
-        updateFrequentOpponentButtons();
-
-        // Re-run search to update available players
-        const query = document.getElementById('playerSearch').value.trim();
-        if (query.length >= 2) {
-            searchPlayers();
-        }
-    }
-
-    function updateFrequentOpponentButtons() {
-        // Update visual state of frequent opponent buttons
-        const buttons = document.querySelectorAll('.frequent-opponent-btn');
-        buttons.forEach(btn => {
-            const userId = parseInt(btn.dataset.userId);
-            const username = btn.dataset.username;
-
-            // Clear button content safely
-            btn.replaceChildren();
-
-            const icon = document.createElement('i');
-            icon.className = selectedPlayerIds.includes(userId)
-                ? 'fas fa-check me-1'
-                : 'fas fa-user me-1';
-            btn.appendChild(icon);
-            btn.appendChild(document.createTextNode(username));
-
-            if (selectedPlayerIds.includes(userId)) {
-                btn.classList.remove('btn-outline-primary');
-                btn.classList.add('btn-primary', 'disabled');
-            } else {
-                btn.classList.remove('btn-primary', 'disabled');
-                btn.classList.add('btn-outline-primary');
-            }
-        });
-    }
-
-    function updateSelectedPlayers() {
-        const selectedDiv = document.getElementById('selectedPlayers');
-        selectedDiv.replaceChildren();
-
-        if (selectedPlayerIds.length === 0) {
-            return;
-        }
-
-        const label = document.createElement('label');
-        label.className = 'form-label';
-        label.textContent = `${i18n.selectedPlayers} (${selectedPlayerIds.length}):`;
-        selectedDiv.appendChild(label);
-
-        const container = document.createElement('div');
-        container.className = 'd-flex flex-wrap gap-2';
-
-        selectedPlayerIds.forEach(id => {
-            const badge = document.createElement('span');
-            badge.className = 'badge bg-primary d-flex align-items-center gap-2 py-2 px-3';
-
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-user';
-            badge.appendChild(icon);
-
-            const nameText = document.createTextNode(selectedPlayerUsernames[id]);
-            badge.appendChild(nameText);
-
-            const closeBtn = document.createElement('button');
-            closeBtn.type = 'button';
-            closeBtn.className = 'btn-close btn-close-white ms-1';
-            closeBtn.style.fontSize = '0.6rem';
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                removePlayer(id);
-            });
-            badge.appendChild(closeBtn);
-
-            container.appendChild(badge);
-        });
-
-        selectedDiv.appendChild(container);
-    }
-
     // Form submission
     document.getElementById('proposalForm').addEventListener('submit', function (e) {
         const proposalType = document.getElementById('proposal_type').value;
 
-        if (proposalType === 'direct' && selectedPlayerIds.length === 0) {
-            e.preventDefault();
-            showError(i18n.selectPlayerError);
-            return;
-        }
-
-        // Add selected players to form
         if (proposalType === 'direct') {
-            selectedPlayerIds.forEach((playerId, index) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'invited_user_ids';
-                input.value = playerId;
-                this.appendChild(input);
-            });
+            const selectedValues = playerSelect ? playerSelect.getValue() : [];
+            if (selectedValues.length === 0) {
+                e.preventDefault();
+                showError(i18n.selectPlayerError);
+                return;
+            }
         }
 
         // Show confirmation modal, submit on confirm
@@ -545,15 +367,14 @@
         // Set proposal type to direct and show player invitations
         document.getElementById('proposal_type').value = 'direct';
         document.getElementById('playerInvitations').style.display = 'block';
-
-        // Pre-select the rematch opponent
-        addPlayer({{ rematch_opponent.id }}, {{ rematch_opponent.username|tojson }});
+        initPlayerSelect();
         {% else %}
         // Show player invitations if "Invito Diretto" is selected on page load
         const proposalType = document.getElementById('proposal_type').value;
         const playerInvitations = document.getElementById('playerInvitations');
         if (proposalType === 'direct') {
             playerInvitations.style.display = 'block';
+            initPlayerSelect();
         }
         {% endif %}
     });

@@ -135,6 +135,36 @@ def search_players():
     ])
 
 
+@individual_match_bp.route("/players/opponents")
+@RoleRequirement.player_or_director_required
+def get_opponents():
+    """Get all players the current user has played against.
+
+    Includes opponents from individual matches, gare, and campionati.
+    Filters for players who have unlocked match proposals (level >= 5).
+    Returns players ordered alphabetically by username.
+
+    Returns JSON array for use in TomSelect dropdown.
+    """
+    from models.individual_match.statistics_service import (
+        IndividualMatchStatisticsService,
+    )
+
+    MIN_LEVEL_FOR_MATCH_PROPOSALS = 5
+
+    opponents = IndividualMatchStatisticsService.get_all_opponents(
+        current_user.id, min_level=MIN_LEVEL_FOR_MATCH_PROPOSALS
+    )
+
+    return jsonify([
+        {
+            "id": u.id,
+            "username": u.username,
+        }
+        for u in opponents
+    ])
+
+
 @individual_match_bp.route("/proposals/create", methods=["GET", "POST"])
 @RoleRequirement.player_or_director_required
 def create_proposal():
@@ -143,18 +173,10 @@ def create_proposal():
         from models.location.models import BilliardHall
         from models.user.models import User
         from models.base import db
-        from models.individual_match.statistics_service import (
-            IndividualMatchStatisticsService,
-        )
 
         verified_venues = BilliardHall.query.filter_by(
             is_active=True, verified=True
         ).order_by(BilliardHall.name).all()
-
-        # Get frequent opponents for suggestions
-        frequent_opponents = IndividualMatchStatisticsService.get_frequent_opponents(
-            current_user.id, limit=5
-        )
 
         # Check for rematch parameters
         rematch_opponent = None
@@ -180,7 +202,6 @@ def create_proposal():
         return render_template(
             "individual_match/create_proposal.html",
             verified_venues=verified_venues,
-            frequent_opponents=frequent_opponents,
             rematch_opponent=rematch_opponent,
             rematch_params=rematch_params,
         )
