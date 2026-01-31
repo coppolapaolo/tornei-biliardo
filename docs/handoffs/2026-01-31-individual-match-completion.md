@@ -2,7 +2,7 @@
 
 **Data**: 31 Gennaio 2026
 **Sessione**: Completamento task dal piano del 30 Gennaio
-**Stato**: 6/7 task completati
+**Stato**: ✅ 7/7 task completati
 
 ---
 
@@ -103,29 +103,31 @@ match_detail → click "Giocane un'altra" → redirect con query params → crea
 
 ---
 
-## ⏳ Task Rimanente
+### Task 3: Migrazione FK Location
+**Commit**: `93b0b48`
 
-### Task 3: Migrazione Completa a FK per Location
-**Effort stimato**: 6 ore
-**Priorità**: MEDIA (technical debt)
+Migrazione da location string a FK `billiard_hall_id`.
 
-**Descrizione**: Eliminare il dual support (stringa + FK) per location, migrando tutto a `billiard_hall_id`.
+**Stato migrazione** (verificato con `python migrations/populate_billiard_hall_fk.py verify`):
+- `gara`: 85.7% con FK
+- `match_proposal`: 100% con FK
+- `individual_match`: 0 records (tabella vuota)
 
-**File da modificare**:
-- `models/individual_match/models.py` - Deprecare campo `location` stringa
-- `migrations/YYYYMMDD_migrate_location_to_fk.py` - Script migrazione (fuzzy match)
-- Template che usano `location` direttamente
+**File modificati**:
+- `models/individual_match/statistics_service.py` - Usa `location_display` per stats
+- `templates/individual_match/*.html` - Usano `location_display` invece di `location`
 
-**Steps**:
-1. Creare script che popola `billiard_hall_id` da `location` string (fuzzy match)
-2. Aggiornare query per usare solo FK
-3. Deprecare campo string (non rimuovere subito per backward compat)
+**Note**:
+- La migrazione FK esisteva già (`migrations/populate_billiard_hall_fk.py`)
+- Le property `location_display` esistevano già sui modelli
+- Il campo `location` string è mantenuto per backward compat
 
 ---
 
 ## Commit della Sessione
 
 ```
+93b0b48 refactor: use location_display property instead of location string
 fb6c247 feat: add VALIDATED status with bilateral confirmation for matches
 fde914a feat: add match reminder notifications for upcoming matches
 16f97b2 feat: add frequent opponents suggestion in match proposal
@@ -158,6 +160,6 @@ pyright models/individual_match/ routes/individual_match.py
 
 ## Prossimi Passi Consigliati
 
-1. **Task 3**: Completare migrazione FK location quando c'è tempo
-2. **UI Testing**: Testare manualmente il flusso VALIDATED in browser
-3. **Scheduled Task**: Configurare `send_match_reminders.py` su PythonAnywhere
+1. **UI Testing**: Testare manualmente il flusso VALIDATED in browser
+2. **Scheduled Task**: Configurare `send_match_reminders.py` su PythonAnywhere (ogni 15 min)
+3. **Production Deploy**: Eseguire `python migrations/populate_billiard_hall_fk.py` su PythonAnywhere
