@@ -136,10 +136,18 @@ def create_proposal():
         from models.location.models import BilliardHall
         from models.user.models import User
         from models.base import db
+        from models.individual_match.statistics_service import (
+            IndividualMatchStatisticsService,
+        )
 
         verified_venues = BilliardHall.query.filter_by(
             is_active=True, verified=True
         ).order_by(BilliardHall.name).all()
+
+        # Get frequent opponents for suggestions
+        frequent_opponents = IndividualMatchStatisticsService.get_frequent_opponents(
+            current_user.id, limit=5
+        )
 
         # Check for rematch parameters
         rematch_opponent = None
@@ -165,6 +173,7 @@ def create_proposal():
         return render_template(
             "individual_match/create_proposal.html",
             verified_venues=verified_venues,
+            frequent_opponents=frequent_opponents,
             rematch_opponent=rematch_opponent,
             rematch_params=rematch_params,
         )

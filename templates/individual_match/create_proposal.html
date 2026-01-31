@@ -144,6 +144,28 @@
                                 <div id="playerInvitations" style="display: none;">
                                     <hr>
                                     <h5>Inviti Diretti</h5>
+
+                                    {% if frequent_opponents and not rematch_opponent %}
+                                    <!-- Frequent Opponents Section -->
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-star text-warning"></i>
+                                            {{ _("Avversari Frequenti") }}
+                                        </label>
+                                        <div class="d-flex flex-wrap gap-2" id="frequentOpponents">
+                                            {% for opponent in frequent_opponents %}
+                                            <button type="button" class="btn btn-outline-primary btn-sm frequent-opponent-btn"
+                                                data-user-id="{{ opponent.id }}"
+                                                data-username="{{ opponent.username }}"
+                                                onclick='addPlayer({{ opponent.id }}, {{ opponent.username|tojson }})'>
+                                                <i class="fas fa-user me-1"></i>{{ opponent.username }}
+                                            </button>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-text">{{ _("Clicca per invitare rapidamente") }}</div>
+                                    </div>
+                                    {% endif %}
+
                                     <div class="mb-3">
                                         <label class="form-label">{{ _("Giocatori da invitare") }}</label>
                                         <div class="input-group">
@@ -397,6 +419,7 @@
         selectedPlayerIds.push(playerId);
         selectedPlayerUsernames[playerId] = username;
         updateSelectedPlayers();
+        updateFrequentOpponentButtons();
 
         // Re-run search to update available players
         searchPlayers();
@@ -406,12 +429,40 @@
         selectedPlayerIds = selectedPlayerIds.filter(id => id !== playerId);
         delete selectedPlayerUsernames[playerId];
         updateSelectedPlayers();
+        updateFrequentOpponentButtons();
 
         // Re-run search to update available players
         const query = document.getElementById('playerSearch').value.trim();
         if (query.length >= 2) {
             searchPlayers();
         }
+    }
+
+    function updateFrequentOpponentButtons() {
+        // Update visual state of frequent opponent buttons
+        const buttons = document.querySelectorAll('.frequent-opponent-btn');
+        buttons.forEach(btn => {
+            const userId = parseInt(btn.dataset.userId);
+            const username = btn.dataset.username;
+
+            // Clear button content safely
+            btn.replaceChildren();
+
+            const icon = document.createElement('i');
+            icon.className = selectedPlayerIds.includes(userId)
+                ? 'fas fa-check me-1'
+                : 'fas fa-user me-1';
+            btn.appendChild(icon);
+            btn.appendChild(document.createTextNode(username));
+
+            if (selectedPlayerIds.includes(userId)) {
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-primary', 'disabled');
+            } else {
+                btn.classList.remove('btn-primary', 'disabled');
+                btn.classList.add('btn-outline-primary');
+            }
+        });
     }
 
     function updateSelectedPlayers() {

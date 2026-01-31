@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 
-from sqlalchemy import func
+from sqlalchemy import func, case
 from ..base import db
 from .models import (
     MatchProposal,
@@ -17,6 +17,7 @@ from .models import (
     ProposalStatus,
 )
 from ..status_enum import MatchStatus
+from ..user.models import User
 
 
 class IndividualMatchStatisticsService:
@@ -168,3 +169,59 @@ class IndividualMatchStatisticsService:
             "availability": availability,
             "statistics": stats,
         }
+
+    @staticmethod
+    def get_frequent_opponents(user_id: int, limit: int = 5) -> List[User]:
+        """Get users this player has played most individual matches against.
+
+        Returns users ordered by number of completed matches (most frequent first).
+        Useful for suggesting opponents when creating new match proposals.
+
+        Args:
+            user_id: The user to find opponents for
+            limit: Maximum number of opponents to return (default 5)
+
+        Returns:
+            List of User objects, ordered by match frequency (descending)
+        """
+        # Build a CASE expression to get the opponent's ID regardless of player position
+        opponent_id_expr = case(
+            (IndividualMatch.player1_id == user_id, IndividualMatch.player2_id),
+            else_=IndividualMatch.player1_id,
+        )
+
+        # Query to count matches per opponent
+        opponent_counts = (
+            db.session.query(
+                opponent_id_expr.label("opponent_id"),
+                func.count().label("match_count"),
+            )
+            .filter(
+                db.or_(
+                    IndividualMatch.player1_id == user_id,
+                    IndividualMatch.player2_id == user_id,
+                ),
+                IndividualMatch.status == MatchStatus.COMPLETED.value,
+            )
+            .group_by(opponent_id_expr)
+            .order_by(func.count().desc())
+            .limit(limit)
+            .all()
+        )
+
+        if not opponent_counts:
+            return []
+
+        # Get the opponent IDs in order
+        opponent_ids = [oc.opponent_id for oc in opponent_counts]
+
+        # Fetch users and maintain the order
+        users_by_id = {
+            u.id: u
+            for u in User.query.filter(
+                User.id.in_(opponent_ids), User.deleted_at.is_(None)
+            ).all()
+        }
+
+        # Return in frequency order
+        return [users_by_id[oid] for oid in opponent_ids if oid in users_by_id]
