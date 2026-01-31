@@ -52,6 +52,24 @@ user.anonymize()
 db.session.delete(user)
 ```
 
+### Soft Delete + UNIQUE Constraints
+
+When calculating sequential IDs (like `rack_number`) with a UNIQUE constraint, **include deleted records**:
+
+```python
+# ❌ WRONG - Causes UNIQUE constraint violation after soft-delete
+max_num = db.session.query(func.max(Rack.rack_number)) \
+    .filter_by(match_id=match_id, is_deleted=False).scalar()
+next_num = (max_num or 0) + 1  # If deleted racks 1-4 exist, returns 1 → CONFLICT!
+
+# ✅ CORRECT - Include ALL records for sequential IDs
+max_num = db.session.query(func.max(Rack.rack_number)) \
+    .filter_by(match_id=match_id).scalar()  # No is_deleted filter
+next_num = (max_num or 0) + 1  # Returns 5 after deleted racks 1-4
+```
+
+**Rule**: UNIQUE constraints apply to ALL rows (active + deleted). Always include deleted records when calculating the next sequential ID.
+
 ### "Race to N" Terminology
 
 The application uses **"Race to N"** (Italian: "Al N"), NOT "Best of N":

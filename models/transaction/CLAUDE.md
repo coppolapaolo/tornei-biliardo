@@ -165,6 +165,41 @@ See `docs/adr/ADR-012-transactional-circular-import-fix.md` for details.
 - **Do not import from `models.base`** - Import from `models.transaction.manager`
 - **Do not use isolation levels on SQLite** - They're ignored (SQLite limitation)
 - **Do not forget decorator on write methods** - Data won't persist without `@transactional`
+- **Do not decorate facade methods that delegate to decorated services** - Double `@transactional` causes nested savepoints that silently rollback on SQLite
+
+---
+
+## Facade/Wrapper Pattern
+
+When creating facade methods that delegate to other services, **only the innermost method should have `@transactional`**:
+
+```python
+# ❌ WRONG - Double decoration causes silent rollback on SQLite
+class FacadeService:
+    @transactional  # ← REMOVE THIS
+    def wrapper_method(self, match_id: int):
+        return InnerService.actual_method(match_id)  # Already has @transactional
+
+class InnerService:
+    @transactional
+    def actual_method(self, match_id: int):
+        # ... actual logic
+        pass
+
+# ✅ CORRECT - Only innermost has decorator
+class FacadeService:
+    def wrapper_method(self, match_id: int):
+        # No decorator - delegates to decorated method
+        return InnerService.actual_method(match_id)
+
+class InnerService:
+    @transactional
+    def actual_method(self, match_id: int):
+        # ... actual logic
+        pass
+```
+
+**Why**: Nested `@transactional` creates savepoints. On SQLite, if the outer transaction commits but inner savepoint had issues, data may not persist. The symptom is: API returns success, but database shows no changes.
 
 ---
 

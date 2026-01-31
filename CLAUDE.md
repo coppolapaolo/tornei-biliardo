@@ -422,6 +422,8 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | Gara N with date before gara N-1 | Ensure date/time is sequential by number (ADR-016) |
 | `EventBus._handlers = {}` in tests | Preserve and restore handlers (breaks notifications/gamification) |
 | Manual SMTP sending | Use `EmailService` for all emails |
+| `max(rack_number) WHERE is_deleted=False` | Include ALL records for sequential IDs with UNIQUE constraints |
+| `@transactional` on facade AND inner service | Only decorate the innermost method (nested causes rollback) |
 
 ---
 
