@@ -79,11 +79,11 @@
                 <div class="col-md-6 col-lg-4 mb-4 match-card" data-status="{{ match.status.value }}"
                     data-discipline="{{ match.discipline }}" data-opponent="{{ opponent.id }}">
                     <div
-                        class="card h-100 border-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
+                        class="card h-100 border-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">{{ match.discipline.replace('_', ' ').title() }}</h6>
                             <span
-                                class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'playing' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
+                                class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
                                 {{ match.status.value.title() }}
                             </span>
                         </div>
@@ -145,7 +145,7 @@
                                     class="btn btn-primary btn-sm">
                                     <i class="fas fa-play"></i> Inizia
                                 </a>
-                                {% elif match.status.value == 'playing' %}
+                                {% elif match.status.value == 'in_progress' %}
                                 <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
                                     class="btn btn-success btn-sm">
                                     <i class="fas fa-shield-halved"></i> Continua
