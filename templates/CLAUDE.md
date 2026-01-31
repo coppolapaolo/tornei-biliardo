@@ -127,14 +127,37 @@ Avoid `%` in translated strings as it's interpreted as a Python format specifier
 
 ---
 
+## Available Enums
+
+These enums are injected as template globals via `app.py` context processor:
+
+```jinja2
+{# GaraStatus - Competition status #}
+GaraStatus.SETUP.value        {# 'setup' #}
+GaraStatus.INSCRIPTION.value  {# 'inscription' #}
+GaraStatus.PLAYING.value      {# 'playing' #}
+GaraStatus.COMPLETED.value    {# 'completed' #}
+GaraStatus.AWAITING_SSR.value {# 'awaiting_ssr' #}
+
+{# MatchStatus - Match status (tournament and individual) #}
+MatchStatus.SCHEDULED.value   {# 'scheduled' #}
+MatchStatus.IN_PROGRESS.value {# 'in_progress' #}
+MatchStatus.COMPLETED.value   {# 'completed' #}
+MatchStatus.VALIDATED.value   {# 'validated' #}
+```
+
+**Always use enum values for status comparisons**, never string literals.
+
+---
+
 ## Common Patterns
 
 ### Status Badge Display
 
 ```jinja2
-{% if gara.status == 'completed' %}
+{% if gara.status == GaraStatus.COMPLETED.value %}
     <span class="badge bg-success">{{ _("Completata") }}</span>
-{% elif gara.status == 'playing' %}
+{% elif gara.status == GaraStatus.PLAYING.value %}
     <span class="badge bg-warning">{{ _("In Corso") }}</span>
 {% endif %}
 ```
@@ -215,6 +238,7 @@ const config = {{ some_dict|tojson }};
 - **Do not import Python modules in templates** - Pass data from route/view
 - **Do not use `%` in translated strings** - Interpreted as Python format specifier
 - **Do not access relationships without null check** - `gara.campionato` may be None
+- **Do not use string literals for status comparisons** - Use enums: `MatchStatus.COMPLETED.value` not `'completed'`
 
 ---
 
