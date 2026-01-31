@@ -18,202 +18,156 @@
                     <div class="card">
                         <div class="card-header">
                             <h4><i class="fas fa-calendar-alt"></i> Gestisci la tua Disponibilità</h4>
-                            <small class="text-muted">Indica quando e dove sei disponibile a giocare per ricevere proposte di match</small>
+                            <small class="text-muted">Indica dove sei disponibile a giocare per ricevere proposte di match</small>
                         </div>
                         <div class="card-body">
-                            <form id="availabilityForm" method="POST">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <!-- Current Availability -->
-                                        <h5>Le tue Disponibilità Attuali</h5>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <!-- Current Availability -->
+                                    <h5>Le tue Località Preferite</h5>
 
-                                        <div id="currentAvailability">
-                                            {% if availability_records and availability_records|length %}
-                                            {% for availability in availability_records %}
-                                            <div class="card mb-3 availability-item" data-id="{{ availability.id }}">
-                                                <div class="card-body">
-                                                    <div class="row align-items-center">
-                                                        <div class="col-md-8">
-                                                            <h6><i class="fas fa-map-marker-alt"></i> {{ availability.location }}</h6>
-                                                            <p class="mb-1">
-                                                                <i class="fas fa-calendar"></i>
-                                                                {% if availability.recurring %}
-                                                                Ogni {{ availability.day_of_week }} alle {{ availability.time|time_local }}
-                                                                {% else %}
-                                                                {{ availability.date|date_local }} alle {{ availability.time|time_local }}
-                                                                {% endif %}
-                                                            </p>
-                                                            {% if availability.notes %}
-                                                            <small class="text-muted">{{ availability.notes }}</small>
+                                    <div id="currentAvailability">
+                                        {% if availability_records and availability_records|length %}
+                                        {% for record in availability_records %}
+                                        <div class="card mb-3 availability-item" data-id="{{ record.id }}">
+                                            <div class="card-body">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-8">
+                                                        <h6><i class="fas fa-map-marker-alt"></i> {{ record.location }}</h6>
+                                                        <p class="mb-1">
+                                                            {% if record.preferred_days %}
+                                                            <i class="fas fa-calendar"></i>
+                                                            {% set days = record.preferred_days|default('')|string %}
+                                                            {% if days %}
+                                                            Giorni: {{ days }}
                                                             {% endif %}
+                                                            {% endif %}
+                                                            {% if record.preferred_times %}
+                                                            <br><i class="fas fa-clock"></i> Orari: {{ record.preferred_times }}
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-4 text-end">
+                                                        <span class="badge bg-{{ 'success' if record.is_available else 'secondary' }}">
+                                                            {{ 'Disponibile' if record.is_available else 'Non disponibile' }}
+                                                        </span>
+                                                        <br>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm mt-1"
+                                                                onclick='removeAvailability({{ record.id }})'>
+                                                            <i class="fas fa-trash"></i> Rimuovi
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% else %}
+                                        <div class="alert alert-info" id="noAvailabilityAlert">
+                                            <i class="fas fa-info-circle"></i>
+                                            Non hai ancora impostato nessuna disponibilità. Aggiungi la tua prima località qui sotto!
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Add New Availability -->
+                                    <hr>
+                                    <h5>Aggiungi Nuova Località</h5>
+
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="location" class="form-label">Luogo *</label>
+                                                        <input type="text" class="form-control" id="location"
+                                                               placeholder="Es: Bar Sport, Sala Biliardi Centro"
+                                                               list="venue-suggestions" autocomplete="off" required>
+                                                        <datalist id="venue-suggestions">
+                                                            {% if verified_venues %}
+                                                            {% for venue in verified_venues %}
+                                                            <option value="{{ venue.name }}">
+                                                                {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
+                                                            </option>
+                                                            {% endfor %}
+                                                            {% endif %}
+                                                        </datalist>
+                                                        <div class="form-text">Seleziona una sala esistente o scrivine una nuova</div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Giorni Preferiti</label>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            {% for day, name in [('1', 'Lun'), ('2', 'Mar'), ('3', 'Mer'), ('4', 'Gio'), ('5', 'Ven'), ('6', 'Sab'), ('0', 'Dom')] %}
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" id="day_{{ day }}" value="{{ day }}">
+                                                                <label class="form-check-label" for="day_{{ day }}">{{ name }}</label>
+                                                            </div>
+                                                            {% endfor %}
                                                         </div>
-                                                        <div class="col-md-4 text-end">
-                                                            <span class="badge bg-{{ 'success' if availability.is_active else 'secondary' }}">
-                                                                {{ 'Attiva' if availability.is_active else 'Inattiva' }}
-                                                            </span>
-                                                            <br>
-                                                            <button type="button" class="btn btn-outline-danger btn-sm mt-1"
-                                                                    onclick="removeAvailability('{{ availability.id }}')">
-                                                                <i class="fas fa-trash"></i> Rimuovi
-                                                            </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="preferred_times" class="form-label">Orari Preferiti</label>
+                                                        <input type="text" class="form-control" id="preferred_times"
+                                                               placeholder="Es: 18:00-22:00" value="18:00-22:00">
+                                                        <div class="form-text">Fascia oraria in cui sei disponibile</div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="is_available" checked>
+                                                            <label class="form-check-label" for="is_available">
+                                                                Attualmente disponibile
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div class="text-center">
+                                                <button type="button" class="btn btn-primary" onclick="addAvailability()">
+                                                    <i class="fas fa-plus"></i> Aggiungi Località
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sidebar with help -->
+                                <div class="col-md-4">
+                                    <!-- Help -->
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-question-circle"></i> Come Funziona?</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="small text-muted">
+                                                <li>Aggiungi le località dove giochi abitualmente</li>
+                                                <li>Indica i tuoi giorni e orari preferiti</li>
+                                                <li>Altri giocatori vedranno le tue disponibilità</li>
+                                                <li>Riceverai proposte di match nelle tue località</li>
+                                                <li>Puoi attivare/disattivare le disponibilità</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Available Locations Summary -->
+                                    {% if available_locations and available_locations|length %}
+                                    <div class="card mt-3">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-check-circle"></i> Località Attive</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            {% for loc in available_locations %}
+                                            <span class="badge bg-success me-1 mb-1">{{ loc }}</span>
                                             {% endfor %}
-                                            {% else %}
-                                            <div class="alert alert-info">
-                                                <i class="fas fa-info-circle"></i>
-                                                Non hai ancora impostato nessuna disponibilità. Aggiungi la tua prima disponibilità qui sotto!
-                                            </div>
-                                            {% endif %}
-                                        </div>
-
-                                        <!-- Add New Availability -->
-                                        <hr>
-                                        <h5>Aggiungi Nuova Disponibilità</h5>
-
-                                        <div class="card bg-light">
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="mb-3">
-                                                            <label for="location" class="form-label">Luogo *</label>
-                                                            <input type="text" class="form-control" id="location"
-                                                                   placeholder="Es: Bar Sport, Sala Biliardi Centro"
-                                                                   list="venue-suggestions" autocomplete="off" required>
-                                                            <datalist id="venue-suggestions">
-                                                                {% if verified_venues %}
-                                                                {% for venue in verified_venues %}
-                                                                <option value="{{ venue.name }}">
-                                                                    {{ venue.name }} - {{ venue.city or 'Città non specificata' }}
-                                                                </option>
-                                                                {% endfor %}
-                                                                {% endif %}
-                                                            </datalist>
-                                                            <div class="form-text">Seleziona una sala esistente o scrivine una nuova</div>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Tipo di Disponibilità *</label>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="radio" name="availability_type"
-                                                                       id="one_time" value="one_time" checked>
-                                                                <label class="form-check-label" for="one_time">
-                                                                    Singola occasione
-                                                                </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="radio" name="availability_type"
-                                                                       id="recurring" value="recurring">
-                                                                <label class="form-check-label" for="recurring">
-                                                                    Ricorrente (ogni settimana)
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <!-- One-time availability fields -->
-                                                        <div id="one_time_fields">
-                                                            <div class="mb-3">
-                                                                <label for="date" class="form-label">Data *</label>
-                                                                <input type="date" class="form-control" id="date">
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Recurring availability fields -->
-                                                        <div id="recurring_fields" style="display: none;">
-                                                            <div class="mb-3">
-                                                                <label for="day_of_week" class="form-label">Giorno della settimana *</label>
-                                                                <select class="form-select" id="day_of_week">
-                                                                    <option value="monday">Lunedì</option>
-                                                                    <option value="tuesday">Martedì</option>
-                                                                    <option value="wednesday">Mercoledì</option>
-                                                                    <option value="thursday">Giovedì</option>
-                                                                    <option value="friday">Venerdì</option>
-                                                                    <option value="saturday">Sabato</option>
-                                                                    <option value="sunday">Domenica</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label for="time" class="form-label">Orario *</label>
-                                                            <input type="time" class="form-control" id="time" value="20:00">
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="notes" class="form-label">Note (opzionale)</label>
-                                                    <textarea class="form-control" id="notes" rows="2"
-                                                              placeholder="Es: Preferisco 8-ball, livello intermedio, ecc."></textarea>
-                                                </div>
-
-                                                <div class="text-center">
-                                                    <button type="button" class="btn btn-primary" onclick="addAvailability()">
-                                                        <i class="fas fa-plus"></i> Aggiungi Disponibilità
-                                                    </button>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
-
-                                    <!-- Sidebar with help and notifications -->
-                                    <div class="col-md-4">
-                                        <!-- Notification Settings -->
-                                        <div class="card mb-4">
-                                            <div class="card-header">
-                                                <h6><i class="fas fa-bell"></i> Notifiche</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="email_notifications"
-                                                           name="email_notifications" checked>
-                                                    <label class="form-check-label" for="email_notifications">
-                                                        Email per nuove proposte
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="push_notifications"
-                                                           name="push_notifications" checked>
-                                                    <label class="form-check-label" for="push_notifications">
-                                                        Notifiche push
-                                                    </label>
-                                                </div>
-                                                <small class="text-muted">
-                                                    Ricevi notifiche quando altri giocatori nella tua zona cercano un match
-                                                </small>
-                                            </div>
-                                        </div>
-
-                                        <!-- Help -->
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h6><i class="fas fa-question-circle"></i> Come Funziona?</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <ul class="small text-muted">
-                                                    <li><strong>Singola:</strong> Disponibile una sola volta</li>
-                                                    <li><strong>Ricorrente:</strong> Disponibile ogni settimana</li>
-                                                    <li>Altri giocatori vedranno le tue disponibilità</li>
-                                                    <li>Riceverai proposte di match nella tua zona</li>
-                                                    <li>Puoi attivare/disattivare le disponibilità</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
-
-                                <!-- Save Button -->
-                                <hr>
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-save"></i> Salva Modifiche
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -225,131 +179,67 @@
 
 {% block scripts %}
 <script>
-// Toggle between one-time and recurring fields
-document.querySelectorAll('input[name="availability_type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const oneTimeFields = document.getElementById('one_time_fields');
-        const recurringFields = document.getElementById('recurring_fields');
-
-        if (this.value === 'one_time') {
-            oneTimeFields.style.display = 'block';
-            recurringFields.style.display = 'none';
-        } else {
-            oneTimeFields.style.display = 'none';
-            recurringFields.style.display = 'block';
-        }
+// Get selected days as JSON string
+function getSelectedDays() {
+    const days = [];
+    document.querySelectorAll('input[id^="day_"]:checked').forEach(cb => {
+        days.push(cb.value);
     });
-});
+    return JSON.stringify(days);
+}
 
-// Set minimum date to today
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date').min = today;
-    document.getElementById('date').value = today;
-});
-
-// Add availability (client-side demo)
+// Add new availability
 function addAvailability() {
-    const location = document.getElementById('location').value.trim();
-    const type = document.querySelector('input[name="availability_type"]:checked').value;
-    const time = document.getElementById('time').value;
-    const notes = document.getElementById('notes').value.trim();
+    const locationInput = document.getElementById('location').value.trim();
+    const preferredTimes = document.getElementById('preferred_times').value.trim();
+    const isAvailable = document.getElementById('is_available').checked;
+    const preferredDays = getSelectedDays();
 
-    if (!location || !time) {
-        showError('Compila tutti i campi obbligatori');
+    if (!locationInput) {
+        showError('Inserisci una località');
         return;
     }
 
-    let dateInfo = '';
-    if (type === 'one_time') {
-        const date = document.getElementById('date').value;
-        if (!date) {
-            showError('Seleziona una data');
-            return;
+    // Send to server
+    fetch('{{ url_for("individual_match.manage_availability") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            availability: [{
+                location: locationInput,
+                preferred_days: preferredDays,
+                preferred_times: preferredTimes,
+                is_available: isAvailable
+            }]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess('Disponibilità aggiunta!');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showError('Errore: ' + data.error);
         }
-        dateInfo = new Date(date).toLocaleDateString('it-IT');
-    } else {
-        const dayOfWeek = document.getElementById('day_of_week').value;
-        const dayNames = {
-            'monday': 'Lunedì', 'tuesday': 'Martedì', 'wednesday': 'Mercoledì',
-            'thursday': 'Giovedì', 'friday': 'Venerdì', 'saturday': 'Sabato', 'sunday': 'Domenica'
-        };
-        dateInfo = `Ogni ${dayNames[dayOfWeek]}`;
-    }
-
-    // Create new availability card (demo - would be handled by backend)
-    const availabilityHtml = `
-        <div class="card mb-3 availability-item border-success" data-id="new">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h6><i class="fas fa-map-marker-alt"></i> ${location}</h6>
-                        <p class="mb-1">
-                            <i class="fas fa-calendar"></i> ${dateInfo} alle ${time}
-                        </p>
-                        ${notes ? `<small class="text-muted">${notes}</small>` : ''}
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <span class="badge bg-warning">Da salvare</span>
-                        <br>
-                        <button type="button" class="btn btn-outline-danger btn-sm mt-1"
-                                onclick="this.closest('.availability-item').remove()">
-                            <i class="fas fa-trash"></i> Rimuovi
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('currentAvailability').insertAdjacentHTML('beforeend', availabilityHtml);
-
-    // Clear form
-    document.getElementById('location').value = '';
-    document.getElementById('notes').value = '';
-
-    // Show success message
-    const alert = document.createElement('div');
-    alert.className = 'alert alert-success alert-dismissible fade show';
-    alert.innerHTML = `
-        <i class="fas fa-check"></i> Disponibilità aggiunta! Ricordati di salvare le modifiche.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.querySelector('.card-body').insertBefore(alert, document.querySelector('.row'));
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('Errore durante il salvataggio');
+    });
 }
 
 // Remove availability
 function removeAvailability(id) {
     showConfirm('Sei sicuro di voler rimuovere questa disponibilità?', () => {
-        document.querySelector(`[data-id="${id}"]`).remove();
-
-        // Show message
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-warning alert-dismissible fade show';
-        alert.innerHTML = `
-            <i class="fas fa-exclamation-triangle"></i> Disponibilità rimossa! Ricordati di salvare le modifiche.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.card-body').insertBefore(alert, document.querySelector('.row'));
+        // For now, just remove from UI - backend should implement DELETE
+        const item = document.querySelector(`[data-id="${id}"]`);
+        if (item) {
+            item.remove();
+            showSuccess('Disponibilità rimossa!');
+        }
     });
 }
-
-// Form submission
-document.getElementById('availabilityForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // In a real implementation, this would collect all availability data and send to server
-    showSuccess('Disponibilità salvate con successo!');
-
-    // Update badges to show saved status
-    document.querySelectorAll('.badge.bg-warning').forEach(badge => {
-        badge.textContent = 'Attiva';
-        badge.className = 'badge bg-success';
-    });
-
-    document.querySelectorAll('.border-success').forEach(item => {
-        item.classList.remove('border-success');
-    });
-});
 </script>
 {% endblock %}

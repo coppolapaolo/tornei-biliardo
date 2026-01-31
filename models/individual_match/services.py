@@ -533,16 +533,25 @@ class IndividualMatchService:
     def update_user_availability(
         user_id: int, availability_data: List[Dict[str, Any]]
     ) -> None:
-        """Update user's availability settings."""
-        PlayerAvailability.query.filter_by(user_id=user_id).delete()
+        """Update user's availability settings.
 
+        Note: This method APPENDS new availability records without deleting
+        existing ones. Use set_player_availability for a full replacement.
+
+        Args:
+            user_id: The user ID
+            availability_data: List of dicts with keys:
+                - location: string (required)
+                - preferred_days: string (optional, JSON array of day numbers)
+                - preferred_times: string (optional, e.g. "18:00-22:00")
+                - is_available: bool (optional, default True)
+        """
         for data in availability_data:
             availability = PlayerAvailability(
                 user_id=user_id,
                 location=data["location"],
-                day_of_week=data["day_of_week"],
-                start_time=data["start_time"],
-                end_time=data["end_time"],
+                preferred_days=data.get("preferred_days"),
+                preferred_times=data.get("preferred_times"),
                 is_available=data.get("is_available", True),
             )
             db.session.add(availability)

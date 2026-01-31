@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Overview - Match Individuali{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Admin Match Individuali</li>
+                </ol>
+            </nav>
+
+            <h1><i class="fas fa-shield-halved"></i> Admin Overview - Match Individuali</h1>
+            <p class="text-muted">Panoramica di tutti i match individuali e proposte.</p>
+        </div>
+    </div>
+
+    <!-- Status Counts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-gamepad"></i> Stato Match</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h4 class="text-warning">{{ status_counts.get('scheduled', 0) }}</h4>
+                            <small class="text-muted">Programmati</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-primary">{{ status_counts.get('in_progress', 0) }}</h4>
+                            <small class="text-muted">In Corso</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-success">{{ status_counts.get('completed', 0) }}</h4>
+                            <small class="text-muted">Completati</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-info">{{ status_counts.get('validated', 0) }}</h4>
+                            <small class="text-muted">Validati</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-danger">{{ status_counts.get('cancelled', 0) }}</h4>
+                            <small class="text-muted">Annullati</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-envelope"></i> Stato Proposte</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h4 class="text-warning">{{ proposal_counts.get('pending', 0) }}</h4>
+                            <small class="text-muted">In Attesa</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-success">{{ proposal_counts.get('accepted', 0) }}</h4>
+                            <small class="text-muted">Accettate</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-secondary">{{ proposal_counts.get('expired', 0) }}</h4>
+                            <small class="text-muted">Scadute</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-danger">{{ proposal_counts.get('cancelled', 0) }}</h4>
+                            <small class="text-muted">Annullate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-info">{{ total_users_with_availability or 0 }}</h2>
+                    <p class="text-muted mb-0">Giocatori con disponibilità</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-primary">{{ active_locations|length }}</h2>
+                    <p class="text-muted mb-0">Località attive</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-success">{{ recent_matches|length }}</h2>
+                    <p class="text-muted mb-0">Match recenti (ultimi 10)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Matches -->
+    {% if recent_matches %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Match Recenti</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Giocatore 1</th>
+                                    <th>Giocatore 2</th>
+                                    <th>Punteggio</th>
+                                    <th>Disciplina</th>
+                                    <th>Stato</th>
+                                    <th>Data</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for match in recent_matches %}
+                                <tr>
+                                    <td>{{ match.id }}</td>
+                                    <td>
+                                        {% if match.winner_id == match.player1_id %}
+                                        <strong class="text-success">{{ match.player1.username }}</strong>
+                                        {% else %}
+                                        {{ match.player1.username }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.winner_id == match.player2_id %}
+                                        <strong class="text-success">{{ match.player2.username }}</strong>
+                                        {% else %}
+                                        {{ match.player2.username }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ match.player1_score }} - {{ match.player2_score }}</td>
+                                    <td>{{ match.discipline.replace('_', ' ').title() }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if match.status.value == 'completed' else 'primary' if match.status.value == 'in_progress' else 'warning' if match.status.value == 'scheduled' else 'danger' }}">
+                                            {{ match.status.value.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ match.created_at|datetime_local }}</td>
+                                    <td>
+                                        <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Active Locations -->
+    {% if active_locations %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-map-marker-alt"></i> Località Attive</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for location in active_locations %}
+                        <span class="badge bg-secondary fs-6">
+                            <i class="fas fa-location-dot me-1"></i>{{ location }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
