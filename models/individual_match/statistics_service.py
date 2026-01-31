@@ -59,7 +59,10 @@ class IndividualMatchStatisticsService:
 
         locations_played = {}
         for match in matches:
-            loc = match.location
+            # Use location_display property to prefer FK over legacy string
+            loc = match.location_display
+            if not loc:
+                continue  # Skip matches without location
             if loc not in locations_played:
                 locations_played[loc] = {"matches": 0, "wins": 0}
             locations_played[loc]["matches"] += 1

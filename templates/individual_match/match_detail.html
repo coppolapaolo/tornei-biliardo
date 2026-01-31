@@ -25,7 +25,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4><i class="fas fa-shield-halved"></i> {{ match.discipline.replace('_', ' ').title() }}</h4>
-                            <small class="text-muted">{{ match.location }} - {{ match.scheduled_at|datetime_local if
+                            <small class="text-muted">{{ match.location_display }} - {{ match.scheduled_at|datetime_local if
                                 match.scheduled_at }}</small>
                         </div>
                         <div>
@@ -308,7 +308,7 @@
                         <dd class="col-sm-7">{{ 'Al' if match.is_race_to else 'Esattamente' }} {{ match.distance }}</dd>
 
                         <dt class="col-sm-5">Luogo:</dt>
-                        <dd class="col-sm-7">{{ match.location }}</dd>
+                        <dd class="col-sm-7">{{ match.location_display }}</dd>
 
                         {% if match.entry_fee %}
                         <dt class="col-sm-5">Entry Fee:</dt>

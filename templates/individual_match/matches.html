@@ -119,7 +119,7 @@
 
                             <!-- Match Info -->
                             <div class="text-center text-muted small mb-3">
-                                <div><i class="fas fa-map-marker-alt"></i> {{ match.location }}</div>
+                                <div><i class="fas fa-map-marker-alt"></i> {{ match.location_display }}</div>
                                 {% if match.scheduled_at %}
                                 <div><i class="fas fa-clock"></i> {{ match.scheduled_at|datetime_local }}</div>
                                 {% endif %}

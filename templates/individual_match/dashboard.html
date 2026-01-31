@@ -38,7 +38,7 @@
                                     <br>
                                     <small class="text-muted">
                                         <i class="fas fa-clock"></i> {{ proposal.scheduled_at|datetime_local if proposal.scheduled_at }}
-                                        <br><i class="fas fa-map-marker-alt"></i> {{ proposal.location }}
+                                        <br><i class="fas fa-map-marker-alt"></i> {{ proposal.location_display }}
                                     </small>
                                 </div>
                                 <div class="text-end">
@@ -83,7 +83,7 @@
                                     <br>
                                     <small class="text-muted">
                                         vs {% if match.player1_id == current_user.id %}{{ match.player2.username }}{% else %}{{ match.player1.username }}{% endif %}
-                                        <br><i class="fas fa-map-marker-alt"></i> {{ match.location }}
+                                        <br><i class="fas fa-map-marker-alt"></i> {{ match.location_display }}
                                     </small>
                                 </div>
                                 <div class="text-end">
