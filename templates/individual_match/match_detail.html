@@ -355,8 +355,11 @@
                         {% endif %}
 
                         {% if match.status.value == 'completed' %}
+                        <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-warning">
+                            <i class="fas fa-redo"></i> {{ _("Giocane un'altra") }}
+                        </a>
                         <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-outline-info">
-                            <i class="fas fa-chart-line"></i> Vedi Statistiche
+                            <i class="fas fa-chart-line"></i> {{ _("Vedi Statistiche") }}
                         </a>
                         {% endif %}
                     </div>

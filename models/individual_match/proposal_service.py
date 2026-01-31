@@ -114,6 +114,11 @@ class ProposalService:
         billiard_hall_id: Optional[int] = None,
     ) -> MatchProposal:
         """Create an open match proposal for all eligible players."""
+        from flask_babel import _
+        from ..user.models import User
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationType, NotificationPriority
+        from .availability_service import AvailabilityService
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
@@ -134,6 +139,50 @@ class ProposalService:
         )
 
         db.session.add(proposal)
+        db.session.flush()  # Get proposal.id for action_url
+
+        # Notify eligible players about the open proposal
+        try:
+            proposer = db.session.get(User, proposer_id)
+            proposer_name = proposer.username if proposer else _("Un giocatore")
+            location_text = location or ""
+
+            # Find eligible players based on venue or location
+            eligible_user_ids: List[int] = []
+
+            if billiard_hall_id:
+                # Venue-based: find players available at this venue
+                venue_players = AvailabilityService.get_available_players_at_venue(
+                    billiard_hall_id=billiard_hall_id,
+                    exclude_user_id=proposer_id
+                )
+                eligible_user_ids = [p["user_id"] for p in venue_players]
+            elif location:
+                # Location-based: find players available at this location string
+                location_players = AvailabilityService.get_available_players_at_location(
+                    location=location,
+                    exclude_user_id=proposer_id
+                )
+                eligible_user_ids = [p["user_id"] for p in location_players]
+
+            if eligible_user_ids:
+                scheduled_str = scheduled_at.strftime("%d/%m/%Y alle %H:%M")
+                NotificationFactory.create_bulk_notification(
+                    user_ids=eligible_user_ids,
+                    notification_type=NotificationType.MATCH_PROPOSAL,
+                    title=_("Nuova proposta di match"),
+                    message=_("%(username)s propone un match aperto%(location)s il %(date)s",
+                              username=proposer_name,
+                              location=f" a {location_text}" if location_text else "",
+                              date=scheduled_str),
+                    priority=NotificationPriority.NORMAL,
+                    action_url=f"/match/proposals/{proposal.id}",
+                    action_text=_("Visualizza"),
+                    continue_on_error=True,
+                )
+        except Exception:
+            pass  # Notification failure shouldn't block proposal creation
+
         return proposal
 
     @staticmethod
@@ -329,6 +378,10 @@ class ProposalService:
     @transactional(domain="individual_match")
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
+        from flask_babel import _
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationType, NotificationPriority
+
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,
             MatchProposal.expires_at <= datetime.utcnow(),
@@ -339,12 +392,33 @@ class ProposalService:
             proposal.expire()
             count += 1
 
+            # Notify proposer that their proposal expired
+            try:
+                location_text = proposal.location or ""
+                NotificationFactory.create_bulk_notification(
+                    user_ids=[proposal.proposer_id],
+                    notification_type=NotificationType.MATCH_DECLINED,
+                    title=_("Proposta scaduta"),
+                    message=_("La tua proposta di match%(location)s è scaduta senza accettazioni.",
+                              location=f" a {location_text}" if location_text else ""),
+                    priority=NotificationPriority.NORMAL,
+                    action_url=f"/match/proposals/{proposal.id}",
+                    action_text=_("Visualizza"),
+                    continue_on_error=True,
+                )
+            except Exception:
+                pass  # Notification failure shouldn't block expiration
+
         return count
 
     @staticmethod
     @transactional(domain="individual_match")
     def _expire_pending_proposals() -> int:
         """Mark expired pending proposals as expired."""
+        from flask_babel import _
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationType, NotificationPriority
+
         now = datetime.utcnow()
 
         expired_proposals = MatchProposal.query.filter(
@@ -356,6 +430,23 @@ class ProposalService:
         for proposal in expired_proposals:
             proposal.expire()
             count += 1
+
+            # Notify proposer that their proposal expired
+            try:
+                location_text = proposal.location or ""
+                NotificationFactory.create_bulk_notification(
+                    user_ids=[proposal.proposer_id],
+                    notification_type=NotificationType.MATCH_DECLINED,
+                    title=_("Proposta scaduta"),
+                    message=_("La tua proposta di match%(location)s è scaduta senza accettazioni.",
+                              location=f" a {location_text}" if location_text else ""),
+                    priority=NotificationPriority.NORMAL,
+                    action_url=f"/match/proposals/{proposal.id}",
+                    action_text=_("Visualizza"),
+                    continue_on_error=True,
+                )
+            except Exception:
+                pass  # Notification failure shouldn't block expiration
 
         return count
 

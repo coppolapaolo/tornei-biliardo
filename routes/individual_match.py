@@ -86,19 +86,87 @@ def proposal_detail(proposal_id):
         return redirect(url_for("individual_match.proposal_list"))
 
 
+@individual_match_bp.route("/players/search")
+@RoleRequirement.player_or_director_required
+def search_players():
+    """Search for players by username for direct invitations.
+
+    Query params:
+        q: Search query (min 2 chars)
+        limit: Max results (default 10)
+
+    Returns JSON array of matching players (excludes current user).
+    """
+    query = request.args.get("q", "").strip()
+    limit = request.args.get("limit", 10, type=int)
+
+    if len(query) < 2:
+        return jsonify([])
+
+    from models.user.models import User
+
+    # Search by username, exclude current user and deleted users
+    # Note: is_deleted is a property, deleted_at is the actual column
+    users = (
+        User.query.filter(
+            User.username.ilike(f"%{query}%"),
+            User.id != current_user.id,
+            User.deleted_at.is_(None),  # Not soft-deleted
+        )
+        .order_by(User.username)
+        .limit(limit)
+        .all()
+    )
+
+    return jsonify([
+        {
+            "id": u.id,
+            "username": u.username,
+            "avatar_url": u.avatar_url if hasattr(u, "avatar_url") else None,
+        }
+        for u in users
+    ])
+
+
 @individual_match_bp.route("/proposals/create", methods=["GET", "POST"])
 @RoleRequirement.player_or_director_required
 def create_proposal():
     """Create new match proposal."""
     if request.method == "GET":
         from models.location.models import BilliardHall
+        from models.user.models import User
+        from models.base import db
 
         verified_venues = BilliardHall.query.filter_by(
             is_active=True, verified=True
         ).order_by(BilliardHall.name).all()
+
+        # Check for rematch parameters
+        rematch_opponent = None
+        rematch_params = {}
+
+        if request.args.get("rematch") == "true":
+            opponent_id = request.args.get("opponent_id", type=int)
+            if opponent_id:
+                rematch_opponent = db.session.get(User, opponent_id)
+
+            rematch_params = {
+                "billiard_hall_id": request.args.get("billiard_hall_id", ""),
+                "location": request.args.get("location", ""),
+                "discipline": request.args.get("discipline", "palla_8"),
+                "distance": request.args.get("distance", "5"),
+                "is_race_to": request.args.get("is_race_to", "true"),
+                "break_rule": request.args.get("break_rule", "alternate"),
+                "is_multi_set": request.args.get("is_multi_set", "false"),
+                "match_distance": request.args.get("match_distance", ""),
+                "is_race_to_sets": request.args.get("is_race_to_sets", "true"),
+            }
+
         return render_template(
             "individual_match/create_proposal.html",
             verified_venues=verified_venues,
+            rematch_opponent=rematch_opponent,
+            rematch_params=rematch_params,
         )
 
     try:
@@ -131,7 +199,7 @@ def create_proposal():
             "expires_at": expires_at,
             "discipline": data.get("discipline", "palla_8"),
             "distance": int(data.get("distance", 5)),
-            "best_of": data.get("best_of", "true").lower() == "true",
+            "is_race_to": data.get("is_race_to", "true").lower() == "true",
             "break_rule": data.get("break_rule", "alternate"),
             "description": data.get("description"),
             "entry_fee": float(data["entry_fee"]) if data.get("entry_fee") else None,
@@ -538,6 +606,54 @@ def update_match_times(match_id):
         else:
             flash(error_msg, "danger")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/rematch")
+@RoleRequirement.player_or_director_required
+def rematch(match_id):
+    """Start a new match with the same opponent - redirects to create_proposal with pre-filled values."""
+    from flask_babel import _
+    from models.base import db
+
+    match = IndividualMatch.query.get_or_404(match_id)
+
+    # Verify user is part of this match
+    if current_user.id not in (match.player1_id, match.player2_id):
+        flash(_("Accesso negato a questo match."), "danger")
+        return redirect(url_for("individual_match.match_list"))
+
+    # Match must be completed
+    if match.status.value != "completed":
+        flash(_("Solo i match completati permettono di giocarne un altro."), "warning")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    # Determine opponent
+    opponent_id = match.player2_id if current_user.id == match.player1_id else match.player1_id
+
+    # Build pre-fill parameters
+    params = {
+        "rematch": "true",
+        "opponent_id": opponent_id,
+        "location": match.location or "",
+        "discipline": match.discipline or "palla_8",
+        "distance": match.distance or 5,
+        "is_race_to": "true" if match.is_race_to else "false",
+        "break_rule": match.break_rule or "alternate",
+    }
+
+    # Add billiard_hall_id if present
+    if match.billiard_hall_id:
+        params["billiard_hall_id"] = match.billiard_hall_id
+
+    # Multi-set parameters if present
+    if getattr(match, "is_multi_set", False):
+        params["is_multi_set"] = "true"
+        if getattr(match, "match_distance", None):
+            params["match_distance"] = match.match_distance
+        if getattr(match, "is_race_to_sets", None) is not None:
+            params["is_race_to_sets"] = "true" if match.is_race_to_sets else "false"
+
+    return redirect(url_for("individual_match.create_proposal", **params))
 
 
 @individual_match_bp.route("/availability", methods=["GET", "POST"])

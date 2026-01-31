@@ -18,10 +18,22 @@
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">
-                            <h4><i class="fas fa-plus-circle"></i> Crea Nuova Proposta di Match</h4>
-                            <small class="text-muted">Invita altri giocatori a una partita individuale</small>
+                            <h4><i class="fas fa-plus-circle"></i> {{ _("Crea Nuova Proposta di Match") }}</h4>
+                            <small class="text-muted">{{ _("Invita altri giocatori a una partita individuale") }}</small>
                         </div>
                         <div class="card-body">
+                            {% if rematch_opponent %}
+                            <div class="alert alert-info mb-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-redo fa-2x me-3"></i>
+                                    <div>
+                                        <strong>{{ _("Nuova partita con") }} {{ rematch_opponent.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ _("Modifica i parametri se desiderato, poi invia la proposta") }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                             <form id="proposalForm" method="POST">
                                 <div class="row">
                                     <!-- Basic Information -->
@@ -42,10 +54,11 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="location" class="form-label">Luogo *</label>
+                                            <label for="location" class="form-label">{{ _("Luogo") }} *</label>
                                             <input type="text" class="form-control" id="location" name="location"
-                                                required placeholder="Es: Bar Sport, Sala Biliardi Centro"
-                                                list="venue-suggestions" autocomplete="off">
+                                                required placeholder="{{ _('Es: Bar Sport, Sala Biliardi Centro') }}"
+                                                list="venue-suggestions" autocomplete="off"
+                                                value="{{ rematch_params.location if rematch_params else '' }}">
                                             <datalist id="venue-suggestions">
                                                 {% if verified_venues %}
                                                 {% for venue in verified_venues %}
@@ -78,47 +91,50 @@
                                         <h5>Impostazioni di Gioco</h5>
 
                                         <div class="mb-3">
-                                            <label for="discipline" class="form-label">Disciplina *</label>
+                                            <label for="discipline" class="form-label">{{ _("Disciplina") }} *</label>
+                                            {% set selected_discipline = rematch_params.discipline if rematch_params else 'palla_8' %}
                                             <select class="form-select" id="discipline" name="discipline" required>
-                                                <option value="palla_8">Palla 8</option>
-                                                <option value="palla_9">Palla 9</option>
-                                                <option value="palla_10">Palla 10</option>
-                                                <option value="one_pocket">One Pocket</option>
-                                                <option value="straight_pool">Straight Pool</option>
+                                                <option value="palla_8" {% if selected_discipline == 'palla_8' %}selected{% endif %}>Palla 8</option>
+                                                <option value="palla_9" {% if selected_discipline == 'palla_9' %}selected{% endif %}>Palla 9</option>
+                                                <option value="palla_10" {% if selected_discipline == 'palla_10' %}selected{% endif %}>Palla 10</option>
+                                                <option value="one_pocket" {% if selected_discipline == 'one_pocket' %}selected{% endif %}>One Pocket</option>
+                                                <option value="straight_pool" {% if selected_discipline == 'straight_pool' %}selected{% endif %}>Straight Pool</option>
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="distance" class="form-label">Distanza *</label>
+                                            <label for="distance" class="form-label">{{ _("Distanza") }} *</label>
                                             <input type="number" class="form-control" id="distance" name="distance"
-                                                min="1" max="25" value="5" required>
-                                            <div class="form-text">Numero di rack da giocare</div>
+                                                min="1" max="25" value="{{ rematch_params.distance if rematch_params and rematch_params.distance else '5' }}" required>
+                                            <div class="form-text">{{ _("Numero di rack da giocare") }}</div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="is_race_to" class="form-label">Formato *</label>
+                                            {% set is_race_to_value = rematch_params.is_race_to if rematch_params else 'true' %}
+                                            <label for="is_race_to" class="form-label">{{ _("Formato") }} *</label>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="radio" name="is_race_to"
-                                                    id="is_race_to_true" value="true" checked>
+                                                    id="is_race_to_true" value="true" {% if is_race_to_value == 'true' %}checked{% endif %}>
                                                 <label class="form-check-label" for="is_race_to_true">
-                                                    Al (vince chi arriva a N rack)
+                                                    {{ _("Al (vince chi arriva a N rack)") }}
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="radio" name="is_race_to"
-                                                    id="is_race_to_false" value="false">
+                                                    id="is_race_to_false" value="false" {% if is_race_to_value == 'false' %}checked{% endif %}>
                                                 <label class="form-check-label" for="is_race_to_false">
-                                                    Esattamente (tutti i rack specificati)
+                                                    {{ _("Esattamente (tutti i rack specificati)") }}
                                                 </label>
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="break_rule" class="form-label">Regola Break</label>
+                                            {% set selected_break_rule = rematch_params.break_rule if rematch_params else 'alternate' %}
+                                            <label for="break_rule" class="form-label">{{ _("Regola Break") }}</label>
                                             <select class="form-select" id="break_rule" name="break_rule">
-                                                <option value="alternate">A turno</option>
-                                                <option value="winner_breaks">Vincitore rompe</option>
-                                                <option value="loser_breaks">Perdente rompe</option>
+                                                <option value="alternate" {% if selected_break_rule == 'alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
+                                                <option value="winner_breaks" {% if selected_break_rule == 'winner_breaks' %}selected{% endif %}>{{ _("Vincitore rompe") }}</option>
+                                                <option value="loser_breaks" {% if selected_break_rule == 'loser_breaks' %}selected{% endif %}>{{ _("Perdente rompe") }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -129,20 +145,14 @@
                                     <hr>
                                     <h5>Inviti Diretti</h5>
                                     <div class="mb-3">
-                                        <label class="form-label">Giocatori da invitare</label>
-                                        <div class="row">
-                                            <div class="col-md-8">
-                                                <input type="text" class="form-control" id="playerSearch"
-                                                    placeholder="Cerca giocatori per username...">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <button type="button" class="btn btn-outline-primary w-100"
-                                                    onclick="searchPlayers()">
-                                                    <i class="fas fa-search"></i> Cerca
-                                                </button>
-                                            </div>
+                                        <label class="form-label">{{ _("Giocatori da invitare") }}</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" id="playerSearch"
+                                                placeholder="{{ _('Cerca giocatori per username...') }}" autocomplete="off">
                                         </div>
-                                        <div id="playerSearchResults" class="mt-2"></div>
+                                        <div class="form-text">{{ _("Inizia a digitare per cercare") }}</div>
+                                        <div id="playerSearchResults" class="mt-2 border rounded" style="max-height: 200px; overflow-y: auto;"></div>
                                         <div id="selectedPlayers" class="mt-3"></div>
                                     </div>
                                 </div>
@@ -217,6 +227,21 @@
 
 {% block scripts %}
 <script>
+    // Internationalization strings
+    const i18n = {
+        searchHint: {{ _("Inserisci almeno 2 caratteri per cercare")|tojson }},
+        searching: {{ _("Ricerca in corso...")|tojson }},
+        noResults: {{ _("Nessun giocatore trovato")|tojson }},
+        allSelected: {{ _("Tutti i giocatori trovati sono già selezionati")|tojson }},
+        add: {{ _("Aggiungi")|tojson }},
+        searchError: {{ _("Errore durante la ricerca")|tojson }},
+        selectedPlayers: {{ _("Giocatori selezionati")|tojson }},
+        selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto")|tojson }},
+        confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di match?")|tojson }},
+        formatRaceTo: {{ _("Al {distance} (chi arriva prima a {distance} vince)")|tojson }},
+        formatExact: {{ _("Esattamente {distance} rack (vincitore per somma punti)")|tojson }}
+    };
+
     let selectedPlayerIds = [];
 
     // Show/hide player invitations based on proposal type
@@ -254,39 +279,182 @@
 
         const explanation = document.querySelector('label[for="is_race_to_true"]');
         if (isRaceTo) {
-            explanation.textContent = `Al ${distance} (chi arriva prima a ${distance} vince)`;
+            explanation.textContent = i18n.formatRaceTo.replace(/\{distance\}/g, distance);
         } else {
-            explanation.textContent = `Esattamente ${distance} rack (vincitore per somma punti)`;
+            explanation.textContent = i18n.formatExact.replace(/\{distance\}/g, distance);
         }
     }
 
-    // Mock player search functionality
+    // Player search functionality
+    let searchTimeout = null;
+    let selectedPlayerUsernames = {};
+
+    // Search on input with debounce
+    document.getElementById('playerSearch').addEventListener('input', function () {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(searchPlayers, 300);
+    });
+
+    // Search on Enter key
+    document.getElementById('playerSearch').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            searchPlayers();
+        }
+    });
+
     function searchPlayers() {
         const query = document.getElementById('playerSearch').value.trim();
         const resultsDiv = document.getElementById('playerSearchResults');
 
-        if (!query) {
-            resultsDiv.innerHTML = '<small class="text-muted">Inserisci un username per cercare</small>';
+        // Clear previous results
+        resultsDiv.replaceChildren();
+
+        if (query.length < 2) {
+            const hint = document.createElement('small');
+            hint.className = 'text-muted';
+            hint.textContent = i18n.searchHint;
+            resultsDiv.appendChild(hint);
             return;
         }
 
-        // This would be replaced with actual AJAX call to search players
-        resultsDiv.innerHTML = `
-        <div class="alert alert-info">
-            <small>In un'implementazione reale, qui verrebbero mostrati i risultati della ricerca per "${query}".</small>
-            <br><small>Per il momento, questa è solo un'interfaccia dimostrativa.</small>
-        </div>
-    `;
+        // Show loading
+        const loading = document.createElement('small');
+        loading.className = 'text-muted';
+        const spinner = document.createElement('i');
+        spinner.className = 'fas fa-spinner fa-spin me-1';
+        loading.appendChild(spinner);
+        loading.appendChild(document.createTextNode(i18n.searching));
+        resultsDiv.appendChild(loading);
+
+        fetch(`{{ url_for('individual_match.search_players') }}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(players => {
+                resultsDiv.replaceChildren();
+
+                if (players.length === 0) {
+                    const noResults = document.createElement('small');
+                    noResults.className = 'text-muted';
+                    noResults.textContent = i18n.noResults;
+                    resultsDiv.appendChild(noResults);
+                    return;
+                }
+
+                // Filter out already selected players
+                const availablePlayers = players.filter(p => !selectedPlayerIds.includes(p.id));
+
+                if (availablePlayers.length === 0) {
+                    const allSelected = document.createElement('small');
+                    allSelected.className = 'text-muted';
+                    allSelected.textContent = i18n.allSelected;
+                    resultsDiv.appendChild(allSelected);
+                    return;
+                }
+
+                availablePlayers.forEach(player => {
+                    const row = document.createElement('div');
+                    row.className = 'd-flex align-items-center justify-content-between p-2 border-bottom player-result';
+                    row.style.cursor = 'pointer';
+                    row.addEventListener('click', () => addPlayer(player.id, player.username));
+
+                    const info = document.createElement('div');
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-user text-muted me-2';
+                    const name = document.createElement('strong');
+                    name.textContent = player.username;
+                    info.appendChild(icon);
+                    info.appendChild(name);
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-sm btn-outline-success';
+                    const btnIcon = document.createElement('i');
+                    btnIcon.className = 'fas fa-plus me-1';
+                    btn.appendChild(btnIcon);
+                    btn.appendChild(document.createTextNode(i18n.add));
+
+                    row.appendChild(info);
+                    row.appendChild(btn);
+                    resultsDiv.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                resultsDiv.replaceChildren();
+                const errorMsg = document.createElement('small');
+                errorMsg.className = 'text-danger';
+                errorMsg.textContent = i18n.searchError;
+                resultsDiv.appendChild(errorMsg);
+            });
+    }
+
+    function addPlayer(playerId, username) {
+        if (selectedPlayerIds.includes(playerId)) {
+            return;
+        }
+
+        selectedPlayerIds.push(playerId);
+        selectedPlayerUsernames[playerId] = username;
+        updateSelectedPlayers();
+
+        // Re-run search to update available players
+        searchPlayers();
+    }
+
+    function removePlayer(playerId) {
+        selectedPlayerIds = selectedPlayerIds.filter(id => id !== playerId);
+        delete selectedPlayerUsernames[playerId];
+        updateSelectedPlayers();
+
+        // Re-run search to update available players
+        const query = document.getElementById('playerSearch').value.trim();
+        if (query.length >= 2) {
+            searchPlayers();
+        }
     }
 
     function updateSelectedPlayers() {
         const selectedDiv = document.getElementById('selectedPlayers');
+        selectedDiv.replaceChildren();
+
         if (selectedPlayerIds.length === 0) {
-            selectedDiv.innerHTML = '';
             return;
         }
 
-        selectedDiv.innerHTML = '<small class="text-muted">Giocatori selezionati:</small>';
+        const label = document.createElement('label');
+        label.className = 'form-label';
+        label.textContent = `${i18n.selectedPlayers} (${selectedPlayerIds.length}):`;
+        selectedDiv.appendChild(label);
+
+        const container = document.createElement('div');
+        container.className = 'd-flex flex-wrap gap-2';
+
+        selectedPlayerIds.forEach(id => {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary d-flex align-items-center gap-2 py-2 px-3';
+
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-user';
+            badge.appendChild(icon);
+
+            const nameText = document.createTextNode(selectedPlayerUsernames[id]);
+            badge.appendChild(nameText);
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'btn-close btn-close-white ms-1';
+            closeBtn.style.fontSize = '0.6rem';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removePlayer(id);
+            });
+            badge.appendChild(closeBtn);
+
+            container.appendChild(badge);
+        });
+
+        selectedDiv.appendChild(container);
     }
 
     // Form submission
@@ -295,7 +463,7 @@
 
         if (proposalType === 'direct' && selectedPlayerIds.length === 0) {
             e.preventDefault();
-            showError('Devi selezionare almeno un giocatore per un invito diretto');
+            showError(i18n.selectPlayerError);
             return;
         }
 
@@ -312,14 +480,31 @@
 
         // Show confirmation modal, submit on confirm
         e.preventDefault();
-        showConfirm('Sei sicuro di voler creare questa proposta di match?', () => {
+        showConfirm(i18n.confirmCreate, () => {
             this.submit();
         });
     });
 
-    // Initialize format explanation
+    // Initialize format explanation and player invitations visibility
     document.addEventListener('DOMContentLoaded', function () {
         updateFormatExplanation();
+
+        // Check for rematch opponent (pre-selected from previous match)
+        {% if rematch_opponent %}
+        // Set proposal type to direct and show player invitations
+        document.getElementById('proposal_type').value = 'direct';
+        document.getElementById('playerInvitations').style.display = 'block';
+
+        // Pre-select the rematch opponent
+        addPlayer({{ rematch_opponent.id }}, {{ rematch_opponent.username|tojson }});
+        {% else %}
+        // Show player invitations if "Invito Diretto" is selected on page load
+        const proposalType = document.getElementById('proposal_type').value;
+        const playerInvitations = document.getElementById('playerInvitations');
+        if (proposalType === 'direct') {
+            playerInvitations.style.display = 'block';
+        }
+        {% endif %}
     });
 </script>
 {% endblock %}
