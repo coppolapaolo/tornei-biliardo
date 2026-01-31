@@ -15,7 +15,7 @@
         <!-- Proposte e Match in Corso -->
         <div class="col-md-8">
             <!-- Match Proposals -->
-            {% if proposals and (proposals.received or proposals.created or proposals.available) %}
+            {% if proposals and (proposals.received_proposals or proposals.sent_proposals or proposals.open_proposals) %}
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-envelope"></i> Proposte di Match</h5>
@@ -24,7 +24,7 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    {% for proposal in (proposals.received + proposals.created + proposals.available)[:5] %}
+                    {% for proposal in (proposals.received_proposals + proposals.sent_proposals + proposals.open_proposals)[:5] %}
                     <div class="card mb-2 border-{{ 'success' if proposal.status.value == 'accepted' else 'warning' if proposal.status.value == 'pending' else 'danger' }}">
                         <div class="card-body py-2">
                             <div class="d-flex justify-content-between align-items-center">
@@ -56,7 +56,7 @@
                         </div>
                     </div>
                     {% endfor %}
-                    {% if proposals|length > 5 %}
+                    {% if (proposals.received_proposals|length + proposals.sent_proposals|length + proposals.open_proposals|length) > 5 %}
                     <div class="text-center">
                         <a href="{{ url_for('individual_match.proposal_list') }}" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-list"></i> Vedi Tutte le Proposte
@@ -87,7 +87,7 @@
                                     </small>
                                 </div>
                                 <div class="text-end">
-                                    {% if match.status.value == 'playing' %}
+                                    {% if match.status.value == 'in_progress' %}
                                     <span class="badge bg-success">{{ match.player1_score }} - {{ match.player2_score }}</span>
                                     <br>
                                     {% endif %}
@@ -145,7 +145,7 @@
             {% endif %}
 
             <!-- Empty State -->
-            {% if not (proposals.received or proposals.created or proposals.available) and not active_matches and not recent_matches %}
+            {% if not (proposals.received_proposals or proposals.sent_proposals or proposals.open_proposals) and not active_matches and not recent_matches %}
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="fas fa-shield-halved fa-3x text-muted mb-3"></i>

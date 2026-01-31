@@ -28,8 +28,8 @@
                                         <h5>Le tue Disponibilità Attuali</h5>
 
                                         <div id="currentAvailability">
-                                            {% if current_availability and current_availability|length %}
-                                            {% for availability in current_availability %}
+                                            {% if availability_records and availability_records|length %}
+                                            {% for availability in availability_records %}
                                             <div class="card mb-3 availability-item" data-id="{{ availability.id }}">
                                                 <div class="card-body">
                                                     <div class="row align-items-center">

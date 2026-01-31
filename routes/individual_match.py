@@ -315,6 +315,32 @@ def cancel_proposal(proposal_id):
             )
 
 
+@individual_match_bp.route("/proposals/<int:proposal_id>/decline", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def decline_proposal(proposal_id):
+    """Decline a direct match proposal invitation."""
+    try:
+        MatchProposalService.reject_invitation(current_user.id, proposal_id)
+
+        if request.is_json:
+            return jsonify(
+                {"success": True, "message": "Proposta rifiutata"}
+            )
+        else:
+            flash("Proposta rifiutata.", "info")
+            return redirect(url_for("individual_match.proposal_list"))
+
+    except Exception as e:
+        error_msg = f"Errore nel rifiuto: {str(e)}"
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(
+                url_for("individual_match.proposal_detail", proposal_id=proposal_id)
+            )
+
+
 @individual_match_bp.route("/matches")
 @RoleRequirement.player_or_director_required
 def match_list():

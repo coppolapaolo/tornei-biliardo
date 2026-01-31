@@ -179,8 +179,27 @@
 <script>
 function declineProposal(proposalId) {
     showConfirm('Sei sicuro di voler rifiutare questa proposta?', () => {
-        // In a real implementation, this would make an AJAX call to decline
-        showInfo('Funzionalità di rifiuto da implementare nel backend');
+        fetch(`/match/proposals/${proposalId}/decline`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccess('Proposta rifiutata');
+                setTimeout(() => {
+                    window.location.href = '{{ url_for("individual_match.proposal_list") }}';
+                }, 1000);
+            } else {
+                showError('Errore: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Errore durante il rifiuto della proposta');
+        });
     });
 }
 </script>

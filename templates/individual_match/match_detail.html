@@ -428,7 +428,7 @@
     const matchId = {{ match.id }};
 
     function addRack(winnerId) {
-        fetch(`/player/match/${matchId}/racks/add`, {
+        fetch(`/match/matches/${matchId}/racks/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -451,7 +451,7 @@
 
     function removeRack(playerId) {
         showConfirm('Rimuovere l\'ultimo rack vinto da questo giocatore?', () => {
-            fetch(`/player/match/${matchId}/racks/remove`, {
+            fetch(`/match/matches/${matchId}/racks/remove`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -475,7 +475,7 @@
 
     function confirmResult() {
         showConfirm('Confermare il risultato del match?', () => {
-            fetch(`/player/match/${matchId}/confirm`, {
+            fetch(`/match/matches/${matchId}/confirm`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -503,7 +503,7 @@
 
     function rejectResult() {
         showConfirm('Rifiutare il risultato? L\'ultimo rack verrà rimosso e si potrà continuare a giocare.', () => {
-            fetch(`/player/match/${matchId}/reject`, {
+            fetch(`/match/matches/${matchId}/reject`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

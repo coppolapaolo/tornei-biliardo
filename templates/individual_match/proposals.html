@@ -341,15 +341,32 @@
 <script>
     function declineProposal(proposalId) {
         showConfirm('Sei sicuro di voler rifiutare questa proposta?', () => {
-            // In a real implementation, this would make an AJAX call to decline
-            showInfo('Funzionalità di rifiuto da implementare nel backend');
+            fetch(`/match/proposals/${proposalId}/decline`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Proposta rifiutata');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showError('Errore: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Errore durante il rifiuto della proposta');
+            });
         });
     }
 
     // Auto-refresh if there are pending proposals
     document.addEventListener('DOMContentLoaded', function () {
-        const pendingProposals = document.querySelectorAll('.badge:contains("Pending")').length;
-        if (pendingProposals > 0) {
+        const pendingBadges = document.querySelectorAll('.badge.bg-warning');
+        if (pendingBadges.length > 0) {
             // Refresh every 30 seconds if there are pending proposals
             setTimeout(() => {
                 window.location.reload();

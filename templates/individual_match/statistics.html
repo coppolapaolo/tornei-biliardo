@@ -41,11 +41,11 @@
                             <small class="text-muted">Match Totali</small>
                         </div>
                         <div class="col-md-2">
-                            <h2 class="display-6 text-success">{{ statistics.wins or 0 }}</h2>
+                            <h2 class="display-6 text-success">{{ statistics.won_matches or 0 }}</h2>
                             <small class="text-muted">Vittorie</small>
                         </div>
                         <div class="col-md-2">
-                            <h2 class="display-6 text-danger">{{ statistics.losses or 0 }}</h2>
+                            <h2 class="display-6 text-danger">{{ statistics.lost_matches or 0 }}</h2>
                             <small class="text-muted">Sconfitte</small>
                         </div>
                         <div class="col-md-2">
@@ -57,8 +57,8 @@
                             <small class="text-muted">Rack Vinti</small>
                         </div>
                         <div class="col-md-2">
-                            <h2 class="display-6 text-secondary">{{ "%.1f"|format(statistics.avg_racks_per_match or 0) }}</h2>
-                            <small class="text-muted">Rack/Match</small>
+                            <h2 class="display-6 text-secondary">{{ "%.1f"|format(statistics.rack_win_percentage or 0) }}%</h2>
+                            <small class="text-muted">% Rack Vinti</small>
                         </div>
                     </div>
                 </div>
