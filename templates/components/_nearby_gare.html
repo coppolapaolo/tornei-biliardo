@@ -1,0 +1,185 @@
+{# templates/components/_nearby_gare.html #}
+{# Component to display gare in user's area, loaded via AJAX #}
+
+<div id="nearbyGareSection" class="card mt-4" style="display: none;">
+  <div class="card-header bg-info text-white">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-map-marker-alt me-2"></i>{{ _('Gare nella tua zona') }}
+      </h5>
+      <span id="nearbyProvinceBadges"></span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div id="nearbyGareLoading" class="text-center py-3">
+      <div class="spinner-border text-info" role="status">
+        <span class="visually-hidden">{{ _('Caricamento...') }}</span>
+      </div>
+    </div>
+    <div id="nearbyGareContent" style="display: none;">
+      <div id="nearbyGareList" class="row"></div>
+      <div id="nearbyGareEmpty" class="text-center py-3 text-muted" style="display: none;">
+        <i class="fas fa-map fa-2x mb-2"></i>
+        <p class="mb-0">{{ _('Nessuna gara con iscrizioni aperte nella tua zona') }}</p>
+      </div>
+    </div>
+    <div id="nearbyGareNoProvince" class="text-center py-3 text-muted" style="display: none;">
+      <i class="fas fa-location-arrow fa-2x mb-2"></i>
+      <p class="mb-2">{{ _('Imposta le tue disponibilità nelle sale per vedere gare vicine') }}</p>
+      <a href="{{ url_for('player.availability_preferences') }}" class="btn btn-sm btn-outline-info">
+        <i class="fas fa-cog me-1"></i>{{ _('Imposta disponibilità') }}
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- JSON Configuration Block (ADR-018) -->
+<script type="application/json" id="nearby-gare-config">
+{
+    "i18n": {
+        "inscriptionOpen": {{ _('Iscrizioni aperte')|tojson }},
+        "until": {{ _('fino al')|tojson }},
+        "participants": {{ _('iscritti')|tojson }},
+        "inscribe": {{ _('Iscriviti')|tojson }}
+    }
+}
+</script>
+
+<script>
+(function() {
+    const config = JSON.parse(document.getElementById('nearby-gare-config').textContent);
+    const i18n = config.i18n;
+
+    // Helper to create icon element
+    function createIcon(iconClass, colorClass) {
+        const icon = document.createElement('i');
+        icon.className = 'fas ' + iconClass + ' ' + (colorClass || '') + ' me-1';
+        return icon;
+    }
+
+    function loadNearbyGare() {
+        fetch('/player/api/nearby-gare')
+            .then(response => response.json())
+            .then(data => {
+                const section = document.getElementById('nearbyGareSection');
+                const loading = document.getElementById('nearbyGareLoading');
+                const content = document.getElementById('nearbyGareContent');
+                const list = document.getElementById('nearbyGareList');
+                const empty = document.getElementById('nearbyGareEmpty');
+                const noProvince = document.getElementById('nearbyGareNoProvince');
+                const badges = document.getElementById('nearbyProvinceBadges');
+
+                loading.style.display = 'none';
+
+                if (!data.provinces || data.provinces.length === 0) {
+                    noProvince.style.display = '';
+                    section.style.display = '';
+                    return;
+                }
+
+                // Show province badges using safe DOM methods
+                badges.replaceChildren();
+                data.provinces.forEach(function(p) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-light text-dark me-1';
+                    badge.textContent = p.name;
+                    badges.appendChild(badge);
+                });
+
+                if (!data.gare || data.gare.length === 0) {
+                    empty.style.display = '';
+                    content.style.display = '';
+                    section.style.display = '';
+                    return;
+                }
+
+                // Render gare using safe DOM methods
+                list.replaceChildren();
+                data.gare.forEach(function(gara) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 col-lg-4 mb-3';
+
+                    const card = document.createElement('div');
+                    card.className = 'card h-100 border-info';
+
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body';
+
+                    // Title
+                    const title = document.createElement('h6');
+                    title.className = 'card-title';
+                    title.textContent = gara.name;
+                    cardBody.appendChild(title);
+
+                    // Details container
+                    const details = document.createElement('p');
+                    details.className = 'card-text small';
+
+                    // Venue line
+                    const venueLine = document.createElement('span');
+                    venueLine.appendChild(createIcon('fa-map-marker-alt', 'text-info'));
+                    venueLine.appendChild(document.createTextNode(gara.venue_name || '-'));
+                    if (gara.city) {
+                        venueLine.appendChild(document.createTextNode(' (' + gara.city + ')'));
+                    }
+                    details.appendChild(venueLine);
+                    details.appendChild(document.createElement('br'));
+
+                    // Date line
+                    if (gara.date) {
+                        const dateLine = document.createElement('span');
+                        dateLine.appendChild(createIcon('fa-calendar', 'text-info'));
+                        const dateStr = new Date(gara.date).toLocaleDateString('it-IT');
+                        dateLine.appendChild(document.createTextNode(dateStr));
+                        if (gara.time) {
+                            dateLine.appendChild(document.createTextNode(' ' + gara.time));
+                        }
+                        details.appendChild(dateLine);
+                        details.appendChild(document.createElement('br'));
+                    }
+
+                    // Participants line
+                    const participantsLine = document.createElement('span');
+                    participantsLine.appendChild(createIcon('fa-users', 'text-info'));
+                    let partText = gara.current_inscriptions + ' ' + i18n.participants;
+                    if (gara.max_participants) {
+                        partText += ' / ' + gara.max_participants;
+                    }
+                    participantsLine.appendChild(document.createTextNode(partText));
+                    details.appendChild(participantsLine);
+
+                    cardBody.appendChild(details);
+
+                    // Inscribe button
+                    const btnDiv = document.createElement('div');
+                    btnDiv.className = 'mt-2';
+                    const btn = document.createElement('a');
+                    btn.href = '/admin/gara/' + gara.id;
+                    btn.className = 'btn btn-sm btn-info';
+                    btn.appendChild(createIcon('fa-sign-in-alt', ''));
+                    btn.appendChild(document.createTextNode(i18n.inscribe));
+                    btnDiv.appendChild(btn);
+                    cardBody.appendChild(btnDiv);
+
+                    card.appendChild(cardBody);
+                    col.appendChild(card);
+                    list.appendChild(col);
+                });
+
+                content.style.display = '';
+                section.style.display = '';
+            })
+            .catch(function(err) {
+                console.error('Error loading nearby gare:', err);
+                document.getElementById('nearbyGareLoading').style.display = 'none';
+            });
+    }
+
+    // Load on page ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadNearbyGare);
+    } else {
+        loadNearbyGare();
+    }
+})();
+</script>

@@ -55,16 +55,41 @@ class UserMetricService:
     @staticmethod
     def _get_scores_inserted(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
         """
-        Count matches where the user has updated the score/result.
-        Note: Currently we might verify this by checking if they are the winner or loser
-        in a confirmed match, or if we have a specific 'updated_by' log. 
-        For now, we assume participation in a completed match counts as inserting score 
-        if we don't track 'who clicked the button'.
-        
-        TODO: Improve this if we add a robust audit log for score entry.
-        For now, alias to total_matches to allow progress.
+        Count distinct matches where the user has inserted at least one rack.
+
+        Uses the added_by_id field in Rack, IndividualRack, and TrioRack tables
+        to accurately track who actually entered scores (vs just being a player).
+
+        Returns count of distinct matches across all match types.
         """
-        return UserMetricService._get_total_matches(user_id, context)
+        from models.match.models import Rack, TrioRack
+        from models.individual_match.models import IndividualRack
+
+        # Tournament matches (regular 1v1)
+        tournament_count = db.session.query(
+            func.count(func.distinct(Rack.match_id))
+        ).filter(
+            Rack.added_by_id == user_id,
+            Rack.is_deleted == False  # noqa: E712
+        ).scalar() or 0
+
+        # Individual matches (casual 1v1)
+        individual_count = db.session.query(
+            func.count(func.distinct(IndividualRack.match_id))
+        ).filter(
+            IndividualRack.added_by_id == user_id,
+            IndividualRack.is_deleted == False  # noqa: E712
+        ).scalar() or 0
+
+        # Trio matches
+        trio_count = db.session.query(
+            func.count(func.distinct(TrioRack.trio_match_id))
+        ).filter(
+            TrioRack.added_by_id == user_id,
+            TrioRack.is_deleted == False  # noqa: E712
+        ).scalar() or 0
+
+        return tournament_count + individual_count + trio_count
 
     @staticmethod
     def _get_tournaments_played(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
@@ -114,12 +139,13 @@ class UserMetricService:
 
     @staticmethod
     def _get_challenges_completed(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
-        """Count completed challenge sessions (drills)."""
-        # Assuming we have a way to track completed drills.
-        # This might need to query a dedicated ChallengeResult model if it exists,
-        # or QuestParticipation for 'drills' type.
-        # Placeholder for now until Challenge domain is fully implemented.
-        return 0
+        """Count completed challenge attempts (drills)."""
+        from models.challenge.models import ChallengeAttempt
+
+        return ChallengeAttempt.query.filter(
+            ChallengeAttempt.user_id == user_id,
+            ChallengeAttempt.completed == True  # noqa: E712
+        ).count()
 
     @staticmethod
     def _get_distinct_opponents(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
@@ -141,6 +167,29 @@ class UserMetricService:
 
     @staticmethod
     def _get_tournament_drills_completed(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
-        """Count drills completed during a tournament context."""
-        # Placeholder
-        return 0
+        """Count drills completed during a tournament context (with gara_id set)."""
+        from models.challenge.models import ChallengeAttempt
+
+        return ChallengeAttempt.query.filter(
+            ChallengeAttempt.user_id == user_id,
+            ChallengeAttempt.completed == True,  # noqa: E712
+            ChallengeAttempt.gara_id.isnot(None)  # Has tournament context
+        ).count()
+
+    @staticmethod
+    def _get_gare_with_drill_played(user_id: int, context: Optional[Dict[str, Any]] = None) -> int:
+        """
+        Count distinct gare where user completed at least one challenge/drill.
+
+        This metric is used for feature gating: users who have experienced
+        drills in a tournament context can unlock standalone drill features.
+        """
+        from models.challenge.models import ChallengeAttempt
+
+        return db.session.query(
+            func.count(func.distinct(ChallengeAttempt.gara_id))
+        ).filter(
+            ChallengeAttempt.user_id == user_id,
+            ChallengeAttempt.completed == True,  # noqa: E712
+            ChallengeAttempt.gara_id.isnot(None)
+        ).scalar() or 0

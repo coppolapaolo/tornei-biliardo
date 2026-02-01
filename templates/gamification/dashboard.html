@@ -104,6 +104,75 @@
         </div>
     </div>
 
+    <!-- Locked Features Progress - What's Next -->
+    {% if locked_features %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>{{ _('Prossimi Sblocchi') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">{{ _('Completa queste attività per sbloccare nuove funzionalità') }}</p>
+                    <div class="row g-3">
+                        {% for feature in locked_features[:4] %}
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-lock text-warning me-2"></i>
+                                        <h6 class="card-title mb-0">{{ feature.feature_name }}</h6>
+                                    </div>
+                                    {% if feature.description %}
+                                    <p class="card-text small text-muted mb-2">{{ feature.description|truncate(60) }}</p>
+                                    {% endif %}
+
+                                    {# Show conditions progress #}
+                                    {% for rule_set in feature.rule_sets %}
+                                    {% if not loop.first %}<hr class="my-2">{% endif %}
+                                    <ul class="list-unstyled small mb-0">
+                                        {% for cond in rule_set.conditions %}
+                                        <li class="mb-1">
+                                            {% if cond.is_met %}
+                                            <i class="fas fa-check-circle text-success me-1"></i>
+                                            {% else %}
+                                            <i class="fas fa-circle text-warning me-1"></i>
+                                            {% endif %}
+                                            {{ cond.description }}
+                                            {% if cond.current_value is defined and cond.required_value is defined %}
+                                            <span class="text-muted">({{ cond.current_value }}/{{ cond.required_value }})</span>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endfor %}
+
+                                    {# Show next action hint #}
+                                    {% if feature.next_action %}
+                                    <div class="mt-2 pt-2 border-top">
+                                        <small class="text-primary">
+                                            <i class="fas fa-arrow-right me-1"></i>{{ feature.next_action }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if locked_features|length > 4 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            {{ _('e altre') }} {{ locked_features|length - 4 }} {{ _('funzionalità da sbloccare') }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Recent Achievements -->
     <div class="row mb-4">
         <div class="col-12">

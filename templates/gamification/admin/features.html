@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-key"></i> {{ _('Gestione Feature Gating') }}</h2>
+    <div>
+      <a href="{{ url_for('gamification.admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Torna al Dashboard') }}
+      </a>
+      <a href="{{ url_for('gamification.admin_create_feature') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> {{ _('Nuova Feature') }}
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p class="text-muted mb-4">
+        {{ _('Le feature gating controllano quali funzionalità sono disponibili agli utenti in base a livello, metriche, ruoli e achievement.') }}
+      </p>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{{ _('Codice') }}</th>
+            <th>{{ _('Nome') }}</th>
+            <th>{{ _('Stato') }}</th>
+            <th>{{ _('Regole') }}</th>
+            <th>{{ _('Azioni') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for feature in features %}
+          <tr>
+            <td><code>{{ feature.code }}</code></td>
+            <td>
+              <strong>{{ feature.name }}</strong>
+              {% if feature.description %}
+              <br><small class="text-muted">{{ feature.description[:60] }}{% if feature.description|length > 60 %}...{% endif %}</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if feature.is_active %}
+                <span class="badge bg-success">{{ _('Attiva') }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ _('Disattiva') }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% set rules = feature.get_rules() %}
+              {% if rules %}
+                <span class="badge bg-info">{{ rules|length }} {{ _('regole') }}</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">{{ _('Aperta a tutti') }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('gamification.admin_feature_detail', code=feature.code) }}"
+                 class="btn btn-sm btn-primary">
+                <i class="bi bi-pencil"></i> {{ _('Modifica') }}
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              {{ _('Nessuna feature configurata') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

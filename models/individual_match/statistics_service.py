@@ -230,27 +230,21 @@ class IndividualMatchStatisticsService:
         return [users_by_id[oid] for oid in opponent_ids if oid in users_by_id]
 
     @staticmethod
-    def get_all_opponents(user_id: int, min_level: int = 5) -> List[User]:
-        """Get all unique opponents this player has played any match against.
+    def _get_all_opponent_ids(user_id: int) -> set[int]:
+        """Get IDs of all players user has played against.
 
         Includes opponents from:
         - Individual matches (completed/validated)
         - Tournament/gara matches (completed/validated)
 
-        Returns users ordered alphabetically by username.
-        Filters for users who have reached minimum level for individual matches.
-
         Args:
             user_id: The user to find opponents for
-            min_level: Minimum gamification level required (default 5)
 
         Returns:
-            List of User objects, ordered alphabetically by username
+            Set of opponent user IDs
         """
-        from ..gamification.models import UserLevel
         from ..match.models import Match
 
-        # Collect opponent IDs from both match types
         opponent_ids_set: set[int] = set()
 
         # 1. Individual matches - opponent ID expression
@@ -274,7 +268,9 @@ class IndividualMatchStatisticsService:
             .distinct()
             .all()
         )
-        opponent_ids_set.update(oc.opponent_id for oc in individual_opponents if oc.opponent_id)
+        opponent_ids_set.update(
+            oc.opponent_id for oc in individual_opponents if oc.opponent_id
+        )
 
         # 2. Tournament/gara matches - opponent ID expression
         tournament_opponent_expr = case(
@@ -297,16 +293,84 @@ class IndividualMatchStatisticsService:
             .distinct()
             .all()
         )
-        opponent_ids_set.update(oc.opponent_id for oc in tournament_opponents if oc.opponent_id)
+        opponent_ids_set.update(
+            oc.opponent_id for oc in tournament_opponents if oc.opponent_id
+        )
 
-        if not opponent_ids_set:
+        return opponent_ids_set
+
+    @staticmethod
+    def get_eligible_opponents(user_id: int) -> List[User]:
+        """Get all unique opponents who have unlocked individual matches.
+
+        Uses can_access("create_match_direct") for consistency with menu visibility.
+        This ensures that users who see the menu also appear in opponent lists,
+        and users who don't have access to individual matches won't appear.
+
+        Includes opponents from:
+        - Individual matches (completed/validated)
+        - Tournament/gara matches (completed/validated)
+
+        Returns users ordered alphabetically by username.
+
+        Args:
+            user_id: The user to find opponents for
+
+        Returns:
+            List of User objects who have unlocked individual matches,
+            ordered alphabetically by username
+        """
+        opponent_ids = IndividualMatchStatisticsService._get_all_opponent_ids(user_id)
+
+        if not opponent_ids:
+            return []
+
+        # Fetch users and filter by feature access
+        users = (
+            User.query.filter(
+                User.id.in_(list(opponent_ids)),
+                User.deleted_at.is_(None),
+            )
+            .order_by(User.username)
+            .all()
+        )
+
+        # Filter by feature access (consistent with menu visibility)
+        return [u for u in users if u.can_access("create_match_direct")]
+
+    @staticmethod
+    def get_all_opponents(user_id: int, min_level: int = 5) -> List[User]:
+        """Get all unique opponents this player has played any match against.
+
+        DEPRECATED: Use get_eligible_opponents() instead for consistency
+        with the gamification feature gating system.
+
+        Includes opponents from:
+        - Individual matches (completed/validated)
+        - Tournament/gara matches (completed/validated)
+
+        Returns users ordered alphabetically by username.
+        Filters for users who have reached minimum level for individual matches.
+
+        Args:
+            user_id: The user to find opponents for
+            min_level: Minimum gamification level required (default 5)
+
+        Returns:
+            List of User objects, ordered alphabetically by username
+        """
+        from ..gamification.models import UserLevel
+
+        opponent_ids = IndividualMatchStatisticsService._get_all_opponent_ids(user_id)
+
+        if not opponent_ids:
             return []
 
         # Fetch users with level filter, ordered alphabetically
         users = (
             User.query.join(UserLevel, User.id == UserLevel.user_id)
             .filter(
-                User.id.in_(list(opponent_ids_set)),
+                User.id.in_(list(opponent_ids)),
                 User.deleted_at.is_(None),
                 UserLevel.current_level >= min_level,
             )

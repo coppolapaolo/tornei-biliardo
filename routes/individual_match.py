@@ -95,7 +95,8 @@ def search_players():
         q: Search query (min 2 chars)
         limit: Max results (default 10)
 
-    Returns JSON array of matching players (excludes current user).
+    Returns JSON array of matching players who have unlocked individual matches.
+    Excludes current user and uses can_access("create_match_direct") for consistency.
     """
     query = request.args.get("q", "").strip()
     limit = request.args.get("limit", 10, type=int)
@@ -104,26 +105,20 @@ def search_players():
         return jsonify([])
 
     from models.user.models import User
-    from models.gamification.models import UserLevel
 
-    # Minimum level required for individual matches (match_proposals feature)
-    MIN_LEVEL_FOR_MATCH_PROPOSALS = 5
-
-    # Search by username, exclude current user, soft-deleted users,
-    # and users who haven't unlocked the match_proposals feature (level < 5)
+    # Search by username, exclude current user and soft-deleted users
     users = (
-        User.query.join(
-            UserLevel, User.id == UserLevel.user_id
-        ).filter(
+        User.query.filter(
             User.username.ilike(f"%{query}%"),
             User.id != current_user.id,
-            User.deleted_at.is_(None),  # Not soft-deleted
-            UserLevel.current_level >= MIN_LEVEL_FOR_MATCH_PROPOSALS,
+            User.deleted_at.is_(None),
         )
         .order_by(User.username)
-        .limit(limit)
         .all()
     )
+
+    # Filter by feature access (consistent with menu visibility and opponent list)
+    eligible_users = [u for u in users if u.can_access("create_match_direct")][:limit]
 
     return jsonify([
         {
@@ -131,7 +126,7 @@ def search_players():
             "username": u.username,
             "avatar_url": u.avatar_url if hasattr(u, "avatar_url") else None,
         }
-        for u in users
+        for u in eligible_users
     ])
 
 
@@ -141,7 +136,7 @@ def get_opponents():
     """Get all players the current user has played against.
 
     Includes opponents from individual matches, gare, and campionati.
-    Filters for players who have unlocked match proposals (level >= 5).
+    Filters by can_access("create_match_direct") for consistency with menu visibility.
     Returns players ordered alphabetically by username.
 
     Returns JSON array for use in TomSelect dropdown.
@@ -150,11 +145,7 @@ def get_opponents():
         IndividualMatchStatisticsService,
     )
 
-    MIN_LEVEL_FOR_MATCH_PROPOSALS = 5
-
-    opponents = IndividualMatchStatisticsService.get_all_opponents(
-        current_user.id, min_level=MIN_LEVEL_FOR_MATCH_PROPOSALS
-    )
+    opponents = IndividualMatchStatisticsService.get_eligible_opponents(current_user.id)
 
     return jsonify([
         {

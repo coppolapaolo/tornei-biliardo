@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-key"></i> {{ feature.name }}</h2>
+    <div>
+      <a href="{{ url_for('gamification.admin_features') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Torna alla lista') }}
+      </a>
+      <button type="button" class="btn btn-info" onclick="previewEligibility()">
+        <i class="bi bi-people"></i> {{ _('Anteprima utenti') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{{ _('Configurazione Regole') }}</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('gamification.admin_update_feature', code=feature.code) }}" id="featureForm">
+            <input type="hidden" name="rules" id="rulesJson" value="">
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">{{ _('Nome') }}</label>
+                <input type="text" class="form-control" name="name" value="{{ feature.name }}" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ _('Codice') }}</label>
+                <input type="text" class="form-control" value="{{ feature.code }}" readonly disabled>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ _('Descrizione') }}</label>
+              <textarea class="form-control" name="description" rows="2">{{ feature.description or '' }}</textarea>
+            </div>
+
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" name="is_active" id="isActive"
+                     {{ 'checked' if feature.is_active else '' }}>
+              <label class="form-check-label" for="isActive">{{ _('Feature attiva') }}</label>
+            </div>
+
+            <hr>
+
+            <h6 class="mb-3">{{ _('Regole di sblocco') }}</h6>
+            <p class="text-muted small">
+              {{ _('Ogni gruppo di condizioni usa logica AND (tutte devono essere vere).') }}<br>
+              {{ _('Gruppi diversi usano logica OR (basta che uno sia vero).') }}
+            </p>
+
+            <div id="ruleSets" class="mb-3">
+              {# Rule sets will be rendered by JavaScript #}
+            </div>
+
+            <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addRuleSet()">
+              <i class="bi bi-plus-circle"></i> {{ _('Aggiungi gruppo OR') }}
+            </button>
+
+            <hr>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg"></i> {{ _('Salva modifiche') }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">{{ _('Guida Condizioni') }}</h6>
+        </div>
+        <div class="card-body small">
+          <h6><i class="bi bi-bar-chart"></i> {{ _('LEVEL') }}</h6>
+          <p class="text-muted">{{ _('Livello gamification del giocatore (1-50+)') }}</p>
+
+          <h6><i class="bi bi-graph-up"></i> {{ _('METRIC') }}</h6>
+          <p class="text-muted">{{ _('Metriche basate su attività utente:') }}</p>
+          <ul class="text-muted">
+            {% for m in available_metrics %}
+            <li><code>{{ m.name }}</code> - {{ m.label }}</li>
+            {% endfor %}
+          </ul>
+
+          <h6><i class="bi bi-person-badge"></i> {{ _('ROLE') }}</h6>
+          <p class="text-muted">{{ _('Ruolo utente (Admin, Director, Gestore Sala)') }}</p>
+
+          <h6><i class="bi bi-trophy"></i> {{ _('ACHIEVEMENT') }}</h6>
+          <p class="text-muted">{{ _('Achievement sbloccato (usa lo slug)') }}</p>
+        </div>
+      </div>
+
+      <div class="card mt-3" id="previewCard" style="display: none;">
+        <div class="card-header">
+          <h6 class="mb-0">{{ _('Anteprima Accesso') }}</h6>
+        </div>
+        <div class="card-body">
+          <div id="previewContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Rule Set Template #}
+<template id="ruleSetTemplate">
+  <div class="rule-set card mb-2" data-index="__INDEX__">
+    <div class="card-header d-flex justify-content-between align-items-center py-2">
+      <span class="badge bg-secondary">{{ _('Gruppo') }} <span class="rule-set-number">__NUMBER__</span> (AND)</span>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRuleSet(this)">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+    <div class="card-body py-2">
+      <div class="conditions"></div>
+      <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addCondition(this)">
+        <i class="bi bi-plus"></i> {{ _('Aggiungi condizione') }}
+      </button>
+    </div>
+  </div>
+</template>
+
+{# Condition Template #}
+<template id="conditionTemplate">
+  <div class="condition row g-2 mb-2 align-items-center">
+    <div class="col-md-3">
+      <select class="form-select form-select-sm condition-type" onchange="updateConditionFields(this)">
+        <option value="">{{ _('Tipo...') }}</option>
+        {% for ct in condition_types %}
+        <option value="{{ ct.value }}">{{ ct.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 condition-metric-field" style="display: none;">
+      <select class="form-select form-select-sm condition-metric">
+        <option value="">{{ _('Metrica...') }}</option>
+        {% for m in available_metrics %}
+        <option value="{{ m.name }}">{{ m.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 condition-role-field" style="display: none;">
+      <select class="form-select form-select-sm condition-role">
+        <option value="">{{ _('Ruolo...') }}</option>
+        {% for r in roles %}
+        <option value="{{ r.value }}">{{ r.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2 condition-operator-field" style="display: none;">
+      <select class="form-select form-select-sm condition-operator">
+        {% for op in operators %}
+        <option value="{{ op.value }}">{{ op.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2 condition-value-field" style="display: none;">
+      <input type="number" class="form-control form-control-sm condition-value" placeholder="{{ _('Valore') }}">
+    </div>
+    <div class="col-md-3 condition-achievement-field" style="display: none;">
+      <input type="text" class="form-control form-control-sm condition-achievement" placeholder="{{ _('Slug achievement') }}">
+    </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCondition(this)">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+</template>
+
+<script>
+// Current rules data - admin-only page with trusted server data
+let rules = {{ feature.get_rules()|tojson }};
+
+// Localized strings for safe DOM manipulation
+const i18n = {
+  noRules: {{ _('Nessuna regola = aperta a tutti')|tojson }},
+  loading: {{ _('Caricamento...')|tojson }},
+  users: {{ _('utenti')|tojson }},
+  canAccess: {{ _('possono accedere')|tojson }},
+  firstUsers: {{ _('Primi utenti:')|tojson }},
+  loadError: {{ _('Errore nel caricamento')|tojson }}
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderRules();
+});
+
+function renderRules() {
+  const container = document.getElementById('ruleSets');
+  container.replaceChildren(); // Clear safely
+
+  if (rules.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'text-muted text-center py-3';
+    p.textContent = i18n.noRules;
+    container.appendChild(p);
+    return;
+  }
+
+  rules.forEach((ruleSet, index) => {
+    addRuleSetElement(ruleSet, index);
+  });
+}
+
+function addRuleSet() {
+  const newRuleSet = { description: '', conditions: [] };
+  rules.push(newRuleSet);
+  renderRules();
+  // Add one condition to the new rule set
+  const lastRuleSet = document.querySelector('.rule-set:last-child');
+  if (lastRuleSet) {
+    addCondition(lastRuleSet.querySelector('.btn-outline-secondary'));
+  }
+}
+
+function addRuleSetElement(ruleSet, index) {
+  const container = document.getElementById('ruleSets');
+  const template = document.getElementById('ruleSetTemplate');
+  const clone = template.content.cloneNode(true);
+
+  const ruleSetEl = clone.querySelector('.rule-set');
+  ruleSetEl.dataset.index = index;
+  ruleSetEl.querySelector('.rule-set-number').textContent = index + 1;
+
+  container.appendChild(clone);
+
+  // Add existing conditions
+  const conditionsContainer = ruleSetEl.querySelector('.conditions');
+  (ruleSet.conditions || []).forEach((condition) => {
+    addConditionElement(conditionsContainer, condition);
+  });
+}
+
+function removeRuleSet(btn) {
+  const ruleSetEl = btn.closest('.rule-set');
+  const index = parseInt(ruleSetEl.dataset.index);
+  rules.splice(index, 1);
+  renderRules();
+}
+
+function addCondition(btn) {
+  const ruleSetEl = btn.closest('.rule-set');
+  const conditionsContainer = ruleSetEl.querySelector('.conditions');
+  addConditionElement(conditionsContainer, {});
+}
+
+function addConditionElement(container, condition) {
+  const template = document.getElementById('conditionTemplate');
+  const clone = template.content.cloneNode(true);
+  const element = clone.querySelector('.condition');
+
+  container.appendChild(clone);
+
+  // Set values if provided
+  if (condition.type) {
+    element.querySelector('.condition-type').value = condition.type;
+    updateConditionFields(element.querySelector('.condition-type'));
+
+    if (condition.type === 'METRIC' && condition.metric) {
+      element.querySelector('.condition-metric').value = condition.metric;
+    }
+    if (condition.type === 'ROLE' && condition.value) {
+      element.querySelector('.condition-role').value = condition.value;
+    }
+    if (condition.type === 'ACHIEVEMENT' && condition.value) {
+      element.querySelector('.condition-achievement').value = condition.value;
+    }
+    if (condition.operator) {
+      element.querySelector('.condition-operator').value = condition.operator;
+    }
+    if (condition.value !== undefined && (condition.type === 'LEVEL' || condition.type === 'METRIC')) {
+      element.querySelector('.condition-value').value = condition.value;
+    }
+  }
+}
+
+function removeCondition(btn) {
+  btn.closest('.condition').remove();
+}
+
+function updateConditionFields(select) {
+  const condition = select.closest('.condition');
+  const type = select.value;
+
+  // Hide all optional fields
+  condition.querySelectorAll('.condition-metric-field, .condition-role-field, .condition-operator-field, .condition-value-field, .condition-achievement-field').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  switch (type) {
+    case 'LEVEL':
+      condition.querySelector('.condition-operator-field').style.display = '';
+      condition.querySelector('.condition-value-field').style.display = '';
+      break;
+    case 'METRIC':
+      condition.querySelector('.condition-metric-field').style.display = '';
+      condition.querySelector('.condition-operator-field').style.display = '';
+      condition.querySelector('.condition-value-field').style.display = '';
+      break;
+    case 'ROLE':
+      condition.querySelector('.condition-role-field').style.display = '';
+      break;
+    case 'ACHIEVEMENT':
+      condition.querySelector('.condition-achievement-field').style.display = '';
+      break;
+  }
+}
+
+// Serialize rules before form submission
+document.getElementById('featureForm').addEventListener('submit', function() {
+  const ruleSetsEls = document.querySelectorAll('.rule-set');
+  const newRules = [];
+
+  ruleSetsEls.forEach(ruleSetEl => {
+    const conditions = [];
+    ruleSetEl.querySelectorAll('.condition').forEach(condEl => {
+      const type = condEl.querySelector('.condition-type').value;
+      if (!type) return;
+
+      const condition = { type: type };
+
+      switch (type) {
+        case 'LEVEL':
+          condition.operator = condEl.querySelector('.condition-operator').value || 'gte';
+          condition.value = parseInt(condEl.querySelector('.condition-value').value) || 1;
+          break;
+        case 'METRIC':
+          condition.metric = condEl.querySelector('.condition-metric').value;
+          condition.operator = condEl.querySelector('.condition-operator').value || 'gte';
+          condition.value = parseInt(condEl.querySelector('.condition-value').value) || 0;
+          break;
+        case 'ROLE':
+          condition.value = condEl.querySelector('.condition-role').value;
+          break;
+        case 'ACHIEVEMENT':
+          condition.value = condEl.querySelector('.condition-achievement').value;
+          break;
+      }
+
+      conditions.push(condition);
+    });
+
+    if (conditions.length > 0) {
+      newRules.push({ conditions: conditions });
+    }
+  });
+
+  document.getElementById('rulesJson').value = JSON.stringify(newRules);
+});
+
+function previewEligibility() {
+  const card = document.getElementById('previewCard');
+  const content = document.getElementById('previewContent');
+
+  // Show loading using safe DOM methods
+  content.replaceChildren();
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'text-center';
+  const icon = document.createElement('i');
+  icon.className = 'bi bi-hourglass-split';
+  loadingDiv.appendChild(icon);
+  loadingDiv.appendChild(document.createTextNode(' ' + i18n.loading));
+  content.appendChild(loadingDiv);
+  card.style.display = '';
+
+  fetch('{{ url_for("gamification.admin_feature_preview", code=feature.code) }}')
+    .then(res => res.json())
+    .then(data => {
+      content.replaceChildren();
+
+      // Stats
+      const statsDiv = document.createElement('div');
+      statsDiv.className = 'mb-2';
+      const strong = document.createElement('strong');
+      strong.textContent = data.eligible_users;
+      statsDiv.appendChild(strong);
+      statsDiv.appendChild(document.createTextNode(' / ' + data.total_users + ' ' + i18n.users));
+      content.appendChild(statsDiv);
+
+      // Progress bar
+      const progressWrapper = document.createElement('div');
+      progressWrapper.className = 'progress mb-2';
+      progressWrapper.style.height = '8px';
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress-bar bg-success';
+      progressBar.style.width = data.percentage + '%';
+      progressWrapper.appendChild(progressBar);
+      content.appendChild(progressWrapper);
+
+      // Percentage text
+      const percentText = document.createElement('small');
+      percentText.className = 'text-muted';
+      percentText.textContent = data.percentage + '% ' + i18n.canAccess;
+      content.appendChild(percentText);
+
+      // User list
+      if (data.eligible_usernames && data.eligible_usernames.length > 0) {
+        content.appendChild(document.createElement('hr'));
+        const usersSmall = document.createElement('small');
+        const usersStrong = document.createElement('strong');
+        usersStrong.textContent = i18n.firstUsers;
+        usersSmall.appendChild(usersStrong);
+        usersSmall.appendChild(document.createElement('br'));
+        usersSmall.appendChild(document.createTextNode(data.eligible_usernames.join(', ')));
+        content.appendChild(usersSmall);
+      }
+    })
+    .catch(() => {
+      content.replaceChildren();
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'text-danger';
+      errorDiv.textContent = i18n.loadError;
+      content.appendChild(errorDiv);
+    });
+}
+</script>
+{% endblock %}

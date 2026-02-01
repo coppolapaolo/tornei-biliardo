@@ -37,6 +37,7 @@ from . import (
     dashboard,
     admin,
     config,
+    features,
 )
 
 __all__ = ["gamification_bp"]

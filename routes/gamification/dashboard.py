@@ -9,6 +9,7 @@ from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
 from models.gamification.quest_service import QuestService
+from models.gamification.unlock_progress_service import UnlockProgressService
 from models.gamification.models import (
     UserLevel, Achievement, UserAchievement, StreakTracker,
     AchievementCategory, AchievementDifficulty, StreakType,
@@ -76,6 +77,9 @@ def dashboard():
     # Get active quests with user's progress
     active_quests = QuestService.get_user_quests(current_user.id, active_only=True)
 
+    # Get locked features progress for "what's next" section
+    locked_features = UnlockProgressService.get_locked_features_progress(current_user.id)
+
     return render_template(
         "gamification/dashboard.html",
         progress=progress,
@@ -83,6 +87,7 @@ def dashboard():
         recent_achievements=recent_achievements,
         streaks=streaks,
         active_quests=active_quests,
+        locked_features=locked_features,
         page_title=_("Dashboard Gamification")
     )
 

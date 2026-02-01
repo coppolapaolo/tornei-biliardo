@@ -21,6 +21,7 @@ from . import (
     proposals,
     notifications,
     challenges,
+    geo,
 )
 
 __all__ = ["player_bp"]
