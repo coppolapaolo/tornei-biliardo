@@ -188,6 +188,8 @@ def create_proposal():
                 "is_multi_set": request.args.get("is_multi_set", "false"),
                 "match_distance": request.args.get("match_distance", ""),
                 "is_race_to_sets": request.args.get("is_race_to_sets", "true"),
+                "scheduled_at": request.args.get("scheduled_at", ""),
+                "expires_hours": request.args.get("expires_hours", "1"),
             }
 
         return render_template(
@@ -206,7 +208,12 @@ def create_proposal():
         )
 
         # Calculate expiration (default 1 hour before match)
-        expires_at = scheduled_at - timedelta(hours=int(data.get("expires_hours", 1)))
+        expires_hours = int(data.get("expires_hours", 1))
+        if expires_hours == 0:
+            # "Never" expires (set to 1 year in future) for immediate matches
+            expires_at = scheduled_at + timedelta(days=365)
+        else:
+            expires_at = scheduled_at - timedelta(hours=expires_hours)
 
         # Convert proposal_type string to enum
         proposal_type_str = data.get("proposal_type", "open")
@@ -737,7 +744,7 @@ def rematch(match_id):
         return redirect(url_for("individual_match.match_list"))
 
     # Match must be completed
-    if match.status.value != "completed":
+    if match.status.value not in ["completed", "validated"]:
         flash(_("Solo i match completati permettono di giocarne un altro."), "warning")
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
@@ -766,6 +773,11 @@ def rematch(match_id):
             params["match_distance"] = match.match_distance
         if getattr(match, "is_race_to_sets", None) is not None:
             params["is_race_to_sets"] = "true" if match.is_race_to_sets else "false"
+    
+    # Set scheduled_at to now (local time approximation)
+    now = datetime.now()
+    params["scheduled_at"] = now.strftime("%Y-%m-%dT%H:%M")
+    params["expires_hours"] = "0"  # 0 means "Never" (immediate match)
 
     return redirect(url_for("individual_match.create_proposal", **params))
 

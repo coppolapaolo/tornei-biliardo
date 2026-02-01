@@ -231,10 +231,10 @@ class NotificationFactory:
         action_url = None
         action_text = None
         if match_id:
-            action_url = f"/player/matches/{match_id}"
+            action_url = f"/match/matches/{match_id}"
             action_text = "Visualizza Partita"
         elif proposal_id:
-            action_url = f"/player/proposals/{proposal_id}"
+            action_url = f"/match/proposals/{proposal_id}"
             action_text = "Visualizza Proposta"
 
         try:

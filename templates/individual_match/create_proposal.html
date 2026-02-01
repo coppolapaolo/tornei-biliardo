@@ -24,7 +24,8 @@
                     <div class="card">
                         <div class="card-header">
                             <h4><i class="fas fa-plus-circle"></i> {{ _("Crea Nuova Proposta di Match") }}</h4>
-                            <small class="text-muted">{{ _("Invita altri giocatori a una partita individuale") }}</small>
+                            <small class="text-muted">{{ _("Invita altri giocatori a una partita individuale")
+                                }}</small>
                         </div>
                         <div class="card-body">
                             {% if rematch_opponent %}
@@ -34,7 +35,8 @@
                                     <div>
                                         <strong>{{ _("Nuova partita con") }} {{ rematch_opponent.username }}</strong>
                                         <br>
-                                        <small class="text-muted">{{ _("Modifica i parametri se desiderato, poi invia la proposta") }}</small>
+                                        <small class="text-muted">{{ _("Modifica i parametri se desiderato, poi invia la
+                                            proposta") }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -73,13 +75,15 @@
                                                 {% endfor %}
                                                 {% endif %}
                                             </datalist>
-                                            <div class="form-text">Seleziona una sala esistente o scrivine una nuova</div>
+                                            <div class="form-text">Seleziona una sala esistente o scrivine una nuova
+                                            </div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="scheduled_at" class="form-label">Data e Ora *</label>
                                             <input type="datetime-local" class="form-control" id="scheduled_at"
-                                                name="scheduled_at" required>
+                                                name="scheduled_at" required
+                                                value="{{ rematch_params.scheduled_at if rematch_params else '' }}">
                                             <div class="form-text">Quando vorresti giocare</div>
                                         </div>
 
@@ -97,36 +101,47 @@
 
                                         <div class="mb-3">
                                             <label for="discipline" class="form-label">{{ _("Disciplina") }} *</label>
-                                            {% set selected_discipline = rematch_params.discipline if rematch_params else 'palla_8' %}
+                                            {% set selected_discipline = rematch_params.discipline if rematch_params
+                                            else 'palla_8' %}
                                             <select class="form-select" id="discipline" name="discipline" required>
-                                                <option value="palla_8" {% if selected_discipline == 'palla_8' %}selected{% endif %}>Palla 8</option>
-                                                <option value="palla_9" {% if selected_discipline == 'palla_9' %}selected{% endif %}>Palla 9</option>
-                                                <option value="palla_10" {% if selected_discipline == 'palla_10' %}selected{% endif %}>Palla 10</option>
-                                                <option value="one_pocket" {% if selected_discipline == 'one_pocket' %}selected{% endif %}>One Pocket</option>
-                                                <option value="straight_pool" {% if selected_discipline == 'straight_pool' %}selected{% endif %}>Straight Pool</option>
+                                                <option value="palla_8" {% if selected_discipline=='palla_8'
+                                                    %}selected{% endif %}>Palla 8</option>
+                                                <option value="palla_9" {% if selected_discipline=='palla_9'
+                                                    %}selected{% endif %}>Palla 9</option>
+                                                <option value="palla_10" {% if selected_discipline=='palla_10'
+                                                    %}selected{% endif %}>Palla 10</option>
+                                                <option value="one_pocket" {% if selected_discipline=='one_pocket'
+                                                    %}selected{% endif %}>One Pocket</option>
+                                                <option value="straight_pool" {% if selected_discipline=='straight_pool'
+                                                    %}selected{% endif %}>Straight Pool</option>
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="distance" class="form-label">{{ _("Distanza") }} *</label>
                                             <input type="number" class="form-control" id="distance" name="distance"
-                                                min="1" max="25" value="{{ rematch_params.distance if rematch_params and rematch_params.distance else '5' }}" required>
+                                                min="1" max="25"
+                                                value="{{ rematch_params.distance if rematch_params and rematch_params.distance else '5' }}"
+                                                required>
                                             <div class="form-text">{{ _("Numero di rack da giocare") }}</div>
                                         </div>
 
                                         <div class="mb-3">
-                                            {% set is_race_to_value = rematch_params.is_race_to if rematch_params else 'true' %}
+                                            {% set is_race_to_value = rematch_params.is_race_to if rematch_params else
+                                            'true' %}
                                             <label for="is_race_to" class="form-label">{{ _("Formato") }} *</label>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="radio" name="is_race_to"
-                                                    id="is_race_to_true" value="true" {% if is_race_to_value == 'true' %}checked{% endif %}>
+                                                    id="is_race_to_true" value="true" {% if is_race_to_value=='true'
+                                                    %}checked{% endif %}>
                                                 <label class="form-check-label" for="is_race_to_true">
                                                     {{ _("Al (vince chi arriva a N rack)") }}
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="radio" name="is_race_to"
-                                                    id="is_race_to_false" value="false" {% if is_race_to_value == 'false' %}checked{% endif %}>
+                                                    id="is_race_to_false" value="false" {% if is_race_to_value=='false'
+                                                    %}checked{% endif %}>
                                                 <label class="form-check-label" for="is_race_to_false">
                                                     {{ _("Esattamente (tutti i rack specificati)") }}
                                                 </label>
@@ -134,12 +149,16 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            {% set selected_break_rule = rematch_params.break_rule if rematch_params else 'alternate' %}
+                                            {% set selected_break_rule = rematch_params.break_rule if rematch_params
+                                            else 'alternate' %}
                                             <label for="break_rule" class="form-label">{{ _("Regola Break") }}</label>
                                             <select class="form-select" id="break_rule" name="break_rule">
-                                                <option value="alternate" {% if selected_break_rule == 'alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
-                                                <option value="winner_breaks" {% if selected_break_rule == 'winner_breaks' %}selected{% endif %}>{{ _("Vincitore rompe") }}</option>
-                                                <option value="loser_breaks" {% if selected_break_rule == 'loser_breaks' %}selected{% endif %}>{{ _("Perdente rompe") }}</option>
+                                                <option value="alternate" {% if selected_break_rule=='alternate'
+                                                    %}selected{% endif %}>{{ _("A turno") }}</option>
+                                                <option value="winner_breaks" {% if selected_break_rule=='winner_breaks'
+                                                    %}selected{% endif %}>{{ _("Vincitore rompe") }}</option>
+                                                <option value="loser_breaks" {% if selected_break_rule=='loser_breaks'
+                                                    %}selected{% endif %}>{{ _("Perdente rompe") }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -175,11 +194,20 @@
                                 <div class="mb-3">
                                     <label for="expires_hours" class="form-label">Scade tra (ore)</label>
                                     <select class="form-select" id="expires_hours" name="expires_hours">
-                                        <option value="1" selected>1 ora prima del match</option>
-                                        <option value="2">2 ore prima del match</option>
-                                        <option value="6">6 ore prima del match</option>
-                                        <option value="24">24 ore prima del match</option>
-                                        <option value="48">48 ore prima del match</option>
+                                        {% set selected_expires = rematch_params.expires_hours if rematch_params else
+                                        '1' %}
+                                        <option value="0" {% if selected_expires=='0' %}selected{% endif %}>Mai (Match
+                                            immediato)</option>
+                                        <option value="1" {% if selected_expires=='1' %}selected{% endif %}>1 ora prima
+                                            del match</option>
+                                        <option value="2" {% if selected_expires=='2' %}selected{% endif %}>2 ore prima
+                                            del match</option>
+                                        <option value="6" {% if selected_expires=='6' %}selected{% endif %}>6 ore prima
+                                            del match</option>
+                                        <option value="24" {% if selected_expires=='24' %}selected{% endif %}>24 ore
+                                            prima del match</option>
+                                        <option value="48" {% if selected_expires=='48' %}selected{% endif %}>48 ore
+                                            prima del match</option>
                                     </select>
                                     <div class="form-text">Quando la proposta scade automaticamente</div>
                                 </div>
@@ -239,12 +267,12 @@
 <script>
     // Internationalization strings
     const i18n = {
-        selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto")|tojson }},
-        confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di match?")|tojson }},
-        formatRaceTo: {{ _("Al {distance} (chi arriva prima a {distance} vince)")|tojson }},
-        formatExact: {{ _("Esattamente {distance} rack (vincitore per somma punti)")|tojson }},
-        noOpponents: {{ _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!")|tojson }},
-        loadingOpponents: {{ _("Caricamento giocatori...")|tojson }}
+        selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto") | tojson }},
+    confirmCreate: { { _("Sei sicuro di voler creare questa proposta di match?") | tojson } },
+    formatRaceTo: { { _("Al {distance} (chi arriva prima a {distance} vince)") | tojson } },
+    formatExact: { { _("Esattamente {distance} rack (vincitore per somma punti)") | tojson } },
+    noOpponents: { { _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!") | tojson } },
+    loadingOpponents: { { _("Caricamento giocatori...") | tojson } }
     };
 
     let playerSelect = null;
@@ -262,37 +290,37 @@
             maxItems: null,
             create: false,
             sortField: { field: 'username', direction: 'asc' },
-            placeholder: {{ _("Seleziona giocatori...")|tojson }},
-            render: {
-                option: function(data, escape) {
-                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
-                },
-                item: function(data, escape) {
-                    return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
-                },
-                no_results: function() {
-                    return '<div class="no-results p-3 text-muted">' + i18n.noOpponents + '</div>';
-                }
-            }
+            placeholder: {{ _("Seleziona giocatori...")| tojson }},
+    render: {
+        option: function(data, escape) {
+            return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+        },
+        item: function(data, escape) {
+            return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
+        },
+        no_results: function() {
+            return '<div class="no-results p-3 text-muted">' + i18n.noOpponents + '</div>';
+        }
+    }
         });
 
-        // Load opponents from API
-        fetch('{{ url_for("individual_match.get_opponents") }}')
-            .then(response => response.json())
-            .then(opponents => {
-                opponents.forEach(opp => {
-                    playerSelect.addOption(opp);
-                });
-                playerSelect.refreshOptions(false);
-
-                // Pre-select rematch opponent if provided
-                {% if rematch_opponent %}
-                playerSelect.addItem({{ rematch_opponent.id }});
-                {% endif %}
-            })
-            .catch(error => {
-                console.error('Error loading opponents:', error);
+    // Load opponents from API
+    fetch('{{ url_for("individual_match.get_opponents") }}')
+        .then(response => response.json())
+        .then(opponents => {
+            opponents.forEach(opp => {
+                playerSelect.addOption(opp);
             });
+            playerSelect.refreshOptions(false);
+
+            // Pre-select rematch opponent if provided
+            {% if rematch_opponent %}
+            playerSelect.addItem({{ rematch_opponent.id }});
+    {% endif %}
+            })
+            .catch (error => {
+        console.error('Error loading opponents:', error);
+    });
     }
 
     // Show/hide player invitations based on proposal type
@@ -313,11 +341,15 @@
     document.addEventListener('DOMContentLoaded', function () {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('scheduled_at').min = now.toISOString().slice(0, 16);
+        const nowStr = now.toISOString().slice(0, 16);
+        document.getElementById('scheduled_at').min = nowStr;
 
-        // Set default to 2 hours from now
-        const defaultTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-        document.getElementById('scheduled_at').value = defaultTime.toISOString().slice(0, 16);
+        // Set default to 2 hours from now ONLY if empty
+        const scheduledInput = document.getElementById('scheduled_at');
+        if (!scheduledInput.value) {
+            const defaultTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+            scheduledInput.value = defaultTime.toISOString().slice(0, 16);
+        }
     });
 
     // Update format explanation based on distance
