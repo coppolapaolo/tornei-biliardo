@@ -2,11 +2,12 @@
 
 {% block title %}{{ _('Match') }}
 {%- if match.is_trio and match.trio_match -%}
-    {# Trio match title #}
-    {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username }}
+{# Trio match title #}
+{{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username
+}}
 {%- else -%}
-    {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
-    match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
+{{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
+match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
 {%- endif -%}
 {% if match.gara %} - {{ _('Gara') }} {{ match.gara.name }}{% endif %}{% endblock %}
 
@@ -19,11 +20,40 @@
                 {% if match.is_trio and match.trio_match %}
                 <i class="fas fa-users"></i>
                 <span class="badge bg-primary me-2">{{ _('Trio') }}</span>
-                {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username }}
+                {{ match.trio_match.player1.username }}
+                {% if can_view_ratings and match.trio_match.player1.elo_rating %}
+                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
+                    match.trio_match.player1.elo_rating }}</span>
+                {% endif %}
+                •
+                {{ match.trio_match.player2.username }}
+                {% if can_view_ratings and match.trio_match.player2.elo_rating %}
+                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
+                    match.trio_match.player2.elo_rating }}</span>
+                {% endif %}
+                •
+                {{ match.trio_match.player3.username }}
+                {% if can_view_ratings and match.trio_match.player3.elo_rating %}
+                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
+                    match.trio_match.player3.elo_rating }}</span>
+                {% endif %}
                 {% else %}
                 <i class="fas fa-shield-halved"></i>
-                {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }} vs {{
-                match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('Bye') }}
+                {{ match.player1|player_name_with_forfeit(is_forfeit=player1_is_forfeit) }}
+                {% if can_view_ratings and match.player1.elo_rating %}
+                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
+                    match.player1.elo_rating }}</span>
+                {% endif %}
+                vs
+                {% if match.player2 %}
+                {{ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) }}
+                {% if can_view_ratings and match.player2.elo_rating %}
+                <span class="badge bg-warning text-dark small" style="font-size: 0.5em; vertical-align: middle;">{{
+                    match.player2.elo_rating }}</span>
+                {% endif %}
+                {% else %}
+                {{ _('Bye') }}
+                {% endif %}
                 {% endif %}
             </h1>
         </div>
@@ -35,8 +65,7 @@
                 <i class="fas fa-arrow-left"></i> {{ _('Torna alla Gara') }}
             </a>
             {% else %}
-            <a href="{{ url_for('player.history') }}"
-                class="btn btn-outline-secondary">
+            <a href="{{ url_for('player.history') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> {{ _('Torna allo Storico') }}
             </a>
             {% endif %}
@@ -142,12 +171,13 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Errore sconosciuto")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante l'aggiunta del rack al trio")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante l'aggiunta del rack al trio")| tojson }});
             });
     }
 
@@ -171,12 +201,13 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Errore sconosciuto")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante la rimozione del rack")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la rimozione del rack")| tojson }});
             });
     }
 
@@ -200,42 +231,44 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Errore sconosciuto")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante la conferma del risultato")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la conferma del risultato")| tojson }});
             });
     }
 
     function declareForfeit(playerId) {
-        showConfirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")|tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler dichiarare forfait per questo giocatore?")| tojson }}, () => {
             // Player endpoint has priority (fairness: directors who are players use player flow)
-        {% if user_is_player %}
-        const forfeitEndpoint = `/player/match/{{ match.id }}/trio/forfeit`;
-        {% elif user_can_manage %}
-        const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
-        {% endif %}
+            {% if user_is_player %}
+            const forfeitEndpoint = `/player/match/{{ match.id }}/trio/forfeit`;
+            {% elif user_can_manage %}
+            const forfeitEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/forfeit`;
+            {% endif %}
 
-        fetch(forfeitEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `player_id=${playerId}`
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+            fetch(forfeitEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `player_id=${playerId}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showError({{ _("Errore:")| tojson }
+                } + ' ' + (data.error || {{ _("Errore sconosciuto")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante la registrazione del forfait")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la registrazione del forfait")| tojson }});
             });
         });
     }
@@ -255,12 +288,13 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Errore sconosciuto")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante l'aggiunta del rack")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante l'aggiunta del rack")| tojson }});
             });
     }
 
@@ -277,12 +311,13 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")|tojson }}));
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante la rimozione del rack")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la rimozione del rack")| tojson }});
             });
     }
 
@@ -299,17 +334,18 @@
                     // Redirect alla dashboard invece di ricaricare la pagina
                     window.location.href = '/dashboard';
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile confermare il risultato")|tojson }}));
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Impossibile confermare il risultato")| tojson }}));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante la conferma")|tojson }});
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la conferma")| tojson }});
             });
     }
 
     function rejectResult() {
-        showConfirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")|tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")| tojson }}, () => {
             fetch(`/player/match/{{ match.id }}/reject`, {
                 method: 'POST',
                 headers: {
@@ -321,18 +357,19 @@
                     if (data.success) {
                         location.reload();
                     } else {
-                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rifiutare il risultato")|tojson }}));
+                        showError({{ _("Errore:")| tojson }
+                } + ' ' + (data.error || {{ _("Impossibile rifiutare il risultato")| tojson }}));
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError({{ _("Errore durante il rifiuto")|tojson }});
+                .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante il rifiuto")| tojson }});
                 });
         });
     }
 
     function forfeitMatch() {
-        showConfirm({{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.")|tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.")| tojson }}, () => {
             fetch(`/player/match/{{ match.id }}/forfeit`, {
                 method: 'POST',
                 headers: {
@@ -342,15 +379,16 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showSuccess(data.message || {{ _("Forfait dichiarato")|tojson }});
-                        location.reload();
-                    } else {
-                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile dichiarare forfait")|tojson }}));
+                        showSuccess(data.message || {{ _("Forfait dichiarato")| tojson }
+                });
+            location.reload();
+        } else {
+        showError({{ _("Errore:")| tojson }} + ' ' + (data.error || {{ _("Impossibile dichiarare forfait") | tojson }}));
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError({{ _("Errore durante la dichiarazione di forfait")|tojson }});
+                .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la dichiarazione di forfait")| tojson }});
                 });
         });
     }
@@ -393,22 +431,23 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
-                    buttons.forEach(btn => btn.disabled = false);
-                    isAddingRack = false;
+                    showError({{ _("Errore:")| tojson }
+            } + ' ' + (data.error || {{ _("Errore sconosciuto")| tojson }}));
+    buttons.forEach(btn => btn.disabled = false);
+    isAddingRack = false;
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showError({{ _("Errore durante l'aggiornamento")|tojson }});
-                buttons.forEach(btn => btn.disabled = false);
-                isAddingRack = false;
+            .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante l'aggiornamento")| tojson }});
+    buttons.forEach(btn => btn.disabled = false);
+    isAddingRack = false;
             });
     }
 
     // Funzioni Admin
     function resetMatch(matchId) {
-        showConfirm({{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.")|tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler resettare completamente questa partita? Tutti i risultati verranno cancellati.")| tojson }}, () => {
             fetch(`/admin/match/${matchId}/reset`, {
                 method: 'POST',
                 headers: {
@@ -419,18 +458,19 @@
                     if (response.ok) {
                         location.reload();
                     } else {
-                        showError({{ _("Errore durante il reset")|tojson }});
-                    }
+                        showError({{ _("Errore durante il reset")| tojson }
+                });
+        }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError({{ _("Errore durante il reset")|tojson }});
+                .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante il reset")| tojson }});
                 });
         });
     }
 
     function resetTrio(trioId) {
-        showConfirm({{ _("Sei sicuro di voler resettare completamente questa partita trio? Tutti i risultati verranno cancellati.")|tojson }}, () => {
+        showConfirm({{ _("Sei sicuro di voler resettare completamente questa partita trio? Tutti i risultati verranno cancellati.")| tojson }}, () => {
             fetch(`/admin/gara/trio/${trioId}/reset`, {
                 method: 'POST',
                 headers: {
@@ -442,18 +482,19 @@
                     if (data.success) {
                         location.reload();
                     } else {
-                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore durante il reset")|tojson }}));
+                        showError({{ _("Errore:")| tojson }
+                } + ' ' + (data.error || {{ _("Errore durante il reset")| tojson }}));
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError({{ _("Errore durante il reset")|tojson }});
+                .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante il reset")| tojson }});
                 });
         });
     }
 
     function validateMatch(matchId) {
-        showConfirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")|tojson }}, () => {
+        showConfirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")| tojson }}, () => {
             fetch(`/admin/match/${matchId}/validate`, {
                 method: 'POST',
                 headers: {
@@ -465,54 +506,56 @@
                     if (data.success) {
                         location.reload();
                     } else {
-                        showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile validare il risultato")|tojson }}));
+                        showError({{ _("Errore:")| tojson }
+                } + ' ' + (data.error || {{ _("Impossibile validare il risultato")| tojson }}));
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError({{ _("Errore durante la validazione")|tojson }});
+                .catch (error => {
+        console.error('Error:', error);
+        showError({{ _("Errore durante la validazione")| tojson }});
                 });
         });
     }
 
-    {# SSE: Real-time updates for ALL trio match players (not just waiting) #}
-    {# All players need SSE to receive notifications when someone else does undo #}
-    {# NOTE: Keep SSE connected even after is_completed=True because undo can reset it #}
+    {# SSE: Real - time updates for ALL trio match players(not just waiting) # }
+    {# All players need SSE to receive notifications when someone else does undo # }
+    {# NOTE: Keep SSE connected even after is_completed = True because undo can reset it # }
     {% if match.is_trio and match.trio_match and user_is_player %}
     {% set trio = match.trio_match %}
-    (function() {
+    (function () {
         // Connect to SSE stream for real-time updates
-        const trioId = {{ trio.id }};
-        const eventSource = new EventSource('/sse/trio/' + trioId);
+        const trioId = {{ trio.id }
+    };
+    const eventSource = new EventSource('/sse/trio/' + trioId);
 
-        eventSource.addEventListener('rack_added', function(e) {
-            console.log('Rack added, reloading...');
-            location.reload();
-        });
+    eventSource.addEventListener('rack_added', function (e) {
+        console.log('Rack added, reloading...');
+        location.reload();
+    });
 
-        eventSource.addEventListener('rack_removed', function(e) {
-            console.log('Rack removed, reloading...');
-            location.reload();
-        });
+    eventSource.addEventListener('rack_removed', function (e) {
+        console.log('Rack removed, reloading...');
+        location.reload();
+    });
 
-        eventSource.addEventListener('forfeit', function(e) {
-            console.log('Forfeit declared, reloading...');
-            location.reload();
-        });
+    eventSource.addEventListener('forfeit', function (e) {
+        console.log('Forfeit declared, reloading...');
+        location.reload();
+    });
 
-        eventSource.addEventListener('connected', function(e) {
-            console.log('SSE connected to trio ' + trioId);
-        });
+    eventSource.addEventListener('connected', function (e) {
+        console.log('SSE connected to trio ' + trioId);
+    });
 
-        eventSource.onerror = function(e) {
-            console.log('SSE connection error, will retry...');
-        };
+    eventSource.onerror = function (e) {
+        console.log('SSE connection error, will retry...');
+    };
 
-        // Close connection when leaving page
-        window.addEventListener('beforeunload', function() {
-            eventSource.close();
-        });
-    })();
+    // Close connection when leaving page
+    window.addEventListener('beforeunload', function () {
+        eventSource.close();
+    });
+    }) ();
     {% endif %}
 </script>
 {% endblock %}

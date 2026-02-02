@@ -78,6 +78,7 @@ class LeaderboardType(Enum):
     STREAK_CURRENT = "streak_current"
     STREAK_LONGEST = "streak_longest"
     WIN_RATE_30_DAYS = "win_rate_30_days"
+    ELO_RATING = "elo_rating"
 
 
 class QuestType(Enum):

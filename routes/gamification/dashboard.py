@@ -200,7 +200,8 @@ def leaderboards():
     type_map = {
         "xp": LeaderboardType.XP_ALL_TIME,
         "level": LeaderboardType.LEVEL_HIGHEST,
-        "streak": LeaderboardType.STREAK_CURRENT
+        "streak": LeaderboardType.STREAK_CURRENT,
+        "elo": LeaderboardType.ELO_RATING
     }
     
     # Get all leaderboards for the view to allow switching without reload (or just active one)
@@ -209,6 +210,11 @@ def leaderboards():
     xp_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.XP_ALL_TIME, limit)
     level_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.LEVEL_HIGHEST, limit)
     streak_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.STREAK_CURRENT, limit)
+    
+    from models.gamification.ui_helpers import GamificationUIHelper
+    elo_leaderboard = []
+    if GamificationUIHelper.can_view_ratings(current_user):
+        elo_leaderboard = LeaderboardService.get_leaderboard(LeaderboardType.ELO_RATING, limit)
 
     track_leaderboard_view()  # KPI tracking
     
@@ -223,6 +229,7 @@ def leaderboards():
         xp_leaderboard=xp_leaderboard,
         level_leaderboard=level_leaderboard,
         streak_leaderboard=streak_leaderboard,
+        elo_leaderboard=elo_leaderboard,
         active_tab=leaderboard_type_str,
         page_title=_("Classifiche")
     )

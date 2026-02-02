@@ -13,6 +13,7 @@ from config import config
 from models import db, User
 from utils import create_admin_if_not_exists, UserPermissions
 from utils.database_utils import get_database_stats
+from models.gamification.ui_helpers import GamificationUIHelper
 
 from utils.status_ui import register_status_filters
 
@@ -132,6 +133,7 @@ def create_app(config_name=None):
             "is_admin": current_user.is_authenticated and current_user.is_admin,
             "unread_notifications_count": unread_count,
             "get_locale": get_locale,
+            "can_view_ratings": GamificationUIHelper.can_view_ratings(current_user),
         }
 
     # Context processor per gamification
@@ -196,6 +198,8 @@ def create_app(config_name=None):
     # Register gamification event handlers
     # This imports the module which auto-registers handlers with EventBus
     from models.gamification import event_handlers  # noqa: F401
+    # Register rating event handlers
+    from models.rating import event_handlers  # noqa: F401
     # Register gamification notification handlers
     # Creates notifications for level ups, achievements, streaks, quests
     from models.gamification import notification_handlers  # noqa: F401

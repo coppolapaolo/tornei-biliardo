@@ -103,6 +103,10 @@ LEVEL_UNLOCKS: Dict[int, Dict[str, str]] = {
         "feature": "match_proposals",
         "description": "Puoi proporre partite individuali"
     },
+    6: {
+        "feature": "view_ratings",
+        "description": "Puoi visualizzare i rating Elo dei giocatori"
+    },
     10: {
         "feature": "tournament_creation",
         "description": "Puoi creare tornei standalone"

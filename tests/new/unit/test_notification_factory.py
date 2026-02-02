@@ -175,7 +175,7 @@ class TestNotificationFactory:
         assert "Player1 vs Player2" in call_kwargs["message"]
         assert "Pool Hall" in call_kwargs["message"]
         assert "Let's play!" in call_kwargs["message"]
-        assert call_kwargs["action_url"] == "/player/proposals/456"
+        assert call_kwargs["action_url"] == "/match/proposals/456"
 
     @patch('models.notification.factory.NotificationService.create_notification')
     def test_create_match_notification_accepted(self, mock_create):
@@ -194,7 +194,7 @@ class TestNotificationFactory:
         call_kwargs = mock_create.call_args[1]
         assert call_kwargs["notification_type"] == NotificationType.MATCH_ACCEPTED
         assert call_kwargs["title"] == "Proposta Accettata!"
-        assert call_kwargs["action_url"] == "/player/matches/789"
+        assert call_kwargs["action_url"] == "/match/matches/789"
 
     @patch('models.notification.factory.NotificationService.create_notification')
     def test_create_match_notification_error(self, mock_create):

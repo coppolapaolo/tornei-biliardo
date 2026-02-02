@@ -33,6 +33,14 @@
                 <i class="fas fa-fire me-2"></i>{{ _('Streak') }}
             </button>
         </li>
+        {% if can_view_ratings %}
+        <li class="nav-item mx-2" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 {% if active_tab == 'elo' %}active{% endif %}" id="elo-tab"
+                data-bs-toggle="tab" data-bs-target="#elo" type="button" role="tab">
+                <i class="fas fa-chart-line me-2"></i>{{ _('Elo Rating') }}
+            </button>
+        </li>
+        {% endif %}
     </ul>
 
     <div class="tab-content" id="leaderboardTabsContent">
@@ -163,6 +171,13 @@
         <div class="tab-pane fade {% if active_tab == 'streak' %}show active{% endif %}" id="streak" role="tabpanel">
             {{ render_leaderboard(streak_leaderboard, 'Streak Attuale', 'Settimane', 'fas fa-fire') }}
         </div>
+
+        <!-- Elo Tab -->
+        {% if can_view_ratings %}
+        <div class="tab-pane fade {% if active_tab == 'elo' %}show active{% endif %}" id="elo" role="tabpanel">
+            {{ render_leaderboard(elo_leaderboard, 'Elo Rating', 'Punti Elo', 'fas fa-chart-line') }}
+        </div>
+        {% endif %}
 
     </div>
 </div>

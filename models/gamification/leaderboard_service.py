@@ -108,6 +108,8 @@ class LeaderboardService:
                 new_entries = LeaderboardService._calculate_streak_current()
             elif leaderboard_type == LeaderboardType.STREAK_LONGEST:
                 new_entries = LeaderboardService._calculate_streak_longest()
+            elif leaderboard_type == LeaderboardType.ELO_RATING:
+                new_entries = LeaderboardService._calculate_elo_rating()
             # Add other types here
             
             # Save to DB
@@ -206,7 +208,29 @@ class LeaderboardService:
                     leaderboard_type=LeaderboardType.STREAK_LONGEST,
                     user_id=streak.user_id,
                     rank=rank,
-                    score=streak.longest_streak,
-                    calculated_at=datetime.utcnow()
                 ))
+        return entries
+
+    @staticmethod
+    def _calculate_elo_rating() -> List[LeaderboardEntry]:
+        """Calculate Elo Rating Ranking."""
+        from models.rating.models import PlayerRating, RatingSystem
+        
+        results = (
+            db.session.query(PlayerRating)
+            .filter_by(rating_system=RatingSystem.ELO)
+            .order_by(desc(PlayerRating.rating_value))
+            .limit(100)
+            .all()
+        )
+        
+        entries = []
+        for rank, pr in enumerate(results, 1):
+            entries.append(LeaderboardEntry(
+                leaderboard_type=LeaderboardType.ELO_RATING,
+                user_id=pr.user_id,
+                rank=rank,
+                score=pr.rating_value,
+                calculated_at=datetime.utcnow()
+            ))
         return entries
