@@ -1,0 +1,114 @@
+{#
+Unified Rack History Component
+
+Displays rack history with added_by/removed_by audit trail.
+Works for both Tournament Match and IndividualMatch.
+
+Parameters:
+- match: Match or IndividualMatch object (must have .racks relationship)
+- player1: User object for player 1
+- player2: User object for player 2
+- player1_name: string (optional) - override player1 display name
+- player2_name: string (optional) - override player2 display name
+#}
+
+{% set p1_name = player1_name|default(player1.username if player1 else match.player1.username) %}
+{% set p2_name = player2_name|default(player2.username if player2 else match.player2.username) %}
+{% set p1_id = player1.id if player1 else match.player1_id %}
+{% set p2_id = player2.id if player2 else match.player2_id %}
+
+{# Filter active and deleted racks #}
+{% set active_racks = match.racks|selectattr('is_deleted', 'equalto', False)|list %}
+{% set deleted_racks = match.racks|selectattr('is_deleted', 'equalto', True)|list %}
+
+{# Active Racks Table #}
+{% if active_racks|length %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-list-ol"></i> {{ _('Storico Rack') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>{{ _('Rack') }}</th>
+                        <th>{{ _('Vincitore') }}</th>
+                        <th>{{ p1_name }}</th>
+                        <th>{{ p2_name }}</th>
+                        <th>{{ _('Aggiunto da') }}</th>
+                        <th>{{ _('Quando') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rack in active_racks|sort(attribute='rack_number') %}
+                    <tr>
+                        <td><strong>{{ rack.rack_number }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if rack.winner_id == p1_id %}primary{% else %}success{% endif %}">
+                                {% if rack.winner_id == p1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if rack.winner_id == p1_id %}
+                            <i class="fas fa-check text-success"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if rack.winner_id == p2_id %}
+                            <i class="fas fa-check text-success"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ rack.added_by.username if rack.added_by else '-' }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ rack.added_at|datetime_local if rack.added_at else '-' }}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Deleted Racks Log (for dispute resolution) #}
+{% if deleted_racks|length %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-history"></i> {{ _('Log Operazioni (Rack Rimossi)') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ _('Rack') }}</th>
+                        <th>{{ _('Vincitore') }}</th>
+                        <th>{{ _('Aggiunto da') }}</th>
+                        <th>{{ _('Aggiunto') }}</th>
+                        <th>{{ _('Rimosso da') }}</th>
+                        <th>{{ _('Rimosso') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rack in deleted_racks|sort(attribute='removed_at', reverse=True) %}
+                    <tr class="text-muted">
+                        <td><strong>{{ rack.rack_number }}</strong></td>
+                        <td>
+                            {% if rack.winner_id == p1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %}
+                        </td>
+                        <td>{{ rack.added_by.username if rack.added_by else '-' }}</td>
+                        <td><small>{{ rack.added_at|datetime_local if rack.added_at else '-' }}</small></td>
+                        <td>{{ rack.removed_by.username if rack.removed_by else '-' }}</td>
+                        <td><small>{{ rack.removed_at|datetime_local if rack.removed_at else '-' }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -231,6 +231,29 @@ def create_proposal():
             if venue:
                 billiard_hall_id = venue.id
 
+        # Parse match format (single, multi, free)
+        match_format = data.get("match_format", "single")
+
+        # Determine distance and multi-set configuration based on format
+        if match_format == "free":
+            # Free format: no distance limit
+            distance = None
+            is_multi_set = False
+            match_distance = None
+            is_race_to = True  # Default, not used for free format
+        elif match_format == "multi":
+            # Multi-set format
+            distance = int(data.get("set_distance", 5))  # Racks per set
+            is_multi_set = True
+            match_distance = int(data.get("match_distance", 3))  # Sets to win
+            is_race_to = True  # Sets are always race-to
+        else:
+            # Single-set format (default)
+            distance = int(data.get("distance", 5))
+            is_multi_set = False
+            match_distance = None
+            is_race_to = data.get("is_race_to", "true").lower() == "true"
+
         proposal_data = {
             "proposer_id": current_user.id,
             "proposal_type": proposal_type,
@@ -239,8 +262,10 @@ def create_proposal():
             "scheduled_at": scheduled_at,
             "expires_at": expires_at,
             "discipline": data.get("discipline", "palla_8"),
-            "distance": int(data.get("distance", 5)),
-            "is_race_to": data.get("is_race_to", "true").lower() == "true",
+            "distance": distance,
+            "is_race_to": is_race_to,
+            "is_multi_set": is_multi_set,
+            "match_distance": match_distance,
             "break_rule": data.get("break_rule", "alternate"),
             "description": data.get("description"),
             "entry_fee": float(data["entry_fee"]) if data.get("entry_fee") else None,
@@ -718,6 +743,45 @@ def update_match_times(match_id):
             })
         else:
             flash("Orari aggiornati con successo!", "success")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    except ValueError as e:
+        error_msg = str(e)
+        if request.is_json:
+            return jsonify({"success": False, "error": error_msg}), 400
+        else:
+            flash(error_msg, "danger")
+            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/forfeit", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def forfeit_match(match_id):
+    """Forfeit an individual match - current user loses, opponent wins."""
+    from flask_babel import _
+
+    try:
+        match = IndividualMatchService.forfeit_match(
+            match_id=match_id, user_id=current_user.id
+        )
+
+        # Emit SSE event for real-time sync
+        from routes.sse import emit_individual_match_event
+        emit_individual_match_event(match_id, "match_forfeited", {
+            "forfeited_by": current_user.id,
+            "winner_id": match.winner_id,
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+        })
+
+        if request.is_json:
+            return jsonify({
+                "success": True,
+                "winner_id": match.winner_id,
+                "message": _("Forfait dichiarato")
+            })
+        else:
+            flash(_("Forfait dichiarato. Match terminato."), "warning")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:

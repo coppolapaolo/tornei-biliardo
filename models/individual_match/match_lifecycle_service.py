@@ -139,6 +139,33 @@ class MatchLifecycleService:
         )
 
     @staticmethod
+    @transactional(domain="individual_match")
+    def forfeit_match(match_id: int, user_id: int) -> IndividualMatch:
+        """Forfeit an individual match - user loses, opponent wins.
+
+        The forfeiting player keeps their current score (racks already won).
+        The opponent receives the winning score (distance).
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of player forfeiting
+
+        Returns:
+            The updated IndividualMatch object
+
+        Raises:
+            ValueError: If invalid forfeit conditions
+        """
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            from flask import abort
+            abort(404)
+
+        # Delegate to model method which handles all validation and logic
+        match.forfeit_match(user_id)
+        return match
+
+    @staticmethod
     def send_match_reminders(
         hours_before: int = 2, window_minutes: int = 15
     ) -> List[int]:

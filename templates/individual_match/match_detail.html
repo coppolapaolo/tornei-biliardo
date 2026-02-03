@@ -37,266 +37,53 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-5">
-                            <h3>{{ match.player1.username }}</h3>
-                            <h1
-                                class="display-4 {% if match.winner_id == match.player1_id %}text-success{% elif match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] %}text-danger{% else %}text-primary{% endif %}">
-                                {{ match.player1_score or 0 }}
-                            </h1>
-                            {% if match.player1_confirmed and match.is_ready_for_validation() %}
-                            <span class="badge bg-success"><i class="fas fa-check"></i> Confermato</span>
-                            {% endif %}
-                        </div>
-                        <div class="col-2">
-                            <h3 class="text-muted">VS</h3>
-                            <p class="text-muted"><i class="fas fa-shield-halved"></i> {{ 'Al' if match.is_race_to else
-                                'Esattamente' }} {{ match.distance }}</p>
-                        </div>
-                        <div class="col-5">
-                            <h3>{{ match.player2.username }}</h3>
-                            <h1
-                                class="display-4 {% if match.winner_id == match.player2_id %}text-success{% elif match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] %}text-danger{% else %}text-primary{% endif %}">
-                                {{ match.player2_score or 0 }}
-                            </h1>
-                            {% if match.player2_confirmed and match.is_ready_for_validation() %}
-                            <span class="badge bg-success"><i class="fas fa-check"></i> Confermato</span>
-                            {% endif %}
-                        </div>
-                    </div>
+                    {# Unified Score Display #}
+                    {% include "components/_unified_match_score.html" %}
+
+                    {# Multi-set breakdown (if applicable) #}
+                    {% if match.is_multi_set %}
+                        {% include "components/_multi_set_score_display.html" %}
+                    {% endif %}
 
                     {% if match.status.value == MatchStatus.SCHEDULED.value %}
                     <div class="text-center mt-3">
                         <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
                             <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-play"></i> Inizia Match
+                                <i class="fas fa-play"></i> {{ _('Inizia Match') }}
                             </button>
                         </form>
                     </div>
                     {% endif %}
 
-                    {% if match.status.value in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value] and match.winner_id %}
-                    <div class="alert alert-success text-center mt-3">
-                        <i class="fas fa-trophy"></i>
-                        <strong>
-                            {% if match.winner_id == match.player1_id %}{{ match.player1.username }}{% else %}{{
-                            match.player2.username }}{% endif %}
-                        </strong> ha vinto il match!
+                    {# Free format: End Match button when at least one rack played #}
+                    {% if match.distance is none and match.status.value == MatchStatus.IN_PROGRESS.value %}
+                    {% set total_racks = (match.player1_score or 0) + (match.player2_score or 0) %}
+                    {% if total_racks > 0 %}
+                    <div class="alert alert-info text-center mt-3">
+                        <p class="mb-2">
+                            <i class="fas fa-infinity"></i>
+                            {{ _('Match senza limite di distanza.') }}
+                        </p>
+                        <button class="btn btn-warning btn-lg" onclick="confirmResult()">
+                            <i class="fas fa-flag-checkered"></i> {{ _('Termina Match') }}
+                        </button>
                     </div>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Score Control (only if match is in progress) -->
+            {# Unified Rack Input - only if match is in progress #}
             {% if match.status.value == MatchStatus.IN_PROGRESS.value %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-calculator"></i> Gestione Punteggio</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Player 1 Controls -->
-                        <div class="col-md-6 text-center">
-                            <h5>{{ match.player1.username }}</h5>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-success btn-lg" onclick="addRack({{ match.player1_id }})" {% if
-                                    not match.can_add_rack() %}disabled{% endif %}>
-                                    <i class="fas fa-plus-circle"></i> Aggiungi Rack
-                                </button>
-                                <button class="btn btn-outline-danger" onclick="removeRack({{ match.player1_id }})" {%
-                                    if match.player1_score==0 %}disabled{% endif %}>
-                                    <i class="fas fa-minus-circle"></i> Rimuovi Rack
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Player 2 Controls -->
-                        <div class="col-md-6 text-center">
-                            <h5>{{ match.player2.username }}</h5>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-success btn-lg" onclick="addRack({{ match.player2_id }})" {% if
-                                    not match.can_add_rack() %}disabled{% endif %}>
-                                    <i class="fas fa-plus-circle"></i> Aggiungi Rack
-                                </button>
-                                <button class="btn btn-outline-danger" onclick="removeRack({{ match.player2_id }})" {%
-                                    if match.player2_score==0 %}disabled{% endif %}>
-                                    <i class="fas fa-minus-circle"></i> Rimuovi Rack
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {% if match.is_ready_for_validation() %}
-                    <div class="alert alert-warning text-center mt-3">
-                        <i class="fas fa-exclamation-triangle"></i> Match pronto per la validazione
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Validation Section (only if ready for validation) -->
-            {% if match.is_ready_for_validation() and match.status.value == MatchStatus.IN_PROGRESS.value %}
-            <div class="card border-success mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5><i class="fas fa-flag-checkered"></i> Conferma Risultato</h5>
-                </div>
-                <div class="card-body">
-                    {# Determine if current user is auto-confirmed (added the winning rack) #}
-                    {% set current_user_confirmed = (current_user.id == match.player1_id and match.player1_confirmed) or (current_user.id == match.player2_id and match.player2_confirmed) %}
-                    {% set opponent_confirmed = (current_user.id == match.player1_id and match.player2_confirmed) or (current_user.id == match.player2_id and match.player1_confirmed) %}
-                    {% set opponent_name = match.player2.username if current_user.id == match.player1_id else match.player1.username %}
-
-                    {% if current_user_confirmed and opponent_confirmed %}
-                    {# Both confirmed - match should complete (shouldn't reach here) #}
-                    <div class="alert alert-success text-center">
-                        <i class="fas fa-check-circle"></i> Entrambi i giocatori hanno confermato!
-                    </div>
-                    {% elif current_user_confirmed %}
-                    {# Current user confirmed (likely auto-confirmed by adding rack), waiting for opponent #}
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-check-circle me-2"></i> Hai confermato aggiungendo l'ultimo rack.
-                        <br><i class="fas fa-hourglass-half me-1"></i> In attesa di {{ opponent_name }}...
-                    </div>
-                    {% elif opponent_confirmed %}
-                    {# Opponent already confirmed, current user needs to confirm or reject #}
-                    <p class="text-center mb-3">
-                        <i class="fas fa-check-circle text-success me-1"></i> {{ opponent_name }} ha confermato il risultato.
-                        <br>Conferma o rifiuta per finalizzare il match.
-                    </p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <button class="btn btn-success btn-lg w-100" onclick="confirmResult()">
-                                <i class="fas fa-check"></i> Accetta Risultato
-                            </button>
-                        </div>
-                        <div class="col-md-6">
-                            <button class="btn btn-danger btn-lg w-100" onclick="rejectResult()">
-                                <i class="fas fa-times"></i> Rifiuta (rimuove ultimo rack)
-                            </button>
-                        </div>
-                    </div>
-                    {% else %}
-                    {# Neither confirmed - show confirmation buttons (fallback case) #}
-                    <p class="text-center mb-3">
-                        Il match ha raggiunto la distanza. Conferma il risultato finale.
-                    </p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <button class="btn btn-success btn-lg w-100" onclick="confirmResult()">
-                                <i class="fas fa-check"></i> Accetta Risultato
-                            </button>
-                        </div>
-                        <div class="col-md-6">
-                            <button class="btn btn-danger btn-lg w-100" onclick="rejectResult()">
-                                <i class="fas fa-times"></i> Rifiuta (rimuove ultimo rack)
-                            </button>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
+            {% set user_is_player = current_user.id in [match.player1_id, match.player2_id] %}
+            {% set show_forfeit = user_is_player %}
+            {% set api_format = 'json' %}
+            {% set require_table_assignment = False %}
+            {% include "components/_unified_rack_input.html" with context %}
             {% endif %}
 
-            <!-- Rack History -->
-            {% set active_racks = match.racks|selectattr('is_deleted', 'equalto', False)|list %}
-            {% if active_racks|length %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-list-ol"></i> Storico Rack</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Rack</th>
-                                    <th>Vincitore</th>
-                                    <th>{{ match.player1.username }}</th>
-                                    <th>{{ match.player2.username }}</th>
-                                    <th>Aggiunto da</th>
-                                    <th>Quando</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for rack in active_racks|sort(attribute='rack_number') %}
-                                <tr>
-                                    <td><strong>{{ rack.rack_number }}</strong></td>
-                                    <td>
-                                        <span
-                                            class="badge bg-{% if rack.winner_id == match.player1_id %}primary{% else %}success{% endif %}">
-                                            {% if rack.winner_id == match.player1_id %}{{ match.player1.username }}{%
-                                            else %}{{ match.player2.username }}{% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if rack.winner_id == match.player1_id %}
-                                        <i class="fas fa-check text-success"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if rack.winner_id == match.player2_id %}
-                                        <i class="fas fa-check text-success"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">{{ rack.added_by.username if rack.added_by else '-'
-                                            }}</small>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">{{ rack.added_at|datetime_local if rack.added_at else
-                                            '-' }}</small>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Rack Log (deleted racks for dispute resolution) -->
-            {% set deleted_racks = match.racks|selectattr('is_deleted', 'equalto', True)|list %}
-            {% if deleted_racks|length %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-history"></i> Log Operazioni (Rack Rimossi)</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Rack</th>
-                                    <th>Vincitore</th>
-                                    <th>Aggiunto da</th>
-                                    <th>Aggiunto</th>
-                                    <th>Rimosso da</th>
-                                    <th>Rimosso</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for rack in deleted_racks|sort(attribute='removed_at', reverse=True) %}
-                                <tr class="text-muted">
-                                    <td><strong>{{ rack.rack_number }}</strong></td>
-                                    <td>
-                                        {% if rack.winner_id == match.player1_id %}{{ match.player1.username }}{% else
-                                        %}{{ match.player2.username }}{% endif %}
-                                    </td>
-                                    <td>{{ rack.added_by.username if rack.added_by else '-' }}</td>
-                                    <td><small>{{ rack.added_at|datetime_local if rack.added_at else '-' }}</small></td>
-                                    <td>{{ rack.removed_by.username if rack.removed_by else '-' }}</td>
-                                    <td><small>{{ rack.removed_at|datetime_local if rack.removed_at else '-' }}</small>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
+            {# Unified Rack History #}
+            {% include "components/_unified_rack_history.html" with context %}
         </div>
 
         <!-- Sidebar -->
@@ -304,17 +91,26 @@
             <!-- Match Information -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Informazioni Match</h5>
+                    <h5><i class="fas fa-info-circle"></i> {{ _('Informazioni Match') }}</h5>
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-5">Disciplina:</dt>
+                        <dt class="col-sm-5">{{ _('Disciplina') }}:</dt>
                         <dd class="col-sm-7">{{ match.discipline.replace('_', ' ').title() }}</dd>
 
-                        <dt class="col-sm-5">Formato:</dt>
-                        <dd class="col-sm-7">{{ 'Al' if match.is_race_to else 'Esattamente' }} {{ match.distance }}</dd>
+                        <dt class="col-sm-5">{{ _('Formato') }}:</dt>
+                        <dd class="col-sm-7">
+                            {% if match.distance is none %}
+                            <i class="fas fa-infinity"></i> {{ _('Libero') }}
+                            {% elif match.is_multi_set %}
+                            {{ _('Al') if match.is_race_to_sets else _('Esattamente') }} {{ match.match_distance }} {{ _('set') }},
+                            {{ _('ogni set al') if match.is_race_to else _('ogni set esattamente') }} {{ match.distance }}
+                            {% else %}
+                            {{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}
+                            {% endif %}
+                        </dd>
 
-                        <dt class="col-sm-5">Luogo:</dt>
+                        <dt class="col-sm-5">{{ _('Luogo') }}:</dt>
                         <dd class="col-sm-7">{{ match.location_display }}</dd>
 
                         {% if match.entry_fee %}
@@ -323,17 +119,17 @@
                         {% endif %}
 
                         {% if match.scheduled_at %}
-                        <dt class="col-sm-5">Programmato:</dt>
+                        <dt class="col-sm-5">{{ _('Programmato') }}:</dt>
                         <dd class="col-sm-7">{{ match.scheduled_at|datetime_local }}</dd>
                         {% endif %}
 
                         {% if match.started_at %}
-                        <dt class="col-sm-5">Iniziato:</dt>
+                        <dt class="col-sm-5">{{ _('Iniziato') }}:</dt>
                         <dd class="col-sm-7">{{ match.started_at|datetime_local }}</dd>
                         {% endif %}
 
                         {% if match.ended_at %}
-                        <dt class="col-sm-5">Completato:</dt>
+                        <dt class="col-sm-5">{{ _('Completato') }}:</dt>
                         <dd class="col-sm-7">{{ match.ended_at|datetime_local }}</dd>
                         {% endif %}
                     </dl>
@@ -343,20 +139,20 @@
             <!-- Actions -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-cogs"></i> Azioni</h5>
+                    <h5><i class="fas fa-cogs"></i> {{ _('Azioni') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Torna alla Lista
+                            <i class="fas fa-arrow-left"></i> {{ _('Torna alla Lista') }}
                         </a>
 
                         {% if match.status.value == MatchStatus.SCHEDULED.value %}
                         <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}"
                             class="d-inline">
                             <button type="button" class="btn btn-outline-danger w-100"
-                                onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare il match?')">
-                                <i class="fas fa-times"></i> Annulla Match
+                                onclick='confirmSubmit(this.closest("form"), {{ _("Sei sicuro di voler annullare il match?")|tojson }})'>
+                                <i class="fas fa-times"></i> {{ _('Annulla Match') }}
                             </button>
                         </form>
                         {% endif %}
@@ -378,23 +174,23 @@
             {% if is_proposer or current_user.is_admin %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="fas fa-clock"></i> Modifica Tempi</h5>
+                    <h5><i class="fas fa-clock"></i> {{ _('Modifica Tempi') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label small">Inizio</label>
+                            <label class="form-label small">{{ _('Inizio') }}</label>
                             <input type="datetime-local" class="form-control form-control-sm" id="individualStartTime"
                                 value="{{ match.started_at.strftime('%Y-%m-%dT%H:%M') if match.started_at else '' }}">
                         </div>
                         <div class="col-6">
-                            <label class="form-label small">Fine</label>
+                            <label class="form-label small">{{ _('Fine') }}</label>
                             <input type="datetime-local" class="form-control form-control-sm" id="individualEndTime"
                                 value="{{ match.ended_at.strftime('%Y-%m-%dT%H:%M') if match.ended_at else '' }}">
                         </div>
                     </div>
                     <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="updateIndividualMatchTimes({{ match.id }})">
-                        <i class="fas fa-save"></i> Aggiorna Tempi
+                        <i class="fas fa-save"></i> {{ _('Aggiorna Tempi') }}
                     </button>
                 </div>
             </div>
@@ -415,7 +211,6 @@
 
     matchEvtSource.addEventListener('match_started', function(e) {
         const data = JSON.parse(e.data);
-        // Only reload if the event was triggered by the other player
         if (data.started_by !== currentUserId) {
             location.reload();
         }
@@ -423,7 +218,6 @@
 
     matchEvtSource.addEventListener('rack_updated', function(e) {
         const data = JSON.parse(e.data);
-        // Only reload if the event was triggered by the other player
         if (data.added_by !== currentUserId && data.removed_by !== currentUserId && data.rejected_by !== currentUserId) {
             location.reload();
         }
@@ -437,11 +231,16 @@
     });
 
     matchEvtSource.addEventListener('match_completed', function(e) {
-        // Always reload when match is completed
         location.reload();
     });
 
-    // Clean up on page unload
+    matchEvtSource.addEventListener('match_forfeited', function(e) {
+        const data = JSON.parse(e.data);
+        if (data.forfeited_by !== currentUserId) {
+            location.reload();
+        }
+    });
+
     window.addEventListener('beforeunload', function() {
         matchEvtSource.close();
     });
@@ -460,17 +259,17 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError('Errore: ' + data.error);
+                    showError({{ _('Errore:')|tojson }} + ' ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('Errore durante l\'aggiunta del rack');
+                showError({{ _("Errore durante l'aggiunta del rack")|tojson }});
             });
     }
 
     function removeRack(playerId) {
-        showConfirm('Rimuovere l\'ultimo rack vinto da questo giocatore?', () => {
+        showConfirm({{ _("Rimuovere l'ultimo rack vinto da questo giocatore?")|tojson }}, () => {
             fetch(`/match/matches/${matchId}/racks/remove`, {
             method: 'POST',
             headers: {
@@ -483,18 +282,18 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    showError('Errore: ' + data.error);
+                    showError({{ _('Errore:')|tojson }} + ' ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('Errore durante la rimozione del rack');
+                showError({{ _("Errore durante la rimozione del rack")|tojson }});
             });
         });
     }
 
     function confirmResult() {
-        showConfirm('Confermare il risultato del match?', () => {
+        showConfirm({{ _('Confermare il risultato del match?')|tojson }}, () => {
             fetch(`/match/matches/${matchId}/confirm`, {
             method: 'POST',
             headers: {
@@ -505,24 +304,24 @@
             .then(data => {
                 if (data.success) {
                     if (data.completed) {
-                        showSuccess('Match completato con successo!');
+                        showSuccess({{ _('Match completato con successo!')|tojson }});
                     } else {
-                        showSuccess('Risultato confermato! In attesa dell\'altro giocatore.');
+                        showSuccess({{ _("Risultato confermato! In attesa dell'altro giocatore.")|tojson }});
                     }
                     location.reload();
                 } else {
-                    showError('Errore: ' + data.error);
+                    showError({{ _('Errore:')|tojson }} + ' ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('Errore durante la conferma');
+                showError({{ _('Errore durante la conferma')|tojson }});
             });
         });
     }
 
     function rejectResult() {
-        showConfirm('Rifiutare il risultato? L\'ultimo rack verrà rimosso e si potrà continuare a giocare.', () => {
+        showConfirm({{ _("Rifiutare il risultato? L'ultimo rack verrà rimosso e si potrà continuare a giocare.")|tojson }}, () => {
             fetch(`/match/matches/${matchId}/reject`, {
             method: 'POST',
             headers: {
@@ -532,15 +331,39 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showInfo('Ultimo rack rimosso. Continuate a giocare!');
+                    showInfo({{ _('Ultimo rack rimosso. Continuate a giocare!')|tojson }});
                     location.reload();
                 } else {
-                    showError('Errore: ' + data.error);
+                    showError({{ _('Errore:')|tojson }} + ' ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('Errore durante il rifiuto');
+                showError({{ _('Errore durante il rifiuto')|tojson }});
+            });
+        });
+    }
+
+    function forfeitMatch() {
+        showConfirm({{ _("Sei sicuro di voler dichiarare forfait? L'avversario vincerà il match.")|tojson }}, () => {
+            fetch(`/match/matches/${matchId}/forfeit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showInfo({{ _('Forfait dichiarato.')|tojson }});
+                    location.reload();
+                } else {
+                    showError({{ _('Errore:')|tojson }} + ' ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError({{ _('Errore durante la dichiarazione di forfait')|tojson }});
             });
         });
     }
@@ -553,7 +376,7 @@
         const endedAt = endTimeInput ? endTimeInput.value : '';
 
         if (!startedAt && !endedAt) {
-            showError('Inserisci almeno un orario');
+            showError({{ _('Inserisci almeno un orario')|tojson }});
             return;
         }
 
@@ -571,15 +394,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showSuccess('Tempi aggiornati con successo');
+                showSuccess({{ _('Tempi aggiornati con successo')|tojson }});
                 setTimeout(() => location.reload(), 1000);
             } else {
-                showError('Errore: ' + (data.error || 'Errore sconosciuto'));
+                showError({{ _('Errore:')|tojson }} + ' ' + (data.error || {{ _('Errore sconosciuto')|tojson }}));
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showError('Errore durante l\'aggiornamento dei tempi');
+            showError({{ _("Errore durante l'aggiornamento dei tempi")|tojson }});
         });
     }
 </script>

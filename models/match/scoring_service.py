@@ -356,13 +356,21 @@ class ScoringService:
     def _apply_forfeit_scores(
         match: Match, forfeit_player: int, winning_score: int
     ) -> None:
-        """Apply forfeit scores to match."""
+        """Apply forfeit scores to match.
+
+        The forfeiting player keeps their current score (racks already won).
+        The winner receives at least the winning score (distance).
+        """
         if forfeit_player == 1:
-            match.player1_score = 0
-            match.player2_score = winning_score
+            # Player 1 forfeits - keep their score, ensure player 2 has winning score
+            if match.player2_score < winning_score:
+                match.player2_score = winning_score
+            # Keep match.player1_score as-is (racks already won)
         else:
-            match.player1_score = winning_score
-            match.player2_score = 0
+            # Player 2 forfeits - keep their score, ensure player 1 has winning score
+            if match.player1_score < winning_score:
+                match.player1_score = winning_score
+            # Keep match.player2_score as-is (racks already won)
 
     @staticmethod
     def _validate_rack_addition(match: Match, winner_id: int) -> None:

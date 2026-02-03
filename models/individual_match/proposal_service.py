@@ -41,8 +41,16 @@ class ProposalService:
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
         billiard_hall_id: Optional[int] = None,
+        is_multi_set: bool = False,
+        match_distance: Optional[int] = None,
     ) -> MatchProposal:
-        """Create a direct match proposal to specific players."""
+        """Create a direct match proposal to specific players.
+
+        Args:
+            distance: Racks per set (or None for free format)
+            is_multi_set: Whether match is multi-set
+            match_distance: Number of sets to win (only for multi-set)
+        """
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
@@ -60,6 +68,8 @@ class ProposalService:
             break_rule=break_rule,
             description=description,
             entry_fee=entry_fee,
+            is_multi_set=is_multi_set,
+            match_distance=match_distance,
         )
 
         db.session.add(proposal)
@@ -112,8 +122,16 @@ class ProposalService:
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
         billiard_hall_id: Optional[int] = None,
+        is_multi_set: bool = False,
+        match_distance: Optional[int] = None,
     ) -> MatchProposal:
-        """Create an open match proposal for all eligible players."""
+        """Create an open match proposal for all eligible players.
+
+        Args:
+            distance: Racks per set (or None for free format)
+            is_multi_set: Whether match is multi-set
+            match_distance: Number of sets to win (only for multi-set)
+        """
         from flask_babel import _
         from ..user.models import User
         from ..notification.factory import NotificationFactory
@@ -136,6 +154,8 @@ class ProposalService:
             break_rule=break_rule,
             description=description,
             entry_fee=entry_fee,
+            is_multi_set=is_multi_set,
+            match_distance=match_distance,
         )
 
         db.session.add(proposal)

@@ -52,15 +52,23 @@ class MatchProposalService:
         scheduled_at: datetime,
         expires_at: datetime,
         discipline: str = "palla_8",
-        distance: int = 5,
+        distance: Optional[int] = 5,
         is_race_to: bool = True,
         break_rule: str = "alternate",
         description: Optional[str] = None,
         entry_fee: Optional[float] = None,
         invited_user_ids: Optional[List[int]] = None,
         billiard_hall_id: Optional[int] = None,
+        is_multi_set: bool = False,
+        match_distance: Optional[int] = None,
     ) -> MatchProposal:
-        """Create a match proposal with invitations if needed."""
+        """Create a match proposal with invitations if needed.
+
+        Args:
+            distance: Racks per set (or None for free format)
+            is_multi_set: Whether match is multi-set
+            match_distance: Number of sets to win (only for multi-set)
+        """
         if proposal_type == ProposalType.DIRECT:
             return ProposalService.create_direct_proposal(
                 proposer_id=proposer_id,
@@ -75,6 +83,8 @@ class MatchProposalService:
                 description=description,
                 entry_fee=entry_fee,
                 billiard_hall_id=billiard_hall_id,
+                is_multi_set=is_multi_set,
+                match_distance=match_distance,
             )
         else:
             return ProposalService.create_open_proposal(
@@ -89,6 +99,8 @@ class MatchProposalService:
                 description=description,
                 entry_fee=entry_fee,
                 billiard_hall_id=billiard_hall_id,
+                is_multi_set=is_multi_set,
+                match_distance=match_distance,
             )
 
     @staticmethod
@@ -406,6 +418,23 @@ class IndividualMatchService:
         return MatchLifecycleService.report_result(
             match_id, reporter_id, winner_id, player1_racks, player2_racks
         )
+
+    @staticmethod
+    def forfeit_match(match_id: int, user_id: int) -> IndividualMatch:
+        """Forfeit a match - user loses, opponent wins.
+
+        The forfeiting player keeps their current score (racks already won).
+        The opponent receives the winning score (distance).
+
+        Args:
+            match_id: ID of the match
+            user_id: ID of player forfeiting
+
+        Returns:
+            The updated IndividualMatch object
+        """
+        # No @transactional here - MatchLifecycleService.forfeit_match has it
+        return MatchLifecycleService.forfeit_match(match_id, user_id)
 
     # ========== Rack Methods (delegate to IndividualRackService) ==========
 

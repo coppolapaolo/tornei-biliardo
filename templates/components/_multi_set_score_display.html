@@ -1,0 +1,125 @@
+{#
+Multi-Set Score Display Component
+
+Shows set-by-set breakdown for multi-set tournament matches.
+Works for Match objects with is_multi_set=True.
+
+Parameters:
+- match: Match object with is_multi_set=True and sets relationship
+- player1_name: string (optional) - override player1 display name
+- player2_name: string (optional) - override player2 display name
+#}
+
+{% set p1_name = player1_name|default(match.player1.username) %}
+{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('Bye')) %}
+
+{% if match.is_multi_set %}
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-layer-group"></i> {{ _('Set') }}
+            </h5>
+            <span class="badge bg-light text-dark">
+                {% if match.distance_config.is_race_to_sets %}
+                    {{ _('Al') }} {{ match.match_distance }}
+                {% else %}
+                    {{ _('Esattamente') }} {{ match.match_distance }}
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        {# Set score summary #}
+        <div class="row text-center mb-3">
+            <div class="col-5">
+                <h5>{{ p1_name }}</h5>
+                <h2 class="{% if match.winner_id == match.player1_id %}text-success{% elif match.winner_id %}text-danger{% else %}text-primary{% endif %}">
+                    {{ match.player1_score or 0 }}
+                </h2>
+                <small class="text-muted">{{ _('set vinti') }}</small>
+            </div>
+            <div class="col-2 d-flex align-items-center justify-content-center">
+                <span class="text-muted h4">-</span>
+            </div>
+            <div class="col-5">
+                <h5>{{ p2_name }}</h5>
+                <h2 class="{% if match.winner_id == match.player2_id %}text-success{% elif match.winner_id %}text-danger{% else %}text-primary{% endif %}">
+                    {{ match.player2_score or 0 }}
+                </h2>
+                <small class="text-muted">{{ _('set vinti') }}</small>
+            </div>
+        </div>
+
+        {# Set-by-set breakdown table #}
+        {% if match.sets|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width: 60px;">{{ _('Set') }}</th>
+                        <th class="text-end">{{ p1_name }}</th>
+                        <th class="text-center" style="width: 40px;"></th>
+                        <th class="text-start">{{ p2_name }}</th>
+                        <th class="text-center" style="width: 100px;">{{ _('Stato') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for set in match.sets %}
+                    <tr class="{% if set.status == 'playing' %}table-warning{% elif set.status == 'completed' %}{% else %}table-light{% endif %}">
+                        <td class="text-center">
+                            <strong>{{ set.set_number }}</strong>
+                        </td>
+                        <td class="text-end {% if set.winner_id == match.player1_id %}fw-bold text-success{% endif %}">
+                            {{ set.player1_racks }}
+                        </td>
+                        <td class="text-center text-muted">-</td>
+                        <td class="text-start {% if set.winner_id == match.player2_id %}fw-bold text-success{% endif %}">
+                            {{ set.player2_racks }}
+                        </td>
+                        <td class="text-center">
+                            {% if set.winner_id %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-trophy"></i>
+                                    {% if set.winner_id == match.player1_id %}{{ p1_name|truncate(10, True, '…') }}{% else %}{{ p2_name|truncate(10, True, '…') }}{% endif %}
+                                </span>
+                            {% elif set.status == 'playing' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-play"></i> {{ _('In corso') }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-clock"></i> {{ _('In attesa') }}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-3">
+            <i class="fas fa-info-circle"></i> {{ _('Nessun set ancora giocato') }}
+        </div>
+        {% endif %}
+
+        {# Current set info #}
+        {% if match.get_current_set is defined and match.get_current_set() %}
+        {% set current_set = match.get_current_set() %}
+        <div class="alert alert-info mt-3 mb-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-play-circle"></i>
+                    <strong>{{ _('Set corrente') }}: {{ current_set.set_number }}</strong>
+                    &mdash; {{ _('Al') }} {{ current_set.distance }} {{ _('rack') }}
+                </span>
+                <span class="badge bg-primary">
+                    {{ current_set.player1_racks }} - {{ current_set.player2_racks }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

@@ -525,6 +525,181 @@ class MatchService:
 
         return ScoringService.forfeit_match(match_id, user_id)
 
+    # ---------------------------------------
+    # MULTI-SET MATCH OPERATIONS
+    # ---------------------------------------
+    @staticmethod
+    @transactional(domain="match")
+    def start_next_set(match_id: int):
+        """Start the next set in a multi-set match.
+
+        Creates a new Set record and transitions it to 'playing' status.
+        If no sets exist yet, creates the first set.
+
+        Args:
+            match_id: ID of the match
+
+        Returns:
+            The newly created Set
+
+        Raises:
+            ValueError: If match not found, not multi-set, or match already complete
+        """
+        from .set_models import Set
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} non trovato")
+
+        if not match.is_multi_set:
+            raise ValueError("Match non è configurato come multi-set")
+
+        # Check if match is already complete
+        match_winning_sets = match.match_distance or 1
+        if match.distance_config.is_race_to_sets:
+            if match.player1_score >= match_winning_sets or match.player2_score >= match_winning_sets:
+                raise ValueError("Match già completato")
+        else:
+            total_sets = match.player1_score + match.player2_score
+            if total_sets >= match_winning_sets:
+                raise ValueError("Match già completato")
+
+        # Check if current set is complete or doesn't exist
+        current_set = match.get_current_set()
+        if current_set and current_set.status == "playing":
+            raise ValueError(f"Set {current_set.set_number} ancora in corso")
+
+        # Determine next set number
+        existing_sets = match.sets or []
+        next_set_number = len(existing_sets) + 1
+
+        # Get distance from gara or match configuration
+        gara = match.gara
+        set_distance = gara.distance if gara else 5  # Default to 5 if no gara
+
+        # Create new set
+        new_set = Set(
+            match_id=match_id,
+            set_number=next_set_number,
+            distance=set_distance,
+            is_race_to=gara.is_race_to if gara else True,
+            status="playing",
+            started_at=datetime.utcnow(),
+        )
+        db.session.add(new_set)
+
+        # Update match current set number
+        match.current_set_number = next_set_number
+
+        # Ensure match is in playing status
+        if match.status == MatchStatus.PENDING.value:
+            match.status = MatchStatus.PLAYING.value
+
+        db.session.add(match)
+
+        return new_set
+
+    @staticmethod
+    @transactional(domain="match")
+    def add_rack_to_current_set(match_id: int, winner_id: int):
+        """Add a rack to the current set in a multi-set match.
+
+        Args:
+            match_id: ID of the match
+            winner_id: ID of player who won the rack
+
+        Returns:
+            The newly created SetRack
+
+        Raises:
+            ValueError: If match not found, not multi-set, no active set, or winner invalid
+        """
+        from .set_models import Set, SetRack
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} non trovato")
+
+        if not match.is_multi_set:
+            raise ValueError("Match non è configurato come multi-set")
+
+        current_set = match.get_current_set()
+        if not current_set:
+            raise ValueError("Nessun set attivo. Inizia un nuovo set.")
+
+        if current_set.status != "playing":
+            raise ValueError(f"Set {current_set.set_number} non è in corso")
+
+        # Use Set's add_rack_result method which handles score updates and completion
+        rack = current_set.add_rack_result(winner_id=winner_id)
+
+        # Note: Set.add_rack_result calls _check_set_completion which calls
+        # match.complete_set() when the set is won, updating match scores
+
+        return rack
+
+    @staticmethod
+    @transactional(domain="match")
+    def remove_rack_from_current_set(match_id: int) -> None:
+        """Remove the last rack from the current set in a multi-set match.
+
+        Args:
+            match_id: ID of the match
+
+        Raises:
+            ValueError: If match not found, not multi-set, or no racks to remove
+        """
+        from .set_models import SetRack
+
+        match = db.session.get(Match, match_id)
+        if not match:
+            raise ValueError(f"Match {match_id} non trovato")
+
+        if not match.is_multi_set:
+            raise ValueError("Match non è configurato come multi-set")
+
+        current_set = match.get_current_set()
+        if not current_set:
+            raise ValueError("Nessun set attivo")
+
+        # Find last rack in current set
+        last_rack = (
+            SetRack.query.filter_by(set_id=current_set.id)
+            .order_by(SetRack.rack_number.desc())
+            .first()
+        )
+
+        if not last_rack:
+            raise ValueError("Nessun rack da rimuovere")
+
+        # Update set scores
+        if last_rack.winner_id == match.player1_id:
+            current_set.player1_racks = max(0, current_set.player1_racks - 1)
+        else:
+            current_set.player2_racks = max(0, current_set.player2_racks - 1)
+
+        # If set was completed, reopen it
+        if current_set.status == "completed":
+            current_set.status = "playing"
+            current_set.winner_id = None
+            current_set.completed_at = None
+
+            # Also need to decrement match set scores
+            if last_rack.winner_id == match.player1_id:
+                match.player1_score = max(0, match.player1_score - 1)
+            else:
+                match.player2_score = max(0, match.player2_score - 1)
+
+            # If match was completed, reopen it
+            if match.status == MatchStatus.COMPLETED.value:
+                match.status = MatchStatus.PLAYING.value
+                match.winner_id = None
+
+        # Delete the rack
+        db.session.delete(last_rack)
+        db.session.add(current_set)
+        db.session.add(match)
+
 
 class RackService:
     """Service per gestione rack con business logic completa."""

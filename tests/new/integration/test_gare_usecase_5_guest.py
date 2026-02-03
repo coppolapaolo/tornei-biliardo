@@ -7,7 +7,7 @@ Tests focused workflow aspects:
 """
 
 import pytest
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from typing import List
 import uuid
 
@@ -332,6 +332,7 @@ class TestUseCaseGuestLiveScores:
             number=1,
             name="Live Scores Gara",
             date=date.today(),
+            time=time(23, 59),
             location="Live Venue",
             description="In progress gara for live score viewing",
             rounds_count=2,
