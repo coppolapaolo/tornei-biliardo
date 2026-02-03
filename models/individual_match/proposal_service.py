@@ -39,7 +39,6 @@ class ProposalService:
         is_race_to: bool = True,
         break_rule: Optional[str] = None,
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None,
         billiard_hall_id: Optional[int] = None,
         is_multi_set: bool = False,
         match_distance: Optional[int] = None,
@@ -67,7 +66,6 @@ class ProposalService:
             is_race_to=is_race_to,
             break_rule=break_rule,
             description=description,
-            entry_fee=entry_fee,
             is_multi_set=is_multi_set,
             match_distance=match_distance,
         )
@@ -120,7 +118,6 @@ class ProposalService:
         is_race_to: bool = True,
         break_rule: Optional[str] = None,
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None,
         billiard_hall_id: Optional[int] = None,
         is_multi_set: bool = False,
         match_distance: Optional[int] = None,
@@ -153,7 +150,6 @@ class ProposalService:
             is_race_to=is_race_to,
             break_rule=break_rule,
             description=description,
-            entry_fee=entry_fee,
             is_multi_set=is_multi_set,
             match_distance=match_distance,
         )
@@ -216,12 +212,13 @@ class ProposalService:
         discipline: Optional[str] = None,
         distance: Optional[int] = None,
         is_race_to: bool = True,
-        entry_fee: Optional[float] = None,
         max_participants: Optional[int] = None,
         is_open_invitation: bool = False,
         **kwargs,
     ) -> MatchProposal:
         """Create a match proposal - unified method supporting both types."""
+        # Silence unused parameter warnings (kept for API compatibility)
+        _ = title, max_participants, is_open_invitation
 
         if proposed_date and proposed_time:
             if isinstance(proposed_time, str):
@@ -244,7 +241,6 @@ class ProposalService:
             distance=distance,
             is_race_to=is_race_to,
             description=description,
-            entry_fee=entry_fee,
         )
 
     @staticmethod

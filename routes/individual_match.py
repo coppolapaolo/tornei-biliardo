@@ -268,7 +268,6 @@ def create_proposal():
             "match_distance": match_distance,
             "break_rule": data.get("break_rule", "alternate"),
             "description": data.get("description"),
-            "entry_fee": float(data["entry_fee"]) if data.get("entry_fee") else None,
             "invited_user_ids": [
                 int(uid) for uid in data.getlist("invited_user_ids")
             ] if hasattr(data, 'getlist') else data.get("invited_user_ids", []),

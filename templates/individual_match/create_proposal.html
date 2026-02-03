@@ -87,12 +87,6 @@
                                             <div class="form-text">Quando vorresti giocare</div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <label for="entry_fee" class="form-label">Entry Fee (€)</label>
-                                            <input type="number" class="form-control" id="entry_fee" name="entry_fee"
-                                                min="0" step="0.01" placeholder="0.00">
-                                            <div class="form-text">Opzionale - costo per partecipare</div>
-                                        </div>
                                     </div>
 
                                     <!-- Game Settings -->
@@ -119,7 +113,7 @@
 
                                         <!-- Match Format Selection -->
                                         <div class="mb-3">
-                                            <label class="form-label">{{ _("Formato Match") }}</label>
+                                            <label class="form-label">{{ _("Tipo Partita") }}</label>
                                             <div class="btn-group w-100 mb-2" role="group">
                                                 <input type="radio" class="btn-check" name="match_format" id="formatSingle" value="single" checked>
                                                 <label class="btn btn-outline-primary" for="formatSingle">
@@ -135,6 +129,11 @@
                                                 <label class="btn btn-outline-primary" for="formatFree">
                                                     <i class="fas fa-infinity"></i> {{ _("Libero") }}
                                                 </label>
+                                            </div>
+                                            <div class="form-text small">
+                                                <strong>{{ _("Set Singolo") }}:</strong> {{ _("Partita classica") }}<br>
+                                                <strong>{{ _("Multi-Set") }}:</strong> {{ _("Più set, vince chi ne raggiunge N") }}<br>
+                                                <strong>{{ _("Libero") }}:</strong> {{ _("Senza limite, termini quando vuoi") }}
                                             </div>
                                         </div>
 
@@ -312,12 +311,12 @@
 <script>
     // Internationalization strings
     const i18n = {
-        selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto") | tojson }},
-    confirmCreate: { { _("Sei sicuro di voler creare questa proposta di match?") | tojson } },
-    formatRaceTo: { { _("Al {distance} (chi arriva prima a {distance} vince)") | tojson } },
-    formatExact: { { _("Esattamente {distance} rack (vincitore per somma punti)") | tojson } },
-    noOpponents: { { _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!") | tojson } },
-    loadingOpponents: { { _("Caricamento giocatori...") | tojson } }
+        selectPlayerError: {{ _("Devi selezionare almeno un giocatore per un invito diretto")|tojson }},
+        confirmCreate: {{ _("Sei sicuro di voler creare questa proposta di match?")|tojson }},
+        formatRaceTo: {{ _("Al {distance} (chi arriva prima a {distance} vince)")|tojson }},
+        formatExact: {{ _("Esattamente {distance} rack (vincitore per somma punti)")|tojson }},
+        noOpponents: {{ _("Non hai ancora giocato con nessuno. Crea prima una proposta aperta!")|tojson }},
+        loadingOpponents: {{ _("Caricamento giocatori...")|tojson }}
     };
 
     let playerSelect = null;

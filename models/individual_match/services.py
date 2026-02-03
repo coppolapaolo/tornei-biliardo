@@ -56,7 +56,6 @@ class MatchProposalService:
         is_race_to: bool = True,
         break_rule: str = "alternate",
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None,
         invited_user_ids: Optional[List[int]] = None,
         billiard_hall_id: Optional[int] = None,
         is_multi_set: bool = False,
@@ -81,7 +80,6 @@ class MatchProposalService:
                 is_race_to=is_race_to,
                 break_rule=break_rule,
                 description=description,
-                entry_fee=entry_fee,
                 billiard_hall_id=billiard_hall_id,
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
@@ -97,7 +95,6 @@ class MatchProposalService:
                 is_race_to=is_race_to,
                 break_rule=break_rule,
                 description=description,
-                entry_fee=entry_fee,
                 billiard_hall_id=billiard_hall_id,
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
@@ -150,7 +147,6 @@ class IndividualMatchService:
         is_race_to: bool = True,
         break_rule: Optional[str] = None,
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None,
         billiard_hall_id: Optional[int] = None,
     ) -> MatchProposal:
         """Create a direct match proposal to specific players."""
@@ -165,7 +161,6 @@ class IndividualMatchService:
             is_race_to=is_race_to,
             break_rule=break_rule,
             description=description,
-            entry_fee=entry_fee,
             billiard_hall_id=billiard_hall_id,
         )
 
@@ -181,7 +176,6 @@ class IndividualMatchService:
         is_race_to: bool = True,
         break_rule: Optional[str] = None,
         description: Optional[str] = None,
-        entry_fee: Optional[float] = None,
         billiard_hall_id: Optional[int] = None,
     ) -> MatchProposal:
         """Create an open match proposal for all eligible players."""
@@ -195,7 +189,6 @@ class IndividualMatchService:
             is_race_to=is_race_to,
             break_rule=break_rule,
             description=description,
-            entry_fee=entry_fee,
             billiard_hall_id=billiard_hall_id,
         )
 
@@ -210,7 +203,6 @@ class IndividualMatchService:
         discipline: Optional[str] = None,
         distance: Optional[int] = None,
         is_race_to: bool = True,
-        entry_fee: Optional[float] = None,
         max_participants: Optional[int] = None,
         is_open_invitation: bool = False,
         **kwargs,
@@ -226,7 +218,6 @@ class IndividualMatchService:
             discipline=discipline,
             distance=distance,
             is_race_to=is_race_to,
-            entry_fee=entry_fee,
             max_participants=max_participants,
             is_open_invitation=is_open_invitation,
             **kwargs,

@@ -108,8 +108,6 @@ def create_match_proposal():
             best_of = "best_of" in request.form
             break_rule = request.form.get("break_rule") or None
             description = request.form.get("description")
-            # I match individuali sono sempre gratuiti
-            entry_fee = None
 
             if proposal_type == "direct":
                 invited_ids = [
@@ -125,7 +123,6 @@ def create_match_proposal():
                     is_race_to=best_of,
                     break_rule=break_rule,
                     description=description,
-                    entry_fee=entry_fee,
                 )
             else:  # open
                 proposal = IndividualMatchService.create_open_proposal(
@@ -137,7 +134,6 @@ def create_match_proposal():
                     is_race_to=best_of,
                     break_rule=break_rule,
                     description=description,
-                    entry_fee=entry_fee,
                 )
 
             flash(f"Match proposal created successfully! ID: {proposal.id}")
@@ -217,7 +213,6 @@ def accept_match_proposal(proposal_id):
                     distance=proposal.distance,
                     is_race_to=proposal.is_race_to,
                     break_rule=proposal.break_rule,
-                    entry_fee=proposal.entry_fee,
                     status=MatchStatus.SCHEDULED.value,
                 )
                 db.session.add(individual_match)

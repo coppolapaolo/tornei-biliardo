@@ -347,7 +347,6 @@ class AvailabilityService:
             discipline="palla_8",  # Default
             distance=7,  # Default
             is_race_to=True,
-            entry_fee=0.0,
         )
 
         return proposal

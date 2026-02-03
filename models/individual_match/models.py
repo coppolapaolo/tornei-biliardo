@@ -77,7 +77,6 @@ class MatchProposal(BaseModel, TimestampMixin):
         db.String(20), nullable=True, default="alternate"
     )  # Break rule: alternate, winner, loser
     description = db.Column(db.Text, nullable=True)
-    entry_fee = db.Column(db.Numeric(10, 2), nullable=True, default=0)
 
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=True)
@@ -206,7 +205,6 @@ class MatchProposal(BaseModel, TimestampMixin):
             distance=self.distance,
             is_race_to=self.is_race_to,
             break_rule=self.break_rule,
-            entry_fee=self.entry_fee,
             # Phase 6: Copy multi-set configuration
             is_multi_set=self.is_multi_set if self.is_multi_set is not None else False,
             match_distance=self.match_distance,
@@ -384,7 +382,6 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
     )  # Race-to vs exact sets
 
     # Optional
-    entry_fee = db.Column(db.Numeric(10, 2), nullable=True)
     notes = db.Column(db.Text, nullable=True)
 
     # Results
