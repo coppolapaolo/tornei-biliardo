@@ -327,9 +327,6 @@ User receives live notifications for XP gains, level-ups, and achievements.
         const userId = POLL_CONFIG.userId;
         const i18n = POLL_CONFIG.i18n;
 
-        let lastTimestamp = 0;
-        const pollInterval = 3000; // 3 seconds for fast updates
-
         function showToast(icon, iconColor, title, message) {
             const toastEl = document.getElementById('sseToast');
             document.getElementById('sseToastIcon').className = 'fas ' + icon + ' ' + iconColor + ' me-2';
@@ -340,58 +337,26 @@ User receives live notifications for XP gains, level-ups, and achievements.
             toast.show();
         }
 
-        function handleEvent(event) {
-            const data = event.data;
+        window.Polling.create({
+            url: '/sse/poll/user/' + userId,
+            onEvent: function(event) {
+                const data = event.data;
 
-            if (event.type === 'xp_gained') {
-                console.log('[Poll User] XP gained:', data);
-                showToast(
-                    'fa-star',
-                    'text-warning',
-                    i18n.xpGained,
-                    '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP'
-                );
-                setTimeout(function () { location.reload(); }, 3000);
-            } else if (event.type === 'level_up') {
-                console.log('[Poll User] Level up:', data);
-                showToast(
-                    'fa-level-up-alt',
-                    'text-success',
-                    i18n.levelUp,
-                    i18n.reachedLevel + data.new_level + '!'
-                );
-                setTimeout(function () { location.reload(); }, 3000);
-            } else if (event.type === 'achievement') {
-                console.log('[Poll User] Achievement:', data);
-                showToast(
-                    'fa-trophy',
-                    'text-primary',
-                    i18n.achievement,
-                    data.achievement_name + ' (+' + data.xp_awarded + ' XP)'
-                );
-                setTimeout(function () { location.reload(); }, 3000);
+                if (event.type === 'xp_gained') {
+                    showToast('fa-star', 'text-warning', i18n.xpGained,
+                        '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP');
+                    setTimeout(function () { location.reload(); }, 3000);
+                } else if (event.type === 'level_up') {
+                    showToast('fa-level-up-alt', 'text-success', i18n.levelUp,
+                        i18n.reachedLevel + data.new_level + '!');
+                    setTimeout(function () { location.reload(); }, 3000);
+                } else if (event.type === 'achievement') {
+                    showToast('fa-trophy', 'text-primary', i18n.achievement,
+                        data.achievement_name + ' (+' + data.xp_awarded + ' XP)');
+                    setTimeout(function () { location.reload(); }, 3000);
+                }
             }
-        }
-
-        function pollUserEvents() {
-            fetch('/sse/poll/user/' + userId + '?since=' + lastTimestamp)
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Poll failed');
-                    return response.json();
-                })
-                .then(function(result) {
-                    lastTimestamp = result.timestamp;
-                    result.events.forEach(handleEvent);
-                })
-                .catch(function(err) {
-                    console.warn('[Poll User] Error:', err.message);
-                });
-        }
-
-        // Start polling
-        setInterval(pollUserEvents, pollInterval);
-        // Initial poll after short delay
-        setTimeout(pollUserEvents, 500);
+        }).start();
     })();
 </script>
 {% endif %}

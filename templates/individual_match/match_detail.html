@@ -205,50 +205,35 @@
     const matchId = {{ match.id }};
     const currentUserId = {{ current_user.id }};
 
-    // Polling for real-time match updates (replaces SSE)
+    // Polling for real-time match updates (only reload if event from other user)
     {% if match.status.value in [MatchStatus.IN_PROGRESS.value, MatchStatus.SCHEDULED.value] %}
-    (function() {
-        let lastTimestamp = 0;
-        const pollInterval = 3000; // 3 seconds for fast updates
-
-        function handleEvent(event) {
-            const data = event.data;
+    window.Polling.create({
+        url: '/sse/poll/individual_match/' + matchId,
+        onEvent: function(event) {
+            var data = event.data;
+            var shouldReload = false;
 
             if (event.type === 'match_started' && data.started_by !== currentUserId) {
-                location.reload();
+                shouldReload = true;
             } else if (event.type === 'rack_updated' &&
                        data.added_by !== currentUserId &&
                        data.removed_by !== currentUserId &&
                        data.rejected_by !== currentUserId) {
-                location.reload();
+                shouldReload = true;
             } else if (event.type === 'result_confirmed' && data.confirmed_by !== currentUserId) {
-                location.reload();
+                shouldReload = true;
             } else if (event.type === 'match_completed') {
-                location.reload();
+                shouldReload = true;
             } else if (event.type === 'match_forfeited' && data.forfeited_by !== currentUserId) {
+                shouldReload = true;
+            }
+
+            if (shouldReload) {
+                console.log('[Poll] ' + event.type + ', reloading...');
                 location.reload();
             }
         }
-
-        function pollMatchEvents() {
-            fetch('/sse/poll/individual_match/' + matchId + '?since=' + lastTimestamp)
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Poll failed');
-                    return response.json();
-                })
-                .then(function(result) {
-                    lastTimestamp = result.timestamp;
-                    result.events.forEach(handleEvent);
-                })
-                .catch(function(err) {
-                    console.warn('[Poll Match] Error:', err.message);
-                });
-        }
-
-        // Start polling
-        setInterval(pollMatchEvents, pollInterval);
-        setTimeout(pollMatchEvents, 500);
-    })();
+    }).start();
     {% endif %}
 
     function addRack(winnerId) {

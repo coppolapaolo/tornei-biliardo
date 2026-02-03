@@ -1747,53 +1747,14 @@
 {% endif %}
 
 {# ═══════════════════════════════════════════════════════════════════════════
-Polling: Real-time updates for gara detail page (replaces SSE)
-All authenticated users receive live updates when matches complete,
-rounds start, inscriptions are added, or gara completes.
+Polling: Real-time updates for gara detail page
 ═══════════════════════════════════════════════════════════════════════════ #}
 {% if current_user.is_authenticated and gara.status != 'completed' %}
 <script>
-  (function () {
-    const garaId = GARA_CONFIG.gara.id;
-    let lastTimestamp = 0;
-    const pollInterval = 3000; // 3 seconds for fast updates
-
-    function handleEvent(event) {
-      // All gara events trigger a reload to update the UI
-      const reloadEvents = [
-        'match_completed',
-        'match_updated',
-        'round_started',
-        'inscription_added',
-        'gara_completed'
-      ];
-
-      if (reloadEvents.includes(event.type)) {
-        console.log('[Poll Gara] ' + event.type + ':', event.data);
-        location.reload();
-      }
-    }
-
-    function pollGaraEvents() {
-      fetch('/sse/poll/gara/' + garaId + '?since=' + lastTimestamp)
-        .then(function(response) {
-          if (!response.ok) throw new Error('Poll failed');
-          return response.json();
-        })
-        .then(function(result) {
-          lastTimestamp = result.timestamp;
-          result.events.forEach(handleEvent);
-        })
-        .catch(function(err) {
-          console.warn('[Poll Gara] Error:', err.message);
-        });
-    }
-
-    // Start polling
-    setInterval(pollGaraEvents, pollInterval);
-    // Initial poll after short delay
-    setTimeout(pollGaraEvents, 500);
-  })();
+  window.Polling.reloadOnEvents({
+    url: '/sse/poll/gara/' + GARA_CONFIG.gara.id,
+    reloadOn: ['match_completed', 'match_updated', 'round_started', 'inscription_added', 'gara_completed']
+  });
 </script>
 {% endif %}
 {% endblock %}
