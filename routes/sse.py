@@ -1,14 +1,19 @@
 # routes/sse.py
-"""Server-Sent Events (SSE) for real-time updates.
+"""Real-time updates via polling (replaced SSE to avoid worker blocking).
 
-Provides SSE endpoints for real-time updates across the application:
+Provides polling endpoints for real-time updates across the application:
 - Trio matches: rack updates, undo, forfeit
 - Gara: match results, round changes, inscriptions
 - User: XP gains, level-ups, achievements
 
 Architecture:
-    Domain Events → EventBus → SSE Bridge → SSE Store → Browser EventSource
+    Domain Events → EventBus → SSE Bridge → Event Store → Browser Polling
     (see routes/sse_bridge.py for event routing)
+
+Migration from SSE to Polling (Feb 2026):
+    SSE connections were blocking uWSGI workers indefinitely, causing
+    severe performance issues with only 3 workers on PythonAnywhere.
+    Polling with 3s interval provides near-real-time updates without blocking.
 """
 
 import json
@@ -17,7 +22,7 @@ from collections import defaultdict
 from threading import Lock
 from typing import Dict, List, Tuple, Literal
 
-from flask import Blueprint, Response, abort
+from flask import Blueprint, Response, abort, jsonify, request
 from flask_login import login_required, current_user
 
 sse_bp = Blueprint("sse", __name__, url_prefix="/sse")
@@ -256,3 +261,97 @@ def individual_match_stream(match_id: int):
         - match_completed: Both players confirmed, match finished
     """
     return _create_sse_response("individual_match", match_id)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Polling Endpoints (Recommended - don't block workers)
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+def _get_events_since(scope: ScopeType, scope_id: int, since: float) -> List[dict]:
+    """Get events newer than timestamp.
+
+    Args:
+        scope: Event scope
+        scope_id: ID within scope
+        since: Unix timestamp - return events after this time
+
+    Returns:
+        List of event dicts with type and data
+    """
+    with _events_lock:
+        events = _events[scope].get(scope_id, [])
+        return [
+            {"type": event_type, "data": data, "timestamp": ts}
+            for event_type, data, ts in events
+            if ts > since
+        ]
+
+
+@sse_bp.route("/poll/trio/<int:trio_id>")
+@login_required
+def poll_trio(trio_id: int):
+    """Poll for trio match updates.
+
+    Query params:
+        since: Unix timestamp (default: 0)
+
+    Returns:
+        JSON with events array
+    """
+    since = request.args.get("since", 0, type=float)
+    events = _get_events_since("trio", trio_id, since)
+    return jsonify({"events": events, "timestamp": time.time()})
+
+
+@sse_bp.route("/poll/gara/<int:gara_id>")
+@login_required
+def poll_gara(gara_id: int):
+    """Poll for gara updates.
+
+    Query params:
+        since: Unix timestamp (default: 0)
+
+    Returns:
+        JSON with events array
+    """
+    since = request.args.get("since", 0, type=float)
+    events = _get_events_since("gara", gara_id, since)
+    return jsonify({"events": events, "timestamp": time.time()})
+
+
+@sse_bp.route("/poll/user/<int:user_id>")
+@login_required
+def poll_user(user_id: int):
+    """Poll for user-specific updates.
+
+    Security: Only allows polling own user events.
+
+    Query params:
+        since: Unix timestamp (default: 0)
+
+    Returns:
+        JSON with events array
+    """
+    if current_user.id != user_id:
+        abort(403)
+
+    since = request.args.get("since", 0, type=float)
+    events = _get_events_since("user", user_id, since)
+    return jsonify({"events": events, "timestamp": time.time()})
+
+
+@sse_bp.route("/poll/individual_match/<int:match_id>")
+@login_required
+def poll_individual_match(match_id: int):
+    """Poll for individual match updates.
+
+    Query params:
+        since: Unix timestamp (default: 0)
+
+    Returns:
+        JSON with events array
+    """
+    since = request.args.get("since", 0, type=float)
+    events = _get_events_since("individual_match", match_id, since)
+    return jsonify({"events": events, "timestamp": time.time()})

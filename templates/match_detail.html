@@ -592,44 +592,43 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         });
     }
 
-    {# SSE: Real-time updates for ALL trio match players (not just waiting) #}
-    {# All players need SSE to receive notifications when someone else does undo #}
-    {# NOTE: Keep SSE connected even after is_completed = True because undo can reset it #}
+    {# Polling: Real-time updates for ALL trio match players (replaces SSE) #}
+    {# All players need updates to receive notifications when someone else does undo #}
+    {# NOTE: Keep polling even after is_completed = True because undo can reset it #}
     {% if match.is_trio and match.trio_match and user_is_player %}
     {% set trio = match.trio_match %}
     (function () {
-        // Connect to SSE stream for real-time updates
         const trioId = {{ trio.id }};
-    const eventSource = new EventSource('/sse/trio/' + trioId);
+        let lastTimestamp = 0;
+        const pollInterval = 3000; // 3 seconds for fast updates
 
-    eventSource.addEventListener('rack_added', function (e) {
-        console.log('Rack added, reloading...');
-        location.reload();
-    });
+        function handleEvent(event) {
+            const reloadEvents = ['rack_added', 'rack_removed', 'forfeit'];
+            if (reloadEvents.includes(event.type)) {
+                console.log('[Poll Trio] ' + event.type + ', reloading...');
+                location.reload();
+            }
+        }
 
-    eventSource.addEventListener('rack_removed', function (e) {
-        console.log('Rack removed, reloading...');
-        location.reload();
-    });
+        function pollTrioEvents() {
+            fetch('/sse/poll/trio/' + trioId + '?since=' + lastTimestamp)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Poll failed');
+                    return response.json();
+                })
+                .then(function(result) {
+                    lastTimestamp = result.timestamp;
+                    result.events.forEach(handleEvent);
+                })
+                .catch(function(err) {
+                    console.warn('[Poll Trio] Error:', err.message);
+                });
+        }
 
-    eventSource.addEventListener('forfeit', function (e) {
-        console.log('Forfeit declared, reloading...');
-        location.reload();
-    });
-
-    eventSource.addEventListener('connected', function (e) {
-        console.log('SSE connected to trio ' + trioId);
-    });
-
-    eventSource.onerror = function (e) {
-        console.log('SSE connection error, will retry...');
-    };
-
-    // Close connection when leaving page
-    window.addEventListener('beforeunload', function () {
-        eventSource.close();
-    });
-    }) ();
+        // Start polling
+        setInterval(pollTrioEvents, pollInterval);
+        setTimeout(pollTrioEvents, 500);
+    })();
     {% endif %}
 </script>
 {% endblock %}

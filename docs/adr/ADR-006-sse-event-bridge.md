@@ -1,8 +1,12 @@
 # [006] SSE Event Bridge Architecture
 
 **Data**: 2026-01-09
-**Stato**: Accepted
+**Stato**: Partially Superseded (transport layer)
 **Decisori**: Paolo, Claude
+
+> **Nota (2026-02-03)**: Il transport layer SSE è stato sostituito con polling HTTP.
+> Vedi **ADR-021** per i dettagli. L'architettura Event Bridge rimane valida,
+> ma i browser ora usano polling invece di EventSource.
 
 ## Contesto
 

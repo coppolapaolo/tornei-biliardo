@@ -290,11 +290,11 @@
 </div>
 
 {# ═══════════════════════════════════════════════════════════════════════════
-SSE: Real-time notifications for gamification events
+Polling: Real-time notifications for gamification events (replaces SSE)
 User receives live notifications for XP gains, level-ups, and achievements.
 ═══════════════════════════════════════════════════════════════════════════ #}
 {% if current_user.is_authenticated %}
-<!-- Toast container for SSE notifications -->
+<!-- Toast container for notifications -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
     <div id="sseToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
@@ -307,7 +307,7 @@ User receives live notifications for XP gains, level-ups, and achievements.
 </div>
 
 <!-- JSON Configuration Block (ADR-018) -->
-<script type="application/json" id="sse-config">
+<script type="application/json" id="poll-config">
 {
     "userId": {{ current_user.id }},
     "i18n": {
@@ -323,13 +323,12 @@ User receives live notifications for XP gains, level-ups, and achievements.
 <script>
     (function () {
         // Load configuration from JSON block
-        const SSE_CONFIG = JSON.parse(document.getElementById('sse-config').textContent);
-        const userId = SSE_CONFIG.userId;
-        const i18n = SSE_CONFIG.i18n;
+        const POLL_CONFIG = JSON.parse(document.getElementById('poll-config').textContent);
+        const userId = POLL_CONFIG.userId;
+        const i18n = POLL_CONFIG.i18n;
 
-        let eventSource = null;
-        let reconnectAttempts = 0;
-        const maxReconnectAttempts = 5;
+        let lastTimestamp = 0;
+        const pollInterval = 3000; // 3 seconds for fast updates
 
         function showToast(icon, iconColor, title, message) {
             const toastEl = document.getElementById('sseToast');
@@ -341,23 +340,11 @@ User receives live notifications for XP gains, level-ups, and achievements.
             toast.show();
         }
 
-        function connectSSE() {
-            if (eventSource) {
-                eventSource.close();
-            }
+        function handleEvent(event) {
+            const data = event.data;
 
-            console.log('[SSE User] Connecting to /sse/user/' + userId);
-            eventSource = new EventSource('/sse/user/' + userId);
-
-            eventSource.addEventListener('connected', function (e) {
-                console.log('[SSE User] Connected:', e.data);
-                reconnectAttempts = 0;
-            });
-
-            // XP gained - show toast notification
-            eventSource.addEventListener('xp_gained', function (e) {
-                const data = JSON.parse(e.data);
-                console.log('[SSE User] XP gained:', data);
+            if (event.type === 'xp_gained') {
+                console.log('[Poll User] XP gained:', data);
                 showToast(
                     'fa-star',
                     'text-warning',
@@ -365,12 +352,8 @@ User receives live notifications for XP gains, level-ups, and achievements.
                     '+' + data.xp_amount + ' XP - ' + i18n.total + data.new_total_xp + ' XP'
                 );
                 setTimeout(function () { location.reload(); }, 3000);
-            });
-
-            // Level up - show celebration toast
-            eventSource.addEventListener('level_up', function (e) {
-                const data = JSON.parse(e.data);
-                console.log('[SSE User] Level up:', data);
+            } else if (event.type === 'level_up') {
+                console.log('[Poll User] Level up:', data);
                 showToast(
                     'fa-level-up-alt',
                     'text-success',
@@ -378,12 +361,8 @@ User receives live notifications for XP gains, level-ups, and achievements.
                     i18n.reachedLevel + data.new_level + '!'
                 );
                 setTimeout(function () { location.reload(); }, 3000);
-            });
-
-            // Achievement unlocked - show celebration toast
-            eventSource.addEventListener('achievement', function (e) {
-                const data = JSON.parse(e.data);
-                console.log('[SSE User] Achievement:', data);
+            } else if (event.type === 'achievement') {
+                console.log('[Poll User] Achievement:', data);
                 showToast(
                     'fa-trophy',
                     'text-primary',
@@ -391,28 +370,28 @@ User receives live notifications for XP gains, level-ups, and achievements.
                     data.achievement_name + ' (+' + data.xp_awarded + ' XP)'
                 );
                 setTimeout(function () { location.reload(); }, 3000);
-            });
-
-            eventSource.onerror = function (e) {
-                console.error('[SSE User] Connection error:', e);
-                eventSource.close();
-
-                if (reconnectAttempts < maxReconnectAttempts) {
-                    reconnectAttempts++;
-                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-                    console.log('[SSE User] Reconnecting in ' + delay + 'ms');
-                    setTimeout(connectSSE, delay);
-                }
-            };
+            }
         }
 
-        connectSSE();
+        function pollUserEvents() {
+            fetch('/sse/poll/user/' + userId + '?since=' + lastTimestamp)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Poll failed');
+                    return response.json();
+                })
+                .then(function(result) {
+                    lastTimestamp = result.timestamp;
+                    result.events.forEach(handleEvent);
+                })
+                .catch(function(err) {
+                    console.warn('[Poll User] Error:', err.message);
+                });
+        }
 
-        window.addEventListener('beforeunload', function () {
-            if (eventSource) {
-                eventSource.close();
-            }
-        });
+        // Start polling
+        setInterval(pollUserEvents, pollInterval);
+        // Initial poll after short delay
+        setTimeout(pollUserEvents, 500);
     })();
 </script>
 {% endif %}

@@ -205,45 +205,50 @@
     const matchId = {{ match.id }};
     const currentUserId = {{ current_user.id }};
 
-    // SSE for real-time match updates
+    // Polling for real-time match updates (replaces SSE)
     {% if match.status.value in [MatchStatus.IN_PROGRESS.value, MatchStatus.SCHEDULED.value] %}
-    const matchEvtSource = new EventSource('/sse/individual_match/' + matchId);
+    (function() {
+        let lastTimestamp = 0;
+        const pollInterval = 3000; // 3 seconds for fast updates
 
-    matchEvtSource.addEventListener('match_started', function(e) {
-        const data = JSON.parse(e.data);
-        if (data.started_by !== currentUserId) {
-            location.reload();
+        function handleEvent(event) {
+            const data = event.data;
+
+            if (event.type === 'match_started' && data.started_by !== currentUserId) {
+                location.reload();
+            } else if (event.type === 'rack_updated' &&
+                       data.added_by !== currentUserId &&
+                       data.removed_by !== currentUserId &&
+                       data.rejected_by !== currentUserId) {
+                location.reload();
+            } else if (event.type === 'result_confirmed' && data.confirmed_by !== currentUserId) {
+                location.reload();
+            } else if (event.type === 'match_completed') {
+                location.reload();
+            } else if (event.type === 'match_forfeited' && data.forfeited_by !== currentUserId) {
+                location.reload();
+            }
         }
-    });
 
-    matchEvtSource.addEventListener('rack_updated', function(e) {
-        const data = JSON.parse(e.data);
-        if (data.added_by !== currentUserId && data.removed_by !== currentUserId && data.rejected_by !== currentUserId) {
-            location.reload();
+        function pollMatchEvents() {
+            fetch('/sse/poll/individual_match/' + matchId + '?since=' + lastTimestamp)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Poll failed');
+                    return response.json();
+                })
+                .then(function(result) {
+                    lastTimestamp = result.timestamp;
+                    result.events.forEach(handleEvent);
+                })
+                .catch(function(err) {
+                    console.warn('[Poll Match] Error:', err.message);
+                });
         }
-    });
 
-    matchEvtSource.addEventListener('result_confirmed', function(e) {
-        const data = JSON.parse(e.data);
-        if (data.confirmed_by !== currentUserId) {
-            location.reload();
-        }
-    });
-
-    matchEvtSource.addEventListener('match_completed', function(e) {
-        location.reload();
-    });
-
-    matchEvtSource.addEventListener('match_forfeited', function(e) {
-        const data = JSON.parse(e.data);
-        if (data.forfeited_by !== currentUserId) {
-            location.reload();
-        }
-    });
-
-    window.addEventListener('beforeunload', function() {
-        matchEvtSource.close();
-    });
+        // Start polling
+        setInterval(pollMatchEvents, pollInterval);
+        setTimeout(pollMatchEvents, 500);
+    })();
     {% endif %}
 
     function addRack(winnerId) {

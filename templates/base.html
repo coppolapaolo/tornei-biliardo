@@ -651,28 +651,45 @@
     </script>
 
     {% if current_user.is_authenticated %}
-    <!-- SSE Notification Badge Real-time Updates -->
+    <!-- Polling for Notification Badge Real-time Updates (replaces SSE) -->
     <script>
     (function() {
         var userId = {{ current_user.id }};
-        var evtSource = new EventSource('/sse/user/' + userId);
+        var lastTimestamp = 0;
+        var pollInterval = 3000; // 3 seconds for fast updates
 
-        evtSource.addEventListener('notification', function(e) {
-            var data = JSON.parse(e.data);
-            var badges = document.querySelectorAll('.notification-badge');
-            badges.forEach(function(badge) {
-                if (data.unread_count > 0) {
-                    badge.textContent = data.unread_count;
-                    badge.style.display = '';
-                } else {
-                    badge.style.display = 'none';
-                }
-            });
-        });
+        function pollUserEvents() {
+            fetch('/sse/poll/user/' + userId + '?since=' + lastTimestamp)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Poll failed');
+                    return response.json();
+                })
+                .then(function(result) {
+                    lastTimestamp = result.timestamp;
+                    result.events.forEach(function(event) {
+                        if (event.type === 'notification') {
+                            var data = event.data;
+                            var badges = document.querySelectorAll('.notification-badge');
+                            badges.forEach(function(badge) {
+                                if (data.unread_count > 0) {
+                                    badge.textContent = data.unread_count;
+                                    badge.style.display = '';
+                                } else {
+                                    badge.style.display = 'none';
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch(function(err) {
+                    console.warn('[Poll] Error:', err.message);
+                });
+        }
 
-        evtSource.onerror = function() {
-            // Reconnection is automatic by the browser
-        };
+        // Start polling
+        setInterval(pollUserEvents, pollInterval);
+        // Initial poll after short delay
+        setTimeout(pollUserEvents, 500);
     })();
     </script>
     {% endif %}
