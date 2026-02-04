@@ -191,7 +191,6 @@ class TestUseCasePlayerAvailability:
             distance=proposal.distance,
             is_race_to=proposal.is_race_to,
             break_rule=proposal.break_rule,
-            entry_fee=proposal.entry_fee,
         )
         db_session.add(individual_match)
 
@@ -383,7 +382,6 @@ class TestUseCasePlayerAvailability:
             distance=match_proposal.distance,
             is_race_to=match_proposal.is_race_to,
             break_rule=match_proposal.break_rule,
-            entry_fee=match_proposal.entry_fee,
         )
         db_session.add(individual_match)
 

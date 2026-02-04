@@ -124,7 +124,6 @@ class TestUseCaseIndividualMatchProposal:
             distance=7,
             is_race_to=True,
             description="Practice for tournament",
-            entry_fee=10.0,
         )
 
         db_session.commit()
@@ -135,7 +134,6 @@ class TestUseCaseIndividualMatchProposal:
         assert proposal.is_race_to is True
         assert proposal.location == "Championship Venue"
         assert proposal.description == "Practice for tournament"
-        assert float(proposal.entry_fee) == 10.0
 
     def test_director_can_propose_match(
         self, director_user: User, player1: User, player2: User, db_session
