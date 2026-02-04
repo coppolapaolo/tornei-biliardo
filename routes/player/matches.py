@@ -140,6 +140,21 @@ def add_rack_simplified(match_id):
         # Get updated match
         match = db.session.get(Match, match_id)
 
+        # Emit event AFTER transaction committed (for real-time updates)
+        from routes.sse import emit_match_event
+
+        emit_match_event(
+            match_id,
+            "rack_added",
+            {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "winner_id": winner_id,
+                "rack_number": rack.rack_number,
+            },
+        )
+
         return jsonify(
             {
                 "success": True,
@@ -175,6 +190,20 @@ def remove_rack_simplified(match_id):
         # Get updated match
         match = db.session.get(Match, match_id)
 
+        # Emit event AFTER transaction committed (for real-time updates)
+        from routes.sse import emit_match_event
+
+        emit_match_event(
+            match_id,
+            "rack_removed",
+            {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "player_id": player_id,
+            },
+        )
+
         return jsonify(
             {
                 "success": True,
@@ -198,6 +227,21 @@ def confirm_match_result(match_id):
     try:
         match = MatchService.confirm_match_result(
             match_id=match_id, user_id=current_user.id
+        )
+
+        # Emit event AFTER transaction committed (for real-time updates)
+        from routes.sse import emit_match_event
+
+        emit_match_event(
+            match_id,
+            "result_confirmed",
+            {
+                "match_id": match_id,
+                "player1_confirmed": match.player1_confirmed,
+                "player2_confirmed": match.player2_confirmed,
+                "confirmed_by": current_user.id,
+                "status": match.status,
+            },
         )
 
         return jsonify(
@@ -226,6 +270,20 @@ def reject_match_result(match_id):
             match_id=match_id, user_id=current_user.id
         )
 
+        # Emit event AFTER transaction committed (for real-time updates)
+        from routes.sse import emit_match_event
+
+        emit_match_event(
+            match_id,
+            "rack_removed",
+            {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "rejected_by": current_user.id,
+            },
+        )
+
         return jsonify(
             {
                 "success": True,
@@ -250,6 +308,20 @@ def forfeit_match(match_id):
     """Forfeit match - current user loses automatically"""
     try:
         match = MatchService.forfeit_match(match_id=match_id, user_id=current_user.id)
+
+        # Emit event AFTER transaction committed (for real-time updates)
+        from routes.sse import emit_match_event
+
+        emit_match_event(
+            match_id,
+            "forfeit",
+            {
+                "match_id": match_id,
+                "forfeit_by": current_user.id,
+                "winner_id": match.winner_id,
+                "status": match.status,
+            },
+        )
 
         return jsonify(
             {

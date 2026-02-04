@@ -85,6 +85,17 @@ class ScoringService:
         # Reset confirmations when score changes
         match.reset_confirmations()
 
+        # Auto-confirm winner when distance is reached
+        # (winner has no reason to contest, only loser needs to confirm)
+        if match.is_at_distance:
+            winner_number = match.rack_score.get_winner()
+            if winner_number is not None:
+                # There's a clear winner - auto-confirm them
+                match_winner_id = (
+                    match.player1_id if winner_number == 1 else match.player2_id
+                )
+                match.confirm_result(match_winner_id)
+
         # Soft transition: pending → playing
         if match.status == MatchStatus.PENDING.value:
             match.status = MatchStatus.PLAYING.value

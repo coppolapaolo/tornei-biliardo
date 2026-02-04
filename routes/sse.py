@@ -19,8 +19,9 @@ Migration from SSE to Polling (Feb 2026):
 import json
 import time
 from collections import defaultdict
+from enum import Enum
 from threading import Lock
-from typing import Dict, List, Tuple, Literal
+from typing import Dict, List, Tuple
 
 from flask import Blueprint, Response, abort, jsonify, request
 from flask_login import login_required, current_user
@@ -31,16 +32,21 @@ sse_bp = Blueprint("sse", __name__, url_prefix="/sse")
 # Event Store
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Scope types supported
-ScopeType = Literal["trio", "gara", "user", "individual_match"]
+
+class EventScope(Enum):
+    """Scope types for SSE/polling events."""
+
+    TRIO = "trio"
+    GARA = "gara"
+    USER = "user"
+    INDIVIDUAL_MATCH = "individual_match"
+    MATCH = "match"  # Gara match (tournament match)
+
 
 # Multi-scope event store
 # Structure: {scope: {scope_id: [(event_type, data, timestamp), ...]}}
 _events: Dict[str, Dict[int, List[Tuple[str, dict, float]]]] = {
-    "trio": defaultdict(list),
-    "gara": defaultdict(list),
-    "user": defaultdict(list),
-    "individual_match": defaultdict(list),
+    scope.value: defaultdict(list) for scope in EventScope
 }
 _events_lock = Lock()
 
@@ -53,7 +59,7 @@ MAX_EVENT_AGE = 60
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def emit_event(scope: ScopeType, scope_id: int, event_type: str, data: dict) -> None:
+def emit_event(scope: EventScope, scope_id: int, event_type: str, data: dict) -> None:
     """Emit an SSE event for any scope.
 
     This is the main entry point for emitting events. Called by:
@@ -61,22 +67,23 @@ def emit_event(scope: ScopeType, scope_id: int, event_type: str, data: dict) -> 
     - Direct calls for trio-specific events (backward compatibility)
 
     Args:
-        scope: Event scope ("trio", "gara", "user")
+        scope: Event scope (EventScope enum member)
         scope_id: ID within scope (trio_match.id, gara.id, user.id)
         event_type: Type of event (e.g., "match_completed", "xp_gained")
         data: Event payload to send to clients
     """
-    if scope not in _events:
-        raise ValueError(f"Invalid scope: {scope}. Must be one of: {list(_events.keys())}")
+    scope_key = scope.value if isinstance(scope, EventScope) else scope
+    if scope_key not in _events:
+        raise ValueError(f"Invalid scope: {scope_key}. Must be one of: {list(_events.keys())}")
 
     with _events_lock:
         now = time.time()
         # Add new event
-        _events[scope][scope_id].append((event_type, data, now))
+        _events[scope_key][scope_id].append((event_type, data, now))
         # Cleanup old events for this scope_id
-        _events[scope][scope_id] = [
+        _events[scope_key][scope_id] = [
             (et, d, ts)
-            for et, d, ts in _events[scope][scope_id]
+            for et, d, ts in _events[scope_key][scope_id]
             if now - ts < MAX_EVENT_AGE
         ]
 
@@ -91,7 +98,7 @@ def emit_trio_event(trio_id: int, event_type: str, data: dict) -> None:
         event_type: Type of event (rack_added, rack_removed, match_updated)
         data: Event data to send to clients
     """
-    emit_event("trio", trio_id, event_type, data)
+    emit_event(EventScope.TRIO, trio_id, event_type, data)
 
 
 def emit_gara_event(gara_id: int, event_type: str, data: dict) -> None:
@@ -104,7 +111,7 @@ def emit_gara_event(gara_id: int, event_type: str, data: dict) -> None:
         event_type: Type of event (match_completed, round_started, etc.)
         data: Event data to send to clients
     """
-    emit_event("gara", gara_id, event_type, data)
+    emit_event(EventScope.GARA, gara_id, event_type, data)
 
 
 def emit_user_event(user_id: int, event_type: str, data: dict) -> None:
@@ -117,7 +124,7 @@ def emit_user_event(user_id: int, event_type: str, data: dict) -> None:
         event_type: Type of event (xp_gained, level_up, achievement, etc.)
         data: Event data to send to clients
     """
-    emit_event("user", user_id, event_type, data)
+    emit_event(EventScope.USER, user_id, event_type, data)
 
 
 def emit_individual_match_event(match_id: int, event_type: str, data: dict) -> None:
@@ -130,7 +137,20 @@ def emit_individual_match_event(match_id: int, event_type: str, data: dict) -> N
         event_type: Type of event (match_started, rack_updated, result_confirmed)
         data: Event data to send to clients
     """
-    emit_event("individual_match", match_id, event_type, data)
+    emit_event(EventScope.INDIVIDUAL_MATCH, match_id, event_type, data)
+
+
+def emit_match_event(match_id: int, event_type: str, data: dict) -> None:
+    """Emit an event for a gara match (tournament match).
+
+    Called when rack is added/removed or match state changes.
+
+    Args:
+        match_id: ID of the match
+        event_type: Type of event (rack_added, rack_removed, forfeit)
+        data: Event data to send to clients
+    """
+    emit_event(EventScope.MATCH, match_id, event_type, data)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -138,25 +158,26 @@ def emit_individual_match_event(match_id: int, event_type: str, data: dict) -> N
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def _create_event_stream(scope: ScopeType, scope_id: int):
+def _create_event_stream(scope: EventScope, scope_id: int):
     """Create an SSE stream generator for a scope.
 
     Args:
-        scope: Event scope
+        scope: Event scope (EventScope enum member)
         scope_id: ID within scope
 
     Yields:
         SSE formatted event strings
     """
+    scope_key = scope.value
     last_check = time.time()
 
     # Send initial connection message
-    yield f"event: connected\ndata: {json.dumps({scope: scope_id})}\n\n"
+    yield f"event: connected\ndata: {json.dumps({scope_key: scope_id})}\n\n"
 
     while True:
         # Check for new events
         with _events_lock:
-            events = _events[scope].get(scope_id, [])
+            events = _events[scope_key].get(scope_id, [])
             new_events = [(et, d, ts) for et, d, ts in events if ts > last_check]
 
         for event_type, data, _ in new_events:
@@ -171,7 +192,7 @@ def _create_event_stream(scope: ScopeType, scope_id: int):
         time.sleep(2)
 
 
-def _create_sse_response(scope: ScopeType, scope_id: int) -> Response:
+def _create_sse_response(scope: EventScope, scope_id: int) -> Response:
     """Create an SSE Response object.
 
     Args:
@@ -208,7 +229,7 @@ def trio_stream(trio_id: int):
         - forfeit: Player forfeited
         - confirmed: Result confirmed
     """
-    return _create_sse_response("trio", trio_id)
+    return _create_sse_response(EventScope.TRIO, trio_id)
 
 
 @sse_bp.route("/gara/<int:gara_id>")
@@ -224,7 +245,7 @@ def gara_stream(gara_id: int):
         - inscription_added: New player registered
         - gara_completed: Gara finished
     """
-    return _create_sse_response("gara", gara_id)
+    return _create_sse_response(EventScope.GARA, gara_id)
 
 
 @sse_bp.route("/user/<int:user_id>")
@@ -245,7 +266,7 @@ def user_stream(user_id: int):
     if current_user.id != user_id:
         abort(403)
 
-    return _create_sse_response("user", user_id)
+    return _create_sse_response(EventScope.USER, user_id)
 
 
 @sse_bp.route("/individual_match/<int:match_id>")
@@ -260,7 +281,7 @@ def individual_match_stream(match_id: int):
         - result_confirmed: Player confirmed result
         - match_completed: Both players confirmed, match finished
     """
-    return _create_sse_response("individual_match", match_id)
+    return _create_sse_response(EventScope.INDIVIDUAL_MATCH, match_id)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -268,19 +289,20 @@ def individual_match_stream(match_id: int):
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def _get_events_since(scope: ScopeType, scope_id: int, since: float) -> List[dict]:
+def _get_events_since(scope: EventScope, scope_id: int, since: float) -> List[dict]:
     """Get events newer than timestamp.
 
     Args:
-        scope: Event scope
+        scope: Event scope (EventScope enum member)
         scope_id: ID within scope
         since: Unix timestamp - return events after this time
 
     Returns:
         List of event dicts with type and data
     """
+    scope_key = scope.value
     with _events_lock:
-        events = _events[scope].get(scope_id, [])
+        events = _events[scope_key].get(scope_id, [])
         return [
             {"type": event_type, "data": data, "timestamp": ts}
             for event_type, data, ts in events
@@ -300,7 +322,7 @@ def poll_trio(trio_id: int):
         JSON with events array
     """
     since = request.args.get("since", 0, type=float)
-    events = _get_events_since("trio", trio_id, since)
+    events = _get_events_since(EventScope.TRIO, trio_id, since)
     return jsonify({"events": events, "timestamp": time.time()})
 
 
@@ -316,7 +338,7 @@ def poll_gara(gara_id: int):
         JSON with events array
     """
     since = request.args.get("since", 0, type=float)
-    events = _get_events_since("gara", gara_id, since)
+    events = _get_events_since(EventScope.GARA, gara_id, since)
     return jsonify({"events": events, "timestamp": time.time()})
 
 
@@ -337,7 +359,7 @@ def poll_user(user_id: int):
         abort(403)
 
     since = request.args.get("since", 0, type=float)
-    events = _get_events_since("user", user_id, since)
+    events = _get_events_since(EventScope.USER, user_id, since)
     return jsonify({"events": events, "timestamp": time.time()})
 
 
@@ -353,5 +375,21 @@ def poll_individual_match(match_id: int):
         JSON with events array
     """
     since = request.args.get("since", 0, type=float)
-    events = _get_events_since("individual_match", match_id, since)
+    events = _get_events_since(EventScope.INDIVIDUAL_MATCH, match_id, since)
+    return jsonify({"events": events, "timestamp": time.time()})
+
+
+@sse_bp.route("/poll/match/<int:match_id>")
+@login_required
+def poll_match(match_id: int):
+    """Poll for gara match (tournament match) updates.
+
+    Query params:
+        since: Unix timestamp (default: 0)
+
+    Returns:
+        JSON with events array
+    """
+    since = request.args.get("since", 0, type=float)
+    events = _get_events_since(EventScope.MATCH, match_id, since)
     return jsonify({"events": events, "timestamp": time.time()})

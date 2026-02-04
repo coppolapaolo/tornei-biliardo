@@ -611,12 +611,21 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         });
     }
 
-    {# Polling: Real-time updates for trio match players #}
-    {% if match.is_trio and match.trio_match and user_is_player %}
-    window.Polling.reloadOnEvents({
-        url: '/sse/poll/trio/' + {{ match.trio_match.id }},
-        reloadOn: ['rack_added', 'rack_removed', 'forfeit']
-    });
+    {# Polling: Real-time updates for match players #}
+    {% if user_is_player %}
+        {% if match.is_trio and match.trio_match %}
+        {# Trio match: poll trio endpoint #}
+        window.Polling.reloadOnEvents({
+            url: '/sse/poll/trio/' + {{ match.trio_match.id }},
+            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed']
+        });
+        {% else %}
+        {# Regular match: poll match endpoint #}
+        window.Polling.reloadOnEvents({
+            url: '/sse/poll/match/' + {{ match.id }},
+            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed']
+        });
+        {% endif %}
     {% endif %}
 </script>
 {% endblock %}
