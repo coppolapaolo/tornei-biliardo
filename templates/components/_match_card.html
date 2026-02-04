@@ -175,8 +175,8 @@
               </button>
             {% endif %}
 
-            {# Validate button (if winner exists but not validated) #}
-            {% if match.winner_id and not match.validated_by_admin %}
+            {# Validate button (if distance reached but not validated and not player-validated) #}
+            {% if match.is_at_distance and not match.validated_by_admin and not match.is_player_validated %}
             <button class="btn btn-success" style="min-height: 44px;" onclick="validateMatchQuick({{ match.id }})">
               <i class="fas fa-check-circle"></i>
             </button>

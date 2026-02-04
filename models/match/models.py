@@ -168,6 +168,55 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         return self.status == MatchStatus.COMPLETED.value
 
     @property
+    def is_at_distance(self) -> bool:
+        """Check if match has reached its required distance.
+
+        Returns True when the match has played all required racks,
+        regardless of whether there's a clear winner.
+
+        For regular matches:
+        - Race to N: one player reached N racks
+        - Exactly N: total racks played == N
+
+        For trio matches:
+        - All required racks have been played per TrioConfig
+        """
+        if self.is_trio and self.trio_match:
+            config = self.trio_match.trio_config
+            return self.trio_match.total_racks_played >= config.total_played_racks
+
+        # Regular 2-player match
+        if not self.gara:
+            # Standalone match - use defaults
+            distance = 5
+            is_race_to = True
+        else:
+            distance = self.gara.distance
+            is_race_to = self.gara.is_race_to
+
+        if is_race_to:
+            # Race to N: one player must reach N
+            return self.player1_score >= distance or self.player2_score >= distance
+        else:
+            # Exactly N: total racks must equal N
+            return self.player1_score + self.player2_score == distance
+
+    @property
+    def is_player_validated(self) -> bool:
+        """Check if all players have confirmed the result.
+
+        For regular matches: both player1 and player2 confirmed.
+        For trio matches: all three players confirmed.
+        """
+        if self.is_trio and self.trio_match:
+            return (
+                self.trio_match.player1_confirmed
+                and self.trio_match.player2_confirmed
+                and self.trio_match.player3_confirmed
+            )
+        return self.player1_confirmed and self.player2_confirmed
+
+    @property
     def distance_config(self):
         """Get Distance value object for this match.
 

@@ -93,7 +93,26 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     {# Player Controls - Simplified Interface (priority for fairness) #}
                     {# Directors who are players in this match use player interface #}
                     {% if user_is_player %}
-                    {% include "components/_match_rack_input.html" %}
+                        {% if match.is_trio and match.trio_match %}
+                            {# Trio matches have their own specialized component #}
+                            {% include "components/_trio_rack_input.html" %}
+                        {% else %}
+                            {# Use unified component for both single-set and multi-set gara matches #}
+                            {% set api_format = 'form' %}
+                            {% set require_table_assignment = True %}
+                            {# Players can always forfeit their own match, even if they're also directors #}
+                            {% set show_forfeit = True %}
+                            {% if match.is_multi_set %}
+                                {% set current_set = match.get_current_set() if match.get_current_set is defined else none %}
+                                {% set add_rack_js_func = 'addSetRackWin' %}
+                                {% set remove_rack_js_func = 'removeSetRack' %}
+                                {% set start_next_set_js_func = 'startNextSet' %}
+                            {% else %}
+                                {% set add_rack_js_func = 'addRackWin' %}
+                                {% set remove_rack_js_func = 'removeRack' %}
+                            {% endif %}
+                            {% include "components/_unified_rack_input.html" with context %}
+                        {% endif %}
                     {% elif user_can_manage %}
                     {# Admin/Director Controls - Only for matches where they are NOT a player #}
                     {% include "components/_match_admin_controls.html" %}
@@ -495,7 +514,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         // Director usa l'endpoint admin se può gestire questa gara
         const url = `/admin/match/{{ match.id }}/add_rack`;
         {% else %}
-        const url = `/player/match/{{ match.id }}/add_rack`;
+        const url = `/player/match/{{ match.id }}/racks/add`;
         {% endif %}
 
         fetch(url, {

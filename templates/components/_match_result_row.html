@@ -191,8 +191,8 @@
             </a>
             {% endif %}
 
-            <!-- Valida Risultato (only when winner exists but not yet validated/completed) -->
-            {% if match.winner_id and not match.validated_by_admin and match.status != 'completed' %}
+            <!-- Valida Risultato (only when distance reached but not yet validated/completed and not player-validated) -->
+            {% if match.is_at_distance and not match.validated_by_admin and match.status != 'completed' and not match.is_player_validated %}
             <button class="btn btn-outline-success" onclick="validateMatchQuick({{ match.id }})" title="{{ _('Valida Risultato') }}">
                 <i class="fas fa-check-circle"></i>
             </button>
