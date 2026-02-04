@@ -134,13 +134,14 @@ class RoundClassification(db.Model):
         if not gara:
             raise ValueError(f"Gara {gara_id} not found")
 
-        # Get all completed matches up to this round (including bye matches)
+        # Get all finished matches up to this round (including bye matches)
+        # Include both 'completed' (admin) and 'validated' (bilateral player confirmation)
         completed_matches = (
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
                 Match.round_number <= round_number,
-                Match.status == "completed",  # type: ignore[operator]
+                Match.status.in_(["completed", "validated"]),  # type: ignore[union-attr]
             )
             .all()
         )

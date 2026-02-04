@@ -24,6 +24,7 @@ from utils import (
 )
 from models.match.services import RackService
 from models.kpi import track_match_played, track_result_submit
+from routes.sse import emit_gara_event
 
 # Match management blueprint
 match_bp = Blueprint("match", __name__)
@@ -155,6 +156,17 @@ def add_rack_result(match_id):
             reported_by_id=1,  # Admin user ID
             validated_by_admin=True,  # Admin validation immediate
         )
+
+        # Emit SSE event for gara detail page polling
+        match = db.session.get(Match, match_id)
+        if match and match.gara_id:
+            emit_gara_event(match.gara_id, "match_updated", {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "winner_id": winner_id,
+            })
+
         return jsonify(result)
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
@@ -203,21 +215,42 @@ def validate_match(match_id):
     - Imposta validated_by_admin = True
     - Completa il match (status = completed)
     - Libera il tavolo e lo assegna alla prima partita in attesa
+
+    Note: Se winner_id non è impostato ma la distanza è raggiunta,
+    determina automaticamente il vincitore in base al punteggio.
+    Per match con pareggio (es. "Esattamente N"), accetta winner_id dalla request.
     """
     try:
         match = db.session.get(Match, match_id)
         if not match:
             return jsonify({"success": False, "error": "Match non trovato"}), 404
 
-        # Verifica che il match abbia un vincitore
-        if not match.winner_id:
-            return jsonify({
-                "success": False,
-                "error": "Il match non ha ancora un vincitore"
-            }), 400
-
         # Verifica che il match non sia già completato
         from models.status_enum import MatchStatus
+        if match.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]:
+            return jsonify({
+                "success": False,
+                "error": "Il match è già stato completato"
+            }), 400
+
+        # Se winner_id non è impostato, verifica se la distanza è raggiunta
+        # e determina il vincitore in base al punteggio
+        if not match.winner_id:
+            # Verifica se il match ha raggiunto la distanza
+            if not match.is_ready_for_validation():
+                return jsonify({
+                    "success": False,
+                    "error": "Il match non ha ancora raggiunto la distanza"
+                }), 400
+
+            # Determina il vincitore in base al punteggio
+            if match.player1_score > match.player2_score:
+                match.winner_id = match.player1_id
+            elif match.player2_score > match.player1_score:
+                match.winner_id = match.player2_id
+            # else: Pareggio - winner_id rimane NULL (consentito)
+
+        # Verifica che il match non sia già completato (check duplicato rimosso)
         if match.status == MatchStatus.COMPLETED.value:
             return jsonify({
                 "success": False,
@@ -251,10 +284,20 @@ def validate_match(match_id):
 
         # Aggiorna progressione round
         from models.competition.services import GaraService
-        if match.gara_id:
-            GaraService.update_round_progression(match.gara_id)
+        gara_id = match.gara_id  # Store before commit
+        if gara_id:
+            GaraService.update_round_progression(gara_id)
 
         db.session.commit()
+
+        # Emit SSE event for gara detail page polling
+        if gara_id:
+            emit_gara_event(gara_id, "match_completed", {
+                "match_id": match_id,
+                "winner_id": match.winner_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+            })
 
         track_match_played()  # KPI tracking
         flash("Risultato validato e partita completata!")
@@ -450,13 +493,16 @@ def assign_table(match_id):
 def remove_rack_admin(rack_id):
     """Rimuovi un rack (admin)"""
     try:
-        # Prima ottieni le info del match per il round update
+        # Prima ottieni le info del match per il round update e SSE
         from models.competition.services import GaraService
 
         rack = Rack.query.get(rack_id)
         gara_id = None
-        if rack and rack.match and rack.match.gara_id:
-            gara_id = rack.match.gara_id
+        match_id = None
+        if rack and rack.match:
+            match_id = rack.match_id
+            if rack.match.gara_id:
+                gara_id = rack.match.gara_id
 
         # Usa il service layer invece del direct database access
         result = RackService.remove_rack_admin(rack_id)
@@ -464,6 +510,15 @@ def remove_rack_admin(rack_id):
         # Dopo aver rimosso il rack, controlla se ci sono turni da aggiornare
         if gara_id:
             GaraService.update_round_progression(gara_id)
+
+            # Emit SSE event for gara detail page polling
+            match = db.session.get(Match, match_id)
+            if match:
+                emit_gara_event(gara_id, "match_updated", {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                })
 
         return jsonify(result)
 
@@ -581,6 +636,15 @@ def add_set_rack(match_id):
         current_set = match.get_current_set()
         set_score = f"{current_set.player1_racks}-{current_set.player2_racks}" if current_set else "0-0"
 
+        # Emit SSE event for gara detail page polling
+        if match.gara_id:
+            emit_gara_event(match.gara_id, "match_updated", {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "set_score": set_score,
+            })
+
         return jsonify({
             "success": True,
             "rack_number": rack.rack_number,
@@ -630,6 +694,15 @@ def remove_set_rack(match_id):
         # Get updated set state
         current_set = match.get_current_set()
         set_score = f"{current_set.player1_racks}-{current_set.player2_racks}" if current_set else "0-0"
+
+        # Emit SSE event for gara detail page polling
+        if match.gara_id:
+            emit_gara_event(match.gara_id, "match_updated", {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "set_score": set_score,
+            })
 
         return jsonify({
             "success": True,

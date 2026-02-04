@@ -6,8 +6,10 @@
     <div class="card-body">
         {% for r in range(1, gara.rounds_count + 1) %}
             {% set round_matches = matches|selectattr("round_number", "equalto", r)|list if matches else [] %}
-            {% set round_completed_matches = round_matches|selectattr("status", "equalto", "completed")|list %}
-            {% set is_round_completed = round_matches|length > 0 and round_completed_matches|length == round_matches|length %}
+            {# Count both 'completed' and 'validated' as finished #}
+            {% set round_completed = round_matches|selectattr("status", "equalto", "completed")|list|length %}
+            {% set round_validated = round_matches|selectattr("status", "equalto", "validated")|list|length %}
+            {% set is_round_completed = round_matches|length > 0 and (round_completed + round_validated) == round_matches|length %}
             {% set is_round_started = round_matches|length > 0 %}
             
             {% if is_round_started %}

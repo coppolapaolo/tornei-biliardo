@@ -52,9 +52,10 @@ class ClassificationService:
         player_gare: Dict[int, set] = {}
 
         for gara in gare:
+            # Include both 'completed' and 'validated' as finished matches
             completed_matches = [
                 m for m in gara.matches
-                if m.status == "completed" and not m.is_bye
+                if m.status in ["completed", "validated"] and not m.is_bye
             ]
             for match in completed_matches:
                 if match.player1_id:

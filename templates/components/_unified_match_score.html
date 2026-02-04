@@ -84,34 +84,9 @@ Parameters:
             {% endif %}
         {% endif %}
     </div>
-    <div class="col-2">
-        <h3 class="text-muted">VS</h3>
-        {# Distance info - adapt to both Match and IndividualMatch #}
-        {% if is_multi_set %}
-        {# Multi-set: show set distance #}
-        <p class="text-muted">
-            <i class="fas fa-layer-group"></i>
-            {{ _('Al') if match.distance_config.is_race_to_sets else _('Esattamente') }}
-            {{ match.match_distance }} {{ _('set') }}
-        </p>
-        {% elif match.distance_config is defined and match.distance_config %}
-        <p class="text-muted">
-            <i class="fas fa-shield-halved"></i>
-            {{ _('Al') if match.distance_config.is_race_to_racks else _('Esattamente') }}
-            {{ match.effective_distance if match.effective_distance is defined else match.distance_config.get_winning_racks() }}
-        </p>
-        {% elif match.distance is defined and match.distance is not none %}
-        <p class="text-muted">
-            <i class="fas fa-shield-halved"></i>
-            {{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}
-        </p>
-        {% elif match.distance is none %}
-        {# Optional distance (free format) #}
-        <p class="text-muted">
-            <i class="fas fa-infinity"></i>
-            {{ _('Libero') }}
-        </p>
-        {% endif %}
+    {# Center VS - distance info already in _match_header.html #}
+    <div class="col-2 d-flex align-items-center justify-content-center">
+        <span class="text-muted fs-5">VS</span>
     </div>
     <div class="col-5">
         {# Player name ABOVE score #}

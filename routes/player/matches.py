@@ -141,7 +141,7 @@ def add_rack_simplified(match_id):
         match = db.session.get(Match, match_id)
 
         # Emit event AFTER transaction committed (for real-time updates)
-        from routes.sse import emit_match_event
+        from routes.sse import emit_match_event, emit_gara_event
 
         emit_match_event(
             match_id,
@@ -154,6 +154,18 @@ def add_rack_simplified(match_id):
                 "rack_number": rack.rack_number,
             },
         )
+
+        # Also emit to gara scope for directors watching gara_detail
+        if match.gara_id:
+            emit_gara_event(
+                match.gara_id,
+                "match_updated",
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                },
+            )
 
         return jsonify(
             {
@@ -191,7 +203,7 @@ def remove_rack_simplified(match_id):
         match = db.session.get(Match, match_id)
 
         # Emit event AFTER transaction committed (for real-time updates)
-        from routes.sse import emit_match_event
+        from routes.sse import emit_match_event, emit_gara_event
 
         emit_match_event(
             match_id,
@@ -203,6 +215,18 @@ def remove_rack_simplified(match_id):
                 "player_id": player_id,
             },
         )
+
+        # Also emit to gara scope for directors watching gara_detail
+        if match.gara_id:
+            emit_gara_event(
+                match.gara_id,
+                "match_updated",
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                },
+            )
 
         return jsonify(
             {
@@ -230,7 +254,7 @@ def confirm_match_result(match_id):
         )
 
         # Emit event AFTER transaction committed (for real-time updates)
-        from routes.sse import emit_match_event
+        from routes.sse import emit_match_event, emit_gara_event
 
         emit_match_event(
             match_id,
@@ -243,6 +267,21 @@ def confirm_match_result(match_id):
                 "status": match.status,
             },
         )
+
+        # Also emit to gara scope for directors watching gara_detail
+        if match.gara_id:
+            is_completed = match.player1_confirmed and match.player2_confirmed
+            event_type = "match_completed" if is_completed else "match_updated"
+            emit_gara_event(
+                match.gara_id,
+                event_type,
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                    "winner_id": match.winner_id,
+                },
+            )
 
         return jsonify(
             {
@@ -271,7 +310,7 @@ def reject_match_result(match_id):
         )
 
         # Emit event AFTER transaction committed (for real-time updates)
-        from routes.sse import emit_match_event
+        from routes.sse import emit_match_event, emit_gara_event
 
         emit_match_event(
             match_id,
@@ -283,6 +322,18 @@ def reject_match_result(match_id):
                 "rejected_by": current_user.id,
             },
         )
+
+        # Also emit to gara scope for directors watching gara_detail
+        if match.gara_id:
+            emit_gara_event(
+                match.gara_id,
+                "match_updated",
+                {
+                    "match_id": match_id,
+                    "player1_score": match.player1_score,
+                    "player2_score": match.player2_score,
+                },
+            )
 
         return jsonify(
             {
@@ -310,7 +361,7 @@ def forfeit_match(match_id):
         match = MatchService.forfeit_match(match_id=match_id, user_id=current_user.id)
 
         # Emit event AFTER transaction committed (for real-time updates)
-        from routes.sse import emit_match_event
+        from routes.sse import emit_match_event, emit_gara_event
 
         emit_match_event(
             match_id,
@@ -322,6 +373,18 @@ def forfeit_match(match_id):
                 "status": match.status,
             },
         )
+
+        # Also emit to gara scope for directors watching gara_detail
+        if match.gara_id:
+            emit_gara_event(
+                match.gara_id,
+                "match_completed",
+                {
+                    "match_id": match_id,
+                    "winner_id": match.winner_id,
+                    "forfeit": True,
+                },
+            )
 
         return jsonify(
             {

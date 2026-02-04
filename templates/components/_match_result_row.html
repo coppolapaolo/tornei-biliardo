@@ -1,7 +1,9 @@
 {# templates/components/_match_result_row.html #}
-{# Crown shows when match is completed and has a winner #}
-{% set p1_wins = match.status == 'completed' and match.winner_id == match.player1_id %}
-{% set p2_wins = match.status == 'completed' and match.winner_id == match.player2_id %}
+{# Helper: check if match is finished (completed or validated) #}
+{% set is_finished = match.status in ['completed', 'validated'] %}
+{# Crown shows when match is finished and has a winner #}
+{% set p1_wins = is_finished and match.winner_id == match.player1_id %}
+{% set p2_wins = is_finished and match.winner_id == match.player2_id %}
 {# Check if players have forfeited - show them in gray #}
 {% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
 {% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
@@ -9,7 +11,7 @@
 {# === TRIO MATCH === #}
 {% if match.is_trio and match.trio_match %}
 {% set trio = match.trio_match %}
-{% set p3_wins = match.status == 'completed' and match.winner_id == trio.player3_id %}
+{% set p3_wins = is_finished and match.winner_id == trio.player3_id %}
 {% set p3_forfeit = forfeit_user_ids is defined and trio.player3_id in forfeit_user_ids %}
 <tr class="table-info">
     <td colspan="3">
@@ -31,7 +33,7 @@
     </td>
     <td>
         {# Trio score: show all three player scores #}
-        {% if match.status == 'completed' %}
+        {% if is_finished %}
         <span class="badge bg-info">
             {{ trio.player1_racks }}-{{ trio.player2_racks }}-{{ trio.player3_racks }}
         </span>
@@ -74,7 +76,7 @@
         {% if match.is_bye %}
         {# Match bye: non ha un vero risultato, mostra semplicemente "-" #}
         <span class="text-muted">-</span>
-        {% elif match.status == 'completed' %}
+        {% elif is_finished %}
         <span class="badge bg-info">
             {{ match.player1_score }} - {{ match.player2_score }}
         </span>
@@ -108,7 +110,7 @@
             {% else %}
             <span class="badge bg-primary">{{ _('In Corso') }}</span>
             {% endif %}
-        {% elif match.status == 'completed' %}
+        {% elif is_finished %}
             {% if is_my_match and not match.is_bye %}
             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="badge bg-success text-decoration-none">
                 <i class="fas fa-eye me-1"></i>{{ _('Completata') }}
@@ -122,8 +124,8 @@
         {% if match.is_bye %}
         {# Match bye: non richiede tavolo #}
         <span class="text-muted">-</span>
-        {% elif match.status == 'completed' %}
-        {# Partite completate: nessun tavolo (già liberato) #}
+        {% elif is_finished %}
+        {# Partite completate/validate: nessun tavolo (già liberato) #}
         <span class="text-muted">-</span>
         {% elif user_can_manage and available_tables %}
         {# Admin/Director view: Badge cliccabile per apertura modal #}
@@ -163,11 +165,11 @@
     </td>
     {% if user_can_manage %}
     <td>
-        {# Show actions if: match is not bye, can be modified, and either has table OR is completed #}
-        {% if not match.is_bye and match_can_modify.get(match.id, True) and (match.table_assignment or match.status == 'completed') %}
+        {# Show actions if: match is not bye, can be modified, and either has table OR is finished OR is at distance #}
+        {% if not match.is_bye and match_can_modify.get(match.id, True) and (match.table_assignment or is_finished or match.is_at_distance) %}
         <div class="btn-group btn-group-sm" role="group">
             <!-- Imposta Risultato Rapido -->
-            {% if match.status != 'completed' %}
+            {% if not is_finished %}
                 {% if match.is_trio and match.trio_match %}
                 {# Trio: chiama openQuickResultTrio con 3 giocatori #}
                 {% set trio = match.trio_match %}
@@ -185,14 +187,14 @@
             {% endif %}
 
             <!-- Vai al Dettaglio (solo se non completato) -->
-            {% if match.status != 'completed' %}
+            {% if not is_finished %}
             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-outline-primary">
                 <i class="fas fa-edit"></i>
             </a>
             {% endif %}
 
             <!-- Valida Risultato (only when distance reached but not yet validated/completed and not player-validated) -->
-            {% if match.is_at_distance and not match.validated_by_admin and match.status != 'completed' and not match.is_player_validated %}
+            {% if match.is_at_distance and not match.validated_by_admin and not is_finished and not match.is_player_validated %}
             <button class="btn btn-outline-success" onclick="validateMatchQuick({{ match.id }})" title="{{ _('Valida Risultato') }}">
                 <i class="fas fa-check-circle"></i>
             </button>
@@ -203,7 +205,7 @@
             {% if match.is_trio and match.trio_match %}
                 {% set has_scores = (match.trio_match.player1_racks > 0 or match.trio_match.player2_racks > 0 or match.trio_match.player3_racks > 0) %}
             {% endif %}
-            {% if match.status == 'completed' or has_scores %}
+            {% if is_finished or has_scores %}
                 {% if match.is_trio and match.trio_match %}
                 {# Trio: call resetTrioQuick with trio ID #}
                 <button class="btn btn-outline-danger" onclick="resetTrioQuick({{ match.trio_match.id }})">
@@ -221,7 +223,7 @@
         <span class="text-muted small">
             <i class="fas fa-lock"></i> {{ _('Bloccato') }}
         </span>
-        {% elif not match.is_bye and not match.table_assignment and match.status != 'completed' %}
+        {% elif not match.is_bye and not match.table_assignment and not is_finished and not match.is_at_distance %}
         <span class="text-muted small">
             <i class="fas fa-clock"></i> {{ _('Assegna tavolo') }}
         </span>

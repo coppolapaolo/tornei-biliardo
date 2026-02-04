@@ -18,11 +18,14 @@
       {% if round_matches %}
         {% set has_playing = round_matches | selectattr("status", "equalto", "playing") | list | length > 0 %}
         {% set has_pending = round_matches | selectattr("status", "equalto", "pending") | list | length > 0 %}
-        {% set all_completed = round_matches | selectattr("status", "equalto", "completed") | list | length == round_matches | length %}
+        {# Count both 'completed' and 'validated' as finished #}
+        {% set completed_count = round_matches | selectattr("status", "equalto", "completed") | list | length %}
+        {% set validated_count = round_matches | selectattr("status", "equalto", "validated") | list | length %}
+        {% set all_finished = (completed_count + validated_count) == round_matches | length %}
 
         {% if has_playing or has_pending %}
           {% set _void = active_rounds.append(round_num) %}
-        {% elif all_completed %}
+        {% elif all_finished %}
           {% set _void = completed_rounds.append(round_num) %}
         {% endif %}
       {% endif %}

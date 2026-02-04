@@ -575,6 +575,8 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         """
         Implementation of BaseMatch abstract method.
         Remove last rack from match (soft delete).
+
+        Also resets player confirmations since the score has changed.
         """
         # Find last non-deleted rack
         last_rack = (
@@ -594,6 +596,9 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
                 self.player1_score = max(0, self.player1_score - 1)
             elif last_rack.winner_id == self.player2_id:
                 self.player2_score = max(0, self.player2_score - 1)
+
+            # Reset confirmations since score changed
+            self.reset_confirmations()
 
 
 class Rack(db.Model):

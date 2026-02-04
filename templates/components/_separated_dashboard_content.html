@@ -344,7 +344,10 @@
                   {% if item.entity.matchmaking_strategy == 'random' %}
                   {# Random: mostra partite completate #}
                   {% set total_matches = item.entity.matches|length %}
-                  {% set completed_matches = item.entity.matches|selectattr('status', 'equalto', 'completed')|list|length %}
+                  {# Count both 'completed' and 'validated' as finished #}
+                  {% set comp_count = item.entity.matches|selectattr('status', 'equalto', 'completed')|list|length %}
+                  {% set val_count = item.entity.matches|selectattr('status', 'equalto', 'validated')|list|length %}
+                  {% set completed_matches = comp_count + val_count %}
                   <small class="text-warning fw-bold">
                     <i class="fas fa-play-circle me-1"></i>
                     {{ completed_matches }}/{{ total_matches }} partite

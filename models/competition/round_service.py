@@ -593,8 +593,10 @@ class RoundService:
                 break
 
             # Controlla se tutti i match del turno sono completati
+            # Note: VALIDATED (bilateral player confirmation) also counts as finished
             all_completed = all(
-                m.status == MatchStatus.COMPLETED.value for m in round_matches
+                m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+                for m in round_matches
             )
 
             if all_completed:

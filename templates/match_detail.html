@@ -13,8 +13,8 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
 
 {% block content %}
 <div class="container-fluid">
-    {# Match Header - consistent with gara header style #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    {# Match Header - hidden on mobile (card already shows all info) #}
+    <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>
                 {% if match.is_trio and match.trio_match %}

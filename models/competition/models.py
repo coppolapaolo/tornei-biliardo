@@ -330,9 +330,11 @@ class Gara(SoftDeleteMixin, db.Model):
 
             # First check: Are ALL matches across ALL rounds completed?
             # This handles cases where current_round wasn't updated properly
+            # Note: VALIDATED (bilateral player confirmation) also counts as finished
             if matches_list:
                 all_matches_completed = all(
-                    m.status == MatchStatus.COMPLETED.value for m in matches_list
+                    m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+                    for m in matches_list
                 )
                 # Check if we have matches for all rounds
                 rounds_with_matches = set(
@@ -354,9 +356,10 @@ class Gara(SoftDeleteMixin, db.Model):
             ]
             # Important: Only consider round completed if there ARE matches
             # in the current round. Empty list means round not started yet.
+            # Note: VALIDATED (bilateral player confirmation) also counts as finished
             if current_round_matches:
                 all_matches_finished = all(
-                    m.status == MatchStatus.COMPLETED.value
+                    m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
                     for m in current_round_matches
                 )
                 if all_matches_finished:
@@ -403,9 +406,11 @@ class Gara(SoftDeleteMixin, db.Model):
             for m in matches_list
             if hasattr(m, "round_number") and m.round_number == self.current_round
         ]
-        # Must have matches in current round AND all must be completed
+        # Must have matches in current round AND all must be finished
+        # Note: VALIDATED (bilateral player confirmation) also counts as finished
         return bool(current_round_matches) and all(
-            m.status == MatchStatus.COMPLETED.value for m in current_round_matches
+            m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
+            for m in current_round_matches
         )
 
     def can_inscribe(self):

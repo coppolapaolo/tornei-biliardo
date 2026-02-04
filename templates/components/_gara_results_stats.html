@@ -19,11 +19,13 @@
         <div class="card bg-success bg-opacity-10">
             <div class="card-body text-center">
                 <h3 class="text-success">
-                    {% set completed_count = namespace(count=0) %}
+                    {# Count both 'completed' and 'validated' as finished #}
+                    {% set finished_count = namespace(count=0) %}
                     {% for round_num, round_matches in matches_by_round.items() %}
-                        {% set completed_count.count = completed_count.count + round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                        {% set finished_count.count = finished_count.count + round_matches|selectattr("status", "equalto", "completed")|list|length %}
+                        {% set finished_count.count = finished_count.count + round_matches|selectattr("status", "equalto", "validated")|list|length %}
                     {% endfor %}
-                    {{ completed_count.count }}
+                    {{ finished_count.count }}
                 </h3>
                 <small class="text-muted">Completate</small>
             </div>

@@ -349,8 +349,10 @@ class AdvancedRoundManager:
                 gara_id=gara_id, round_number=round_number
             ).all()
 
+            # Count both COMPLETED and VALIDATED as finished
             completed_matches = [
-                m for m in round_matches if m.status == MatchStatus.COMPLETED.value
+                m for m in round_matches
+                if m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
             ]
             pending_matches = [
                 m for m in round_matches if m.status == MatchStatus.PENDING.value

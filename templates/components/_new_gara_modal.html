@@ -250,6 +250,9 @@
                                         <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
                                             Match a 3 Giocatori
                                         </option>
+                                        <option value="no" {% if campionato.default_odd_policy == 'no' %}selected{% endif %}>
+                                            Lista d'Attesa
+                                        </option>
                                     </select>
                                     <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
                                         <i class="fas fa-exclamation-triangle"></i> Trio disponibile solo per distanze 2-5

@@ -267,8 +267,10 @@ class TiebreakerService:
             round_number=tiebreaker_round
         ).all()
 
-        # Calculate resolution status
-        all_matches_completed = all(m.status == "completed" for m in tiebreaker_matches)
+        # Calculate resolution status (VALIDATED also counts as finished)
+        all_matches_completed = all(
+            m.status in ["completed", "validated"] for m in tiebreaker_matches
+        )
         all_attempts_completed = all(a.completed for a in tiebreaker_attempts)
 
         return {

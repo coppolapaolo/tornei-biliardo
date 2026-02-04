@@ -319,7 +319,8 @@ class TableAssignmentService:
         if not completed_match:
             raise ValueError(f"Match {match_id} not found")
 
-        if completed_match.status != MatchStatus.COMPLETED.value:
+        # Accept both COMPLETED (admin validation) and VALIDATED (bilateral player confirmation)
+        if completed_match.status not in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]:
             raise ValueError("Can only release tables from completed matches")
 
         # Store gara_id before potentially clearing table

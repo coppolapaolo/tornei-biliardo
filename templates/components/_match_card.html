@@ -1,8 +1,10 @@
 {# templates/components/_match_card.html #}
 {# Expects: match, user_can_manage, available_tables, match_can_modify, forfeit_user_ids, user_inscription #}
 
-{% set p1_wins = match.status == 'completed' and match.winner_id == match.player1_id %}
-{% set p2_wins = match.status == 'completed' and match.winner_id == match.player2_id %}
+{# Helper: check if match is finished (completed or validated) #}
+{% set is_finished = match.status in ['completed', 'validated'] %}
+{% set p1_wins = is_finished and match.winner_id == match.player1_id %}
+{% set p2_wins = is_finished and match.winner_id == match.player2_id %}
 {% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
 {% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
 {% set is_my_match = user_inscription and current_user.is_authenticated and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
@@ -10,6 +12,7 @@
 {# Determine card border color based on status #}
 {% set status_class = 'border-warning' if match.status == 'pending' else ('border-primary' if match.status == 'playing' else 'border-success') %}
 {% if match.is_bye %}{% set status_class = 'border-info' %}{% endif %}
+{% if is_finished %}{% set status_class = 'border-success' %}{% endif %}
 
 <div class="card mb-3 {{ status_class }}" style="border-width: 2px;">
   {# === HEADER === #}
@@ -21,7 +24,7 @@
       <span class="badge bg-warning text-dark">{{ _('In Attesa') }}</span>
       {% elif match.status == 'playing' %}
       <span class="badge bg-primary">{{ _('In Corso') }}</span>
-      {% elif match.status == 'completed' %}
+      {% elif is_finished %}
       <span class="badge bg-success">{{ _('Completata') }}</span>
       {% endif %}
 
@@ -32,7 +35,7 @@
 
     {# Table badge #}
     <div>
-      {% if match.is_bye or match.status == 'completed' %}
+      {% if match.is_bye or is_finished %}
         {# No table shown #}
       {% elif user_can_manage and available_tables %}
         {% if match.is_trio and match.trio_match %}
@@ -65,7 +68,7 @@
   <div class="card-body py-3 text-center">
     {% if match.is_trio and match.trio_match %}
       {% set trio = match.trio_match %}
-      {% set p3_wins = match.status == 'completed' and match.winner_id == trio.player3_id %}
+      {% set p3_wins = is_finished and match.winner_id == trio.player3_id %}
       {% set p3_forfeit = forfeit_user_ids is defined and trio.player3_id in forfeit_user_ids %}
 
       {# Trio: 3 players #}
@@ -91,7 +94,7 @@
 
       {# Trio score #}
       <div class="mt-2">
-        {% if match.status == 'completed' %}
+        {% if is_finished %}
         <span class="badge bg-info fs-6">{{ trio.player1_racks }} - {{ trio.player2_racks }} - {{ trio.player3_racks }}</span>
         {% elif trio.player1_racks > 0 or trio.player2_racks > 0 or trio.player3_racks > 0 %}
         <span class="badge bg-warning fs-6">{{ trio.player1_racks }} - {{ trio.player2_racks }} - {{ trio.player3_racks }}</span>
@@ -123,7 +126,7 @@
       {# Score #}
       {% if not match.is_bye %}
       <div class="mt-2">
-        {% if match.status == 'completed' %}
+        {% if is_finished %}
         <span class="badge bg-info fs-6">{{ match.player1_score }} - {{ match.player2_score }}</span>
         {% elif match.player1_score > 0 or match.player2_score > 0 %}
         <span class="badge bg-warning fs-6">{{ match.player1_score }} - {{ match.player2_score }}</span>
@@ -150,7 +153,7 @@
         <div class="text-center text-muted">
           <i class="fas fa-lock"></i> {{ _('Bloccato') }}
         </div>
-      {% elif not has_table and match.status != 'completed' %}
+      {% elif not has_table and not is_finished %}
         {# Need to assign table first #}
         <div class="text-center text-muted small">
           <i class="fas fa-clock"></i> {{ _('Assegna tavolo per abilitare azioni') }}
@@ -158,7 +161,7 @@
       {% else %}
         {# Actions available #}
         <div class="d-flex flex-wrap gap-2">
-          {% if match.status != 'completed' %}
+          {% if not is_finished %}
             {# Quick Result button #}
             {% if match.is_trio and match.trio_match %}
               {% set trio = match.trio_match %}
@@ -189,7 +192,7 @@
           {% endif %}
 
           {# Reset button (if completed or has scores) #}
-          {% if match.status == 'completed' or has_scores %}
+          {% if is_finished or has_scores %}
             {% if match.is_trio and match.trio_match %}
             <button class="btn btn-outline-danger" style="min-height: 44px;" onclick="resetTrioQuick({{ match.trio_match.id }})">
               <i class="fas fa-undo"></i>

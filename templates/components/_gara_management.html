@@ -121,7 +121,10 @@
                 {# Random strategy: all rounds created at start, players advance independently #}
                 {% if gara.matchmaking_strategy == 'random' %}
                 {% set total_matches = gara.matches|length %}
-                {% set completed_matches = gara.matches|selectattr('status', 'equalto', 'completed')|list|length %}
+                {# Count both 'completed' (admin) and 'validated' (bilateral player confirmation) as finished #}
+                {% set completed_count = gara.matches|selectattr('status', 'equalto', 'completed')|list|length %}
+                {% set validated_count = gara.matches|selectattr('status', 'equalto', 'validated')|list|length %}
+                {% set completed_matches = completed_count + validated_count %}
 
                 {% if gara.get_real_status() == 'campionato_completed' or completed_matches == total_matches %}
                 {# All matches completed - check for tiebreakers #}

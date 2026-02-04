@@ -152,31 +152,29 @@ Multi-set specific parameters:
 
             {# Current set active and not complete - show rack controls #}
             {% elif active_set and not set_completed and not current_user_confirmed %}
-            <div class="row">
-                <!-- Player 1 Controls -->
-                <div class="col-md-6 text-center">
-                    <h5>{{ p1_name }}</h5>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success btn-lg" onclick="{{ add_rack }}({{ match.player1_id }})" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                            <i class="fas fa-plus-circle"></i> {{ _('Aggiungi Rack') }}
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="{{ remove_rack }}({{ match.player1_id }})" {% if active_set.player1_racks == 0 %}disabled{% endif %}>
-                            <i class="fas fa-minus-circle"></i> {{ _('Rimuovi Rack') }}
-                        </button>
-                    </div>
+            {# Compact horizontal layout - always side-by-side #}
+            <div class="row g-2 mb-2">
+                <div class="col-6">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }})" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                        <i class="fas fa-plus"></i> {{ p1_name }}
+                    </button>
                 </div>
-
-                <!-- Player 2 Controls -->
-                <div class="col-md-6 text-center">
-                    <h5>{{ p2_name }}</h5>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success btn-lg" onclick="{{ add_rack }}({{ match.player2_id }})" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
-                            <i class="fas fa-plus-circle"></i> {{ _('Aggiungi Rack') }}
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="{{ remove_rack }}({{ match.player2_id }})" {% if active_set.player2_racks == 0 %}disabled{% endif %}>
-                            <i class="fas fa-minus-circle"></i> {{ _('Rimuovi Rack') }}
-                        </button>
-                    </div>
+                <div class="col-6">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }})" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                        <i class="fas fa-plus"></i> {{ p2_name }}
+                    </button>
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }})" {% if active_set.player1_racks == 0 %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> {{ p1_name }}
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }})" {% if active_set.player2_racks == 0 %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> {{ p2_name }}
+                    </button>
                 </div>
             </div>
 
@@ -254,33 +252,90 @@ Multi-set specific parameters:
            SINGLE-SET MATCH CONTROLS (original logic)
            ═══════════════════════════════════════════════════════════════════════════ #}
         {% else %}
-            {# Rack add/remove controls - only for in-progress matches #}
-            {% if is_in_progress and not current_user_confirmed %}
-            <div class="row">
-                <!-- Player 1 Controls -->
-                <div class="col-md-6 text-center">
-                    <h5>{{ p1_name }}</h5>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success btn-lg" onclick="{{ add_rack }}({{ match.player1_id }})" {% if not can_add %}disabled{% endif %}>
-                            <i class="fas fa-plus-circle"></i> {{ _('Aggiungi Rack') }}
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="{{ remove_rack }}({{ match.player1_id }})" {% if match.player1_score == 0 %}disabled{% endif %}>
-                            <i class="fas fa-minus-circle"></i> {{ _('Rimuovi Rack') }}
-                        </button>
-                    </div>
-                </div>
+            {# ─────────────────────────────────────────────────────────────────────────
+               CONFIRMATION SECTION - shown FIRST when match at distance
+               ───────────────────────────────────────────────────────────────────────── #}
+            {% if match_at_distance %}
+            <div class="alert alert-warning text-center mb-3">
+                <i class="fas fa-flag-checkered"></i> {{ _('Match pronto per la validazione') }}
+            </div>
 
-                <!-- Player 2 Controls -->
-                <div class="col-md-6 text-center">
-                    <h5>{{ p2_name }}</h5>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success btn-lg" onclick="{{ add_rack }}({{ match.player2_id }})" {% if not can_add %}disabled{% endif %}>
-                            <i class="fas fa-plus-circle"></i> {{ _('Aggiungi Rack') }}
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="{{ remove_rack }}({{ match.player2_id }})" {% if match.player2_score == 0 %}disabled{% endif %}>
-                            <i class="fas fa-minus-circle"></i> {{ _('Rimuovi Rack') }}
-                        </button>
-                    </div>
+            {% if current_user_confirmed and opponent_confirmed %}
+            {# Both confirmed - match should complete (shouldn't reach here normally) #}
+            <div class="alert alert-success text-center mb-3">
+                <i class="fas fa-check-circle"></i> {{ _('Entrambi i giocatori hanno confermato!') }}
+            </div>
+            {% elif current_user_confirmed %}
+            {# Current user confirmed, waiting for opponent #}
+            <div class="alert alert-info text-center mb-3">
+                <i class="fas fa-check-circle me-2"></i> {{ _('Hai confermato il risultato.') }}
+                <br><i class="fas fa-hourglass-half me-1"></i> {{ _('In attesa di') }} {{ opponent_name }}...
+            </div>
+            {% elif opponent_confirmed %}
+            {# Opponent confirmed, current user needs to confirm or reject #}
+            <p class="text-center mb-3">
+                <i class="fas fa-check-circle text-success me-1"></i> {{ opponent_name }} {{ _('ha confermato il risultato.') }}
+                <br>{{ _('Conferma o rifiuta per finalizzare il match.') }}
+            </p>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}()">
+                        <i class="fas fa-check"></i> {{ _('Accetta') }}
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}()">
+                        <i class="fas fa-times"></i> {{ _('Rifiuta') }}
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            {# Neither confirmed - show confirmation buttons #}
+            <p class="text-center mb-3">
+                {{ _('Il match ha raggiunto la distanza. Conferma il risultato finale.') }}
+            </p>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}()">
+                        <i class="fas fa-check"></i> {{ _('Accetta') }}
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}()">
+                        <i class="fas fa-times"></i> {{ _('Rifiuta') }}
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {# ─────────────────────────────────────────────────────────────────────────
+               RACK ADD/REMOVE CONTROLS - shown below confirmation section
+               ───────────────────────────────────────────────────────────────────────── #}
+            {% if is_in_progress and not current_user_confirmed %}
+            {# Compact horizontal layout - always side-by-side #}
+            <div class="row g-2 mb-2">
+                <div class="col-6">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }})" {% if not can_add %}disabled{% endif %}>
+                        <i class="fas fa-plus"></i> {{ p1_name }}
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }})" {% if not can_add %}disabled{% endif %}>
+                        <i class="fas fa-plus"></i> {{ p2_name }}
+                    </button>
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }})" {% if match.player1_score == 0 %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> {{ p1_name }}
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }})" {% if match.player2_score == 0 %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> {{ p2_name }}
+                    </button>
                 </div>
             </div>
             {% endif %}
@@ -291,61 +346,6 @@ Multi-set specific parameters:
                 <i class="fas fa-exclamation-triangle"></i>
                 {{ _('Assegnare un tavolo prima di iniziare la partita') }}
             </div>
-            {% endif %}
-
-            {# Distance reached - show confirmation section #}
-            {% if match_at_distance %}
-            <div class="alert alert-warning text-center mt-3">
-                <i class="fas fa-flag-checkered"></i> {{ _('Match pronto per la validazione') }}
-            </div>
-
-            {% if current_user_confirmed and opponent_confirmed %}
-            {# Both confirmed - match should complete (shouldn't reach here normally) #}
-            <div class="alert alert-success text-center">
-                <i class="fas fa-check-circle"></i> {{ _('Entrambi i giocatori hanno confermato!') }}
-            </div>
-            {% elif current_user_confirmed %}
-            {# Current user confirmed, waiting for opponent #}
-            <div class="alert alert-info text-center">
-                <i class="fas fa-check-circle me-2"></i> {{ _('Hai confermato il risultato.') }}
-                <br><i class="fas fa-hourglass-half me-1"></i> {{ _('In attesa di') }} {{ opponent_name }}...
-            </div>
-            {% elif opponent_confirmed %}
-            {# Opponent confirmed, current user needs to confirm or reject #}
-            <p class="text-center mb-3">
-                <i class="fas fa-check-circle text-success me-1"></i> {{ opponent_name }} {{ _('ha confermato il risultato.') }}
-                <br>{{ _('Conferma o rifiuta per finalizzare il match.') }}
-            </p>
-            <div class="row">
-                <div class="col-md-6">
-                    <button class="btn btn-success btn-lg w-100" onclick="{{ confirm_func }}()">
-                        <i class="fas fa-check"></i> {{ _('Accetta Risultato') }}
-                    </button>
-                </div>
-                <div class="col-md-6">
-                    <button class="btn btn-danger btn-lg w-100" onclick="{{ reject_func }}()">
-                        <i class="fas fa-times"></i> {{ _('Rifiuta (rimuove ultimo rack)') }}
-                    </button>
-                </div>
-            </div>
-            {% else %}
-            {# Neither confirmed - show confirmation buttons #}
-            <p class="text-center mb-3">
-                {{ _('Il match ha raggiunto la distanza. Conferma il risultato finale.') }}
-            </p>
-            <div class="row">
-                <div class="col-md-6">
-                    <button class="btn btn-success btn-lg w-100" onclick="{{ confirm_func }}()">
-                        <i class="fas fa-check"></i> {{ _('Accetta Risultato') }}
-                    </button>
-                </div>
-                <div class="col-md-6">
-                    <button class="btn btn-danger btn-lg w-100" onclick="{{ reject_func }}()">
-                        <i class="fas fa-times"></i> {{ _('Rifiuta (rimuove ultimo rack)') }}
-                    </button>
-                </div>
-            </div>
-            {% endif %}
             {% endif %}
 
             {# Forfeit button - only for in-progress matches #}

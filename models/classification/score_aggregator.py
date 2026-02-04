@@ -38,12 +38,13 @@ class ScoreAggregator:
         from models.match.models import Match
         from models.base import db
 
+        # Include both 'completed' (admin) and 'validated' (bilateral player confirmation)
         matches = (
             db.session.query(Match)
             .filter(
                 Match.gara_id == gara_id,
                 Match.round_number <= up_to_round,
-                Match.status == "completed",
+                Match.status.in_(["completed", "validated"]),
             )
             .all()
         )
@@ -93,8 +94,10 @@ class ScoreAggregator:
         player_stats: Dict[int, Dict[str, int]] = {}
 
         for gara in gare:
+            # Include both 'completed' and 'validated' as finished matches
             matches = [
-                m for m in gara.matches if m.status == "completed" and not m.is_bye
+                m for m in gara.matches
+                if m.status in ["completed", "validated"] and not m.is_bye
             ]
             for match in matches:
                 if match.is_trio and match.trio_match:
