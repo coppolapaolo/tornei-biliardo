@@ -203,6 +203,13 @@
             </button>
             {% endif %}
           {% endif %}
+
+          {# If director is ALSO a player in this match, show player link #}
+          {% if is_my_match %}
+          <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-primary" style="min-height: 44px;">
+            <i class="fas fa-play-circle"></i>
+          </a>
+          {% endif %}
         </div>
       {% endif %}
 
