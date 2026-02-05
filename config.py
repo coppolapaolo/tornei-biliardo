@@ -61,6 +61,10 @@ class ProductionConfig(Config):
     TESTING = False
     ADMIN_PASSWORD_REQUIRED = True
 
+    # In produzione, la password admin DEVE venire dalla variabile d'ambiente
+    # Nessun fallback - se non settata, l'app deve fallire
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or None
+
 
 class TestingConfig(Config):
     """Configurazione per test"""

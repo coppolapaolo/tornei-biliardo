@@ -209,6 +209,10 @@ def create_admin_if_not_exists():
         .first()
     )
     if existing_admin:
+        # In produzione, aggiorna sempre la password dalla configurazione
+        # per garantire che sia quella della variabile d'ambiente
+        if require_pwd and password:
+            existing_admin.set_password(password)
         return existing_admin
 
     if not username or not password:
