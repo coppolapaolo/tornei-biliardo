@@ -13,6 +13,7 @@ from models.rating.models import (
     CategoryLevel,
 )
 from utils import admin_required, director_required
+from utils.route_helpers import handle_ajax_service_action
 
 # Blueprint initialization
 rating_bp = Blueprint("rating", __name__)
@@ -58,9 +59,9 @@ def view_ratings():
 @login_required
 def update_rating():
     """Update player rating (self-reported, requires verification)."""
-    try:
-        data = request.get_json() if request.is_json else request.form
+    data = request.get_json() if request.is_json else request.form
 
+    def action():
         rating = RatingService.update_user_rating(
             user_id=current_user.id,
             rating_system=RatingSystem(data["rating_system"]),
@@ -68,27 +69,14 @@ def update_rating():
             external_id=data.get("external_id"),
             confidence=float(data.get("confidence", 0.5)),
         )
+        return {"rating_id": rating.id, "verified": rating.verified}
 
-        if request.is_json:
-            return jsonify(
-                {
-                    "success": True,
-                    "rating_id": rating.id,
-                    "verified": rating.verified,
-                    "message": "Rating updated successfully. Verification pending.",
-                }
-            )
-        else:
-            flash("Rating updated successfully. Verification pending.", "success")
-            return redirect(url_for("rating.view_ratings"))
-
-    except ValueError as e:
-        error_msg = f"Error updating rating: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return redirect(url_for("rating.view_ratings"))
+    return handle_ajax_service_action(
+        action=action,
+        redirect_url=url_for("rating.view_ratings"),
+        success_message="Rating updated successfully. Verification pending.",
+        error_prefix=None,
+    )
 
 
 @rating_bp.route("/handicap/calculator")
@@ -148,69 +136,45 @@ def manage_ratings():
 @director_required
 def assign_category():
     """Assign category to player (directors only)."""
-    try:
-        data = request.get_json() if request.is_json else request.form
+    data = request.get_json() if request.is_json else request.form
 
+    def action():
         category = CategoryService.assign_category(
             user_id=int(data["user_id"]),
             category=CategoryLevel(data["category"]),
             assigned_by_id=current_user.id,
             reason=data.get("reason"),
         )
+        return {"category_id": category.id}
 
-        if request.is_json:
-            return jsonify(
-                {
-                    "success": True,
-                    "category_id": category.id,
-                    "message": "Category assigned successfully",
-                }
-            )
-        else:
-            flash("Category assigned successfully!", "success")
-            return redirect(url_for("rating.manage_ratings"))
-
-    except ValueError as e:
-        error_msg = f"Error assigning category: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return redirect(url_for("rating.manage_ratings"))
+    return handle_ajax_service_action(
+        action=action,
+        redirect_url=url_for("rating.manage_ratings"),
+        success_message="Category assigned successfully!",
+        error_prefix=None,
+    )
 
 
 @rating_bp.route("/ratings/<int:rating_id>/verify", methods=["POST"])
 @director_required
 def verify_rating(rating_id):
     """Verify a player's rating (directors only)."""
-    try:
-        data = request.get_json() if request.is_json else request.form
+    data = request.get_json() if request.is_json else request.form
 
+    def action():
         rating = RatingService.verify_rating(
             rating_id=rating_id,
             verified_by_id=current_user.id,
             verified=data.get("verified", "true").lower() == "true",
         )
+        return {"verified": rating.verified}
 
-        if request.is_json:
-            return jsonify(
-                {
-                    "success": True,
-                    "verified": rating.verified,
-                    "message": "Rating verification updated",
-                }
-            )
-        else:
-            flash("Rating verification updated!", "success")
-            return redirect(url_for("rating.manage_ratings"))
-
-    except ValueError as e:
-        error_msg = f"Error verifying rating: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return redirect(url_for("rating.manage_ratings"))
+    return handle_ajax_service_action(
+        action=action,
+        redirect_url=url_for("rating.manage_ratings"),
+        success_message="Rating verification updated!",
+        error_prefix=None,
+    )
 
 
 # Admin routes
@@ -230,11 +194,11 @@ def manage_handicap_rules():
 @admin_required
 def create_handicap_rule():
     """Create new handicap rule (admin only)."""
-    try:
-        import json
+    import json
 
-        data = request.get_json() if request.is_json else request.form
+    data = request.get_json() if request.is_json else request.form
 
+    def action():
         # Handle category_rules - convert from string if needed
         category_rules = data.get("category_rules")
         if category_rules is not None:
@@ -273,26 +237,14 @@ def create_handicap_rule():
             category_rules=category_rules,
             rating_rules=rating_rules,
         )
+        return {"rule_id": rule.id}
 
-        if request.is_json:
-            return jsonify(
-                {
-                    "success": True,
-                    "rule_id": rule.id,
-                    "message": "Handicap rule created successfully",
-                }
-            )
-        else:
-            flash("Handicap rule created successfully!", "success")
-            return redirect(url_for("rating.manage_handicap_rules"))
-
-    except ValueError as e:
-        error_msg = f"Error creating handicap rule: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return redirect(url_for("rating.manage_handicap_rules"))
+    return handle_ajax_service_action(
+        action=action,
+        redirect_url=url_for("rating.manage_handicap_rules"),
+        success_message="Handicap rule created successfully!",
+        error_prefix=None,
+    )
 
 
 @rating_bp.route("/admin/statistics")

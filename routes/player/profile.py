@@ -32,6 +32,7 @@ from models.campionato.models import Campionato
 from models.user.services import UserDeletionService, UserService
 from models.user.permission_service import UserPermissionService
 from utils import player_only
+from utils.route_helpers import handle_service_action
 
 from . import player_bp
 from models.base import utc_now
@@ -440,18 +441,13 @@ def change_password():
 @player_only
 def request_director():
     """Richiede la promozione a direttore di gara"""
-    try:
-        UserPermissionService.request_director_promotion(user_id=current_user.id)
-
-        # Notification sent via event system (DirectorRequestCreatedEvent)
-        flash("Richiesta inviata. Sarai contattato dall'amministratore.")
-
-    except ValueError as e:
-        flash(f"Errore: {str(e)}", "error")
-    except Exception as e:
-        flash(f"Errore inaspettato: {str(e)}", "error")
-
-    return redirect(url_for("player.profile"))
+    return handle_service_action(
+        action=lambda: UserPermissionService.request_director_promotion(
+            user_id=current_user.id
+        ),
+        redirect_url=url_for("player.profile"),
+        success_message="Richiesta inviata. Sarai contattato dall'amministratore.",
+    )
 
 
 # ============ PRIVACY SETTINGS ============

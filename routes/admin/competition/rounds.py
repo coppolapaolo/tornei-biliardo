@@ -82,15 +82,12 @@ def cancel_first_round(gara_id):
 @gara_manager_required
 def cancel_current_round(gara_id):
     """Cancella l'avvio del turno corrente se non ci sono risultati"""
-    try:
-        gara = GaraService.cancel_current_round_startup(gara_id)
-        flash(
-            f"Avvio del turno {gara.current_round + 1} cancellato con successo!",
-            "success",
-        )
-    except ValueError as ve:
-        flash(str(ve), "error")
-    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+    return handle_service_action(
+        action=lambda: GaraService.cancel_current_round_startup(gara_id),
+        redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
+        success_message="Avvio del turno cancellato con successo!",
+        error_prefix=None,
+    )
 
 
 @competition_bp.route("/<int:gara_id>/terminate", methods=["POST"])

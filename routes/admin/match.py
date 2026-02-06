@@ -25,6 +25,7 @@ from utils import (
 from models.match.services import RackService
 from models.kpi import track_match_played, track_result_submit
 from routes.sse import emit_gara_event
+from utils.route_helpers import handle_service_action
 
 # Match management blueprint
 match_bp = Blueprint("match", __name__)
@@ -179,14 +180,13 @@ def add_rack_result(match_id):
 @match_manager_required
 def set_match_result_direct(match_id):
     """Imposta risultato completo di una partita (admin)"""
-    try:
+
+    def action():
         player1_score = int(request.form["player1_score"])
         player2_score = int(request.form["player2_score"])
 
-        # Usa il service layer invece del direct database access
         RackService.set_match_result_direct(match_id, player1_score, player2_score)
 
-        # Dopo aver impostato il risultato, controlla se ci sono turni da aggiornare
         from models.match.models import Match
         from models.competition.services import GaraService
 
@@ -194,15 +194,12 @@ def set_match_result_direct(match_id):
         if match and match.gara_id:
             GaraService.update_round_progression(match.gara_id)
 
-        flash("Risultato impostato con successo!")
-        return redirect(url_for("admin.match.match_detail", match_id=match_id))
-
-    except ValueError as ve:
-        flash(str(ve), "error")
-        return redirect(url_for("admin.match.match_detail", match_id=match_id))
-    except Exception as e:
-        flash(f"Errore durante l'impostazione del risultato: {str(e)}", "error")
-        return redirect(url_for("admin.match.match_detail", match_id=match_id))
+    return handle_service_action(
+        action=action,
+        redirect_url=url_for("admin.match.match_detail", match_id=match_id),
+        success_message="Risultato impostato con successo!",
+        error_prefix=None,
+    )
 
 
 @match_bp.route("/<int:match_id>/validate", methods=["POST"])

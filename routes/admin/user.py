@@ -9,6 +9,7 @@ from models import (
     db,
 )
 from utils import admin_required
+from utils.route_helpers import handle_service_action
 from models.status_enum import DirectorRequestStatus
 from models.user.services import UserService
 
@@ -80,18 +81,16 @@ def approve_director_request(req_id):
     from models.user.services import DirectorRequestService
     from flask_login import current_user
 
-    try:
-        # Usa il service layer invece del direct database access
-        # Cast current_user to User type since @admin_required ensures it's a valid admin User
-        from models.base import db
-
+    def action():
         admin_user = db.session.get(User, current_user.id)
         DirectorRequestService.process_request(req_id, admin_user, approve=True)
-        flash("Richiesta approvata.")
-    except (PermissionError, ValueError) as e:
-        flash(str(e), "error")
 
-    return redirect(url_for("admin.user.director_requests"))
+    return handle_service_action(
+        action=action,
+        redirect_url=url_for("admin.user.director_requests"),
+        success_message="Richiesta approvata.",
+        error_prefix=None,
+    )
 
 
 @user_bp.route("/director_requests/<int:req_id>/reject", methods=["POST"])
@@ -101,18 +100,16 @@ def reject_director_request(req_id):
     from models.user.services import DirectorRequestService
     from flask_login import current_user
 
-    try:
-        # Usa il service layer invece del direct database access
-        # Cast current_user to User type since @admin_required ensures it's a valid admin User
-        from models.base import db
-
+    def action():
         admin_user = db.session.get(User, current_user.id)
         DirectorRequestService.process_request(req_id, admin_user, approve=False)
-        flash("Richiesta rifiutata.")
-    except (PermissionError, ValueError) as e:
-        flash(str(e), "error")
 
-    return redirect(url_for("admin.user.director_requests"))
+    return handle_service_action(
+        action=action,
+        redirect_url=url_for("admin.user.director_requests"),
+        success_message="Richiesta rifiutata.",
+        error_prefix=None,
+    )
 
 
 @user_bp.route("/director_requests/<int:req_id>/process", methods=["POST"])
@@ -153,13 +150,12 @@ def demote_director(user_id):
     from models.user.services import UserService
     from flask_login import current_user
 
-    try:
-        UserService.demote_director_to_player(user_id, current_user.id)
-        flash("Utente degradato da direttore a giocatore.")
-    except (PermissionError, ValueError) as e:
-        flash(str(e), "error")
-
-    return redirect(url_for("admin.user.user_detail", user_id=user_id))
+    return handle_service_action(
+        action=lambda: UserService.demote_director_to_player(user_id, current_user.id),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message="Utente degradato da direttore a giocatore.",
+        error_prefix=None,
+    )
 
 
 @user_bp.route("/user/<int:user_id>/promote_director", methods=["POST"])
@@ -169,13 +165,12 @@ def promote_director(user_id):
     from models.user.permission_service import UserPermissionService
     from flask_login import current_user
 
-    try:
-        UserPermissionService.promote_to_director(user_id, current_user.id)
-        flash("Utente promosso a direttore di gara.")
-    except ValueError as e:
-        flash(str(e), "error")
-
-    return redirect(url_for("admin.user.user_detail", user_id=user_id))
+    return handle_service_action(
+        action=lambda: UserPermissionService.promote_to_director(user_id, current_user.id),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message="Utente promosso a direttore di gara.",
+        error_prefix=None,
+    )
 
 
 @user_bp.route("/user/<int:user_id>/toggle_gamification_override", methods=["POST"])
@@ -217,14 +212,13 @@ def set_user_password(user_id: int):
         flash(_("Le password non corrispondono"), "danger")
         return redirect(url_for("admin.user.user_detail", user_id=user_id))
 
-    try:
-        UserProfileService.set_password_as_admin(
+    return handle_service_action(
+        action=lambda: UserProfileService.set_password_as_admin(
             user_id=user_id,
             new_password=new_password,
             admin_id=current_user.id,
-        )
-        flash(_("Password impostata con successo"), "success")
-    except ValueError as e:
-        flash(str(e), "danger")
-
-    return redirect(url_for("admin.user.user_detail", user_id=user_id))
+        ),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message=_("Password impostata con successo"),
+        error_prefix=None,
+    )

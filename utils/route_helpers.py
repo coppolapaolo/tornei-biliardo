@@ -34,13 +34,71 @@ def ajax_error(error: str, status: int = 400) -> tuple[Any, int]:
     return jsonify({"success": False, "error": error}), status
 
 
+def handle_ajax_service_action(
+    action: Callable[[], Any],
+    redirect_url: str,
+    success_message: str,
+    error_prefix: Optional[str] = "Errore",
+):
+    """Execute a service action with AJAX-aware error handling.
+
+    For AJAX/JSON requests: returns JSON response.
+    For regular requests: flashes message and redirects.
+
+    If the action returns a dict, its contents are merged into
+    the JSON success response (useful for returning IDs, etc.).
+
+    Args:
+        action: Callable to execute. May return a dict for AJAX response data.
+        redirect_url: URL to redirect to (non-AJAX requests).
+        success_message: Message for flash (non-AJAX) or JSON (AJAX).
+        error_prefix: Prefix for business error messages.
+            Use None to flash the raw error message without prefix.
+
+    Usage:
+        return handle_ajax_service_action(
+            action=lambda: ChallengeService.delete_challenge(challenge_id),
+            redirect_url=url_for("challenge.challenge_catalog"),
+            success_message="Challenge eliminata con successo",
+        )
+    """
+    is_json = is_ajax_request() or request.is_json
+    try:
+        result = action()
+        if is_json:
+            data = result if isinstance(result, dict) else None
+            return ajax_success(message=success_message, data=data)
+        flash(success_message, "success")
+    except (ValueError, PermissionError) as e:
+        msg = f"{error_prefix}: {e}" if error_prefix else str(e)
+        if is_json:
+            return ajax_error(msg)
+        flash(msg, "error")
+    except Exception as e:
+        msg = f"Errore imprevisto: {e}"
+        if is_json:
+            return ajax_error(msg, status=500)
+        flash(msg, "error")
+    return redirect(redirect_url)
+
+
 def handle_service_action(
     action: Callable[[], Any],
     redirect_url: str,
     success_message: str,
-    error_prefix: str = "Errore",
+    error_prefix: Optional[str] = "Errore",
 ):
     """Execute a service action with standard error handling and redirect.
+
+    Catches ValueError and PermissionError as expected business errors,
+    and Exception as unexpected errors.
+
+    Args:
+        action: Callable to execute (typically a service method call).
+        redirect_url: URL to redirect to after success or error.
+        success_message: Flash message on success.
+        error_prefix: Prefix for business error messages.
+            Use None to flash the raw error message without prefix.
 
     Usage:
         return handle_service_action(
@@ -52,8 +110,9 @@ def handle_service_action(
     try:
         action()
         flash(success_message, "success")
-    except ValueError as ve:
-        flash(f"{error_prefix}: {str(ve)}", "error")
+    except (ValueError, PermissionError) as e:
+        msg = f"{error_prefix}: {e}" if error_prefix else str(e)
+        flash(msg, "error")
     except Exception as e:
-        flash(f"Errore imprevisto: {str(e)}", "error")
+        flash(f"Errore imprevisto: {e}", "error")
     return redirect(redirect_url)

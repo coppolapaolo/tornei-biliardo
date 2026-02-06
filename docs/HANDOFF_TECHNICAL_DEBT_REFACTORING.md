@@ -1,8 +1,8 @@
 # HANDOFF: Technical Debt Refactoring
 
 **Data**: 2026-02-06
-**Stato**: IN CORSO
-**Valutazione complessiva architettura**: 7.5/10
+**Stato**: FASI 1-3 COMPLETATE, FASE 4 PARZIALE (4.1/4.2 cancellati, 4.3 da pianificare)
+**Valutazione complessiva architettura**: 7.5/10 → 8/10 (post-refactoring)
 
 ---
 
@@ -204,22 +204,32 @@ def ajax_or_redirect(success_data=None, error_msg=None, status=200, redirect_url
 
 ---
 
-### FASE 4 - Architetturale (lungo termine, da pianificare)
+### FASE 4 - Architetturale (lungo termine)
 
 #### TASK 4.1: Definire Protocol interfaces per servizi cross-domain
-**Problema**: `MatchmakingOrchestrator` dipende da concrete `MatchService`, `RatingService`, `ChallengeService`.
-**Soluzione**: Definire `Protocol` classes per dependency injection.
-**Stato**: DA PIANIFICARE - richiede analisi piu' approfondita dei confini.
+**Problema originale**: `MatchmakingOrchestrator` dipende da concrete `MatchService`, `RatingService`, `ChallengeService`.
+**Analisi (2026-02-06)**: Sia `MatchmakingOrchestrator` che `DomainOrchestrator` sono **codice morto** — usati solo in test legacy, mai in route/servizi di produzione. `create_round_with_handicaps()` ha un bug (passa kwargs non accettati da `MatchService.create_match()`). Aggiungere Protocol a codice morto non ha valore.
+**Stato**: CANCELLATO — codice morto, nessun beneficio in produzione.
 
 #### TASK 4.2: Separare UtilityMixin in mixin focalizzati
-**Problema**: `UtilityMixin` ha 6 metodi (save, delete, to_dict, find_by_id, find_all, refresh) — non tutti i modelli li usano tutti.
-**Soluzione**: Split in `PersistableMixin`, `SerializableMixin`, `QueryableMixin`.
-**Stato**: DA PIANIFICARE - basso impatto, alto blast radius (tutti i modelli usano BaseModel).
+**Problema originale**: `UtilityMixin` ha 6 metodi (save, delete, to_dict, find_by_id, find_all, refresh).
+**Analisi (2026-02-06)**: TUTTI i metodi di `UtilityMixin` sono usati **solo nei test legacy**. Zero utilizzo in codice di produzione (i servizi usano `@transactional` e query dirette). Inoltre `BaseModel` duplica gia' 5 dei 6 metodi (manca solo `refresh()`). Splittare un mixin inutilizzato in produzione non ha valore.
+**Stato**: CANCELLATO — nessun utilizzo in produzione.
 
-#### TASK 4.3: Creare state machine esplicita per Match/TrioMatch
-**Problema**: `Match` (1215 LOC) e `TrioMatch` (1155 LOC) sono god classes.
-**Soluzione**: Estrarre `MatchStateMachine` e `TrioMatchStateMachine`.
-**Stato**: DA PIANIFICARE - alto impatto, richiede design dettagliato.
+#### TASK 4.3: Estrarre responsabilita' da Match/TrioMatch god classes
+**Problema**: `Match` (586 LOC, 37 metodi tra propri+ereditati, 8 gruppi di responsabilita') e `TrioMatch` (487 LOC, 31 tra metodi+property, 7 gruppi) sono god classes confermate.
+**Analisi (2026-02-06)**: Gruppi di responsabilita' identificati in Match:
+1. State Queries (4 metodi read-only)
+2. Distance/Scoring Config (4 property, gia' delegano a value objects)
+3. Handicap Management (3 metodi)
+4. Discipline Management (4 metodi)
+5. Multi-Set Management (4 metodi)
+6. Tiebreaker Support (4 metodi)
+7. Match Completion/State Transitions (5 metodi)
+8. Result Validation (4 metodi, da BaseMatchMixin)
+
+Per TrioMatch: round-robin logic (2), bonus/completion (2), 3-player confirmation (4), forfeit (1, 71 LOC), 14 computed properties.
+**Stato**: DA PIANIFICARE — unico task con impatto reale, ma alto rischio. Approccio suggerito: estrarre un gruppo alla volta (es. Multi-Set → servizio, Tiebreaker → servizio).
 
 ---
 
@@ -230,12 +240,37 @@ def ajax_or_redirect(success_data=None, error_msg=None, status=200, redirect_url
 | 1.1 | Consolidare permessi duplicati | BASSO | ALTO (sicurezza) | ~80 | DONE |
 | 1.2 | Eliminare parse_date duplicata | BASSO | MEDIO | ~10 | DONE |
 | 1.3 | Centralizzare filtro iscrizioni | BASSO | MEDIO | ~30 | DONE |
-| 2.1 | Creare route_helpers.py | MEDIO | ALTO | ~300 (graduale) | DONE (utility + 1 proof-of-concept) |
+| 2.1 | Creare route_helpers.py | MEDIO | ALTO | ~300 (graduale) | DONE (utility + 20 route convertite) |
 | 3.1 | Estrarre GaraStatusResolver | MEDIO | ALTO (manutenibilita') | ~60 | DONE |
 | 3.2 | Estrarre parse_tables_input | BASSO | BASSO | ~10 | DONE |
-| 4.1 | Protocol interfaces | MEDIO | MEDIO | 0 (architettura) | DA PIANIFICARE |
-| 4.2 | Split UtilityMixin | ALTO | BASSO | 0 (architettura) | DA PIANIFICARE |
-| 4.3 | State machine Match/Trio | ALTO | ALTO | ~200+ | DA PIANIFICARE |
+| 4.1 | Protocol interfaces | — | — | — | CANCELLATO (orchestrators = codice morto) |
+| 4.2 | Split UtilityMixin | — | — | — | CANCELLATO (zero uso in produzione) |
+| 4.3 | Estrarre da Match/TrioMatch | ALTO | ALTO | ~200+ | DA PIANIFICARE |
+
+---
+
+## Findings Aggiuntivi (2026-02-06)
+
+### Dead Code su Match Model
+7 metodi mai chiamati dall'esterno:
+- **Tiebreaker** (4 metodi, ~48 LOC): `needs_tiebreaker()`, `has_active_tiebreaker()`, `get_active_tiebreaker()`, `can_start_tiebreaker()` — solo auto-referenziati. Esiste `TiebreakerService` che gestisce la logica a livello gara.
+- **Handicap** (3 metodi, ~20 LOC): `apply_handicap()`, `get_effective_score()`, `get_handicap_info()` — scritti per `MatchmakingOrchestrator` che e' codice morto.
+
+**Azione consigliata**: Valutare rimozione o spostamento in mixin opzionale.
+
+### Dead Code: MatchmakingOrchestrator e DomainOrchestrator
+Entrambi usati solo in test legacy. `create_round_with_handicaps()` ha un bug (passa kwargs non accettati da `MatchService.create_match()`).
+
+### Anti-pattern: `@transactional` su Route Handlers
+20+ route hanno `@transactional` direttamente come decoratore della route. Per CLAUDE.md, il decoratore dovrebbe essere solo sui metodi del service layer. Route coinvolte:
+- `routes/admin/venue.py`: 7 route (create, delete, activate, toggle, verify, update_table, upload_photo)
+- `routes/admin/competition/crud.py`: 3 route (create_gara_standalone, create_gara, edit_gara)
+- `routes/admin/competition/rounds.py`: 3 route (start_first_round, amalfi_start_round, start_round_generic)
+- `routes/admin/competition/inscriptions.py`: 1 route (close_inscriptions)
+- `routes/player/proposals.py`: 2 route (accept/reject match proposal)
+- `routes/player/notifications.py`: 3 route (notifications, mark_read, mark_all_read)
+
+**Azione consigliata**: Spostare le operazioni DB nei service, poi rimuovere `@transactional` dalle route. Richiede creazione di VenueService e NotificationService (se non esistono).
 
 ---
 

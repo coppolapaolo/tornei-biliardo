@@ -31,6 +31,7 @@ from utils import (
     challenge_attempt_player_required,
 )
 from models.challenge.services import ChallengeService
+from utils.route_helpers import handle_ajax_service_action
 
 # Blueprint initialization
 challenge_bp = Blueprint("challenge", __name__)
@@ -198,27 +199,17 @@ def delete_challenge(challenge_id):
     if not can_delete:
         abort(403)
 
-    try:
-        # Delete associated image file before deleting the challenge
+    def action():
         if challenge.image_filename:
             delete_challenge_image(challenge.image_filename)
-
         ChallengeService.delete_challenge(challenge_id)
 
-        message = "Challenge eliminata con successo"
-        if request.is_json:
-            return jsonify({"success": True, "message": message})
-        else:
-            flash(message, "success")
-            return redirect(url_for("challenge.challenge_catalog"))
-
-    except Exception as e:
-        error_msg = f"Errore nell'eliminazione della challenge: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return redirect(url_for("challenge.challenge_catalog"))
+    return handle_ajax_service_action(
+        action=action,
+        redirect_url=url_for("challenge.challenge_catalog"),
+        success_message="Challenge eliminata con successo",
+        error_prefix=None,
+    )
 
 
 @challenge_bp.route("/<int:challenge_id>")

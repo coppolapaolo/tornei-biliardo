@@ -20,6 +20,7 @@ from models.status_enum import GaraStatus
 from models.competition.services import GaraService
 from models.competition.state_service import StateService
 from utils import gara_manager_required
+from utils.route_helpers import handle_service_action
 
 from . import competition_bp
 
@@ -29,34 +30,27 @@ from . import competition_bp
 @gara_manager_required
 def open_inscriptions(gara_id):
     """Apri iscrizioni per una gara"""
-    try:
-        # Tenta di ottenere le date UTC dal JavaScript
-        # Se mancano (es. JS non ha girato o errore client), prova i campi normali
+
+    def action():
         start_key = "inscription_start_utc" if "inscription_start_utc" in request.form else "inscription_start"
         end_key = "inscription_end_utc" if "inscription_end_utc" in request.form else "inscription_end"
-
         start_str = request.form.get(start_key)
         end_str = request.form.get(end_key)
-
         if not start_str or not end_str:
-            flash("Date di inizio o fine iscrizioni mancanti", "error")
-            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
-
+            raise ValueError("Date di inizio o fine iscrizioni mancanti")
         inscription_start = parse_date_string(start_str)
         if not inscription_start:
             raise ValueError(f"Formato data non valido: {start_str}")
         inscription_end = parse_date_string(end_str)
         if not inscription_end:
             raise ValueError(f"Formato data non valido: {end_str}")
-
         GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
-        flash("Iscrizioni aperte!")
-    except ValueError as ve:
-        flash(f"Errore: {str(ve)}", "error")
-    except Exception as e:
-        flash(f"Errore imprevisto: {str(e)}", "error")
 
-    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+    return handle_service_action(
+        action=action,
+        redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
+        success_message="Iscrizioni aperte!",
+    )
 
 
 @competition_bp.route("/<int:gara_id>/modify_inscription_dates", methods=["POST"])
@@ -71,16 +65,14 @@ def modify_inscription_dates(gara_id):
         request.form["inscription_end_utc"], "%Y-%m-%dT%H:%M:%S"
     )
 
-    # Usa il service layer invece del direct database access
-    try:
-        GaraService.modify_inscription_dates(
+    return handle_service_action(
+        action=lambda: GaraService.modify_inscription_dates(
             gara_id, inscription_start, inscription_end
-        )
-        flash("Date di iscrizione aggiornate con successo!")
-    except ValueError as ve:
-        flash(str(ve), "error")
-
-    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        ),
+        redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
+        success_message="Date di iscrizione aggiornate con successo!",
+        error_prefix=None,
+    )
 
 
 @competition_bp.route("/<int:gara_id>/close_inscriptions", methods=["POST"])

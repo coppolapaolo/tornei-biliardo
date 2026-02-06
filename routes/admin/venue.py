@@ -15,6 +15,7 @@ from models.user.venue_manager_service import VenueManagerService
 from models.user.models import VenueManagerRequest, User
 from models.transaction.manager import transactional
 from utils import admin_required, venue_manager_required
+from utils.route_helpers import handle_service_action
 from flask_login import login_required, current_user
 from models.base import db, utc_now
 
@@ -641,16 +642,15 @@ def assign_venue_manager(venue_id):
         flash("Seleziona un utente da assegnare come gestore.", "error")
         return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
 
-    try:
-        from flask_login import current_user
+    from flask_login import current_user
 
-        admin_user = cast(User, current_user)
-        VenueManagementService.assign_venue_manager(int(user_id), venue_id, admin_user)
-        flash("Gestore assegnato con successo!", "success")
-    except Exception as e:
-        flash(f"Errore nell'assegnare il gestore: {str(e)}", "error")
-
-    return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
+    return handle_service_action(
+        action=lambda: VenueManagementService.assign_venue_manager(
+            int(user_id), venue_id, cast(User, current_user)
+        ),
+        redirect_url=url_for("admin.venue.venue_detail", venue_id=venue_id),
+        success_message="Gestore assegnato con successo!",
+    )
 
 
 @venue_bp.route("/assignments/<int:assignment_id>/revoke", methods=["POST"])
