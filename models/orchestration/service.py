@@ -7,7 +7,6 @@ Requirements: Coordinate operations across User, Campionato, Competition, Match,
 from __future__ import annotations
 
 from typing import Dict, Any, List, Optional
-from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
 import logging
@@ -17,6 +16,7 @@ from ..campionato.services import TournamentService
 from ..competition.services import GaraService
 from ..matchmaking.service import MatchmakingService
 from ..rating.services import CategoryService
+from models.base import utc_now
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ class DomainOrchestrator:
     ) -> OperationResult:
         """Orchestrate complete campionato setup across multiple domains."""
 
-        start_time = datetime.utcnow()
+        start_time = utc_now()
         affected_domains = ["campionato", "competition", "user", "rating"]
 
         try:
@@ -144,7 +144,7 @@ class DomainOrchestrator:
                 matchmaking_configs.append(config)
                 affected_domains.append("matchmaking")
 
-            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            execution_time = (utc_now() - start_time).total_seconds() * 1000
 
             result_data = {
                 "campionato": {
@@ -173,7 +173,7 @@ class DomainOrchestrator:
             return result
 
         except Exception as e:
-            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            execution_time = (utc_now() - start_time).total_seconds() * 1000
 
             result = OperationResult.failure_result(
                 operation_type=OperationType.TOURNAMENT_SETUP,
@@ -195,7 +195,7 @@ class DomainOrchestrator:
     ) -> OperationResult:
         """Orchestrate complete user onboarding across domains."""
 
-        start_time = datetime.utcnow()
+        start_time = utc_now()
         affected_domains = ["user"]
 
         try:
@@ -242,7 +242,7 @@ class DomainOrchestrator:
                     )
                     affected_domains.append("challenge")
 
-            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            execution_time = (utc_now() - start_time).total_seconds() * 1000
 
             result_data = {
                 "user": {"id": user.id, "username": user.username, "role": user.role},
@@ -267,7 +267,7 @@ class DomainOrchestrator:
             return result
 
         except Exception as e:
-            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            execution_time = (utc_now() - start_time).total_seconds() * 1000
 
             result = OperationResult.failure_result(
                 operation_type=OperationType.USER_ONBOARDING,

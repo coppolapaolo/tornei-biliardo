@@ -13,6 +13,7 @@ This migration:
 
 import sqlite3
 from datetime import datetime
+from models.base import utc_now
 
 
 def get_migration_id() -> str:
@@ -114,7 +115,7 @@ def upgrade(cursor) -> None:
                 match_id = match_row[0]
 
         # Create GaraByeChallenge record
-        now = datetime.utcnow().isoformat()
+        now = utc_now().isoformat()
         cursor.execute("""
             INSERT INTO gara_bye_challenge
             (gara_id, challenge_attempt_id, round_number, user_id, match_id,

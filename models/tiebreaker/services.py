@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, cast
 from datetime import datetime
 
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
     Tiebreaker,
@@ -199,7 +199,7 @@ class TiebreakerService:
             was_successful=bool(points_scored > 0),
             ended_rally=ended_rally,
             notes=notes,
-            completed_at=datetime.utcnow(),
+            completed_at=utc_now(),
         )
 
         db.session.add(rally_attempt)

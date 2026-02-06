@@ -26,6 +26,7 @@ from models.individual_match.services import (
 )
 from models.user.models import User
 from models.user.role_enum import UserRole
+from models.base import utc_now
 
 
 class TestIndividualMatchServiceTransactionMigration:
@@ -79,8 +80,8 @@ class TestIndividualMatchServiceTransactionMigration:
                 mock_notification.return_value = {"success": True}
 
                 # Act: create direct proposal
-                scheduled_time = datetime.utcnow() + timedelta(hours=2)
-                expires_time = datetime.utcnow() + timedelta(hours=1)
+                scheduled_time = utc_now() + timedelta(hours=2)
+                expires_time = utc_now() + timedelta(hours=1)
 
                 proposal = IndividualMatchService.create_direct_proposal(
                     proposer_id=proposer.id,
@@ -131,8 +132,8 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Act: create open proposal
-            scheduled_time = datetime.utcnow() + timedelta(hours=3)
-            expires_time = datetime.utcnow() + timedelta(hours=1)
+            scheduled_time = utc_now() + timedelta(hours=3)
+            expires_time = utc_now() + timedelta(hours=1)
 
             proposal = IndividualMatchService.create_open_proposal(
                 proposer_id=proposer.id,
@@ -171,7 +172,7 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Arrange: create proposal that's already expired
-            past_time = datetime.utcnow() - timedelta(hours=1)
+            past_time = utc_now() - timedelta(hours=1)
 
             expired_proposal = MatchProposal(
                 proposer_id=proposer.id,
@@ -211,8 +212,8 @@ class TestIndividualMatchServiceTransactionMigration:
 
         with app.app_context():
             # Test with invalid user ID to trigger rollback during autoflush
-            scheduled_time = datetime.utcnow() + timedelta(hours=2)
-            expires_time = datetime.utcnow() + timedelta(hours=1)
+            scheduled_time = utc_now() + timedelta(hours=2)
+            expires_time = utc_now() + timedelta(hours=1)
 
             # This will not raise exception but should rollback properly
             proposal = IndividualMatchService.create_direct_proposal(
@@ -263,8 +264,8 @@ class TestIndividualMatchServiceTransactionMigration:
                 "models.notification.services.NotificationService.create_notification"
             ):
                 # Create proposal
-                scheduled_time = datetime.utcnow() + timedelta(hours=4)
-                expires_time = datetime.utcnow() + timedelta(hours=1)
+                scheduled_time = utc_now() + timedelta(hours=4)
+                expires_time = utc_now() + timedelta(hours=1)
 
                 proposal = IndividualMatchService.create_direct_proposal(
                     proposer_id=proposer.id,

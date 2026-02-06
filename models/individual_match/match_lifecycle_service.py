@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Optional, List
 
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from ..status_enum import MatchStatus
 from .models import IndividualMatch, MatchProposal
@@ -185,7 +185,7 @@ class MatchLifecycleService:
         from ..notification.factory import NotificationFactory
         from ..notification.models import NotificationType, NotificationPriority
 
-        now = datetime.utcnow()
+        now = utc_now()
         window_start = now + timedelta(hours=hours_before)
         window_end = window_start + timedelta(minutes=window_minutes)
 

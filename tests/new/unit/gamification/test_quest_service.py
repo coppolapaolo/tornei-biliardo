@@ -23,6 +23,7 @@ from models.gamification.models import (
     UserLevel,
 )
 from models.gamification.xp_config import QUEST_XP_REWARDS
+from models.base import utc_now
 
 
 class TestQuestCreation:
@@ -30,8 +31,8 @@ class TestQuestCreation:
 
     def test_create_quest_with_upcoming_status(self, db_session, isolated_players):
         """Quest created with future start date should be UPCOMING."""
-        future_start = datetime.utcnow() + timedelta(days=1)
-        future_end = datetime.utcnow() + timedelta(days=8)
+        future_start = utc_now() + timedelta(days=1)
+        future_end = utc_now() + timedelta(days=8)
 
         quest = QuestService.create_quest(
             name="Future Quest",
@@ -48,8 +49,8 @@ class TestQuestCreation:
 
     def test_create_quest_with_active_status(self, db_session, isolated_players):
         """Quest created with current dates should be ACTIVE."""
-        past_start = datetime.utcnow() - timedelta(days=1)
-        future_end = datetime.utcnow() + timedelta(days=6)
+        past_start = utc_now() - timedelta(days=1)
+        future_end = utc_now() + timedelta(days=6)
 
         quest = QuestService.create_quest(
             name="Active Quest",
@@ -64,8 +65,8 @@ class TestQuestCreation:
 
     def test_create_quest_with_expired_status(self, db_session, isolated_players):
         """Quest created with past dates should be EXPIRED."""
-        past_start = datetime.utcnow() - timedelta(days=10)
-        past_end = datetime.utcnow() - timedelta(days=3)
+        past_start = utc_now() - timedelta(days=10)
+        past_end = utc_now() - timedelta(days=3)
 
         quest = QuestService.create_quest(
             name="Expired Quest",
@@ -84,8 +85,8 @@ class TestQuestCreation:
             name="Weekly Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 5}
         )
 
@@ -97,8 +98,8 @@ class TestQuestCreation:
             name="Special Quest",
             description="Test",
             quest_type=QuestType.SPECIAL_EVENT,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 10},
             xp_reward=500
         )
@@ -117,8 +118,8 @@ class TestQuestLifecycle:
             description="Test",
             quest_type=QuestType.WEEKLY,
             status=QuestStatus.UPCOMING,  # Manually set as upcoming
-            start_date=datetime.utcnow() - timedelta(hours=1),  # Started 1 hour ago
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(hours=1),  # Started 1 hour ago
+            end_date=utc_now() + timedelta(days=6),
             requirements='{"type": "matches_played", "target": 5}',
             xp_reward=150,
             participant_count=0,
@@ -139,8 +140,8 @@ class TestQuestLifecycle:
             description="Test",
             quest_type=QuestType.WEEKLY,
             status=QuestStatus.ACTIVE,  # Currently active
-            start_date=datetime.utcnow() - timedelta(days=8),
-            end_date=datetime.utcnow() - timedelta(hours=1),  # Ended 1 hour ago
+            start_date=utc_now() - timedelta(days=8),
+            end_date=utc_now() - timedelta(hours=1),  # Ended 1 hour ago
             requirements='{"type": "matches_played", "target": 5}',
             xp_reward=150,
             participant_count=0,
@@ -166,8 +167,8 @@ class TestQuestParticipation:
             name="Active Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 10}
         )
 
@@ -191,8 +192,8 @@ class TestQuestParticipation:
             name="Active Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 5}
         )
 
@@ -220,8 +221,8 @@ class TestQuestParticipation:
             name="Expired Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=10),
-            end_date=datetime.utcnow() - timedelta(days=3),
+            start_date=utc_now() - timedelta(days=10),
+            end_date=utc_now() - timedelta(days=3),
             requirements={"type": "matches_played", "target": 5}
         )
 
@@ -240,8 +241,8 @@ class TestQuestProgress:
             name="Active Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 10}
         )
 
@@ -264,8 +265,8 @@ class TestQuestProgress:
             name="Active Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 5}
         )
 
@@ -291,8 +292,8 @@ class TestQuestProgress:
             name="Active Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 1},
             xp_reward=200
         )
@@ -325,8 +326,8 @@ class TestActivityBasedProgress:
             name="Matches Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 5}
         )
 
@@ -334,8 +335,8 @@ class TestActivityBasedProgress:
             name="Wins Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_won", "target": 3}
         )
 
@@ -366,8 +367,8 @@ class TestActivityBasedProgress:
             name="Matches Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 5}
         )
 
@@ -396,8 +397,8 @@ class TestActivityBasedProgress:
             name="Easy Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 2}
         )
 
@@ -423,8 +424,8 @@ class TestQuestQueries:
             name="Quest 1",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 10}
         )
 
@@ -432,8 +433,8 @@ class TestQuestQueries:
             name="Quest 2",
             description="Test",
             quest_type=QuestType.MONTHLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=29),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=29),
             requirements={"type": "matches_won", "target": 20}
         )
 
@@ -462,8 +463,8 @@ class TestQuestQueries:
             name="Easy Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 1},
             xp_reward=100
         )
@@ -492,8 +493,8 @@ class TestQuestQueries:
             name="Quest",
             description="Test",
             quest_type=QuestType.WEEKLY,
-            start_date=datetime.utcnow() - timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=6),
+            start_date=utc_now() - timedelta(days=1),
+            end_date=utc_now() + timedelta(days=6),
             requirements={"type": "matches_played", "target": 10}
         )
 

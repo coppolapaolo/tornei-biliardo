@@ -21,6 +21,7 @@ from models.competition.round_service import RoundService
 from models.match.services import MatchService, RackService
 from models.match.models import TrioMatch
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -141,8 +142,8 @@ class TestUseCaseRandomStrategy:
         )
 
         # Open inscriptions and inscribe players
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_8:
@@ -201,8 +202,8 @@ class TestUseCaseRandomStrategy:
         )
 
         # Open inscriptions and inscribe 9 players
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_9:
@@ -259,8 +260,8 @@ class TestUseCaseRandomStrategy:
         )
 
         # Setup and start
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_8:
@@ -347,8 +348,8 @@ class TestUseCaseRandomChallenge:
         )
 
         # Setup inscriptions
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:
@@ -432,8 +433,8 @@ class TestUseCaseRandomClassification:
         )
 
         # Setup
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:

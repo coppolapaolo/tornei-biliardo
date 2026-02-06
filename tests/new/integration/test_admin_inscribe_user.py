@@ -14,6 +14,7 @@ from models.user.models import User
 from models.competition.models import Gara, Inscription
 from models.notification.models import Notification, NotificationType
 from models.status_enum import GaraStatus
+from models.base import utc_now
 
 
 @pytest.fixture
@@ -79,8 +80,8 @@ def gara_in_inscription(db_session, director_user):
         max_participants=10,
         director_id=director_user.id,
         status=GaraStatus.INSCRIPTION.value,
-        inscription_start=datetime.utcnow() - timedelta(hours=1),
-        inscription_end=datetime.utcnow() + timedelta(days=1),
+        inscription_start=utc_now() - timedelta(hours=1),
+        inscription_end=utc_now() + timedelta(days=1),
     )
     db_session.add(gara)
     db_session.commit()
@@ -198,8 +199,8 @@ class TestAdminInscribeUser:
             max_participants=1,
             director_id=director_user.id,
             status=GaraStatus.INSCRIPTION.value,
-            inscription_start=datetime.utcnow() - timedelta(hours=1),
-            inscription_end=datetime.utcnow() + timedelta(days=1),
+            inscription_start=utc_now() - timedelta(hours=1),
+            inscription_end=utc_now() + timedelta(days=1),
         )
         db_session.add(gara)
         db_session.commit()
@@ -368,8 +369,8 @@ class TestAdminInscribeFormVisibility:
             max_participants=1,
             director_id=director_user.id,
             status=GaraStatus.INSCRIPTION.value,
-            inscription_start=datetime.utcnow() - timedelta(hours=1),
-            inscription_end=datetime.utcnow() + timedelta(days=1),
+            inscription_start=utc_now() - timedelta(hours=1),
+            inscription_end=utc_now() + timedelta(days=1),
         )
         db_session.add(gara)
         db_session.commit()

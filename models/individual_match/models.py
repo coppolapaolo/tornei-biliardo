@@ -13,7 +13,7 @@ from enum import Enum
 
 from sqlalchemy import func
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 from ..status_enum import Discipline, MatchStatus
 from ..match.base_match import BaseMatchMixin
 
@@ -156,7 +156,7 @@ class MatchProposal(BaseModel, TimestampMixin):
 
     def is_expired(self) -> bool:
         """Check if proposal has expired."""
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
     def can_be_accepted_by(self, user_id: int) -> bool:
         """Check if user can accept this proposal."""
@@ -190,7 +190,7 @@ class MatchProposal(BaseModel, TimestampMixin):
 
         self.status = ProposalStatus.ACCEPTED
         self.accepted_by_id = user_id
-        self.accepted_at = datetime.utcnow()
+        self.accepted_at = utc_now()
 
         # Create the individual match
         individual_match = IndividualMatch(
@@ -309,7 +309,7 @@ class ProposalInvitation(BaseModel, TimestampMixin):
             raise ValueError("Invitation cannot be accepted")
 
         self.status = InvitationStatus.ACCEPTED
-        self.responded_at = datetime.utcnow()
+        self.responded_at = utc_now()
 
         return self.proposal.accept(self.invited_user_id)
 
@@ -319,7 +319,7 @@ class ProposalInvitation(BaseModel, TimestampMixin):
             raise ValueError("Invitation cannot be rejected")
 
         self.status = InvitationStatus.REJECTED
-        self.responded_at = datetime.utcnow()
+        self.responded_at = utc_now()
 
     def __repr__(self) -> str:
         return (
@@ -592,7 +592,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
         self.status = MatchStatus.VALIDATED
 
         if hasattr(self, "ended_at"):
-            self.ended_at = datetime.utcnow()
+            self.ended_at = utc_now()
 
     @property
     def location_display(self) -> str:
@@ -617,7 +617,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             raise ValueError("Match cannot be started")
 
         self.status = MatchStatus.IN_PROGRESS
-        self.started_at = datetime.utcnow()
+        self.started_at = utc_now()
 
         # For multi-set matches, create the first set
         if self.is_multi_set:
@@ -687,7 +687,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             raise ValueError("Match is not in progress")
 
         self.status = MatchStatus.COMPLETED
-        self.ended_at = datetime.utcnow()
+        self.ended_at = utc_now()
         self.winner_id = winner_id
 
     def cancel_match(self, reason: Optional[str] = None) -> None:
@@ -736,7 +736,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
 
         # Complete the match
         self.status = MatchStatus.COMPLETED
-        self.ended_at = datetime.utcnow()
+        self.ended_at = utc_now()
 
     def get_opponent(self, user_id: int) -> Optional["User"]:
         """Get the opponent for a given user."""
@@ -781,7 +781,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
         if last_rack:
             last_rack.is_deleted = True
             last_rack.removed_by_id = user_id
-            last_rack.removed_at = datetime.utcnow()
+            last_rack.removed_at = utc_now()
 
             # Update scores
             if last_rack.winner_id == self.player1_id:
@@ -829,7 +829,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             distance=self.distance,
             is_race_to=self.is_race_to,
             status="playing",
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
         )
         # Append to collection to update relationship and cascade persist
         self.sets.append(new_set)  # type: ignore[union-attr]
@@ -863,7 +863,7 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
             distance=self.distance,
             is_race_to=self.is_race_to,
             status="playing",
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
         )
         # Append to collection to update relationship and cascade persist
         self.sets.append(new_set)  # type: ignore[union-attr]
@@ -970,7 +970,7 @@ class IndividualSet(BaseModel, TimestampMixin):
             raise ValueError("Set can only be started from pending status")
 
         self.status = "playing"
-        self.started_at = datetime.utcnow()
+        self.started_at = utc_now()
 
     def add_rack_result(
         self,
@@ -1037,7 +1037,7 @@ class IndividualSet(BaseModel, TimestampMixin):
     def _complete_set(self, winner_id: int) -> None:
         """Complete the set with a winner."""
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         self.winner_id = winner_id
 
         # Update match set scores
@@ -1075,7 +1075,7 @@ class IndividualSet(BaseModel, TimestampMixin):
         # Soft delete the rack
         last_rack.is_deleted = True
         last_rack.removed_by_id = user_id
-        last_rack.removed_at = datetime.utcnow()
+        last_rack.removed_at = utc_now()
 
         # Update set scores
         if last_rack.winner_id == self.match.player1_id:
@@ -1145,7 +1145,7 @@ class IndividualRack(BaseModel, TimestampMixin):
 
     # Log delle operazioni per tracciare chi ha aggiunto/rimosso rack
     added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    added_at = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)
+    added_at = db.Column(db.DateTime, nullable=True, default=utc_now)
     removed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     removed_at = db.Column(db.DateTime, nullable=True)
     is_deleted = db.Column(

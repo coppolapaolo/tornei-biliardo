@@ -35,6 +35,7 @@ from models.individual_match.services import (
 )
 from models.rating.services import RatingService, CategoryService, HandicapService
 from models.classification.services import ClassificationService
+from models.base import utc_now
 
 
 @pytest.fixture
@@ -420,8 +421,8 @@ class TestExtendedDomainIntegration:
             proposer_id=proposer.id,
             proposal_type=ProposalType.DIRECT,
             location="Test Location",
-            scheduled_at=datetime.utcnow() + timedelta(hours=2),
-            expires_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=2),
+            expires_at=utc_now() + timedelta(hours=1),
             discipline="palla_8",
             distance=5,
             invited_user_ids=[accepter.id],

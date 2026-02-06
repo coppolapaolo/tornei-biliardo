@@ -17,6 +17,7 @@ from models.optimization.query_optimizer import (
     optimized_query,
     bulk_load_relationships,
 )
+from models.base import utc_now
 
 
 class TestQueryMetrics:
@@ -114,7 +115,7 @@ class TestN1Problem:
 
     def test_n1_problem_initialization(self):
         """Test N1Problem initialization."""
-        detection_time = datetime.utcnow()
+        detection_time = utc_now()
         affected_tables = {"users", "orders"}
 
         problem = N1Problem(
@@ -141,7 +142,7 @@ class TestN1Problem:
         problem = N1Problem(
             parent_query="SELECT * FROM users",
             child_queries=["query1", "query2", "query3"],
-            detection_time=datetime.utcnow(),
+            detection_time=utc_now(),
             severity="high",
             suggested_solution="Use join",
             affected_tables=set(),
@@ -266,7 +267,7 @@ class TestQueryAnalyzer:
         # Use real datetime instead of mocking to avoid recursion
         from datetime import datetime
 
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Setup analyzer with mocked methods
         analyzer._queries_are_similar = Mock(return_value=True)
@@ -504,7 +505,7 @@ class TestQueryOptimizer:
         mock_n1_problem = N1Problem(
             parent_query="SELECT * FROM users",
             child_queries=["SELECT * FROM orders WHERE user_id = 1"] * 10,
-            detection_time=datetime.utcnow(),
+            detection_time=utc_now(),
             severity="high",
             suggested_solution="Use eager loading",
             affected_tables=set(),

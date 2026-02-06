@@ -14,6 +14,7 @@ from models.competition.services import (
 )
 from models.competition.state_service import StateService
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -62,8 +63,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.utcnow()
-            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            gara.inscription_start = utc_now()
+            gara.inscription_end = utc_now() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status
@@ -303,8 +304,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before starting tournament
-            gara.inscription_start = datetime.utcnow()
-            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            gara.inscription_start = utc_now()
+            gara.inscription_end = utc_now() + timedelta(hours=24)
             db.session.commit()
 
             # Start tournament but don't complete any matches
@@ -369,8 +370,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.utcnow()
-            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            gara.inscription_start = utc_now()
+            gara.inscription_end = utc_now() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status
@@ -478,8 +479,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.utcnow()
-            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            gara.inscription_start = utc_now()
+            gara.inscription_end = utc_now() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status
@@ -590,8 +591,8 @@ class TestClassificationDisplay:
             )
 
             # Set inscription dates before moving to inscription status
-            gara.inscription_start = datetime.utcnow()
-            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            gara.inscription_start = utc_now()
+            gara.inscription_end = utc_now() + timedelta(hours=24)
             db.session.commit()
 
             # Move to inscription status
@@ -702,8 +703,8 @@ class TestClassificationDisplay:
                 rounds_count=2,
             )
 
-            gara.inscription_start = datetime.utcnow()
-            gara.inscription_end = datetime.utcnow() + timedelta(hours=24)
+            gara.inscription_start = utc_now()
+            gara.inscription_end = utc_now() + timedelta(hours=24)
             db.session.commit()
 
             StateService.to_inscription(gara)

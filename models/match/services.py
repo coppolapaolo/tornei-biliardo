@@ -17,7 +17,7 @@ from datetime import datetime
 if TYPE_CHECKING:
     from models.orchestration.service import OperationResult
 
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from .models import Match, Rack, TrioMatch
 from models.transaction.manager import transactional
@@ -584,7 +584,7 @@ class MatchService:
             distance=set_distance,
             is_race_to=gara.is_race_to if gara else True,
             status="playing",
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
         )
         db.session.add(new_set)
 

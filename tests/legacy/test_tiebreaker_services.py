@@ -11,6 +11,7 @@ from models.tiebreaker.models import (
     TiebreakerStatus,
     SpotShotResult,
 )
+from models.base import utc_now
 
 
 class TestTiebreakerService:
@@ -307,7 +308,7 @@ class TestTiebreakerService:
                     mock_rally_attempt_class.return_value = mock_rally_attempt
 
                     with patch("models.tiebreaker.services.datetime") as mock_datetime:
-                        mock_datetime.utcnow.return_value = datetime(
+                        mock_utc_now.return_value = datetime(
                             2023, 1, 1, 12, 0, 0
                         )
 

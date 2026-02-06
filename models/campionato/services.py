@@ -14,7 +14,7 @@ from models.match.models import Match
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import TournamentStatus, GaraStatus
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Campionato
@@ -218,7 +218,7 @@ class TournamentService(DomainService):
             if hasattr(campionato, field):
                 setattr(campionato, field, value)
 
-        campionato.updated_at = datetime.utcnow()
+        campionato.updated_at = utc_now()
         return campionato
 
     @transactional(domain="campionato")
@@ -234,7 +234,7 @@ class TournamentService(DomainService):
             raise ValueError("Campionato not found")
 
         campionato.is_active = not campionato.is_active
-        campionato.updated_at = datetime.utcnow()
+        campionato.updated_at = utc_now()
         return campionato
 
     @transactional(domain="campionato")
@@ -451,7 +451,7 @@ class TournamentService(DomainService):
         # Soft delete all garas in the campionato
         for gara in campionato.gare:
             if not gara.is_deleted:
-                gara.deleted_at = datetime.utcnow()
+                gara.deleted_at = utc_now()
                 gara.deleted_reason = reason or ""
                 db.session.add(gara)
 

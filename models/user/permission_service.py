@@ -7,7 +7,7 @@ following Task 1.3 decomposition patterns.
 
 from typing import Optional, List, Dict
 from datetime import datetime
-from models.base import db
+from models.base import db, utc_now
 from models.user.models import User, DirectorRequest
 from models.user.role_enum import UserRole
 from models.status_enum import DirectorRequestStatus
@@ -144,7 +144,7 @@ class UserPermissionService:
         if approve:
             director_request.status = DirectorRequestStatus.APPROVED.value
             director_request.processed_by_id = admin_user.id
-            director_request.processed_at = datetime.utcnow()
+            director_request.processed_at = utc_now()
             director_request.notes = notes
 
             # Automatically promote user to director role upon approval
@@ -154,7 +154,7 @@ class UserPermissionService:
         else:
             director_request.status = DirectorRequestStatus.REJECTED.value
             director_request.processed_by_id = admin_user.id
-            director_request.processed_at = datetime.utcnow()
+            director_request.processed_at = utc_now()
             director_request.notes = notes
 
         # Emit event for notification system

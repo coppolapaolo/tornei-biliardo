@@ -6,7 +6,7 @@ from flask_login import current_user
 from flask_babel import gettext as _
 
 from utils import admin_required
-from models.base import db
+from models.base import db, utc_now
 from models.gamification.level_service import LevelService
 from models.gamification.models import (
     UserLevel, Achievement, UserAchievement, StreakTracker,
@@ -115,7 +115,7 @@ def admin_create_quest():
                 flash(_("Il nome della quest è obbligatorio"), "error")
                 return redirect(url_for("gamification.admin_create_quest"))
 
-            start_date = datetime.fromisoformat(start_date_str) if start_date_str else datetime.utcnow()
+            start_date = datetime.fromisoformat(start_date_str) if start_date_str else utc_now()
 
             if end_date_str:
                 end_date = datetime.fromisoformat(end_date_str)
@@ -127,7 +127,7 @@ def admin_create_quest():
                     end_date = start_date + timedelta(days=30)
 
             # Determine initial status
-            now = datetime.utcnow()
+            now = utc_now()
             if start_date <= now < end_date:
                 status = QuestStatus.ACTIVE
             elif start_date > now:

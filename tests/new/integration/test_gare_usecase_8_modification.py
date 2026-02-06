@@ -20,6 +20,7 @@ from models.competition.inscription_service import InscriptionService
 from models.competition.round_manager import AdvancedRoundManager, RoundLockStatus
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -82,8 +83,8 @@ class TestUseCaseMatchReset:
         )
 
         # Open inscriptions and inscribe players
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:
@@ -306,8 +307,8 @@ class TestUseCaseRoundLocking:
         )
 
         # Open inscriptions and inscribe players
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:
@@ -500,8 +501,8 @@ class TestUseCaseRoundCancellation:
         )
 
         # Setup inscriptions
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:

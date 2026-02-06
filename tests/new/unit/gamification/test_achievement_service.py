@@ -21,6 +21,7 @@ from models.gamification.models import (
     AchievementDifficulty,
     UserLevel,
 )
+from models.base import utc_now
 
 
 class TestAchievementUnlock:
@@ -167,7 +168,7 @@ class TestAchievementUnlock:
             achievement_id=achievement.id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=datetime.utcnow()
+            unlocked_at=utc_now()
         )
         db_session.add(user_achievement)
         db_session.flush()
@@ -225,7 +226,7 @@ class TestAchievementProgress:
             achievement_id=achievement1.id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=datetime.utcnow()
+            unlocked_at=utc_now()
         )
         db_session.add(user_achievement1)
 
@@ -295,7 +296,7 @@ class TestAchievementProgress:
             achievement_id=achievement1.id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=datetime.utcnow()
+            unlocked_at=utc_now()
         )
         db_session.add(user_achievement1)
         db_session.flush()
@@ -344,14 +345,14 @@ class TestAchievementStats:
             achievement_id=achievements[0].id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=datetime.utcnow()
+            unlocked_at=utc_now()
         )
         user_achievement2 = UserAchievement(
             user_id=player.id,
             achievement_id=achievements[2].id,
             current_progress=0,
             is_unlocked=True,
-            unlocked_at=datetime.utcnow()
+            unlocked_at=utc_now()
         )
         db_session.add_all([user_achievement1, user_achievement2])
         db_session.flush()

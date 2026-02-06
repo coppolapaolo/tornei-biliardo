@@ -15,7 +15,7 @@ from typing import List, Optional
 import logging
 from datetime import datetime
 
-from models.base import db
+from models.base import db, utc_now
 from models.user.models import User
 from models.gamification.feature_models import FeatureConfig, UserFeatureUsage
 from models.gamification.unlock_engine import UnlockEngine
@@ -84,6 +84,6 @@ class NudgeService:
             db.session.add(usage)
         
         usage.usage_count += 1
-        usage.last_used_at = datetime.utcnow()
+        usage.last_used_at = utc_now()
         # db.session.commit() should be handled by caller/request lifecycle
         logger.debug(f"User {user_id} used feature {feature_code}")

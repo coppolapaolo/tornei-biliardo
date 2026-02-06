@@ -10,6 +10,7 @@ from models.playoff.models import (
     PlayoffType,
     QualificationStatus,
 )
+from models.base import utc_now
 
 
 class TestPlayoffService:
@@ -189,7 +190,7 @@ class TestPlayoffService:
 
             with patch("models.playoff.services.db") as mock_db:
                 with patch("models.playoff.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(2023, 1, 1, 12, 0, 0)
+                    mock_utc_now.return_value = datetime(2023, 1, 1, 12, 0, 0)
 
                     result = PlayoffService.notify_qualified_players(configuration_id=1)
 
@@ -456,7 +457,7 @@ class TestPlayoffService:
                 ) as mock_notify:
                     with patch("models.playoff.services.db") as mock_db:
                         with patch("models.playoff.services.datetime") as mock_datetime:
-                            mock_datetime.utcnow.return_value = datetime(
+                            mock_utc_now.return_value = datetime(
                                 2023, 1, 1, 12, 0, 0
                             )
 

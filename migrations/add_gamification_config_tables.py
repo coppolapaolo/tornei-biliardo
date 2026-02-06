@@ -19,6 +19,7 @@ Seeds initial data from xp_config.py hardcoded values for backward compatibility
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+from models.base import utc_now
 
 
 # Default values from xp_config.py for initial seeding
@@ -191,7 +192,7 @@ def upgrade_sqlite(db_path: str = "instance/billiard_campionato.db") -> None:
 
 def seed_initial_data(cursor: sqlite3.Cursor) -> None:
     """Seed initial configuration data from xp_config.py defaults."""
-    now = datetime.utcnow().isoformat()
+    now = utc_now().isoformat()
 
     # Seed XP rates
     print("      Seeding XP rates...")

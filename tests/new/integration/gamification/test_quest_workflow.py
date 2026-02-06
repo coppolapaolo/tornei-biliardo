@@ -27,6 +27,7 @@ from models.gamification.models import (
     XPTransactionType,
 )
 from models.events.base import EventBus
+from models.base import utc_now
 
 
 class TestQuestLifecycleWorkflow:
@@ -42,7 +43,7 @@ class TestQuestLifecycleWorkflow:
         player2 = isolated_players[1]
 
         # Create active quest
-        now = datetime.utcnow()
+        now = utc_now()
         quest = QuestService.create_quest(
             name="Weekly Warrior",
             description="Play 5 matches this week",
@@ -111,7 +112,7 @@ class TestQuestLifecycleWorkflow:
         WHEN update_quest_statuses is called
         THEN quests transition to correct states
         """
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create upcoming quest (starts in future)
         upcoming_quest = QuestService.create_quest(
@@ -191,7 +192,7 @@ class TestAutoJoinQuestWorkflow:
             events_published.append(event)
             return original_publish(event)
 
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create active quest
         quest = QuestService.create_quest(
@@ -258,7 +259,7 @@ class TestAutoJoinQuestWorkflow:
         THEN only matching quests are affected
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create quest for matches_played
         matches_quest = QuestService.create_quest(
@@ -320,7 +321,7 @@ class TestQuestXPIntegration:
         THEN correct XP amounts are awarded
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create weekly quest
         weekly_quest = QuestService.create_quest(
@@ -384,7 +385,7 @@ class TestQuestStatisticsAndLeaderboard:
         """
         player1 = isolated_players[0]
         player2 = isolated_players[1]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create quest
         quest = QuestService.create_quest(
@@ -428,7 +429,7 @@ class TestQuestStatisticsAndLeaderboard:
         THEN accurate statistics are returned
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create and complete weekly quest
         weekly = QuestService.create_quest(
@@ -480,7 +481,7 @@ class TestQuestQueryMethods:
         THEN returns correct quest info with progress
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create active quest
         quest = QuestService.create_quest(
@@ -521,7 +522,7 @@ class TestQuestQueryMethods:
         WHEN get_active_quests is called
         THEN only active quests are returned
         """
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create active quest
         active_quest = QuestService.create_quest(
@@ -563,7 +564,7 @@ class TestQuestSpecialEventWorkflow:
         """
         player1 = isolated_players[0]
         player2 = isolated_players[1]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create special event quest (e.g., tournament weekend)
         event_quest = QuestService.create_quest(
@@ -621,7 +622,7 @@ class TestQuestEdgeCases:
         THEN raises ValueError
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Create upcoming quest
         upcoming = QuestService.create_quest(
@@ -643,7 +644,7 @@ class TestQuestEdgeCases:
         THEN returns existing participation
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         quest = QuestService.create_quest(
             name="Test Quest",
@@ -672,7 +673,7 @@ class TestQuestEdgeCases:
         THEN progress update is ignored
         """
         player = isolated_players[0]
-        now = datetime.utcnow()
+        now = utc_now()
 
         quest = QuestService.create_quest(
             name="Complete Quest",

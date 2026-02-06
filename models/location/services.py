@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import BilliardHall, UserLocationAvailability, DayOfWeek
 
@@ -325,7 +325,7 @@ class LocationService:
                 billiard_hall_id=hall.id,
                 is_available=True,
                 matches_played_here=1,
-                last_played_at=datetime.utcnow(),
+                last_played_at=utc_now(),
             )
             db.session.add(availability)
 

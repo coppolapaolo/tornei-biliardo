@@ -12,7 +12,7 @@ from typing import Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -48,7 +48,7 @@ class PlayerCategory(BaseModel, TimestampMixin):
 
     # Assignment details
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    assigned_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    assigned_at = db.Column(db.DateTime, nullable=False, default=utc_now)
     reason = db.Column(db.String(255), nullable=True)
 
     # Validity
@@ -68,7 +68,7 @@ class PlayerCategory(BaseModel, TimestampMixin):
         return (
             cls.query.filter_by(user_id=user_id, is_active=True)
             .filter(
-                db.or_(cls.expires_at.is_(None), cls.expires_at > datetime.utcnow())  # type: ignore[attr-defined]
+                db.or_(cls.expires_at.is_(None), cls.expires_at > utc_now())  # type: ignore[attr-defined]
             )
             .first()
         )
@@ -76,7 +76,7 @@ class PlayerCategory(BaseModel, TimestampMixin):
     def expire_category(self) -> None:
         """Mark category as expired."""
         self.is_active = False
-        self.expires_at = datetime.utcnow()
+        self.expires_at = utc_now()
 
     def __repr__(self) -> str:
         return f"<PlayerCategory {self.user_id}: {self.category.value}>"
@@ -97,7 +97,7 @@ class PlayerRating(BaseModel, TimestampMixin):
     # Rating details
     confidence = db.Column(db.Float, nullable=True)  # Confidence level (0.0-1.0)
     games_played = db.Column(db.Integer, nullable=False, default=0)
-    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     # External rating details
     external_id = db.Column(db.String(50), nullable=True)  # ID in external system
@@ -124,7 +124,7 @@ class PlayerRating(BaseModel, TimestampMixin):
         """Update rating value and statistics."""
         self.rating_value = new_rating
         self.games_played += games_increment
-        self.last_updated = datetime.utcnow()
+        self.last_updated = utc_now()
 
     def get_category_equivalent(self) -> CategoryLevel:
         """Convert rating to category equivalent."""

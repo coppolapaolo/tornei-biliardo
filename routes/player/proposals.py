@@ -14,6 +14,7 @@ from models.transaction.manager import transactional
 from utils import player_only, player_required
 
 from . import player_bp
+from models.base import utc_now
 
 
 # ============ HELPER FUNCTIONS ============
@@ -193,14 +194,14 @@ def accept_match_proposal(proposal_id):
         else:
             # Change status to accepted (works for pending or rejected)
             invitation.status = InvitationStatus.ACCEPTED
-            invitation.responded_at = datetime.utcnow()
+            invitation.responded_at = utc_now()
 
             # Update proposal status
             proposal = invitation.proposal
             if proposal.status != ProposalStatus.ACCEPTED:
                 proposal.status = ProposalStatus.ACCEPTED
                 proposal.accepted_by_id = current_user.id
-                proposal.accepted_at = datetime.utcnow()
+                proposal.accepted_at = utc_now()
 
                 individual_match = IndividualMatch(
                     proposal_id=proposal.id,
@@ -259,7 +260,7 @@ def reject_match_proposal(proposal_id):
         else:
             # Change status to rejected (works for pending or accepted)
             invitation.status = InvitationStatus.REJECTED
-            invitation.responded_at = datetime.utcnow()
+            invitation.responded_at = utc_now()
 
             # If this was an accepted invitation being rejected,
             # we might need to update the proposal status back to pending

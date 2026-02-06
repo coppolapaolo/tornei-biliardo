@@ -13,6 +13,7 @@ from typing import Any, Callable, Dict, List, Type, TypeVar, Optional
 from datetime import datetime
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
+from models.base import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class DomainEvent(ABC):
     def __post_init__(self):
         """Initialize base event fields."""
         # Initialize base fields
-        timestamp = datetime.utcnow()
+        timestamp = utc_now()
         self.event_id = f"evt_{timestamp.strftime('%Y%m%d_%H%M%S_%f')}"
         self.occurred_at = timestamp
         self.metadata = {}

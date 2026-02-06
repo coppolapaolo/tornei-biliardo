@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from ..base import db
+from ..base import db, utc_now
 from .models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -129,7 +129,7 @@ class PlayoffService:
         # For now, just mark as notified
         count = 0
         for qualification in qualifications:
-            qualification.notified_at = datetime.utcnow()
+            qualification.notified_at = utc_now()
             count += 1
 
         return count
@@ -217,7 +217,7 @@ class PlayoffService:
         expired_count = 0
 
         configurations = PlayoffConfiguration.query.filter(
-            PlayoffConfiguration.response_deadline <= datetime.utcnow(),
+            PlayoffConfiguration.response_deadline <= utc_now(),
             PlayoffConfiguration.is_active.is_(True),
         ).all()
 

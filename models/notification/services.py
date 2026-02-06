@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
     Notification,
@@ -298,7 +298,7 @@ class NotificationService:
     def expire_old_notifications() -> int:
         """Expire old notifications that have passed their expiry time."""
         expired_notifications = Notification.query.filter(
-            Notification.expires_at <= datetime.utcnow(),
+            Notification.expires_at <= utc_now(),
             Notification.status.in_(  # type: ignore[attr-defined]
                 [NotificationStatus.PENDING, NotificationStatus.SENT]
             ),
@@ -315,7 +315,7 @@ class NotificationService:
     @transactional(domain="notification")
     def cleanup_old_notifications(days_old: int = 30) -> int:
         """Delete old notifications to keep database clean."""
-        cutoff_date = datetime.utcnow() - timedelta(days=days_old)
+        cutoff_date = utc_now() - timedelta(days=days_old)
 
         old_notifications = Notification.query.filter(
             Notification.created_at <= cutoff_date,
@@ -366,7 +366,7 @@ class NotificationService:
             if not preference.auto_delete_days:
                 continue
 
-            cutoff_date = datetime.utcnow() - timedelta(days=preference.auto_delete_days)
+            cutoff_date = utc_now() - timedelta(days=preference.auto_delete_days)
 
             # Delete old notifications of this type for this user
             old_notifications = Notification.query.filter(

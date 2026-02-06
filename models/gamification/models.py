@@ -17,7 +17,7 @@ from enum import Enum
 from datetime import datetime, date
 from typing import Optional, Dict, Any
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 
 # ========================================
@@ -349,7 +349,7 @@ class LeaderboardEntry(db.Model, TimestampMixin):
     period_end = db.Column(db.Date, nullable=True)
 
     # Cache Metadata
-    calculated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    calculated_at = db.Column(db.DateTime, nullable=False, default=utc_now)
     is_stale = db.Column(db.Boolean, nullable=False, default=False)
 
     # Relationships

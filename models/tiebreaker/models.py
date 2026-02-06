@@ -22,7 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, Mapped
 
-from ..base import db
+from ..base import db, utc_now
 
 if TYPE_CHECKING:
     from ..match.models import Match
@@ -89,7 +89,7 @@ class Tiebreaker(db.Model):
     winner_id = Column(Integer, ForeignKey("user.id"), nullable=True)
 
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
 
@@ -124,7 +124,7 @@ class Tiebreaker(db.Model):
             raise ValueError("Tiebreaker must be pending to start")
 
         self.status = TiebreakerStatus.IN_PROGRESS.value
-        self.started_at = datetime.utcnow()
+        self.started_at = utc_now()
 
     def complete(self, winner_id: int) -> None:
         """Complete the tiebreaker with a winner."""
@@ -136,7 +136,7 @@ class Tiebreaker(db.Model):
 
         self.status = TiebreakerStatus.COMPLETED.value
         self.winner_id = winner_id
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
     def cancel(self, reason: Optional[str] = None) -> None:
         """Cancel the tiebreaker."""
@@ -239,7 +239,7 @@ class SpotShot(db.Model):
     result = Column(String(10), nullable=False)  # SpotShotResult enum
 
     # Timing
-    attempted_at = Column(DateTime, default=datetime.utcnow)
+    attempted_at = Column(DateTime, default=utc_now)
 
     # Notes
     notes = Column(Text, nullable=True)
@@ -276,7 +276,7 @@ class RallyAttempt(db.Model):
     ended_rally = Column(Boolean, default=False)  # Did this attempt end the rally?
 
     # Timing
-    started_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, default=utc_now)
     completed_at = Column(DateTime, nullable=True)
 
     # Notes
@@ -323,7 +323,7 @@ class PlayoffMatch(db.Model):
     status = Column(String(20), default="pending")
 
     # Timing
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
 
@@ -344,7 +344,7 @@ class PlayoffMatch(db.Model):
             raise ValueError("Match must be pending to start")
 
         self.status = "in_progress"
-        self.started_at = datetime.utcnow()
+        self.started_at = utc_now()
 
     def complete_match(self, winner_id: int, p1_score: int, p2_score: int) -> None:
         """Complete the playoff match."""
@@ -358,7 +358,7 @@ class PlayoffMatch(db.Model):
         self.player1_score = p1_score
         self.player2_score = p2_score
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
 
 class TiebreakerConfiguration(db.Model):
@@ -387,8 +387,8 @@ class TiebreakerConfiguration(db.Model):
     is_default = Column(Boolean, default=False)
 
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<TiebreakerConfiguration {self.name}>"

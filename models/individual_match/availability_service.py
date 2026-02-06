@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 
-from models.base import db, transactional
+from models.base import db, transactional, utc_now
 from models.individual_match.models import (
     PlayerAvailability,
     MatchProposal,
@@ -45,7 +45,7 @@ class AvailabilityService:
                 json.dumps(preferred_days) if preferred_days else None
             )
             existing.preferred_times = preferred_times
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = utc_now()
         else:
             existing = PlayerAvailability(
                 user_id=user_id,
@@ -95,7 +95,7 @@ class AvailabilityService:
             )
             existing.preferred_time_start = preferred_time_start
             existing.preferred_time_end = preferred_time_end
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = utc_now()
         else:
             existing = UserLocationAvailability(
                 user_id=user_id,
@@ -335,7 +335,7 @@ class AvailabilityService:
 
         # Use a future datetime if none provided
         if proposed_datetime is None:
-            proposed_datetime = datetime.now() + timedelta(days=1)
+            proposed_datetime = utc_now() + timedelta(days=1)
 
         # Create direct match proposal to target user
         proposal = IndividualMatchService.create_direct_proposal(

@@ -13,7 +13,17 @@ from sqlalchemy import inspect as sa_inspect
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def utc_now() -> datetime:
+    """Return current UTC time as a naive datetime (no tzinfo).
+
+    Uses the non-deprecated datetime.now(timezone.utc) API internally,
+    but strips tzinfo for compatibility with SQLite and existing naive
+    datetime columns. Drop-in replacement for utc_now().
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 # Initialize SQLAlchemy instance FIRST (before importing transactional)
 # This is required because transaction/manager.py imports db
@@ -111,9 +121,9 @@ class TimestampMixin:
     Use this only when you actually need timestamp tracking.
     """
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        db.DateTime, default=utc_now, onupdate=utc_now, nullable=False
     )
 
 
@@ -129,7 +139,7 @@ class SoftDeleteMixin:
 
     def soft_delete(self) -> None:
         """Mark the record as soft deleted"""
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = utc_now()
 
     @property
     def is_deleted(self) -> bool:
@@ -227,9 +237,9 @@ class BaseModel(db.Model):
     __abstract__ = True
 
     # Include both timestamp and utility functionality
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        db.DateTime, default=utc_now, onupdate=utc_now, nullable=False
     )
 
     @transactional(domain="base")

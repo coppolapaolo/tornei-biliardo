@@ -15,7 +15,7 @@ from datetime import datetime
 import json
 import logging
 
-from models.base import db
+from models.base import db, utc_now
 from models.transaction.manager import transactional
 from models.gamification.models import (
     Achievement,
@@ -144,7 +144,7 @@ class AchievementService:
         
         # Award achievement!
         user_achievement.is_unlocked = True
-        user_achievement.unlocked_at = datetime.utcnow()
+        user_achievement.unlocked_at = utc_now()
         
         # Award XP bonus
         if achievement.xp_reward > 0:

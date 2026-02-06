@@ -34,6 +34,7 @@ from models.user.permission_service import UserPermissionService
 from utils import player_only
 
 from . import player_bp
+from models.base import utc_now
 
 
 # ============ PROFILO UTENTE E GESTIONE ACCOUNT ============
@@ -739,7 +740,7 @@ def _get_export_dir() -> Path:
 
 def _cleanup_old_exports(export_dir: Path) -> None:
     """Remove export files older than GDPR_EXPORT_MAX_AGE_HOURS."""
-    cutoff = datetime.utcnow() - timedelta(hours=GDPR_EXPORT_MAX_AGE_HOURS)
+    cutoff = utc_now() - timedelta(hours=GDPR_EXPORT_MAX_AGE_HOURS)
     for file in export_dir.glob("*.zip"):
         try:
             # Extract timestamp from filename: {user_id}_{timestamp}.zip
@@ -955,7 +956,7 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
     ]
 
     return {
-        "export_date": serialize_date(datetime.utcnow()),
+        "export_date": serialize_date(utc_now()),
         "export_version": "1.0",
         "account": account_data,
         "privacy_settings": privacy_data,
@@ -994,7 +995,7 @@ def _generate_gdpr_export(
             _cleanup_old_exports(export_dir)
 
             # Generate filename
-            timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            timestamp = utc_now().strftime("%Y%m%d_%H%M%S")
             filename = f"{user_id}_{timestamp}.zip"
             filepath = export_dir / filename
 
@@ -1063,7 +1064,7 @@ def request_gdpr_export():
     for file in export_dir.glob(f"{user.id}_*.zip"):
         # If export created in last 5 minutes, don't allow another
         mtime = datetime.fromtimestamp(file.stat().st_mtime)
-        if datetime.utcnow() - mtime < timedelta(minutes=5):
+        if utc_now() - mtime < timedelta(minutes=5):
             flash(
                 _("Un export è già in corso o è stato generato di recente. Controlla le notifiche."),
                 "warning",
@@ -1120,7 +1121,7 @@ def download_gdpr_export(filename: str):
 
     # Check if file is expired
     mtime = datetime.fromtimestamp(filepath.stat().st_mtime)
-    if datetime.utcnow() - mtime > timedelta(hours=GDPR_EXPORT_MAX_AGE_HOURS):
+    if utc_now() - mtime > timedelta(hours=GDPR_EXPORT_MAX_AGE_HOURS):
         filepath.unlink()  # Delete expired file
         flash(_("Il file di export è scaduto. Richiedi un nuovo export."), "warning")
         return redirect(url_for("player.privacy_settings"))

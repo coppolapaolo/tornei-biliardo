@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, date, time as time_obj
 
 from sqlalchemy import func
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
     MatchProposal,
@@ -228,7 +228,7 @@ class ProposalService:
                 proposed_time_obj = proposed_time
             scheduled_at = datetime.combine(proposed_date, proposed_time_obj)
         else:
-            scheduled_at = kwargs.get("scheduled_at", datetime.now())
+            scheduled_at = kwargs.get("scheduled_at", utc_now())
 
         if not location:
             location = "TBD"
@@ -322,7 +322,7 @@ class ProposalService:
             active_filter = db.or_(
                 db.and_(
                     MatchProposal.status == ProposalStatus.PENDING,
-                    MatchProposal.expires_at > datetime.utcnow(),
+                    MatchProposal.expires_at > utc_now(),
                 ),
                 MatchProposal.status == ProposalStatus.ACCEPTED,
                 MatchProposal.status == ProposalStatus.CANCELLED,
@@ -353,7 +353,7 @@ class ProposalService:
                 MatchProposal.proposal_type == ProposalType.OPEN,
                 MatchProposal.proposer_id != user_id,
                 MatchProposal.status == ProposalStatus.PENDING,
-                MatchProposal.expires_at > datetime.utcnow(),
+                MatchProposal.expires_at > utc_now(),
             )
             .order_by(MatchProposal.created_at.desc())
             .all()
@@ -468,7 +468,7 @@ class ProposalService:
 
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,
-            MatchProposal.expires_at <= datetime.utcnow(),
+            MatchProposal.expires_at <= utc_now(),
         ).all()
 
         count = 0
@@ -503,7 +503,7 @@ class ProposalService:
         from ..notification.factory import NotificationFactory
         from ..notification.models import NotificationType, NotificationPriority
 
-        now = datetime.utcnow()
+        now = utc_now()
 
         expired_proposals = MatchProposal.query.filter(
             MatchProposal.status == ProposalStatus.PENDING,

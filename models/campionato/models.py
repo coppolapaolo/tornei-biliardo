@@ -7,7 +7,7 @@ Dependencies: models.base.db, models.user.models
 
 from datetime import datetime
 from typing import TYPE_CHECKING
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import TournamentStatus, GaraStatus, EntityType
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 
@@ -62,9 +62,9 @@ class Campionato(db.Model):
 
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.DateTime, default=utc_now, onupdate=utc_now
     )
 
     # Soft delete functionality
@@ -219,7 +219,7 @@ class Campionato(db.Model):
             return False
 
         self.is_deleted = True
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = utc_now()
         self.deleted_reason = reason or "Campionato deleted by administrator"
         self.is_active = False
 

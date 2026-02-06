@@ -9,11 +9,12 @@ Provides functionality to:
 
 from __future__ import annotations
 from typing import List, Optional, Set, TYPE_CHECKING
-from datetime import datetime
+
 
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.competition.models import Gara
 from models.status_enum import GaraStatus
+from models.base import utc_now
 
 if TYPE_CHECKING:
     from models.user.models import User
@@ -120,7 +121,7 @@ class GeoMatchingService:
         if not provinces:
             return []
 
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Query gare in inscription period
         query = Gara.query.join(

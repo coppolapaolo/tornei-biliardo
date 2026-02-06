@@ -7,7 +7,7 @@ between Match (tournament matches) and IndividualMatch (casual matches).
 
 import pytest
 from datetime import datetime
-from models.base import db
+from models.base import db, utc_now
 from models.match.base_match import BaseMatchMixin
 from models.status_enum import MatchStatus
 
@@ -184,12 +184,12 @@ def sample_match(db_session, sample_users):
     gara = Gara(
         number=1,
         name="Test Gara",
-        date=datetime.utcnow().date(),
+        date=utc_now().date(),
         discipline="palla_8",
         distance=5,
         is_race_to=True,
         status=GaraStatus.INSCRIPTION.value,
-        time=datetime.utcnow().time(),
+        time=utc_now().time(),
     )
     db_session.add(gara)
     db_session.flush()
@@ -221,7 +221,7 @@ def sample_racks(db_session, sample_match):
             rack_number=i + 1,
             winner_id=sample_match.player1_id,
             added_by_id=sample_match.player1_id,
-            added_at=datetime.utcnow(),
+            added_at=utc_now(),
         )
         db_session.add(rack)
         racks.append(rack)

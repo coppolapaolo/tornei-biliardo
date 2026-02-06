@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
-from ..base import db, BaseModel
+from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
     from .models import User
@@ -107,7 +107,7 @@ class HiddenMatch(BaseModel):
         db.ForeignKey("match.id", ondelete="CASCADE"),
         nullable=False,
     )
-    hidden_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    hidden_at = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "match_id", name="uq_hidden_match_user_match"),
@@ -139,7 +139,7 @@ class HiddenInscription(BaseModel):
         db.ForeignKey("inscription.id", ondelete="CASCADE"),
         nullable=False,
     )
-    hidden_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    hidden_at = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     __table_args__ = (
         db.UniqueConstraint(
@@ -173,7 +173,7 @@ class HiddenCampionato(BaseModel):
         db.ForeignKey("campionato.id", ondelete="CASCADE"),
         nullable=False,
     )
-    hidden_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    hidden_at = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     __table_args__ = (
         db.UniqueConstraint(

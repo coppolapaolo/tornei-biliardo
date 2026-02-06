@@ -19,6 +19,7 @@ from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -139,8 +140,8 @@ class TestUseCaseRoundRobin:
         )
 
         # Open inscriptions and inscribe players
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:
@@ -198,8 +199,8 @@ class TestUseCaseRoundRobin:
         )
 
         # Setup
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:

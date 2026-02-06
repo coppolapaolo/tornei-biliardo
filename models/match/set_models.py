@@ -5,7 +5,7 @@ Set models for multi-set matches.
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-from models.base import db, BaseModel, TimestampMixin
+from models.base import db, BaseModel, TimestampMixin, utc_now
 
 
 class Set(BaseModel, TimestampMixin):
@@ -174,7 +174,7 @@ class Set(BaseModel, TimestampMixin):
             raise ValueError("Set can only be started from pending status")
 
         self.status = "playing"
-        self.started_at = datetime.utcnow()
+        self.started_at = utc_now()
 
     def add_rack_result(
         self,
@@ -257,7 +257,7 @@ class Set(BaseModel, TimestampMixin):
     def _complete_set(self, winner_id: int) -> None:
         """Complete the set with a winner."""
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         self.winner_id = winner_id
 
         # Notify match to check if it's completed

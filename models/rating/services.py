@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
     PlayerCategory,
@@ -173,7 +173,7 @@ class RatingService:
                         [
                             r
                             for r in ratings
-                            if (datetime.utcnow() - r.last_updated).days <= 30
+                            if (utc_now() - r.last_updated).days <= 30
                         ]
                     ),
                 }
@@ -236,7 +236,7 @@ class RatingService:
         return {
             "rating_leaderboards": leaderboards,
             "category_leaders": category_leaders,
-            "last_updated": datetime.utcnow(),
+            "last_updated": utc_now(),
         }
 
     @staticmethod

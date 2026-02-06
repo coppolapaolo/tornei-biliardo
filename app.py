@@ -72,7 +72,10 @@ def create_app(config_name=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(User, user_id)
+        user = db.session.get(User, user_id)
+        if user and user.is_deleted:
+            return None
+        return user
 
     # Context processor per debug info
     @app.context_processor

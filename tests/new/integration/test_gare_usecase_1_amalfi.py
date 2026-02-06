@@ -22,6 +22,7 @@ from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -145,8 +146,8 @@ class TestUseCaseAmalfiWorkflow:
         )
 
         # Open inscriptions
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(days=5)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(days=5)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Inscribe all 11 players
@@ -193,8 +194,8 @@ class TestUseCaseAmalfiWorkflow:
         )
 
         # Open inscriptions and inscribe players
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_8:
@@ -245,8 +246,8 @@ class TestUseCaseAmalfiWorkflow:
         )
 
         # Setup and start
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_8:
@@ -322,8 +323,8 @@ class TestUseCaseAmalfiWorkflow:
         )
 
         # Setup
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_8:
@@ -478,8 +479,8 @@ class TestUseCaseAmalfiChallenge:
         assert gara.matchmaking_strategy == "amalfi"
 
         # Setup inscriptions
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:

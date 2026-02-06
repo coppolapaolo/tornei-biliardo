@@ -27,6 +27,7 @@ from models.competition.services import (
 )
 from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
+from models.base import utc_now
 
 
 @pytest.mark.unit
@@ -68,8 +69,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -148,8 +149,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -240,8 +241,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates in the past
-        inscription_start = datetime.utcnow() - timedelta(hours=2)
-        inscription_end = datetime.utcnow() - timedelta(hours=1)  # Already closed
+        inscription_start = utc_now() - timedelta(hours=2)
+        inscription_end = utc_now() - timedelta(hours=1)  # Already closed
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -297,8 +298,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates in the future
-        inscription_start = datetime.utcnow() + timedelta(hours=1)  # Starts in 1 hour
-        inscription_end = datetime.utcnow() + timedelta(hours=3)
+        inscription_start = utc_now() + timedelta(hours=1)  # Starts in 1 hour
+        inscription_end = utc_now() + timedelta(hours=3)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -354,8 +355,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -403,7 +404,7 @@ class TestParticipantLimitsWaitlistTDD:
             number=1,
             name="Forfeit Policy Test",
             date=tomorrow,
-            time=datetime.utcnow().time(),
+            time=utc_now().time(),
             discipline="palla 9",
             distance=7,
             is_race_to=True,
@@ -414,8 +415,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -492,8 +493,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -566,8 +567,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
@@ -628,8 +629,8 @@ class TestParticipantLimitsWaitlistTDD:
         )
 
         # Set inscription dates and start inscriptions
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=2)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=2)
         GaraService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )

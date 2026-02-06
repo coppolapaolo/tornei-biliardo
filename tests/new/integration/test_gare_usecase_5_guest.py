@@ -20,6 +20,7 @@ from models.campionato.services import TournamentService
 from models.dashboard.services import DashboardService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -178,8 +179,8 @@ class TestUseCaseGuestViewResults:
         )
 
         # Setup inscriptions - keep window open during inscription
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:
@@ -347,8 +348,8 @@ class TestUseCaseGuestLiveScores:
         )
 
         # Setup inscriptions - keep window open during inscription
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         for player in players_6:

@@ -15,6 +15,7 @@ from models.competition.services import (
 from models.competition.models import Gara
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
+from models.base import utc_now
 
 
 class TestProvaStateMachineEnhanced:
@@ -428,7 +429,7 @@ class TestProvaServiceEnhanced:
     ):
         """Test modify_inscription_dates with future start date (reopen setup)."""
         mock_now = datetime(2024, 1, 1)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         mock_gara = Mock()
         mock_gara.can_modify_inscription_dates.return_value = True
@@ -453,7 +454,7 @@ class TestProvaServiceEnhanced:
     ):
         """Test modify_inscription_dates within current inscription period."""
         mock_now = datetime(2024, 1, 7)  # Between start and end
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         mock_gara = Mock()
         mock_gara.can_modify_inscription_dates.return_value = True

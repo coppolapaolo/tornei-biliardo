@@ -5,6 +5,3 @@ line-length = 88
 omit = [
     "models/legacy_models.py"
 ]
-
-[tool.pytest.ini_options]
-tdd_guard_project_root = "/Users/paolo/My Drive/Programming/Python/tornei-biliardo"

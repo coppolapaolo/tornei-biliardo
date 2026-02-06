@@ -7,7 +7,7 @@ Mantiene la stessa interfaccia esistente (Gara → Gara) senza sovraingegnerizza
 
 import pytest
 from datetime import datetime, date, timedelta
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
 from models.competition.models import Gara
@@ -44,8 +44,8 @@ class TestStateServiceTDD:
             distance=5,
             director_id=isolated_director_user.id,
             status=GaraStatus.SETUP.value,
-            inscription_start=datetime.utcnow() + timedelta(minutes=10),
-            inscription_end=datetime.utcnow() + timedelta(days=1),
+            inscription_start=utc_now() + timedelta(minutes=10),
+            inscription_end=utc_now() + timedelta(days=1),
         )
         db_session.add(gara)
         db_session.commit()

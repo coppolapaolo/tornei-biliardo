@@ -12,6 +12,7 @@ from models.individual_match.services import (
     IndividualMatchService,
 )
 from models.individual_match.models import ProposalType, ProposalStatus
+from models.base import utc_now
 
 
 class TestMatchProposalService:
@@ -58,7 +59,7 @@ class TestMatchProposalService:
     def test_expire_proposals(self, mock_proposal_class, mock_db, mock_datetime):
         """Test expiring old proposals."""
         mock_now = datetime(2024, 1, 20, 14, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         mock_proposal1 = Mock()
         mock_proposal2 = Mock()
@@ -259,7 +260,7 @@ class TestIndividualMatchService:
     def test_submit_rack_result_success(self, mock_rack_class, mock_db, mock_datetime):
         """Test successful rack result submission."""
         mock_now = datetime(2024, 1, 20, 15, 30)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         mock_match = Mock()
         mock_match.player1_id = 123
@@ -421,7 +422,7 @@ class TestIndividualMatchService:
             "models.individual_match.services.MatchProposal"
         ) as mock_proposal_class:
             with patch("models.individual_match.services.datetime") as mock_datetime:
-                mock_datetime.utcnow.return_value = datetime(2024, 1, 20)
+                mock_utc_now.return_value = datetime(2024, 1, 20)
 
                 mock_proposal = Mock()
 

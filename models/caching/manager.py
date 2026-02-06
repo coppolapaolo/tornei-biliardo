@@ -17,6 +17,7 @@ import json
 import logging
 from collections import OrderedDict
 from enum import Enum
+from models.base import utc_now
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -60,16 +61,16 @@ class CacheEntry:
         """Check if entry has expired."""
         if self.ttl_seconds is None:
             return False
-        return (datetime.utcnow() - self.created_at).total_seconds() > self.ttl_seconds
+        return (utc_now() - self.created_at).total_seconds() > self.ttl_seconds
 
     @property
     def age_seconds(self) -> float:
         """Get age of cache entry in seconds."""
-        return (datetime.utcnow() - self.created_at).total_seconds()
+        return (utc_now() - self.created_at).total_seconds()
 
     def access(self) -> None:
         """Record cache access."""
-        self.last_accessed = datetime.utcnow()
+        self.last_accessed = utc_now()
         self.access_count += 1
 
 
@@ -331,8 +332,8 @@ class HierarchicalCacheManager:
         entry = CacheEntry(
             key=key,
             value=value,
-            created_at=datetime.utcnow(),
-            last_accessed=datetime.utcnow(),
+            created_at=utc_now(),
+            last_accessed=utc_now(),
             ttl_seconds=ttl_seconds,
             tags=tags or [],
         )

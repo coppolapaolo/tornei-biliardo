@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from sqlalchemy import desc, asc
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 from ..transaction import transactional
 
 if TYPE_CHECKING:
@@ -127,7 +127,7 @@ class GaraChallengeAttempt(BaseModel, TimestampMixin):
     score = db.Column(db.Integer, nullable=True)  # Null if not completed
     passed = db.Column(db.Boolean, nullable=True)  # For pass/fail challenges
     completed = db.Column(db.Boolean, nullable=False, default=False)
-    attempted_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    attempted_at = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     # Optional: notes or details about the attempt
     notes = db.Column(db.Text, nullable=True)
@@ -157,7 +157,7 @@ class GaraChallengeAttempt(BaseModel, TimestampMixin):
     ) -> None:
         """Mark attempt as completed with score/result."""
         self.completed = True
-        self.attempted_at = datetime.utcnow()
+        self.attempted_at = utc_now()
 
         # Get gara_challenge from parameter or relationship
         gc = gara_challenge or self.gara_challenge
@@ -206,7 +206,7 @@ class GaraChallengeClassification(BaseModel):
     )  # Number of challenges attempted
 
     # Metadata
-    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     # Relationships
     gara = db.relationship("Gara")
@@ -284,7 +284,7 @@ class GaraChallengeClassification(BaseModel):
                 classification.total_best_score = total_best_score
                 classification.total_all_attempts = total_all_attempts
                 classification.challenges_completed = challenges_completed
-                classification.last_updated = datetime.utcnow()
+                classification.last_updated = utc_now()
 
                 classifications.append(classification)
 

@@ -13,6 +13,7 @@ import importlib.util
 import sys
 from pathlib import Path
 from datetime import datetime
+from models.base import utc_now
 
 
 def get_db_path() -> str:
@@ -86,7 +87,7 @@ def record_migration(conn: sqlite3.Connection, migration_name: str) -> None:
     """Record a migration as applied."""
     conn.execute(
         "INSERT OR IGNORE INTO migrations_history (migration_name, applied_at) VALUES (?, ?)",
-        (migration_name, datetime.utcnow().isoformat())
+        (migration_name, utc_now().isoformat())
     )
     conn.commit()
 

@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -200,7 +200,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
     )
 
     # Attempt details
-    started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    started_at = db.Column(db.DateTime, nullable=False, default=utc_now)
     completed_at = db.Column(db.DateTime, nullable=True)
     completed = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -226,7 +226,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
 
     def start_exam(self) -> None:
         """Initialize exam attempt with challenge placeholders."""
-        self.started_at = datetime.utcnow()
+        self.started_at = utc_now()
 
         # Create placeholder results for each challenge in the exam
         for exam_challenge in self.exam.challenges.all():
@@ -238,7 +238,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
     def complete_exam(self, notes: Optional[str] = None) -> None:
         """Mark exam as completed and calculate final grade."""
         self.completed = True
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
         if notes:
             self.notes = notes
@@ -314,7 +314,7 @@ class ExamChallengeResult(BaseModel, TimestampMixin):
         """Complete this challenge within the exam."""
         self.score = score
         self.passed = passed
-        self.attempted_at = datetime.utcnow()
+        self.attempted_at = utc_now()
         if notes:
             self.notes = notes
 

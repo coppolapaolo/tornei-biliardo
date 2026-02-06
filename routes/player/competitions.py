@@ -1,8 +1,6 @@
 # routes/player/competitions.py
 """Competition-related routes: inscriptions, unsubscriptions, history."""
 
-from datetime import datetime
-
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 
@@ -12,6 +10,7 @@ from models.kpi import track_gara_inscription
 from utils import player_only, player_required
 
 from . import player_bp
+from models.base import utc_now
 
 
 # ============ REDIRECTS (legacy compatibility) ============
@@ -46,7 +45,7 @@ def inscribe_to_gara(gara_id):
     gara = Gara.query.get_or_404(gara_id)
 
     # Verifica che le iscrizioni siano aperte
-    now = datetime.utcnow()
+    now = utc_now()
     if (
         gara.status != GaraStatus.INSCRIPTION.value
         or now < gara.inscription_start

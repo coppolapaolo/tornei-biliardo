@@ -16,7 +16,7 @@ from models.user.models import VenueManagerRequest, User
 from models.transaction.manager import transactional
 from utils import admin_required, venue_manager_required
 from flask_login import login_required, current_user
-from models.base import db
+from models.base import db, utc_now
 
 # Venue management blueprint
 venue_bp = Blueprint("venue", __name__)
@@ -490,7 +490,7 @@ def upload_photo(venue_id):
     if file and _allowed_file(file.filename):
         try:
             filename = secure_filename(
-                f"venue_{venue_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+                f"venue_{venue_id}_{utc_now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
             )
 
             # Use centralized image path management

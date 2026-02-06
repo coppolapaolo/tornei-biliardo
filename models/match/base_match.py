@@ -12,6 +12,7 @@ This module implements the shared behavior for:
 
 from datetime import datetime
 from typing import Any, Optional, TYPE_CHECKING
+from models.base import utc_now
 
 if TYPE_CHECKING:
     from models.match.score import RackScore
@@ -147,10 +148,10 @@ class BaseMatchMixin:
         # Set confirmation for the appropriate player
         if user_id == self.player1_id:
             self.player1_confirmed = True
-            self.player1_confirmed_at = datetime.utcnow()
+            self.player1_confirmed_at = utc_now()
         elif user_id == self.player2_id:
             self.player2_confirmed = True
-            self.player2_confirmed_at = datetime.utcnow()
+            self.player2_confirmed_at = utc_now()
 
         # If both confirmed, complete the match
         if self.player1_confirmed and self.player2_confirmed:
@@ -211,7 +212,7 @@ class BaseMatchMixin:
             self.status = IndividualMatchStatus.VALIDATED
 
         if hasattr(self, "completed_at"):
-            self.completed_at = datetime.utcnow()
+            self.completed_at = utc_now()
 
         # Emit SSE event for tournament matches (gara matches)
         if is_tournament_match and hasattr(self, "gara_id") and self.gara_id:

@@ -26,6 +26,7 @@ from models.location.models import BilliardHall, UserLocationAvailability, DayOf
 from models.notification.models import Notification
 from models.notification.services import NotificationService
 from models.individual_match.availability_service import AvailabilityService
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -178,7 +179,7 @@ class TestUseCasePlayerAvailability:
         # We'll simulate the acceptance manually
         proposal.status = ProposalStatus.ACCEPTED
         proposal.accepted_by_id = player1.id
-        proposal.accepted_at = datetime.utcnow()
+        proposal.accepted_at = utc_now()
 
         # Create the individual match manually
         individual_match = IndividualMatch(
@@ -196,7 +197,7 @@ class TestUseCasePlayerAvailability:
 
         # Update invitation status
         invitation.status = InvitationStatus.ACCEPTED
-        invitation.responded_at = datetime.utcnow()
+        invitation.responded_at = utc_now()
 
         db_session.commit()
 
@@ -369,7 +370,7 @@ class TestUseCasePlayerAvailability:
         # Accept the match (same manual workaround as first test)
         match_proposal.status = ProposalStatus.ACCEPTED
         match_proposal.accepted_by_id = player1.id
-        match_proposal.accepted_at = datetime.utcnow()
+        match_proposal.accepted_at = utc_now()
 
         # Create the individual match manually
         individual_match = IndividualMatch(
@@ -387,7 +388,7 @@ class TestUseCasePlayerAvailability:
 
         # Update invitation status
         invitation.status = InvitationStatus.ACCEPTED
-        invitation.responded_at = datetime.utcnow()
+        invitation.responded_at = utc_now()
 
         db_session.commit()
 

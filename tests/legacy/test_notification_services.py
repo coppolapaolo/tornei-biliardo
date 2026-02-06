@@ -10,6 +10,7 @@ from models.notification.models import (
     NotificationType,
     NotificationPriority,
 )
+from models.base import utc_now
 
 
 class TestNotificationService:
@@ -164,7 +165,7 @@ class TestNotificationService:
             "action_text": "Test Action",
         }
         mock_template.default_priority = NotificationPriority.NORMAL
-        mock_template.get_expiry_datetime.return_value = datetime.utcnow() + timedelta(
+        mock_template.get_expiry_datetime.return_value = utc_now() + timedelta(
             hours=24
         )
 
@@ -540,7 +541,7 @@ class TestNotificationService:
 
             with patch("models.notification.services.db") as mock_db:
                 with patch("models.notification.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(2023, 1, 1, 12, 0, 0)
+                    mock_utc_now.return_value = datetime(2023, 1, 1, 12, 0, 0)
 
                     result = NotificationService.expire_old_notifications()
 
@@ -582,7 +583,7 @@ class TestNotificationService:
 
             with patch("models.notification.services.db") as mock_db:
                 with patch("models.notification.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(2023, 1, 1, 12, 0, 0)
+                    mock_utc_now.return_value = datetime(2023, 1, 1, 12, 0, 0)
 
                     with patch(
                         "models.notification.services.timedelta"

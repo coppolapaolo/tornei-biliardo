@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 from datetime import datetime
 
 from models.status_enum import MatchStatus, GaraStatus
+from models.base import utc_now
 
 
 class TestMatchProposalRoutes:
@@ -383,7 +384,7 @@ class TestPlayerDashboardAndProvaRoutes:
         mock_gara_class.query.get_or_404.return_value = mock_gara
 
         mock_now = datetime(2024, 1, 22, 10, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
         mock_gara.inscription_start = datetime(2024, 1, 20, 9, 0, 0)
         mock_gara.inscription_end = datetime(2024, 1, 25, 18, 0, 0)
 

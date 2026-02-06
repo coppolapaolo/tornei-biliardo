@@ -7,6 +7,7 @@ from datetime import datetime
 from models import User, DirectorRequest
 from models.user.role_enum import UserRole
 from models.user.services import UserService
+from models.base import utc_now
 
 
 @pytest.mark.unit
@@ -68,7 +69,7 @@ class TestDirectorRequestModel:
         # Test approval
         request.status = "approved"
         request.processed_by = admin
-        request.processed_at = datetime.utcnow()
+        request.processed_at = utc_now()
         db_session.commit()
 
         assert request.status == "approved"

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 from models.exceptions import InvalidTransitionError
@@ -68,7 +68,7 @@ class MatchStateService:
 
         # Auto-set started_at if not already manually set
         if match.started_at is None:
-            match.started_at = datetime.utcnow()
+            match.started_at = utc_now()
 
         db.session.add(match)
         return match
@@ -106,7 +106,7 @@ class MatchStateService:
 
         # Auto-set ended_at if not already manually set
         if match.ended_at is None:
-            match.ended_at = datetime.utcnow()
+            match.ended_at = utc_now()
 
         db.session.add(match)
 

@@ -13,6 +13,7 @@ from models.competition.services import (
 from models.competition.models import Gara
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
+from models.base import utc_now
 
 
 class TestProvaStateMachine:
@@ -288,9 +289,9 @@ class TestProvaService:
             with patch.object(
                 ProvaStateMachine, "reopen_setup", return_value=mock_gara
             ) as mock_reopen_setup:
-                # Mock datetime.utcnow to be before start_date
+                # Mock utc_now to be before start_date
                 with patch("models.competition.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(
+                    mock_utc_now.return_value = datetime(
                         2022, 12, 15
                     )  # Before start
                     mock_datetime.side_effect = lambda *args, **kw: datetime(
@@ -329,9 +330,9 @@ class TestProvaService:
             with patch.object(
                 ProvaStateMachine, "to_inscription", return_value=mock_gara
             ) as mock_to_inscription:
-                # Mock datetime.utcnow to be between start and end dates
+                # Mock utc_now to be between start and end dates
                 with patch("models.competition.services.datetime") as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(
+                    mock_utc_now.return_value = datetime(
                         2023, 1, 15
                     )  # Between start and end
                     mock_datetime.side_effect = lambda *args, **kw: datetime(

@@ -25,6 +25,7 @@ from models.classification.models import RoundClassification, PlayerEncounter
 from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.matchmaking.policies import anti_rematch_allowed
 from models import db
+from models.base import utc_now
 
 
 class TestAntiRematchRegression:
@@ -90,8 +91,8 @@ class TestAntiRematchRegression:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Open inscriptions and start tournament
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -215,8 +216,8 @@ class TestAntiRematchRegression:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start tournament
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -393,8 +394,8 @@ class TestAntiRematchRegression:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start tournament
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -617,8 +618,8 @@ class TestAntiRematchRegression:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start tournament
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -723,8 +724,8 @@ class TestAntiRematchRegression:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start tournament
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

@@ -12,6 +12,7 @@ from models import User, Gara, Match
 from models.competition.services import GaraService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -95,7 +96,7 @@ class TestAntiRematchBug:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            time=datetime.utcnow().time(),
+            time=utc_now().time(),
         )
 
         # Iscrivi 6 giocatori
@@ -103,8 +104,8 @@ class TestAntiRematchBug:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Apri iscrizioni e avvia primo turno
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 
@@ -184,7 +185,7 @@ class TestAntiRematchBug:
             first_round_policy="random",
             odd_number_policy="bye",
             anti_rematch_enabled=True,
-            time=datetime.utcnow().time(),
+            time=utc_now().time(),
         )
 
         # Iscrivi 4 giocatori
@@ -192,8 +193,8 @@ class TestAntiRematchBug:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Avvia la gara
-        inscription_start = datetime.utcnow() - timedelta(hours=1)
-        inscription_end = datetime.utcnow() + timedelta(hours=1)
+        inscription_start = utc_now() - timedelta(hours=1)
+        inscription_end = utc_now() + timedelta(hours=1)
         GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
         GaraService.start_first_round(gara.id)
 

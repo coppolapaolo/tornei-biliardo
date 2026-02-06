@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Optional, Tuple
 from datetime import datetime
 
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 from .models import Match, Rack
@@ -64,7 +64,7 @@ class ScoringService:
         # Get next rack number
         max_rack = (
             db.session.query(func.max(Rack.rack_number))
-            .filter_by(match_id=match_id, is_deleted=False)
+            .filter_by(match_id=match_id)
             .scalar()
         )
         rack_number = (max_rack or 0) + 1
@@ -75,7 +75,7 @@ class ScoringService:
             rack_number=rack_number,
             winner_id=winner_id,
             added_by_id=user_id,
-            added_at=datetime.utcnow(),
+            added_at=utc_now(),
         )
         db.session.add(rack)
 
@@ -137,7 +137,7 @@ class ScoringService:
         # Soft delete with audit trail
         last_rack.is_deleted = True
         last_rack.removed_by_id = user_id
-        last_rack.removed_at = datetime.utcnow()
+        last_rack.removed_at = utc_now()
 
         # Update scores
         ScoringService._update_score_on_remove(match, player_id)

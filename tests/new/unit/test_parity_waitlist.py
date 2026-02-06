@@ -11,7 +11,7 @@ Regole da docs/CLASSIFICATION_SYSTEM.md sezione 3.5:
 import pytest
 from datetime import date, time, datetime, timedelta
 
-from models.base import db
+from models.base import db, utc_now
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.competition.inscription_service import InscriptionService
 from models.competition.services import GaraService
@@ -76,7 +76,7 @@ def players(db_session):
 @pytest.fixture
 def gara_with_no_policy(db_session, director):
     """Create a gara with odd_number_policy=NO."""
-    now = datetime.utcnow()
+    now = utc_now()
     gara = Gara(
         number=1,
         name="Gara Test Parità",
@@ -101,7 +101,7 @@ def gara_with_no_policy(db_session, director):
 @pytest.fixture
 def gara_with_bye_policy(db_session, director):
     """Create a gara with standard bye policy."""
-    now = datetime.utcnow()
+    now = utc_now()
     gara = Gara(
         number=2,
         name="Gara Test Bye",
@@ -303,7 +303,7 @@ class TestParityAndCapacityWaitlistInteraction:
         self, app, db_session, director, players
     ):
         """La parità viene controllata prima della capacità."""
-        now = datetime.utcnow()
+        now = utc_now()
         # Gara con max 4 partecipanti E policy NO
         gara = Gara(
             number=3,

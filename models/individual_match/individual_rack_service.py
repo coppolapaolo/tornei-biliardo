@@ -10,7 +10,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 
 from sqlalchemy import func
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import IndividualMatch, IndividualRack
 
@@ -51,7 +51,7 @@ class IndividualRackService:
             rack_number=rack_number,
             winner_id=winner_id,
             added_by_id=user_id,
-            added_at=datetime.utcnow(),
+            added_at=utc_now(),
         )
 
         db.session.add(rack)
@@ -66,12 +66,12 @@ class IndividualRackService:
         if match.is_ready_for_validation():
             if user_id == match.player1_id:
                 match.player1_confirmed = True
-                match.player1_confirmed_at = datetime.utcnow()
+                match.player1_confirmed_at = utc_now()
                 match.player2_confirmed = False
                 match.player2_confirmed_at = None
             else:
                 match.player2_confirmed = True
-                match.player2_confirmed_at = datetime.utcnow()
+                match.player2_confirmed_at = utc_now()
                 match.player1_confirmed = False
                 match.player1_confirmed_at = None
         else:
@@ -111,7 +111,7 @@ class IndividualRackService:
 
         last_rack.is_deleted = True
         last_rack.removed_by_id = user_id
-        last_rack.removed_at = datetime.utcnow()
+        last_rack.removed_at = utc_now()
 
         if player_id == match.player1_id:
             match.player1_score = max(0, match.player1_score - 1)

@@ -14,6 +14,7 @@ from models.user.services import (
     UserDeletionService,
 )
 from models.user.role_enum import UserRole
+from models.base import utc_now
 
 
 class TestUserService:
@@ -246,7 +247,7 @@ class TestUserService:
     def test_promote_to_director_success(self, mock_db, mock_datetime):
         """Test successful promotion to director."""
         mock_now = datetime(2024, 1, 15, 12, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         mock_user = Mock()
         mock_user.role = UserRole.PLAYER.value

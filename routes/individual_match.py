@@ -797,7 +797,7 @@ def forfeit_match(match_id):
 def rematch(match_id):
     """Start a new match with the same opponent - redirects to create_proposal with pre-filled values."""
     from flask_babel import _
-    from models.base import db
+    from models.base import db, utc_now
 
     match = IndividualMatch.query.get_or_404(match_id)
 
@@ -838,7 +838,7 @@ def rematch(match_id):
             params["is_race_to_sets"] = "true" if match.is_race_to_sets else "false"
     
     # Set scheduled_at to now (local time approximation)
-    now = datetime.now()
+    now = utc_now()
     params["scheduled_at"] = now.strftime("%Y-%m-%dT%H:%M")
     params["expires_hours"] = "0"  # 0 means "Never" (immediate match)
 

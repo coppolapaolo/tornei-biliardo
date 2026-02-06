@@ -12,6 +12,7 @@ from models.individual_match.models import IndividualMatch
 from models.status_enum import MatchStatus
 from models.user.models import User
 from models.user.role_enum import UserRole
+from models.base import utc_now
 
 
 class TestIndividualMatchForfeitRoute:
@@ -73,7 +74,7 @@ class TestIndividualMatchForfeitRoute:
                 player1_id=player1.id,
                 player2_id=player2.id,
                 location="Test Hall",
-                scheduled_at=datetime.utcnow() + timedelta(hours=1),
+                scheduled_at=utc_now() + timedelta(hours=1),
                 status=MatchStatus.IN_PROGRESS,
                 distance=5,
                 is_race_to=True,
@@ -92,7 +93,7 @@ class TestIndividualMatchForfeitRoute:
                 player1_id=player1.id,
                 player2_id=player2.id,
                 location="Test Hall",
-                scheduled_at=datetime.utcnow() + timedelta(hours=1),
+                scheduled_at=utc_now() + timedelta(hours=1),
                 status=MatchStatus.IN_PROGRESS,
                 distance=5,
                 is_race_to=True,
@@ -111,7 +112,7 @@ class TestIndividualMatchForfeitRoute:
                 player1_id=player1.id,
                 player2_id=player2.id,
                 location="Test Hall",
-                scheduled_at=datetime.utcnow() + timedelta(hours=1),
+                scheduled_at=utc_now() + timedelta(hours=1),
                 status=MatchStatus.COMPLETED,
                 distance=5,
                 is_race_to=True,

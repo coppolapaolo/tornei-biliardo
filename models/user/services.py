@@ -22,7 +22,7 @@ from sqlalchemy.engine.row import Row
 from sqlalchemy import func, desc, or_
 from datetime import datetime
 
-from ..base import db
+from ..base import db, utc_now
 from .models import User, DirectorRequest, VenueManagement, VenueManagerRequest
 from ..transaction.manager import (
     DomainService,
@@ -344,7 +344,7 @@ class UserService:
             raise ValueError("Director request not found")
 
         request.status = status
-        request.processed_at = datetime.utcnow()
+        request.processed_at = utc_now()
         if processed_by:
             request.processed_by = processed_by
 

@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 from ..transaction import transactional
 
 if TYPE_CHECKING:
@@ -310,7 +310,7 @@ class PlayoffQualification(BaseModel, TimestampMixin):
             raise ValueError("Can only confirm pending qualifications")
 
         self.status = QualificationStatus.CONFIRMED
-        self.responded_at = datetime.utcnow()
+        self.responded_at = utc_now()
 
     def decline_participation(self) -> Optional["PlayoffQualification"]:
         """Decline participation and trigger replacement process."""
@@ -318,7 +318,7 @@ class PlayoffQualification(BaseModel, TimestampMixin):
             raise ValueError("Can only decline pending qualifications")
 
         self.status = QualificationStatus.DECLINED
-        self.responded_at = datetime.utcnow()
+        self.responded_at = utc_now()
 
         # Find next eligible player for replacement
         return (
@@ -406,7 +406,7 @@ class PlayoffTournament(BaseModel, TimestampMixin):
             raise ValueError("Can only start registration from setup status")
 
         self.status = "registration"
-        self.registration_start = datetime.utcnow()
+        self.registration_start = utc_now()
 
         # Get confirmed qualifications
         confirmed_qualifications = [
@@ -441,7 +441,7 @@ class PlayoffTournament(BaseModel, TimestampMixin):
     def complete_campionato(self, winner_id: Optional[int] = None) -> None:
         """Mark campionato as completed."""
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         if winner_id:
             self.winner_id = winner_id
 

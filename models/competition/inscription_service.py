@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import Optional
 from datetime import datetime
 
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from .models import Inscription
 from models.transaction.manager import transactional
@@ -74,7 +74,7 @@ class InscriptionService:
         # Validazione: Verifica periodo di iscrizione
         # IMPORTANT: Use UTC for all datetime comparisons
         # Database stores naive datetimes which are treated as UTC
-        now = datetime.utcnow()
+        now = utc_now()
         if gara.inscription_start and gara.inscription_end:
             if now < gara.inscription_start:
                 raise ValueError("Iscrizioni non ancora aperte")
@@ -672,7 +672,7 @@ class InscriptionService:
         gara.inscription_end = inscription_end
 
         # Gestione intelligente dello stato
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Se le iscrizioni devono ancora iniziare
         if inscription_start > now:

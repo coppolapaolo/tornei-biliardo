@@ -7,7 +7,7 @@ per centralizzare tutta la logica iscrizioni in un unico service.
 
 import pytest
 from datetime import datetime, date, timedelta
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from models.competition.models import Gara
 from models.user.models import User
@@ -38,8 +38,8 @@ class TestInscriptionServiceTDD:
         from models.competition.inscription_service import InscriptionService
 
         # Metodo deve essere spostato da GaraService
-        start_time = datetime.utcnow() + timedelta(minutes=10)
-        end_time = datetime.utcnow() + timedelta(days=1)
+        start_time = utc_now() + timedelta(minutes=10)
+        end_time = utc_now() + timedelta(days=1)
 
         result_gara = InscriptionService.open_inscriptions(
             gara.id, start_time, end_time
@@ -70,8 +70,8 @@ class TestInscriptionServiceTDD:
         from models.competition.inscription_service import InscriptionService
 
         # Metodo deve essere spostato da GaraService
-        new_start = datetime.utcnow() + timedelta(minutes=30)
-        new_end = datetime.utcnow() + timedelta(hours=12)  # Prima della gara
+        new_start = utc_now() + timedelta(minutes=30)
+        new_end = utc_now() + timedelta(hours=12)  # Prima della gara
 
         result_gara = InscriptionService.modify_inscription_dates(
             gara.id, new_start, new_end
@@ -101,8 +101,8 @@ class TestInscriptionServiceTDD:
         from models.competition.inscription_service import InscriptionService
 
         # Date sbagliate: fine prima di inizio
-        wrong_start = datetime.utcnow() + timedelta(days=2)
-        wrong_end = datetime.utcnow() + timedelta(days=1)
+        wrong_start = utc_now() + timedelta(days=2)
+        wrong_end = utc_now() + timedelta(days=1)
 
         with pytest.raises(ValueError, match="precedente"):
             InscriptionService.open_inscriptions(gara.id, wrong_start, wrong_end)

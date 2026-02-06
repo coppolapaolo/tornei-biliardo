@@ -1,7 +1,6 @@
 # routes/player/notifications.py
 """Notification management and venue manager request routes."""
 
-from datetime import datetime
 from typing import cast
 
 from flask import render_template, request, redirect, url_for, flash
@@ -11,6 +10,7 @@ from models import db, User
 from models.transaction.manager import transactional
 
 from . import player_bp
+from models.base import utc_now
 
 
 # ============ NOTIFICATIONS ============
@@ -39,7 +39,7 @@ def notifications():
     for notif in user_notifications:
         if notif.status == NotificationStatus.PENDING:
             notif.status = NotificationStatus.SENT
-            notif.sent_at = datetime.utcnow()
+            notif.sent_at = utc_now()
 
     # Get user's global auto-delete preference
     # Use SYSTEM_ANNOUNCEMENT type as global setting
@@ -67,7 +67,7 @@ def mark_notification_read(notification_id):
     ).first_or_404()
 
     notification.status = NotificationStatus.READ
-    notification.read_at = datetime.utcnow()
+    notification.read_at = utc_now()
 
     # If there's an action URL, redirect to it
     if notification.action_url:
@@ -85,7 +85,7 @@ def mark_all_notifications_read():
 
     Notification.query.filter_by(user_id=current_user.id).filter(
         Notification.status != NotificationStatus.READ
-    ).update({"status": NotificationStatus.READ, "read_at": datetime.utcnow()})
+    ).update({"status": NotificationStatus.READ, "read_at": utc_now()})
 
     flash("Tutte le notifiche sono state segnate come lette.")
     return redirect(url_for("player.notifications"))

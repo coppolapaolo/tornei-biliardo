@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import Optional
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 from .enums import FeatureName, MilestoneType
 
 
@@ -140,7 +140,7 @@ class KpiMilestone(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     milestone_type = db.Column(db.String(50), nullable=False)
     milestone_value = db.Column(db.Integer, nullable=False)
-    reached_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reached_at = db.Column(db.DateTime, default=utc_now)
     notification_sent = db.Column(db.Boolean, default=False)
 
     __table_args__ = (
@@ -172,7 +172,7 @@ class KpiMilestone(BaseModel):
             milestone = cls(
                 milestone_type=milestone_type.value,
                 milestone_value=value,
-                reached_at=datetime.utcnow(),
+                reached_at=utc_now(),
                 notification_sent=send_notification,
             )
             db.session.add(milestone)

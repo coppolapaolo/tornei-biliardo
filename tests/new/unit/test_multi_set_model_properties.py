@@ -10,6 +10,7 @@ from models.individual_match.models import MatchProposal, IndividualMatch
 from models.match.distance import Distance
 from models.status_enum import Discipline
 from datetime import datetime, timedelta
+from models.base import utc_now
 
 
 class TestGaraMultiSetProperty:
@@ -20,7 +21,7 @@ class TestGaraMultiSetProperty:
         gara = Gara(
             campionato_id=None,
             number=1,
-            date=datetime.utcnow().date(),
+            date=utc_now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
@@ -41,7 +42,7 @@ class TestGaraMultiSetProperty:
         gara = Gara(
             campionato_id=None,
             number=1,
-            date=datetime.utcnow().date(),
+            date=utc_now().date(),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
             is_race_to=False,
@@ -61,7 +62,7 @@ class TestGaraMultiSetProperty:
         gara = Gara(
             campionato_id=None,
             number=1,
-            date=datetime.utcnow().date(),
+            date=utc_now().date(),
             discipline=Discipline.TEN_BALL.value,
             distance=5,  # Racks per set (Race-to-5)
             is_race_to=True,  # Race-to racks
@@ -86,7 +87,7 @@ class TestGaraMultiSetProperty:
         gara = Gara(
             campionato_id=None,
             number=1,
-            date=datetime.utcnow().date(),
+            date=utc_now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=3,
             is_race_to=True,
@@ -108,7 +109,7 @@ class TestGaraMultiSetProperty:
         gara = Gara(
             campionato_id=None,
             number=1,
-            date=datetime.utcnow().date(),
+            date=utc_now().date(),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
             is_race_to=True,
@@ -127,7 +128,7 @@ class TestGaraMultiSetProperty:
         gara = Gara(
             campionato_id=None,
             number=1,
-            date=datetime.utcnow().date(),
+            date=utc_now().date(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True
@@ -151,8 +152,8 @@ class TestMatchProposalMultiSetProperty:
             proposer_id=1,
             proposal_type="direct",
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now(),
+            expires_at=utc_now() + timedelta(days=1),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
@@ -172,8 +173,8 @@ class TestMatchProposalMultiSetProperty:
             proposer_id=1,
             proposal_type="open",
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now(),
+            expires_at=utc_now() + timedelta(days=1),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
             is_race_to=True,
@@ -195,8 +196,8 @@ class TestMatchProposalMultiSetProperty:
             proposer_id=1,
             proposal_type="open",
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now(),
+            expires_at=utc_now() + timedelta(days=1),
             distance=None
         )
 
@@ -212,7 +213,7 @@ class TestIndividualMatchMultiSetProperty:
             player1_id=1,
             player2_id=2,
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
+            scheduled_at=utc_now(),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
@@ -231,7 +232,7 @@ class TestIndividualMatchMultiSetProperty:
             player1_id=1,
             player2_id=2,
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
+            scheduled_at=utc_now(),
             discipline=Discipline.TEN_BALL.value,
             distance=3,
             is_race_to=True,
@@ -257,8 +258,8 @@ class TestMatchProposalAcceptCopiesMultiSet:
             proposer_id=1,
             proposal_type="open",
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now(),
+            expires_at=utc_now() + timedelta(days=1),
             discipline=Discipline.EIGHT_BALL.value,
             distance=7,
             is_race_to=True,
@@ -280,8 +281,8 @@ class TestMatchProposalAcceptCopiesMultiSet:
             proposer_id=1,
             proposal_type="open",
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now(),
+            expires_at=utc_now() + timedelta(days=1),
             discipline=Discipline.NINE_BALL.value,
             distance=5,
             is_race_to=True,

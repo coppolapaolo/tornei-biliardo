@@ -6,7 +6,7 @@ Dependencies: models.base.db, datetime
 """
 
 from datetime import datetime
-from models.base import db, SoftDeleteMixin
+from models.base import db, SoftDeleteMixin, utc_now
 from enum import Enum
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 from models.matchmaking.configuration import (
@@ -368,7 +368,7 @@ class Gara(SoftDeleteMixin, db.Model):
                     else:
                         return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
         elif self.status == GaraStatus.INSCRIPTION.value:
-            if self.inscription_end and datetime.utcnow() > self.inscription_end:
+            if self.inscription_end and utc_now() > self.inscription_end:
                 return ProvaDerivedStatus.INSCRIPTION_CLOSED.value
         return self.status
 
@@ -417,7 +417,7 @@ class Gara(SoftDeleteMixin, db.Model):
         """Verifica se si possono fare iscrizioni"""
         if self.status != GaraStatus.INSCRIPTION.value:
             return False
-        if self.inscription_end and datetime.utcnow() > self.inscription_end:
+        if self.inscription_end and utc_now() > self.inscription_end:
             return False
         return True
 
@@ -589,7 +589,7 @@ class Gara(SoftDeleteMixin, db.Model):
             reason: Optional reason for deletion
         """
         from datetime import datetime
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = utc_now()
         self.deleted_reason = reason
 
     def can_cancel_round(self, round_number: Optional[int] = None) -> bool:
@@ -762,7 +762,7 @@ class Inscription(db.Model):
     gara_id = db.Column(
         db.Integer, db.ForeignKey("gara.id", ondelete="CASCADE"), nullable=False
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     initial_order = db.Column(db.Integer)  # ordine sorteggio iniziale
 
     user = db.relationship("User", back_populates="inscriptions")

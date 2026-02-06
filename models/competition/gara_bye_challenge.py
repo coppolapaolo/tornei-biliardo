@@ -25,7 +25,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
     from ..challenge.models import ChallengeAttempt
@@ -139,7 +139,7 @@ class GaraByeChallenge(BaseModel, TimestampMixin):
         """
         self.challenge_attempt_id = challenge_attempt_id
         self.is_completed = True
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
     @classmethod
     def get_pending_for_user(

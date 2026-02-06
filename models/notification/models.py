@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -141,15 +141,15 @@ class Notification(BaseModel, TimestampMixin):
         """Mark notification as sent."""
         if self.status == NotificationStatus.PENDING:
             self.status = NotificationStatus.SENT
-            self.sent_at = datetime.utcnow()
+            self.sent_at = utc_now()
             self.delivery_attempts += 1
-            self.last_attempt_at = datetime.utcnow()
+            self.last_attempt_at = utc_now()
 
     def mark_as_read(self) -> None:
         """Mark notification as read."""
         if self.status in [NotificationStatus.SENT, NotificationStatus.PENDING]:
             self.status = NotificationStatus.READ
-            self.read_at = datetime.utcnow()
+            self.read_at = utc_now()
 
     def dismiss(self) -> None:
         """Dismiss notification."""
@@ -164,7 +164,7 @@ class Notification(BaseModel, TimestampMixin):
         """Check if notification is expired."""
         if not self.expires_at:
             return False
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
     def expire(self) -> None:
         """Mark notification as expired."""
@@ -328,7 +328,7 @@ class NotificationPreference(BaseModel, TimestampMixin):
         if not self.quiet_hours_start or not self.quiet_hours_end:
             return False
 
-        now = datetime.utcnow().time()
+        now = utc_now().time()
 
         if self.quiet_hours_start <= self.quiet_hours_end:
             # Normal case: 22:00 - 08:00
@@ -342,7 +342,7 @@ class NotificationPreference(BaseModel, TimestampMixin):
         if not self.max_per_day:
             return False
 
-        today_start = datetime.utcnow().replace(
+        today_start = utc_now().replace(
             hour=0, minute=0, second=0, microsecond=0
         )
         today_count = Notification.query.filter(
@@ -359,7 +359,7 @@ class NotificationPreference(BaseModel, TimestampMixin):
         if not self.min_interval_minutes:
             return False
 
-        cutoff_time = datetime.utcnow() - timedelta(minutes=self.min_interval_minutes)
+        cutoff_time = utc_now() - timedelta(minutes=self.min_interval_minutes)
         recent_notification = Notification.query.filter(
             Notification.user_id == self.user_id,
             Notification.notification_type == self.notification_type,
@@ -443,7 +443,7 @@ class NotificationTemplate(BaseModel, TimestampMixin):
         """Get expiry datetime based on default hours."""
         if not self.default_expires_hours:
             return None
-        return datetime.utcnow() + timedelta(hours=self.default_expires_hours)
+        return utc_now() + timedelta(hours=self.default_expires_hours)
 
     def __repr__(self) -> str:
         return f"<NotificationTemplate {self.notification_type.value}>"

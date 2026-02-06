@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from models.orchestration.service import OperationResult
 from datetime import date, datetime
 
-from models.base import db
+from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
 from models.transaction.manager import transactional
@@ -1314,7 +1314,7 @@ class GaraService:
             Match.query.filter_by(gara_id=gara_id).update({"gara_id": None})
 
         # Soft delete the gara
-        gara.deleted_at = datetime.utcnow()
+        gara.deleted_at = utc_now()
         gara.deleted_reason = reason
 
         db.session.add(gara)

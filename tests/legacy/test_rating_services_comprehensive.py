@@ -8,6 +8,7 @@ from datetime import datetime
 
 from models.rating.services import RatingService, CategoryService, HandicapService
 from models.rating.models import CategoryLevel, RatingSystem
+from models.base import utc_now
 
 
 class TestRatingService:
@@ -160,7 +161,7 @@ class TestRatingService:
     ):
         """Test get_system_statistics method."""
         mock_now = datetime(2024, 1, 15, 12, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         mock_fargo_system = Mock()
         mock_fargo_system.value = "FARGO"

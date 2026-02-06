@@ -8,7 +8,7 @@ the competition's withdraw_policy setting.
 from datetime import datetime
 from typing import Optional
 
-from models.base import db
+from models.base import db, utc_now
 from models.transaction.manager import transactional
 from .models import Gara, Inscription, WithdrawPolicy
 from .inscription_service import InscriptionService
@@ -131,7 +131,7 @@ class WithdrawPolicyService:
         if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value:
             # Policy FORFEIT: Mark as forfeit but keep in inscriptions
             inscription.is_forfeit = True
-            inscription.forfeit_at = datetime.utcnow()
+            inscription.forfeit_at = utc_now()
             return "forfeit_marked"
 
         elif gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:

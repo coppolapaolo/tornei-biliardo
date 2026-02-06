@@ -24,7 +24,7 @@ from datetime import datetime
 import json
 import logging
 
-from models.base import db
+from models.base import db, utc_now
 from models.transaction.manager import transactional
 from models.gamification.models import (
     Quest,
@@ -101,7 +101,7 @@ class QuestService:
             )
         """
         # Determine status based on dates
-        now = datetime.utcnow()
+        now = utc_now()
         if now < start_date:
             status = QuestStatus.UPCOMING
         elif now <= end_date:
@@ -145,7 +145,7 @@ class QuestService:
         Returns:
             Dict with counts: {"activated": int, "expired": int}
         """
-        now = datetime.utcnow()
+        now = utc_now()
         activated = 0
         expired = 0
 
@@ -328,7 +328,7 @@ class QuestService:
 
         quest = participation.quest
         participation.is_completed = True
-        participation.completed_at = datetime.utcnow()
+        participation.completed_at = utc_now()
         participation.xp_awarded = quest.xp_reward
 
         # Update quest stats
@@ -644,7 +644,7 @@ class QuestService:
             )
             average_progress = total_progress_percentage / len(participations)
 
-        now = datetime.utcnow()
+        now = utc_now()
         time_remaining = quest.end_date - now if quest.end_date > now else None
         is_expired = quest.status == QuestStatus.EXPIRED or quest.end_date < now
 

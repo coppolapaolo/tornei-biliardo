@@ -45,6 +45,7 @@ from models.individual_match.models import (
     InvitationStatus,
 )
 from models.individual_match.services import IndividualMatchService
+from models.base import utc_now
 
 
 class TestIndividualMatchServicesTransactionMigrationPhase1:
@@ -97,8 +98,8 @@ class TestIndividualMatchServicesTransactionMigrationPhase1:
                 location="Test Hall Phase1",
                 discipline="8ball",
                 distance=5,
-                scheduled_at=datetime.utcnow() + timedelta(hours=2),
-                expires_at=datetime.utcnow() + timedelta(hours=1),
+                scheduled_at=utc_now() + timedelta(hours=2),
+                expires_at=utc_now() + timedelta(hours=1),
                 description="Test proposal for accept",
             )
             db.session.add(proposal)
@@ -159,8 +160,8 @@ class TestIndividualMatchServicesTransactionMigrationPhase1:
                 location="Test Hall Reject",
                 discipline="9ball",
                 distance=3,
-                scheduled_at=datetime.utcnow() + timedelta(hours=3),
-                expires_at=datetime.utcnow() + timedelta(hours=1),
+                scheduled_at=utc_now() + timedelta(hours=3),
+                expires_at=utc_now() + timedelta(hours=1),
                 description="Test proposal for rejection",
             )
             db.session.add(proposal)
@@ -235,8 +236,8 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
                 location="Test Hall Phase2",
                 discipline="9ball",
                 distance=7,
-                scheduled_at=datetime.utcnow() + timedelta(hours=2),
-                expires_at=datetime.utcnow() + timedelta(hours=1),
+                scheduled_at=utc_now() + timedelta(hours=2),
+                expires_at=utc_now() + timedelta(hours=1),
                 description="Test match for execution",
             )
             db.session.add(proposal)
@@ -453,8 +454,8 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
                 location="Test Hall Cancel",
                 discipline="10ball",
                 distance=7,
-                scheduled_at=datetime.utcnow() + timedelta(hours=4),
-                expires_at=datetime.utcnow() + timedelta(hours=2),
+                scheduled_at=utc_now() + timedelta(hours=4),
+                expires_at=utc_now() + timedelta(hours=2),
                 description="Test proposal for cancellation",
             )
             db.session.add(proposal)
@@ -496,8 +497,8 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
                 location="Test Hall Invite",
                 discipline="straight_pool",
                 distance=100,
-                scheduled_at=datetime.utcnow() + timedelta(hours=5),
-                expires_at=datetime.utcnow() + timedelta(hours=2),
+                scheduled_at=utc_now() + timedelta(hours=5),
+                expires_at=utc_now() + timedelta(hours=2),
                 description="Test proposal for invitation",
             )
             db.session.add(proposal)
@@ -544,8 +545,8 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
                 location="Test Hall Response",
                 discipline="one_pocket",
                 distance=5,
-                scheduled_at=datetime.utcnow() + timedelta(hours=6),
-                expires_at=datetime.utcnow() + timedelta(hours=3),
+                scheduled_at=utc_now() + timedelta(hours=6),
+                expires_at=utc_now() + timedelta(hours=3),
                 description="Test proposal for response",
             )
             db.session.add(proposal)

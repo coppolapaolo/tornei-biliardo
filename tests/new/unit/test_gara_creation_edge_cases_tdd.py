@@ -24,6 +24,7 @@ from models.status_enum import GaraStatus
 from models.competition.services import GaraService
 from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
+from models.base import utc_now
 
 
 @pytest.mark.unit
@@ -170,8 +171,8 @@ class TestGaraCreationEdgeCasesTDD:
         gara_date = date.today() + timedelta(days=60)
 
         # Inscriptions start today, end next month
-        inscription_start = datetime.utcnow()
-        inscription_end = datetime.utcnow() + timedelta(days=30)
+        inscription_start = utc_now()
+        inscription_end = utc_now() + timedelta(days=30)
 
         gara = GaraService.create_gara(
             campionato_id=None,
@@ -262,7 +263,7 @@ class TestGaraCreationEdgeCasesTDD:
         )
 
         # Try to set inscription end after gara date
-        inscription_start = datetime.utcnow()
+        inscription_start = utc_now()
         inscription_end = datetime.combine(
             tomorrow + timedelta(days=1), datetime.min.time()
         ) + timedelta(hours=1)

@@ -8,6 +8,7 @@ when the match has reached the maximum possible racks and needs validation.
 import pytest
 from datetime import datetime
 from models.status_enum import MatchStatus
+from models.base import utc_now
 
 
 class TestBaseMatchMaxRacksValidation:
@@ -242,7 +243,7 @@ def sample_match(db_session, sample_users):
     gara = Gara(
         number=1,
         name="Test Gara",
-        date=datetime.utcnow().date(),
+        date=utc_now().date(),
         discipline="palla_8",
         distance=5,
         is_race_to=True,
@@ -277,7 +278,7 @@ def sample_match_exact_distance(db_session, sample_users):
     gara = Gara(
         number=2,
         name="Test Gara Exact",
-        date=datetime.utcnow().date(),
+        date=utc_now().date(),
         discipline="palla_8",
         distance=5,
         is_race_to=False,  # Exact distance
@@ -313,7 +314,7 @@ def sample_individual_match(db_session, sample_users):
         player1_id=sample_users[0].id,
         player2_id=sample_users[1].id,
         location="Test Location",
-        scheduled_at=datetime.utcnow(),
+        scheduled_at=utc_now(),
         discipline="palla_8",
         distance=5,
         is_race_to=True,
@@ -336,7 +337,7 @@ def sample_tournament_match(db_session, sample_users):
     gara = Gara(
         number=3,
         name="Test Gara Tournament",
-        date=datetime.utcnow().date(),
+        date=utc_now().date(),
         discipline="palla_8",
         distance=5,
         is_race_to=True,

@@ -24,6 +24,7 @@ from models.individual_match.models import (
     InvitationStatus,
 )
 from models.individual_match.services import IndividualMatchService
+from models.base import utc_now
 
 
 @pytest.mark.integration
@@ -84,7 +85,7 @@ class TestUseCaseIndividualMatchProposal:
             proposer_id=player1.id,
             invited_user_ids=[player2.id],
             location="Test Billiard Hall",
-            scheduled_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now() + timedelta(days=1),
             discipline="palla_8",
             distance=5,
             is_race_to=True,
@@ -114,7 +115,7 @@ class TestUseCaseIndividualMatchProposal:
 
         UC6: Proposal includes discipline, distance, and other settings.
         """
-        scheduled_time = datetime.utcnow() + timedelta(days=2)
+        scheduled_time = utc_now() + timedelta(days=2)
         proposal = IndividualMatchService.create_direct_proposal(
             proposer_id=player1.id,
             invited_user_ids=[player2.id],
@@ -147,7 +148,7 @@ class TestUseCaseIndividualMatchProposal:
             proposer_id=director_user.id,
             invited_user_ids=[player1.id, player2.id],
             location="Competition Venue",
-            scheduled_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now() + timedelta(days=1),
             discipline="palla_9",
             distance=7,
             is_race_to=True,
@@ -214,7 +215,7 @@ class TestUseCaseIndividualMatchCancellation:
             proposer_id=player1.id,
             invited_user_ids=[player2.id],
             location="Test Venue",
-            scheduled_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now() + timedelta(days=1),
             discipline="palla_8",
             distance=5,
             is_race_to=True,
@@ -243,8 +244,8 @@ class TestUseCaseIndividualMatchCancellation:
             proposer_id=player1.id,
             invited_user_ids=[player2.id],
             location="Test Venue",
-            scheduled_at=datetime.utcnow() + timedelta(days=1),
-            expires_at=datetime.utcnow() - timedelta(hours=1),  # Already expired
+            scheduled_at=utc_now() + timedelta(days=1),
+            expires_at=utc_now() - timedelta(hours=1),  # Already expired
             discipline="palla_8",
             distance=5,
             is_race_to=True,
@@ -286,7 +287,7 @@ class TestUseCaseOpenProposal:
         proposal = IndividualMatchService.create_open_proposal(
             proposer_id=player1.id,
             location="Community Hall",
-            scheduled_at=datetime.utcnow() + timedelta(days=1),
+            scheduled_at=utc_now() + timedelta(days=1),
             discipline="palla_8",
             distance=5,
             is_race_to=True,

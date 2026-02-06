@@ -11,7 +11,7 @@ from flask import has_app_context, current_app
 from utils import create_admin_if_not_exists
 
 from models import User
-from models.base import db
+from models.base import db, utc_now
 from models.campionato.models import Campionato
 from models.user.models import TournamentDirector
 from models.user.services import UserService
@@ -140,7 +140,7 @@ def _reset_database_core() -> Dict[str, object]:
 
         # Apertura iscrizioni + 8 iscritti su La Garetta
         GaraService.to_inscription(
-            gara_garetta.id, datetime.utcnow(), datetime.utcnow() + timedelta(days=3)
+            gara_garetta.id, utc_now(), utc_now() + timedelta(days=3)
         )
         for u in players[:8]:
             InscriptionService.inscribe_user(u.id, gara_garetta.id)

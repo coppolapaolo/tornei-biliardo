@@ -9,7 +9,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
-from ..base import db, BaseModel
+from ..base import db, BaseModel, utc_now
 
 
 class UserToken(BaseModel):
@@ -21,7 +21,7 @@ class UserToken(BaseModel):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     token = db.Column(db.String(100), unique=True, nullable=False, index=True)
     token_type = db.Column(db.String(20), nullable=False)  # 'verification', 'password_reset'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     expires_at = db.Column(db.DateTime, nullable=False)
     is_used = db.Column(db.Boolean, default=False)
 
@@ -43,7 +43,7 @@ class UserToken(BaseModel):
             UserToken: The created token
         """
         token_str = secrets.token_urlsafe(32)
-        expires_at = datetime.utcnow() + timedelta(hours=expires_in_hours)
+        expires_at = utc_now() + timedelta(hours=expires_in_hours)
 
         token = cls(
             user_id=user_id,
@@ -58,7 +58,7 @@ class UserToken(BaseModel):
         """Check if token is valid and not expired."""
         if self.is_used:
             return False
-        if datetime.utcnow() > self.expires_at:
+        if utc_now() > self.expires_at:
             return False
         return True
 

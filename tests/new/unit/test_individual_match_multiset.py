@@ -17,6 +17,7 @@ from models.individual_match.models import (
     IndividualSet,
 )
 from models.status_enum import MatchStatus
+from models.base import utc_now
 
 
 class TestMultiSetMatchStart:
@@ -30,7 +31,7 @@ class TestMultiSetMatchStart:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             discipline="palla_8",
             distance=5,  # Each set is race-to-5
@@ -65,7 +66,7 @@ class TestMultiSetMatchStart:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=5,
             is_race_to=True,
@@ -91,7 +92,7 @@ class TestMultiSetRackScoring:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=5,
             is_race_to=True,
@@ -126,7 +127,7 @@ class TestMultiSetRackScoring:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=3,  # Race to 3 racks per set
             is_race_to=True,
@@ -164,7 +165,7 @@ class TestMultiSetRackScoring:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=5,
             is_race_to=True,
@@ -195,7 +196,7 @@ class TestMultiSetTransitions:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=2,  # Race to 2 racks per set
             is_race_to=True,
@@ -233,7 +234,7 @@ class TestMultiSetTransitions:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=5,
             is_race_to=True,
@@ -260,7 +261,7 @@ class TestMultiSetTransitions:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=2,
             is_race_to=True,
@@ -301,7 +302,7 @@ class TestMultiSetCompletion:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=2,
             is_race_to=True,
@@ -337,7 +338,7 @@ class TestMultiSetCompletion:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=2,
             is_race_to=True,
@@ -379,9 +380,9 @@ class TestIndividualSetModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
+            scheduled_at=utc_now(),
             status=MatchStatus.IN_PROGRESS,
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
             distance=5,
             is_race_to=True,
             is_multi_set=True,
@@ -396,7 +397,7 @@ class TestIndividualSetModel:
             distance=5,
             is_race_to=True,
             status="playing",  # Already playing
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
         )
         db_session.add(individual_set)
         db_session.commit()
@@ -412,7 +413,7 @@ class TestIndividualSetModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=5,
             is_race_to=True,
@@ -447,7 +448,7 @@ class TestIndividualSetModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=2,  # Race to 2
             is_race_to=True,
@@ -488,7 +489,7 @@ class TestGetCurrentSet:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow(),
+            scheduled_at=utc_now(),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -507,7 +508,7 @@ class TestGetCurrentSet:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=5,
             is_race_to=True,
@@ -534,7 +535,7 @@ class TestGetCurrentSet:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,
             distance=2,
             is_race_to=True,

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from sqlalchemy import func, desc, and_
 
-from models.base import db
+from models.base import db, utc_now
 from models.user.models import User
 from models.gamification.models import (
     UserLevel,
@@ -86,7 +86,7 @@ class LeaderboardService:
             return True
             
         ttl = LEADERBOARD_CACHE_TTL.get(leaderboard_type.name, 3600)
-        age = (datetime.utcnow() - last_entry.calculated_at).total_seconds()
+        age = (utc_now() - last_entry.calculated_at).total_seconds()
         
         return age > ttl
 
@@ -139,7 +139,7 @@ class LeaderboardService:
                 user_id=user_level.user_id,
                 rank=rank,
                 score=user_level.total_xp,
-                calculated_at=datetime.utcnow()
+                calculated_at=utc_now()
             ))
         return entries
 
@@ -161,7 +161,7 @@ class LeaderboardService:
                 user_id=user_level.user_id,
                 rank=rank,
                 score=user_level.current_level,
-                calculated_at=datetime.utcnow()
+                calculated_at=utc_now()
             ))
         return entries
 
@@ -186,7 +186,7 @@ class LeaderboardService:
                     user_id=streak.user_id,
                     rank=rank,
                     score=streak.current_streak,
-                    calculated_at=datetime.utcnow()
+                    calculated_at=utc_now()
                 ))
         return entries
 
@@ -231,6 +231,6 @@ class LeaderboardService:
                 user_id=pr.user_id,
                 rank=rank,
                 score=pr.rating_value,
-                calculated_at=datetime.utcnow()
+                calculated_at=utc_now()
             ))
         return entries

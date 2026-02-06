@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 from models.individual_match.models import IndividualMatch
 from models.status_enum import MatchStatus
+from models.base import utc_now
 
 
 class TestIndividualMatchForfeitModel:
@@ -26,7 +27,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -53,7 +54,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -80,7 +81,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -109,7 +110,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -137,7 +138,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -161,7 +162,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -182,7 +183,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.COMPLETED,  # Already completed
             distance=5,
             is_race_to=True,
@@ -204,7 +205,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.CANCELLED,
             distance=5,
             is_race_to=True,
@@ -225,7 +226,7 @@ class TestIndividualMatchForfeitModel:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.SCHEDULED,  # Not started yet
             distance=5,
             is_race_to=True,
@@ -257,7 +258,7 @@ class TestIndividualMatchForfeitService:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,
@@ -285,7 +286,7 @@ class TestIndividualMatchForfeitService:
             player1_id=player1.id,
             player2_id=player2.id,
             location="Test Hall",
-            scheduled_at=datetime.utcnow() + timedelta(hours=1),
+            scheduled_at=utc_now() + timedelta(hours=1),
             status=MatchStatus.IN_PROGRESS,
             distance=5,
             is_race_to=True,

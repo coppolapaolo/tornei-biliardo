@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 from datetime import datetime
 
 from models.exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
+from models.base import utc_now
 
 
 class TestExamModel:
@@ -324,7 +325,7 @@ class TestExamAttemptModel:
     def test_start_exam(self, mock_exam, mock_db, mock_datetime):
         """Test start_exam method."""
         mock_now = datetime(2024, 1, 1, 12, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         # Mock exam challenges
         mock_challenge1 = Mock()
@@ -349,7 +350,7 @@ class TestExamAttemptModel:
     ):
         """Test complete_exam method with notes."""
         mock_now = datetime(2024, 1, 1, 14, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         # Mock challenge results
         mock_result1 = Mock()
@@ -386,7 +387,7 @@ class TestExamAttemptModel:
         self, mock_exam, mock_challenge_results, mock_datetime
     ):
         """Test complete_exam method without notes."""
-        mock_datetime.utcnow.return_value = datetime(2024, 1, 1, 14, 0, 0)
+        mock_utc_now.return_value = datetime(2024, 1, 1, 14, 0, 0)
 
         # Mock challenge results with None score
         mock_result1 = Mock()
@@ -502,7 +503,7 @@ class TestExamChallengeResultModel:
     def test_complete_challenge_with_all_params(self, mock_datetime):
         """Test complete_challenge with all parameters."""
         mock_now = datetime(2024, 1, 1, 15, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         result = ExamChallengeResult()
 
@@ -517,7 +518,7 @@ class TestExamChallengeResultModel:
     def test_complete_challenge_minimal_params(self, mock_datetime):
         """Test complete_challenge with minimal parameters."""
         mock_now = datetime(2024, 1, 1, 15, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         result = ExamChallengeResult()
 
@@ -532,7 +533,7 @@ class TestExamChallengeResultModel:
     def test_complete_challenge_without_notes(self, mock_datetime):
         """Test complete_challenge without notes."""
         mock_now = datetime(2024, 1, 1, 15, 0, 0)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_utc_now.return_value = mock_now
 
         result = ExamChallengeResult()
 

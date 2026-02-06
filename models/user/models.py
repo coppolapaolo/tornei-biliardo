@@ -9,13 +9,12 @@ Updated: Added encryption for personal data (email, phone) per SPECIFICHE.md
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Dict, List, TYPE_CHECKING
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from ..base import db, BaseModel  # BaseModel for timestamps
+from ..base import db, BaseModel  # BaseModel for timestamps, utc_now
 from ..fields import EncryptedString  # Encrypted field types
 
 if TYPE_CHECKING:
@@ -26,7 +25,7 @@ if TYPE_CHECKING:  # Avoid runtime circular imports
     from ..match.models import Match
     from ..campionato.models import Campionato
 
-from models.base import TimestampMixin, SoftDeleteMixin
+from models.base import TimestampMixin, SoftDeleteMixin, utc_now
 
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -146,14 +145,14 @@ class User(UserMixin, BaseModel, TimestampMixin, SoftDeleteMixin):
     # Operazioni di anonimizzazione (PII → NULL, username tecnico)
     def anonymize(self) -> None:
         if not self.is_deleted:
-            self.deleted_at = datetime.utcnow()
+            self.deleted_at = utc_now()
         if not self.previous_username:
             self.previous_username = self.username
         # Username tecnico e univoco; UI mostrerà una versione "accattivante"
         stamp = (
             self.deleted_at.strftime("%Y%m%d")
             if self.deleted_at
-            else datetime.utcnow().strftime("%Y%m%d")
+            else utc_now().strftime("%Y%m%d")
         )
         self.username = f"deleted-{self.id}-{stamp}"
         self.email = None
@@ -365,7 +364,7 @@ class DirectorAssignment(BaseModel):
     entity_type = db.Column(db.String(20), primary_key=True)  # 'campionato' o 'gara'
     entity_id = db.Column(db.Integer, primary_key=True)
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     director = db.relationship(
@@ -411,7 +410,7 @@ class DirectorRequest(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    requested_at = db.Column(db.DateTime, default=utc_now)
     status = db.Column(
         db.String(20), nullable=False, default="pending"
     )  # pending|approved|rejected
@@ -427,7 +426,7 @@ class DirectorRequest(BaseModel):
         from ..status_enum import DirectorRequestStatus
 
         self.status = DirectorRequestStatus.APPROVED
-        self.processed_at = datetime.utcnow()
+        self.processed_at = utc_now()
         self.processed_by = admin
         # Get the user object and update role
 
@@ -440,7 +439,7 @@ class DirectorRequest(BaseModel):
         from ..status_enum import DirectorRequestStatus
 
         self.status = DirectorRequestStatus.REJECTED
-        self.processed_at = datetime.utcnow()
+        self.processed_at = utc_now()
         self.processed_by = admin
         if notes:
             self.notes = notes
@@ -460,7 +459,7 @@ class VenueManagerRequest(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey("billiard_hall.id"), nullable=False)
-    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    requested_at = db.Column(db.DateTime, default=utc_now)
     status = db.Column(
         db.String(20), nullable=False, default="pending"
     )  # pending|approved|rejected|cancelled|contested
@@ -486,7 +485,7 @@ class VenueManagerRequest(BaseModel):
         from ..status_enum import VenueManagerRequestStatus
 
         self.status = VenueManagerRequestStatus.APPROVED
-        self.processed_at = datetime.utcnow()
+        self.processed_at = utc_now()
         self.processed_by = admin
         if admin_notes:
             self.admin_notes = admin_notes
@@ -501,7 +500,7 @@ class VenueManagerRequest(BaseModel):
         from ..status_enum import VenueManagerRequestStatus
 
         self.status = VenueManagerRequestStatus.REJECTED
-        self.processed_at = datetime.utcnow()
+        self.processed_at = utc_now()
         self.processed_by = admin
         if admin_notes:
             self.admin_notes = admin_notes
@@ -511,7 +510,7 @@ class VenueManagerRequest(BaseModel):
         from ..status_enum import VenueManagerRequestStatus
 
         self.status = VenueManagerRequestStatus.CANCELLED
-        self.processed_at = datetime.utcnow()
+        self.processed_at = utc_now()
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<VenueManagerRequest {self.id} {self.status}>"
@@ -528,7 +527,7 @@ class VenueManagement(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey("billiard_hall.id"), nullable=False)
-    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_at = db.Column(db.DateTime, default=utc_now)
     assigned_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     revoked_at = db.Column(db.DateTime, nullable=True)
@@ -548,7 +547,7 @@ class VenueManagement(BaseModel):
     def revoke(self, admin: "User") -> None:
         """Revoke venue management assignment."""
         self.is_active = False
-        self.revoked_at = datetime.utcnow()
+        self.revoked_at = utc_now()
         self.revoked_by = admin
 
     def __repr__(self) -> str:  # pragma: no cover

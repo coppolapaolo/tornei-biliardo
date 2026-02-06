@@ -15,6 +15,7 @@ from models.user.privacy_models import (
     HiddenCampionato,
 )
 from models.user.privacy_service import PrivacyService
+from models.base import utc_now
 
 
 @pytest.fixture
@@ -45,7 +46,7 @@ def test_gara(db_session):
     gara = Gara(
         name=f"Test Gara {unique_id}",
         number=1,
-        date=datetime.utcnow().date(),
+        date=utc_now().date(),
         discipline="palla_8",
         distance=5,
         is_race_to=True,

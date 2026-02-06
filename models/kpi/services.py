@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from sqlalchemy import func, and_, or_
 
-from ..base import db
+from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import KpiFeatureUsage, KpiDailySnapshot, KpiMilestone
 from .enums import (
@@ -219,7 +219,7 @@ class KpiService:
         """Get count of users active in last N days (based on match activity)."""
         from ..match.models import Match
 
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = utc_now() - timedelta(days=days)
 
         # Users who played a match in the period
         active_p1 = (
@@ -271,8 +271,8 @@ class KpiService:
         from ..user.models import User
         from ..match.models import Match
 
-        cutoff_registration = datetime.utcnow() - timedelta(days=days * 2)
-        cutoff_activity = datetime.utcnow() - timedelta(days=days)
+        cutoff_registration = utc_now() - timedelta(days=days * 2)
+        cutoff_activity = utc_now() - timedelta(days=days)
 
         # Users registered before cutoff_registration
         eligible_users = User.query.filter(
@@ -535,7 +535,7 @@ class KpiService:
         )
 
         if last_match:
-            days_since_match = (datetime.utcnow() - last_match.updated_at).days
+            days_since_match = (utc_now() - last_match.updated_at).days
             if days_since_match >= 7:
                 alerts.append(AlertType.NO_MATCH_7_DAYS)
             elif days_since_match >= 3:
@@ -549,7 +549,7 @@ class KpiService:
         )
 
         if last_user:
-            days_since_registration = (datetime.utcnow() - last_user.created_at).days
+            days_since_registration = (utc_now() - last_user.created_at).days
             if days_since_registration >= 7:
                 alerts.append(AlertType.NO_REGISTRATION_7_DAYS)
 
@@ -711,7 +711,7 @@ class KpiService:
         stickiness = round((dau / mau * 100), 1) if mau > 0 else 0.0
         
         # 2. Real Churn: Users active last month (30-60d ago) but NOT active this month (0-30d)
-        today = datetime.utcnow()
+        today = utc_now()
         thirty_days_ago = today - timedelta(days=30)
         sixty_days_ago = today - timedelta(days=60)
         
@@ -806,7 +806,7 @@ class KpiService:
         from ..user.models import User
         from ..match.models import Match, TrioMatch
 
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        thirty_days_ago = utc_now() - timedelta(days=30)
 
         # Count regular matches (is_trio=False) as P1
         p1_counts = (

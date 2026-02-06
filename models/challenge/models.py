@@ -43,7 +43,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from sqlalchemy import desc
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
     pass
@@ -299,7 +299,7 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
     score = db.Column(db.Integer, nullable=True)  # Punteggio: None se non completato
     passed = db.Column(db.Boolean, nullable=True)  # Solo per sfide pass/fail, None per numeriche
     completed = db.Column(db.Boolean, nullable=False, default=False)  # Stato completamento
-    attempted_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Timestamp tentativo
+    attempted_at = db.Column(db.DateTime, nullable=False, default=utc_now)  # Timestamp tentativo
 
     # Note opzionali sul tentativo (condizioni particolari, osservazioni)
     notes = db.Column(db.Text, nullable=True)
@@ -344,7 +344,7 @@ class ChallengeAttempt(BaseModel, TimestampMixin):
             ValueError: Se parametri non corrispondono al tipo di sfida
         """
         self.completed = True
-        self.attempted_at = datetime.utcnow()
+        self.attempted_at = utc_now()
 
         if self.challenge.pass_fail_only:
             # Sfide Pass/Fail Esplicite:
@@ -402,7 +402,7 @@ class ChallengeFavorite(BaseModel):
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
-    favorited_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    favorited_at = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     # Relazioni per navigazione dominio
     challenge = db.relationship("Challenge", back_populates="favorites")

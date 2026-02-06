@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
     from ..user.models import User
@@ -304,7 +304,7 @@ class UserLocationAvailability(BaseModel, TimestampMixin):
             return False
 
         # Check advance notice requirement
-        notice_hours = (check_datetime - datetime.utcnow()).total_seconds() / 3600
+        notice_hours = (check_datetime - utc_now()).total_seconds() / 3600
         if notice_hours < self.advance_notice_hours:
             return False
 
@@ -337,7 +337,7 @@ class UserLocationAvailability(BaseModel, TimestampMixin):
     def record_match_played(self) -> None:
         """Record that a match was played at this location."""
         self.matches_played_here += 1
-        self.last_played_at = datetime.utcnow()
+        self.last_played_at = utc_now()
 
     def get_availability_summary(self) -> Dict[str, Any]:
         """Get availability summary for this location."""

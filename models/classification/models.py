@@ -13,7 +13,7 @@ Phase 5 Refactor Notes:
 """
 
 from datetime import datetime
-from models.base import db, TimestampMixin
+from models.base import db, TimestampMixin, utc_now
 from sqlalchemy.orm import backref
 from models.transaction.manager import transactional
 
@@ -83,7 +83,7 @@ class RoundClassification(db.Model):
     previous_position = db.Column(db.Integer)  # posizione turno precedente
 
     # Metadata
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relations
     gara = db.relationship(
@@ -428,7 +428,7 @@ class PlayerEncounter(db.Model):
     player1_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     player2_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     round_number = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relations
     gara = db.relationship(

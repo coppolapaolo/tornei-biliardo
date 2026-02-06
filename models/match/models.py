@@ -7,7 +7,7 @@ Dependencies: models.base.db, datetime
 
 from datetime import datetime
 from typing import Optional, Dict, Any, TYPE_CHECKING
-from models.base import db, TimestampMixin
+from models.base import db, TimestampMixin, utc_now
 from models.status_enum import MatchStatus, Discipline
 from .base_match import BaseMatchMixin
 
@@ -62,7 +62,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         db.Boolean, default=False
     )  # Match specifico bloccato per modifiche
     round_locked = db.Column(db.Boolean, default=False)  # Round bloccato per modifiche
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     is_trio = db.Column(db.Boolean, default=False)  # Indica se è un trio
 
     # Time tracking for statistics
@@ -589,7 +589,7 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             # Soft delete the rack with log info
             last_rack.is_deleted = True
             last_rack.removed_by_id = user_id
-            last_rack.removed_at = datetime.utcnow()
+            last_rack.removed_at = utc_now()
 
             # Update match scores
             if last_rack.winner_id == self.player1_id:
@@ -625,11 +625,11 @@ class Rack(db.Model):
         db.Text, nullable=True
     )  # Note admin per modifiche/correzioni
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Nuovi campi per UX semplificata (log operazioni)
     added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    added_at = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)
+    added_at = db.Column(db.DateTime, nullable=True, default=utc_now)
     removed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     removed_at = db.Column(db.DateTime, nullable=True)
     is_deleted = db.Column(
@@ -657,7 +657,7 @@ class MatchResult(db.Model):
     player1_score = db.Column(db.Integer)
     player2_score = db.Column(db.Integer)
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relazioni
     reporter = db.relationship("User", foreign_keys=[user_id], overlaps="match_results")
@@ -712,7 +712,7 @@ class TrioMatch(db.Model):
         db.Integer, db.ForeignKey("user.id")
     )  # Con classifica rack-based, winner_id puo' essere NULL (pareggio)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relations
     # uselist=False because each Match has at most one TrioMatch (1:1 relationship)
@@ -1180,7 +1180,7 @@ class TrioRack(db.Model):
 
     # Audit trail
     added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Soft delete for undo
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
@@ -1208,7 +1208,7 @@ class TrioRack(db.Model):
         """Mark rack as deleted (undo)."""
         self.is_deleted = True
         self.removed_by_id = removed_by_id
-        self.removed_at = datetime.utcnow()
+        self.removed_at = utc_now()
 
     def __repr__(self):
         return f"<TrioRack {self.rack_number} trio={self.trio_match_id} winner={self.winner_id}>"

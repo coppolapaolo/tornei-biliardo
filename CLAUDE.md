@@ -100,17 +100,22 @@ Before writing any code:
 ## Critical Conventions
 
 ### 1. Timezone Handling
-The application uses **UTC-based datetime convention** throughout.
+The application uses **UTC-based datetime convention** throughout via the `utc_now()` utility.
 
 ```python
 # ✅ CORRECT
-from datetime import datetime
-now = datetime.utcnow()
+from models.base import utc_now
+now = utc_now()
 
 # ❌ WRONG
-now = datetime.now()
+from datetime import datetime
+now = datetime.now()       # Local time, not UTC
+now = datetime.utcnow()   # Deprecated in Python 3.12+
 ```
 
+`utc_now()` uses `datetime.now(timezone.utc).replace(tzinfo=None)` internally — non-deprecated API, but returns naive datetimes compatible with SQLite.
+
+- **Column defaults**: Use `default=utc_now` (no parens — callable reference)
 - **Frontend**: Use `|datetime_local` filter to display UTC → Italian time (UTC+2)
 
 ### 2. "Race to N" Terminology (NOT "Best of N")
@@ -362,6 +367,8 @@ service = MatchmakingService(gara_id=gara.id, strategy=MatchmakingStrategy.AMALF
 matches = service.create_next_round()
 ```
 
+**Note**: The Random Anti-Rematch strategy uses `networkx` for maximum cardinality matching on the anti-rematch graph. Don't reimplement graph algorithms — use `nx` (already in requirements.txt).
+
 ### Multi-Set Matches
 ```python
 # Single match - distance = winning racks threshold
@@ -410,7 +417,7 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 
 | Mistake | Correct Approach |
 |---------|------------------|
-| `datetime.now()` | `datetime.utcnow()` |
+| `datetime.now()` or `datetime.utcnow()` | `utc_now()` from `models.base` |
 | `gara.distance = 9` (thinking best of 9) | `gara.distance = 5` (race to 5) |
 | `db.session.delete(user)` | `user.anonymize()` |
 | `gara.status == GaraStatus.PLAYING` | `gara.status == GaraStatus.PLAYING.value` |
@@ -473,21 +480,6 @@ See `docs/adr/ADR-012-transactional-circular-import-fix.md` for a detailed case 
 
 ---
 
-## ✅ AUDIT COMPLETATO (31 Dicembre 2025)
+## Audit Status
 
-14 sprint completati con risultato finale: **0 FAIL, 0 WARNING**.
-
-Vedi `docs/AUDIT_REFACTORING_PLAN.md` per il piano completo e `docs/TODO_BACKLOG.md` per lo storico.
-
-### Metriche Finali
-| Metrica | Iniziale | Finale |
-|---------|----------|--------|
-| TODO comments | 28 | 7 (P3 minor) |
-| File > 1000 linee | 2 | 1 |
-| Import circolari | 14 | 13 |
-| Pyright errors | 0 | 0 |
-
-### Comandi di Verifica
-```bash
-./scripts/audit/verify_audit_completion.sh
-```
+Codebase audit completed (Dec 2025): 0 FAIL, 0 WARNING. Details in `docs/AUDIT_REFACTORING_PLAN.md`.

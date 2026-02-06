@@ -19,6 +19,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Query
 
 from ..caching import cache_manager
+from models.base import utc_now
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class QueryMetrics:
         self.min_time_ms = min(self.min_time_ms, duration_ms)
         self.max_time_ms = max(self.max_time_ms, duration_ms)
         self.avg_time_ms = self.total_time_ms / self.execution_count
-        self.last_executed = datetime.utcnow()
+        self.last_executed = utc_now()
 
         if params and len(self.parameters) < 10:  # Keep sample of parameters
             self.parameters.append(params)
@@ -135,7 +136,7 @@ class QueryAnalyzer:
 
     def detect_n1_problems(self, time_window_minutes: int = 5) -> List[N1Problem]:
         """Detect N+1 query problems in recent executions."""
-        cutoff_time = datetime.utcnow() - timedelta(minutes=time_window_minutes)
+        cutoff_time = utc_now() - timedelta(minutes=time_window_minutes)
 
         # Group queries by similarity and timing
         recent_queries = {
@@ -171,7 +172,7 @@ class QueryAnalyzer:
                     problem = N1Problem(
                         parent_query=parent_metrics.sql_text,
                         child_queries=child_candidates,
-                        detection_time=datetime.utcnow(),
+                        detection_time=utc_now(),
                         severity=severity,
                         suggested_solution=solution,
                         affected_tables=self._extract_tables(parent_metrics.sql_text),
@@ -185,7 +186,7 @@ class QueryAnalyzer:
             self._n1_problems = [
                 p
                 for p in self._n1_problems
-                if (datetime.utcnow() - p.detection_time).total_seconds()
+                if (utc_now() - p.detection_time).total_seconds()
                 < 3600  # 1 hour
             ]
 
