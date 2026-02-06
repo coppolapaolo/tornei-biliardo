@@ -370,13 +370,14 @@ def view_profile(user_id):
 @login_required
 @player_only
 def edit_profile():
-    """Modifica email e telefono dell'utente corrente."""
+    """Modifica username, email e telefono dell'utente corrente."""
     if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
         email = (request.form.get("email") or "").strip()
         phone = (request.form.get("phone") or "").strip() or None
 
         try:
-            UserService.update_user(current_user.id, email=email, phone=phone)
+            UserService.update_user(current_user.id, username=username, email=email, phone=phone)
             flash("Informazioni aggiornate correttamente.", "success")
             return redirect(url_for("player.profile"))
         except ValueError as e:
