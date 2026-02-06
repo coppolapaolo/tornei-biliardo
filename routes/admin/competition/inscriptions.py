@@ -10,6 +10,7 @@ from flask import (
 from flask_login import login_required, current_user
 from datetime import datetime
 from models.transaction.manager import transactional
+from models.shared.utils import parse_date_string
 
 from models import (
     db,
@@ -41,17 +42,12 @@ def open_inscriptions(gara_id):
             flash("Date di inizio o fine iscrizioni mancanti", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-        # Tenta di parsare con diversi formati (ISO con T o spazio)
-        def parse_date(date_str):
-            for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M"):
-                try:
-                    return datetime.strptime(date_str, fmt)
-                except ValueError:
-                    continue
-            raise ValueError(f"Formato data non valido: {date_str}")
-
-        inscription_start = parse_date(start_str)
-        inscription_end = parse_date(end_str)
+        inscription_start = parse_date_string(start_str)
+        if not inscription_start:
+            raise ValueError(f"Formato data non valido: {start_str}")
+        inscription_end = parse_date_string(end_str)
+        if not inscription_end:
+            raise ValueError(f"Formato data non valido: {end_str}")
 
         GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
         flash("Iscrizioni aperte!")

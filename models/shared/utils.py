@@ -20,8 +20,10 @@ def parse_date_string(
     """
     if formats is None:
         formats = [
-            "%Y-%m-%d",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%dT%H:%M",
             "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d",
             "%d/%m/%Y",
             "%d/%m/%Y %H:%M",
             "%d/%m/%Y %H:%M:%S",
@@ -97,6 +99,39 @@ def safe_get_attr(obj: Any, attr_path: str, default: Any = None) -> Any:
         return current
     except (AttributeError, TypeError):
         return default
+
+
+def parse_tables_input(input_str: str) -> List[str]:
+    """Parse user input to list of table names.
+
+    Handles:
+    - Multiple spaces around commas
+    - Alphanumeric table names (letters, numbers, words)
+    - Single integer interpreted as count (1-N)
+
+    Examples:
+    - "2,3,5" -> ["2", "3", "5"]
+    - "2, 3, 5" -> ["2", "3", "5"]
+    - "Sala A, Sala B" -> ["Sala A", "Sala B"]
+    - "5" -> ["1", "2", "3", "4", "5"]  (single integer = count)
+    - "" -> []
+    """
+    if not input_str or not input_str.strip():
+        return []
+
+    input_str = input_str.strip()
+
+    # Check if it's a single integer (interpreted as count)
+    if input_str.isdigit():
+        count = int(input_str)
+        if count > 0:
+            return [str(i) for i in range(1, count + 1)]
+        return []
+
+    # Otherwise, split by comma and strip each element
+    tables = [t.strip() for t in input_str.split(",")]
+    # Filter out empty strings
+    return [t for t in tables if t]
 
 
 def merge_dicts(dict1: Dict, dict2: Dict) -> Dict:

@@ -57,49 +57,17 @@ def campionato_manager_required(campionato_id_getter):
 def gara_manager_required(fn):
     """Permette l'accesso solo a chi può gestire la gara specificata.
 
-    Supports both standalone garas (director assignment) and
-    campionato garas (via campionato permissions).
+    Delegates to PermissionChecker.can_manage_competition() which handles
+    both standalone garas and campionato garas.
     """
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        from models import Gara, db  # Local import to avoid circular dependency
-
         gara_id = kwargs.get("gara_id") or (
             request.view_args.get("gara_id") if request.view_args else None
         )
-        gara = db.session.get(Gara, gara_id)
-
-        if getattr(current_user, "is_admin", False):
-            return fn(*args, **kwargs)
-
-        # Standalone: serve essere DIRECTOR e essere il director assegnato o co-direttore
-        if gara and getattr(gara, "campionato_id", None) is None:
-            if not getattr(current_user, "is_director", False):
-                abort(403)
-
-            # Director principale
-            if gara.director_id == current_user.id:
-                return fn(*args, **kwargs)
-
-            # Co-direttore via DirectorAssignment
-            from models.user.models import DirectorAssignment
-
-            is_co_director = (
-                db.session.query(DirectorAssignment)
-                .filter(
-                    DirectorAssignment.entity_type == "gara",
-                    DirectorAssignment.entity_id == gara_id,
-                    DirectorAssignment.user_id == current_user.id,
-                )
-                .first()
-                is not None
-            )
-            if not is_co_director:
-                abort(403)
-            return fn(*args, **kwargs)
-
-        # Campionati: lascia l'implementazione esistente (assegnazione su campionato)
+        if not PermissionChecker.can_manage_competition(current_user, gara_id):
+            abort(403)
         return fn(*args, **kwargs)
 
     return wrapper
@@ -143,55 +111,23 @@ def venue_manager_required(f):
 
 
 def rack_manager_required(f):
-    """Richiede che l'utente possa gestire il campionato collegato al rack."""
+    """Richiede che l'utente possa gestire la gara collegata al rack.
+
+    Delegates to PermissionChecker.can_manage_competition() which handles
+    both standalone garas and campionato garas.
+    """
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        from models import Rack, db  # Local import to avoid circular dependency
+        from models import Rack  # Local import to avoid circular dependency
 
         rack_id = kwargs.get("rack_id")
         rack = Rack.query.get_or_404(rack_id)
-        gara = rack.match.gara
-        campionato_id = gara.campionato_id
+        gara_id = rack.match.gara_id
 
-        # Admin può sempre gestire
-        if getattr(current_user, "is_admin", False):
-            return f(*args, **kwargs)
-
-        # Standalone: serve essere DIRECTOR e essere il director assegnato o co-direttore
-        if campionato_id is None:  # Gara standalone
-            if not getattr(current_user, "is_director", False):
-                flash("Non puoi gestire i rack di questa gara.", "error")
-                return redirect(url_for("dashboard.dashboard"))
-
-            # Director principale
-            if hasattr(gara, "director_id") and gara.director_id == current_user.id:
-                return f(*args, **kwargs)
-
-            # Co-direttore via DirectorAssignment
-            from models.user.models import DirectorAssignment
-
-            gara_id = gara.id
-            is_co_director = (
-                db.session.query(DirectorAssignment)
-                .filter(
-                    DirectorAssignment.entity_type == "gara",
-                    DirectorAssignment.entity_id == gara_id,
-                    DirectorAssignment.user_id == current_user.id,
-                )
-                .first()
-                is not None
-            )
-            if not is_co_director:
-                flash("Non puoi gestire i rack di questa gara.", "error")
-                return redirect(url_for("dashboard.dashboard"))
-            return f(*args, **kwargs)
-
-        # Gara con campionato: usa la logica standard
-        def _get_tid(**_ignored):
-            return campionato_id
-
-        return campionato_manager_required(_get_tid)(f)(*args, **kwargs)
+        if not PermissionChecker.can_manage_competition(current_user, gara_id):
+            abort(403)
+        return f(*args, **kwargs)
 
     return decorated_function
 

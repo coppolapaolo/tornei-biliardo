@@ -8,7 +8,7 @@ Dependencies: models.base.db, datetime
 from datetime import datetime
 from models.base import db, SoftDeleteMixin, utc_now
 from enum import Enum
-from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
+from models.status_enum import GaraStatus, MatchStatus
 from models.matchmaking.configuration import (
     MatchmakingStrategy,
     FirstRoundPolicy,
@@ -244,35 +244,12 @@ class Gara(SoftDeleteMixin, db.Model):
     def parse_tables_input(input_str: str) -> List[str]:
         """Parse user input to list of table names.
 
-        Handles:
-        - Multiple spaces around commas
-        - Alphanumeric table names (letters, numbers, words)
-        - Single integer interpreted as count (1-N)
-
-        Examples:
-        - "2,3,5" → ["2", "3", "5"]
-        - "2, 3, 5" → ["2", "3", "5"]
-        - "2,  a,      7  , 1" → ["2", "a", "7", "1"]
-        - "Sala A, Sala B" → ["Sala A", "Sala B"]
-        - "5" → ["1", "2", "3", "4", "5"]  (single integer = count)
-        - "" → []
+        Delegates to models.shared.utils.parse_tables_input.
+        Kept as static method on Gara for backward compatibility.
         """
-        if not input_str or not input_str.strip():
-            return []
+        from models.shared.utils import parse_tables_input as _parse_tables
 
-        input_str = input_str.strip()
-
-        # Check if it's a single integer (interpreted as count)
-        if input_str.isdigit():
-            count = int(input_str)
-            if count > 0:
-                return [str(i) for i in range(1, count + 1)]
-            return []
-
-        # Otherwise, split by comma and strip each element
-        tables = [t.strip() for t in input_str.split(",")]
-        # Filter out empty strings
-        return [t for t in tables if t]
+        return _parse_tables(input_str)
 
     def get_available_tables(self) -> List[str]:
         """Return available table names for this gara.
@@ -324,74 +301,22 @@ class Gara(SoftDeleteMixin, db.Model):
         return f"{self.name} - {self.campionato.name}"
 
     def get_real_status(self):
-        """Restituisce lo status reale, considerando anche round e iscrizioni"""
-        if self.status == GaraStatus.PLAYING.value:
-            matches_list = getattr(self, "matches", []) or []
+        """Restituisce lo status reale, considerando anche round e iscrizioni.
 
-            # First check: Are ALL matches across ALL rounds completed?
-            # This handles cases where current_round wasn't updated properly
-            # Note: VALIDATED (bilateral player confirmation) also counts as finished
-            if matches_list:
-                all_matches_completed = all(
-                    m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
-                    for m in matches_list
-                )
-                # Check if we have matches for all rounds
-                rounds_with_matches = set(
-                    m.round_number for m in matches_list if hasattr(m, "round_number")
-                )
-                all_rounds_have_matches = (
-                    len(rounds_with_matches) == self.rounds_count
-                    and max(rounds_with_matches) == self.rounds_count
-                )
+        Delegates to GaraStatusResolver for the actual logic.
+        """
+        from models.competition.status_resolver import GaraStatusResolver
 
-                if all_matches_completed and all_rounds_have_matches:
-                    return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
-
-            # Fallback: Check current round status
-            current_round_matches = [
-                m
-                for m in matches_list
-                if hasattr(m, "round_number") and m.round_number == self.current_round
-            ]
-            # Important: Only consider round completed if there ARE matches
-            # in the current round. Empty list means round not started yet.
-            # Note: VALIDATED (bilateral player confirmation) also counts as finished
-            if current_round_matches:
-                all_matches_finished = all(
-                    m.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]
-                    for m in current_round_matches
-                )
-                if all_matches_finished:
-                    if self.current_round < self.rounds_count:
-                        return ProvaDerivedStatus.ROUND_COMPLETED.value
-                    else:
-                        return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
-        elif self.status == GaraStatus.INSCRIPTION.value:
-            if self.inscription_end and utc_now() > self.inscription_end:
-                return ProvaDerivedStatus.INSCRIPTION_CLOSED.value
-        return self.status
+        return GaraStatusResolver.resolve(self)
 
     def get_status_badge_info(self):
-        """Restituisce info per badge status nel template"""
-        real_status = self.get_real_status()
-        return {
-            GaraStatus.SETUP.value: {"class": "bg-warning", "text": "Setup"},
-            GaraStatus.INSCRIPTION.value: {
-                "class": "bg-info",
-                "text": "Iscrizioni Aperte",
-            },
-            "inscription_closed": {
-                "class": "bg-secondary",
-                "text": "Iscrizioni Chiuse",
-            },
-            "ready_to_start": {"class": "bg-primary", "text": "Pronta per Iniziare"},
-            GaraStatus.PLAYING.value: {"class": "bg-success", "text": "In Corso"},
-            GaraStatus.AWAITING_SSR.value: {"class": "bg-warning", "text": "Spareggi"},
-            GaraStatus.COMPLETED.value: {"class": "bg-dark", "text": "Completata"},
-            "round_completed": {"class": "bg-info", "text": "Turno Completato"},
-            "campionato_completed": {"class": "bg-dark", "text": "Gara Completata"},
-        }.get(real_status, {"class": "bg-secondary", "text": "Sconosciuto"})
+        """Restituisce info per badge status nel template.
+
+        Delegates to status_resolver.get_status_badge for the badge mapping.
+        """
+        from models.competition.status_resolver import get_status_badge
+
+        return get_status_badge(self)
 
     def can_start_new_round(self):
         """Verifica se si può iniziare un nuovo round"""
@@ -692,9 +617,7 @@ class Gara(SoftDeleteMixin, db.Model):
 
     def get_active_inscriptions_count(self):
         """Conta le iscrizioni attive (non in lista d'attesa e non ritirate)"""
-        return len(
-            [i for i in self.inscriptions if not i.is_withdrawn and not i.is_waitlist]
-        )
+        return Inscription.active_count_for_gara(self.id)
 
     def get_waitlist_count(self):
         """Conta i giocatori in lista d'attesa"""
@@ -779,6 +702,20 @@ class Inscription(db.Model):
     waitlist_position = db.Column(db.Integer, nullable=True)
     # Reason for waitlist: 'capacity' (max exceeded) or 'parity' (odd count with NO policy)
     waitlist_reason = db.Column(db.String(20), nullable=True)
+
+    @classmethod
+    def active_for_gara(cls, gara_id: int) -> list["Inscription"]:
+        """Return active (non-withdrawn, non-waitlist) inscriptions for a gara."""
+        return cls.query.filter_by(
+            gara_id=gara_id, is_withdrawn=False, is_waitlist=False
+        ).all()
+
+    @classmethod
+    def active_count_for_gara(cls, gara_id: int) -> int:
+        """Count active (non-withdrawn, non-waitlist) inscriptions for a gara."""
+        return cls.query.filter_by(
+            gara_id=gara_id, is_withdrawn=False, is_waitlist=False
+        ).count()
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.gara_id}>"

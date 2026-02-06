@@ -28,6 +28,7 @@ from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
 from utils import gara_manager_required
+from utils.route_helpers import handle_service_action
 
 from . import competition_bp
 
@@ -66,17 +67,14 @@ def start_first_round(gara_id):
 @gara_manager_required
 def cancel_first_round(gara_id):
     """Cancella l'avvio del primo turno se non ci sono risultati"""
-    try:
-        GaraService.cancel_first_round_startup(gara_id)
-        flash(
+    return handle_service_action(
+        action=lambda: GaraService.cancel_first_round_startup(gara_id),
+        redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
+        success_message=(
             "Avvio del primo turno cancellato con successo! "
-            "La gara è tornata allo stato di iscrizioni.",
-            "success",
-        )
-    except ValueError as ve:
-        flash(str(ve), "error")
-
-    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+            "La gara è tornata allo stato di iscrizioni."
+        ),
+    )
 
 
 @competition_bp.route("/<int:gara_id>/cancel_current_round", methods=["POST"])

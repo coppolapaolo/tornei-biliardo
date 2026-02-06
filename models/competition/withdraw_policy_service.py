@@ -149,15 +149,7 @@ class WithdrawPolicyService:
 
         Includes forfeit players as they still participate in matchmaking.
         """
-        return (
-            db.session.query(Inscription)
-            .filter_by(
-                gara_id=gara_id,
-                is_withdrawn=False,
-                is_waitlist=False
-            )
-            .all()
-        )
+        return Inscription.active_for_gara(gara_id)
 
     @staticmethod
     def get_forfeit_inscriptions(gara_id: int) -> list[Inscription]:
