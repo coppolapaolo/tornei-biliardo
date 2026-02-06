@@ -174,7 +174,7 @@
                 {# Trio: chiama openQuickResultTrio con 3 giocatori #}
                 {% set trio = match.trio_match %}
                 <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#quickResultModal"
-                    onclick="openQuickResultTrio({{ match.id }}, {{ trio.id }}, '{{ trio.player1.username }}', '{{ trio.player2.username }}', '{{ trio.player3.username }}', {{ trio.player1_racks }}, {{ trio.player2_racks }}, {{ trio.player3_racks }}, '{{ match.started_at.strftime('%H:%M') if match.started_at else '' }}')">
+                    onclick='openQuickResultTrio({{ match.id }}, {{ trio.id }}, {{ trio.player1.username|tojson }}, {{ trio.player2.username|tojson }}, {{ trio.player3.username|tojson }}, {{ trio.player1_racks }}, {{ trio.player2_racks }}, {{ trio.player3_racks }}, {{ (match.started_at.strftime("%H:%M") if match.started_at else "")|tojson }})'>
                     <i class="fas fa-tachometer-alt"></i>
                 </button>
                 {% else %}

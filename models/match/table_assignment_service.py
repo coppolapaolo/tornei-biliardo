@@ -84,6 +84,29 @@ class TableAssignmentService:
         return gara.get_available_tables()
 
     @staticmethod
+    def get_occupied_tables(gara_id: int) -> dict[str, int]:
+        """Get mapping of occupied tables to their match IDs.
+
+        A table is "occupied" if it's assigned to a PLAYING match in this gara.
+
+        Args:
+            gara_id: ID of the gara
+
+        Returns:
+            Dict mapping table names to match IDs (e.g., {"3": 42, "5": 45})
+        """
+        occupied = (
+            db.session.query(Match.table_assignment, Match.id)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status == MatchStatus.PLAYING.value,
+                Match.table_assignment.isnot(None),
+            )
+            .all()
+        )
+        return {row[0]: row[1] for row in occupied}
+
+    @staticmethod
     def _get_free_tables(gara_id: int) -> List[str]:
         """Get list of tables that are currently free (not assigned to PLAYING matches).
 
@@ -108,16 +131,7 @@ class TableAssignmentService:
             return []
 
         # Find tables currently assigned to PLAYING matches
-        occupied_tables = set(
-            row[0]
-            for row in db.session.query(Match.table_assignment)
-            .filter(
-                Match.gara_id == gara_id,
-                Match.status == MatchStatus.PLAYING.value,
-                Match.table_assignment.isnot(None),
-            )
-            .all()
-        )
+        occupied_tables = set(TableAssignmentService.get_occupied_tables(gara_id).keys())
 
         # Return tables that are configured but not occupied
         return list(all_tables - occupied_tables)
@@ -361,8 +375,9 @@ class TableAssignmentService:
         - Validates round locking before allowing reassignment
         - If new_table is occupied by another PLAYING match → other match loses table (eviction)
         - If new_table is free → simple assignment
-        - If new_table is None → removes table assignment
+        - If new_table is None → removes table assignment (only if no racks played)
         - A table can only host ONE playing match at a time (physical constraint)
+        - If match has racks (started), table cannot be removed, only swapped
 
         Args:
             match_id: ID of the match to reassign
@@ -388,6 +403,9 @@ class TableAssignmentService:
 
         old_table = match.table_assignment
 
+        # Check if match has racks played (via scores)
+        has_racks = (match.player1_score or 0) + (match.player2_score or 0) > 0
+
         # Check if players are busy in another match (when assigning a table)
         # This only applies when assigning a new table, not when removing
         if new_table is not None and not old_table:
@@ -408,7 +426,13 @@ class TableAssignmentService:
 
         # Case 1: Remove table assignment
         if new_table is None:
+            # Business Rule: Cannot remove table if match has racks (only swap allowed)
+            if has_racks:
+                return False, "Non puoi rimuovere il tavolo: la partita è già iniziata. Puoi solo scambiarlo.", None
+
             match.table_assignment = None
+            # Reset started_at since match hasn't really started without racks
+            match.started_at = None
             RackService.reset_match_complete(match.id)
             db.session.add(match)
             return True, f"Tavolo '{old_table}' rimosso dal match", None
@@ -430,9 +454,13 @@ class TableAssignmentService:
         )
 
         if occupying_match:
+            # Check if occupying match has racks played
+            occupying_has_racks = (occupying_match.player1_score or 0) + (occupying_match.player2_score or 0) > 0
+
             # Automatic swap/eviction with occupying match
             swapped = False
             if old_table:
+                # Swap tables between matches
                 occupying_match.table_assignment = old_table
                 # Ensure occupying match status is correct if it now has a table
                 if (occupying_match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
@@ -442,7 +470,16 @@ class TableAssignmentService:
                         pass
                 swapped = True
             else:
+                # No old_table to swap - would evict occupying match
+                # Business Rule: Cannot evict a match that has started (has racks)
+                if occupying_has_racks:
+                    return False, (
+                        f"Il tavolo '{new_table}' è occupato da una partita già iniziata. "
+                        f"Per scambiare, il tuo match deve già avere un tavolo assegnato."
+                    ), None
+
                 occupying_match.table_assignment = None
+                occupying_match.started_at = None  # Reset since no racks
                 RackService.reset_match_complete(occupying_match.id)
 
             match.table_assignment = new_table

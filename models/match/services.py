@@ -826,6 +826,12 @@ class RackService:
         match.player2_score = 0
         match.winner_id = None
 
+        # Reset player confirmations
+        match.player1_confirmed = False
+        match.player2_confirmed = False
+        match.player1_confirmed_at = None
+        match.player2_confirmed_at = None
+
         # Stato intelligente basato su table_assignment:
         # - Se ha tavolo assegnato → PLAYING (pronto per essere giocato)
         # - Se non ha tavolo → PENDING (in attesa di assegnazione)

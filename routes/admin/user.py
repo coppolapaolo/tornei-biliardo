@@ -187,16 +187,44 @@ def toggle_gamification_override(user_id):
         if not user:
             flash("Utente non trovato.", "error")
             return redirect(url_for("admin.user.users_list"))
-        
+
         # Toggle the override
         user.gamification_override = not user.gamification_override
         db.session.commit()
-        
+
         status = "attivato" if user.gamification_override else "disattivato"
         flash(f"Gamification Override {status} per {user.username}.", "success")
-        
+
     except Exception as e:
         db.session.rollback()
         flash(f"Errore: {str(e)}", "error")
-    
+
+    return redirect(url_for("admin.user.user_detail", user_id=user_id))
+
+
+@user_bp.route("/user/<int:user_id>/set-password", methods=["POST"])
+@admin_required
+def set_user_password(user_id: int):
+    """Admin sets a new password for a user"""
+    from flask_login import current_user
+    from flask_babel import _
+    from models.user.profile_service import UserProfileService
+
+    new_password = request.form.get("new_password", "").strip()
+    confirm_password = request.form.get("confirm_password", "").strip()
+
+    if new_password != confirm_password:
+        flash(_("Le password non corrispondono"), "danger")
+        return redirect(url_for("admin.user.user_detail", user_id=user_id))
+
+    try:
+        UserProfileService.set_password_as_admin(
+            user_id=user_id,
+            new_password=new_password,
+            admin_id=current_user.id,
+        )
+        flash(_("Password impostata con successo"), "success")
+    except ValueError as e:
+        flash(str(e), "danger")
+
     return redirect(url_for("admin.user.user_detail", user_id=user_id))

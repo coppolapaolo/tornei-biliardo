@@ -872,9 +872,10 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
                 classif.campionato.name if classif.campionato else None
             ),
             "position": classif.position,
-            "points": classif.points,
-            "wins": classif.wins,
-            "losses": classif.losses,
+            "total_matches_won": classif.total_matches_won,
+            "total_racks_won": classif.total_racks_won,
+            "total_point_difference": classif.total_point_difference,
+            "gare_played": classif.gare_played,
         }
         for classif in classifications
     ]
@@ -965,15 +966,25 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
     }
 
 
-def _generate_gdpr_export(app, user_id: int, username: str) -> None:
-    """Background task to generate GDPR export."""
+def _generate_gdpr_export(
+    app, user_id: int, username: str, i18n_strings: dict[str, str]
+) -> None:
+    """Background task to generate GDPR export.
+
+    Args:
+        app: Flask application instance
+        user_id: User ID to export data for
+        username: Username for filename
+        i18n_strings: Pre-translated strings (translated before thread spawn
+            because Flask-Babel requires request context which is unavailable in threads)
+    """
     with app.app_context():
         try:
             # Collect data
             data = _collect_user_data(user_id)
             if not data:
                 raise ValueError(f"No data found for user {user_id}")
-            
+
             # Create export directory
             export_dir = Path(app.instance_path) / "gdpr_exports"
             export_dir.mkdir(parents=True, exist_ok=True)
@@ -994,18 +1005,18 @@ def _generate_gdpr_export(app, user_id: int, username: str) -> None:
                     json_content.encode("utf-8"),
                 )
 
-            # Send notification
+            # Send notification (using pre-translated strings)
             from models.notification.services import NotificationService
             from models.notification.models import NotificationType, NotificationPriority
 
             NotificationService.create_notification(
                 user_id=user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
-                title=_("Export GDPR Pronto"),
-                message=_("Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."),
+                title=i18n_strings["success_title"],
+                message=i18n_strings["success_message"],
                 priority=NotificationPriority.NORMAL,
                 action_url=f"/player/gdpr-export/download/{filename}",
-                action_text=_("Scarica"),
+                action_text=i18n_strings["success_action"],
             )
 
             # Emit SSE event for real-time notification
@@ -1028,12 +1039,15 @@ def _generate_gdpr_export(app, user_id: int, username: str) -> None:
                 NotificationService.create_notification(
                     user_id=user_id,
                     notification_type=NotificationType.ACCOUNT_UPDATE,
-                    title=_("Errore Export GDPR"),
-                    message=_("Si è verificato un errore durante la generazione dell'archivio. Riprova più tardi."),
+                    title=i18n_strings["error_title"],
+                    message=i18n_strings["error_message"],
                     priority=NotificationPriority.HIGH,
                 )
-            except Exception:
-                pass
+            except Exception as notify_error:
+                current_app.logger.error(
+                    f"Failed to send error notification for user {user_id}: {notify_error}",
+                    exc_info=True,
+                )
 
 
 @player_bp.route("/gdpr-export/request", methods=["POST"])
@@ -1055,11 +1069,21 @@ def request_gdpr_export():
             )
             return redirect(url_for("player.privacy_settings"))
 
+    # Pre-translate strings while we still have request context
+    # (Flask-Babel requires request context, unavailable in background threads)
+    i18n_strings = {
+        "success_title": _("Export GDPR Pronto"),
+        "success_message": _("Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."),
+        "success_action": _("Scarica"),
+        "error_title": _("Errore Export GDPR"),
+        "error_message": _("Si è verificato un errore durante la generazione dell'archivio. Riprova più tardi."),
+    }
+
     # Start background export
     app = current_app._get_current_object()  # Get actual app object for thread
     thread = threading.Thread(
         target=_generate_gdpr_export,
-        args=(app, user.id, user.username),
+        args=(app, user.id, user.username, i18n_strings),
         daemon=True,
     )
     thread.start()

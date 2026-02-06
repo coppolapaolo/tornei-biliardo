@@ -58,6 +58,30 @@
         </p>
         {% endif %}
 
+        {# Set Password (Admin Only) #}
+        {% if current_user.is_admin and not user.is_admin %}
+        <hr class="my-3">
+        <p><strong>Imposta Password:</strong></p>
+        <form action="{{ url_for('admin.user.set_user_password', user_id=user.id) }}" method="POST"
+            onsubmit='return confirmSubmit(this, {{ "Impostare una nuova password per %s?"|format(user.username)|tojson }})'>
+            <div class="row g-2 align-items-end">
+                <div class="col-5">
+                    <input type="password" name="new_password" class="form-control form-control-sm"
+                           placeholder="Nuova password" required minlength="6">
+                </div>
+                <div class="col-5">
+                    <input type="password" name="confirm_password" class="form-control form-control-sm"
+                           placeholder="Conferma password" required minlength="6">
+                </div>
+                <div class="col-2">
+                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                        <i class="fas fa-key"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+
         <p><strong>Registrato:</strong> {{ user.created_at|datetime_local }}</p>
 
         {% if debug_info.debug_mode %}

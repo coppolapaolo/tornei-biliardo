@@ -459,6 +459,62 @@ def assign_table(match_id):
             db.session.commit()
             logger.info("Changes committed to database")
 
+            # Emit SSE events for polling updates
+            match = db.session.get(Match, match_id)
+            if match:
+                event_type = "table_assigned" if new_table else "table_removed"
+
+                # Emit to gara scope (for gara_detail page)
+                if match.gara_id:
+                    emit_gara_event(match.gara_id, "match_updated", {
+                        "match_id": match_id,
+                        "table_assignment": match.table_assignment,
+                        "status": match.status,
+                        "event": event_type,
+                    })
+
+                # Emit to match scope (for match_detail page)
+                from routes.sse import emit_match_event, emit_user_event
+                emit_match_event(match_id, event_type, {
+                    "match_id": match_id,
+                    "table_assignment": match.table_assignment,
+                    "status": match.status,
+                })
+
+                # Emit to user scope (for player dashboard)
+                for player_id in [match.player1_id, match.player2_id]:
+                    if player_id:
+                        emit_user_event(player_id, "match_table_changed", {
+                            "match_id": match_id,
+                            "table_assignment": match.table_assignment,
+                            "event": event_type,
+                        })
+
+                # If there was a swap, also emit for the swapped match
+                if swapped_match_id:
+                    swapped_match = db.session.get(Match, swapped_match_id)
+                    if swapped_match:
+                        if swapped_match.gara_id:
+                            emit_gara_event(swapped_match.gara_id, "match_updated", {
+                                "match_id": swapped_match_id,
+                                "table_assignment": swapped_match.table_assignment,
+                                "status": swapped_match.status,
+                                "event": "table_swapped",
+                            })
+                        emit_match_event(swapped_match_id, "table_swapped", {
+                            "match_id": swapped_match_id,
+                            "table_assignment": swapped_match.table_assignment,
+                            "status": swapped_match.status,
+                        })
+                        # Emit to users of swapped match
+                        for player_id in [swapped_match.player1_id, swapped_match.player2_id]:
+                            if player_id:
+                                emit_user_event(player_id, "match_table_changed", {
+                                    "match_id": swapped_match_id,
+                                    "table_assignment": swapped_match.table_assignment,
+                                    "event": "table_swapped",
+                                })
+
         logger.info(
             f"Service returned: success={success}, message='{message}', "
             f"swapped_match_id={swapped_match_id}"

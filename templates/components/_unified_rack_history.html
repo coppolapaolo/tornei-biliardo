@@ -34,8 +34,6 @@ Parameters:
                     <tr>
                         <th>{{ _('Rack') }}</th>
                         <th>{{ _('Vincitore') }}</th>
-                        <th>{{ p1_name }}</th>
-                        <th>{{ p2_name }}</th>
                         <th>{{ _('Aggiunto da') }}</th>
                         <th>{{ _('Quando') }}</th>
                     </tr>
@@ -48,16 +46,6 @@ Parameters:
                             <span class="badge bg-{% if rack.winner_id == p1_id %}primary{% else %}success{% endif %}">
                                 {% if rack.winner_id == p1_id %}{{ p1_name }}{% else %}{{ p2_name }}{% endif %}
                             </span>
-                        </td>
-                        <td>
-                            {% if rack.winner_id == p1_id %}
-                            <i class="fas fa-check text-success"></i>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if rack.winner_id == p2_id %}
-                            <i class="fas fa-check text-success"></i>
-                            {% endif %}
                         </td>
                         <td>
                             <small class="text-muted">{{ rack.added_by.username if rack.added_by else '-' }}</small>

@@ -740,6 +740,7 @@
       "inscriptionEnd": {{ (gara.inscription_end.isoformat() if gara.inscription_end else None) | tojson }}
     },
     "availableTables": {{ available_tables | tojson }},
+    "occupiedTables": {{ occupied_tables | tojson }},
     "i18n": {
       "confirmStartRandom": {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }},
       "confirmStartStandard": {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }},
@@ -1612,6 +1613,7 @@
   let tableAssignmentMatchId = null;
   let tableAssignmentCurrentTable = null;
   const availableTables = GARA_CONFIG.availableTables;
+  const occupiedTables = GARA_CONFIG.occupiedTables || {};  // Maps table_name -> match_id
 
   /**
    * Apre il modal di assegnazione tavolo
@@ -1683,13 +1685,14 @@
   }
 
   /**
-   * Verifica se un tavolo è occupato (dummy - sempre false per ora)
-   * TODO: Implementare logica reale quando si passa info tavoli occupati dal backend
+   * Verifica se un tavolo è occupato da un altro match (non il corrente)
+   * @param {string} tableName - Nome del tavolo
+   * @returns {boolean} true se occupato da altro match
    */
   function isTableOccupied(tableName) {
-    // Per ora consideriamo tutti i tavoli liberi
-    // In futuro si potrebbe passare dal backend una lista di tavoli occupati
-    return false;
+    const occupyingMatchId = occupiedTables[tableName];
+    // Occupato se: ha un match assegnato E non è il match corrente che stiamo editando
+    return occupyingMatchId !== undefined && occupyingMatchId !== tableAssignmentMatchId;
   }
 
   /**

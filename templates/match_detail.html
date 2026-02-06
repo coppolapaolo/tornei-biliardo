@@ -617,13 +617,13 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         {# Trio match: poll trio endpoint #}
         window.Polling.reloadOnEvents({
             url: '/sse/poll/trio/' + {{ match.trio_match.id }},
-            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed']
+            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed', 'table_assigned', 'table_removed', 'table_swapped']
         });
         {% else %}
         {# Regular match: poll match endpoint #}
         window.Polling.reloadOnEvents({
             url: '/sse/poll/match/' + {{ match.id }},
-            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed']
+            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed', 'table_assigned', 'table_removed', 'table_swapped']
         });
         {% endif %}
     {% endif %}

@@ -570,8 +570,40 @@ class UserProfileService:
 
         user.set_password(new_password)
         token.mark_as_used()
-        
+
         # Invalidate other sessions/tokens if needed (optional)
-        
+
+        return True
+
+    @staticmethod
+    @transactional(domain="user")
+    def set_password_as_admin(user_id: int, new_password: str, admin_id: int) -> bool:
+        """Admin sets a new password for a user (no old password required).
+
+        Args:
+            user_id: ID of user to set password for
+            new_password: New password to set
+            admin_id: ID of admin performing the action (for audit logging)
+
+        Returns:
+            bool: True if password set successfully
+
+        Raises:
+            ValueError: If user not found, target is admin, or password too short
+        """
+        from flask import current_app
+
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("Utente non trovato")
+
+        if user.role == UserRole.ADMIN.value:
+            raise ValueError("Non è possibile modificare la password dell'amministratore")
+
+        if not new_password or len(new_password.strip()) < 6:
+            raise ValueError("La password deve essere di almeno 6 caratteri")
+
+        user.set_password(new_password)
+        current_app.logger.info(f"Admin {admin_id} set password for user {user_id}")
         return True
 

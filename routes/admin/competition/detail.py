@@ -336,10 +336,12 @@ def gara_detail(gara_id):
 
     # Get available tables for gara (for table assignment UI)
     available_tables = []
+    occupied_tables = {}  # Maps table_name -> match_id
     if user_can_manage:
         from models.match.table_assignment_service import TableAssignmentService
 
         available_tables = TableAssignmentService.get_table_names_for_gara(gara.id)
+        occupied_tables = TableAssignmentService.get_occupied_tables(gara.id)
 
     # Get forfeit user IDs for visual indication
     forfeit_user_ids = set(
@@ -400,6 +402,7 @@ def gara_detail(gara_id):
         match_can_modify=match_can_modify,
         discipline_choices=Discipline.get_choices(),
         available_tables=available_tables,
+        occupied_tables=occupied_tables,
         forfeit_user_ids=forfeit_user_ids,
         available_users=available_users,
         # SSR (Spot Shot Rally) data

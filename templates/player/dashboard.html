@@ -56,5 +56,13 @@ function unsubscribeFromProva(provaId, provaNumber) {
         });
     });
 }
+
+{# Polling: Real-time updates for player's active matches #}
+{% if current_user.is_authenticated %}
+window.Polling.reloadOnEvents({
+    url: '/sse/poll/user/' + {{ current_user.id }},
+    reloadOn: ['match_table_changed', 'my_match_completed', 'my_match_started']
+});
+{% endif %}
 </script>
 {% endblock %}
