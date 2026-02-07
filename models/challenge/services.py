@@ -80,8 +80,7 @@ class ChallengeService:
         """
         challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
-            from flask import abort
-            abort(404)
+            raise ValueError("Challenge non trovata")
 
         # Aggiorna solo i campi specificati (pattern partial update)
         if description is not None:
@@ -228,9 +227,7 @@ class ChallengeService:
         """Complete a challenge attempt with results."""
         attempt = db.session.get(ChallengeAttempt, attempt_id)
         if not attempt:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tentativo challenge non trovato")
 
         attempt.complete_attempt(score=score, passed=passed)
         if notes:
@@ -339,9 +336,7 @@ class ChallengeService:
 
         attempt = db.session.get(ChallengeAttempt, attempt_id)
         if not attempt:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tentativo challenge non trovato")
 
         # Complete the attempt
         attempt.complete_attempt(score=score, passed=None)
@@ -458,9 +453,7 @@ class ChallengeService:
         """
         challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Challenge non trovata")
 
         # Verifica se la sfida ha tentativi registrati (cronologia)
         has_attempts = (

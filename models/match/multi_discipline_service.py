@@ -29,9 +29,7 @@ class MultiDisciplineService:
         """
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if not match.supports_multi_discipline():
             raise ValueError("Match does not support multi-discipline configuration")
@@ -79,9 +77,7 @@ class MultiDisciplineService:
         """
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if not match.supports_multi_discipline():
             raise ValueError("Match does not support multi-discipline configuration")
@@ -269,9 +265,7 @@ class MultiDisciplineService:
         """Get progress summary for a multi-discipline match."""
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if not match.is_multi_set:
             return {

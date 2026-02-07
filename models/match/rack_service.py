@@ -187,9 +187,7 @@ class RackService:
         """
         rack = db.session.get(Rack, rack_id)
         if rack is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Rack non trovato")
         match = rack.match
 
         # Salva il vincitore per aggiornare il punteggio
@@ -236,9 +234,7 @@ class RackService:
         """Valida un rack (admin)."""
         rack = db.session.get(Rack, rack_id)
         if rack is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Rack non trovato")
 
         # Valida il rack
         rack.validated_by_admin = True

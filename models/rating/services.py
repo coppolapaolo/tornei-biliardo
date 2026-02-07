@@ -102,9 +102,7 @@ class RatingService:
         """Verify or unverify a player's rating."""
         rating = db.session.get(PlayerRating, rating_id)
         if rating is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Rating non trovato")
 
         rating.verified = verified
         rating.verified_by_id = verified_by_id if verified else None
@@ -348,9 +346,7 @@ class RatingService:
 
         rule = db.session.get(HandicapRule, handicap_rule_id)
         if rule is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Regola handicap non trovata")
 
         # Try category-based handicap first
         category_result = HandicapService._calculate_category_handicap(
@@ -420,9 +416,7 @@ class CategoryService:
         """Manually expire a category assignment."""
         category = db.session.get(PlayerCategory, category_id)
         if category is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Categoria non trovata")
         category.expire_category()
 
 
@@ -503,9 +497,7 @@ class HandicapService:
         """Update handicap rule active status."""
         rule = db.session.get(HandicapRule, rule_id)
         if rule is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Regola handicap non trovata")
         rule.is_active = is_active
         return rule
 

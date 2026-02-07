@@ -24,8 +24,7 @@ class MatchLifecycleService:
         """Start an individual match (must be one of the players)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can start the match")
@@ -39,8 +38,7 @@ class MatchLifecycleService:
         """Confirm match result by a player (new UX)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can confirm the result")
@@ -57,8 +55,7 @@ class MatchLifecycleService:
         """Reject match result - removes last rack (new UX)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can reject the result")
@@ -75,8 +72,7 @@ class MatchLifecycleService:
         """Complete a match - legacy method for backward compatibility."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can complete the match")
@@ -100,8 +96,7 @@ class MatchLifecycleService:
         """Cancel a match (must be one of the players)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can cancel the match")
@@ -158,8 +153,7 @@ class MatchLifecycleService:
         """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         # Delegate to model method which handles all validation and logic
         match.forfeit_match(user_id)

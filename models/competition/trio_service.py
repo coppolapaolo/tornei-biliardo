@@ -27,9 +27,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         # Verifica che il vincitore sia tra i giocatori del trio
         if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
@@ -107,9 +105,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         # Use TrioScoringService for reset
         from models.match.trio_scoring_service import TrioScoringService
@@ -127,9 +123,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         # Remove last rack via service
         from models.match.trio_scoring_service import TrioScoringService
@@ -206,9 +200,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         result = trio.confirm_result_by_admin()
 
@@ -251,9 +243,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         result = trio.confirm_result_by_player(user_id)
 
@@ -294,9 +284,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         success = trio.handle_forfeit(forfeiting_player_id, added_by_id)
         if not success:
@@ -343,9 +331,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Trio match non trovato")
 
         # Get configuration based on gara distance
         config = trio.trio_config

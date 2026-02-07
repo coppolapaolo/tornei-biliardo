@@ -177,9 +177,7 @@ class PlayoffService:
         """Find the next eligible player for playoff replacement."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Configurazione playoff non trovata")
 
         # Get current qualified/confirmed players by querying directly instead of using relationship
         confirmed_qualifications = PlayoffQualification.query.filter_by(
@@ -243,9 +241,7 @@ class PlayoffService:
         """Create the actual playoff campionato."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Configurazione playoff non trovata")
 
         # Check if campionato already exists
         if configuration.playoff_campionato is not None:
@@ -275,9 +271,7 @@ class PlayoffService:
         """Start registration for a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
         if campionato is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Campionato playoff non trovato")
         campionato.start_registration()
 
         return campionato
@@ -336,9 +330,7 @@ class PlayoffService:
         """Check if playoff is ready to start and create campionato if needed."""
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Configurazione playoff non trovata")
 
         confirmed_count = configuration.qualifications.filter_by(
             status=QualificationStatus.CONFIRMED
@@ -366,9 +358,7 @@ class PlayoffService:
         """Complete a playoff campionato."""
         campionato = db.session.get(PlayoffTournament, campionato_id)
         if campionato is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Campionato playoff non trovato")
         campionato.complete_campionato(winner_id)
 
         return campionato

@@ -463,9 +463,7 @@ class MatchService:
         """
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if not match.is_ready_for_validation():
             raise ValueError("Match is not ready for validation")
@@ -502,9 +500,7 @@ class MatchService:
         """
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if not match.is_ready_for_validation():
             raise ValueError("Match is not ready for validation")

@@ -401,8 +401,7 @@ class ProposalService:
 
         proposal = db.session.get(MatchProposal, proposal_id)
         if proposal is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Proposta non trovata")
 
         if not proposal.can_be_accepted_by(user_id):
             raise ValueError("User cannot accept this proposal")
@@ -447,8 +446,7 @@ class ProposalService:
         """Cancel a match proposal."""
         proposal = db.session.get(MatchProposal, proposal_id)
         if proposal is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Proposta non trovata")
 
         if proposal.proposer_id != user_id:
             raise ValueError("Only the proposer can cancel the proposal")

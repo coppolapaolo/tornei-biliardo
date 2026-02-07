@@ -71,9 +71,7 @@ class MatchmakingOrchestrator:
 
         gara = db.session.get(Gara, gara_id)
         if gara is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Gara non trovata")
 
         # Generate pairings
         pairings = self._matchmaking.run(

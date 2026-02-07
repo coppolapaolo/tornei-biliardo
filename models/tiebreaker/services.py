@@ -137,9 +137,7 @@ class TiebreakerService:
 
         tiebreaker = db.session.get(Tiebreaker, tiebreaker_id)
         if tiebreaker is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tiebreaker non trovato")
 
         if str(tiebreaker.status) != TiebreakerStatus.IN_PROGRESS.value:
             raise ValueError("Tiebreaker must be in progress to record shots")
@@ -180,9 +178,7 @@ class TiebreakerService:
 
         tiebreaker = db.session.get(Tiebreaker, tiebreaker_id)
         if tiebreaker is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tiebreaker non trovato")
 
         if str(tiebreaker.status) != TiebreakerStatus.IN_PROGRESS.value:
             raise ValueError("Tiebreaker must be in progress to record attempts")
@@ -221,9 +217,7 @@ class TiebreakerService:
 
         tiebreaker = db.session.get(Tiebreaker, tiebreaker_id)
         if tiebreaker is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tiebreaker non trovato")
 
         playoff_match = PlayoffMatch(
             tiebreaker_id=tiebreaker_id,
@@ -246,9 +240,7 @@ class TiebreakerService:
 
         playoff_match = db.session.get(PlayoffMatch, playoff_match_id)
         if playoff_match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Playoff match non trovato")
         playoff_match.complete_match(winner_id, p1_score, p2_score)
 
         # Check if entire tiebreaker is complete
@@ -262,9 +254,7 @@ class TiebreakerService:
 
         tiebreaker = db.session.get(Tiebreaker, tiebreaker_id)
         if tiebreaker is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tiebreaker non trovato")
         score_summary = tiebreaker.get_score_summary()
 
         status = {
@@ -466,9 +456,7 @@ class TiebreakerConfigurationService:
 
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Match non trovato")
 
         # Try to find specific configuration
         config = None

@@ -28,8 +28,7 @@ class IndividualRackService:
         """Add a rack won by specified player (new simplified UX)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in (match.player1_id, match.player2_id):
             raise ValueError("User is not part of this match")
@@ -92,8 +91,7 @@ class IndividualRackService:
         """Remove last rack won by specified player (new simplified UX)."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in (match.player1_id, match.player2_id):
             raise ValueError("User is not part of this match")
@@ -174,8 +172,7 @@ class IndividualRackService:
         """Original add_rack_result implementation."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         if user_id not in [match.player1_id, match.player2_id]:
             raise ValueError("Only match players can add rack results")

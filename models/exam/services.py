@@ -56,9 +56,7 @@ class ExamService:
         """Add a challenge to an exam."""
         exam = db.session.get(Exam, exam_id)
         if exam is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Esame non trovato")
 
         # Auto-assign order if not provided
         if order is None:
@@ -157,9 +155,7 @@ class ExamService:
         # Check if all challenges are completed
         attempt = db.session.get(ExamAttempt, exam_attempt_id)
         if attempt is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tentativo esame non trovato")
         progress = attempt.get_progress()
 
         if progress["is_complete"] and not attempt.completed:
@@ -175,9 +171,7 @@ class ExamService:
         """Manually complete an exam attempt."""
         attempt = db.session.get(ExamAttempt, exam_attempt_id)
         if attempt is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Tentativo esame non trovato")
 
         if not attempt.completed:
             attempt.complete_exam(notes=notes)
@@ -198,9 +192,7 @@ class ExamService:
         """Get detailed statistics for an exam."""
         exam = db.session.get(Exam, exam_id)
         if exam is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Esame non trovato")
         return exam.get_statistics()
 
     @staticmethod
@@ -244,9 +236,7 @@ class ExamService:
         """Update exam details."""
         exam = db.session.get(Exam, exam_id)
         if exam is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Esame non trovato")
 
         if name is not None:
             exam.name = name
@@ -267,9 +257,7 @@ class ExamService:
         """Delete an exam (soft delete by marking inactive)."""
         exam = db.session.get(Exam, exam_id)
         if exam is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Esame non trovato")
         exam.is_active = False
 
     @staticmethod

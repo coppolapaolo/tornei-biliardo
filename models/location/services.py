@@ -204,9 +204,7 @@ class LocationService:
 
         hall = db.session.get(BilliardHall, billiard_hall_id)
         if hall is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Sala biliardo non trovata")
 
         # Count active users
         active_users_count = UserLocationAvailability.query.filter_by(
@@ -340,9 +338,7 @@ class LocationService:
 
         hall = db.session.get(BilliardHall, hall_id)
         if hall is None:
-            from flask import abort
-
-            abort(404)
+            raise ValueError("Sala biliardo non trovata")
 
         # Update simple fields
         simple_fields = [

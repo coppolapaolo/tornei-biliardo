@@ -54,8 +54,7 @@ class ScoringService:
 
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         # Validate winner
         if winner_id not in (match.player1_id, match.player2_id):
@@ -119,8 +118,7 @@ class ScoringService:
         """
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         # Find last non-deleted rack for this player
         last_rack = (
@@ -172,8 +170,7 @@ class ScoringService:
         """
         match = db.session.get(Match, match_id)
         if match is None:
-            from flask import abort
-            abort(404)
+            raise ValueError("Match non trovato")
 
         # Validate forfeit conditions
         ScoringService._validate_forfeit(match, user_id)
