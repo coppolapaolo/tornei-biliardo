@@ -390,16 +390,7 @@ class PlayoffTournament(BaseModel, TimestampMixin):
     def start_registration(self) -> None:
         """Start the registration process for confirmed qualifiers.
 
-        NOTE: This method is not yet fully implemented.
-        See docs/TODO_PLAYOFF_IMPLEMENTATION.md for implementation plan.
-
-        Current state:
-        - Domain models exist (PlayoffConfiguration, PlayoffQualification, PlayoffTournament)
-        - Integration with GaraService and InscriptionService is pending
-
-        Required services (not yet implemented):
-        - PlayoffService.create_playoff_gara()
-        - PlayoffService.inscribe_qualified_players()
+        Not yet fully implemented — see docs/TODO_PLAYOFF_IMPLEMENTATION.md.
         """
         if self.status != "setup":
             raise ValueError("Can only start registration from setup status")
@@ -414,12 +405,6 @@ class PlayoffTournament(BaseModel, TimestampMixin):
         ]
 
         if not self.gara_id:
-            # Playoff gara creation is not yet implemented
-            # See docs/TODO_PLAYOFF_IMPLEMENTATION.md for required API:
-            #
-            # from models.playoff.services import PlayoffService
-            # gara = PlayoffService.create_playoff_gara(self)
-            # self.gara_id = gara.id
             raise NotImplementedError(
                 "Playoff gara creation not implemented. "
                 "See docs/TODO_PLAYOFF_IMPLEMENTATION.md"

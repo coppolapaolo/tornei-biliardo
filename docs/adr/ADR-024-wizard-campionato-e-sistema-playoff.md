@@ -1,4 +1,4 @@
-# 0001 Wizard Creazione Campionato Multi-Step e Sistema Playoff
+# ADR-024: Wizard Creazione Campionato Multi-Step e Sistema Playoff
 
 **Data**: 2026-01-07
 **Stato**: Accepted
