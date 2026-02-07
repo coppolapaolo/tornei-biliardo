@@ -1,8 +1,8 @@
 # HANDOFF: Technical Debt Refactoring
 
 **Data**: 2026-02-07
-**Stato**: ROUND 1-5 COMPLETI
-**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3) → 9.5/10 (post-Round 4) → 9.7/10 (post-Round 5)
+**Stato**: ROUND 1-6 COMPLETI
+**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3) → 9.5/10 (post-Round 4) → 9.7/10 (post-Round 5) → 9.8/10 (post-Round 6)
 
 ---
 
@@ -581,6 +581,49 @@ Quinto ciclo. Focus su bug di correttezza transazionale, violazioni di convenzio
 | P2 | Clean up manual commit/rollback in services | BASSO | MEDIO (convenzione + 1 bug) | FATTO |
 | P3 | Replace abort(404) con ValueError nei services | BASSO | MEDIO (architettura) | FATTO (9322cc0) |
 | P4 | Remove facade wrappers da GaraService | BASSO | BASSO (clarity, -170 LOC) | FATTO (9fc0e4a) |
+
+---
+
+## Round 6 — File Splits for Remaining Large Services (2026-02-07)
+
+Sesto ciclo. Focus su split di file service con classi multiple mescolate.
+
+### P1: Split models/rating/services.py (757 LOC → 3 file)
+
+**Problema**: 3 classi distinte (`RatingService`, `CategoryService`, `HandicapService`) nello stesso file.
+
+**Split**:
+- `rating_service.py` (~415 LOC): `RatingService` + `CategoryService` (strettamente accoppiate)
+- `handicap_service.py` (~335 LOC): `HandicapService` (calcolo handicap e gestione regole)
+- `services.py`: Re-export shim
+
+**File creati/modificati**:
+- `models/rating/rating_service.py` — **NUOVO**
+- `models/rating/handicap_service.py` — **NUOVO**
+- `models/rating/services.py` — Re-export shim (13 LOC)
+
+### P2: Split models/classification/services.py (800 LOC → 4 file)
+
+**Problema**: 5 classi + 1 funzione utility mescolate nello stesso file, con scope diversi (campionato vs gara vs encounter).
+
+**Split per scope**:
+- `campionato_classification.py` (~245 LOC): `ClassificationService` (classifiche campionato)
+- `gara_classification.py` (~430 LOC): `StrategyBasedClassificationService`, `RoundClassificationService`, `GaraClassificationService`, `visible_user_ids_for_gara` (classifiche gara/round)
+- `encounter_service.py` (~125 LOC): `PlayerEncounterService` (anti-rematch tracking)
+- `services.py`: Re-export shim
+
+**File creati/modificati**:
+- `models/classification/campionato_classification.py` — **NUOVO**
+- `models/classification/gara_classification.py` — **NUOVO**
+- `models/classification/encounter_service.py` — **NUOVO**
+- `models/classification/services.py` — Re-export shim (22 LOC)
+
+### Riepilogo Round 6
+
+| # | Task | Rischio | Impatto | Stato |
+|---|------|---------|---------|-------|
+| P1 | Split rating/services.py (3 classi → 2 file) | BASSO | BASSO (maintainability) | FATTO |
+| P2 | Split classification/services.py (5 classi → 3 file) | BASSO | BASSO (maintainability) | FATTO |
 
 ---
 
