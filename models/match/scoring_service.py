@@ -10,7 +10,6 @@ High-complexity methods have been refactored with helper functions to reduce CC.
 from __future__ import annotations
 
 from typing import Optional, Tuple
-from datetime import datetime
 
 from models.base import db, utc_now
 from models.status_enum import MatchStatus

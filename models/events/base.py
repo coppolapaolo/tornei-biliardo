@@ -56,7 +56,6 @@ class DomainEvent(ABC):
     @abstractmethod
     def get_event_type(self) -> str:
         """Return the event type identifier."""
-        pass
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert event to dictionary for serialization."""
@@ -74,7 +73,6 @@ class DomainEvent(ABC):
     @abstractmethod
     def _get_event_data(self) -> Dict[str, Any]:
         """Return event-specific data for serialization."""
-        pass
 
 
 class EventHandler:

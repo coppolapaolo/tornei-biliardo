@@ -12,7 +12,6 @@ Phase 5 Refactor Notes:
 - Legacy static methods preserved for backward compatibility
 """
 
-from datetime import datetime
 from models.base import db, TimestampMixin, utc_now
 from sqlalchemy.orm import backref
 from models.transaction.manager import transactional

@@ -7,9 +7,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional, List, Tuple, Any, Dict
 
-from flask import request
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload
 
 from models.base import db
@@ -321,7 +320,6 @@ class PlayerHistoryService:
 
         Returns gare where user had an inscription (active or completed).
         """
-        from models.classification.models import RoundClassification
 
         # Subquery for user's inscriptions
         inscribed_gara_ids = (

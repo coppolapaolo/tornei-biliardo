@@ -18,6 +18,67 @@ class LocationService:
     """Service for location and availability management."""
 
     @staticmethod
+    def find_or_create_venue(
+        location: str,
+        tables_input: Optional[str],
+        added_by_id: int,
+    ) -> tuple[str, Optional[int], Optional[str]]:
+        """Find an existing venue by name or auto-create a disabled one.
+
+        Args:
+            location: Name of the venue.
+            tables_input: Table configuration string (single number or comma-separated list).
+            added_by_id: ID of the user creating the venue.
+
+        Returns:
+            Tuple of (location_str, billiard_hall_id, user_message):
+            - user_message is a flash-ready string (or None) informing the user.
+        """
+        if not location or not location.strip():
+            return ("", None, None)
+
+        location = location.strip()
+
+        existing_venue = BilliardHall.query.filter_by(name=location).first()
+        if existing_venue:
+            return (location, existing_venue.id, None)
+
+        if not tables_input or not tables_input.strip():
+            return (
+                location,
+                None,
+                f"Impossibile creare '{location}': specificare il numero di tavoli.",
+            )
+
+        from models.competition.models import Gara  # local to avoid circular import
+
+        parsed_tables = Gara.parse_tables_input(tables_input)
+        if not parsed_tables:
+            return (location, None, None)
+
+        number_of_tables = len(parsed_tables)
+        is_explicit_list = "," in tables_input.strip() or not tables_input.strip().isdigit()
+
+        try:
+            new_venue = LocationService.create_billiard_hall(
+                name=location,
+                added_by_id=added_by_id,
+                number_of_tables=number_of_tables,
+            )
+            if is_explicit_list:
+                new_venue.set_table_names(parsed_tables)
+            new_venue.is_active = False
+            new_venue.verified = False
+
+            msg = (
+                f"Nuovo luogo '{location}' aggiunto come disattivato. "
+                f"Sarà verificato dall'admin."
+            )
+            return (location, new_venue.id, msg)
+        except Exception as e:
+            return (location, None, f"Errore nella creazione del luogo: {e}")
+
+    @staticmethod
     @transactional(domain="location")
     def create_billiard_hall(
         name: str,

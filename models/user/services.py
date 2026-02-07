@@ -19,11 +19,9 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.engine.row import Row
-from sqlalchemy import func, desc, or_
-from datetime import datetime
 
 from ..base import db, utc_now
-from .models import User, DirectorRequest, VenueManagement, VenueManagerRequest
+from .models import User, DirectorRequest
 from ..transaction.manager import (
     DomainService,
     transactional,
@@ -31,12 +29,8 @@ from ..transaction.manager import (
 )
 
 from models.match import Match
-from models.competition.models import Gara, Inscription
-from models.location.models import BilliardHall
-from models.status_enum import MatchStatus
 from models.user.role_enum import UserRole
 from models.classification.models import Classification
-from models.campionato.models import Campionato
 
 # Import decomposed services from Task 1.3
 # These imports are used for service composition and delegation
@@ -122,7 +116,6 @@ class UserService:
 
         All functionality now handled by UserPermissionService.demote_director_to_player()
         """
-        pass
 
 
     @staticmethod

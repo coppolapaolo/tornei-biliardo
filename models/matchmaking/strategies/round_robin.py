@@ -6,7 +6,7 @@ Requirements: SPECIFICHE.md - Round Robin campionato format
 
 from __future__ import annotations
 
-from typing import Sequence, List, Tuple, Optional, Dict, Any, TYPE_CHECKING
+from typing import Sequence, List, Tuple, Dict, Any, TYPE_CHECKING
 
 from .base import Pairing, BaseStrategy
 

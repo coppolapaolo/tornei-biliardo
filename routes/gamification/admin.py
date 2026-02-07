@@ -38,7 +38,6 @@ def admin_dashboard():
     - Quest participation stats
     - Achievement unlock rates
     """
-    from models import User
     from sqlalchemy import func
 
     # Get level distribution

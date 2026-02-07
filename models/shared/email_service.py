@@ -5,7 +5,6 @@ Purpose: Service for sending system emails (verification, password reset) via SM
 
 import os
 import logging
-from typing import Optional
 from flask import current_app
 from flask_mail import Message
 

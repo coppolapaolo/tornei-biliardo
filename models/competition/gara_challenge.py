@@ -15,17 +15,14 @@ Design Note (Sprint 11 - December 2025):
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
-from sqlalchemy import desc, asc
+from sqlalchemy import desc
 
 from ..base import db, BaseModel, TimestampMixin, utc_now
 from ..transaction import transactional
 
 if TYPE_CHECKING:
-    from ..challenge.models import Challenge
-    from ..user.models import User
-    from .models import Gara
+    pass
 
 
 class GaraChallenge(BaseModel, TimestampMixin):

@@ -5,7 +5,7 @@ Purpose: Core rating management and player category services
 
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime
 
 from ..base import db, utc_now

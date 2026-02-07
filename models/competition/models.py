@@ -5,16 +5,14 @@ Data Structures: Gara, Inscription
 Dependencies: models.base.db, datetime
 """
 
-from datetime import datetime
 from models.base import db, SoftDeleteMixin, utc_now
 from enum import Enum
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import GaraStatus, MatchStatus, WithdrawPolicy  # noqa: F401
 from models.matchmaking.configuration import (
     MatchmakingStrategy,
     FirstRoundPolicy,
     OddNumberPolicy,
 )
-from models.status_enum import WithdrawPolicy
 from models.competition.constants import (
     DEFAULT_MIN_PARTICIPANTS,
     DEFAULT_ROUNDS_COUNT,
@@ -513,7 +511,6 @@ class Gara(SoftDeleteMixin, db.Model):
         Args:
             reason: Optional reason for deletion
         """
-        from datetime import datetime
         self.deleted_at = utc_now()
         self.deleted_reason = reason
 

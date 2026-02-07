@@ -16,12 +16,11 @@ Created: 2025-01-18
 
 from __future__ import annotations
 
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from typing import Optional
 
 from models.base import db, transactional
 from models.status_enum import GaraStatus
-from .models import Gara, Inscription
+from .models import Gara
 
 
 class RoundService:
@@ -279,7 +278,6 @@ class RoundService:
         Utilizzabile solo se il primo turno è stato avviato ma nessun risultato è stato inserito.
         """
         from models.match.models import Match, TrioMatch
-        from models.status_enum import MatchStatus
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
@@ -348,7 +346,6 @@ class RoundService:
 
         # Riporta la gara allo stato inscription
         gara.current_round = 0
-        from models.competition.state_service import StateService
 
         if gara.status == GaraStatus.PLAYING.value:
             # Note: StateService doesn't have a direct method to go back to inscription

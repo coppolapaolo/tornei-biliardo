@@ -4,7 +4,7 @@ from __future__ import annotations
 utils/reset_data.py — Dataset demo v2 (agosto 2025)
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Dict, List
 
 from flask import has_app_context, current_app

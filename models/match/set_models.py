@@ -2,7 +2,6 @@
 Set models for multi-set matches.
 """
 
-from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from models.base import db, BaseModel, TimestampMixin, utc_now

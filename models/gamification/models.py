@@ -14,8 +14,6 @@ Database models for the gamification system including:
 
 from __future__ import annotations
 from enum import Enum
-from datetime import datetime, date
-from typing import Optional, Dict, Any
 
 from ..base import db, BaseModel, TimestampMixin, utc_now
 

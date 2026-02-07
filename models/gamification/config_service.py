@@ -130,7 +130,6 @@ class GamificationConfigService:
         Note: Objects are detached from session to allow safe caching.
         All attributes are pre-loaded before caching.
         """
-        from models.gamification.config_models import DEFAULT_LEVEL_UNLOCKS
 
         cache_key = "_level_unlocks"
         with cls._cache_lock:

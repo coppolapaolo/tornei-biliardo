@@ -1,19 +1,8 @@
 # routes/main.py - AGGIORNATO per correggere import path
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user, logout_user
-from datetime import date
-from models import db, Campionato, Gara, User, Inscription, Match
+from models import db, Campionato, Gara, User
 from config import Config
-
-
-def _role_truthy(user, attr_name: str) -> bool:
-    val = getattr(user, attr_name, None)
-    if val is None:
-        return False
-    try:
-        return bool(val() if callable(val) else val)
-    except TypeError:
-        return bool(val)
 
 
 main_bp = Blueprint("main", __name__)
@@ -25,93 +14,13 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.dashboard"))
 
-    # Mostra TUTTI i campionati attivi
-    active_campionatos = (
-        Campionato.query.filter_by(is_active=True)
-        .order_by(Campionato.created_at.desc())
-        .all()
-    )
+    from models.campionato.homepage_service import HomepageService
 
-    # Mostra anche le gare standalone pubbliche
-    from models.status_enum import GaraStatus
-
-    standalone_garas = (
-        Gara.query.filter_by(campionato_id=None)
-        .filter(Gara.status != GaraStatus.SETUP.value)  # Hide setup garas
-        .order_by(Gara.date.desc())
-        .limit(5)
-        .all()
-    )
-
-    if not active_campionatos and not standalone_garas:
+    data = HomepageService.get_homepage_data()
+    if data is None:
         return render_template("no_campionato.html")
 
-    # Raccogli dati per TUTTI i campionati attivi
-    from models.campionato.services import TournamentService
-    from types import SimpleNamespace
-
-    tournaments_data = []
-    for campionato in active_campionatos:
-        # Prossime gare per questo campionato
-        upcoming_garas = (
-            Gara.query.filter(
-                Gara.campionato_id == campionato.id, Gara.date >= date.today()
-            )
-            .order_by(Gara.date)
-            .limit(3)
-            .all()
-        )
-
-        # Gare completate per questo campionato
-        from models.status_enum import GaraStatus
-        completed_garas = (
-            Gara.query.filter(
-                Gara.campionato_id == campionato.id,
-                Gara.status == GaraStatus.COMPLETED.value
-            )
-            .order_by(Gara.date.desc())
-            .all()
-        )
-
-        # Classifica generale per questo campionato usando TournamentService
-        # Questo gestisce correttamente tutti i tipi: Amalfi, Random, Points-based
-        campionato_service = TournamentService()
-        general_classification = campionato_service.calculate_general_classification(
-            campionato.id
-        )
-
-        # Trasforma il risultato nel formato atteso dal template
-        # Il template si aspetta oggetti con: position, user.username, total_matches_won/total_rack_difference
-        top_classifications = []
-        for position, player_data in general_classification[:5]:  # Top 5
-            # Crea un oggetto che il template può usare
-            classification_obj = SimpleNamespace(
-                position=position,
-                user=SimpleNamespace(username=player_data.get("username", "N/A")),
-                total_matches_won=player_data.get("total_matches_won", 0),
-                matches_won=player_data.get("total_matches_won", 0),
-                # Per Random campionati, total_rack_difference contiene i rack totali
-                total_rack_difference=player_data.get("total_rack_difference", 0),
-                # Punti spareggio (SSR) per Random campionati
-                total_spot_shot_wins=player_data.get("total_spot_shot_wins", 0),
-            )
-            top_classifications.append(classification_obj)
-
-        tournaments_data.append(
-            {
-                "campionato": campionato,
-                "upcoming_garas": upcoming_garas,
-                "completed_garas": completed_garas,
-                "top_classifications": top_classifications,
-            }
-        )
-
-    return render_template(
-        "index.html",
-        tournaments_data=tournaments_data,
-        active_campionatos=active_campionatos,
-        standalone_garas=standalone_garas,
-    )
+    return render_template("index.html", **data)
 
 
 @main_bp.route("/reset")
@@ -292,7 +201,6 @@ def debug_create_player():
         return "Funzione non disponibile in produzione", 403
 
     from models.user.models import User
-    from werkzeug.security import generate_password_hash
 
     # Trova il prossimo numero disponibile
     counter = 1

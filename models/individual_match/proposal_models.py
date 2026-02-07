@@ -13,7 +13,6 @@ from ..base import db, BaseModel, TimestampMixin, utc_now
 from ..status_enum import Discipline
 
 if TYPE_CHECKING:
-    from ..user.models import User
     from .match_models import IndividualMatch
 
 
@@ -303,7 +302,6 @@ class ProposalInvitation(BaseModel, TimestampMixin):
 
     def accept(self) -> "IndividualMatch":
         """Accept this invitation."""
-        from .match_models import IndividualMatch
 
         if self.status != InvitationStatus.PENDING:
             raise ValueError("Invitation cannot be accepted")

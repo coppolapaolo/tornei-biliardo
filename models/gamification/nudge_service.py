@@ -11,12 +11,10 @@ Strategies:
 """
 
 from __future__ import annotations
-from typing import List, Optional
+from typing import Optional
 import logging
-from datetime import datetime
 
 from models.base import db, utc_now
-from models.user.models import User
 from models.gamification.feature_models import FeatureConfig, UserFeatureUsage
 from models.gamification.unlock_engine import UnlockEngine
 from models.gamification.frontend_bridge import GamificationFrontendBridge

@@ -11,7 +11,6 @@ Key Methods:
 
 from __future__ import annotations
 from typing import Tuple, Optional, Dict, Any, List
-from datetime import datetime
 import json
 import logging
 
@@ -25,7 +24,6 @@ from models.gamification.models import (
 )
 from models.gamification.events import AchievementUnlockedEvent
 from models.gamification.level_service import LevelService
-from models.gamification.xp_config import XP_RATES
 from models.gamification.models import XPTransactionType
 from models.events.base import EventBus
 

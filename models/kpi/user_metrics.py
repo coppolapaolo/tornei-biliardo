@@ -16,9 +16,7 @@ from sqlalchemy import func, or_
 from models.base import db
 from models.match.models import Match
 from models.competition.models import Inscription, Gara
-from models.user.models import User, DirectorAssignment, VenueManagement
-from models.gamification.models import StreakTracker, UserAchievement, QuestParticipation
-from models.user.role_enum import UserRole
+from models.user.models import DirectorAssignment
 
 class UserMetricService:
     """

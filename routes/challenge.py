@@ -13,12 +13,8 @@ from flask import (
     flash,
     jsonify,
     abort,
-    current_app,
 )
-import os
-import uuid
 from flask_login import login_required, current_user
-from PIL import Image
 
 from models import (
     db,
@@ -32,85 +28,15 @@ from utils import (
 )
 from models.challenge.services import ChallengeService
 from utils.route_helpers import handle_ajax_service_action
+from utils.image_paths import ImagePathManager
 
 # Blueprint initialization
 challenge_bp = Blueprint("challenge", __name__)
 
 
-# Helper functions
-def allowed_file(filename):
-    """Check if file extension is allowed."""
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def save_challenge_image(image_file):
-    """Save uploaded challenge image with resizing and optimization for mobile landscape viewing."""
-    if not image_file or not allowed_file(image_file.filename):
-        return None
-
-    # Generate unique filename (always use .jpg for optimized output)
-    filename = f"{uuid.uuid4().hex}.jpg"
-
-    # Use centralized image path management
-    from utils.image_paths import ImagePathManager
-
-    # Create upload directory if it doesn't exist
-    ImagePathManager.ensure_challenge_upload_dir()
-    upload_dir = ImagePathManager.get_challenge_upload_dir()
-
-    # Process and save image with optimization
-    filepath = os.path.join(upload_dir, filename)
-
-    try:
-        # Open image with PIL
-        with Image.open(image_file) as img:
-            # Convert to RGB if necessary (handles PNG with alpha, etc.)
-            if img.mode in ("RGBA", "P"):
-                img = img.convert("RGB")
-
-            # Calculate resize dimensions for mobile landscape (max 800x600)
-            max_width, max_height = 800, 600
-            img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
-
-            # Save with optimization for web
-            img.save(
-                filepath,
-                "JPEG",
-                quality=85,  # Good quality but smaller file size
-                optimize=True,  # Enable optimization
-                progressive=True,  # Progressive JPEG for better loading
-            )
-
-        return filename
-
-    except Exception as e:
-        # If image processing fails, remove any partial file and return None
-        if os.path.exists(filepath):
-            os.remove(filepath)
-        current_app.logger.error(f"Failed to process challenge image: {str(e)}")
-        return None
-
-
-def delete_challenge_image(image_filename):
-    """Delete challenge image file from disk."""
-    if not image_filename:
-        return
-
-    # Use centralized image path management
-    from utils.image_paths import ImagePathManager
-
-    upload_dir = ImagePathManager.get_challenge_upload_dir()
-    filepath = os.path.join(upload_dir, image_filename)
-
-    try:
-        if os.path.exists(filepath):
-            os.remove(filepath)
-            current_app.logger.info(f"Deleted challenge image: {image_filename}")
-    except Exception as e:
-        current_app.logger.error(
-            f"Failed to delete challenge image {image_filename}: {str(e)}"
-        )
+# Convenience aliases for image operations (delegated to ImagePathManager)
+save_challenge_image = ImagePathManager.save_challenge_image
+delete_challenge_image = ImagePathManager.delete_challenge_image
 
 
 @challenge_bp.route("/")

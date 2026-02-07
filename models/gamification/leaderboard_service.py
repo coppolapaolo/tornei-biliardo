@@ -8,13 +8,11 @@ Manages leaderboard data with a caching strategy:
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
-from sqlalchemy import func, desc, and_
+from typing import List, Dict, Any
+from sqlalchemy import desc
 
 from models.base import db, utc_now
 from models.transaction.manager import transactional
-from models.user.models import User
 from models.gamification.models import (
     UserLevel,
     StreakTracker,

@@ -7,7 +7,7 @@ This module defines the models for the Attribute-Based Access Control (ABAC) sys
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import json
 
 from ..base import db, BaseModel, TimestampMixin

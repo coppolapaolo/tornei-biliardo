@@ -1,0 +1,109 @@
+# models/campionato/homepage_service.py
+"""Service for aggregating homepage data.
+
+Extracts business logic previously inline in routes/main.py:index().
+"""
+
+from __future__ import annotations
+
+from datetime import date
+from types import SimpleNamespace
+from typing import Any, Dict, Optional
+
+from models.campionato.models import Campionato
+from models.competition.models import Gara
+from models.status_enum import GaraStatus
+from models.campionato.services import TournamentService
+
+
+class HomepageService:
+    """Aggregates data for the public homepage."""
+
+    @staticmethod
+    def get_homepage_data() -> Optional[Dict[str, Any]]:
+        """Return all data needed to render the homepage.
+
+        Returns:
+            Dict with keys: tournaments_data, active_campionatos, standalone_garas.
+            None if there are no active campionatos and no standalone garas
+            (caller should render the "no campionato" page).
+        """
+        active_campionatos = (
+            Campionato.query.filter_by(is_active=True)
+            .order_by(Campionato.created_at.desc())
+            .all()
+        )
+
+        standalone_garas = (
+            Gara.query.filter_by(campionato_id=None)
+            .filter(Gara.status != GaraStatus.SETUP.value)
+            .order_by(Gara.date.desc())
+            .limit(5)
+            .all()
+        )
+
+        if not active_campionatos and not standalone_garas:
+            return None
+
+        tournaments_data = [
+            HomepageService._build_tournament_data(c) for c in active_campionatos
+        ]
+
+        return {
+            "tournaments_data": tournaments_data,
+            "active_campionatos": active_campionatos,
+            "standalone_garas": standalone_garas,
+        }
+
+    @staticmethod
+    def _build_tournament_data(campionato: Campionato) -> Dict[str, Any]:
+        """Build display data for a single campionato."""
+        upcoming_garas = (
+            Gara.query.filter(
+                Gara.campionato_id == campionato.id,
+                Gara.date >= date.today(),
+            )
+            .order_by(Gara.date)
+            .limit(3)
+            .all()
+        )
+
+        completed_garas = (
+            Gara.query.filter(
+                Gara.campionato_id == campionato.id,
+                Gara.status == GaraStatus.COMPLETED.value,
+            )
+            .order_by(Gara.date.desc())
+            .all()
+        )
+
+        service = TournamentService()
+        general_classification = service.calculate_general_classification(
+            campionato.id
+        )
+
+        top_classifications = [
+            HomepageService._to_classification_namespace(position, player_data)
+            for position, player_data in general_classification[:5]
+        ]
+
+        return {
+            "campionato": campionato,
+            "upcoming_garas": upcoming_garas,
+            "completed_garas": completed_garas,
+            "top_classifications": top_classifications,
+        }
+
+    @staticmethod
+    def _to_classification_namespace(
+        position: int, player_data: Dict[str, Any]
+    ) -> SimpleNamespace:
+        """Convert classification tuple into a SimpleNamespace for the template."""
+        return SimpleNamespace(
+            position=position,
+            user=SimpleNamespace(username=player_data.get("username", "N/A")),
+            total_matches_won=player_data.get("total_matches_won", 0),
+            matches_won=player_data.get("total_matches_won", 0),
+            total_rack_difference=player_data.get("total_rack_difference", 0),
+            total_spot_shot_wins=player_data.get("total_spot_shot_wins", 0),
+        )

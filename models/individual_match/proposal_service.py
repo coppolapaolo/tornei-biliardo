@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, date, time as time_obj
 
-from sqlalchemy import func
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (

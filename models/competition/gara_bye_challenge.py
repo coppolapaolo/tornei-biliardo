@@ -22,14 +22,12 @@ Design Note (Sprint 11 - December 2025):
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
 from ..base import db, BaseModel, TimestampMixin, utc_now
 
 if TYPE_CHECKING:
-    from ..challenge.models import ChallengeAttempt
-    from .models import Gara
+    pass
 
 
 class GaraByeChallenge(BaseModel, TimestampMixin):

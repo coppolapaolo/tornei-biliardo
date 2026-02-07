@@ -8,7 +8,7 @@ Implements:
 """
 
 from flask import (
-    Blueprint, render_template, request, redirect, url_for, flash, abort, session
+    Blueprint, render_template, request, redirect, url_for, flash, session
 )
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError

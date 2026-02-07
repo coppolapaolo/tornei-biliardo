@@ -15,7 +15,6 @@ Design Note (Sprint 11 - December 2025):
 from __future__ import annotations
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 from ..base import db
 from ..challenge.models import Challenge

@@ -262,7 +262,6 @@ class TableAssignmentService:
         Returns:
             Number of matches that received table assignments
         """
-        from models.match.services import MatchService
 
         # Get all currently free tables
         free_tables = TableAssignmentService._get_free_tables(gara_id)

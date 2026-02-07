@@ -6,14 +6,13 @@ Purpose: Service layer for player availability and match request management
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 
 from models.base import db, transactional, utc_now
 from models.individual_match.models import (
     PlayerAvailability,
     MatchProposal,
-    ProposalInvitation,
 )
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.user.models import User
@@ -331,7 +330,7 @@ class AvailabilityService:
     ) -> MatchProposal:
         """Create a match request based on availability discovery."""
         from models.individual_match.services import IndividualMatchService
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         # Use a future datetime if none provided
         if proposed_datetime is None:

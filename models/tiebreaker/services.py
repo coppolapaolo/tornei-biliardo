@@ -7,7 +7,6 @@ Requirements: SPECIFICHE.md - Tiebreaker system management
 from __future__ import annotations
 
 from typing import Dict, Any, Optional, cast
-from datetime import datetime
 
 from ..base import db, utc_now
 from ..transaction.manager import transactional

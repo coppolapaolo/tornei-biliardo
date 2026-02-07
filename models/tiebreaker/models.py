@@ -6,7 +6,6 @@ Requirements: SPECIFICHE.md - Tiebreaker system with spot shot rallies and playo
 
 from __future__ import annotations
 
-from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 

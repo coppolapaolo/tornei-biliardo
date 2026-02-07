@@ -6,7 +6,7 @@ Extracted from services.py for maintainability (Round 4 P3).
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Iterable, Tuple
+from typing import List, Optional, Iterable, Tuple
 from datetime import date as date_cls
 from flask_babel import gettext as _
 

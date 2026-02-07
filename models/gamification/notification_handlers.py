@@ -10,7 +10,6 @@ All notifications support i18n with Flask-Babel via template_key + template_para
 
 from __future__ import annotations
 import logging
-from datetime import datetime, timedelta
 
 from flask_babel import gettext as _
 
@@ -19,7 +18,6 @@ from models.gamification.events import (
     LevelUpEvent,
     AchievementUnlockedEvent,
     StreakMilestoneEvent,
-    StreakBrokenEvent,
     QuestCompletedEvent,
 )
 from models.notification.services import NotificationService

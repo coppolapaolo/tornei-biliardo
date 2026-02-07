@@ -5,7 +5,7 @@ This service detects tied positions in the final classification and manages
 the tiebreaker process (playoff match or challenge) based on gara configuration.
 """
 
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Tuple
 from dataclasses import dataclass
 
 from models.base import db

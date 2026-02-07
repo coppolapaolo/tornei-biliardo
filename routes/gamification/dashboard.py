@@ -11,12 +11,10 @@ from models.gamification.streak_service import StreakService
 from models.gamification.quest_service import QuestService
 from models.gamification.unlock_progress_service import UnlockProgressService
 from models.gamification.models import (
-    UserLevel, Achievement, UserAchievement, StreakTracker,
-    AchievementCategory, AchievementDifficulty, StreakType,
-    Quest, QuestStatus
+    AchievementCategory, AchievementDifficulty, StreakType, Quest,
+    QuestStatus
 )
 from models.kpi import track_achievement_view, track_leaderboard_view
-from utils import admin_required
 
 from . import gamification_bp
 
@@ -222,7 +220,6 @@ def leaderboards():
     if request.headers.get("HX-Request"):
         template_name = f"gamification/partials/leaderboard_{leaderboard_type_str}.html"
         # Since we don't have partials yet, stick to full render or create logic later
-        pass
 
     return render_template(
         "gamification/leaderboards.html",

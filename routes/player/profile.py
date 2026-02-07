@@ -15,9 +15,8 @@ from flask import (
     flash,
 )
 from flask_login import login_required, current_user
-from werkzeug.exceptions import abort
 
-from models import db, Gara, Inscription, Match, User
+from models import db, Gara, Inscription, Match
 from models.status_enum import MatchStatus
 from models.campionato.models import Campionato
 from models.user.services import UserService

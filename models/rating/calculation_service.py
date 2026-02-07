@@ -5,7 +5,7 @@ Handles the mathematical logic for updating Elo ratings based on match results.
 Supports both standard 1v1 matches and Trio matches (treated as multi-way comparison).
 """
 import math
-from typing import Tuple, List, Dict, Optional
+from typing import Optional
 from models.rating.models import RatingSystem, PlayerRating
 from models.match.models import Match, TrioMatch
 from models.base import db

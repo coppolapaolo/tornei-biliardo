@@ -7,12 +7,12 @@ Data Structures: RoundConfiguration
 
 from __future__ import annotations
 
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING
 
 from models.base import db, BaseModel, TimestampMixin
 
 if TYPE_CHECKING:
-    from .models import Gara
+    pass
 
 
 class RoundConfiguration(BaseModel, TimestampMixin):

@@ -22,11 +22,9 @@ from .user_events import (
 from .match_events import (
     MatchProposalCreatedEvent,
     MatchAcceptedEvent,
-    MatchCompletedEvent,
 )
 from .competition_events import (
     CompetitionRegistrationOpenedEvent,
-    InscriptionCreatedEvent,
     DirectorAssignmentAddedEvent,
     DirectorAssignmentRemovedEvent,
 )

@@ -2,7 +2,7 @@
 UI Helpers for Gamification.
 Provides utilities for templates to check feature access easily.
 """
-from typing import Dict, List, Union
+from typing import Dict
 from models.gamification.unlock_engine import UnlockEngine
 from models.user.models import User
 

@@ -11,14 +11,14 @@ Architecture:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import logging
 
 from models.base import db
 from models.user.models import User
 from models.gamification.feature_models import FeatureConfig
 from models.kpi.user_metrics import UserMetricService
-from models.gamification.models import UserLevel, UserAchievement
+from models.gamification.models import UserLevel
 
 logger = logging.getLogger(__name__)
 

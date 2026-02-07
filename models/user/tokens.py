@@ -6,8 +6,7 @@ Purpose: User token management for email verification and password reset
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import timedelta
 
 from ..base import db, BaseModel, utc_now
 

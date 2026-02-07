@@ -1,8 +1,10 @@
 """Utility module for managing image paths consistently across the application."""
 
 import os
+import uuid
 from typing import Optional
 from flask import current_app
+from PIL import Image
 
 
 class ImagePathManager:
@@ -114,6 +116,49 @@ class ImagePathManager:
         return (
             "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions
         )
+
+    @staticmethod
+    def save_challenge_image(image_file) -> Optional[str]:  # type: ignore[no-untyped-def]
+        """Save an uploaded challenge image with resizing and JPEG optimization.
+
+        Returns the generated filename on success, or None on failure.
+        """
+        if not image_file or not ImagePathManager.is_allowed_file(image_file.filename):
+            return None
+
+        filename = f"{uuid.uuid4().hex}.jpg"
+        ImagePathManager.ensure_challenge_upload_dir()
+        upload_dir = ImagePathManager.get_challenge_upload_dir()
+        filepath = os.path.join(upload_dir, filename)
+
+        try:
+            with Image.open(image_file) as img:
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.thumbnail((800, 600), Image.Resampling.LANCZOS)
+                img.save(filepath, "JPEG", quality=85, optimize=True, progressive=True)
+            return filename
+        except Exception as e:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            current_app.logger.error(f"Failed to process challenge image: {e}")
+            return None
+
+    @staticmethod
+    def delete_challenge_image(image_filename: Optional[str]) -> None:
+        """Delete a challenge image file from disk."""
+        if not image_filename:
+            return
+        upload_dir = ImagePathManager.get_challenge_upload_dir()
+        filepath = os.path.join(upload_dir, image_filename)
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                current_app.logger.info(f"Deleted challenge image: {image_filename}")
+        except Exception as e:
+            current_app.logger.error(
+                f"Failed to delete challenge image {image_filename}: {e}"
+            )
 
     @staticmethod
     def extract_filename_from_path(image_path: Optional[str]) -> Optional[str]:

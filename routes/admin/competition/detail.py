@@ -3,7 +3,6 @@
 
 from flask import (
     render_template,
-    abort,
 )
 from flask_login import current_user
 
@@ -19,7 +18,6 @@ from models.status_enum import (
     Discipline,
 )
 from models.classification.models import RoundClassification, GaraClassification
-from models.classification.services import RoundClassificationService
 from models.competition.spareggio_service import SpareggioService
 
 from . import competition_bp
@@ -379,8 +377,25 @@ def gara_detail(gara_id):
             if player['current_ssr_score'] is not None:
                 ssr_scores_map[player['user_id']] = player['current_ssr_score']
 
+    # Pre-compute template flags that were previously {% set %} in the template
+    is_ssr_phase = gara.status == GaraStatus.AWAITING_SSR.value
+    show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data)
+    is_gara_ending = (
+        (gara.get_real_status() == "campionato_completed" and not has_unresolved_tiebreakers)
+        or (has_ssr_data and not has_unresolved_tiebreakers)
+    )
+    has_scores = bool(
+        current_round_classification
+        and (
+            any(c.rack_difference != 0 for c in current_round_classification)
+            or any(c.matches_won > 0 for c in current_round_classification)
+        )
+    )
+    ssr_needs_input = is_ssr_phase and has_unresolved_tiebreakers
+    ssr_ready_to_terminate = is_ssr_phase and not has_unresolved_tiebreakers
+
     return render_template(
-        "gara_detail.html",  # Template unificato
+        "gara_detail.html",
         gara=gara,
         user_can_manage=user_can_manage,
         user_inscription=user_inscription,
@@ -409,4 +424,11 @@ def gara_detail(gara_id):
         can_edit_ssr=can_edit_ssr,
         has_unresolved_tiebreakers=has_unresolved_tiebreakers,
         ssr_scores_map=ssr_scores_map,
+        # Pre-computed template flags (moved from template {% set %})
+        is_ssr_phase=is_ssr_phase,
+        show_ssr_section=show_ssr_section,
+        is_gara_ending=is_gara_ending,
+        has_scores=has_scores,
+        ssr_needs_input=ssr_needs_input,
+        ssr_ready_to_terminate=ssr_ready_to_terminate,
     )

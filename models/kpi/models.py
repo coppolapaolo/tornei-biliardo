@@ -5,7 +5,7 @@ Purpose: SQLAlchemy models for KPI tracking system
 
 from __future__ import annotations
 
-from datetime import datetime, date
+from datetime import date
 from typing import Optional
 
 from ..base import db, BaseModel, TimestampMixin, utc_now

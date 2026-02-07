@@ -5,8 +5,6 @@ This service centralizes the logic for handling player forfeits based on
 the competition's withdraw_policy setting.
 """
 
-from datetime import datetime
-from typing import Optional
 
 from models.base import db, utc_now
 from models.transaction.manager import transactional

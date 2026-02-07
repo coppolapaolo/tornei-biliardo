@@ -13,7 +13,6 @@ import logging
 from flask import g, has_request_context
 
 from ..base import db
-from ..transaction.manager import transactional
 from .models import KpiFeatureUsage
 from .enums import FeatureName
 

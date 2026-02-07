@@ -5,7 +5,7 @@ Purpose: KPI calculation and metrics service
 
 from __future__ import annotations
 
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 
@@ -13,7 +13,7 @@ from sqlalchemy import func, and_, or_
 
 from ..base import db, utc_now
 from ..transaction.manager import transactional
-from .models import KpiFeatureUsage, KpiDailySnapshot, KpiMilestone
+from .models import KpiFeatureUsage, KpiMilestone
 from .enums import (
     FeatureName,
     MilestoneType,
@@ -615,7 +615,7 @@ class KpiService:
         - Saturation: Avg (Inscriptions / Max Participants) * 100
         """
         from ..user.models import User, DirectorAssignment
-        from ..competition.models import Gara, Inscription
+        from ..competition.models import Gara
 
         # 1. Get all users who are directors (or admins acting as directors)
         # We look for explicit assignments or admins who created garas

@@ -19,7 +19,6 @@ from .privacy_models import (
 if TYPE_CHECKING:
     from ..match.models import Match
     from ..competition.models import Inscription
-    from ..campionato.models import Campionato
 
 
 class PrivacyService:

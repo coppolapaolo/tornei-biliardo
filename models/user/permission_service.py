@@ -6,7 +6,6 @@ following Task 1.3 decomposition patterns.
 """
 
 from typing import Optional, List, Dict
-from datetime import datetime
 from models.base import db, utc_now
 from models.user.models import User, DirectorRequest
 from models.user.role_enum import UserRole

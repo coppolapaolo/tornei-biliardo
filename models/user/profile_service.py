@@ -6,7 +6,6 @@ following Task 1.3 decomposition patterns.
 """
 
 from typing import Optional, List, Dict, Any
-from sqlalchemy import func
 from models.base import db
 from models.user.models import User
 from models.user.role_enum import UserRole

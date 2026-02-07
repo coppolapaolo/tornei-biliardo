@@ -8,7 +8,6 @@ Data Structures: PlayoffConfiguration, PlayoffQualification, PlayoffTournament
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from enum import Enum
 

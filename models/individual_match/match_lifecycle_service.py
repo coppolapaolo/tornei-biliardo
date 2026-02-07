@@ -6,7 +6,7 @@ Sprint 13: IndividualMatchService decomposition
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Optional, List
 
 from ..base import db, utc_now

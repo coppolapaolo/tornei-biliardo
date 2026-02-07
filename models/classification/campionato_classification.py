@@ -11,7 +11,6 @@ from ..caching import cached, cache_invalidate, cache_manager
 from ..optimization import optimized_query
 from ..transaction import transactional
 
-from .strategies.base import PlayerScore
 from .registry import get_classification_registry
 from .score_aggregator import ScoreAggregator
 

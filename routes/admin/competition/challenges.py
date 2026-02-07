@@ -10,7 +10,6 @@ from flask import (
     url_for,
     flash,
     jsonify,
-    abort,
 )
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename

@@ -8,7 +8,6 @@ from flask import (
     url_for,
     flash,
     jsonify,
-    abort,
 )
 from flask_login import login_required
 

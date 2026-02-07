@@ -12,7 +12,6 @@ from .base import (
     ClassificationStrategy,
     ClassificationScope,
     ClassificationResult,
-    ClassificationEntry,
     PlayerScore,
 )
 

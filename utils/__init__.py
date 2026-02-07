@@ -32,9 +32,7 @@ to break the circular dependency while keeping related code together.
 See also: ADR-XXX (planned) for detailed architecture decision.
 """
 
-from functools import wraps
 from flask import current_app
-from flask_login import current_user
 
 from models.competition.services import GaraService
 from models.transaction.manager import transactional

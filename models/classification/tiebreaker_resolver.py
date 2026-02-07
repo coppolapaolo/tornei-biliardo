@@ -6,7 +6,7 @@ Dependencies: typing, dataclasses, .strategies.base
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional, List, Tuple, Sequence
+from typing import Dict, Optional, List, Sequence
 
 from .strategies.base import ClassificationEntry, PlayerScore
 

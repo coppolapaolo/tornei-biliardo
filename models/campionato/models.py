@@ -5,14 +5,13 @@ Data Structures: Campionato
 Dependencies: models.base.db, models.user.models
 """
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 from models.base import db, utc_now
 from models.status_enum import TournamentStatus, GaraStatus, EntityType
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 
 if TYPE_CHECKING:
-    from models.user.models import User, TournamentDirector
+    pass
 
 
 class Campionato(db.Model):
@@ -309,7 +308,6 @@ class Campionato(db.Model):
             policy_name: Ignored (kept for API compatibility)
         """
         # No-op: scoring is now automatic
-        pass
 
     def _legacy_set_scoring_policy(self, policy_name: str) -> None:
         """Internal legacy method for migration purposes only."""

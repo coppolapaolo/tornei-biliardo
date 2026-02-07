@@ -4,7 +4,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from werkzeug.utils import secure_filename
 import os
-from datetime import datetime
 from typing import cast
 from PIL import Image, ImageOps
 
@@ -12,10 +11,10 @@ from models import BilliardHall
 from models.location.services import LocationService
 from models.user.services import VenueManagementService
 from models.user.venue_manager_service import VenueManagerService
-from models.user.models import VenueManagerRequest, User
+from models.user.models import User
 from utils import admin_required, venue_manager_required
 from utils.route_helpers import handle_service_action
-from flask_login import login_required, current_user
+from flask_login import login_required
 from models.base import db, utc_now
 
 # Venue management blueprint
@@ -65,7 +64,6 @@ def venues_list():
                 ).first()
 
             # Get pending requests for this venue
-            from models.status_enum import VenueManagerRequestStatus
 
             pending_requests = (
                 VenueManagerService.get_venue_manager_requests_by_venue(venue.id)
@@ -96,8 +94,6 @@ def venues_list():
             # Check if current user has pending request for this specific venue
             has_pending_request_for_venue = False
             if not current_user.is_admin:
-                from models.status_enum import VenueManagerRequestStatus
-
                 # Check if user has pending request for this venue
                 user_requests = VenueManagerService.get_venue_manager_requests_by_user(current_user.id)
                 has_pending_request_for_venue = any(

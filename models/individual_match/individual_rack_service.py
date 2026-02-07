@@ -7,7 +7,6 @@ Sprint 13: IndividualMatchService decomposition
 from __future__ import annotations
 
 from typing import Optional, Dict, Any
-from datetime import datetime
 
 from sqlalchemy import func
 from ..base import db, utc_now

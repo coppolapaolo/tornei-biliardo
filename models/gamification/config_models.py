@@ -11,9 +11,8 @@ Models:
 """
 
 from __future__ import annotations
-from datetime import datetime
 
-from ..base import db, BaseModel, TimestampMixin
+from ..base import db, TimestampMixin
 
 
 class GamificationConfig(db.Model, TimestampMixin):

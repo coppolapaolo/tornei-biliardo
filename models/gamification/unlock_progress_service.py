@@ -11,7 +11,7 @@ Used for the user-facing "progression visible" dashboard.
 """
 
 from __future__ import annotations
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 from models.base import db
 from models.gamification.feature_models import FeatureConfig

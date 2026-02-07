@@ -11,7 +11,7 @@ JavaScript frontend display.
 from __future__ import annotations
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from flask import flash, has_request_context
 from flask_login import current_user
@@ -24,11 +24,6 @@ from models.gamification.events import (
     StreakMilestoneEvent,
     StreakBrokenEvent,
     QuestCompletedEvent,
-)
-from models.notification.templates import (
-    DIFFICULTY_LABELS,
-    STREAK_TYPE_LABELS,
-    QUEST_TYPE_LABELS,
 )
 
 class GamificationEventType:

@@ -7,13 +7,12 @@ Handles all state transitions: pending → playing → completed.
 
 from __future__ import annotations
 
-from datetime import datetime
 
 from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 from models.exceptions import InvalidTransitionError
-from .models import Match, Rack
+from .models import Match
 
 
 class MatchStateService:

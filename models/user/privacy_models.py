@@ -6,13 +6,12 @@ Requirements: Allow users to control visibility of profile data and hide specifi
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from typing import Dict, Any, TYPE_CHECKING
 
 from ..base import db, BaseModel, utc_now
 
 if TYPE_CHECKING:
-    from .models import User
+    pass
 
 
 class UserPrivacySetting(BaseModel):

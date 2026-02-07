@@ -26,19 +26,9 @@
 {# Header comune a tutti gli utenti #}
 {% include "components/_gara_header.html" %}
 
-{# Determine gara phase for section ordering - needed early for mobile layout decisions #}
-{% set is_ssr_phase = gara.status == 'awaiting_ssr' %}
-{% set show_ssr_section = is_ssr_phase or (ssr_groups and has_ssr_data) %}
-{% set is_gara_ending = (gara.get_real_status() == 'campionato_completed' and not has_unresolved_tiebreakers) or
-(has_ssr_data and not has_unresolved_tiebreakers) %}
-{% set has_scores = current_round_classification and (current_round_classification|selectattr('rack_difference', 'ne',
-0)|list|length > 0 or current_round_classification|selectattr('matches_won', 'gt', 0)|list|length > 0) %}
-
-{# === SSR SUB-PHASES for mobile layout === #}
-{# Phase A: SSR with unresolved tiebreakers - need to enter scores #}
-{% set ssr_needs_input = is_ssr_phase and has_unresolved_tiebreakers %}
-{# Phase B: SSR resolved, ready to terminate - scores entered, show terminate button #}
-{% set ssr_ready_to_terminate = is_ssr_phase and not has_unresolved_tiebreakers %}
+{# Phase flags are pre-computed in the route handler (detail.py) and passed as template variables:
+   is_ssr_phase, show_ssr_section, is_gara_ending, has_scores,
+   ssr_needs_input, ssr_ready_to_terminate #}
 
 {# ============================================================== #}
 {# MOBILE SSR LAYOUT - Phase A: Unresolved tiebreakers #}
