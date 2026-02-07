@@ -200,6 +200,56 @@ class QuestService:
         return db.session.get(Quest, quest_id)
 
     # ========================================
+    # Admin Operations
+    # ========================================
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def activate_quest(quest_id: int) -> Quest:
+        """Set quest status to ACTIVE.
+
+        Raises:
+            ValueError: If quest not found.
+        """
+        quest = db.session.get(Quest, quest_id)
+        if not quest:
+            raise ValueError("Quest non trovata")
+        quest.status = QuestStatus.ACTIVE
+        logger.info(f"Quest '{quest.name}' activated by admin")
+        return quest
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def expire_quest(quest_id: int) -> Quest:
+        """Set quest status to EXPIRED.
+
+        Raises:
+            ValueError: If quest not found.
+        """
+        quest = db.session.get(Quest, quest_id)
+        if not quest:
+            raise ValueError("Quest non trovata")
+        quest.status = QuestStatus.EXPIRED
+        logger.info(f"Quest '{quest.name}' expired by admin")
+        return quest
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def delete_quest(quest_id: int) -> None:
+        """Delete quest if no participants.
+
+        Raises:
+            ValueError: If quest not found or has participants.
+        """
+        quest = db.session.get(Quest, quest_id)
+        if not quest:
+            raise ValueError("Quest non trovata")
+        if quest.participant_count > 0:
+            raise ValueError("Non è possibile eliminare una quest con partecipanti")
+        db.session.delete(quest)
+        logger.info(f"Quest '{quest.name}' deleted by admin")
+
+    # ========================================
     # Participation Management
     # ========================================
 

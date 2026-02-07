@@ -8,8 +8,10 @@ from flask import render_template, request, flash, redirect, url_for, jsonify
 from flask_babel import gettext as _
 
 from utils import admin_required
+from utils.route_helpers import handle_service_action
 from models.base import db
 from models.gamification.feature_models import FeatureConfig
+from models.gamification.feature_config_service import FeatureConfigService
 from models.user.models import User
 from . import gamification_bp
 
@@ -89,32 +91,28 @@ def admin_update_feature(code: str):
     """Update feature rules."""
     import json
 
-    feature = db.session.get(FeatureConfig, code)
-    if not feature:
-        flash(_("Feature non trovata"), "danger")
-        return redirect(url_for("gamification.admin_features"))
-
+    rules_json = request.form.get("rules", "[]")
     try:
-        # Parse rules from JSON form field
-        rules_json = request.form.get("rules", "[]")
         rules = json.loads(rules_json)
-
-        feature.set_rules(rules)
-        feature.is_active = request.form.get("is_active") == "on"
-        feature.name = request.form.get("name", feature.name)
-        feature.description = request.form.get("description", "")
-
-        db.session.commit()
-        flash(_("Feature aggiornata con successo"), "success")
-
     except json.JSONDecodeError:
-        db.session.rollback()
         flash(_("Formato regole non valido"), "danger")
-    except Exception as e:
-        db.session.rollback()
-        flash(_("Errore: %(error)s", error=str(e)), "danger")
+        return redirect(url_for("gamification.admin_feature_detail", code=code))
 
-    return redirect(url_for("gamification.admin_feature_detail", code=code))
+    is_active = request.form.get("is_active") == "on"
+    name = request.form.get("name", "")
+    description = request.form.get("description", "")
+
+    return handle_service_action(
+        action=lambda: FeatureConfigService.update_feature(
+            code=code,
+            rules=rules,
+            is_active=is_active,
+            name=name,
+            description=description,
+        ),
+        redirect_url=url_for("gamification.admin_feature_detail", code=code),
+        success_message=_("Feature aggiornata con successo"),
+    )
 
 
 @gamification_bp.route("/admin/features/<code>/preview")
@@ -150,34 +148,18 @@ def admin_create_feature():
             page_title=_("Nuova Feature")
         )
 
-    try:
-        code = request.form.get("code", "").strip().lower().replace(" ", "_")
-        name = request.form.get("name", "").strip()
+    code = request.form.get("code", "").strip().lower().replace(" ", "_")
+    name = request.form.get("name", "").strip()
+    description = request.form.get("description", "")
+    is_active = request.form.get("is_active") == "on"
 
-        if not code or not name:
-            flash(_("Codice e nome sono obbligatori"), "danger")
-            return redirect(url_for("gamification.admin_create_feature"))
-
-        # Check if code already exists
-        existing = db.session.get(FeatureConfig, code)
-        if existing:
-            flash(_("Codice feature già esistente"), "danger")
-            return redirect(url_for("gamification.admin_create_feature"))
-
-        feature = FeatureConfig(
+    return handle_service_action(
+        action=lambda: FeatureConfigService.create_feature(
             code=code,
             name=name,
-            description=request.form.get("description", ""),
-            is_active=request.form.get("is_active") == "on",
-            rules="[]"
-        )
-        db.session.add(feature)
-        db.session.commit()
-
-        flash(_("Feature creata con successo"), "success")
-        return redirect(url_for("gamification.admin_feature_detail", code=code))
-
-    except Exception as e:
-        db.session.rollback()
-        flash(_("Errore: %(error)s", error=str(e)), "danger")
-        return redirect(url_for("gamification.admin_create_feature"))
+            description=description,
+            is_active=is_active,
+        ),
+        redirect_url=url_for("gamification.admin_features"),
+        success_message=_("Feature creata con successo"),
+    )

@@ -181,6 +181,22 @@ class LevelService:
         return user_level, did_level_up
 
     @staticmethod
+    @transactional(domain="gamification")
+    def reset_user_level(user_id: int) -> UserLevel:
+        """Reset user level to 1, XP to 0. Keeps total_xp for historical record.
+
+        Raises:
+            ValueError: If user has no level data.
+        """
+        user_level = UserLevel.query.filter_by(user_id=user_id).first()
+        if not user_level:
+            raise ValueError("Utente non ha dati di livello")
+        user_level.current_level = 1
+        user_level.current_xp = 0
+        logger.info(f"Reset user {user_id} level to 1")
+        return user_level
+
+    @staticmethod
     def get_level_progress(user_id: int) -> Dict[str, Any]:
         """
         Get UI display data for level progress.

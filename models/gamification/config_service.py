@@ -17,6 +17,7 @@ import logging
 from threading import Lock
 
 from models.base import db
+from models.transaction.manager import transactional
 from models.gamification.config_models import (
     GamificationConfig,
     LevelUnlock,
@@ -433,3 +434,170 @@ class GamificationConfigService:
                 "description": unlock.description or ""
             }
         return result
+
+    # ========================================
+    # Admin Write Operations
+    # ========================================
+
+    @classmethod
+    @transactional(domain="gamification")
+    def update_config(cls, key: str, value: int, updated_by_id: int) -> GamificationConfig:
+        """Update a configuration value. Invalidates cache.
+
+        Raises:
+            ValueError: If key empty, value negative, or config not found.
+        """
+        if not key:
+            raise ValueError("Chiave configurazione mancante")
+        if value < 0:
+            raise ValueError("Il valore non può essere negativo")
+        config = db.session.get(GamificationConfig, key)
+        if not config:
+            raise ValueError("Configurazione non trovata")
+        config.value = value
+        config.updated_by_id = updated_by_id
+        cls.invalidate_cache()
+        logger.info(f"Config '{key}' updated to {value} by user {updated_by_id}")
+        return config
+
+    @classmethod
+    @transactional(domain="gamification")
+    def add_level_unlock(
+        cls, level: int, feature_code: str, feature_name: str, description: str
+    ) -> LevelUnlock:
+        """Add a new level unlock.
+
+        Raises:
+            ValueError: If validation fails or level already has unlock.
+        """
+        if level < 1:
+            raise ValueError("Il livello deve essere almeno 1")
+        if not feature_code or not feature_name:
+            raise ValueError("Codice e nome feature sono obbligatori")
+        if LevelUnlock.query.filter_by(level=level).first():
+            raise ValueError(f"Il livello {level} ha già un unlock definito")
+        unlock = LevelUnlock(
+            level=level,
+            feature_code=feature_code,
+            feature_name=feature_name,
+            description=description,
+            is_active=True,
+        )
+        db.session.add(unlock)
+        cls.invalidate_cache()
+        logger.info(f"Added level unlock at level {level}: {feature_code}")
+        return unlock
+
+    @classmethod
+    @transactional(domain="gamification")
+    def update_level_unlock(
+        cls, unlock_id: int, feature_name: str, description: str, is_active: bool
+    ) -> LevelUnlock:
+        """Update an existing level unlock.
+
+        Raises:
+            ValueError: If unlock not found or feature_name empty.
+        """
+        unlock = db.session.get(LevelUnlock, unlock_id)
+        if not unlock:
+            raise ValueError("Level unlock non trovato")
+        if not feature_name:
+            raise ValueError("Il nome feature è obbligatorio")
+        unlock.feature_name = feature_name
+        unlock.description = description
+        unlock.is_active = is_active
+        cls.invalidate_cache()
+        logger.info(f"Updated level unlock {unlock_id}")
+        return unlock
+
+    @classmethod
+    @transactional(domain="gamification")
+    def delete_level_unlock(cls, unlock_id: int) -> None:
+        """Delete a level unlock.
+
+        Raises:
+            ValueError: If unlock not found.
+        """
+        unlock = db.session.get(LevelUnlock, unlock_id)
+        if not unlock:
+            raise ValueError("Level unlock non trovato")
+        level = unlock.level
+        db.session.delete(unlock)
+        cls.invalidate_cache()
+        logger.info(f"Deleted level unlock at level {level}")
+
+    @classmethod
+    @transactional(domain="gamification")
+    def add_streak_milestone(
+        cls,
+        weeks: int,
+        freeze_tokens: int,
+        xp_bonus_multiplier: int,
+        is_recurring: bool,
+    ) -> StreakMilestone:
+        """Add a new streak milestone.
+
+        Raises:
+            ValueError: If validation fails or weeks already has milestone.
+        """
+        if weeks < 1:
+            raise ValueError("Le settimane devono essere almeno 1")
+        if freeze_tokens < 0:
+            raise ValueError("I freeze token non possono essere negativi")
+        if StreakMilestone.query.filter_by(weeks=weeks).first():
+            raise ValueError(f"Milestone per {weeks} settimane già esistente")
+        milestone = StreakMilestone(
+            weeks=weeks,
+            freeze_tokens=freeze_tokens,
+            xp_bonus_multiplier=xp_bonus_multiplier,
+            is_recurring=is_recurring,
+            is_active=True,
+        )
+        db.session.add(milestone)
+        cls.invalidate_cache()
+        logger.info(f"Added streak milestone at {weeks} weeks")
+        return milestone
+
+    @classmethod
+    @transactional(domain="gamification")
+    def update_streak_milestone(
+        cls,
+        milestone_id: int,
+        freeze_tokens: int,
+        xp_bonus_multiplier: int,
+        is_recurring: bool,
+        is_active: bool,
+    ) -> StreakMilestone:
+        """Update an existing streak milestone.
+
+        Raises:
+            ValueError: If milestone not found or freeze_tokens negative.
+        """
+        milestone = db.session.get(StreakMilestone, milestone_id)
+        if not milestone:
+            raise ValueError("Milestone non trovato")
+        if freeze_tokens < 0:
+            raise ValueError("I freeze token non possono essere negativi")
+        milestone.freeze_tokens = freeze_tokens
+        milestone.xp_bonus_multiplier = xp_bonus_multiplier
+        milestone.is_recurring = is_recurring
+        milestone.is_active = is_active
+        cls.invalidate_cache()
+        logger.info(f"Updated streak milestone {milestone_id}")
+        return milestone
+
+    @classmethod
+    @transactional(domain="gamification")
+    def delete_streak_milestone(cls, milestone_id: int) -> None:
+        """Delete a streak milestone.
+
+        Raises:
+            ValueError: If milestone not found.
+        """
+        milestone = db.session.get(StreakMilestone, milestone_id)
+        if not milestone:
+            raise ValueError("Milestone non trovato")
+        weeks = milestone.weeks
+        db.session.delete(milestone)
+        cls.invalidate_cache()
+        logger.info(f"Deleted streak milestone at {weeks} weeks")

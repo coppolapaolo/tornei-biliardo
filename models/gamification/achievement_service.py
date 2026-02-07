@@ -20,6 +20,8 @@ from models.transaction.manager import transactional
 from models.gamification.models import (
     Achievement,
     UserAchievement,
+    AchievementCategory,
+    AchievementDifficulty,
 )
 from models.gamification.events import AchievementUnlockedEvent
 from models.gamification.level_service import LevelService
@@ -619,3 +621,64 @@ class AchievementService:
             "by_difficulty": by_difficulty,
             "recent_unlocks": [ua.achievement for ua in recent_unlocks]
         }
+
+    # ========================================
+    # Admin Operations
+    # ========================================
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def create_achievement(
+        slug: str,
+        name: str,
+        description: str,
+        category: str,
+        difficulty: str,
+        icon_path: Optional[str],
+        xp_reward: int,
+        is_hidden: bool,
+        is_progressive: bool,
+        requirement_type: str,
+        requirement_value: int,
+    ) -> Achievement:
+        """Create a new achievement definition.
+
+        Raises:
+            ValueError: If slug/name empty or slug already exists.
+        """
+        if not slug or not name:
+            raise ValueError("Slug e nome sono obbligatori")
+        if Achievement.query.filter_by(slug=slug).first():
+            raise ValueError("Un achievement con questo slug esiste già")
+
+        requirements = json.dumps({"type": requirement_type, "count": requirement_value})
+        achievement = Achievement(
+            slug=slug,
+            name=name,
+            description=description,
+            category=AchievementCategory[category.upper()],
+            difficulty=AchievementDifficulty[difficulty.upper()],
+            icon_path=icon_path,
+            xp_reward=xp_reward,
+            is_hidden=is_hidden,
+            is_progressive=is_progressive,
+            requirements=requirements,
+        )
+        db.session.add(achievement)
+        logger.info(f"Created achievement '{slug}'")
+        return achievement
+
+    @staticmethod
+    @transactional(domain="gamification")
+    def toggle_hidden(achievement_id: int) -> Achievement:
+        """Toggle achievement hidden status.
+
+        Raises:
+            ValueError: If achievement not found.
+        """
+        achievement = db.session.get(Achievement, achievement_id)
+        if not achievement:
+            raise ValueError("Achievement non trovato")
+        achievement.is_hidden = not achievement.is_hidden
+        logger.info(f"Achievement '{achievement.slug}' hidden={achievement.is_hidden}")
+        return achievement
