@@ -27,7 +27,7 @@ from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
 from utils import gara_manager_required
-from utils.route_helpers import handle_service_action
+from utils.route_helpers import handle_service_action, get_or_ajax_404
 
 from . import competition_bp
 
@@ -641,9 +641,7 @@ def round_management_overview(gara_id):
     """Overview of round management with modification capabilities."""
     from models.competition.round_manager import AdvancedRoundManager
 
-    gara = db.session.get(Gara, gara_id)
-    if not gara:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Get round modification summary
     rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
@@ -777,9 +775,7 @@ def get_round_status(gara_id):
     """AJAX endpoint to get current round status."""
     from models.competition.round_manager import AdvancedRoundManager
 
-    gara = db.session.get(Gara, gara_id)
-    if not gara:
-        return jsonify({"error": "Gara non trovata"}), 404
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     rounds_summary = AdvancedRoundManager.get_round_modification_summary(gara_id)
 

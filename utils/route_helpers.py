@@ -9,7 +9,23 @@ Reduces boilerplate for common patterns:
 
 from typing import Any, Callable, Optional
 
-from flask import flash, jsonify, redirect, request
+from flask import abort, flash, jsonify, make_response, redirect, request
+
+from models.base import db
+
+
+def get_or_ajax_404(model_class: type, entity_id: int, entity_name: str = "Risorsa") -> Any:
+    """Fetch an entity by PK or abort with a JSON 404 response (for AJAX routes).
+
+    Usage:
+        match = get_or_ajax_404(Match, match_id, "Match")
+    """
+    entity = db.session.get(model_class, entity_id)
+    if entity is None:
+        abort(make_response(
+            jsonify({"success": False, "error": f"{entity_name} non trovato/a"}), 404
+        ))
+    return entity
 
 
 def is_ajax_request() -> bool:

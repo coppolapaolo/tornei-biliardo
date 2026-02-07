@@ -42,9 +42,7 @@ def export_profile_csv(user_id):
     if user.id != user_id:
         abort(403)
 
-    target_user = db.session.get(User, user_id)
-    if not target_user:
-        abort(404)
+    target_user = db.get_or_404(User, user_id)
 
     # Get all completed matches for the user
     matches = Match.query.filter(

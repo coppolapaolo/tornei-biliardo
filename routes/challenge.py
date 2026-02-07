@@ -188,9 +188,7 @@ def create_challenge():
 @director_required
 def delete_challenge(challenge_id):
     """Delete challenge (soft delete - mark as inactive)."""
-    challenge = db.session.get(Challenge, challenge_id)
-    if challenge is None:
-        abort(404)
+    challenge = db.get_or_404(Challenge, challenge_id)
 
     # Check if user can delete (admin can delete all, directors can delete their own)
     can_delete = current_user.is_admin or (
@@ -217,9 +215,7 @@ def delete_challenge(challenge_id):
 @challenge_player_required
 def challenge_detail(challenge_id):
     """Dettaglio sfida"""
-    challenge = db.session.get(Challenge, challenge_id)
-    if challenge is None:
-        abort(404)
+    challenge = db.get_or_404(Challenge, challenge_id)
 
     # Always return the full page template (no more modal)
     return render_template("player/challenge_detail.html", challenge=challenge)
@@ -229,9 +225,7 @@ def challenge_detail(challenge_id):
 @login_required
 def start_attempt(challenge_id):
     """Start a new challenge attempt."""
-    challenge = db.session.get(Challenge, challenge_id)
-    if challenge is None:
-        abort(404)
+    challenge = db.get_or_404(Challenge, challenge_id)
 
     # Check if challenge is active
     if not challenge.is_active:
@@ -288,9 +282,7 @@ def start_attempt(challenge_id):
 @challenge_attempt_player_required
 def attempt_detail(attempt_id):
     """Dettaglio tentativo di sfida"""
-    attempt = db.session.get(ChallengeAttempt, attempt_id)
-    if attempt is None:
-        abort(404)
+    attempt = db.get_or_404(ChallengeAttempt, attempt_id)
 
     return render_template("player/challenge_attempt_detail.html", attempt=attempt)
 
@@ -496,9 +488,7 @@ def complete_x_replacement(attempt_id):
 @director_required
 def edit_challenge(challenge_id):
     """Edit challenge (directors only)."""
-    challenge = db.session.get(Challenge, challenge_id)
-    if challenge is None:
-        abort(404)
+    challenge = db.get_or_404(Challenge, challenge_id)
 
     # Check if user can edit (admin can edit all, directors can edit their own)
     can_edit = current_user.is_admin or (

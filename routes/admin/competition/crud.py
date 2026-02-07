@@ -317,9 +317,7 @@ def create_gara():
         return redirect(url_for("dashboard.dashboard"))
 
     campionato_id = int(campionato_id)
-    campionato = db.session.get(Campionato, campionato_id)
-    if campionato is None:
-        abort(404)
+    campionato = db.get_or_404(Campionato, campionato_id)
 
     # Verifica permessi sul campionato
     from models.user.models import DirectorAssignment
@@ -457,9 +455,7 @@ def create_gara():
 @gara_manager_required
 def edit_gara(gara_id):
     """Modifica gara"""
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     if not gara.can_be_modified():
         flash("Impossibile modificare la gara: ci sono già delle iscrizioni!")
@@ -572,9 +568,7 @@ def edit_gara(gara_id):
 @gara_manager_required
 def delete_gara(gara_id):
     """Cancella gara"""
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Determina se è standalone prima della cancellazione
     is_standalone = gara.campionato_id is None
@@ -607,9 +601,7 @@ def soft_delete_gara(gara_id):
     Marks the gara as deleted without physical removal.
     Supports cascade options for related matches.
     """
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Get cascade option from form
     cascade_option = request.form.get("cascade_option", "delete_all")
@@ -654,9 +646,7 @@ def soft_delete_gara(gara_id):
 @gara_manager_required
 def cancel_gara(gara_id):
     """Cancella gara con notifiche ai partecipanti"""
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     campionato_id = gara.campionato_id
     gara_name = gara.name

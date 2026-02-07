@@ -232,9 +232,7 @@ def view_profile(user_id):
     from models.challenge.models import Challenge, ChallengeAttempt
     from models.user.privacy_service import PrivacyService
 
-    user = db.session.get(User, user_id)
-    if user is None:
-        abort(404)
+    user = db.get_or_404(User, user_id)
 
     # Privacy context
     viewer_id = current_user.id if current_user.is_authenticated else None

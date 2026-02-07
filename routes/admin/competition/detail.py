@@ -34,9 +34,7 @@ def gara_detail(gara_id):
     - Player iscritto → Vista personale con le sue partite
     - Guest/Player non iscritto → Vista pubblica read-only
     """
-    gara = db.session.get(Gara, gara_id)
-    if gara is None:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Forza un refresh per assicurarsi di avere i dati più aggiornati
     db.session.refresh(gara)

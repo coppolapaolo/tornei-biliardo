@@ -8,7 +8,7 @@ from flask import render_template, request, flash, redirect, url_for, jsonify
 from flask_babel import gettext as _
 
 from utils import admin_required
-from utils.route_helpers import handle_service_action
+from utils.route_helpers import handle_service_action, get_or_ajax_404
 from models.base import db
 from models.gamification.feature_models import FeatureConfig
 from models.gamification.feature_config_service import FeatureConfigService
@@ -122,9 +122,7 @@ def admin_feature_preview(code: str):
 
     Returns JSON with stats about eligible users.
     """
-    feature = db.session.get(FeatureConfig, code)
-    if not feature:
-        return jsonify({"error": "Feature not found"}), 404
+    feature = get_or_ajax_404(FeatureConfig, code, "Feature")
 
     # Get all active users
     users = User.query.filter(User.deleted_at.is_(None)).all()

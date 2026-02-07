@@ -438,9 +438,7 @@ def edit_campionato(campionato_id):
     """Modifica campionato - allineato al wizard di creazione"""
     from models.location.models import BilliardHall
 
-    campionato = db.session.get(Campionato, campionato_id)
-    if campionato is None:
-        abort(404)
+    campionato = db.get_or_404(Campionato, campionato_id)
 
     if not campionato.can_be_modified():
         flash(
@@ -546,9 +544,7 @@ def soft_delete_campionato(campionato_id):
     Marks the campionato and all its garas as deleted.
     Supports cascade options for related matches.
     """
-    campionato = db.session.get(Campionato, campionato_id)
-    if campionato is None:
-        abort(404)
+    campionato = db.get_or_404(Campionato, campionato_id)
 
     # Get cascade option from form
     cascade_option = request.form.get("cascade_option", "delete_all")

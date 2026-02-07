@@ -203,9 +203,7 @@ def campionato_detail_public(campionato_id):
     """Dettaglio campionato pubblico - visibile ai guest"""
     from models.campionato.services import TournamentService
 
-    campionato = db.session.get(Campionato, campionato_id)
-    if campionato is None:
-        abort(404)
+    campionato = db.get_or_404(Campionato, campionato_id)
 
     # Get all garas for this campionato
     garas = (

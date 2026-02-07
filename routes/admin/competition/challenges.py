@@ -21,6 +21,7 @@ from models import (
 )
 from models.status_enum import GaraStatus
 from utils import gara_manager_required, admin_required
+from utils.route_helpers import get_or_ajax_404
 
 from . import competition_bp
 
@@ -37,9 +38,7 @@ def get_gara_challenges(gara_id):
     """Get active challenges for a gara (AJAX endpoint)."""
     from models.challenge import GaraChallengeService
 
-    gara = db.session.get(Gara, gara_id)
-    if not gara:
-        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":
@@ -84,9 +83,7 @@ def add_challenge_to_gara(gara_id):
     """Add a challenge to a gara (AJAX endpoint)."""
     from models.challenge import GaraChallengeService
 
-    gara = db.session.get(Gara, gara_id)
-    if not gara:
-        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":
@@ -163,9 +160,7 @@ def remove_challenge_from_gara(gara_id):
     """Remove a challenge from a gara (AJAX endpoint)."""
     from models.challenge import GaraChallengeService, GaraChallenge
 
-    gara = db.session.get(Gara, gara_id)
-    if not gara:
-        return jsonify({"success": False, "error": "Gara non trovata"}), 404
+    gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":
@@ -432,9 +427,7 @@ def get_gara_challenge_classification(gara_id):
     """Get challenge classification for a gara."""
     from models.challenge import GaraChallengeService
 
-    gara = db.session.get(Gara, gara_id)
-    if not gara:
-        abort(404)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Solo per gare Random
     if gara.matchmaking_strategy != "random":

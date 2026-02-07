@@ -25,7 +25,7 @@ from utils import (
 from models.match.services import RackService
 from models.kpi import track_match_played, track_result_submit
 from routes.sse import emit_gara_event
-from utils.route_helpers import handle_service_action
+from utils.route_helpers import handle_service_action, get_or_ajax_404
 
 # Match management blueprint
 match_bp = Blueprint("match", __name__)
@@ -42,9 +42,7 @@ def match_detail(match_id):
     """
     from flask_login import current_user
 
-    match = db.session.get(Match, match_id)
-    if match is None:
-        abort(404)
+    match = db.get_or_404(Match, match_id)
 
     # Determina permessi (pattern da gara_detail)
     user_can_manage = False
@@ -218,9 +216,7 @@ def validate_match(match_id):
     Per match con pareggio (es. "Esattamente N"), accetta winner_id dalla request.
     """
     try:
-        match = db.session.get(Match, match_id)
-        if not match:
-            return jsonify({"success": False, "error": "Match non trovato"}), 404
+        match = get_or_ajax_404(Match, match_id, "Match")
 
         # Verifica che il match non sia già completato
         from models.status_enum import MatchStatus
@@ -626,9 +622,7 @@ def start_next_set(match_id):
     from models.match.services import MatchService
 
     try:
-        match = db.session.get(Match, match_id)
-        if not match:
-            return jsonify({"success": False, "error": "Match non trovato"}), 404
+        match = get_or_ajax_404(Match, match_id, "Match")
 
         if not match.is_multi_set:
             return jsonify({
@@ -672,9 +666,7 @@ def add_set_rack(match_id):
     try:
         winner_id = int(request.form["winner_id"])
 
-        match = db.session.get(Match, match_id)
-        if not match:
-            return jsonify({"success": False, "error": "Match non trovato"}), 404
+        match = get_or_ajax_404(Match, match_id, "Match")
 
         if not match.is_multi_set:
             return jsonify({
@@ -731,9 +723,7 @@ def remove_set_rack(match_id):
     from models.match.services import MatchService
 
     try:
-        match = db.session.get(Match, match_id)
-        if not match:
-            return jsonify({"success": False, "error": "Match non trovato"}), 404
+        match = get_or_ajax_404(Match, match_id, "Match")
 
         if not match.is_multi_set:
             return jsonify({

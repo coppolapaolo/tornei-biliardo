@@ -133,11 +133,7 @@ def venue_detail(venue_id):
     """Scheda dettagliata sala biliardo - vista role-based"""
     from flask_login import current_user
 
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
+    venue = db.get_or_404(BilliardHall, venue_id)
 
     # Allow admin to see inactive venues, but not regular users
     if not venue.is_active and not current_user.is_admin:
@@ -271,11 +267,7 @@ def create_venue():
 @venue_manager_required
 def edit_venue(venue_id):
     """Modifica sala biliardo"""
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
+    venue = db.get_or_404(BilliardHall, venue_id)
 
     if request.method == "POST":
         # Get form data - collect in kwargs dict to avoid type issues
@@ -388,11 +380,7 @@ def toggle_venue_status(venue_id):
 @venue_manager_required
 def verify_venue(venue_id):
     """Verifica sala biliardo"""
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
+    venue = db.get_or_404(BilliardHall, venue_id)
 
     new_verified = not venue.verified
 
@@ -426,11 +414,7 @@ def update_table_numbers(venue_id):
 @venue_manager_required
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
+    venue = db.get_or_404(BilliardHall, venue_id)
 
     if "photo" not in request.files:
         flash("Nessuna foto selezionata", "error")
