@@ -1,8 +1,8 @@
 # HANDOFF: Technical Debt Refactoring
 
-**Data**: 2026-02-06
-**Stato**: FASI 1-3 COMPLETATE, FASE 4 PARZIALE, FASE 5 (anti-pattern @transactional) COMPLETATA
-**Valutazione complessiva architettura**: 7.5/10 → 8.8/10 (post-refactoring)
+**Data**: 2026-02-07
+**Stato**: ROUND 1 COMPLETO (Fasi 1-5), ROUND 2 COMPLETO (P1-P3), ROUND 3 COMPLETO (P1-P4)
+**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3)
 
 ---
 
@@ -281,6 +281,141 @@ Originariamente 20+ route con `@transactional` diretto. **Tutte 19 risolte** (0 
 3. **Un commit per task**: messaggi di commit chiari con `refactor:` prefix
 4. **Verifica obbligatoria**: `pyright` + `pytest tests/new/ -n 4` dopo ogni task
 5. **Template check**: se il refactoring tocca metodi usati nei template, controllare anche quelli
+
+---
+
+## Round 2 — Technical Debt Cleanup (2026-02-07)
+
+Secondo ciclo di analisi post-Round 1. Identificate 3 aree residue.
+
+### P1: Gamification Routes → Service Layer (39 manual commits → 0)
+
+**Problema**: `routes/gamification/admin.py`, `config.py`, `features.py` usavano raw `db.session.commit()/rollback()` invece di delegare a servizi `@transactional`.
+
+**Soluzione**:
+- Aggiunti metodi admin a `QuestService` (+3), `AchievementService` (+2), `LevelService` (+1)
+- Aggiunti 9 metodi write a `GamificationConfigService` (era read-only)
+- Creato `FeatureConfigService` (nuovo file, 2 metodi)
+- Refactored 21 route handler a `handle_service_action()` / `handle_ajax_service_action()`
+
+**File modificati**: `quest_service.py`, `achievement_service.py`, `level_service.py`, `config_service.py`, `feature_config_service.py` (NEW), `routes/gamification/admin.py`, `config.py`, `features.py`
+**Stato**: DONE
+
+### P2: Remaining Route Manual Commits (5 → 0)
+
+**Problema**: 5 route residue con `db.session.commit()` manuale fuori dal Round 1.
+
+**Soluzione**:
+- `routes/admin/user.py` — `process_director_request`: aggiunto param `admin_notes` a `DirectorRequestService.process_request()`
+- `routes/admin/user.py` — `toggle_gamification_override`: nuovo `UserService.toggle_gamification_override()`
+- `routes/challenge.py` — `edit_challenge`: refactored a `handle_ajax_service_action`
+- `routes/admin/campionato.py` — `_create_playoff_config`: nuovo `TournamentService.create_playoff_config()`
+
+**4 route mantenute as-is** (pattern corretti): `validate_match`, `assign_table`, `delete_account`, `_generate_gdpr_export`
+
+**File modificati**: `director_request_service.py`, `services.py` (user), `challenge.py`, `campionato.py`, `services.py` (campionato)
+**Stato**: DONE
+
+### P3: Split Large Files (2 file → 7 moduli)
+
+**Problema**: 2 file superavano i 1000 LOC ciascuno.
+
+#### P3a: `models/individual_match/models.py` (1218 LOC → 3 moduli + re-export shim)
+- `proposal_models.py` (~310 LOC): ProposalType, ProposalStatus, InvitationStatus, MatchProposal, ProposalInvitation
+- `match_models.py` (~660 LOC): IndividualMatch, IndividualSetStatus, IndividualSet, IndividualRack
+- `availability_models.py` (~50 LOC): PlayerAvailability (deprecated)
+- `models.py` ridotto a re-export shim (~46 LOC) — zero importers da aggiornare
+
+#### P3b: `routes/player/profile.py` (1133 LOC → 4 moduli)
+- `profile.py` (~440 LOC): display + editing profilo
+- `privacy.py` (~115 LOC): 7 route privacy settings e hide/show
+- `account.py` (~55 LOC): cancellazione account
+- `exports.py` (~480 LOC): CSV + GDPR export
+
+**Stato**: DONE
+
+### Riepilogo Round 2
+
+| # | Task | Rischio | Impatto | Stato |
+|---|------|---------|---------|-------|
+| P1 | Gamification routes → service layer | BASSO | ALTO (39 commit manuali eliminati) | DONE |
+| P2 | Remaining route manual commits | BASSO | MEDIO (5 commit manuali eliminati) | DONE |
+| P3a | Split individual_match/models.py | BASSO | MEDIO (manutenibilita') | DONE |
+| P3b | Split player/profile.py | BASSO | MEDIO (manutenibilita') | DONE |
+
+---
+
+## Round 3 — Structural Decomposition (2026-02-07)
+
+Terzo ciclo di refactoring. Focus su SRP violations e file di grandi dimensioni residui.
+
+### P1: Extract TrioMatchService from GaraService
+
+**Problema**: `GaraService` (1400 LOC, 34 metodi) conteneva 7 metodi trio match (~370 LOC) che violavano SRP — logica di scoring trio non correlata al lifecycle della gara.
+
+**Soluzione**:
+- Creato `models/competition/trio_service.py` con `TrioMatchService` (7 metodi)
+- Sostituiti i 7 method body in `GaraService` con delegation shim (1 riga ciascuno, senza `@transactional`)
+- GaraService ridotto da ~1400 a ~1065 LOC
+
+**File**: `trio_service.py` (NEW), `services.py` (MODIFIED)
+**Stato**: DONE
+
+### P2: Standardize Entity Fetch Pattern
+
+**Problema**: 25+ istanze di `db.session.get() + abort(404)` vs 15+ gia' con `get_or_404()`. Inconsistenza tra route AJAX (JSON 404) e non-AJAX (HTML 404).
+
+**Soluzione**:
+- Aggiunto `get_or_ajax_404()` helper a `utils/route_helpers.py`
+- Convertite 23 istanze non-AJAX a `db.get_or_404()`
+- Convertite 9 istanze AJAX a `get_or_ajax_404()`
+- 13 file route modificati
+
+**File**: `route_helpers.py` (MODIFIED) + 13 route files
+**Stato**: DONE
+
+### P3: Split Large Route Files (2 file → 2 package)
+
+**Problema**: 2 route file da ~950 LOC ciascuno.
+
+#### P3a: `routes/individual_match.py` (951 LOC → package)
+- `__init__.py` (~25 LOC): Blueprint + imports
+- `proposals.py` (~350 LOC): 8 route — proposal CRUD/lifecycle
+- `matches.py` (~450 LOC): 12 route — match scoring/lifecycle
+- `views.py` (~100 LOC): 4 route + 2 error handler — dashboard, stats, availability, admin
+
+#### P3b: `routes/admin/match.py` (923 LOC → package)
+- `__init__.py` (~25 LOC): Blueprint + imports
+- `detail.py` (~320 LOC): 3 route — match_detail, assign_table, update_match_times
+- `scoring.py` (~300 LOC): 6 route — add_rack, set_result, validate, reset, rack ops
+- `multi_set.py` (~155 LOC): 3 route — start_next_set, add/remove set rack
+- `challenges.py` (~155 LOC): 2 route — record challenge attempt(s)
+
+Tutte le 57 URL route preservate, zero modifiche ai caller.
+
+**Stato**: DONE
+
+### P4: Split models/match/services.py (3 classi → 3 file)
+
+**Problema**: 1039 LOC con 3 classi distinte gia' ben separate nello stesso file.
+
+**Soluzione**:
+- `match_service.py` (~560 LOC): MatchService — state machine, multi-set, admin ops
+- `rack_service.py` (~240 LOC): RackService — rack scoring, validation, reset
+- `result_service.py` (~60 LOC): MatchResultService — result validation/submission
+- `services.py` ridotto a re-export shim (~65 LOC) — zero importers da aggiornare
+
+**Stato**: DONE
+
+### Riepilogo Round 3
+
+| # | Task | Rischio | Impatto | Stato |
+|---|------|---------|---------|-------|
+| P1 | Extract TrioMatchService | BASSO | ALTO (SRP, -335 LOC da GaraService) | DONE |
+| P2 | Standardize entity fetch | BASSO | MEDIO (consistenza, 33 istanze) | DONE |
+| P3a | Split individual_match.py | BASSO | MEDIO (manutenibilita') | DONE |
+| P3b | Split admin/match.py | BASSO | MEDIO (manutenibilita') | DONE |
+| P4 | Split match/services.py | BASSO | MEDIO (manutenibilita') | DONE |
 
 ---
 
