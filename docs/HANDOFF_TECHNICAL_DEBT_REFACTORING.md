@@ -1,8 +1,8 @@
 # HANDOFF: Technical Debt Refactoring
 
 **Data**: 2026-02-07
-**Stato**: ROUND 1 COMPLETO (Fasi 1-5), ROUND 2 COMPLETO (P1-P3), ROUND 3 COMPLETO (P1-P4)
-**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3)
+**Stato**: ROUND 1 COMPLETO (Fasi 1-5), ROUND 2 COMPLETO (P1-P3), ROUND 3 COMPLETO (P1-P4), ROUND 4 COMPLETO (P1-P4)
+**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3) → 9.5/10 (post-Round 4)
 
 ---
 
@@ -416,6 +416,54 @@ Tutte le 57 URL route preservate, zero modifiche ai caller.
 | P3a | Split individual_match.py | BASSO | MEDIO (manutenibilita') | DONE |
 | P3b | Split admin/match.py | BASSO | MEDIO (manutenibilita') | DONE |
 | P4 | Split match/services.py | BASSO | MEDIO (manutenibilita') | DONE |
+
+---
+
+## Round 4 — Final Cleanup (2026-02-07)
+
+### P1: Eliminate Manual Commits/Rollbacks in Routes
+
+6 instances of `db.session.commit()` / `db.session.rollback()` remained in route handlers, violating the `@transactional` convention.
+
+**Approach**: Created `MatchValidationService.validate_and_complete()` in `models/match/validation_service.py` (~95 LOC) wrapping all 6 operations of match validation in a single `@transactional`. Removed redundant commit/rollback from `detail.py`, `account.py`, `exports.py`.
+
+**Files modified**: `models/match/validation_service.py` (NEW), `models/match/services.py`, `routes/admin/match/scoring.py`, `routes/admin/match/detail.py`, `routes/player/account.py`, `routes/player/exports.py`
+
+### P2: Remove Trio Wrapper Methods from GaraService
+
+7 thin wrapper methods in `GaraService` delegated directly to `TrioMatchService` with no added logic.
+
+**Approach**: Updated 2 route files to import `TrioMatchService` directly. Removed 7 wrappers (~37 LOC) from `GaraService`.
+
+**Files modified**: `models/competition/services.py`, `routes/player/matches.py`, `routes/admin/competition/matches.py`
+
+### P3: Split models/dashboard/services.py (1100 LOC)
+
+Single file mixed queries, section builders, role facades, and dataclasses.
+
+**Approach**: Split into 3 focused modules with re-export shim:
+- `view_models.py` (~160 LOC): Dataclasses (`CapabilityVM`, `UnifiedDashboardItem`, `DashboardVM`) + query helpers
+- `section_builders.py` (~230 LOC): `DashboardSectionBuilder` (player, individual match, challenge, gamification sections)
+- `dashboard_service.py` (~760 LOC): `DashboardService` role facades + query builders
+- `services.py`: Re-export shim
+
+### P4: Split models/campionato/services.py (1025 LOC)
+
+`TournamentService` mixed CRUD lifecycle with complex statistics/ranking logic.
+
+**Approach**: Split into 2 focused modules with re-export shim. Used inheritance (`TournamentService extends TournamentStatisticsService`) so all callers continue to work without changes:
+- `statistics_service.py` (~290 LOC): `TournamentStatisticsService` + `compute_campionato_status`
+- `tournament_service.py` (~600 LOC): `TournamentService` CRUD + lifecycle
+- `services.py`: Re-export shim
+
+### Riepilogo Round 4
+
+| # | Task | Rischio | Impatto | Stato |
+|---|------|---------|---------|-------|
+| P1 | Eliminate manual commits/rollbacks | BASSO | ALTO (transaction safety) | DONE |
+| P2 | Remove trio wrappers from GaraService | BASSO | MEDIO (clarity) | DONE |
+| P3 | Split dashboard/services.py | BASSO | MEDIO (maintainability) | DONE |
+| P4 | Split campionato/services.py | BASSO | MEDIO (maintainability) | DONE |
 
 ---
 
