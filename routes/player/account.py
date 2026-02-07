@@ -51,6 +51,5 @@ def delete_account():
         )
         return redirect(url_for("main.index"))
     except Exception:
-        db.session.rollback()
         flash("Errore durante l'eliminazione dell'account.", "danger")
         raise

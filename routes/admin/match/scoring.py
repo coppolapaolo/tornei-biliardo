@@ -21,7 +21,7 @@ from utils import (
 from models.match.services import RackService
 from models.kpi import track_match_played
 from routes.sse import emit_gara_event
-from utils.route_helpers import handle_service_action, get_or_ajax_404
+from utils.route_helpers import handle_service_action
 
 from . import match_bp
 
@@ -101,81 +101,18 @@ def validate_match(match_id):
     determina automaticamente il vincitore in base al punteggio.
     Per match con pareggio (es. "Esattamente N"), accetta winner_id dalla request.
     """
+    from models.match.validation_service import MatchValidationService
+
     try:
-        match = get_or_ajax_404(Match, match_id, "Match")
+        result = MatchValidationService.validate_and_complete(match_id)
 
-        # Verifica che il match non sia già completato
-        from models.status_enum import MatchStatus
-        if match.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]:
-            return jsonify({
-                "success": False,
-                "error": "Il match è già stato completato"
-            }), 400
-
-        # Se winner_id non è impostato, verifica se la distanza è raggiunta
-        # e determina il vincitore in base al punteggio
-        if not match.winner_id:
-            # Verifica se il match ha raggiunto la distanza
-            if not match.is_ready_for_validation():
-                return jsonify({
-                    "success": False,
-                    "error": "Il match non ha ancora raggiunto la distanza"
-                }), 400
-
-            # Determina il vincitore in base al punteggio
-            if match.player1_score > match.player2_score:
-                match.winner_id = match.player1_id
-            elif match.player2_score > match.player1_score:
-                match.winner_id = match.player2_id
-            # else: Pareggio - winner_id rimane NULL (consentito)
-
-        # Verifica che il match non sia già completato (check duplicato rimosso)
-        if match.status == MatchStatus.COMPLETED.value:
-            return jsonify({
-                "success": False,
-                "error": "Il match è già stato completato"
-            }), 400
-
-        # Imposta validazione admin
-        match.validated_by_admin = True
-
-        # Completa il match
-        from models.match.services import MatchService
-        MatchService.to_completed(match_id)
-
-        # Riassegna il tavolo alle partite in attesa
-        old_table = match.table_assignment
-        if old_table:
-            from models.match.table_assignment_service import TableAssignmentService
-            # IMPORTANTE: Rimuovi il tavolo dal match originale per evitare
-            # che SQLAlchemy lo ripristini al commit
-            match.table_assignment = None
-
-            # Trova e assegna il tavolo al primo match in attesa
-            waiting_match = TableAssignmentService.release_and_reassign_table(match_id)
-
-            # Se c'è un match in attesa, transizionalo a PLAYING
-            if waiting_match and waiting_match.status != "playing":
-                try:
-                    MatchService.to_playing(waiting_match.id)
-                except Exception:
-                    pass  # Table assignment è comunque stato fatto
-
-        # Aggiorna progressione round
-        from models.competition.services import GaraService
-        gara_id = match.gara_id  # Store before commit
-        if gara_id:
-            GaraService.update_round_progression(gara_id)
-
-        db.session.commit()
-
-        # Emit SSE event for gara detail page polling
-        if gara_id:
-            emit_gara_event(gara_id, "match_completed", {
+        # Emit SSE event for gara detail page polling (no DB writes)
+        if result["gara_id"]:
+            emit_gara_event(result["gara_id"], "match_completed", {
                 "match_id": match_id,
-                "winner_id": match.winner_id,
-                "player1_score": match.player1_score,
-                "player2_score": match.player2_score,
+                "winner_id": result["winner_id"],
+                "player1_score": result["player1_score"],
+                "player2_score": result["player2_score"],
             })
 
         track_match_played()  # KPI tracking
@@ -186,8 +123,12 @@ def validate_match(match_id):
             "match_completed": True
         })
 
+    except ValueError as ve:
+        return jsonify({
+            "success": False,
+            "error": str(ve)
+        }), 400
     except Exception as e:
-        db.session.rollback()
         return jsonify({
             "success": False,
             "error": f"Errore durante la validazione: {str(e)}"

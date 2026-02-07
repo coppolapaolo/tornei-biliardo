@@ -223,18 +223,12 @@ def assign_table(match_id):
             f"Route assign_table called: match_id={match_id}, new_table={new_table}"
         )
 
-        # Call service layer (has @transactional)
+        # Call service layer (has @transactional, commits automatically)
         success, message, swapped_match_id = TableAssignmentService.reassign_table(
             match_id, new_table
         )
 
-        # CRITICAL: Explicit commit required for Flask routes
-        # The @transactional decorator in reassign_table() creates a savepoint
-        # within the Flask request's session, but doesn't commit the parent
-        # transaction. Flask-SQLAlchemy requires explicit commit at route level.
         if success:
-            db.session.commit()
-            logger.info("Changes committed to database")
 
             # Emit SSE events for polling updates
             match = db.session.get(Match, match_id)
@@ -310,7 +304,6 @@ def assign_table(match_id):
         logger.error(
             f"Exception in assign_table for match {match_id}: {str(e)}", exc_info=True
         )
-        db.session.rollback()  # Rollback on error
         return (
             jsonify({"success": False, "message": f"Errore: {str(e)}"}),
             500,

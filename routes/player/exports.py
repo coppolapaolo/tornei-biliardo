@@ -452,7 +452,6 @@ def _generate_gdpr_export(
             )
 
         except Exception as e:
-            db.session.rollback()  # Ensure session is clean after failure
             # Log error and notify user of failure
             current_app.logger.error(f"GDPR export failed for user {user_id}: {e}", exc_info=True)
             try:

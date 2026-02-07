@@ -9,6 +9,7 @@ to work unchanged via this module.
 from .match_service import MatchService
 from .rack_service import RackService
 from .result_service import MatchResultService
+from .validation_service import MatchValidationService
 
 from models.exceptions import InvalidTransitionError
 
@@ -61,6 +62,7 @@ __all__ = [
     "MatchService",
     "RackService",
     "MatchResultService",
+    "MatchValidationService",
     "InvalidTransitionError",
     "add_rack",
 ]
