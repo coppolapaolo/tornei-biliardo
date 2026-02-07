@@ -16,6 +16,9 @@ player_bp = Blueprint("player", __name__)
 # Import all route modules to register their routes with the blueprint
 from . import (
     profile,
+    privacy,
+    account,
+    exports,
     competitions,
     matches,
     proposals,

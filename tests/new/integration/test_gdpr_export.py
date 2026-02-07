@@ -60,7 +60,7 @@ class TestGDPRExport:
     def test_collect_user_data_returns_all_categories(self, app, player_with_data):
         """Test that _collect_user_data returns all expected data categories."""
         with app.app_context():
-            from routes.player.profile import _collect_user_data
+            from routes.player.exports import _collect_user_data
 
             data = _collect_user_data(player_with_data.id)
 
@@ -80,7 +80,7 @@ class TestGDPRExport:
     def test_collect_user_data_account_info(self, app, player_with_data):
         """Test that account data is correctly collected."""
         with app.app_context():
-            from routes.player.profile import _collect_user_data
+            from routes.player.exports import _collect_user_data
 
             data = _collect_user_data(player_with_data.id)
 
@@ -91,7 +91,7 @@ class TestGDPRExport:
     def test_collect_user_data_inscriptions(self, app, player_with_data):
         """Test that inscriptions are correctly collected."""
         with app.app_context():
-            from routes.player.profile import _collect_user_data
+            from routes.player.exports import _collect_user_data
 
             data = _collect_user_data(player_with_data.id)
 
@@ -101,7 +101,7 @@ class TestGDPRExport:
     def test_collect_user_data_gamification(self, app, player_with_data):
         """Test that gamification data is correctly collected."""
         with app.app_context():
-            from routes.player.profile import _collect_user_data
+            from routes.player.exports import _collect_user_data
 
             data = _collect_user_data(player_with_data.id)
 
