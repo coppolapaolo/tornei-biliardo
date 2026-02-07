@@ -150,7 +150,7 @@ class TestUseCaseRandomStrategy:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round - Random strategy creates ALL rounds
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Check matches created for ALL rounds
         for round_num in range(1, 4):
@@ -210,7 +210,7 @@ class TestUseCaseRandomStrategy:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Check round 1 matches
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -267,7 +267,7 @@ class TestUseCaseRandomStrategy:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Collect all pairings
         all_pairings = []
@@ -356,7 +356,7 @@ class TestUseCaseRandomChallenge:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Verify gara started successfully
         db_session.refresh(gara)
@@ -440,7 +440,7 @@ class TestUseCaseRandomClassification:
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete round 1 matches
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()

@@ -18,7 +18,7 @@ from unittest.mock import patch
 from collections import defaultdict
 
 from models.competition.models import Gara
-from models.competition.services import GaraService
+from models.competition.services import GaraService, RoundService
 from models.competition.inscription_service import InscriptionService
 from models.match.models import Match
 from models.classification.models import RoundClassification, PlayerEncounter
@@ -93,8 +93,8 @@ class TestAntiRematchRegression:
         # Open inscriptions and start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Track all pairings across ALL rounds
         all_encounters = set()  # set of (min_id, max_id) tuples
@@ -132,7 +132,7 @@ class TestAntiRematchRegression:
                 )
 
                 # Create next round
-                GaraService.create_amalfi_round(gara.id, round_num)
+                RoundService.create_round_with_strategy(gara.id, round_num)
                 matches = Match.query.filter_by(
                     gara_id=gara.id, round_number=round_num
                 ).all()
@@ -218,8 +218,8 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Track encounters
         all_encounters = set()
@@ -248,7 +248,7 @@ class TestAntiRematchRegression:
                 RoundClassification.calculate_classification_after_round(
                     gara.id, round_num - 1
                 )
-                GaraService.create_amalfi_round(gara.id, round_num)
+                RoundService.create_round_with_strategy(gara.id, round_num)
 
             matches = Match.query.filter_by(
                 gara_id=gara.id, round_number=round_num
@@ -396,8 +396,8 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Get round 1 pairings
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -429,7 +429,7 @@ class TestAntiRematchRegression:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Create round 2
-        GaraService.create_amalfi_round(gara.id, 2)
+        RoundService.create_round_with_strategy(gara.id, 2)
 
         # Get round 2 pairings
         round2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
@@ -620,8 +620,8 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Complete round 1 matches using MatchService.to_completed()
         # which records encounters
@@ -726,8 +726,8 @@ class TestAntiRematchRegression:
         # Start tournament
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Complete round 1 matches to record encounters
         from models.match.services import MatchService

@@ -118,7 +118,7 @@ def handle_service_action(
 
     Usage:
         return handle_service_action(
-            action=lambda: GaraService.open_inscriptions(gara_id, start, end),
+            action=lambda: InscriptionService.open_inscriptions(gara_id, start, end),
             redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
             success_message="Iscrizioni aperte!",
         )

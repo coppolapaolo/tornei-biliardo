@@ -27,6 +27,7 @@ from utils import (
     director_or_admin_required,
 )
 from models.competition.services import GaraService
+from models.matchmaking.configuration import get_available_strategies
 from models.location.models import BilliardHall
 from models.location.services import LocationService
 from models.kpi import track_gara_create
@@ -258,7 +259,7 @@ def create_gara_standalone():
     )
 
     # Ottieni le strategie disponibili
-    available_strategies = GaraService.get_available_strategies()
+    available_strategies = get_available_strategies()
 
     return render_template(
         "admin/gara_create_standalone.html",
@@ -544,7 +545,7 @@ def edit_gara(gara_id):
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Get available strategies for the form
-    available_strategies = GaraService.get_available_strategies()
+    available_strategies = get_available_strategies()
 
     # Get verified venues for location suggestions
     verified_venues = (

@@ -16,7 +16,7 @@ import json
 from models import User, Gara, Match, Inscription
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
-from models.competition.services import GaraService, InscriptionService
+from models.competition.services import GaraService, RoundService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
 from models.challenge.models import Challenge
@@ -115,8 +115,8 @@ class TestUIFrontendBehaviors:
 
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Step 3: Verify initial UI state - only Round 1 has edit buttons
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -140,7 +140,7 @@ class TestUIFrontendBehaviors:
 
         # Step 5: Start Round 2 and verify UI state change
         total_matches, normal_matches, bye_matches, trio_matches = (
-            GaraService.create_round_with_strategy(gara.id, 2)
+            RoundService.create_round_with_strategy(gara.id, 2)
         )
         gara.current_round = 2
         db_session.add(gara)
@@ -220,8 +220,8 @@ class TestUIFrontendBehaviors:
 
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Step 3: Verify table assignment logic
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -320,8 +320,8 @@ class TestUIFrontendBehaviors:
 
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Step 4: Player accesses dashboard and sees first round match
         test_player = players_8[0]

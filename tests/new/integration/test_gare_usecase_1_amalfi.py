@@ -202,7 +202,7 @@ class TestUseCaseAmalfiWorkflow:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Check matches created
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -253,7 +253,7 @@ class TestUseCaseAmalfiWorkflow:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete round 1 matches
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -267,7 +267,7 @@ class TestUseCaseAmalfiWorkflow:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
 
         # Create and check round 2
-        GaraService.create_amalfi_round(gara.id, 2)
+        RoundService.create_round_with_strategy(gara.id, 2)
         round2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
 
         # Verify no rematch from round 1
@@ -285,7 +285,7 @@ class TestUseCaseAmalfiWorkflow:
         RoundClassification.calculate_classification_after_round(gara.id, 2)
 
         # Create and check round 3
-        GaraService.create_amalfi_round(gara.id, 3)
+        RoundService.create_round_with_strategy(gara.id, 3)
         round3_matches = Match.query.filter_by(gara_id=gara.id, round_number=3).all()
 
         # Verify no rematch from rounds 1 or 2
@@ -330,7 +330,7 @@ class TestUseCaseAmalfiWorkflow:
         for player in players_8:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete round 1 with known results
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()

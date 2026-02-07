@@ -21,7 +21,7 @@ from models import User, Gara, Inscription, Match
 from models.user.role_enum import UserRole
 from models.competition.models import WithdrawPolicy
 from models.status_enum import GaraStatus, MatchStatus
-from models.competition.services import GaraService
+from models.competition.services import GaraService, InscriptionService
 from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
 from models.base import utc_now
@@ -105,7 +105,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -171,7 +171,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -268,7 +268,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -348,7 +348,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -443,7 +443,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -491,7 +491,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -536,7 +536,7 @@ class TestGaraStateTransitionsTDD:
         # when current time is within the inscription period
         inscription_start = utc_now()
         inscription_end = utc_now() + timedelta(hours=2)
-        GaraService.modify_inscription_dates(
+        InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 

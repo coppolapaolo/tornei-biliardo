@@ -21,6 +21,7 @@ from sqlalchemy.exc import IntegrityError
 from models.base import db, utc_now
 from models.competition.services import (
     GaraService,
+    RoundService,
     InscriptionService,
 )
 from models.competition.state_service import StateService
@@ -458,12 +459,12 @@ class TestGaraServiceCharacterization:
 
         # Senza iscritti fallisce
         with pytest.raises(ValueError, match="Servono almeno.*iscritti"):
-            GaraService.start_first_round(gara.id)
+            RoundService.start_first_round(gara.id)
 
         # Con iscrizione insufficienti (min_participants=6 by default)
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
         with pytest.raises(ValueError, match="Servono almeno.*iscritti"):
-            GaraService.start_first_round(gara.id)
+            RoundService.start_first_round(gara.id)
 
         # Apri iscrizioni prima
         start_time = utc_now() - timedelta(minutes=10)
@@ -475,14 +476,14 @@ class TestGaraServiceCharacterization:
         for player in self.player_users:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        updated_gara = GaraService.start_first_round(gara.id)
+        updated_gara = RoundService.start_first_round(gara.id)
 
         assert updated_gara.current_round == 1
         assert updated_gara.status == GaraStatus.PLAYING.value
 
         # Non può riavviare
         with pytest.raises(ValueError, match="già iniziata"):
-            GaraService.start_first_round(gara.id)
+            RoundService.start_first_round(gara.id)
 
     def test_cancel_first_round_characterization(self):
         """Caratterizza la cancellazione primo turno."""
@@ -499,7 +500,7 @@ class TestGaraServiceCharacterization:
 
         # Senza avvio fallisce
         with pytest.raises(ValueError, match="primo turno"):
-            GaraService.cancel_first_round_startup(gara.id)
+            RoundService.cancel_first_round_startup(gara.id)
 
         # Apri iscrizioni e iscrivi giocatori (6 per min_participants)
         start_time = utc_now() - timedelta(minutes=10)
@@ -512,10 +513,10 @@ class TestGaraServiceCharacterization:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Avvia primo turno
-        updated_gara = GaraService.start_first_round(gara.id)
+        updated_gara = RoundService.start_first_round(gara.id)
 
         # Cancellazione riuscita (nessun risultato)
-        reset_gara = GaraService.cancel_first_round_startup(updated_gara.id)
+        reset_gara = RoundService.cancel_first_round_startup(updated_gara.id)
 
         assert reset_gara.current_round == 0
         assert reset_gara.status == GaraStatus.INSCRIPTION.value

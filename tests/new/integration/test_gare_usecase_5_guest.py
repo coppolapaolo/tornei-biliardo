@@ -14,7 +14,7 @@ import uuid
 from models import User, Gara, Match
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
-from models.competition.services import GaraService
+from models.competition.services import GaraService, RoundService
 from models.competition.inscription_service import InscriptionService
 from models.campionato.services import TournamentService
 from models.dashboard.services import DashboardService
@@ -187,7 +187,7 @@ class TestUseCaseGuestViewResults:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start and complete the gara
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete all matches
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -356,7 +356,7 @@ class TestUseCaseGuestLiveScores:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round - this sets status to PLAYING
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         return gara
 

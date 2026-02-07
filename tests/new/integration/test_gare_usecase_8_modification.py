@@ -15,7 +15,7 @@ import uuid
 from models import User, Gara, Match
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
-from models.competition.services import GaraService
+from models.competition.services import GaraService, RoundService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_manager import AdvancedRoundManager, RoundLockStatus
 from models.match.services import MatchService, RackService
@@ -91,7 +91,7 @@ class TestUseCaseMatchReset:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete all round 1 matches
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -315,7 +315,7 @@ class TestUseCaseRoundLocking:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete all round 1 matches
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -509,7 +509,7 @@ class TestUseCaseRoundCancellation:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start and complete round 1
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         for match in round1_matches:
             if not match.is_bye:
@@ -524,7 +524,7 @@ class TestUseCaseRoundCancellation:
         assert len(round1_matches) > 0, "Round 1 should have matches"
 
         # Create round 2
-        GaraService.create_amalfi_round(gara.id, 2)
+        RoundService.create_round_with_strategy(gara.id, 2)
         round2_matches = Match.query.filter_by(gara_id=gara.id, round_number=2).all()
 
         # Verify round 2 was created

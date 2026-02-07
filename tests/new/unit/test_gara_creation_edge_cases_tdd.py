@@ -21,7 +21,7 @@ from models import User, Gara, Inscription
 from models.user.role_enum import UserRole
 from models.competition.models import WithdrawPolicy
 from models.status_enum import GaraStatus
-from models.competition.services import GaraService
+from models.competition.services import GaraService, InscriptionService
 from models.competition.state_service import StateService
 from models.exceptions import InvalidTransitionError
 from models.base import utc_now
@@ -189,7 +189,7 @@ class TestGaraCreationEdgeCasesTDD:
         )
 
         # This should work - dates are valid
-        updated_gara = GaraService.modify_inscription_dates(
+        updated_gara = InscriptionService.modify_inscription_dates(
             gara.id, inscription_start, inscription_end
         )
 
@@ -272,7 +272,7 @@ class TestGaraCreationEdgeCasesTDD:
             ValueError,
             match="Le iscrizioni non possono terminare dopo la data della gara",
         ):
-            GaraService.modify_inscription_dates(
+            InscriptionService.modify_inscription_dates(
                 gara.id, inscription_start, inscription_end
             )
 

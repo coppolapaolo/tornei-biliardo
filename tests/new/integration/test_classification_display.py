@@ -10,6 +10,7 @@ from models.user.role_enum import UserRole
 from models.status_enum import MatchStatus
 from models.competition.services import (
     GaraService,
+    RoundService,
     InscriptionService,
 )
 from models.competition.state_service import StateService
@@ -92,7 +93,7 @@ class TestClassificationDisplay:
 
             # 3. Start playing and create first round matches
             StateService.start_playing(gara)
-            GaraService.create_round_with_strategy(gara.id, 1)
+            RoundService.create_round_with_strategy(gara.id, 1)
 
             # Refresh gara to get current round updated
             db.session.refresh(gara)
@@ -125,7 +126,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Update round progression to set current_round correctly
-            GaraService.update_round_progression(gara.id)
+            RoundService.update_round_progression(gara.id)
             db.session.refresh(gara)
 
             # Create classification for round 1 (ensure they exist for the test)
@@ -157,7 +158,7 @@ class TestClassificationDisplay:
             ), "Should show classification after round 1 is completed"
 
             # 7. Create second round but don't complete it
-            GaraService.create_round_with_strategy(gara.id, 2)
+            RoundService.create_round_with_strategy(gara.id, 2)
             db.session.refresh(gara)
 
             # 8. Test: Should still show only round 1 classification
@@ -191,7 +192,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Update round progression to set current_round correctly
-            GaraService.update_round_progression(gara.id)
+            RoundService.update_round_progression(gara.id)
             db.session.refresh(gara)
 
             # Create classification for round 2 (ensure they exist for the test)
@@ -333,7 +334,7 @@ class TestClassificationDisplay:
 
             # Start playing and create first round
             StateService.start_playing(gara)
-            GaraService.create_round_with_strategy(gara.id, 1)
+            RoundService.create_round_with_strategy(gara.id, 1)
 
             # Test: No classification should be shown
             response = client.get(f"/admin/gara/{gara.id}")
@@ -399,7 +400,7 @@ class TestClassificationDisplay:
 
             # 3. Start playing and create first round
             StateService.start_playing(gara)
-            GaraService.create_round_with_strategy(gara.id, 1)
+            RoundService.create_round_with_strategy(gara.id, 1)
 
             # 4. Complete all matches in round 1 BUT don't create manual classifications
             first_round_matches = Match.query.filter_by(
@@ -417,7 +418,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Update round progression
-            GaraService.update_round_progression(gara.id)
+            RoundService.update_round_progression(gara.id)
             db.session.refresh(gara)
 
             # 5. Remove any automatically created classifications to simulate missing data
@@ -508,7 +509,7 @@ class TestClassificationDisplay:
 
             # 3. Start playing and create first round
             StateService.start_playing(gara)
-            GaraService.create_round_with_strategy(gara.id, 1)
+            RoundService.create_round_with_strategy(gara.id, 1)
 
             # 4. Complete all matches in round 1 with initial results
             first_round_matches = Match.query.filter_by(
@@ -526,7 +527,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Update round progression
-            GaraService.update_round_progression(gara.id)
+            RoundService.update_round_progression(gara.id)
             db.session.refresh(gara)
 
             # 5. Get initial classification
@@ -621,7 +622,7 @@ class TestClassificationDisplay:
             # 3. Start playing and create first round
             gara_id = gara.id  # Store ID before any session changes
             StateService.start_playing(gara)
-            GaraService.create_round_with_strategy(gara_id, 1)
+            RoundService.create_round_with_strategy(gara_id, 1)
 
             # Use get() instead of refresh() for session isolation
             from models.competition.models import Gara
@@ -732,7 +733,7 @@ class TestClassificationDisplay:
             # 3. Start playing and create first round
             gara_id = gara.id  # Store ID before any session changes
             StateService.start_playing(gara)
-            GaraService.create_round_with_strategy(gara_id, 1)
+            RoundService.create_round_with_strategy(gara_id, 1)
 
             # 4. Complete ALL matches in round 1 (required for Amalfi strategy)
             first_round_matches = Match.query.filter_by(
@@ -750,7 +751,7 @@ class TestClassificationDisplay:
             db.session.commit()
 
             # Update round progression - use get() instead of refresh()
-            GaraService.update_round_progression(gara_id)
+            RoundService.update_round_progression(gara_id)
             from models.competition.models import Gara
             gara = db.session.get(Gara, gara_id)
 

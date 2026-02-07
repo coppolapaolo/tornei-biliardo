@@ -148,7 +148,7 @@ class TestUseCaseRoundRobin:
             InscriptionService.inscribe_user(player.id, gara.id)
 
         # Start first round
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Check round 1 matches
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
@@ -206,7 +206,7 @@ class TestUseCaseRoundRobin:
         for player in players_6:
             InscriptionService.inscribe_user(player.id, gara.id)
 
-        GaraService.start_first_round(gara.id)
+        RoundService.start_first_round(gara.id)
 
         # Complete first round matches one by one
         round1_matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()

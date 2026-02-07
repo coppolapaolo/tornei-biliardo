@@ -466,9 +466,9 @@ def debug_complete_current_round(gara_id):
 
     # Flask handles transaction commit automatically
     # Dopo aver completato i match, controlla se ci sono turni da aggiornare
-    from models.competition.services import GaraService
+    from models.competition.round_service import RoundService
 
-    GaraService.update_round_progression(gara_id)
+    RoundService.update_round_progression(gara_id)
 
     flash(
         f"Completati {completed_count} match del turno attuale con risultati random!",

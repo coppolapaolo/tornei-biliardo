@@ -17,6 +17,7 @@ from models import (
 )
 from models.status_enum import GaraStatus
 from models.competition.services import GaraService
+from models.competition.inscription_service import InscriptionService
 from models.competition.state_service import StateService
 from utils import gara_manager_required
 from utils.route_helpers import handle_service_action
@@ -43,7 +44,7 @@ def open_inscriptions(gara_id):
         inscription_end = parse_date_string(end_str)
         if not inscription_end:
             raise ValueError(f"Formato data non valido: {end_str}")
-        GaraService.open_inscriptions(gara_id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(gara_id, inscription_start, inscription_end)
 
     return handle_service_action(
         action=action,
@@ -65,7 +66,7 @@ def modify_inscription_dates(gara_id):
     )
 
     return handle_service_action(
-        action=lambda: GaraService.modify_inscription_dates(
+        action=lambda: InscriptionService.modify_inscription_dates(
             gara_id, inscription_start, inscription_end
         ),
         redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),

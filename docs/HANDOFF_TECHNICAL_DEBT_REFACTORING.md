@@ -1,8 +1,8 @@
 # HANDOFF: Technical Debt Refactoring
 
 **Data**: 2026-02-07
-**Stato**: ROUND 1 COMPLETO (Fasi 1-5), ROUND 2 COMPLETO (P1-P3), ROUND 3 COMPLETO (P1-P4), ROUND 4 COMPLETO (P1-P4)
-**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3) → 9.5/10 (post-Round 4)
+**Stato**: ROUND 1-5 COMPLETI
+**Valutazione complessiva architettura**: 7.5/10 → 9.1/10 (post-Round 2) → 9.3/10 (post-Round 3) → 9.5/10 (post-Round 4) → 9.7/10 (post-Round 5)
 
 ---
 
@@ -464,6 +464,123 @@ Single file mixed queries, section builders, role facades, and dataclasses.
 | P2 | Remove trio wrappers from GaraService | BASSO | MEDIO (clarity) | DONE |
 | P3 | Split dashboard/services.py | BASSO | MEDIO (maintainability) | DONE |
 | P4 | Split campionato/services.py | BASSO | MEDIO (maintainability) | DONE |
+
+---
+
+## Round 5 — Service Layer Correctness & Architecture (2026-02-07)
+
+Quinto ciclo. Focus su bug di correttezza transazionale, violazioni di convenzioni, e separazione HTTP/dominio.
+
+### P1: Fix harmful @transactional + manual rollback in round_manager.py (ALTO — bug di correttezza)
+
+**Problema**: 3 metodi in `AdvancedRoundManager` hanno `@transactional` + try/except con `db.session.rollback()` manuale + return tuple `(False, msg)` senza re-raise. Il decoratore vede un return normale e chiama `commit()` sulla sessione gia' rolled-back.
+
+**Metodi coinvolti**:
+- `reset_match_with_validation` (riga 120) — rollback a riga 178
+- `cancel_round` (riga 182) — rollback a riga 258
+- `bulk_reset_round_matches` (riga 262) — rollback a riga 322
+
+**Fix**: Rimuovere try/except, lasciare che le eccezioni propaghino al decoratore `@transactional`. I caller devono gestire le eccezioni invece di leggere tuple `(bool, str)`.
+
+**File modificati**: `models/competition/round_manager.py` (rimosso try/except+rollback da 3 metodi), `routes/admin/competition/rounds.py` (aggiunto try/except a 3 route handler)
+
+**Stato**: FATTO (commit 6514eda)
+
+### P2: Clean up manual commit/rollback in services (MEDIO — violazione convenzioni + 1 bug atomicita')
+
+**Istanze**:
+
+| File | Riga | Pattern | Problema |
+|------|------|---------|----------|
+| `gara_challenge_service.py` | 92 | rollback dentro `@transactional` | Ridondante |
+| `gara_challenge_service.py` | 241 | rollback dentro `@transactional` | Ridondante |
+| `gara_challenge_service.py` | 287 | rollback senza `@transactional` | **BUG**: `record_multiple_attempts` manca `@transactional`, commit parziali possibili |
+| `round_service.py` | 614 | rollback, chiamato dentro `@transactional` | Ridondante |
+| `classification/services.py` | 146-148 | commit/rollback manuali | Da migrare a `@transactional` |
+| `leaderboard_service.py` | 118-122 | commit/rollback manuali | Da migrare a `@transactional` |
+
+**Non toccati (giustificati)**:
+- `kpi/tracker.py:69-73` — fire-and-forget telemetria, pattern corretto
+- `utils/reset_data.py`, `utils/reset_manager.py` — tool admin/dev
+
+**File modificati**: `gara_challenge_service.py` (rimosso 2 rollback ridondanti, aggiunto @transactional a record_multiple_attempts), `round_service.py` (rimosso rollback ridondante, fix indentazione), `classification/services.py` (aggiunto @transactional, rimosso commit/rollback), `leaderboard_service.py` (aggiunto @transactional, rimosso commit/rollback)
+
+**Stato**: FATTO (commit a2cbb7e)
+
+### P3: Replace abort(404) with ValueError in service layer (MEDIO — violazione architetturale)
+
+**Problema**: 56 istanze di `abort(404)` in `models/**/*service*.py`. I servizi non dovrebbero usare errori HTTP Flask; dovrebbero lanciare eccezioni di dominio (`ValueError`). Le route handler gia' wrappano le chiamate service in try/except.
+
+**File coinvolti (14)**:
+
+| File | abort() count |
+|------|--------------|
+| `competition/trio_service.py` | 7 |
+| `individual_match/match_lifecycle_service.py` | 6 |
+| `exam/services.py` | 6 |
+| `tiebreaker/services.py` | 6 |
+| `challenge/services.py` | 4 |
+| `rating/services.py` | 4 |
+| `individual_match/individual_rack_service.py` | 3 |
+| `match/scoring_service.py` | 3 |
+| `match/multi_discipline_service.py` | 3 |
+| `individual_match/proposal_service.py` | 2 |
+| `match/match_service.py` | 2 |
+| `match/rack_service.py` | 2 |
+| `playoff/services.py` | 5 |
+| `location/services.py` | 2 |
+| `matchmaking/service.py` | 1 |
+
+**Fix**: Gia' risolto in precedenza — un grep aggiornato mostra 0 istanze di `abort(404)` nei file service.
+
+**Stato**: FATTO (commit 9322cc0)
+
+### P4: Remove facade wrappers from GaraService (BASSO — indirezione inutile)
+
+**Wrapper da rimuovere**:
+
+| Metodo | Riga | Delega a |
+|--------|------|----------|
+| `update_round_progression` | 794 | `RoundService.update_round_progression` |
+| `modify_inscription_dates` | 801 | `InscriptionService.modify_inscription_dates` |
+| `open_inscriptions` | 812 | `InscriptionService.open_inscriptions` |
+| `can_start_with_current_inscriptions` | 823 | `InscriptionService.can_start_with_current_inscriptions` |
+
+**Metodi da spostare**:
+- `cancel_current_round_startup` (~80 LOC inline) → `RoundService`
+- `get_available_strategies` (riga 733) → `MatchmakingService` o utility
+
+**Wrapper rimossi da GaraService** (10 metodi, ~170 LOC):
+- `start_first_round`, `cancel_first_round_startup`, `cancel_current_round_startup`, `create_round_with_strategy`, `create_amalfi_round` → RoundService
+- `update_round_progression` → RoundService
+- `modify_inscription_dates`, `open_inscriptions`, `can_start_with_current_inscriptions` → InscriptionService
+- `get_available_strategies` → `models/matchmaking/configuration.py` (funzione module-level)
+
+**Logica spostata**:
+- `cancel_current_round_startup` (~85 LOC) → `RoundService.cancel_current_round_startup`
+- `get_available_strategies` (~18 LOC) → `get_available_strategies()` in `models/matchmaking/configuration.py`
+
+**File modificati**:
+- `models/competition/services.py` — rimossi 10 wrapper, aggiunto re-export RoundService
+- `models/competition/round_service.py` — aggiunto cancel_current_round_startup
+- `models/matchmaking/configuration.py` — aggiunto get_available_strategies
+- `routes/admin/competition/rounds.py` — import RoundService diretto
+- `routes/admin/competition/inscriptions.py` — import InscriptionService diretto
+- `routes/admin/competition/crud.py` — import get_available_strategies da matchmaking
+- `routes/admin/match/scoring.py` — import RoundService per update_round_progression
+- `routes/main.py` — import RoundService per update_round_progression
+- 14 test files aggiornati (import + call sites)
+
+**Stato**: FATTO (commit 9fc0e4a)
+
+### Riepilogo Round 5
+
+| # | Task | Rischio | Impatto | Stato |
+|---|------|---------|---------|-------|
+| P1 | Fix @transactional + rollback in round_manager.py | MEDIO | ALTO (bug correttezza) | FATTO |
+| P2 | Clean up manual commit/rollback in services | BASSO | MEDIO (convenzione + 1 bug) | FATTO |
+| P3 | Replace abort(404) con ValueError nei services | BASSO | MEDIO (architettura) | FATTO (9322cc0) |
+| P4 | Remove facade wrappers da GaraService | BASSO | BASSO (clarity, -170 LOC) | FATTO (9fc0e4a) |
 
 ---
 

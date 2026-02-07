@@ -21,7 +21,7 @@ Business Context:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 class MatchmakingStrategy(str, Enum):
@@ -389,6 +389,20 @@ STRATEGY_CONSTRAINTS = {
         "compatible_classification_systems": ["WINS", "RACK"],
     },
 }
+
+
+def get_available_strategies() -> Dict[str, Any]:
+    """Return available strategies with their configurations for UI display."""
+    strategies: Dict[str, Any] = {}
+    for strategy in MatchmakingStrategy:
+        constraints = STRATEGY_CONSTRAINTS.get(strategy, {})
+        strategies[strategy.value] = {
+            "name": strategy.value,
+            "display_name": strategy.value.replace("_", " ").title(),
+            "description": constraints.get("description", ""),
+            "constraints": constraints,
+        }
+    return strategies
 
 
 def get_strategies_for_classification_system(

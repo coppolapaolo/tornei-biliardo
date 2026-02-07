@@ -23,7 +23,6 @@ from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
 from models.transaction.manager import transactional
-from .round_service import RoundService
 from .state_service import StateService
 
 from models.exceptions import InvalidTransitionError
@@ -368,124 +367,6 @@ class GaraService:
                 continue_on_error=True,
             )
 
-    @staticmethod
-    def start_first_round(gara_id: int) -> Gara:
-        """Avvia il primo turno della gara con controlli e sorteggio."""
-        return RoundService.start_first_round(gara_id)
-
-    @staticmethod
-    @transactional(domain="competition")
-    def cancel_first_round_startup(gara_id: int) -> Gara:
-        """Cancella l'avvio del primo turno se non sono stati inseriti risultati."""
-        return RoundService.cancel_first_round_startup(gara_id)
-
-    @staticmethod
-    @transactional(domain="competition")
-    def cancel_current_round_startup(gara_id: int) -> Gara:
-        """Cancella l'avvio del turno corrente se non sono stati inseriti risultati.
-
-        Decrementa il current_round e rimuove tutte le partite del turno corrente.
-        Utilizzabile solo se non sono stati inseriti risultati (anche parziali).
-        """
-        from models.match.models import Match, TrioMatch
-        from models.status_enum import MatchStatus, GaraStatus
-
-        gara = db.session.get(Gara, gara_id)
-        if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
-
-        # Verifica che siamo in stato playing
-        if gara.status != GaraStatus.PLAYING.value:
-            raise ValueError("La gara deve essere in stato playing")
-
-        current_round = gara.current_round
-        if current_round <= 0:
-            raise ValueError("Non c'è un turno corrente da cancellare")
-
-        # Verifica che non ci siano risultati inseriti (neanche parziali)
-        current_round_matches = Match.query.filter_by(
-            gara_id=gara_id, round_number=current_round
-        ).all()
-
-        if not current_round_matches:
-            raise ValueError("Non ci sono partite del turno corrente da cancellare")
-
-        # Controlla che non ci siano risultati inseriti (neanche parziali)
-        # Note: match.status == PLAYING just means a table was assigned,
-        # not that results have been entered. Only check actual scores.
-        for match in current_round_matches:
-            if (
-                match.player1_score > 0
-                or match.player2_score > 0
-                or match.winner_id is not None
-            ):
-                raise ValueError(
-                    "Impossibile cancellare l'avvio: sono già stati inseriti "
-                    "risultati (anche parziali)"
-                )
-
-        # Rimuovi tutte le partite del turno corrente e dati correlati
-        from models.classification.models import (
-            PlayerEncounter,
-            RoundClassification,
-        )
-
-        # Rimuovi eventuali trii collegati
-        for match in current_round_matches:
-            trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
-            if trio:
-                db.session.delete(trio)
-
-        # Rimuovi i PlayerEncounter del turno corrente per ripristinare l'anti-rematch
-        encounters_to_remove = (
-            db.session.query(PlayerEncounter)
-            .filter_by(gara_id=gara_id, round_number=current_round)
-            .all()
-        )
-        for encounter in encounters_to_remove:
-            db.session.delete(encounter)
-
-        # Rimuovi le RoundClassification del turno corrente
-        classifications_to_remove = (
-            db.session.query(RoundClassification)
-            .filter_by(gara_id=gara_id, round_number=current_round)
-            .all()
-        )
-        for classification in classifications_to_remove:
-            db.session.delete(classification)
-
-        # Rimuovi tutte le partite
-        for match in current_round_matches:
-            db.session.delete(match)
-
-        # Decrementa il current_round
-        gara.current_round = current_round - 1
-
-        # Se torniamo al turno 0, riporta allo stato inscription
-        if gara.current_round == 0:
-            gara.status = GaraStatus.INSCRIPTION.value
-
-        db.session.add(gara)
-        return gara
-
-    @staticmethod
-    def create_round_with_strategy(
-        gara_id: int, round_number: int, discipline_override: Optional[str] = None
-    ) -> tuple[int, int, int, int]:
-        """Facade: delegate to RoundService."""
-        from models.competition.round_service import RoundService
-
-        return RoundService.create_round_with_strategy(
-            gara_id, round_number, discipline_override
-        )
-
-    @staticmethod
-    def create_amalfi_round(
-        gara_id: int, round_number: int
-    ) -> tuple[int, int, int, int]:
-        """Legacy compatibility wrapper."""
-        return GaraService.create_round_with_strategy(gara_id, round_number)
-
     # -----------------------------
     # VALIDAZIONE DATI (type-safe)
     # -----------------------------
@@ -731,25 +612,6 @@ class GaraService:
     # -----------------------------
 
     @staticmethod
-    def get_available_strategies() -> dict:
-        """Restituisce le strategie disponibili con le loro configurazioni."""
-        from models.matchmaking.configuration import (
-            STRATEGY_CONSTRAINTS,
-            MatchmakingStrategy,
-        )
-
-        strategies = {}
-        for strategy in MatchmakingStrategy:
-            constraints = STRATEGY_CONSTRAINTS.get(strategy, {})
-            strategies[strategy.value] = {
-                "name": strategy.value,
-                "display_name": strategy.value.replace("_", " ").title(),
-                "description": constraints.get("description", ""),
-                "constraints": constraints,
-            }
-        return strategies
-
-    @staticmethod
     @transactional(domain="competition")
     def remove_director(gara_id: int, user_id: int) -> bool:
         """Rimuove un co-direttore dalla gara.
@@ -790,42 +652,6 @@ class GaraService:
         EventBus.publish(event)
 
         return True
-
-    @staticmethod
-    def update_round_progression(gara_id: int) -> None:
-        """Facade: delegate to RoundService."""
-        from models.competition.round_service import RoundService
-
-        return RoundService.update_round_progression(gara_id)
-
-    @staticmethod
-    def modify_inscription_dates(
-        gara_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> "Gara":
-        """Facade: delegate to InscriptionService."""
-        from models.competition.inscription_service import InscriptionService
-
-        return InscriptionService.modify_inscription_dates(
-            gara_id, inscription_start, inscription_end
-        )
-
-    @staticmethod
-    def open_inscriptions(
-        gara_id: int, inscription_start: datetime, inscription_end: datetime
-    ) -> "Gara":
-        """Facade: delegate to InscriptionService."""
-        from models.competition.inscription_service import InscriptionService
-
-        return InscriptionService.open_inscriptions(
-            gara_id, inscription_start, inscription_end
-        )
-
-    @staticmethod
-    def can_start_with_current_inscriptions(gara_id: int) -> bool:
-        """Facade: delegate to InscriptionService."""
-        from models.competition.inscription_service import InscriptionService
-
-        return InscriptionService.can_start_with_current_inscriptions(gara_id)
 
     @staticmethod
     @transactional(domain="competition")
@@ -1016,15 +842,16 @@ class GaraService:
             affected_domains=["competition", "notification"],
         )
 
-    # Note: InscriptionService and RoundService have been extracted as separate services
-    # GaraService retains existing methods for backward compatibility
-    # New code should use InscriptionService and RoundService directly
+    # Note: InscriptionService and RoundService have been extracted as separate services.
+    # New code should import them directly.
 
 
 from models.competition.inscription_service import InscriptionService
+from models.competition.round_service import RoundService  # noqa: F811
 
 __all__ = [
     "GaraService",
     "InscriptionService",
+    "RoundService",
     "InvalidTransitionError",
 ]

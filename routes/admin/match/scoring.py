@@ -72,11 +72,11 @@ def set_match_result_direct(match_id):
         RackService.set_match_result_direct(match_id, player1_score, player2_score)
 
         from models.match.models import Match
-        from models.competition.services import GaraService
+        from models.competition.round_service import RoundService
 
         match = Match.query.get(match_id)
         if match and match.gara_id:
-            GaraService.update_round_progression(match.gara_id)
+            RoundService.update_round_progression(match.gara_id)
 
     return handle_service_action(
         action=action,
@@ -180,7 +180,7 @@ def remove_rack_admin(rack_id):
     """Rimuovi un rack (admin)"""
     try:
         # Prima ottieni le info del match per il round update e SSE
-        from models.competition.services import GaraService
+        from models.competition.round_service import RoundService
 
         rack = Rack.query.get(rack_id)
         gara_id = None
@@ -195,7 +195,7 @@ def remove_rack_admin(rack_id):
 
         # Dopo aver rimosso il rack, controlla se ci sono turni da aggiornare
         if gara_id:
-            GaraService.update_round_progression(gara_id)
+            RoundService.update_round_progression(gara_id)
 
             # Emit SSE event for gara detail page polling
             match = db.session.get(Match, match_id)

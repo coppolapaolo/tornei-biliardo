@@ -23,6 +23,7 @@ from models.status_enum import (
     MatchStatus,
 )
 from models.competition.services import GaraService
+from models.competition.round_service import RoundService
 from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
@@ -40,7 +41,7 @@ def start_first_round(gara_id):
     try:
         gara = db.session.get(Gara, gara_id)
 
-        GaraService.start_first_round(gara_id)
+        RoundService.start_first_round(gara_id)
 
         if gara and gara.matchmaking_strategy == "random":
             flash("Gara avviata! Tutti i turni sono stati creati.", "success")
@@ -66,7 +67,7 @@ def start_first_round(gara_id):
 def cancel_first_round(gara_id):
     """Cancella l'avvio del primo turno se non ci sono risultati"""
     return handle_service_action(
-        action=lambda: GaraService.cancel_first_round_startup(gara_id),
+        action=lambda: RoundService.cancel_first_round_startup(gara_id),
         redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
         success_message=(
             "Avvio del primo turno cancellato con successo! "
@@ -81,7 +82,7 @@ def cancel_first_round(gara_id):
 def cancel_current_round(gara_id):
     """Cancella l'avvio del turno corrente se non ci sono risultati"""
     return handle_service_action(
-        action=lambda: GaraService.cancel_current_round_startup(gara_id),
+        action=lambda: RoundService.cancel_current_round_startup(gara_id),
         redirect_url=url_for("admin.competition.gara_detail", gara_id=gara_id),
         success_message="Avvio del turno cancellato con successo!",
         error_prefix=None,

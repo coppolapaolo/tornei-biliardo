@@ -16,7 +16,7 @@ from models import User, Gara, Match, Inscription
 from models.user.models import DirectorAssignment
 from models.user.role_enum import UserRole
 from models.status_enum import GaraStatus, MatchStatus
-from models.competition.services import GaraService, InscriptionService
+from models.competition.services import GaraService, RoundService, InscriptionService
 from models.campionato.services import TournamentService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification, Classification
@@ -440,7 +440,7 @@ class TestUseCaseCampionatoWorkflow:
         # Open inscriptions with short window
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(minutes=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
 
         # Simulate inscription expiry
         gara.inscription_end = utc_now() - timedelta(minutes=1)
@@ -448,7 +448,7 @@ class TestUseCaseCampionatoWorkflow:
         db_session.commit()
 
         # Check if can start with current inscriptions
-        can_start = GaraService.can_start_with_current_inscriptions(gara.id)
+        can_start = InscriptionService.can_start_with_current_inscriptions(gara.id)
         assert can_start is False  # Only 10 players, need 12
 
         # Cancel gara due to insufficient players
@@ -471,8 +471,8 @@ class TestUseCaseCampionatoWorkflow:
         # Open inscriptions and start
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Complete all rounds
         current_round = 1
@@ -499,9 +499,9 @@ class TestUseCaseCampionatoWorkflow:
             # Create next round if not last
             if current_round < max_rounds:
                 if gara.matchmaking_strategy == "amalfi":
-                    GaraService.create_amalfi_round(gara.id, current_round + 1)
+                    RoundService.create_round_with_strategy(gara.id, current_round + 1)
                 elif gara.matchmaking_strategy == "random":
-                    GaraService.create_round_with_strategy(gara.id, current_round + 1)
+                    RoundService.create_round_with_strategy(gara.id, current_round + 1)
                 elif gara.matchmaking_strategy == "round_robin":
                     # Round-robin creates all rounds at once
                     pass
@@ -845,8 +845,8 @@ class TestUseCaseCampionatoVariants:
         """Complete a full gara with simplified logic."""
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         for round_num in range(1, gara.rounds_count + 1):
             matches = Match.query.filter_by(
@@ -900,9 +900,9 @@ class TestUseCaseCampionatoVariants:
 
             if round_num < gara.rounds_count:
                 if gara.matchmaking_strategy == "random":
-                    GaraService.create_round_with_strategy(gara.id, round_num + 1)
+                    RoundService.create_round_with_strategy(gara.id, round_num + 1)
                 else:
-                    GaraService.create_amalfi_round(gara.id, round_num + 1)
+                    RoundService.create_round_with_strategy(gara.id, round_num + 1)
 
                 gara.current_round = round_num + 1
                 db_session.add(gara)

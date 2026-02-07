@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta
 from typing import Set, Tuple
 
 from models import User, Gara, Match
-from models.competition.services import GaraService, InscriptionService
+from models.competition.services import GaraService, RoundService, InscriptionService
 from models.match.services import MatchService, RackService
 from models.classification.models import RoundClassification
 from models.base import utc_now
@@ -106,8 +106,8 @@ class TestAntiRematchBug:
         # Apri iscrizioni e avvia primo turno
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Traccia tutti i pairing attraverso i turni
         all_pairings: Set[Tuple[int, int]] = set()
@@ -120,7 +120,7 @@ class TestAntiRematchBug:
                     gara.id, round_num - 1
                 )
                 # Poi crea il turno successivo
-                GaraService.create_amalfi_round(gara.id, round_num)
+                RoundService.create_round_with_strategy(gara.id, round_num)
                 gara.current_round = round_num
                 db_session.add(gara)
                 db_session.commit()
@@ -195,8 +195,8 @@ class TestAntiRematchBug:
         # Avvia la gara
         inscription_start = utc_now() - timedelta(hours=1)
         inscription_end = utc_now() + timedelta(hours=1)
-        GaraService.open_inscriptions(gara.id, inscription_start, inscription_end)
-        GaraService.start_first_round(gara.id)
+        InscriptionService.open_inscriptions(gara.id, inscription_start, inscription_end)
+        RoundService.start_first_round(gara.id)
 
         # Con 4 giocatori e 2 turni:
         # - Turno 1: 2 match (4 giocatori)
@@ -210,7 +210,7 @@ class TestAntiRematchBug:
                     gara.id, round_num - 1
                 )
                 # Crea turno successivo
-                GaraService.create_amalfi_round(gara.id, round_num)
+                RoundService.create_round_with_strategy(gara.id, round_num)
                 gara.current_round = round_num
                 db_session.add(gara)
                 db_session.commit()
