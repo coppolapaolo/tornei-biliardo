@@ -682,13 +682,15 @@ def reset_match_advanced(gara_id, match_id):
     """
     from models.competition.round_manager import AdvancedRoundManager
 
-    # No more admin_override support (removed October 2025)
-    success, message = AdvancedRoundManager.reset_match_with_validation(match_id)
+    try:
+        success, message = AdvancedRoundManager.reset_match_with_validation(match_id)
 
-    if success:
-        flash(message, "success")
-    else:
-        flash(message, "danger")
+        if success:
+            flash(message, "success")
+        else:
+            flash(message, "danger")
+    except Exception as e:
+        flash(f"Errore nel reset del match: {str(e)}", "danger")
 
     return redirect(
         url_for("admin.competition.round_management_overview", gara_id=gara_id)
@@ -710,13 +712,15 @@ def cancel_round_advanced(gara_id, round_number):
     """
     from models.competition.round_manager import AdvancedRoundManager
 
-    # No more admin_override support (removed October 2025)
-    success, message = AdvancedRoundManager.cancel_round(gara_id, round_number)
+    try:
+        success, message = AdvancedRoundManager.cancel_round(gara_id, round_number)
 
-    if success:
-        flash(message, "success")
-    else:
-        flash(message, "danger")
+        if success:
+            flash(message, "success")
+        else:
+            flash(message, "danger")
+    except Exception as e:
+        flash(f"Errore nella cancellazione del turno: {str(e)}", "danger")
 
     return redirect(
         url_for("admin.competition.round_management_overview", gara_id=gara_id)
@@ -732,18 +736,21 @@ def bulk_reset_round_matches(gara_id, round_number):
     """Reset all matches in a round."""
     from models.competition.round_manager import AdvancedRoundManager
 
-    success, message, stats = AdvancedRoundManager.bulk_reset_round_matches(
-        gara_id, round_number
-    )
-
-    if success:
-        flash(f"{message}. {stats['reset_count']} match resettati.", "success")
-    else:
-        flash(
-            f"{message}. {stats.get('reset_count', 0)} match resettati, "
-            f"{stats.get('error_count', 0)} errori.",
-            "warning",
+    try:
+        success, message, stats = AdvancedRoundManager.bulk_reset_round_matches(
+            gara_id, round_number
         )
+
+        if success:
+            flash(f"{message}. {stats['reset_count']} match resettati.", "success")
+        else:
+            flash(
+                f"{message}. {stats.get('reset_count', 0)} match resettati, "
+                f"{stats.get('error_count', 0)} errori.",
+                "warning",
+            )
+    except Exception as e:
+        flash(f"Errore nel reset bulk: {str(e)}", "danger")
 
     return redirect(
         url_for("admin.competition.round_management_overview", gara_id=gara_id)

@@ -146,37 +146,21 @@ class AdvancedRoundManager:
         if not can_modify:
             return False, reason
 
-        # Store original match state for rollback
-        original_status = match.status
-        original_winner = match.winner_id
-        original_p1_score = match.player1_score
-        original_p2_score = match.player2_score
+        # Reset the match
+        RackService.reset_match_complete(match_id)
 
-        try:
-            # Reset the match
-            RackService.reset_match_complete(match_id)
+        # Recalculate classifications for affected rounds
+        AdvancedRoundManager._recalculate_affected_classifications(
+            match.gara_id, match.round_number
+        )
 
-            # Recalculate classifications for affected rounds
-            AdvancedRoundManager._recalculate_affected_classifications(
-                match.gara_id, match.round_number
-            )
+        # Update round progression if needed
+        AdvancedRoundManager._update_round_progression_after_reset(
+            match.gara_id, match.round_number
+        )
 
-            # Update round progression if needed
-            AdvancedRoundManager._update_round_progression_after_reset(
-                match.gara_id, match.round_number
-            )
-
-            # Transaction managed by @transactional decorator
-            return True, "Match resettato con successo"
-
-        except Exception as e:
-            # Rollback match state
-            match.status = original_status
-            match.winner_id = original_winner
-            match.player1_score = original_p1_score
-            match.player2_score = original_p2_score
-            db.session.rollback()
-            return False, f"Errore nel reset del match: {str(e)}"
+        # Transaction managed by @transactional decorator
+        return True, "Match resettato con successo"
 
     @staticmethod
     @transactional(domain="competition")
@@ -221,42 +205,33 @@ class AdvancedRoundManager:
                 "Reset i match prima di cancellare il turno.",
             )
 
-        try:
-            # Delete all matches in the round
-            for match in round_matches:
-                # Delete associated racks first (bulk delete via query)
-                from models.match.models import Rack
+        # Delete all matches in the round
+        for match in round_matches:
+            # Delete associated racks first (bulk delete via query)
+            from models.match.models import Rack
 
-                Rack.query.filter_by(match_id=match.id).delete()
-                # Delete match instance (requires explicit session delete)
-                # Note: Rack.query.delete() is bulk delete on query result
-                # while db.session.delete(match) deletes specific instance
-                db.session.delete(match)
+            Rack.query.filter_by(match_id=match.id).delete()
+            db.session.delete(match)
 
-            # Delete classifications for this round
-            RoundClassification.query.filter_by(
-                gara_id=gara_id, round_number=round_number
-            ).delete()
+        # Delete classifications for this round
+        RoundClassification.query.filter_by(
+            gara_id=gara_id, round_number=round_number
+        ).delete()
 
-            # Delete PlayerEncounters for this round to maintain anti-rematch consistency
-            # This ensures players can be paired again after round cancellation
-            from models.classification.models import PlayerEncounter
-            PlayerEncounter.delete_round_encounters(gara_id, round_number)
+        # Delete PlayerEncounters for this round to maintain anti-rematch consistency
+        from models.classification.models import PlayerEncounter
+        PlayerEncounter.delete_round_encounters(gara_id, round_number)
 
-            # Update gara current round if we cancelled the current round
-            if round_number == gara.current_round:
-                gara.current_round = max(0, round_number - 1)
+        # Update gara current round if we cancelled the current round
+        if round_number == gara.current_round:
+            gara.current_round = max(0, round_number - 1)
 
-                # Update gara status if going back to round 0
-                if gara.current_round == 0:
-                    gara.status = GaraStatus.INSCRIPTION.value
+            # Update gara status if going back to round 0
+            if gara.current_round == 0:
+                gara.status = GaraStatus.INSCRIPTION.value
 
-            # Transaction managed by @transactional decorator
-            return True, f"Turno {round_number} cancellato con successo"
-
-        except Exception as e:
-            db.session.rollback()
-            return False, f"Errore nella cancellazione del turno: {str(e)}"
+        # Transaction managed by @transactional decorator
+        return True, f"Turno {round_number} cancellato con successo"
 
     @staticmethod
     @transactional(domain="competition")
@@ -286,8 +261,8 @@ class AdvancedRoundManager:
         error_count = 0
         errors = []
 
-        try:
-            for match in completed_matches:
+        for match in completed_matches:
+            try:
                 success, message = AdvancedRoundManager.reset_match_with_validation(
                     match.id
                 )
@@ -296,31 +271,32 @@ class AdvancedRoundManager:
                 else:
                     error_count += 1
                     errors.append(f"Match {match.id}: {message}")
+            except Exception as e:
+                # Inner @transactional rolls back the savepoint;
+                # we record the error and continue with remaining matches
+                error_count += 1
+                errors.append(f"Match {match.id}: {str(e)}")
 
-            # Update gara status if all matches were reset
-            if reset_count > 0:
-                # Recalculate round progression
-                AdvancedRoundManager._update_round_progression_after_reset(
-                    gara_id, round_number
-                )
+        # Update gara status if all matches were reset
+        if reset_count > 0:
+            # Recalculate round progression
+            AdvancedRoundManager._update_round_progression_after_reset(
+                gara_id, round_number
+            )
 
-            # Transaction managed by @transactional decorator
+        # Transaction managed by @transactional decorator
 
-            stats = {
-                "reset_count": reset_count,
-                "error_count": error_count,
-                "total_matches": len(completed_matches),
-            }
+        stats = {
+            "reset_count": reset_count,
+            "error_count": error_count,
+            "total_matches": len(completed_matches),
+        }
 
-            if error_count == 0:
-                return True, f"Tutti i {reset_count} match sono stati resettati", stats
-            else:
-                message = f"{reset_count} match resettati, {error_count} errori"
-                return False, message, stats
-
-        except Exception as e:
-            db.session.rollback()
-            return False, f"Errore nel reset bulk: {str(e)}", {"error_count": 1}
+        if error_count == 0:
+            return True, f"Tutti i {reset_count} match sono stati resettati", stats
+        else:
+            message = f"{reset_count} match resettati, {error_count} errori"
+            return False, message, stats
 
     @staticmethod
     def get_round_modification_summary(gara_id: int) -> Dict[int, Dict[str, Any]]:
