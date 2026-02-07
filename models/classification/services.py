@@ -66,6 +66,7 @@ class ClassificationService:
         return {pid: len(gare_ids) for pid, gare_ids in player_gare.items()}
 
     @staticmethod
+    @transactional(domain="classification")
     @cached(
         ttl_seconds=300,
         tags=["classification", "campionato"],
@@ -142,12 +143,7 @@ class ClassificationService:
             db.session.add(classification)
             classifications.append(classification)
 
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            raise
-
+        # Transaction managed by @transactional decorator
         return classifications
 
     @staticmethod

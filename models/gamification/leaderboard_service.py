@@ -13,6 +13,7 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy import func, desc, and_
 
 from models.base import db, utc_now
+from models.transaction.manager import transactional
 from models.user.models import User
 from models.gamification.models import (
     UserLevel,
@@ -91,36 +92,30 @@ class LeaderboardService:
         return age > ttl
 
     @staticmethod
+    @transactional(domain="gamification")
     def _refresh_leaderboard(leaderboard_type: LeaderboardType) -> None:
         """Recalculate and cache leaderboard data."""
-        try:
-            # Delete old entries
-            LeaderboardEntry.query.filter_by(leaderboard_type=leaderboard_type).delete()
-            
-            # Calculate new entries
-            new_entries = []
-            
-            if leaderboard_type == LeaderboardType.XP_ALL_TIME:
-                new_entries = LeaderboardService._calculate_xp_all_time()
-            elif leaderboard_type == LeaderboardType.LEVEL_HIGHEST:
-                new_entries = LeaderboardService._calculate_level_highest()
-            elif leaderboard_type == LeaderboardType.STREAK_CURRENT:
-                new_entries = LeaderboardService._calculate_streak_current()
-            elif leaderboard_type == LeaderboardType.STREAK_LONGEST:
-                new_entries = LeaderboardService._calculate_streak_longest()
-            elif leaderboard_type == LeaderboardType.ELO_RATING:
-                new_entries = LeaderboardService._calculate_elo_rating()
-            # Add other types here
-            
-            # Save to DB
-            if new_entries:
-                db.session.add_all(new_entries)
-                db.session.commit()
-                logger.info(f"Updated {leaderboard_type.value} with {len(new_entries)} entries")
-                
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Error refreshing leaderboard {leaderboard_type.value}: {e}", exc_info=True)
+        # Delete old entries
+        LeaderboardEntry.query.filter_by(leaderboard_type=leaderboard_type).delete()
+
+        # Calculate new entries
+        new_entries = []
+
+        if leaderboard_type == LeaderboardType.XP_ALL_TIME:
+            new_entries = LeaderboardService._calculate_xp_all_time()
+        elif leaderboard_type == LeaderboardType.LEVEL_HIGHEST:
+            new_entries = LeaderboardService._calculate_level_highest()
+        elif leaderboard_type == LeaderboardType.STREAK_CURRENT:
+            new_entries = LeaderboardService._calculate_streak_current()
+        elif leaderboard_type == LeaderboardType.STREAK_LONGEST:
+            new_entries = LeaderboardService._calculate_streak_longest()
+        elif leaderboard_type == LeaderboardType.ELO_RATING:
+            new_entries = LeaderboardService._calculate_elo_rating()
+
+        # Save to DB — transaction managed by @transactional decorator
+        if new_entries:
+            db.session.add_all(new_entries)
+            logger.info(f"Updated {leaderboard_type.value} with {len(new_entries)} entries")
 
     @staticmethod
     def _calculate_xp_all_time() -> List[LeaderboardEntry]:

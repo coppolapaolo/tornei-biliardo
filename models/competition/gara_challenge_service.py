@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-from sqlalchemy.exc import IntegrityError
 
 from ..base import db
 from ..challenge.models import Challenge
@@ -84,13 +83,9 @@ class GaraChallengeService:
             is_active=True,
         )
 
-        try:
-            db.session.add(gara_challenge)
-            # Transaction managed by @transactional decorator
-            return gara_challenge
-        except IntegrityError:
-            db.session.rollback()
-            raise ValueError("Errore durante l'aggiunta della challenge alla gara")
+        db.session.add(gara_challenge)
+        # Transaction managed by @transactional decorator
+        return gara_challenge
 
     @staticmethod
     @transactional(domain="competition")
@@ -229,19 +224,16 @@ class GaraChallengeService:
             score=score, passed=passed, gara_challenge=gara_challenge
         )
 
-        try:
-            db.session.add(attempt)
-            # Transaction managed by @transactional decorator
+        db.session.add(attempt)
+        # Transaction managed by @transactional decorator
 
-            # Update the gara challenge classification
-            GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
+        # Update the gara challenge classification
+        GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
 
-            return attempt
-        except IntegrityError:
-            db.session.rollback()
-            raise ValueError("Errore durante la registrazione del tentativo")
+        return attempt
 
     @staticmethod
+    @transactional(domain="competition")
     def record_multiple_attempts(
         attempts_data: List[Dict[str, Any]],
         round_when_attempted: Optional[int] = None,
@@ -258,34 +250,29 @@ class GaraChallengeService:
         """
         recorded_attempts = []
 
-        try:
-            for attempt_data in attempts_data:
-                attempt = GaraChallengeService.record_challenge_attempt(
-                    gara_challenge_id=attempt_data["gara_challenge_id"],
-                    user_id=attempt_data["user_id"],
-                    score=attempt_data.get("score"),
-                    passed=attempt_data.get("passed"),
-                    notes=attempt_data.get("notes"),
-                    round_when_attempted=round_when_attempted,
+        for attempt_data in attempts_data:
+            attempt = GaraChallengeService.record_challenge_attempt(
+                gara_challenge_id=attempt_data["gara_challenge_id"],
+                user_id=attempt_data["user_id"],
+                score=attempt_data.get("score"),
+                passed=attempt_data.get("passed"),
+                notes=attempt_data.get("notes"),
+                round_when_attempted=round_when_attempted,
+            )
+            recorded_attempts.append(attempt)
+
+        # Update classification once after all attempts
+        if attempts_data:
+            first_attempt = attempts_data[0]
+            gara_challenge = GaraChallenge.query.get(
+                first_attempt["gara_challenge_id"]
+            )
+            if gara_challenge:
+                GaraChallengeService.update_gara_classification(
+                    gara_challenge.gara_id
                 )
-                recorded_attempts.append(attempt)
 
-            # Update classification once after all attempts
-            if attempts_data:
-                first_attempt = attempts_data[0]
-                gara_challenge = GaraChallenge.query.get(
-                    first_attempt["gara_challenge_id"]
-                )
-                if gara_challenge:
-                    GaraChallengeService.update_gara_classification(
-                        gara_challenge.gara_id
-                    )
-
-            return recorded_attempts
-
-        except Exception as e:
-            db.session.rollback()
-            raise ValueError(f"Errore durante la registrazione dei tentativi: {str(e)}")
+        return recorded_attempts
 
     @staticmethod
     def update_gara_classification(gara_id: int) -> List[GaraChallengeClassification]:
