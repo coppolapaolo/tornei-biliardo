@@ -53,13 +53,13 @@ from .classification.models import Classification, RoundClassification, PlayerEn
 
 # PHASE 3: New domains for specification compliance
 from .challenge.models import Challenge, ChallengeAttempt, ChallengeFavorite
-from .challenge.gara_challenge_models import (
+from .competition.gara_challenge import (
     GaraChallenge,
     GaraChallengeAttempt,
     GaraChallengeClassification,
 )
 from .challenge.services import ChallengeService
-from .challenge.gara_challenge_service import GaraChallengeService
+from .competition.gara_challenge_service import GaraChallengeService
 from .exam.models import Exam, ExamChallenge, ExamAttempt, ExamChallengeResult
 from .individual_match.models import (
     MatchProposal,

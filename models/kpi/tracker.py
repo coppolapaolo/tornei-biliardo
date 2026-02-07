@@ -12,7 +12,7 @@ import logging
 
 from flask import g, has_request_context
 
-from ..base import db
+from ..base import transactional
 from .models import KpiFeatureUsage
 from .enums import FeatureName
 
@@ -50,26 +50,29 @@ class FeatureTracker:
             for_date: Optional date override (defaults to today)
         """
         try:
-            if for_date is None:
-                for_date = date.today()
-
-            # Check if this is a unique usage for this session
-            session_key = cls._get_session_key(feature, for_date)
-            is_unique = session_key not in cls._session_tracked
-
-            # Get or create the record
-            record = KpiFeatureUsage.get_or_create(feature, for_date)
-            record.usage_count += 1
-
-            if is_unique:
-                record.unique_users += 1
-                cls._session_tracked.add(session_key)
-
-            db.session.commit()
-
+            cls._track_impl(feature, for_date)
         except Exception as e:
             logger.warning(f"Failed to track feature {feature.value}: {e}")
-            db.session.rollback()
+
+    @classmethod
+    @transactional(domain="kpi")
+    def _track_impl(
+        cls,
+        feature: FeatureName,
+        for_date: Optional[date] = None,
+    ) -> None:
+        if for_date is None:
+            for_date = date.today()
+
+        session_key = cls._get_session_key(feature, for_date)
+        is_unique = session_key not in cls._session_tracked
+
+        record = KpiFeatureUsage.get_or_create(feature, for_date)
+        record.usage_count += 1
+
+        if is_unique:
+            record.unique_users += 1
+            cls._session_tracked.add(session_key)
 
     @classmethod
     def track_batch(cls, features: list[FeatureName]) -> None:
