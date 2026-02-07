@@ -99,7 +99,7 @@ class TestTrioCompletionAtCorrectRack:
         assert not trio.is_completed, "Should not be completed until confirmed"
 
         # Confirm result - SHOULD complete
-        trio.confirm_result()
+        trio.confirm_result_by_admin()
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.is_completed, "Should complete after confirmation"
@@ -142,7 +142,7 @@ class TestTrioCompletionAtCorrectRack:
         assert not trio.is_completed, "Should not be completed until confirmed"
 
         # Confirm result - SHOULD complete
-        trio.confirm_result()
+        trio.confirm_result_by_admin()
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.is_completed, "Should complete after confirmation"
@@ -184,7 +184,7 @@ class TestTrioCompletionAtCorrectRack:
         assert not trio.is_completed, "Should not be completed until confirmed"
 
         # Confirm result - SHOULD complete
-        trio.confirm_result()
+        trio.confirm_result_by_admin()
         db_session.commit()
         trio = db_session.get(TrioMatch, trio.id)
         assert trio.is_completed, "Should complete after confirmation"

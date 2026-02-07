@@ -5,8 +5,7 @@ Data Structures: Match, Rack, MatchResult, TrioMatch
 Dependencies: models.base.db, datetime
 """
 
-from datetime import datetime
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from models.base import db, TimestampMixin, utc_now
 from models.status_enum import MatchStatus, Discipline
 from .base_match import BaseMatchMixin
@@ -285,214 +284,20 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             return self.discipline
         return self.gara.discipline if self.gara else Discipline.EIGHT_BALL.value
 
-    def start_next_set(
-        self,
-    ) -> (
-        "Set"
-    ):  # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-004. Decision: Match is aggregate root for Sets.
-        """Start the next set in a multi-set match."""
-        if not self.is_multi_set:
-            raise ValueError("This is not a multi-set match")
-
-        # Check if current set is completed
-        current_set = self.get_current_set()
-        if current_set and not current_set.is_completed():
-            raise ValueError("Current set must be completed before starting next set")
-
-        # Check if match is already completed
-        if self.is_completed():
-            raise ValueError("Match is already completed")
-
-        # Create new set
-        from .set_models import Set
-
-        # Get distance from previous set or default
-        distance = getattr(current_set, "distance", 5) if current_set else 5
-
-        # Multi-set matches always use race-to mode to guarantee a winner
-        new_set = Set(
-            match_id=self.id,
-            set_number=self.current_set_number,
-            distance=distance,
-            is_race_to=True,  # Always race-to for multi-set to prevent ties
-        )
-
-        from ..base import db
-
-        db.session.add(new_set)
-
-        return new_set
+    def start_next_set(self) -> "Set":
+        """Start the next set in a multi-set match. Delegates to SetLifecycleService."""
+        from .set_lifecycle_service import SetLifecycleService
+        return SetLifecycleService.start_next_set(self)
 
     def get_current_set(self) -> Optional["Set"]:
-        """Get the current set being played."""
-        if not self.is_multi_set:
-            return None
-
-        # Query the database directly to avoid relationship loading issues
-        from .set_models import Set
-
-        return Set.query.filter_by(
-            match_id=self.id, set_number=self.current_set_number
-        ).first()
+        """Get the current set being played. Delegates to SetLifecycleService."""
+        from .set_lifecycle_service import SetLifecycleService
+        return SetLifecycleService.get_current_set(self)
 
     def complete_set(self, set_number: int, winner_id: int) -> None:
-        """Complete a set and check if match is finished."""
-        if not self.is_multi_set:
-            raise ValueError("This is not a multi-set match")
-
-        # Update match scores (sets won)
-        if winner_id == self.player1_id:
-            self.player1_score += 1
-        elif winner_id == self.player2_id:
-            self.player2_score += 1
-        else:
-            raise ValueError("Winner must be one of the match players")
-
-        # Check if match is won
-        if self.player1_score >= self.match_distance:
-            self.winner_id = self.player1_id
-            self.status = "completed"
-            # Check if all matches in gara are completed and auto-complete gara
-            self._check_and_complete_gara_if_needed(self)
-        elif self.player2_score >= self.match_distance:
-            self.winner_id = self.player2_id
-            self.status = "completed"
-            # Check if all matches in gara are completed and auto-complete gara
-            self._check_and_complete_gara_if_needed(self)
-        else:
-            # Move to next set
-            self.current_set_number += 1
-
-    def get_match_summary(self) -> dict:
-        """Get comprehensive match summary."""
-        if self.is_multi_set:
-            sets_summary = []
-            # Query sets directly from database
-            from .set_models import Set
-
-            match_sets = (
-                Set.query.filter_by(match_id=self.id).order_by(Set.set_number).all()
-            )
-
-            for match_set in match_sets:
-                sets_summary.append(
-                    {
-                        "set_number": match_set.set_number,
-                        "player1_racks": match_set.player1_racks,
-                        "player2_racks": match_set.player2_racks,
-                        "winner_id": match_set.winner_id,
-                        "is_completed": match_set.is_completed(),
-                    }
-                )
-
-            return {
-                "is_multi_set": True,
-                "match_distance": self.match_distance,
-                "sets_won": {
-                    "player1": self.player1_score,
-                    "player2": self.player2_score,
-                },
-                "current_set": self.current_set_number,
-                "sets": sets_summary,
-                "is_completed": self.is_completed(),
-                "winner_id": self.winner_id,
-            }
-        else:
-            # Legacy single-set match
-            return {
-                "is_multi_set": False,
-                "racks_won": {
-                    "player1": self.player1_score,
-                    "player2": self.player2_score,
-                },
-                "is_completed": self.is_completed(),
-                "winner_id": self.winner_id,
-            }
-
-    def supports_multi_discipline(
-        self,
-    ) -> (
-        bool
-    ):  # TODO: controllare se la modellazione cosi' e' ok. la disciplina e' un campo strutturato? deve essere strutturato? oppure e' solo una descrizione. Per i match multi disciplina avevo in mente quelli di APA in cui i primi 4 rack sono a palla 8 e gli altri sono a palla 9 e si arriva al 7. Ma se il funzionamento dell'app non cambia allora si puo' lasciare questo come semplice valore di descrizione
-        """Check if match supports multi-discipline play."""
-        return (
-            self.is_multi_set
-        )  # Only multi-set matches support multi-discipline for now
-
-    def configure_set_disciplines(self, set_disciplines: Dict[int, str]) -> None:
-        """Configure specific disciplines for sets.
-
-        Args:
-            set_disciplines: Dict mapping set number to discipline name
-        """
-        if not self.supports_multi_discipline():
-            raise ValueError("Match must support multi-discipline mode")
-
-        # Query sets directly from database
-        from .set_models import Set
-
-        for set_number, discipline in set_disciplines.items():
-            match_set = Set.query.filter_by(
-                match_id=self.id, set_number=set_number
-            ).first()
-            if match_set:
-                match_set.discipline = discipline
-
-    def get_multi_discipline_summary(self) -> Dict[str, Any]:
-        """Get summary of disciplines used across all sets."""
-        if not self.is_multi_set:
-            return {
-                "is_multi_discipline": False,
-                "primary_discipline": getattr(self, "discipline", "palla_8"),
-                "sets": [],
-            }
-
-        sets_summary = []
-        all_disciplines = set()
-
-        # Query sets directly from database
-        from .set_models import Set
-
-        match_sets = (
-            Set.query.filter_by(match_id=self.id).order_by(Set.set_number).all()
-        )
-
-        for match_set in match_sets:
-            set_discipline_info = match_set.get_discipline_summary()
-            sets_summary.append(
-                {
-                    "set_number": match_set.set_number,
-                    "discipline_info": set_discipline_info,
-                }
-            )
-
-            if set_discipline_info.get("disciplines_used"):
-                all_disciplines.update(set_discipline_info["disciplines_used"])
-
-        return {
-            "is_multi_discipline": len(all_disciplines) > 1,
-            "disciplines_used": list(all_disciplines),
-            "total_disciplines": len(all_disciplines),
-            "sets": sets_summary,
-        }
-
-    def _check_and_complete_gara_if_needed(
-        self, match_obj
-    ):  # RESOLVED: See docs/ARCHITECTURAL_DECISIONS.md ADR-001. Decision: Keep coupling for pragmatic reasons.
-        """
-        Verifica se tutti i match della gara sono completati.
-
-        NOTA: Non completa automaticamente la gara. Il direttore/admin deve
-        esplicitamente terminare la gara usando il pulsante "Termina gara"
-        nella UI. Questo permette di:
-        - Resettare l'ultimo turno se necessario
-        - Verificare i risultati prima della chiusura definitiva
-        - Gestire eventuali contestazioni
-        """
-        # Metodo mantenuto per compatibilità ma non esegue più l'auto-completamento
-        # La gara passa in stato "campionato_completed" (derivato) quando tutti i match
-        # sono completati, ma rimane in status "playing" fino a terminazione esplicita
-        pass
+        """Complete a set and check if match is finished. Delegates to SetLifecycleService."""
+        from .set_lifecycle_service import SetLifecycleService
+        SetLifecycleService.complete_set(self, set_number, winner_id)
 
     def _remove_last_rack(self, user_id: int) -> None:
         """
@@ -750,22 +555,6 @@ class TrioMatch(db.Model):
     # NOTE: add_rack_win() moved to TrioScoringService.add_rack_win()
     # NOTE: remove_last_rack() moved to TrioScoringService.remove_last_rack()
 
-    def _update_current_players(self):
-        """Update current_player1, current_player2, waiting_player based on next rack."""
-        config = self.trio_config
-        next_rack = self.total_racks_played + 1
-
-        if next_rack > config.total_played_racks:
-            # All racks done
-            return
-
-        matchup = config.get_matchup_for_rack(next_rack)
-        if matchup:
-            p1_idx, p2_idx, waiting_idx = matchup
-            self.current_player1_id = self.player_ids[p1_idx]
-            self.current_player2_id = self.player_ids[p2_idx]
-            self.waiting_player_id = self.player_ids[waiting_idx]
-
     def initialize_matchup(self):
         """Initialize current players for the first rack.
 
@@ -773,44 +562,8 @@ class TrioMatch(db.Model):
         the initial matchup (P1 vs P2, P3 waits).
         """
         if self.total_racks_played == 0 and self.current_player1_id is None:
-            self._update_current_players()
-
-    def _apply_bonus_and_complete(self):
-        """Apply bonus flag and set trio to awaiting confirmation.
-
-        Note: bonus_racks don't create actual rack records - the bonus is virtual
-        and applied equally to all players for display/classification purposes.
-        Since it's equal for all, it doesn't affect winner determination.
-
-        The trio enters 'awaiting_confirmation' state - user must call
-        confirm_result() to finalize the match.
-        """
-        config = self.trio_config
-
-        # Set bonus flag (for UI display - bonus is virtual, not actual racks)
-        if config.bonus_racks > 0:
-            self.bonus_applied = True
-
-        # Flush to ensure computed properties see all racks
-        db.session.flush()
-
-        # Determine winner (highest racks, or None if tie)
-        scores = [
-            (self.player1_racks, self.player1_id),
-            (self.player2_racks, self.player2_id),
-            (self.player3_racks, self.player3_id),
-        ]
-        scores.sort(reverse=True)
-
-        # Check for tie at the top
-        if scores[0][0] > scores[1][0]:
-            self.winner_id = scores[0][1]
-        else:
-            # Tie - no single winner (valid for rack-based classification)
-            self.winner_id = None
-
-        # Enter awaiting confirmation state (don't complete yet)
-        self.awaiting_confirmation = True
+            from .trio_scoring_service import TrioScoringService
+            TrioScoringService._update_current_players(self)
 
     def confirm_result_by_player(self, user_id: int) -> dict:
         """Confirm the trio result by a specific player.
@@ -883,17 +636,6 @@ class TrioMatch(db.Model):
             "is_completed": True,
             "message": "Partita validata dall'amministratore"
         }
-
-    def confirm_result(self) -> bool:
-        """Legacy method - use confirm_result_by_admin for admin or confirm_result_by_player.
-
-        Kept for backward compatibility, acts as admin confirmation.
-        """
-        if not self.awaiting_confirmation:
-            return False
-
-        self._finalize_trio()
-        return True
 
     def _finalize_trio(self) -> None:
         """Internal method to finalize the trio match."""
@@ -980,7 +722,8 @@ class TrioMatch(db.Model):
             db.session.flush()
 
             # Update matchup for next rack
-            self._update_current_players()
+            from .trio_scoring_service import TrioScoringService
+            TrioScoringService._update_current_players(self)
 
         # If all racks now played, apply bonus and enter confirmation
         if self.total_racks_played >= config.total_played_racks:
@@ -1026,52 +769,9 @@ class TrioMatch(db.Model):
     # NOTE: reset() moved to TrioScoringService.reset()
 
     def get_current_state(self):
-        """Return current state of the trio for UI rendering."""
-        config = self.trio_config
-        next_rack = self.total_racks_played + 1
-
-        return {
-            "players": {
-                "player1": {
-                    "id": self.player1_id,
-                    "user": self.player1,
-                    "racks": self.player1_racks,
-                },
-                "player2": {
-                    "id": self.player2_id,
-                    "user": self.player2,
-                    "racks": self.player2_racks,
-                },
-                "player3": {
-                    "id": self.player3_id,
-                    "user": self.player3,
-                    "racks": self.player3_racks,
-                },
-            },
-            "current_matchup": {
-                "player1": self.current_player1,
-                "player2": self.current_player2,
-                "waiting": self.waiting_player,
-            },
-            "progress": {
-                "current_round": self.current_round,
-                "total_rounds": config.num_rounds,
-                "rack_in_round": self.current_rack_in_round + 1,
-                "racks_per_round": config.racks_per_round,
-                "total_racks_played": self.total_racks_played,
-                "total_racks_needed": config.total_played_racks,
-                "next_rack": next_rack if next_rack <= config.total_played_racks else None,
-            },
-            "config": {
-                "distance": config.distance,
-                "num_rounds": config.num_rounds,
-                "bonus_racks": config.bonus_racks,
-                "max_racks_per_player": config.max_racks_per_player,
-            },
-            "is_completed": self.is_completed,
-            "bonus_applied": self.bonus_applied,
-            "winner": self.winner,
-        }
+        """Return current state of the trio for UI rendering. Delegates to TrioStateSerializer."""
+        from .trio_state_serializer import TrioStateSerializer
+        return TrioStateSerializer.serialize(self)
 
     def __repr__(self):
         return f"<TrioMatch {self.player1_id}-{self.player2_id}-{self.player3_id}>"

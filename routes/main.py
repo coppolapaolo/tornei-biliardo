@@ -464,8 +464,6 @@ def debug_complete_current_round(gara_id):
             match.player2_score = player2_score
 
         match.status = MatchStatus.COMPLETED.value
-        # Check if all matches in gara are completed and auto-complete gara
-        match._check_and_complete_gara_if_needed(match)
         completed_count += 1
 
     # Flask handles transaction commit automatically

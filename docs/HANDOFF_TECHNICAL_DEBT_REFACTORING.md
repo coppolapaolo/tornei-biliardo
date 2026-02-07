@@ -218,18 +218,12 @@ def ajax_or_redirect(success_data=None, error_msg=None, status=200, redirect_url
 
 #### TASK 4.3: Estrarre responsabilita' da Match/TrioMatch god classes
 **Problema**: `Match` (586 LOC, 37 metodi tra propri+ereditati, 8 gruppi di responsabilita') e `TrioMatch` (487 LOC, 31 tra metodi+property, 7 gruppi) sono god classes confermate.
-**Analisi (2026-02-06)**: Gruppi di responsabilita' identificati in Match:
-1. State Queries (4 metodi read-only)
-2. Distance/Scoring Config (4 property, gia' delegano a value objects)
-3. Handicap Management (3 metodi)
-4. Discipline Management (4 metodi)
-5. Multi-Set Management (4 metodi)
-6. Tiebreaker Support (4 metodi)
-7. Match Completion/State Transitions (5 metodi)
-8. Result Validation (4 metodi, da BaseMatchMixin)
-
-Per TrioMatch: round-robin logic (2), bonus/completion (2), 3-player confirmation (4), forfeit (1, 71 LOC), 14 computed properties.
-**Stato**: DA PIANIFICARE — unico task con impatto reale, ma alto rischio. Approccio suggerito: estrarre un gruppo alla volta (es. Multi-Set → servizio, Tiebreaker → servizio).
+**Soluzione implementata (2026-02-07)**:
+- **Phase 1**: Deleted ~190 lines of dead/duplicate code: `_check_and_complete_gara_if_needed` (no-op), `_apply_bonus_and_complete` (duplicated in TrioScoringService), `_update_current_players` (duplicated in TrioScoringService), `get_match_summary` (zero callers), `supports_multi_discipline`/`configure_set_disciplines`/`get_multi_discipline_summary` (only used in legacy tests), `confirm_result` (replaced by `confirm_result_by_admin`)
+- **Phase 2**: Extracted `SetLifecycleService` (`set_lifecycle_service.py`) — `start_next_set`, `get_current_set`, `complete_set` moved from Match with 1-line proxy methods kept for backward compatibility
+- **Phase 3**: Extracted `TrioStateSerializer` (`trio_state_serializer.py`) — `get_current_state` UI dict builder moved from TrioMatch with 1-line proxy
+- **Result**: models.py reduced from 1138 LOC to 837 LOC (-26.4%). Match+TrioMatch focused on domain behavior; serialization and multi-set lifecycle in dedicated services.
+**Stato**: DONE
 
 ---
 
@@ -245,7 +239,7 @@ Per TrioMatch: round-robin logic (2), bonus/completion (2), 3-player confirmatio
 | 3.2 | Estrarre parse_tables_input | BASSO | BASSO | ~10 | DONE |
 | 4.1 | Protocol interfaces | — | — | — | CANCELLATO (orchestrators = codice morto) |
 | 4.2 | Split UtilityMixin | — | — | — | CANCELLATO (zero uso in produzione) |
-| 4.3 | Estrarre da Match/TrioMatch | ALTO | ALTO | ~200+ | DA PIANIFICARE |
+| 4.3 | Estrarre da Match/TrioMatch | ALTO | ALTO | ~300 | DONE |
 | 4.4 | Rimozione dead code Match | BASSO | MEDIO | ~68 | DONE |
 | 5.1 | Rimuovere @transactional da route (Type B) | BASSO | ALTO (architettura) | ~20 | DONE (2 route) |
 | 5.2 | Estrarre DB ops da route a service (Type A) | MEDIO | ALTO | ~150 | DONE (10 route) |

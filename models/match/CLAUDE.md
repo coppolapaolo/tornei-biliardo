@@ -105,7 +105,7 @@ is_completed() -> bool
 get_effective_discipline() -> str
     # Returns discipline override or gara default
 
-# Multi-Set Methods
+# Multi-Set Methods (proxy to SetLifecycleService)
 start_next_set() -> Set
     # Start next set in multi-set match
 
@@ -114,9 +114,6 @@ get_current_set() -> Optional[Set]
 
 complete_set(set_number: int, winner_id: int) -> None
     # Complete a set and check if match finished
-
-get_match_summary() -> dict
-    # Returns sets won by each player, current set, etc.
 ```
 
 **Usage Examples:**
@@ -331,14 +328,22 @@ def last_rack(self) -> Optional[TrioRack]
 
 **Key Methods:**
 ```python
-def add_rack_win(winner_id: int, added_by_id: int = None) -> TrioRack
-    # Add rack win and update matchup for next rack
+# NOTE: add_rack_win(), remove_last_rack(), reset() moved to TrioScoringService
 
-def remove_last_rack(removed_by_id: int = None) -> Optional[TrioRack]
-    # Soft-delete last rack (undo). Returns removed rack or None.
+def get_current_state() -> dict
+    # UI state dict (proxy to TrioStateSerializer.serialize)
 
-def reset() -> None
-    # Delete all racks, reset state. Preserves table assignment.
+def confirm_result_by_player(user_id: int) -> dict
+    # Player confirms trio result (all 3 needed)
+
+def confirm_result_by_admin() -> dict
+    # Admin confirms trio result (bypasses player confirmations)
+
+def handle_forfeit(forfeiting_player_id: int, added_by_id: int = None) -> bool
+    # Handle player forfeit
+
+def initialize_matchup() -> None
+    # Set up initial matchup (P1 vs P2, P3 waits)
 
 @property
 def trio_config(self) -> TrioConfig
