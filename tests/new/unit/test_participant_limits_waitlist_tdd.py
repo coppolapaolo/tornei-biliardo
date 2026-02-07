@@ -191,8 +191,6 @@ class TestParticipantLimitsWaitlistTDD:
         db_session.commit()
 
         # Remove one regular player using the service (which should trigger waitlist promotion)
-        from models.competition.inscription_service import InscriptionService
-
         InscriptionService.uninscribe_user(regular_players[0].id, gara.id)
 
         # Waitlist player should be automatically promoted
