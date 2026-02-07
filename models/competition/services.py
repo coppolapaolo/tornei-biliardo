@@ -486,46 +486,6 @@ class GaraService:
         """Legacy compatibility wrapper."""
         return GaraService.create_round_with_strategy(gara_id, round_number)
 
-    # -------------------------------------------------------
-    # TRIO MATCH DELEGATIONS (logic in TrioMatchService)
-    # -------------------------------------------------------
-    @staticmethod
-    def add_trio_rack(trio_id: int, winner_id: int) -> dict:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.add_trio_rack(trio_id, winner_id)
-
-    @staticmethod
-    def reset_trio(trio_id: int) -> None:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.reset_trio(trio_id)
-
-    @staticmethod
-    def remove_trio_rack(trio_id: int, removed_by_id: int) -> dict:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.remove_trio_rack(trio_id, removed_by_id)
-
-    @staticmethod
-    def confirm_trio_result(trio_id: int) -> dict:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.confirm_trio_result(trio_id)
-
-    @staticmethod
-    def confirm_trio_result_by_player(trio_id: int, user_id: int) -> dict:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.confirm_trio_result_by_player(trio_id, user_id)
-
-    @staticmethod
-    def forfeit_trio(trio_id: int, forfeiting_player_id: int, added_by_id: int) -> dict:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.forfeit_trio(trio_id, forfeiting_player_id, added_by_id)
-
-    @staticmethod
-    def set_trio_result(
-        trio_id: int, player1_racks: int, player2_racks: int, player3_racks: int
-    ) -> dict:
-        from .trio_service import TrioMatchService
-        return TrioMatchService.set_trio_result(trio_id, player1_racks, player2_racks, player3_racks)
-
     # -----------------------------
     # VALIDAZIONE DATI (type-safe)
     # -----------------------------

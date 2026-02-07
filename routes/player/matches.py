@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 from models import db, Match
 from models.match.services import MatchService
-from models.competition.services import GaraService
+from models.competition.trio_service import TrioMatchService
 from utils import match_player_required, trio_player_required
 
 from . import player_bp
@@ -31,7 +31,7 @@ def add_trio_rack(match_id):
         trio_id = match.trio_match.id
 
         # Use the service layer (same as admin)
-        result = GaraService.add_trio_rack(trio_id, winner_id)
+        result = TrioMatchService.add_trio_rack(trio_id, winner_id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -54,7 +54,7 @@ def remove_trio_rack(match_id):
         trio_id = match.trio_match.id
 
         # Use the service layer
-        result = GaraService.remove_trio_rack(trio_id, current_user.id)
+        result = TrioMatchService.remove_trio_rack(trio_id, current_user.id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -81,7 +81,7 @@ def confirm_trio_result(match_id):
         trio_id = match.trio_match.id
 
         # Use player-specific confirmation (requires all 3 to confirm)
-        result = GaraService.confirm_trio_result_by_player(trio_id, current_user.id)
+        result = TrioMatchService.confirm_trio_result_by_player(trio_id, current_user.id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -110,7 +110,7 @@ def forfeit_trio(match_id):
             forfeiting_player_id = current_user.id
 
         # Use the service layer
-        result = GaraService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
+        result = TrioMatchService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
         return jsonify(result)
 
     except ValueError as ve:

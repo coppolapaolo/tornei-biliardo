@@ -7,7 +7,7 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
-from models.competition.services import GaraService
+from models.competition.trio_service import TrioMatchService
 from utils import trio_manager_required
 
 from . import competition_bp
@@ -25,7 +25,7 @@ def trio_add_rack(trio_id):
         winner_id = int(request.form["winner_id"])
 
         # Usa il service layer invece del direct database access
-        result = GaraService.add_trio_rack(trio_id, winner_id)
+        result = TrioMatchService.add_trio_rack(trio_id, winner_id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -41,7 +41,7 @@ def trio_remove_rack(trio_id):
     """Rimuovi ultimo rack da partita trio (undo)"""
     try:
         # Usa il service layer
-        result = GaraService.remove_trio_rack(trio_id, current_user.id)
+        result = TrioMatchService.remove_trio_rack(trio_id, current_user.id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -56,7 +56,7 @@ def trio_remove_rack(trio_id):
 def trio_confirm(trio_id):
     """Conferma il risultato del trio e completa la partita."""
     try:
-        result = GaraService.confirm_trio_result(trio_id)
+        result = TrioMatchService.confirm_trio_result(trio_id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -75,7 +75,7 @@ def trio_forfeit(trio_id):
         if not forfeiting_player_id:
             return jsonify({"error": "Player ID richiesto"}), 400
 
-        result = GaraService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
+        result = TrioMatchService.forfeit_trio(trio_id, forfeiting_player_id, current_user.id)
         return jsonify(result)
 
     except ValueError as ve:
@@ -91,7 +91,7 @@ def trio_reset(trio_id):
     """Reset completo trio"""
     try:
         # Usa il service layer invece del direct database access
-        GaraService.reset_trio(trio_id)
+        TrioMatchService.reset_trio(trio_id)
         return jsonify({"success": True, "message": "Trio resettato con successo"})
 
     except ValueError as ve:
@@ -110,7 +110,7 @@ def trio_set_result(trio_id):
         player2_racks = int(request.form["player2_racks"])
         player3_racks = int(request.form["player3_racks"])
 
-        result = GaraService.set_trio_result(
+        result = TrioMatchService.set_trio_result(
             trio_id, player1_racks, player2_racks, player3_racks
         )
 
@@ -119,7 +119,9 @@ def trio_set_result(trio_id):
 
         trio = TrioMatch.query.get(trio_id)
         if trio and trio.match and trio.match.gara_id:
-            GaraService.update_round_progression(trio.match.gara_id)
+            from models.competition.round_service import RoundService
+
+            RoundService.update_round_progression(trio.match.gara_id)
 
         return jsonify(result)
 
