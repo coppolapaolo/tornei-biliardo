@@ -9,7 +9,6 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from datetime import datetime
-from models.transaction.manager import transactional
 from models.shared.utils import parse_date_string
 
 from models import (
@@ -76,7 +75,6 @@ def modify_inscription_dates(gara_id):
 
 
 @competition_bp.route("/<int:gara_id>/close_inscriptions", methods=["POST"])
-@transactional(domain="competition")
 @login_required
 @gara_manager_required
 def close_inscriptions(gara_id):

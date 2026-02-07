@@ -317,7 +317,7 @@ class TestNotificationService:
         # Mark as read through service
         result = NotificationService.mark_notification_read(notification.id, user.id)
 
-        assert result is True
+        assert result is not None
 
         db_session.refresh(notification)
         assert notification.status == NotificationStatus.READ
@@ -337,7 +337,7 @@ class TestNotificationService:
 
         result = NotificationService.mark_notification_read(99999, user.id)
 
-        assert result is False
+        assert result is None
 
     def test_mark_all_notifications_as_read(self, db_session):
         """Test marking all user notifications as read."""

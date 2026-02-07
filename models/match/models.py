@@ -135,34 +135,6 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         """
         return self.gara_id is None
 
-    def apply_handicap(self, handicap_data: dict) -> None:
-        """Apply handicap to the match."""
-        self.has_handicap = handicap_data.get("handicap", 0) > 0
-        self.player1_handicap = handicap_data.get("player1_handicap", 0)
-        self.player2_handicap = handicap_data.get("player2_handicap", 0)
-        self.handicap_explanation = handicap_data.get("explanation")
-
-        # Update scores with handicap
-        self.player1_score += self.player1_handicap
-        self.player2_score += self.player2_handicap
-
-    def get_effective_score(self, player_id: int) -> int:
-        """Get effective score including handicap for a player."""
-        if player_id == self.player1_id:
-            return self.player1_score
-        elif player_id == self.player2_id:
-            return self.player2_score
-        return 0
-
-    def get_handicap_info(self) -> dict:
-        """Get handicap information for this match."""
-        return {
-            "has_handicap": self.has_handicap,
-            "player1_handicap": self.player1_handicap,
-            "player2_handicap": self.player2_handicap,
-            "explanation": self.handicap_explanation,
-        }
-
     def is_completed(self) -> bool:
         """Check if match is completed."""
         return self.status == MatchStatus.COMPLETED.value
@@ -436,55 +408,6 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
                 "is_completed": self.is_completed(),
                 "winner_id": self.winner_id,
             }
-
-    def needs_tiebreaker(self) -> bool:
-        """Check if match needs a tiebreaker (tied scores)."""
-        if self.status != "completed":
-            return False
-
-        # For multi-set matches, check set scores
-        if self.is_multi_set:
-            return self.player1_score == self.player2_score and self.player1_score > 0
-
-        # For single matches, check rack scores
-        return self.player1_score == self.player2_score and self.player1_score > 0
-
-    def has_active_tiebreaker(self) -> bool:
-        """Check if match has an active tiebreaker."""
-        # Query tiebreakers directly from database
-        from models.tiebreaker.models import Tiebreaker
-
-        pending_count = Tiebreaker.query.filter(
-            Tiebreaker.match_id == self.id, Tiebreaker.status == "pending"
-        ).count()
-
-        in_progress_count = Tiebreaker.query.filter(
-            Tiebreaker.match_id == self.id, Tiebreaker.status == "in_progress"
-        ).count()
-
-        return (pending_count + in_progress_count) > 0
-
-    def get_active_tiebreaker(self):
-        """Get the active tiebreaker for this match."""
-        # Query tiebreakers directly from database
-        from models.tiebreaker.models import Tiebreaker
-
-        # Check for pending tiebreaker first
-        pending_tb = Tiebreaker.query.filter(
-            Tiebreaker.match_id == self.id, Tiebreaker.status == "pending"
-        ).first()
-
-        if pending_tb:
-            return pending_tb
-
-        # Check for in-progress tiebreaker
-        return Tiebreaker.query.filter(
-            Tiebreaker.match_id == self.id, Tiebreaker.status == "in_progress"
-        ).first()
-
-    def can_start_tiebreaker(self) -> bool:
-        """Check if a tiebreaker can be started for this match."""
-        return self.needs_tiebreaker() and not self.has_active_tiebreaker()
 
     def supports_multi_discipline(
         self,

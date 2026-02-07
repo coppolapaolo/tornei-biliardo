@@ -368,6 +368,51 @@ class RoundService:
         Returns:
             Tuple con (total_matches, normal_matches, bye_matches, trio_matches)
         """
+        return RoundService._create_round_impl(
+            gara_id, round_number, discipline_override
+        )
+
+    @staticmethod
+    @transactional(domain="competition")
+    def start_next_round(
+        gara_id: int, round_number: int, discipline_override: Optional[str] = None
+    ) -> tuple[int, int, int, int, int]:
+        """Create a round and advance the gara state.
+
+        Combines round creation, state transition to PLAYING,
+        current_round update, and table assignment in one transaction.
+
+        Returns:
+            Tuple: (total, normal, bye, trio, tables_assigned)
+        """
+        from models.competition.state_service import StateService
+        from models.match.table_assignment_service import TableAssignmentService
+
+        total, n_normal, n_bye, n_trio = RoundService._create_round_impl(
+            gara_id, round_number, discipline_override
+        )
+
+        gara = db.session.get(Gara, gara_id)
+        if not gara:
+            raise ValueError(f"Gara {gara_id} non trovata")
+
+        if gara.status != GaraStatus.PLAYING.value:
+            StateService.start_playing(gara)
+            db.session.refresh(gara)
+
+        gara.current_round = round_number
+
+        tables_assigned = TableAssignmentService.assign_tables_to_round(
+            gara_id, round_number
+        )
+
+        return total, n_normal, n_bye, n_trio, tables_assigned
+
+    @staticmethod
+    def _create_round_impl(
+        gara_id: int, round_number: int, discipline_override: Optional[str] = None
+    ) -> tuple[int, int, int, int]:
+        """Core round creation logic (no @transactional — called within a transaction)."""
         from models.match.models import Match, TrioMatch
 
         try:

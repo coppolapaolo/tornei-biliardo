@@ -7,10 +7,8 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 
 from models import db, User
-from models.transaction.manager import transactional
 
 from . import player_bp
-from models.base import utc_now
 
 
 # ============ NOTIFICATIONS ============
@@ -18,15 +16,17 @@ from models.base import utc_now
 
 @player_bp.route("/notifications")
 @login_required
-@transactional(domain="notification")
 def notifications():
     """Mostra le notifiche dell'utente (accessibile a tutti gli utenti autenticati)"""
     from models.notification.models import (
         Notification,
-        NotificationStatus,
         NotificationPreference,
         NotificationType,
     )
+    from models.notification.services import NotificationService
+
+    # Mark PENDING notifications as SENT (via service layer)
+    NotificationService.mark_pending_as_sent(current_user.id)
 
     # Get all notifications for current user
     user_notifications = (
@@ -34,12 +34,6 @@ def notifications():
         .order_by(Notification.created_at.desc())
         .all()
     )
-
-    # Mark PENDING notifications as SENT
-    for notif in user_notifications:
-        if notif.status == NotificationStatus.PENDING:
-            notif.status = NotificationStatus.SENT
-            notif.sent_at = utc_now()
 
     # Get user's global auto-delete preference
     # Use SYSTEM_ANNOUNCEMENT type as global setting
@@ -57,20 +51,16 @@ def notifications():
 
 @player_bp.route("/notifications/<int:notification_id>/mark_read", methods=["POST"])
 @login_required
-@transactional(domain="notification")
 def mark_notification_read(notification_id):
     """Segna una notifica come letta"""
-    from models.notification.models import Notification, NotificationStatus
+    from models.notification.services import NotificationService
 
-    notification = Notification.query.filter_by(
-        id=notification_id, user_id=current_user.id
-    ).first_or_404()
-
-    notification.status = NotificationStatus.READ
-    notification.read_at = utc_now()
+    notification = NotificationService.mark_notification_read(
+        notification_id, current_user.id
+    )
 
     # If there's an action URL, redirect to it
-    if notification.action_url:
+    if notification and notification.action_url:
         return redirect(notification.action_url)
 
     return redirect(url_for("player.notifications"))
@@ -78,14 +68,11 @@ def mark_notification_read(notification_id):
 
 @player_bp.route("/notifications/mark_all_read", methods=["POST"])
 @login_required
-@transactional(domain="notification")
 def mark_all_notifications_read():
     """Segna tutte le notifiche come lette"""
-    from models.notification.models import Notification, NotificationStatus
+    from models.notification.services import NotificationService
 
-    Notification.query.filter_by(user_id=current_user.id).filter(
-        Notification.status != NotificationStatus.READ
-    ).update({"status": NotificationStatus.READ, "read_at": utc_now()})
+    NotificationService.mark_all_read(current_user.id)
 
     flash("Tutte le notifiche sono state segnate come lette.")
     return redirect(url_for("player.notifications"))

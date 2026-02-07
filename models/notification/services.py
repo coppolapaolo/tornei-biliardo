@@ -162,17 +162,23 @@ class NotificationService:
 
     @staticmethod
     @transactional(domain="notification")
-    def mark_notification_read(notification_id: int, user_id: int) -> bool:
-        """Mark a notification as read."""
+    def mark_notification_read(
+        notification_id: int, user_id: int
+    ) -> Optional[Notification]:
+        """Mark a notification as read.
+
+        Returns the notification if found, None otherwise.
+        Backward compatible: truthy when found, falsy when not.
+        """
         notification = Notification.query.filter_by(
             id=notification_id, user_id=user_id
         ).first()
 
         if not notification:
-            return False
+            return None
 
         notification.mark_as_read()
-        return True
+        return notification
 
     @staticmethod
     @transactional(domain="notification")
@@ -208,6 +214,28 @@ class NotificationService:
         count = 0
         for notification in notifications:
             notification.mark_as_read()
+            count += 1
+
+        return count
+
+    @staticmethod
+    @transactional(domain="notification")
+    def mark_pending_as_sent(user_id: int) -> int:
+        """Mark all PENDING notifications as SENT for a user.
+
+        Called when the user views the notifications page.
+        Returns the number of notifications updated.
+        """
+        notifications = (
+            Notification.query.filter_by(
+                user_id=user_id, status=NotificationStatus.PENDING
+            ).all()
+        )
+
+        count = 0
+        for notification in notifications:
+            notification.status = NotificationStatus.SENT
+            notification.sent_at = utc_now()
             count += 1
 
         return count

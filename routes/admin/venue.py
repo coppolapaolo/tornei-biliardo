@@ -13,7 +13,6 @@ from models.location.services import LocationService
 from models.user.services import VenueManagementService
 from models.user.venue_manager_service import VenueManagerService
 from models.user.models import VenueManagerRequest, User
-from models.transaction.manager import transactional
 from utils import admin_required, venue_manager_required
 from utils.route_helpers import handle_service_action
 from flask_login import login_required, current_user
@@ -211,7 +210,6 @@ def venue_detail(venue_id):
 
 @venue_bp.route("/venues/new", methods=["GET", "POST"])
 @admin_required
-@transactional(domain="venue")
 def create_venue():
     """Crea nuova sala biliardo"""
     if request.method == "POST":
@@ -255,11 +253,8 @@ def create_venue():
                 table_types=table_types if table_types else None,
                 amenities=amenities if amenities else None,
                 hourly_rate=float(hourly_rate) if hourly_rate else None,
+                business_hours=business_hours if business_hours else None,
             )
-
-            # Set business hours if provided
-            if business_hours:
-                venue.business_hours = business_hours
 
             flash("Sala biliardo creata con successo!", "success")
             return redirect(url_for("admin.venue.venue_detail", venue_id=venue.id))
@@ -336,84 +331,61 @@ def edit_venue(venue_id):
 
 @venue_bp.route("/venues/<int:venue_id>/delete", methods=["POST"])
 @admin_required
-@transactional(domain="venue")
 def delete_venue(venue_id):
     """Disattiva sala biliardo (soft delete)"""
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
-
-    try:
-        venue.is_active = False
-        flash(f"Sala biliardo '{venue.name}' disattivata.", "success")
-    except Exception as e:
-        flash(f"Errore nella disattivazione: {e}", "error")
-
-    return redirect(url_for("admin.venue.venues_list"))
+    return handle_service_action(
+        action=lambda: LocationService.set_venue_active(venue_id, False),
+        redirect_url=url_for("admin.venue.venues_list"),
+        success_message="Sala biliardo disattivata.",
+        error_prefix=None,
+    )
 
 
 @venue_bp.route("/venues/<int:venue_id>/activate", methods=["POST"])
 @admin_required
-@transactional(domain="venue")
 def activate_venue(venue_id):
     """Attiva sala biliardo"""
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
-
-    try:
-        venue.is_active = True
-        flash(f"Sala biliardo '{venue.name}' attivata.", "success")
-    except Exception as e:
-        flash(f"Errore nell'attivazione: {e}", "error")
-
-    return redirect(url_for("admin.venue.venues_list"))
+    return handle_service_action(
+        action=lambda: LocationService.set_venue_active(venue_id, True),
+        redirect_url=url_for("admin.venue.venues_list"),
+        success_message="Sala biliardo attivata.",
+        error_prefix=None,
+    )
 
 
 @venue_bp.route("/venues/<int:venue_id>/toggle", methods=["POST"])
 @admin_required
-@transactional(domain="venue")
 def toggle_venue_status(venue_id):
     """API AJAX per cambiare stato venue (is_active o verified)"""
     from flask import jsonify
 
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        return jsonify({"success": False, "message": "Sala non trovata"}), 404
+    data = request.get_json()
+    field = data.get("field") if data else None
+    value = data.get("value") if data else None
+
+    if field not in ["is_active", "verified"]:
+        return jsonify({"success": False, "message": "Campo non valido"}), 400
 
     try:
-        data = request.get_json()
-        field = data.get("field")
-        value = data.get("value")
-
-        if field not in ["is_active", "verified"]:
-            return jsonify({"success": False, "message": "Campo non valido"}), 400
-
-        # Update the field
-        setattr(venue, field, value)
-
-        # Generate appropriate message
         if field == "is_active":
+            venue = LocationService.set_venue_active(venue_id, value)
             message = f"Sala '{venue.name}' {'attivata' if value else 'disattivata'}."
         else:
+            venue = LocationService.set_venue_verified(venue_id, value)
             message = (
                 f"Sala '{venue.name}' {'verificata' if value else 'non verificata'}."
             )
 
         return jsonify({"success": True, "message": message})
 
+    except ValueError as e:
+        return jsonify({"success": False, "message": str(e)}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"success": False, "message": f"Errore: {str(e)}"}), 500
 
 
 @venue_bp.route("/venues/<int:venue_id>/verify", methods=["POST"])
 @venue_manager_required
-@transactional(domain="venue")
 def verify_venue(venue_id):
     """Verifica sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -422,55 +394,36 @@ def verify_venue(venue_id):
 
         abort(404)
 
-    try:
-        venue.verified = not venue.verified
-        status = "verificata" if venue.verified else "non verificata"
-        flash(f"Sala biliardo '{venue.name}' ora è {status}.", "success")
-    except Exception as e:
-        flash(f"Errore nella modifica dello stato: {e}", "error")
+    new_verified = not venue.verified
 
-    return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
+    return handle_service_action(
+        action=lambda: LocationService.set_venue_verified(venue_id, new_verified),
+        redirect_url=url_for("admin.venue.venue_detail", venue_id=venue_id),
+        success_message=(
+            f"Sala biliardo ora è {'verificata' if new_verified else 'non verificata'}."
+        ),
+        error_prefix=None,
+    )
 
 
 @venue_bp.route("/venues/<int:venue_id>/table_numbers", methods=["POST"])
 @venue_manager_required
-@transactional(domain="venue")
 def update_table_numbers(venue_id):
     """Aggiorna numerazione tavoli"""
-    venue = db.session.get(BilliardHall, venue_id)
-    if not venue:
-        from flask import abort
-
-        abort(404)
-
     table_numbers = request.form.get("table_numbers", "")
 
-    try:
-        # Store table numbers as JSON in amenities or create a new field
-        # For now, we'll store it as a special amenity entry
-        current_amenities = venue.get_amenities()
-
-        # Remove existing table number entries
-        current_amenities = [
-            a for a in current_amenities if not a.startswith("Tavoli:")
-        ]
-
-        # Add new table numbers
-        if table_numbers.strip():
-            current_amenities.append(f"Tavoli: {table_numbers}")
-
-        venue.set_amenities(current_amenities)
-
-        flash("Numerazione tavoli aggiornata!", "success")
-    except Exception as e:
-        flash(f"Errore nell'aggiornamento: {e}", "error")
-
-    return redirect(url_for("admin.venue.venue_detail", venue_id=venue_id))
+    return handle_service_action(
+        action=lambda: LocationService.update_venue_table_numbers(
+            venue_id, table_numbers
+        ),
+        redirect_url=url_for("admin.venue.venue_detail", venue_id=venue_id),
+        success_message="Numerazione tavoli aggiornata!",
+        error_prefix=None,
+    )
 
 
 @venue_bp.route("/venues/<int:venue_id>/photo", methods=["POST"])
 @venue_manager_required
-@transactional(domain="venue")
 def upload_photo(venue_id):
     """Carica foto per la sala biliardo"""
     venue = db.session.get(BilliardHall, venue_id)
@@ -503,21 +456,12 @@ def upload_photo(venue_id):
 
             file_path = os.path.join(upload_dir, filename)
 
-            # Resize and optimize image
+            # Resize and optimize image (file I/O — not DB-related)
             _resize_and_save_image(file, file_path)
 
-            # Store photo path in amenities for now
-            current_amenities = venue.get_amenities()
-
-            # Remove existing photo entries
-            current_amenities = [
-                a for a in current_amenities if not a.startswith("Foto:")
-            ]
-
-            # Add new photo path using centralized utility
+            # Update venue photo in DB via service
             venue_db_path = ImagePathManager.get_venue_db_path(filename)
-            current_amenities.append(f"Foto: {venue_db_path}")
-            venue.set_amenities(current_amenities)
+            LocationService.update_venue_photo(venue_id, venue_db_path)
 
             flash("Foto caricata e ridimensionata con successo!", "success")
         except Exception as e:

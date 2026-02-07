@@ -11,7 +11,6 @@ from flask import (
     abort,
 )
 from flask_login import login_required
-from models.transaction.manager import transactional
 
 from models import (
     db,
@@ -36,7 +35,6 @@ from . import competition_bp
 @competition_bp.route("/<int:gara_id>/start_first_round", methods=["POST"])
 @login_required
 @gara_manager_required
-@transactional()
 def start_first_round(gara_id):
     """Avvia primo turno della gara (o tutti i turni per strategia Random)"""
     try:
@@ -416,9 +414,10 @@ def amalfi_classification(gara_id, round_number):
 )
 @login_required
 @gara_manager_required
-@transactional(domain="competition")
 def amalfi_start_round(gara_id, round_number):
     """Avvia un turno specifico con algoritmo Amalfi"""
+    from models.competition.round_service import RoundService
+
     gara = Gara.query.get_or_404(gara_id)
 
     try:
@@ -471,22 +470,10 @@ def amalfi_start_round(gara_id, round_number):
                     }
                 )
 
-        # Crea il turno Amalfi usando il service layer
-        total, n_normal, n_bye, n_trio = GaraService.create_amalfi_round(
+        # Create round + advance gara state in one transaction
+        total, n_normal, n_bye, n_trio, _tables = RoundService.start_next_round(
             gara_id, round_number
         )
-
-        # Aggiorna lo stato della gara
-        if gara.status != GaraStatus.PLAYING.value:
-            gara = GaraService.start_playing(gara.id)
-
-        # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
-        db.session.refresh(gara)
-
-        # Aggiorna il turno corrente DOPO il cambio di stato
-        gara.current_round = round_number
-        db.session.add(gara)
-        # Changes will be committed by transaction decorator
 
         # Costruisci il messaggio di successo
         message = (
@@ -524,9 +511,10 @@ def amalfi_start_round(gara_id, round_number):
 @competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
 @login_required
 @gara_manager_required
-@transactional(domain="competition")
 def start_round_generic(gara_id, round_number):
     """Avvia un turno specifico con la strategia configurata nella gara"""
+    from models.competition.round_service import RoundService
+
     gara = Gara.query.get_or_404(gara_id)
 
     try:
@@ -589,26 +577,15 @@ def start_round_generic(gara_id, round_number):
             # Se è uguale alla disciplina della gara, non serve override
             discipline_override = None
 
-        # Crea il turno usando la strategia configurata
-        total, n_normal, n_bye, n_trio = GaraService.create_round_with_strategy(
-            gara_id, round_number, discipline_override
+        # Create round + advance gara state in one transaction
+        total, n_normal, n_bye, n_trio, tables_assigned = (
+            RoundService.start_next_round(
+                gara_id, round_number, discipline_override
+            )
         )
 
-        # Aggiorna lo stato della gara
-        if gara.status != GaraStatus.PLAYING.value:
-            gara = GaraService.start_playing(gara.id)
-
-        # Ricarica sempre l'oggetto per assicurarsi di lavorare con i dati freschi
+        # Refresh gara to get updated strategy name
         db.session.refresh(gara)
-
-        # Aggiorna il turno corrente DOPO il cambio di stato
-        gara.current_round = round_number
-        db.session.add(gara)
-        # Changes will be committed by transaction decorator
-
-        # Assign tables to new round matches
-        from models.match.table_assignment_service import TableAssignmentService
-        tables_assigned = TableAssignmentService.assign_tables_to_round(gara_id, round_number)
 
         # Messaggio di successo
         strategy_name = gara.matchmaking_strategy.replace("_", " ").title()

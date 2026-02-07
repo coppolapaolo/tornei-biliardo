@@ -111,6 +111,49 @@ class MatchProposalService:
         return ProposalService.accept_proposal(user_id, proposal_id)
 
     @staticmethod
+    @transactional(domain="individual_match")
+    def reject_proposal(proposal_id: int, user_id: int) -> None:
+        """Reject a match proposal invitation.
+
+        Handles both simple rejection (pending invitation) and un-acceptance
+        (already accepted invitation). If the user was the acceptor, reverts
+        the proposal to pending and deletes any created match.
+        """
+        from .models import InvitationStatus
+
+        invitation = ProposalInvitation.query.filter_by(
+            proposal_id=proposal_id, invited_user_id=user_id
+        ).first()
+
+        if not invitation:
+            raise ValueError("Invito non trovato")
+
+        if invitation.status == InvitationStatus.REJECTED:
+            return  # Already rejected, idempotent
+
+        from ..base import utc_now
+
+        invitation.status = InvitationStatus.REJECTED
+        invitation.responded_at = utc_now()
+
+        # If this was the accepted user, un-accept the proposal
+        proposal = invitation.proposal
+        if (
+            proposal.status == ProposalStatus.ACCEPTED
+            and proposal.accepted_by_id == user_id
+        ):
+            proposal.status = ProposalStatus.PENDING
+            proposal.accepted_by_id = None
+            proposal.accepted_at = None
+
+            # Delete any existing match created from this proposal
+            existing_match = IndividualMatch.query.filter_by(
+                proposal_id=proposal_id
+            ).first()
+            if existing_match and existing_match.status == MatchStatus.SCHEDULED.value:
+                db.session.delete(existing_match)
+
+    @staticmethod
     def cancel_proposal(proposal_id: int, user_id: int) -> None:
         """Cancel a proposal."""
         return ProposalService.cancel_proposal(user_id, proposal_id)

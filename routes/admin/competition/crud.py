@@ -13,7 +13,6 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from datetime import datetime
-from models.transaction.manager import transactional
 
 from models import (
     db,
@@ -121,7 +120,6 @@ def _handle_venue_creation(
 @competition_bp.route("/create_standalone", methods=["GET", "POST"])
 @login_required
 @director_or_admin_required
-@transactional(domain="competition")
 def create_gara_standalone():
     """Crea gara standalone (admin o director)"""
     if request.method == "POST":
@@ -236,11 +234,9 @@ def create_gara_standalone():
                 # SSR (Spot Shot Rally) tiebreaker configuration
                 tiebreaker_enabled=tiebreaker_enabled,
                 tiebreaker_until_position=tiebreaker_until_position,
+                # Gara-specific available tables
+                available_tables=available_tables,
             )
-
-            # Set gara-specific available tables
-            if available_tables:
-                gara.set_available_tables(available_tables)
 
             track_gara_create()  # KPI tracking
             flash(f"Gara singola '{name}' creata con successo!", "success")
@@ -304,7 +300,6 @@ def get_strategy_constraints(strategy):
 
 @competition_bp.route("/create", methods=["POST"])
 @login_required
-@transactional(domain="competition")
 def create_gara():
     """Crea nuova gara - Aggiornata per supportare standalone"""
 
@@ -444,11 +439,9 @@ def create_gara():
             tiebreaker_enabled=tiebreaker_enabled,
             tiebreaker_until_position=tiebreaker_until_position,
             classification_system=classification_system,
+            # Gara-specific available tables
+            available_tables=available_tables,
         )
-
-        # Set gara-specific available tables
-        if available_tables:
-            gara.set_available_tables(available_tables)
 
         flash(f"Gara {number} creata con successo!")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
@@ -462,7 +455,6 @@ def create_gara():
 @competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])
 @login_required
 @gara_manager_required
-@transactional(domain="competition")
 def edit_gara(gara_id):
     """Modifica gara"""
     gara = db.session.get(Gara, gara_id)
@@ -483,14 +475,6 @@ def edit_gara(gara_id):
         # Parse tables for gara-specific configuration
         available_tables = Gara.parse_tables_input(tables_input) if tables_input else []
 
-        # Update operational settings (available_tables, location) - always allowed
-        # These are logistical settings that directors need to adjust during competition
-        gara.set_available_tables(available_tables)
-        gara.location = location
-        gara.billiard_hall_id = billiard_hall_id
-        db.session.add(gara)
-
-        # Try to update competition settings (may fail if gara has inscriptions)
         try:
             max_participants = request.form.get("max_participants")
             max_participants = int(max_participants) if max_participants else None
@@ -553,13 +537,13 @@ def edit_gara(gara_id):
                 # SSR (Spot Shot Rally) tiebreaker configuration
                 tiebreaker_enabled=tiebreaker_enabled,
                 tiebreaker_until_position=tiebreaker_until_position,
+                # Operational settings (tables, location)
+                available_tables=available_tables,
             )
 
             flash("Gara aggiornata con successo!")
         except ValueError as ve:
-            # Competition settings couldn't be updated, but operational settings were saved
             flash(str(ve), "error")
-            flash("Nota: le impostazioni tavoli e location sono state aggiornate.", "info")
 
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 

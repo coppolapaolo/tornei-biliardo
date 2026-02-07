@@ -1,8 +1,8 @@
 # HANDOFF: Technical Debt Refactoring
 
 **Data**: 2026-02-06
-**Stato**: FASI 1-3 COMPLETATE, FASE 4 PARZIALE (4.1/4.2 cancellati, 4.3 da pianificare)
-**Valutazione complessiva architettura**: 7.5/10 → 8/10 (post-refactoring)
+**Stato**: FASI 1-3 COMPLETATE, FASE 4 PARZIALE, FASE 5 (anti-pattern @transactional) COMPLETATA
+**Valutazione complessiva architettura**: 7.5/10 → 8.8/10 (post-refactoring)
 
 ---
 
@@ -246,31 +246,37 @@ Per TrioMatch: round-robin logic (2), bonus/completion (2), 3-player confirmatio
 | 4.1 | Protocol interfaces | — | — | — | CANCELLATO (orchestrators = codice morto) |
 | 4.2 | Split UtilityMixin | — | — | — | CANCELLATO (zero uso in produzione) |
 | 4.3 | Estrarre da Match/TrioMatch | ALTO | ALTO | ~200+ | DA PIANIFICARE |
+| 4.4 | Rimozione dead code Match | BASSO | MEDIO | ~68 | DONE |
+| 5.1 | Rimuovere @transactional da route (Type B) | BASSO | ALTO (architettura) | ~20 | DONE (2 route) |
+| 5.2 | Estrarre DB ops da route a service (Type A) | MEDIO | ALTO | ~150 | DONE (10 route) |
+| 5.3 | Spostare mutazioni extra in service (Type C) | MEDIO | MEDIO | ~50 | DONE (7 route) |
 
 ---
 
 ## Findings Aggiuntivi (2026-02-06)
 
 ### Dead Code su Match Model
-7 metodi mai chiamati dall'esterno:
+7 metodi mai chiamati dall'esterno — **RIMOSSI** (~68 LOC):
 - **Tiebreaker** (4 metodi, ~48 LOC): `needs_tiebreaker()`, `has_active_tiebreaker()`, `get_active_tiebreaker()`, `can_start_tiebreaker()` — solo auto-referenziati. Esiste `TiebreakerService` che gestisce la logica a livello gara.
 - **Handicap** (3 metodi, ~20 LOC): `apply_handicap()`, `get_effective_score()`, `get_handicap_info()` — scritti per `MatchmakingOrchestrator` che e' codice morto.
-
-**Azione consigliata**: Valutare rimozione o spostamento in mixin opzionale.
 
 ### Dead Code: MatchmakingOrchestrator e DomainOrchestrator
 Entrambi usati solo in test legacy. `create_round_with_handicaps()` ha un bug (passa kwargs non accettati da `MatchService.create_match()`).
 
 ### Anti-pattern: `@transactional` su Route Handlers
-20+ route hanno `@transactional` direttamente come decoratore della route. Per CLAUDE.md, il decoratore dovrebbe essere solo sui metodi del service layer. Route coinvolte:
-- `routes/admin/venue.py`: 7 route (create, delete, activate, toggle, verify, update_table, upload_photo)
-- `routes/admin/competition/crud.py`: 3 route (create_gara_standalone, create_gara, edit_gara)
-- `routes/admin/competition/rounds.py`: 3 route (start_first_round, amalfi_start_round, start_round_generic)
-- `routes/admin/competition/inscriptions.py`: 1 route (close_inscriptions)
-- `routes/player/proposals.py`: 2 route (accept/reject match proposal)
-- `routes/player/notifications.py`: 3 route (notifications, mark_read, mark_all_read)
+Originariamente 20+ route con `@transactional` diretto. **Tutte 19 risolte** (0 rimaste).
 
-**Azione consigliata**: Spostare le operazioni DB nei service, poi rimuovere `@transactional` dalle route. Richiede creazione di VenueService e NotificationService (se non esistono).
+**RISOLTE — Fase 1 (12 route, Type A/B)**:
+- `routes/admin/venue.py`: 5 route (delete, activate, toggle, verify, update_table) — nuovi metodi in `LocationService`
+- `routes/admin/competition/rounds.py`: 1 route (start_first_round) — gia' delegava a service
+- `routes/admin/competition/inscriptions.py`: 1 route (close_inscriptions) — gia' delegava a service, fix ordine decoratori
+- `routes/player/notifications.py`: 3 route (notifications, mark_read, mark_all_read) — nuovi metodi in `NotificationService`
+- `routes/player/proposals.py`: 2 route (accept/reject) — `MatchProposalService.reject_proposal()` creato
+
+**RISOLTE — Fase 2 (7 route, Type C — mixed service + direct DB ops)**:
+- `routes/admin/venue.py`: 2 route (create_venue, upload_photo) — `business_hours` param aggiunto a `create_billiard_hall()`, nuovo `LocationService.update_venue_photo()`
+- `routes/admin/competition/crud.py`: 3 route (create_gara_standalone, create_gara, edit_gara) — `available_tables` gestito dentro `GaraService.create_gara()` e `update_gara()`
+- `routes/admin/competition/rounds.py`: 2 route (amalfi_start_round, start_round_generic) — nuovo `RoundService.start_next_round()` combina creazione turno + state transition + current_round + table assignment
 
 ---
 

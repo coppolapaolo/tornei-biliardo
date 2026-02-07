@@ -160,6 +160,9 @@ class GaraService:
         # Estrai configurazione strategia se presente
         strategy_config = kwargs.pop("strategy_config", None)
 
+        # Estrai available_tables (list) — va impostato via set_available_tables()
+        available_tables = kwargs.pop("available_tables", None)
+
         gara = Gara(
             number=number,
             name=name,
@@ -205,6 +208,10 @@ class GaraService:
             logger = logging.getLogger(__name__)
             for warning in classification_warnings:
                 logger.warning(f"Gara config warning: {warning}")
+
+        # Set available tables via method (serializes to JSON)
+        if available_tables:
+            gara.set_available_tables(available_tables)
 
         db.session.add(gara)
         db.session.flush()
@@ -258,6 +265,11 @@ class GaraService:
             raise ValueError(
                 "Impossibile modificare la gara: ci sono già delle iscrizioni!"
             )
+
+        # Estrai available_tables (list) — va impostato via set_available_tables()
+        available_tables = kwargs.pop("available_tables", None)
+        if available_tables is not None:
+            gara.set_available_tables(available_tables)
 
         # Aggiorna solo i campi forniti
         for field, value in kwargs.items():

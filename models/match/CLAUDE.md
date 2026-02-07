@@ -117,16 +117,6 @@ complete_set(set_number: int, winner_id: int) -> None
 
 get_match_summary() -> dict
     # Returns sets won by each player, current set, etc.
-
-# Handicap Methods
-apply_handicap(handicap_data: dict) -> None
-    # Apply handicap to match
-
-get_effective_score(player_id: int) -> int
-    # Get score including handicap
-
-get_handicap_info() -> dict
-    # Get handicap details
 ```
 
 **Usage Examples:**

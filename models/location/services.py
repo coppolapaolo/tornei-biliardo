@@ -33,6 +33,7 @@ class LocationService:
         amenities: Optional[List[str]] = None,
         hourly_rate: Optional[float] = None,
         added_by_id: Optional[int] = None,
+        business_hours: Optional[str] = None,
     ) -> BilliardHall:
         """Create a new billiard hall."""
 
@@ -49,6 +50,9 @@ class LocationService:
             hourly_rate=hourly_rate,
             added_by_id=added_by_id,
         )
+
+        if business_hours:
+            hall.business_hours = business_hours
 
         if table_types:
             hall.set_table_types(table_types)
@@ -400,3 +404,61 @@ class LocationService:
             search_query = search_query.filter_by(verified=True)
 
         return search_query.order_by(BilliardHall.name).all()
+
+    @staticmethod
+    @transactional(domain="location")
+    def set_venue_active(venue_id: int, active: bool) -> BilliardHall:
+        """Activate or deactivate a venue."""
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError(f"Sala con id {venue_id} non trovata")
+        venue.is_active = active
+        return venue
+
+    @staticmethod
+    @transactional(domain="location")
+    def set_venue_verified(venue_id: int, verified: bool) -> BilliardHall:
+        """Set venue verification status."""
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError(f"Sala con id {venue_id} non trovata")
+        venue.verified = verified
+        return venue
+
+    @staticmethod
+    @transactional(domain="location")
+    def update_venue_table_numbers(
+        venue_id: int, table_numbers: str
+    ) -> BilliardHall:
+        """Update venue table numbers stored in amenities."""
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError(f"Sala con id {venue_id} non trovata")
+
+        current_amenities = venue.get_amenities()
+        # Remove existing table number entries
+        current_amenities = [
+            a for a in current_amenities if not a.startswith("Tavoli:")
+        ]
+        # Add new table numbers
+        if table_numbers.strip():
+            current_amenities.append(f"Tavoli: {table_numbers}")
+        venue.set_amenities(current_amenities)
+        return venue
+
+    @staticmethod
+    @transactional(domain="location")
+    def update_venue_photo(venue_id: int, photo_db_path: str) -> BilliardHall:
+        """Update venue photo path in amenities."""
+        venue = db.session.get(BilliardHall, venue_id)
+        if not venue:
+            raise ValueError(f"Sala con id {venue_id} non trovata")
+
+        current_amenities = venue.get_amenities()
+        # Remove existing photo entries
+        current_amenities = [
+            a for a in current_amenities if not a.startswith("Foto:")
+        ]
+        current_amenities.append(f"Foto: {photo_db_path}")
+        venue.set_amenities(current_amenities)
+        return venue
