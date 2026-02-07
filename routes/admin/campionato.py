@@ -292,20 +292,13 @@ def _create_playoff_config(
     positions_to: int,
 ) -> None:
     """Helper per creare una configurazione playoff."""
-    from models.playoff.models import PlayoffConfiguration, PlayoffType
-
-    config = PlayoffConfiguration(
+    campionato_service.create_playoff_config(
         campionato_id=campionato_id,
         name=name,
-        playoff_type=PlayoffType.TOP_N,
         max_participants=max_participants,
         positions_from=positions_from,
         positions_to=positions_to,
-        is_active=True,
-        auto_generate=True,
     )
-    db.session.add(config)
-    db.session.commit()
 
 
 @campionato_bp.route("/wizard/cancel", methods=["GET", "POST"])

@@ -962,6 +962,31 @@ class TournamentService(DomainService):
 
         return result
 
+    @staticmethod
+    @transactional(domain="campionato")
+    def create_playoff_config(
+        campionato_id: int,
+        name: str,
+        max_participants: int,
+        positions_from: int,
+        positions_to: int,
+    ) -> Any:
+        """Create a playoff configuration for a campionato."""
+        from models.playoff.models import PlayoffConfiguration, PlayoffType
+
+        config = PlayoffConfiguration(
+            campionato_id=campionato_id,
+            name=name,
+            playoff_type=PlayoffType.TOP_N,
+            max_participants=max_participants,
+            positions_from=positions_from,
+            positions_to=positions_to,
+            is_active=True,
+            auto_generate=True,
+        )
+        db.session.add(config)
+        return config
+
 
 # -----------------------------
 # Funzione *pura* per lo stato derivato del Campionato

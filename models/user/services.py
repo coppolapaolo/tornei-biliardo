@@ -303,6 +303,20 @@ class UserService:
         return User.query.filter_by(role=role).all()
 
     @staticmethod
+    @transactional(domain="user")
+    def toggle_gamification_override(user_id: int) -> User:
+        """Toggle gamification_override flag for a user.
+
+        Raises:
+            ValueError: If user not found.
+        """
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("Utente non trovato")
+        user.gamification_override = not user.gamification_override
+        return user
+
+    @staticmethod
     def request_director_promotion(
         user_id: int, notes: Optional[str] = None
     ) -> DirectorRequest:

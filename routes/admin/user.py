@@ -116,31 +116,25 @@ def reject_director_request(req_id):
 @admin_required
 def process_director_request(req_id):
     """Process director request (approve or reject based on status parameter)"""
-    from models.user.services import DirectorRequestService
+    from models.user.permission_service import UserPermissionService
     from flask_login import current_user
 
-    try:
-        status = request.form.get("status")
-        admin_notes = request.form.get("admin_notes", "")
+    status = request.form.get("status")
+    admin_notes = request.form.get("admin_notes", "") or None
+    approve = status == "approved"
 
-        approve = status == "approved"
-
+    def action():
         admin_user = db.session.get(User, current_user.id)
-        processed_request = DirectorRequestService.process_request(
-            req_id, admin_user, approve=approve
+        UserPermissionService.process_director_request(
+            req_id, admin_user, approve=approve, notes=admin_notes
         )
 
-        # Update admin notes if provided
-        if admin_notes:
-            processed_request.notes = admin_notes
-            db.session.commit()
-
-        flash("Richiesta processata con successo.")
-    except (PermissionError, ValueError) as e:
-        db.session.rollback()
-        flash(str(e), "error")
-
-    return redirect(url_for("admin.user.director_requests"))
+    return handle_service_action(
+        action=action,
+        redirect_url=url_for("admin.user.director_requests"),
+        success_message="Richiesta processata con successo.",
+        error_prefix=None,
+    )
 
 
 @user_bp.route("/user/<int:user_id>/demote_director", methods=["POST"])
@@ -177,24 +171,11 @@ def promote_director(user_id):
 @admin_required
 def toggle_gamification_override(user_id):
     """Toggle gamification_override for a user (admin bypass)"""
-    try:
-        user = db.session.get(User, user_id)
-        if not user:
-            flash("Utente non trovato.", "error")
-            return redirect(url_for("admin.user.users_list"))
-
-        # Toggle the override
-        user.gamification_override = not user.gamification_override
-        db.session.commit()
-
-        status = "attivato" if user.gamification_override else "disattivato"
-        flash(f"Gamification Override {status} per {user.username}.", "success")
-
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Errore: {str(e)}", "error")
-
-    return redirect(url_for("admin.user.user_detail", user_id=user_id))
+    return handle_service_action(
+        action=lambda: UserService.toggle_gamification_override(user_id),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message="Gamification Override aggiornato.",
+    )
 
 
 @user_bp.route("/user/<int:user_id>/set-password", methods=["POST"])

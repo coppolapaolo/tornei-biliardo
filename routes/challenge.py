@@ -512,56 +512,39 @@ def edit_challenge(challenge_id):
             "challenge/create.html", challenge=challenge, edit_mode=True
         )
 
-    try:
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form
-            # Handle image upload if provided
-            image_file = request.files.get("image")
-            if image_file:
-                image_filename = save_challenge_image(image_file)
-                if image_filename:
-                    # Delete old image
-                    if challenge.image_filename:
-                        delete_challenge_image(challenge.image_filename)
-                    # Update with new image path
-                    from utils.image_paths import ImagePathManager
+    from models.challenge.services import ChallengeService
+    from utils.route_helpers import handle_ajax_service_action
 
-                    challenge.image_path = ImagePathManager.get_challenge_db_path(
-                        image_filename
-                    )
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form
 
-        # Update challenge fields
-        challenge.description = data["description"]
-        challenge.is_active = data.get("is_active", "false").lower() == "true"
+    # Handle image upload if provided (filesystem concern, before service call)
+    new_image_path = None
+    if not request.is_json:
+        image_file = request.files.get("image")
+        if image_file:
+            image_filename = save_challenge_image(image_file)
+            if image_filename:
+                if challenge.image_filename:
+                    delete_challenge_image(challenge.image_filename)
+                from utils.image_paths import ImagePathManager
+                new_image_path = ImagePathManager.get_challenge_db_path(image_filename)
 
-        db.session.commit()
+    description = data["description"]
+    is_active = data.get("is_active", "false").lower() == "true"
 
-        if request.is_json:
-            return jsonify(
-                {
-                    "success": True,
-                    "challenge_id": challenge.id,
-                    "message": "Challenge updated successfully",
-                }
-            )
-        else:
-            flash("Challenge updated successfully!", "success")
-            return redirect(
-                url_for("challenge.challenge_detail", challenge_id=challenge.id)
-            )
-
-    except ValueError as e:
-        db.session.rollback()
-        error_msg = f"Error updating challenge: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return render_template(
-                "challenge/create.html", challenge=challenge, edit_mode=True
-            )
+    return handle_ajax_service_action(
+        action=lambda: ChallengeService.update_challenge(
+            challenge_id=challenge_id,
+            description=description,
+            is_active=is_active,
+            image_path=new_image_path,
+        ),
+        redirect_url=url_for("challenge.challenge_detail", challenge_id=challenge.id),
+        success_message="Challenge updated successfully",
+    )
 
 
 # Error handlers
