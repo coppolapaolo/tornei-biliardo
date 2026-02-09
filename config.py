@@ -30,6 +30,9 @@ class Config:
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER") or f"Campionato Biliardo <{MAIL_USERNAME}>"
 
+    # Error tracking (GlitchTip/Sentry)
+    GLITCHTIP_DSN = os.environ.get("GLITCHTIP_DSN")
+
     # App Info
     APP_NAME = "Campionato Biliardo"
     VERSION = "1.0.0"
@@ -70,6 +73,8 @@ class TestingConfig(Config):
     """Configurazione per test"""
 
     TESTING = True
+    GLITCHTIP_DSN = None
+    WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
     ADMIN_USERNAME = "admin"
