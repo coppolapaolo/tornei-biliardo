@@ -33,15 +33,15 @@
     gap: 12px;
     padding: 16px 20px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: #fff;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
-                0 0 20px rgba(99, 102, 241, 0.2);
+    background: linear-gradient(135deg, var(--toast-bg-start) 0%, var(--toast-bg-end) 100%);
+    color: var(--toast-text);
+    box-shadow: 0 10px 40px var(--shadow-md),
+                0 0 20px var(--toast-glow);
     pointer-events: auto;
     min-width: 300px;
     max-width: 400px;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--toast-border);
 
     /* Entry animation */
     animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
@@ -149,8 +149,8 @@
    ======================================== */
 
 .gamification-toast.xp-gain {
-    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-    border-left: 4px solid #4ade80;
+    background: linear-gradient(135deg, var(--xp-bg-start) 0%, var(--toast-bg-end) 100%);
+    border-left: 4px solid var(--xp-green);
 }
 
 /* Legacy toast-icon support (can be removed if not needed) */
@@ -169,7 +169,7 @@
 .xp-amount {
     font-size: 24px;
     font-weight: 700;
-    color: #4ade80;
+    color: var(--xp-green);
     animation: xpCountUp 0.8s ease-out;
 }
 
@@ -189,11 +189,11 @@
    ======================================== */
 
 .gamification-toast.level-up {
-    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #4c1d95 100%);
+    background: linear-gradient(135deg, var(--level-purple-dark) 0%, var(--level-purple) 50%, var(--level-purple-dark) 100%);
     background-size: 200% 200%;
     animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
                levelUpGlow 2s ease-in-out infinite;
-    border: 2px solid #a78bfa;
+    border: 2px solid var(--level-purple-light);
     box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4),
                 0 0 30px rgba(167, 139, 250, 0.3);
 }
@@ -233,7 +233,7 @@
 .level-number {
     font-size: 32px;
     font-weight: 800;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    background: linear-gradient(135deg, var(--level-gold-start) 0%, var(--level-gold-end) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -251,26 +251,26 @@
    ======================================== */
 
 .gamification-toast.achievement {
-    background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-    border-left: 4px solid #fbbf24;
+    background: linear-gradient(135deg, var(--achievement-common-start) 0%, var(--achievement-common-end) 100%);
+    border-left: 4px solid var(--achievement-badge-bg);
 }
 
 .gamification-toast.achievement.rare {
-    background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%);
-    border: 2px solid #60a5fa;
+    background: linear-gradient(135deg, var(--achievement-rare-start) 0%, var(--achievement-rare-end) 100%);
+    border: 2px solid var(--achievement-rare-border);
 }
 
 .gamification-toast.achievement.epic {
-    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
-    border: 2px solid #a78bfa;
+    background: linear-gradient(135deg, var(--achievement-epic-start) 0%, var(--achievement-epic-end) 100%);
+    border: 2px solid var(--achievement-epic-border);
 }
 
 .gamification-toast.achievement.legendary {
-    background: linear-gradient(135deg, #78350f 0%, #f59e0b 50%, #78350f 100%);
+    background: linear-gradient(135deg, var(--achievement-legendary-start) 0%, var(--achievement-legendary-mid) 50%, var(--achievement-legendary-start) 100%);
     background-size: 200% 200%;
     animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
                legendaryShine 3s ease-in-out infinite;
-    border: 2px solid #fbbf24;
+    border: 2px solid var(--achievement-badge-bg);
 }
 
 @keyframes legendaryShine {
@@ -304,7 +304,7 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    background: linear-gradient(135deg, var(--achievement-badge-bg) 0%, var(--level-gold-end) 100%);
     box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
 }
 
@@ -313,8 +313,8 @@
    ======================================== */
 
 .gamification-toast.streak {
-    background: linear-gradient(135deg, #7c2d12 0%, #ea580c 100%);
-    border-left: 4px solid #fb923c;
+    background: linear-gradient(135deg, var(--streak-red) 0%, var(--streak-orange) 100%);
+    border-left: 4px solid var(--streak-orange-light);
 }
 
 .gamification-toast.streak .toast-icon {
@@ -330,7 +330,7 @@
 .streak-count {
     font-size: 28px;
     font-weight: 700;
-    color: #fbbf24;
+    color: var(--streak-gold);
 }
 
 .streak-freeze {
@@ -338,10 +338,10 @@
     align-items: center;
     gap: 4px;
     padding: 4px 10px;
-    background: rgba(59, 130, 246, 0.3);
+    background: var(--streak-freeze-bg);
     border-radius: 20px;
     font-size: 14px;
-    color: #93c5fd;
+    color: var(--streak-freeze-text);
     animation: freezeGlow 1s ease-in-out infinite alternate;
 }
 
@@ -364,7 +364,7 @@
 .toast-title {
     font-size: 14px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--toast-text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -372,12 +372,12 @@
 .toast-message {
     font-size: 16px;
     font-weight: 500;
-    color: #fff;
+    color: var(--toast-text);
 }
 
 .toast-subtitle {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--toast-text-dim);
 }
 
 /* ========================================
@@ -409,7 +409,7 @@
 
 @keyframes counterPop {
     0% { transform: scale(1); }
-    50% { transform: scale(1.2); color: #4ade80; }
+    50% { transform: scale(1.2); color: var(--xp-green); }
     100% { transform: scale(1); }
 }
 
@@ -427,7 +427,7 @@
 
 .xp-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+    background: linear-gradient(90deg, var(--xp-green) 0%, var(--xp-green-mid) 50%, var(--xp-green-dark) 100%);
     border-radius: 12px;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -464,7 +464,7 @@
 
 .achievement-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px var(--shadow-sm);
 }
 
 .achievement-card.locked {
@@ -506,8 +506,8 @@
 }
 
 @keyframes fireGlow {
-    0% { filter: drop-shadow(0 0 5px #f97316); }
-    100% { filter: drop-shadow(0 0 15px #fb923c); }
+    0% { filter: drop-shadow(0 0 5px var(--streak-fire-start)); }
+    100% { filter: drop-shadow(0 0 15px var(--streak-orange-light)); }
 }
 
 /* ========================================
@@ -522,15 +522,15 @@
     height: 40px;
     padding: 0 12px;
     border-radius: 20px;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    color: #fff;
+    background: linear-gradient(135deg, var(--badge-indigo-start) 0%, var(--badge-indigo-end) 100%);
+    color: var(--toast-text);
     font-weight: 700;
     font-size: 18px;
     box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
 }
 
 .level-badge.milestone {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    background: linear-gradient(135deg, var(--level-gold-start) 0%, var(--level-gold-end) 100%);
     animation: milestonePulse 2s ease-in-out infinite;
 }
 

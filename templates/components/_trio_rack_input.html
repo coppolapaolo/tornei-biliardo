@@ -131,7 +131,7 @@
                         <small>{{ _('Come direttore puoi validare direttamente') }}</small>
                     </p>
                     <button class="btn btn-success btn-lg"
-                            onclick="confirmTrioResult()">
+                            onclick="confirmTrioResult(this)">
                         <i class="fas fa-check-double"></i> {{ _('Valida risultato') }}
                     </button>
                 {% elif user_is_player %}
@@ -153,7 +153,7 @@
                     {% else %}
                         <p class="mb-2 mt-2">{{ _('Conferma il risultato per completare la partita') }}</p>
                         <button class="btn btn-success btn-lg"
-                                onclick="confirmTrioResult()">
+                                onclick="confirmTrioResult(this)">
                             <i class="fas fa-check"></i> {{ _('Conferma risultato') }}
                         </button>
                     {% endif %}
@@ -186,14 +186,14 @@
                 <div class="row g-2 mb-3">
                     <div class="col-6">
                         <button class="btn btn-primary w-100 py-3"
-                                onclick="addTrioRackWin({{ current_p1.id }})">
+                                onclick="addTrioRackWin({{ current_p1.id }}, this)">
                             <i class="fas fa-plus"></i><br>
                             <span class="fw-bold">{{ current_p1.username }}</span>
                         </button>
                     </div>
                     <div class="col-6">
                         <button class="btn btn-primary w-100 py-3"
-                                onclick="addTrioRackWin({{ current_p2.id }})">
+                                onclick="addTrioRackWin({{ current_p2.id }}, this)">
                             <i class="fas fa-plus"></i><br>
                             <span class="fw-bold">{{ current_p2.username }}</span>
                         </button>
@@ -315,7 +315,7 @@
                     </div>
                     {% if rack.can_undo and (user_can_manage or user_is_player) and not trio.is_completed %}
                     <button class="btn btn-outline-danger btn-sm"
-                            onclick="removeTrioLastRack()"
+                            onclick="removeTrioLastRack(this)"
                             title="{{ _('Annulla ultimo rack') }}">
                         <i class="fas fa-undo"></i>
                     </button>

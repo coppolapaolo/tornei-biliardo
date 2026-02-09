@@ -195,7 +195,7 @@
 
             <!-- Valida Risultato (only when distance reached but not yet validated/completed and not player-validated) -->
             {% if match.is_at_distance and not match.validated_by_admin and not is_finished and not match.is_player_validated %}
-            <button class="btn btn-outline-success" onclick="validateMatchQuick({{ match.id }})" title="{{ _('Valida Risultato') }}">
+            <button class="btn btn-outline-success" onclick="validateMatchQuick({{ match.id }}, this)" title="{{ _('Valida Risultato') }}">
                 <i class="fas fa-check-circle"></i>
             </button>
             {% endif %}
@@ -208,12 +208,12 @@
             {% if is_finished or has_scores %}
                 {% if match.is_trio and match.trio_match %}
                 {# Trio: call resetTrioQuick with trio ID #}
-                <button class="btn btn-outline-danger" onclick="resetTrioQuick({{ match.trio_match.id }})">
+                <button class="btn btn-outline-danger" onclick="resetTrioQuick({{ match.trio_match.id }}, this)">
                     <i class="fas fa-undo"></i>
                 </button>
                 {% else %}
                 {# Normal match: call resetMatchQuick with match ID #}
-                <button class="btn btn-outline-danger" onclick="resetMatchQuick({{ match.id }})">
+                <button class="btn btn-outline-danger" onclick="resetMatchQuick({{ match.id }}, this)">
                     <i class="fas fa-undo"></i>
                 </button>
                 {% endif %}

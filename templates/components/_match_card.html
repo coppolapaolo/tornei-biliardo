@@ -180,7 +180,7 @@
 
             {# Validate button (if distance reached but not validated and not player-validated) #}
             {% if match.is_at_distance and not match.validated_by_admin and not match.is_player_validated %}
-            <button class="btn btn-success" style="min-height: 44px;" onclick="validateMatchQuick({{ match.id }})">
+            <button class="btn btn-success" style="min-height: 44px;" onclick="validateMatchQuick({{ match.id }}, this)">
               <i class="fas fa-check-circle"></i>
             </button>
             {% endif %}
@@ -194,11 +194,11 @@
           {# Reset button (if completed or has scores) #}
           {% if is_finished or has_scores %}
             {% if match.is_trio and match.trio_match %}
-            <button class="btn btn-outline-danger" style="min-height: 44px;" onclick="resetTrioQuick({{ match.trio_match.id }})">
+            <button class="btn btn-outline-danger" style="min-height: 44px;" onclick="resetTrioQuick({{ match.trio_match.id }}, this)">
               <i class="fas fa-undo"></i>
             </button>
             {% else %}
-            <button class="btn btn-outline-danger" style="min-height: 44px;" onclick="resetMatchQuick({{ match.id }})">
+            <button class="btn btn-outline-danger" style="min-height: 44px;" onclick="resetMatchQuick({{ match.id }}, this)">
               <i class="fas fa-undo"></i>
             </button>
             {% endif %}

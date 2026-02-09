@@ -24,7 +24,7 @@
 
 .table-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px var(--shadow-sm);
 }
 
 .table-btn:active:not(:disabled) {
@@ -32,30 +32,30 @@
 }
 
 .table-btn-current {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    background-color: var(--tb-primary);
+    border-color: var(--tb-primary);
     color: white;
 }
 
 .table-btn-occupied {
-    background-color: #fff3cd;
-    border-color: #ffc107;
-    color: #856404;
+    background-color: var(--tb-warning-light);
+    border-color: var(--tb-warning);
+    color: var(--tb-warning-text);
 }
 
 .table-btn-occupied:hover {
-    background-color: #ffc107;
+    background-color: var(--tb-warning);
     color: #000;
 }
 
 .table-btn-available {
     background-color: white;
-    border-color: #198754;
-    color: #198754;
+    border-color: var(--tb-success);
+    color: var(--tb-success);
 }
 
 .table-btn-available:hover {
-    background-color: #198754;
+    background-color: var(--tb-success);
     color: white;
 }
 
@@ -66,6 +66,33 @@
 
 .table-name {
     font-size: 0.9rem;
+}
+
+/* ========================================
+   Loading States
+   ======================================== */
+
+.btn-loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-loading .spinner-border {
+    vertical-align: text-bottom;
+}
+
+.modal-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: inherit;
 }
 
 /* Responsive adjustments */

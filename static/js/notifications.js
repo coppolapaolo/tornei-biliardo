@@ -256,3 +256,87 @@ function confirmLink(link, message, options = {}) {
 function confirmAction(message, action, options = {}) {
   showConfirm(message, action, options);
 }
+
+// === LOADING STATES ===
+
+/**
+ * Disabilita un bottone e mostra uno spinner inline.
+ * Ritorna una funzione restore() per ripristinare lo stato originale.
+ * @param {HTMLElement} button - Il bottone (o qualsiasi elemento clickabile)
+ * @returns {function} restore - Chiamare per ripristinare il bottone
+ */
+function withLoading(button) {
+  if (!button) return function() {};
+
+  var children = Array.from(button.childNodes).map(function(n) { return n.cloneNode(true); });
+  var originalDisabled = button.disabled;
+
+  button.disabled = true;
+  button.classList.add('btn-loading');
+
+  // Insert spinner before existing content
+  var spinner = document.createElement('span');
+  spinner.className = 'spinner-border spinner-border-sm me-1';
+  spinner.setAttribute('role', 'status');
+  button.prepend(spinner);
+
+  return function restore() {
+    // Restore original children
+    while (button.firstChild) button.removeChild(button.firstChild);
+    children.forEach(function(child) { button.appendChild(child); });
+    button.disabled = originalDisabled;
+    button.classList.remove('btn-loading');
+  };
+}
+
+/**
+ * Wrapper per fetch che gestisce loading automaticamente.
+ * @param {string} url - URL della richiesta
+ * @param {object} options - Opzioni per fetch
+ * @param {HTMLElement} [triggerElement] - Bottone che ha attivato l'azione
+ * @returns {Promise<Response>} - La response del fetch
+ */
+function fetchWithLoading(url, options, triggerElement) {
+  var restore = triggerElement ? withLoading(triggerElement) : function() {};
+
+  return fetch(url, options)
+    .catch(function(error) {
+      showError(error.message);
+      throw error;
+    })
+    .finally(function() {
+      restore();
+    });
+}
+
+/**
+ * Mostra un overlay di caricamento su un modale.
+ * @param {string|HTMLElement} modalSelector - Selettore CSS o elemento del modale
+ * @returns {function} remove - Chiamare per rimuovere l'overlay
+ */
+function showModalLoading(modalSelector) {
+  var modalEl = typeof modalSelector === 'string'
+    ? document.querySelector(modalSelector)
+    : modalSelector;
+  if (!modalEl) return function() {};
+
+  var modalBody = modalEl.querySelector('.modal-body') || modalEl.querySelector('.modal-content');
+  if (!modalBody) return function() {};
+
+  // Ensure relative positioning for the overlay
+  var originalPosition = modalBody.style.position;
+  modalBody.style.position = 'relative';
+
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-loading-overlay';
+  var spinnerEl = document.createElement('div');
+  spinnerEl.className = 'spinner-border text-primary';
+  spinnerEl.setAttribute('role', 'status');
+  overlay.appendChild(spinnerEl);
+  modalBody.appendChild(overlay);
+
+  return function remove() {
+    overlay.remove();
+    modalBody.style.position = originalPosition;
+  };
+}

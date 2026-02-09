@@ -47,15 +47,15 @@
             </td>
             <td>
               {% if ach.difficulty.value == 'bronze' %}
-                <span class="badge" style="background-color: #cd7f32;">Bronze</span>
+                <span class="badge badge-bronze">Bronze</span>
               {% elif ach.difficulty.value == 'silver' %}
-                <span class="badge" style="background-color: #c0c0c0; color: #333;">Silver</span>
+                <span class="badge badge-silver">Silver</span>
               {% elif ach.difficulty.value == 'gold' %}
-                <span class="badge" style="background-color: #ffd700; color: #333;">Gold</span>
+                <span class="badge badge-gold">Gold</span>
               {% elif ach.difficulty.value == 'platinum' %}
-                <span class="badge" style="background-color: #e5e4e2; color: #333;">Platinum</span>
+                <span class="badge badge-platinum">Platinum</span>
               {% elif ach.difficulty.value == 'diamond' %}
-                <span class="badge" style="background-color: #b9f2ff; color: #333;">Diamond</span>
+                <span class="badge badge-diamond">Diamond</span>
               {% endif %}
             </td>
             <td><span class="badge bg-warning text-dark">{{ ach.xp_reward }}</span></td>

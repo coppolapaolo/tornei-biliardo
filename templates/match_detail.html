@@ -188,7 +188,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
 <script>
     // TRIO MATCH - Add rack win for trio matches
     {% if match.is_trio and match.trio_match %}
-    function addTrioRackWin(winnerId) {
+    function addTrioRackWin(winnerId, btn) {
         // Player endpoint has priority (fairness: directors who are players use player flow)
         {% if user_is_player %}
         const trioEndpoint = `/player/match/{{ match.id }}/trio/add_rack`;
@@ -196,6 +196,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/add_rack`;
         {% endif %}
 
+        const restore = withLoading(btn);
         fetch(trioEndpoint, {
             method: 'POST',
             headers: {
@@ -209,15 +210,17 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante l'aggiunta del rack al trio")| tojson }});
+        restore();
             });
     }
 
-    function removeTrioLastRack() {
+    function removeTrioLastRack(btn) {
         // Player endpoint has priority (fairness: directors who are players use player flow)
         {% if user_is_player %}
         const trioEndpoint = `/player/match/{{ match.id }}/trio/remove_rack`;
@@ -225,6 +228,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/remove_rack`;
         {% endif %}
 
+        const restore = withLoading(btn);
         fetch(trioEndpoint, {
             method: 'POST',
             headers: {
@@ -238,15 +242,17 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante la rimozione del rack")| tojson }});
+        restore();
             });
     }
 
-    function confirmTrioResult() {
+    function confirmTrioResult(btn) {
         // Player endpoint has priority (fairness: directors who are players use player flow)
         {% if user_is_player %}
         const trioEndpoint = `/player/match/{{ match.id }}/trio/confirm`;
@@ -254,6 +260,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         const trioEndpoint = `/admin/gara/trio/{{ match.trio_match.id }}/confirm`;
         {% endif %}
 
+        const restore = withLoading(btn);
         fetch(trioEndpoint, {
             method: 'POST',
             headers: {
@@ -267,11 +274,13 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante la conferma del risultato")| tojson }});
+        restore();
             });
     }
 
@@ -308,7 +317,8 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
     {% endif %}
 
     // NEW SIMPLIFIED UX - Add/Remove Racks with validation at end
-    function addRack(winnerId) {
+    function addRack(winnerId, btn) {
+        const restore = withLoading(btn);
         fetch(`/player/match/{{ match.id }}/racks/add`, {
             method: 'POST',
             headers: {
@@ -322,15 +332,18 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante l'aggiunta del rack")| tojson }});
+        restore();
             });
     }
 
-    function removeRack(playerId) {
+    function removeRack(playerId, btn) {
+        const restore = withLoading(btn);
         fetch(`/player/match/{{ match.id }}/racks/remove`, {
             method: 'POST',
             headers: {
@@ -344,15 +357,18 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")|tojson }}));
+                    restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante la rimozione del rack")| tojson }});
+        restore();
             });
     }
 
-    function confirmResult() {
+    function confirmResult(btn) {
+        const restore = withLoading(btn);
         fetch(`/player/match/{{ match.id }}/confirm`, {
             method: 'POST',
             headers: {
@@ -366,16 +382,19 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     window.location.href = '/dashboard';
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile confermare il risultato")|tojson }}));
+                    restore();
                 }
             })
             .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante la conferma")| tojson }});
+        restore();
             });
     }
 
-    function rejectResult() {
+    function rejectResult(btn) {
         showConfirm({{ _("Sei sicuro di voler rifiutare il risultato? L'ultimo rack verrà rimosso.")| tojson }}, () => {
+            const restore = withLoading(btn);
             fetch(`/player/match/{{ match.id }}/reject`, {
                 method: 'POST',
                 headers: {
@@ -388,17 +407,20 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                         location.reload();
                     } else {
                         showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rifiutare il risultato")|tojson }}));
+                        restore();
                     }
                 })
                 .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante il rifiuto")| tojson }});
+        restore();
                 });
         });
     }
 
-    function forfeitMatch() {
+    function forfeitMatch(btn) {
         showConfirm({{ _("Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita dalla gara secondo la policy impostata.")| tojson }}, () => {
+            const restore = withLoading(btn);
             fetch(`/player/match/{{ match.id }}/forfeit`, {
                 method: 'POST',
                 headers: {
@@ -412,18 +434,21 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                         location.reload();
                     } else {
                         showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile dichiarare forfait")|tojson }}));
+                        restore();
                     }
                 })
                 .catch (error => {
         console.error('Error:', error);
         showError({{ _("Errore durante la dichiarazione di forfait")| tojson }});
+        restore();
                 });
         });
     }
 
     // === MULTI-SET MATCH FUNCTIONS ===
     {% if match.is_multi_set %}
-    function addSetRackWin(winnerId) {
+    function addSetRackWin(winnerId, btn) {
+        const restore = withLoading(btn);
         fetch(`/admin/match/{{ match.id }}/set/add_rack`, {
             method: 'POST',
             headers: {
@@ -437,16 +462,19 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Errore sconosciuto")|tojson }}));
+                    restore();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _("Errore durante l'aggiunta del rack al set")|tojson }});
+                restore();
             });
     }
 
-    function removeSetRack(playerId) {
+    function removeSetRack(playerId, btn) {
         showConfirm({{ _("Rimuovere l'ultimo rack dal set?")|tojson }}, () => {
+            const restore = withLoading(btn);
             fetch(`/admin/match/{{ match.id }}/set/remove_rack`, {
                 method: 'POST',
                 headers: {
@@ -460,16 +488,19 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                         location.reload();
                     } else {
                         showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile rimuovere il rack")|tojson }}));
+                        restore();
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     showError({{ _("Errore durante la rimozione del rack")|tojson }});
+                    restore();
                 });
         });
     }
 
-    function startNextSet() {
+    function startNextSet(btn) {
+        const restore = withLoading(btn);
         fetch(`/admin/match/{{ match.id }}/start-next-set`, {
             method: 'POST',
             headers: {
@@ -482,11 +513,13 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                     location.reload();
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile iniziare il nuovo set")|tojson }}));
+                    restore();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _("Errore durante l'avvio del nuovo set")|tojson }});
+                restore();
             });
     }
     {% endif %}

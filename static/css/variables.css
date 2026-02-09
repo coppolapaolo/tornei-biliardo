@@ -1,0 +1,99 @@
+/* ========================================
+   CSS Custom Properties (Design Tokens)
+   ========================================
+   Single source of truth for all colors.
+   Grouped by semantic domain.
+   ======================================== */
+
+:root {
+  /* === Bootstrap overrides === */
+  --tb-primary: #0d6efd;
+  --tb-success: #198754;
+  --tb-warning: #ffc107;
+  --tb-warning-light: #fff3cd;
+  --tb-warning-text: #856404;
+
+  /* === Gamification: Toast base === */
+  --toast-bg-start: #1a1a2e;
+  --toast-bg-end: #16213e;
+  --toast-text: #fff;
+  --toast-text-muted: rgba(255, 255, 255, 0.8);
+  --toast-text-dim: rgba(255, 255, 255, 0.6);
+  --toast-border: rgba(255, 255, 255, 0.1);
+  --toast-glow: rgba(99, 102, 241, 0.2);
+
+  /* === Gamification: XP === */
+  --xp-green: #4ade80;
+  --xp-green-mid: #22c55e;
+  --xp-green-dark: #16a34a;
+  --xp-bg-start: #0f3460;
+
+  /* === Gamification: Level Up === */
+  --level-purple-dark: #4c1d95;
+  --level-purple: #7c3aed;
+  --level-purple-light: #a78bfa;
+  --level-gold-start: #fbbf24;
+  --level-gold-end: #f59e0b;
+
+  /* === Gamification: Achievements === */
+  --achievement-common-start: #064e3b;
+  --achievement-common-end: #047857;
+  --achievement-rare-start: #1e3a5f;
+  --achievement-rare-end: #3b82f6;
+  --achievement-rare-border: #60a5fa;
+  --achievement-epic-start: #4c1d95;
+  --achievement-epic-end: #7c3aed;
+  --achievement-epic-border: #a78bfa;
+  --achievement-legendary-start: #78350f;
+  --achievement-legendary-mid: #f59e0b;
+  --achievement-badge-bg: #fbbf24;
+
+  /* === Gamification: Streaks === */
+  --streak-red: #7c2d12;
+  --streak-orange: #ea580c;
+  --streak-orange-light: #fb923c;
+  --streak-fire-start: #f97316;
+  --streak-gold: #fbbf24;
+  --streak-freeze-bg: rgba(59, 130, 246, 0.3);
+  --streak-freeze-text: #93c5fd;
+
+  /* === Gamification: Level Badge === */
+  --badge-indigo-start: #4f46e5;
+  --badge-indigo-end: #7c3aed;
+
+  /* === Medal colors (admin achievements) === */
+  --medal-bronze: #cd7f32;
+  --medal-silver: #c0c0c0;
+  --medal-gold: #ffd700;
+  --medal-platinum: #e5e4e2;
+  --medal-diamond: #b9f2ff;
+  --medal-text-dark: #333;
+
+  /* === Streak highlight gradient === */
+  --streak-highlight-start: #ff9800;
+  --streak-highlight-end: #ff5722;
+
+  /* === Shadows === */
+  --shadow-sm: rgba(0, 0, 0, 0.2);
+  --shadow-md: rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Medal Badge Utility Classes
+   (replaces inline styles in templates)
+   ======================================== */
+
+.badge-bronze { background-color: var(--medal-bronze); color: #fff; }
+.badge-silver { background-color: var(--medal-silver); color: var(--medal-text-dark); }
+.badge-gold   { background-color: var(--medal-gold);   color: var(--medal-text-dark); }
+.badge-platinum { background-color: var(--medal-platinum); color: var(--medal-text-dark); }
+.badge-diamond  { background-color: var(--medal-diamond);  color: var(--medal-text-dark); }
+
+/* ========================================
+   Streak Highlight Card
+   (replaces inline gradient in streaks.html)
+   ======================================== */
+
+.streak-highlight-gradient {
+  background: linear-gradient(135deg, var(--streak-highlight-start) 0%, var(--streak-highlight-end) 100%);
+}

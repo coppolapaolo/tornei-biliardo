@@ -72,7 +72,7 @@
         <small><i class="fas fa-check-circle"></i> {{ _('Tutti gli spareggi risolti! Classifica finale pronta.')
           }}</small>
       </div>
-      <button class="btn btn-success btn-lg w-100" onclick="terminateGara({{ gara.id }})">
+      <button class="btn btn-success btn-lg w-100" onclick="terminateGara({{ gara.id }}, this)">
         <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
       </button>
       <small class="text-muted d-block text-center mt-2">
@@ -278,7 +278,7 @@
               {% if can_edit_ssr %}
               <div class="mt-2 text-end">
                 <button type="button" class="btn btn-sm btn-warning"
-                  onclick='saveSsrGroup({{ gara.id }}, {{ group.position }})'>
+                  onclick='saveSsrGroup({{ gara.id }}, {{ group.position }}, this)'>
                   <i class="fas fa-save"></i> {{ _('Salva') }}
                 </button>
               </div>
@@ -662,7 +662,7 @@
         </div>
 
         <!-- Rimuovi tavolo -->
-        <button class="btn btn-outline-danger w-100" onclick="selectTableFromModal(null)">
+        <button class="btn btn-outline-danger w-100" onclick="selectTableFromModal(null, this)">
           <i class="fas fa-times-circle"></i> {{ _('Rimuovi Tavolo') }}
         </button>
       </div>
@@ -775,7 +775,8 @@
       "tieFor": {{ _("Pari merito per il") | tojson }},
       "place": {{ _("posto") | tojson }},
       "ssrPoints": {{ _("Punti SSR") | tojson }},
-      "swapTitle": {{ _("Click per scambiare con match occupante") | tojson }}
+      "swapTitle": {{ _("Click per scambiare con match occupante") | tojson }},
+      "tablePrefix": {{ _("Tavolo") | tojson }}
     }
   }
 </script>
@@ -840,8 +841,9 @@
     });
   }
 
-  function terminateGara(garaId) {
+  function terminateGara(garaId, btn) {
     showConfirm(GARA_CONFIG.i18n.confirmTerminate, () => {
+      const restore = withLoading(btn);
       fetch(`/admin/gara/${garaId}/terminate`, {
         method: 'POST',
         headers: {
@@ -853,22 +855,25 @@
           if (data.success) {
             location.reload();
           } else if (data.needs_tiebreaker) {
-            // Show message to use SSR workflow instead
             showInfo(data.message || GARA_CONFIG.i18n.infoSsrStart);
+            restore();
           } else {
             showError(GARA_CONFIG.i18n.errorTermination + ' ' + (data.error || data.message));
+            restore();
           }
         })
         .catch(error => {
           console.error('Error:', error);
           showError(GARA_CONFIG.i18n.errorTerminationWait);
+          restore();
         });
     });
   }
 
-  function startSsr(garaId) {
+  function startSsr(garaId, btn) {
     const confirmMsg = GARA_CONFIG.i18n.confirmStartSsr;
     showConfirm(confirmMsg, () => {
+      const restore = withLoading(btn);
       fetch(`/admin/gara/${garaId}/start_ssr`, {
         method: 'POST',
         headers: {
@@ -882,10 +887,12 @@
           location.reload();
         } else {
           showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+          restore();
         }
       }).catch(error => {
         console.error('Fetch error:', error);
         showError(GARA_CONFIG.i18n.errorSsrStart);
+        restore();
       });
     });
   }
@@ -1004,6 +1011,7 @@
     }
 
     // Submit scores
+    const removeOverlay = showModalLoading('#ssrModal');
     fetch(`/admin/gara/${garaId}/save_ssr_scores`, {
       method: 'POST',
       headers: {
@@ -1020,18 +1028,21 @@
           location.reload();
         } else if (data.needs_tiebreaker) {
           // Still have unresolved tiebreakers - update modal
+          removeOverlay();
           showSsrModal(garaId, data.tiebreakers);
           showInfo(data.message);
         } else {
           showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+          removeOverlay();
         }
       }).catch(error => {
         console.error('Error:', error);
         showError(GARA_CONFIG.i18n.errorSsrSave);
+        removeOverlay();
       });
   }
 
-  function saveSsrGroup(garaId, groupPosition) {
+  function saveSsrGroup(garaId, groupPosition, btn) {
     // Collect scores for this specific group
     // Filter to only VISIBLE inputs (avoid duplicate mobile/desktop inputs)
     const allInputs = document.querySelectorAll(`.ssr-group-input[data-group-position="${groupPosition}"]`);
@@ -1065,6 +1076,7 @@
     }
 
     // Submit scores for this group
+    const restore = withLoading(btn);
     fetch(`/admin/gara/${garaId}/save_ssr_group`, {
       method: 'POST',
       headers: {
@@ -1080,21 +1092,25 @@
         if (data.success) {
           showSuccess(data.message);
           if (data.all_resolved) {
-            // All tiebreakers resolved - reload to show terminate button
             location.reload();
+          } else {
+            restore();
           }
         } else {
           showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+          restore();
         }
       })
       .catch(error => {
         console.error('Error:', error);
         showError(GARA_CONFIG.i18n.errorSsrSave);
+        restore();
       });
   }
 
-  function resetLastRound(garaId, roundNumber) {
+  function resetLastRound(garaId, roundNumber, btn) {
     showConfirm(GARA_CONFIG.i18n.confirmResetRound, () => {
+      const restore = withLoading(btn);
       fetch(`/admin/gara/${garaId}/round/${roundNumber}/bulk_reset`, {
         method: 'POST',
         headers: {
@@ -1106,16 +1122,21 @@
         } else {
           response.text().then(text => {
             showError(GARA_CONFIG.i18n.errorReset + ' ' + text);
+            restore();
           });
         }
+      }).catch(error => {
+        console.error('Error:', error);
+        restore();
       });
     });
   }
 
-  function deleteProva(provaId, provaNumber) {
+  function deleteProva(provaId, provaNumber, btn) {
     let confirmMsg = GARA_CONFIG.i18n.confirmDeleteGara;
     confirmMsg = confirmMsg.replace('{number}', provaNumber);
     showConfirm(confirmMsg, () => {
+      const restore = withLoading(btn);
       fetch(`/admin/gara/${provaId}/delete`, {
         method: 'POST',
         headers: {
@@ -1132,19 +1153,22 @@
           response.text().then(text => {
             showError(GARA_CONFIG.i18n.errorDelete + response.status);
             console.error('Delete error:', text);
+            restore();
           });
         }
       }).catch(err => {
         showError(GARA_CONFIG.i18n.errorNetworkDelete);
         console.error('Network error:', err);
+        restore();
       });
     });
   }
 
-  function cancelProvaWithNotifications(provaId, provaNumber) {
+  function cancelProvaWithNotifications(provaId, provaNumber, btn) {
     let confirmMsg = GARA_CONFIG.i18n.confirmCancelGara;
     confirmMsg = confirmMsg.replace('{number}', provaNumber);
     showConfirm(confirmMsg, () => {
+      const restore = withLoading(btn);
       fetch(`/admin/gara/${provaId}/cancel`, {
         method: 'POST',
         headers: {
@@ -1160,8 +1184,12 @@
         } else {
           response.text().then(text => {
             showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+            restore();
           });
         }
+      }).catch(error => {
+        console.error('Error:', error);
+        restore();
       });
     });
   }
@@ -1267,9 +1295,11 @@
     }
   });
 
-  function startAmalfiRound(roundNumber) {
-    const buttons = document.querySelectorAll('button[onclick*="startAmalfiRound"]');
-    buttons.forEach(btn => btn.disabled = true);
+  function startAmalfiRound(roundNumber, btn) {
+    const restores = [];
+    document.querySelectorAll('button[onclick*="startAmalfiRound"]').forEach(function(b) {
+      restores.push(withLoading(b));
+    });
 
     fetch(`/admin/gara/${GARA_CONFIG.gara.id}/amalfi/start_round/${roundNumber}`, {
       method: 'POST',
@@ -1283,20 +1313,22 @@
         } else {
           response.text().then(text => {
             showError(GARA_CONFIG.i18n.errorRound + ' ' + text);
-            buttons.forEach(btn => btn.disabled = false);
+            restores.forEach(function(r) { r(); });
           });
         }
       })
       .catch(error => {
         console.error('Error:', error);
         showError(GARA_CONFIG.i18n.errorNetworkRound);
-        buttons.forEach(btn => btn.disabled = false);
+        restores.forEach(function(r) { r(); });
       });
   }
 
-  function startRound(roundNumber) {
-    const buttons = document.querySelectorAll('button[onclick*="startRound"]');
-    buttons.forEach(btn => btn.disabled = true);
+  function startRound(roundNumber, btn) {
+    const restores = [];
+    document.querySelectorAll('button[onclick*="startRound"]').forEach(function(b) {
+      restores.push(withLoading(b));
+    });
 
     // Try to load full config from new format first
     const storedConfig = localStorage.getItem(`roundConfig_${GARA_CONFIG.gara.id}_${roundNumber}`);
@@ -1349,13 +1381,13 @@
           }
         } else {
           showError(GARA_CONFIG.i18n.errorTitle + ' ' + data.error);
-          buttons.forEach(btn => btn.disabled = false);
+          restores.forEach(function(r) { r(); });
         }
       })
       .catch(error => {
         console.error('Error:', error);
         showError(GARA_CONFIG.i18n.errorCreateRound);
-        buttons.forEach(btn => btn.disabled = false);
+        restores.forEach(function(r) { r(); });
       });
   }
 
@@ -1450,6 +1482,7 @@
   function submitQuickResult(event) {
     event.preventDefault();
 
+    const removeOverlay = showModalLoading('#quickResultModal');
     const isTrio = document.getElementById('quickIsTrio').value === 'true';
     const matchId = document.getElementById('quickMatchId').value;
 
@@ -1505,6 +1538,7 @@
         .catch(error => {
           console.error('Error:', error);
           showError(GARA_CONFIG.i18n.errorTitle + ' ' + error.message);
+          removeOverlay();
         });
     } else {
       // Submit normal match result
@@ -1534,14 +1568,16 @@
         .catch(error => {
           console.error('Error:', error);
           showError(error.message);
+          removeOverlay();
         });
     }
 
     return false;
   }
 
-  function resetMatchQuick(matchId) {
+  function resetMatchQuick(matchId, btn) {
     showConfirm({{ _("Sei sicuro di voler resettare questa partita?")| tojson }}, () => {
+      var restore = withLoading(btn);
       fetch(`/admin/match/${matchId}/reset`, {
         method: 'POST',
         headers: {
@@ -1553,13 +1589,19 @@
             location.reload();
           } else {
             showError(GARA_CONFIG.i18n.errorResetMatch);
+            restore();
           }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          restore();
         });
     });
   }
 
-  function resetTrioQuick(trioId) {
+  function resetTrioQuick(trioId, btn) {
     showConfirm({{ _("Sei sicuro di voler resettare questo trio?")| tojson }}, () => {
+      var restore = withLoading(btn);
       fetch(`/admin/gara/trio/${trioId}/reset`, {
         method: 'POST',
         headers: {
@@ -1575,13 +1617,19 @@
             }).catch(() => {
               showError(GARA_CONFIG.i18n.errorResetTrio);
             });
+            restore();
           }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          restore();
         });
     });
   }
 
-  function validateMatchQuick(matchId) {
+  function validateMatchQuick(matchId, btn) {
     showConfirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")| tojson }}, () => {
+      var restore = withLoading(btn);
       fetch(`/admin/match/${matchId}/validate`, {
         method: 'POST',
         headers: {
@@ -1594,11 +1642,13 @@
             location.reload();
           } else {
             showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || GARA_CONFIG.i18n.infoValidateImpossible));
+            restore();
           }
         })
         .catch(error => {
           console.error('Error:', error);
           showError(GARA_CONFIG.i18n.errorValidationWait);
+          restore();
         });
     });
   }
@@ -1627,7 +1677,7 @@
     // Mostra/nascondi info tavolo attuale
     if (currentTable) {
       document.getElementById('currentTableInfo').style.display = 'block';
-      document.getElementById('currentTableDisplay').textContent = `Tavolo ${currentTable}`;
+      document.getElementById('currentTableDisplay').textContent = GARA_CONFIG.i18n.tablePrefix + ' ' + currentTable;
     } else {
       document.getElementById('currentTableInfo').style.display = 'none';
     }
@@ -1664,7 +1714,7 @@
                 <div class="table-name">${tableName}</div>
             `;
         button.title = GARA_CONFIG.i18n.swapTitle;
-        button.onclick = () => selectTableFromModal(tableName);
+        button.onclick = function() { selectTableFromModal(tableName, this); };
       } else {
         // Tavolo disponibile
         button.classList.add('table-btn-available');
@@ -1672,7 +1722,7 @@
                 <div class="table-icon"><i class="fas fa-table"></i></div>
                 <div class="table-name">${tableName}</div>
             `;
-        button.onclick = () => selectTableFromModal(tableName);
+        button.onclick = function() { selectTableFromModal(tableName, this); };
       }
 
       tableGrid.appendChild(button);
@@ -1694,8 +1744,9 @@
    * Gestisce la selezione di un tavolo dal modal
    * @param {string|null} newTable - Tavolo selezionato, o null per rimuovere
    */
-  function selectTableFromModal(newTable) {
+  function selectTableFromModal(newTable, btn) {
     const tableValue = newTable;
+    const restore = withLoading(btn);
 
     console.log(`selectTableFromModal called: matchId=${tableAssignmentMatchId}, newTable=${tableValue}`);
 
@@ -1734,11 +1785,13 @@
         } else {
           console.error('Error from server:', data.message);
           showError(GARA_CONFIG.i18n.errorTitle + ' ' + data.message);
+          restore();
         }
       })
       .catch(error => {
         console.error('Network error:', error);
         showError(GARA_CONFIG.i18n.errorTableNetwork);
+        restore();
       });
   }
 </script>

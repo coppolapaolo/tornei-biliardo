@@ -65,7 +65,7 @@
                             <i class="fas fa-infinity"></i>
                             {{ _('Match senza limite di distanza.') }}
                         </p>
-                        <button class="btn btn-warning btn-lg" onclick="confirmResult()">
+                        <button class="btn btn-warning btn-lg" onclick="confirmResult(this)">
                             <i class="fas fa-flag-checkered"></i> {{ _('Termina Match') }}
                         </button>
                     </div>
@@ -238,7 +238,8 @@
     }).start();
     {% endif %}
 
-    function addRack(winnerId) {
+    function addRack(winnerId, btn) {
+        const restore = withLoading(btn);
         fetch(`/match/matches/${matchId}/racks/add`, {
             method: 'POST',
             headers: {
@@ -252,16 +253,19 @@
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);
+                    restore();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _("Errore durante l'aggiunta del rack")|tojson }});
+                restore();
             });
     }
 
-    function removeRack(playerId) {
+    function removeRack(playerId, btn) {
         showConfirm({{ _("Rimuovere l'ultimo rack vinto da questo giocatore?")|tojson }}, () => {
+            const restore = withLoading(btn);
             fetch(`/match/matches/${matchId}/racks/remove`, {
             method: 'POST',
             headers: {
@@ -275,17 +279,20 @@
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);
+                    restore();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _("Errore durante la rimozione del rack")|tojson }});
+                restore();
             });
         });
     }
 
-    function confirmResult() {
+    function confirmResult(btn) {
         showConfirm({{ _('Confermare il risultato del match?')|tojson }}, () => {
+            const restore = withLoading(btn);
             fetch(`/match/matches/${matchId}/confirm`, {
             method: 'POST',
             headers: {
@@ -303,17 +310,20 @@
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);
+                    restore();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _('Errore durante la conferma')|tojson }});
+                restore();
             });
         });
     }
 
-    function rejectResult() {
+    function rejectResult(btn) {
         showConfirm({{ _("Rifiutare il risultato? L'ultimo rack verrà rimosso e si potrà continuare a giocare.")|tojson }}, () => {
+            const restore = withLoading(btn);
             fetch(`/match/matches/${matchId}/reject`, {
             method: 'POST',
             headers: {
@@ -327,11 +337,13 @@
                     location.reload();
                 } else {
                     showError({{ _('Errore:')|tojson }} + ' ' + data.error);
+                    restore();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _('Errore durante il rifiuto')|tojson }});
+                restore();
             });
         });
     }

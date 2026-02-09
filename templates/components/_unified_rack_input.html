@@ -145,7 +145,7 @@ Multi-set specific parameters:
             {% if not active_set and not match_complete_by_sets %}
             <div class="text-center">
                 <p class="text-muted">{{ _('Nessun set in corso.') }}</p>
-                <button class="btn btn-primary btn-lg" onclick="{{ start_set_func }}()" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                <button class="btn btn-primary btn-lg" onclick="{{ start_set_func }}(this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
                     <i class="fas fa-play"></i> {{ _('Inizia Set 1') }}
                 </button>
             </div>
@@ -155,24 +155,24 @@ Multi-set specific parameters:
             {# Compact horizontal layout - always side-by-side #}
             <div class="row g-2 mb-2">
                 <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }})" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
                         <i class="fas fa-plus"></i> {{ p1_name }}
                     </button>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }})" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>
                         <i class="fas fa-plus"></i> {{ p2_name }}
                     </button>
                 </div>
             </div>
             <div class="row g-2">
                 <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }})" {% if active_set.player1_racks == 0 %}disabled{% endif %}>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if active_set.player1_racks == 0 %}disabled{% endif %}>
                         <i class="fas fa-minus"></i> {{ p1_name }}
                     </button>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }})" {% if active_set.player2_racks == 0 %}disabled{% endif %}>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if active_set.player2_racks == 0 %}disabled{% endif %}>
                         <i class="fas fa-minus"></i> {{ p2_name }}
                     </button>
                 </div>
@@ -198,7 +198,7 @@ Multi-set specific parameters:
                     {% endif %}
                     {{ _('ha vinto il set.') }}
                 </div>
-                <button class="btn btn-primary w-100 btn-lg" onclick="{{ start_set_func }}()">
+                <button class="btn btn-primary w-100 btn-lg" onclick="{{ start_set_func }}(this)">
                     <i class="fas fa-forward"></i> {{ _('Inizia Set') }} {{ active_set.set_number + 1 }}
                 </button>
             </div>
@@ -217,7 +217,7 @@ Multi-set specific parameters:
                     {{ _('ha vinto') }} {{ match.player1_score }} - {{ match.player2_score }}
                 </div>
                 {% if not current_user_confirmed %}
-                <button class="btn btn-success w-100 btn-lg" onclick="{{ confirm_func }}()">
+                <button class="btn btn-success w-100 btn-lg" onclick="{{ confirm_func }}(this)">
                     <i class="fas fa-check"></i> {{ _('Accetta risultato') }}
                 </button>
                 {% else %}
@@ -242,7 +242,7 @@ Multi-set specific parameters:
             {# Forfeit button for multi-set #}
             {% if show_forfeit_btn and not match_complete_by_sets and not (match.is_bye is defined and match.is_bye) %}
             <div class="mt-3">
-                <button class="btn btn-outline-secondary w-100" onclick="{{ forfeit_func }}()">
+                <button class="btn btn-outline-secondary w-100" onclick="{{ forfeit_func }}(this)">
                     <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
                 </button>
             </div>
@@ -279,12 +279,12 @@ Multi-set specific parameters:
             </p>
             <div class="row g-2 mb-3">
                 <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}()">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}(this)">
                         <i class="fas fa-check"></i> {{ _('Accetta') }}
                     </button>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}()">
+                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}(this)">
                         <i class="fas fa-times"></i> {{ _('Rifiuta') }}
                     </button>
                 </div>
@@ -296,12 +296,12 @@ Multi-set specific parameters:
             </p>
             <div class="row g-2 mb-3">
                 <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}()">
+                    <button class="btn btn-success w-100 py-2" onclick="{{ confirm_func }}(this)">
                         <i class="fas fa-check"></i> {{ _('Accetta') }}
                     </button>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}()">
+                    <button class="btn btn-danger w-100 py-2" onclick="{{ reject_func }}(this)">
                         <i class="fas fa-times"></i> {{ _('Rifiuta') }}
                     </button>
                 </div>
@@ -316,24 +316,24 @@ Multi-set specific parameters:
             {# Compact horizontal layout - always side-by-side #}
             <div class="row g-2 mb-2">
                 <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }})" {% if not can_add %}disabled{% endif %}>
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if not can_add %}disabled{% endif %}>
                         <i class="fas fa-plus"></i> {{ p1_name }}
                     </button>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }})" {% if not can_add %}disabled{% endif %}>
+                    <button class="btn btn-success w-100 py-2" onclick="{{ add_rack }}({{ match.player2_id }}, this)" {% if not can_add %}disabled{% endif %}>
                         <i class="fas fa-plus"></i> {{ p2_name }}
                     </button>
                 </div>
             </div>
             <div class="row g-2">
                 <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }})" {% if match.player1_score == 0 %}disabled{% endif %}>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player1_id }}, this)" {% if match.player1_score == 0 %}disabled{% endif %}>
                         <i class="fas fa-minus"></i> {{ p1_name }}
                     </button>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }})" {% if match.player2_score == 0 %}disabled{% endif %}>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="{{ remove_rack }}({{ match.player2_id }}, this)" {% if match.player2_score == 0 %}disabled{% endif %}>
                         <i class="fas fa-minus"></i> {{ p2_name }}
                     </button>
                 </div>
@@ -351,7 +351,7 @@ Multi-set specific parameters:
             {# Forfeit button - only for in-progress matches #}
             {% if is_in_progress and show_forfeit_btn and not match_at_distance %}
             <div class="mt-3">
-                <button class="btn btn-outline-secondary w-100" onclick="{{ forfeit_func }}()">
+                <button class="btn btn-outline-secondary w-100" onclick="{{ forfeit_func }}(this)">
                     <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
                 </button>
             </div>

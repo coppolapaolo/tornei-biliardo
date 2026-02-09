@@ -92,7 +92,7 @@
                 {% elif gara.can_modify_inscription_dates() %}
                 {{ modify_dates_button(_('Estendi Iscrizioni'), 'fas fa-edit', 'mb-1') }}
                 <button class="btn btn-danger w-100 mb-2"
-                    onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }})">
+                    onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }}, this)">
                     <i class="fas fa-times-circle"></i> {{ _('Cancella Gara') }}
                 </button>
                 <small class="text-muted d-block text-center">{{ _('Servono %(min)d iscritti (%(current)d attuali)',
@@ -135,7 +135,7 @@
 
                 {% if has_unresolved_tiebreakers %}
                 {# Has unresolved tiebreakers - show SSR button #}
-                <button class="btn btn-warning w-100 mb-2" onclick="startSsr({{ gara.id }})">
+                <button class="btn btn-warning w-100 mb-2" onclick="startSsr({{ gara.id }}, this)">
                     <i class="fas fa-balance-scale"></i> {{ _('Avvia Spareggio (SSR)') }}
                 </button>
                 <small class="text-muted d-block text-center mb-2">
@@ -144,7 +144,7 @@
                 </small>
                 {% else %}
                 {# No tiebreakers - show terminate button #}
-                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }})">
+                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }}, this)">
                     <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
                 </button>
                 <small class="text-muted d-block text-center mb-2">
@@ -175,7 +175,7 @@
 
                 {% if has_unresolved_tiebreakers %}
                 {# Has unresolved tiebreakers - show SSR button #}
-                <button class="btn btn-warning w-100 mb-2" onclick="startSsr({{ gara.id }})">
+                <button class="btn btn-warning w-100 mb-2" onclick="startSsr({{ gara.id }}, this)">
                     <i class="fas fa-balance-scale"></i> {{ _('Avvia Spareggio (SSR)') }}
                 </button>
                 <small class="text-muted d-block text-center mb-2">
@@ -184,7 +184,7 @@
                 </small>
                 {% else %}
                 {# No tiebreakers - show terminate button #}
-                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }})">
+                <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }}, this)">
                     <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
                 </button>
                 <small class="text-muted d-block text-center mb-2">
@@ -195,7 +195,7 @@
 
                 {# Allow resetting the last round before termination #}
                 <button class="btn btn-warning w-100 mb-2"
-                    onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }})">
+                    onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }}, this)">
                     <i class="fas fa-undo"></i> {{ _('Reset Ultimo Turno') }}
                 </button>
                 <small class="text-muted d-block text-center mb-2">
@@ -210,7 +210,7 @@
 
                 {# Button to start next round - only if not the last round #}
                 {% if gara.current_round < gara.rounds_count %} <button class="btn btn-success w-100 mb-2"
-                    onclick="startRound({{ gara.current_round + 1 }})">
+                    onclick="startRound({{ gara.current_round + 1 }}, this)">
                     <i class="fas fa-forward"></i> {{ _('Avvia Turno %(num)s', num=gara.current_round + 1) }}
                     </button>
                     {% endif %}
@@ -268,7 +268,7 @@
                     <div class="alert alert-success p-2 mb-2">
                         <small><i class="fas fa-check-circle"></i> {{ _('Tutti gli spareggi risolti!') }}</small>
                     </div>
-                    <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }})">
+                    <button class="btn btn-primary w-100 mb-2" onclick="terminateGara({{ gara.id }}, this)">
                         <i class="fas fa-flag-checkered"></i> {{ _('Termina Gara') }}
                     </button>
                     <small class="text-muted d-block text-center mb-2">
@@ -280,7 +280,7 @@
                     <!-- Azioni aggiuntive -->
                     {% if gara.can_be_deleted() %}
                     <hr>
-                    <button class="btn btn-danger w-100" onclick="deleteProva({{ gara.id }}, {{ gara.number }})">
+                    <button class="btn btn-danger w-100" onclick="deleteProva({{ gara.id }}, {{ gara.number }}, this)">
                         <i class="fas fa-trash"></i> {{ _('Elimina Gara') }}
                     </button>
                     {% endif %}
