@@ -13,6 +13,8 @@ import importlib.util
 import sys
 from pathlib import Path
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from models.base import utc_now
 
 

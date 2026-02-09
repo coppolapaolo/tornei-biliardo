@@ -106,7 +106,8 @@ def profile():
     challenge_stats = None
     challenge_history = []
     try:
-        from models.challenge import GaraChallengeAttempt, GaraChallenge, Challenge
+        from models.competition.gara_challenge import GaraChallenge, GaraChallengeAttempt
+        from models.challenge import Challenge
 
         # Get all challenge attempts by this user
         user_attempts = (

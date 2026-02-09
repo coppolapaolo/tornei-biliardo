@@ -40,7 +40,8 @@ def record_challenge_attempt():
                 400,
             )
 
-        from models.challenge import GaraChallengeService, GaraChallenge
+        from models.competition.gara_challenge_service import GaraChallengeService
+        from models.competition.gara_challenge import GaraChallenge
 
         # Verify gara challenge exists and user has permissions
         gara_challenge = GaraChallenge.query.get(data["gara_challenge_id"])
@@ -139,7 +140,7 @@ def record_challenge_attempts():
                     400,
                 )
 
-        from models.challenge import GaraChallengeService
+        from models.competition.gara_challenge_service import GaraChallengeService
 
         # Record all attempts
         recorded_attempts = GaraChallengeService.record_multiple_attempts(

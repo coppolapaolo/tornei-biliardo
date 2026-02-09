@@ -59,24 +59,19 @@ class IndividualRackService:
         else:
             match.player2_score += 1
 
-        # Auto-confirm for the player who added the winning rack
-        # Only the opponent needs to explicitly confirm
+        # Reset confirmations when score changes
+        match.reset_confirmations()
+
+        # Auto-confirm when distance is reached:
+        # - Winner auto-confirms (loser must accept)
+        # - Tie: rack adder auto-confirms (opponent must accept)
         if match.is_ready_for_validation():
-            if user_id == match.player1_id:
-                match.player1_confirmed = True
-                match.player1_confirmed_at = utc_now()
-                match.player2_confirmed = False
-                match.player2_confirmed_at = None
+            if match.player1_score > match.player2_score:
+                match.confirm_result(match.player1_id)
+            elif match.player2_score > match.player1_score:
+                match.confirm_result(match.player2_id)
             else:
-                match.player2_confirmed = True
-                match.player2_confirmed_at = utc_now()
-                match.player1_confirmed = False
-                match.player1_confirmed_at = None
-        else:
-            match.player1_confirmed = False
-            match.player2_confirmed = False
-            match.player1_confirmed_at = None
-            match.player2_confirmed_at = None
+                match.confirm_result(user_id)
 
         return rack
 

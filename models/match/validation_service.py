@@ -45,10 +45,12 @@ class MatchValidationService:
         if match.status in [MatchStatus.COMPLETED.value, MatchStatus.VALIDATED.value]:
             raise ValueError("Il match è già stato completato")
 
+        # Check distance is reached (works for both 1v1 and trio)
+        if not match.is_at_distance:
+            raise ValueError("Il match non ha ancora raggiunto la distanza")
+
         # Auto-determine winner if not set
         if not match.winner_id:
-            if not match.is_ready_for_validation():
-                raise ValueError("Il match non ha ancora raggiunto la distanza")
 
             if match.player1_score > match.player2_score:
                 match.winner_id = match.player1_id

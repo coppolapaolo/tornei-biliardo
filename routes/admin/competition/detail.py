@@ -300,7 +300,7 @@ def gara_detail(gara_id):
     user_challenge_data = None
 
     if gara.matchmaking_strategy == "random":
-        from models.challenge import GaraChallengeService
+        from models.competition.gara_challenge_service import GaraChallengeService
 
         if GaraChallengeService.has_active_challenges(gara_id):
             if user_can_manage:

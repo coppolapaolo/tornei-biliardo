@@ -95,7 +95,7 @@ def match_detail(match_id):
         and match.gara.status in ["playing", "completed"]
     ):
 
-        from models.challenge import GaraChallengeService
+        from models.competition.gara_challenge_service import GaraChallengeService
 
         # Get challenges available for current round
         available_challenges = GaraChallengeService.get_available_challenges_for_round(

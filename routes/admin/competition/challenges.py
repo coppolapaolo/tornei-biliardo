@@ -35,7 +35,7 @@ from . import competition_bp
 @gara_manager_required
 def get_gara_challenges(gara_id):
     """Get active challenges for a gara (AJAX endpoint)."""
-    from models.challenge import GaraChallengeService
+    from models.competition.gara_challenge_service import GaraChallengeService
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
@@ -80,7 +80,7 @@ def get_gara_challenges(gara_id):
 @gara_manager_required
 def add_challenge_to_gara(gara_id):
     """Add a challenge to a gara (AJAX endpoint)."""
-    from models.challenge import GaraChallengeService
+    from models.competition.gara_challenge_service import GaraChallengeService
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
@@ -157,7 +157,8 @@ def add_challenge_to_gara(gara_id):
 @gara_manager_required
 def remove_challenge_from_gara(gara_id):
     """Remove a challenge from a gara (AJAX endpoint)."""
-    from models.challenge import GaraChallengeService, GaraChallenge
+    from models.competition.gara_challenge_service import GaraChallengeService
+    from models.competition.gara_challenge import GaraChallenge
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
@@ -424,7 +425,7 @@ def create_new_challenge():
 @gara_manager_required
 def get_gara_challenge_classification(gara_id):
     """Get challenge classification for a gara."""
-    from models.challenge import GaraChallengeService
+    from models.competition.gara_challenge_service import GaraChallengeService
 
     gara = db.get_or_404(Gara, gara_id)
 

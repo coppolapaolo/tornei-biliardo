@@ -798,6 +798,11 @@
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/admin/gara/${provaId}/start_first_round`;
+      const csrf = document.createElement('input');
+      csrf.type = 'hidden';
+      csrf.name = 'csrf_token';
+      csrf.value = csrfToken();
+      form.appendChild(csrf);
       document.body.appendChild(form);
       form.submit();
     });
