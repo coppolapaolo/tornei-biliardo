@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-09 10:40+0100\n"
+"POT-Creation-Date: 2026-02-09 11:07+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -3224,7 +3224,7 @@ msgstr "Setup"
 #: templates/components/_multi_set_score_display.html:27
 #: templates/individual_match/match_detail.html:107
 #: templates/individual_match/match_detail.html:110
-#, fuzzy, python-format
+#, fuzzy
 msgid "Esattamente"
 msgstr "Exactly %(n)s sets"
 
@@ -3926,37 +3926,71 @@ msgstr "Edit Race"
 msgid "Override Attivo"
 msgstr "Freeze active"
 
-#: templates/errors/404.html:3 templates/errors/404.html:8
+#: templates/errors/404.html:3
 #, fuzzy
 msgid "Pagina non trovata"
 msgstr "Round Discipline Configuration"
 
-#: templates/errors/404.html:9
-msgid "La pagina che stai cercando non esiste o è stata spostata."
+#: templates/errors/404.html:11
+#, fuzzy
+msgid "Tiro sbagliato!"
+msgstr "Create Championship"
+
+#: templates/errors/404.html:13
+msgid ""
+"La palla è finita fuori dal tavolo. La pagina che cerchi non esiste o è "
+"stata imbucata altrove."
 msgstr ""
 
-#: templates/errors/404.html:11 templates/errors/429.html:11
-#: templates/errors/500.html:11 templates/public/campionato_detail.html:22
-#: templates/public/campionatos_list.html:49
+#: templates/errors/404.html:18
+msgid ""
+"Consiglio: controlla il tiro (URL) e riprova. Anche i campioni sbagliano "
+"ogni tanto."
+msgstr ""
+
+#: templates/errors/404.html:21 templates/errors/429.html:21
+#: templates/errors/500.html:21
 #, fuzzy
-msgid "Torna alla Home"
+msgid "Torna al tavolo"
 msgstr "Back to Race"
 
-#: templates/errors/429.html:3 templates/errors/429.html:8
+#: templates/errors/429.html:3
 msgid "Troppe richieste"
 msgstr ""
 
-#: templates/errors/429.html:9
-msgid "Hai effettuato troppe richieste. Attendi qualche minuto e riprova."
+#: templates/errors/429.html:11
+msgid "Piano! Non è un tiro di apertura!"
 msgstr ""
 
-#: templates/errors/500.html:3 templates/errors/500.html:8
+#: templates/errors/429.html:13
+msgid ""
+"Troppe steccate di fila! Anche il biliardo ha le sue regole: riprendi "
+"fiato e ritenta tra qualche minuto."
+msgstr ""
+
+#: templates/errors/429.html:18
+msgid "Nel frattempo, perché non ripassi le regole del 9-ball?"
+msgstr ""
+
+#: templates/errors/500.html:3
 #, fuzzy
 msgid "Errore del server"
 msgstr "Error during cancellation:"
 
-#: templates/errors/500.html:9
-msgid "Si è verificato un errore interno. Riprova più tardi."
+#: templates/errors/500.html:11
+msgid "Fallo tecnico!"
+msgstr ""
+
+#: templates/errors/500.html:13
+msgid ""
+"Il panno del tavolo si è strappato. I nostri tecnici stanno già riparando"
+" il danno."
+msgstr ""
+
+#: templates/errors/500.html:18
+msgid ""
+"Prova a ricaricare la pagina. Se il problema persiste, fai una pausa e "
+"gessati la stecca."
 msgstr ""
 
 #: templates/gamification/achievements.html:10
@@ -5404,7 +5438,7 @@ msgid "Al (vince chi arriva a N rack)"
 msgstr "most racks wins"
 
 #: templates/individual_match/create_proposal.html:165
-#, fuzzy, python-format
+#, fuzzy
 msgid "Esattamente (tutti i rack specificati)"
 msgstr "Exactly %(n)s racks"
 
@@ -5441,7 +5475,7 @@ msgid "A turno"
 msgstr "Rounds:"
 
 #: templates/individual_match/create_proposal.html:204
-#, fuzzy, python-format
+#, fuzzy
 msgid "Vincitore rompe"
 msgstr "Winner: %(name)s"
 
@@ -5520,12 +5554,12 @@ msgid "Formato"
 msgstr "Race Information"
 
 #: templates/individual_match/match_detail.html:108
-#, fuzzy, python-format
+#, fuzzy
 msgid "ogni set al"
 msgstr "each set race to %(n)s racks"
 
 #: templates/individual_match/match_detail.html:108
-#, fuzzy, python-format
+#, fuzzy
 msgid "ogni set esattamente"
 msgstr "each set exactly %(n)s racks"
 
@@ -5857,6 +5891,12 @@ msgstr ""
 #: templates/player/profile.html:129
 msgid "Queste azioni sono irreversibili."
 msgstr ""
+
+#: templates/public/campionato_detail.html:22
+#: templates/public/campionatos_list.html:49
+#, fuzzy
+msgid "Torna alla Home"
+msgstr "Back to Race"
 
 #: templates/public/campionato_detail.html:43
 #, fuzzy
@@ -6707,5 +6747,14 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Milestone non trovato"
+#~ msgstr ""
+
+#~ msgid "La pagina che stai cercando non esiste o è stata spostata."
+#~ msgstr ""
+
+#~ msgid "Hai effettuato troppe richieste. Attendi qualche minuto e riprova."
+#~ msgstr ""
+
+#~ msgid "Si è verificato un errore interno. Riprova più tardi."
 #~ msgstr ""
 

@@ -1,5 +1,5 @@
 # app.py - Clean application factory pattern
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, jsonify
 from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
@@ -240,6 +240,35 @@ def create_app(config_name=None):
             created, skipped = seed_achievements(db.session)
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
+
+    # Security headers
+    @app.after_request
+    def set_security_headers(response):
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net code.jquery.com; "
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; "
+            "font-src cdnjs.cloudflare.com cdn.jsdelivr.net; "
+            "img-src 'self' data:; "
+            "connect-src 'self'"
+        )
+        if not app.debug:
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
+        return response
+
+    # Health check endpoint
+    @app.route("/health")
+    def health():
+        from sqlalchemy import text
+        try:
+            db.session.execute(text("SELECT 1"))
+            return jsonify(status="healthy", version=app.config["VERSION"]), 200
+        except Exception as e:
+            return jsonify(status="unhealthy", error=str(e)), 503
 
     # Custom error pages
     @app.errorhandler(404)

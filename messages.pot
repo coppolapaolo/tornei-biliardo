@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-09 10:40+0100\n"
+"POT-Creation-Date: 2026-02-09 11:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3670,34 +3670,67 @@ msgstr ""
 msgid "Override Attivo"
 msgstr ""
 
-#: templates/errors/404.html:3 templates/errors/404.html:8
+#: templates/errors/404.html:3
 msgid "Pagina non trovata"
 msgstr ""
 
-#: templates/errors/404.html:9
-msgid "La pagina che stai cercando non esiste o è stata spostata."
+#: templates/errors/404.html:11
+msgid "Tiro sbagliato!"
 msgstr ""
 
-#: templates/errors/404.html:11 templates/errors/429.html:11
-#: templates/errors/500.html:11 templates/public/campionato_detail.html:22
-#: templates/public/campionatos_list.html:49
-msgid "Torna alla Home"
+#: templates/errors/404.html:13
+msgid ""
+"La palla è finita fuori dal tavolo. La pagina che cerchi non esiste o è "
+"stata imbucata altrove."
 msgstr ""
 
-#: templates/errors/429.html:3 templates/errors/429.html:8
+#: templates/errors/404.html:18
+msgid ""
+"Consiglio: controlla il tiro (URL) e riprova. Anche i campioni sbagliano "
+"ogni tanto."
+msgstr ""
+
+#: templates/errors/404.html:21 templates/errors/429.html:21
+#: templates/errors/500.html:21
+msgid "Torna al tavolo"
+msgstr ""
+
+#: templates/errors/429.html:3
 msgid "Troppe richieste"
 msgstr ""
 
-#: templates/errors/429.html:9
-msgid "Hai effettuato troppe richieste. Attendi qualche minuto e riprova."
+#: templates/errors/429.html:11
+msgid "Piano! Non è un tiro di apertura!"
 msgstr ""
 
-#: templates/errors/500.html:3 templates/errors/500.html:8
+#: templates/errors/429.html:13
+msgid ""
+"Troppe steccate di fila! Anche il biliardo ha le sue regole: riprendi "
+"fiato e ritenta tra qualche minuto."
+msgstr ""
+
+#: templates/errors/429.html:18
+msgid "Nel frattempo, perché non ripassi le regole del 9-ball?"
+msgstr ""
+
+#: templates/errors/500.html:3
 msgid "Errore del server"
 msgstr ""
 
-#: templates/errors/500.html:9
-msgid "Si è verificato un errore interno. Riprova più tardi."
+#: templates/errors/500.html:11
+msgid "Fallo tecnico!"
+msgstr ""
+
+#: templates/errors/500.html:13
+msgid ""
+"Il panno del tavolo si è strappato. I nostri tecnici stanno già riparando"
+" il danno."
+msgstr ""
+
+#: templates/errors/500.html:18
+msgid ""
+"Prova a ricaricare la pagina. Se il problema persiste, fai una pausa e "
+"gessati la stecca."
 msgstr ""
 
 #: templates/gamification/achievements.html:10
@@ -5457,6 +5490,11 @@ msgstr ""
 
 #: templates/player/profile.html:129
 msgid "Queste azioni sono irreversibili."
+msgstr ""
+
+#: templates/public/campionato_detail.html:22
+#: templates/public/campionatos_list.html:49
+msgid "Torna alla Home"
 msgstr ""
 
 #: templates/public/campionato_detail.html:43
