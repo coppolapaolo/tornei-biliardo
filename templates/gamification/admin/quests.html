@@ -62,6 +62,7 @@
               <div class="btn-group btn-group-sm">
                 {% if quest.status != quest_statuses.ACTIVE %}
                 <form method="POST" action="{{ url_for('gamification.admin_activate_quest', quest_id=quest.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-success" title="{{ _('Attiva') }}">
                     <i class="bi bi-play-fill"></i>
                   </button>
@@ -69,6 +70,7 @@
                 {% endif %}
                 {% if quest.status == quest_statuses.ACTIVE %}
                 <form method="POST" action="{{ url_for('gamification.admin_expire_quest', quest_id=quest.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-warning" title="{{ _('Termina') }}">
                     <i class="bi bi-stop-fill"></i>
                   </button>
@@ -77,6 +79,7 @@
                 {% if quest.participant_count == 0 %}
                 <form method="POST" action="{{ url_for('gamification.admin_delete_quest', quest_id=quest.id) }}" style="display:inline;"
                       onsubmit="return confirmSubmit(this, {{ _('Sei sicuro di voler eliminare questa quest?')|tojson }})">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger" title="{{ _('Elimina') }}">
                     <i class="bi bi-trash"></i>
                   </button>
@@ -96,6 +99,7 @@
         </tbody>
       </table>
     </div>
+    {% include "components/_pagination.html" %}
   </div>
 </div>
 {% endblock %}

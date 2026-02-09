@@ -17,6 +17,7 @@
         </div>
         <div class="card-body">
           <form method="POST" action="{{ url_for('gamification.admin_grant_xp') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
               <label for="user_id" class="form-label">{{ _('Utente') }} *</label>
               <select class="form-select" id="user_id" name="user_id" required>
@@ -51,6 +52,7 @@
         <div class="card-body">
           <p class="text-muted small">{{ _('Resetta il livello di un utente a 1. I dati XP storici vengono preservati.') }}</p>
           <form method="POST" action="" id="resetForm" onsubmit="return confirmReset();">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
               <label for="reset_user_id" class="form-label">{{ _('Utente') }} *</label>
               <select class="form-select" id="reset_user_id" name="reset_user_id" required>
@@ -111,6 +113,7 @@
               {% endfor %}
             </tbody>
           </table>
+          {% include "components/_pagination.html" %}
         </div>
       </div>
     </div>

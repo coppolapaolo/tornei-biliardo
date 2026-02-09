@@ -84,10 +84,14 @@ def admin_dashboard():
 @admin_required
 def admin_quests():
     """List all quests for management."""
-    quests = Quest.query.order_by(Quest.start_date.desc()).all()
+    page = request.args.get("page", 1, type=int)
+    pagination = Quest.query.order_by(
+        Quest.start_date.desc()
+    ).paginate(page=page, per_page=20, error_out=False)
     return render_template(
         "gamification/admin/quests.html",
-        quests=quests,
+        quests=pagination.items,
+        pagination=pagination,
         quest_statuses=QuestStatus,
         page_title=_("Gestione Quest")
     )
@@ -191,8 +195,10 @@ def admin_achievements():
     """List all achievements with unlock statistics."""
     from sqlalchemy import func
 
-    # Get all achievements with unlock counts
-    achievements = Achievement.query.all()
+    page = request.args.get("page", 1, type=int)
+
+    # Paginate achievements
+    pagination = Achievement.query.paginate(page=page, per_page=20, error_out=False)
 
     # Get unlock counts per achievement
     unlock_stats = dict(
@@ -206,7 +212,7 @@ def admin_achievements():
 
     # Combine data
     achievement_data = []
-    for achievement in achievements:
+    for achievement in pagination.items:
         achievement_data.append({
             "achievement": achievement,
             "unlock_count": unlock_stats.get(achievement.id, 0)
@@ -215,6 +221,7 @@ def admin_achievements():
     return render_template(
         "gamification/admin/achievements.html",
         achievements=achievement_data,
+        pagination=pagination,
         categories=AchievementCategory,
         difficulties=AchievementDifficulty,
         page_title=_("Gestione Achievement")
@@ -288,17 +295,20 @@ def admin_xp_management():
     from models import User
     from models.gamification.models import XPTransaction
 
-    # Get recent transactions
-    recent_transactions = XPTransaction.query.order_by(
+    page = request.args.get("page", 1, type=int)
+
+    # Paginate recent transactions
+    pagination = XPTransaction.query.order_by(
         XPTransaction.created_at.desc()
-    ).limit(50).all()
+    ).paginate(page=page, per_page=20, error_out=False)
 
     # Get users for dropdown
     users = User.query.filter(User.deleted_at.is_(None)).order_by(User.username).all()
 
     return render_template(
         "gamification/admin/xp_management.html",
-        recent_transactions=recent_transactions,
+        recent_transactions=pagination.items,
+        pagination=pagination,
         users=users,
         xp_types=XPTransactionType,
         page_title=_("Gestione XP")

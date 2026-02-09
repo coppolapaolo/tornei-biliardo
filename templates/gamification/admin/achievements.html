@@ -71,6 +71,7 @@
             </td>
             <td>
               <form method="POST" action="{{ url_for('gamification.admin_toggle_achievement_hidden', achievement_id=ach.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline-secondary btn-sm" title="{{ _('Toggle nascosto') }}">
                   <i class="bi bi-eye{{ '-slash' if not ach.is_hidden else '' }}"></i>
                 </button>
@@ -88,6 +89,7 @@
         </tbody>
       </table>
     </div>
+    {% include "components/_pagination.html" %}
   </div>
 </div>
 {% endblock %}
