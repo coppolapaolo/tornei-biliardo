@@ -205,7 +205,7 @@ function addAvailability() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify({
             availability: [{
                 location: locationInput,

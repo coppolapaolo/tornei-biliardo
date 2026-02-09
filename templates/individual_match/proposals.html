@@ -103,6 +103,7 @@
                                         <form method="POST"
                                             action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}"
                                             class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-success w-100">
                                                 <i class="fas fa-check"></i> Accetta
                                             </button>
@@ -197,6 +198,7 @@
                                     <form method="POST"
                                         action="{{ url_for('individual_match.cancel_proposal', proposal_id=proposal.id) }}"
                                         class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="button" class="btn btn-outline-danger"
                                             onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare questa proposta?')">
                                             <i class="fas fa-times"></i> Annulla
@@ -264,6 +266,7 @@
                                     <form method="POST"
                                         action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}"
                                         class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="fas fa-handshake"></i> Accetta Sfida
                                         </button>
@@ -345,7 +348,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                'X-CSRFToken': csrfToken()}
             })
             .then(response => response.json())
             .then(data => {

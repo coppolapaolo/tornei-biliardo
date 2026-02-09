@@ -85,6 +85,7 @@
                                               action="{{ url_for('player.cancel_venue_manager_request', request_id=request.id) }}"
                                               style="display: inline;"
                                               onsubmit="return confirmSubmit(this, 'Sei sicuro di voler annullare questa richiesta?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Annulla">
                                                 <i class="fas fa-ban"></i> Annulla
                                             </button>

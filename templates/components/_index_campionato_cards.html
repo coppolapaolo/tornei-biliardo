@@ -75,6 +75,7 @@
                                     <form method="POST"
                                         action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}"
                                         class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-primary btn-sm">
                                             <i class="fas fa-user-plus"></i> Iscriviti
                                         </button>

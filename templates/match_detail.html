@@ -200,7 +200,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: `winner_id=${winnerId}`
         })
             .then(response => response.json())
@@ -229,7 +229,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: ''
         })
             .then(response => response.json())
@@ -258,7 +258,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: ''
         })
             .then(response => response.json())
@@ -288,7 +288,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                'X-CSRFToken': csrfToken()},
                 body: `player_id=${playerId}`
             })
                 .then(response => response.json())
@@ -313,7 +313,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: `winner_id=${winnerId}`
         })
             .then(response => response.json())
@@ -335,7 +335,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: `player_id=${playerId}`
         })
             .then(response => response.json())
@@ -357,7 +357,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            }
+            'X-CSRFToken': csrfToken()}
         })
             .then(response => response.json())
             .then(data => {
@@ -380,7 +380,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                'X-CSRFToken': csrfToken()}
             })
                 .then(response => response.json())
                 .then(data => {
@@ -403,7 +403,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                'X-CSRFToken': csrfToken()}
             })
                 .then(response => response.json())
                 .then(data => {
@@ -428,7 +428,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: `winner_id=${winnerId}`
         })
             .then(response => response.json())
@@ -451,7 +451,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                'X-CSRFToken': csrfToken()},
                 body: `player_id=${playerId}`
             })
                 .then(response => response.json())
@@ -474,7 +474,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            }
+            'X-CSRFToken': csrfToken()}
         })
             .then(response => response.json())
             .then(data => {
@@ -521,7 +521,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            'X-CSRFToken': csrfToken()},
             body: `winner_id=${winnerId}`
         })
             .then(response => response.json())
@@ -549,7 +549,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                'X-CSRFToken': csrfToken()}
             })
                 .then(response => {
                     if (response.ok) {
@@ -571,7 +571,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                'X-CSRFToken': csrfToken()}
             })
                 .then(response => response.json())
                 .then(data => {
@@ -594,7 +594,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                'X-CSRFToken': csrfToken()}
             })
                 .then(response => response.json())
                 .then(data => {

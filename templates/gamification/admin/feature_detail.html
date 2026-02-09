@@ -21,6 +21,7 @@
         </div>
         <div class="card-body">
           <form method="POST" action="{{ url_for('gamification.admin_update_feature', code=feature.code) }}" id="featureForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="rules" id="rulesJson" value="">
 
             <div class="row mb-3">

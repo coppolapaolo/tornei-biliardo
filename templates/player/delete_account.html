@@ -37,6 +37,7 @@
                 <hr>
 
                 <form method="POST" onsubmit="return confirmSubmit(this, 'Sei SICURO di voler eliminare definitivamente il tuo account?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="password" class="form-label">
                             <strong>Conferma la tua password:</strong>

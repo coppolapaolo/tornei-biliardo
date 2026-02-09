@@ -25,6 +25,7 @@
         {% endif %}
       </div>
       <form method="POST" action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-success btn-sm">
           <i class="fas fa-handshake"></i> Join
         </button>

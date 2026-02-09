@@ -68,7 +68,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                'X-CSRFToken': csrfToken()}
             }).then(response => {
                 if (response.ok) {
                     location.reload();

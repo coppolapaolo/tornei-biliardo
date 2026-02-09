@@ -15,6 +15,7 @@
         <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
             onsubmit="return confirmSubmit(this, 'Sei sicuro di voler rimuovere il ruolo di direttore a {{ user.username }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger btn-sm">
                 <i class="fas fa-user-minus"></i> Rimuovi ruolo
             </button>
@@ -26,6 +27,7 @@
         <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
             onsubmit="return confirmSubmit(this, 'Promuovere {{ user.username }} a Direttore di Gara?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-success btn-sm">
                 <i class="fas fa-user-plus"></i> Promuovi a Direttore
             </button>
@@ -39,7 +41,7 @@
         <p><strong>Gamification:</strong>
             {% if user.gamification_override %}
             <span class="badge bg-warning text-dark">
-                <i class="fas fa-unlock"></i> Override Attivo
+                <i class="fas fa-unlock"></i> {{ _('Override Attivo') }}
             </span>
             {% else %}
             <span class="badge bg-light text-muted">
@@ -49,6 +51,7 @@
         <form action="{{ url_for('admin.user.toggle_gamification_override', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
             onsubmit="return confirmSubmit(this, '{{ 'Disattivare' if user.gamification_override else 'Attivare' }} Override Gamification per {{ user.username }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
                 class="btn btn-outline-{{ 'danger' if user.gamification_override else 'warning' }} btn-sm">
                 <i class="fas fa-{{ 'lock' if user.gamification_override else 'unlock' }}"></i>
@@ -64,6 +67,7 @@
         <p><strong>Imposta Password:</strong></p>
         <form action="{{ url_for('admin.user.set_user_password', user_id=user.id) }}" method="POST"
             onsubmit='return confirmSubmit(this, {{ "Impostare una nuova password per %s?"|format(user.username)|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-2 align-items-end">
                 <div class="col-5">
                     <input type="password" name="new_password" class="form-control form-control-sm"

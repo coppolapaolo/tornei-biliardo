@@ -7,6 +7,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('admin.competition.modify_inscription_dates', gara_id=gara.id) }}" method="POST" id="modifyDatesForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
                     <div class="alert alert-info">
                         <small><i class="fas fa-clock"></i> <strong>Timezone:</strong> <span id="modify-user-timezone">Caricamento...</span></small>

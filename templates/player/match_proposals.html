@@ -57,6 +57,7 @@
                             <form method="POST"
                                 action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}"
                                 class="d-inline me-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-sm btn-success">
                                     <i class="fas fa-check"></i> Accetta
                                 </button>
@@ -66,6 +67,7 @@
                             <form method="POST"
                                 action="{{ url_for('player.reject_match_proposal', proposal_id=proposal.id) }}"
                                 class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                     onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler {{ 'rifiutare' if user_invitation.status.value == 'pending' else 'cambiare la tua decisione e rifiutare' }} questo invito?')">
                                     <i class="fas fa-times"></i> {% if user_invitation.status.value == 'accepted'
@@ -138,6 +140,7 @@
                             <form method="POST"
                                 action="{{ url_for('player.cancel_match_proposal', proposal_id=proposal.id) }}"
                                 class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                     onclick="confirmSubmit(this.closest('form'), 'Sei sicuro di voler annullare questa proposta?')">
                                     <i class="fas fa-times"></i> Annulla
@@ -187,6 +190,7 @@
                         <div class="mt-3">
                             <form method="POST"
                                 action="{{ url_for('player.accept_match_proposal', proposal_id=proposal.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-sm btn-success">
                                     <i class="fas fa-handshake"></i> Partecipa al Match
                                 </button>

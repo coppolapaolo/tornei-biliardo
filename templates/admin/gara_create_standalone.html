@@ -108,6 +108,7 @@
             </div>
 
             <form id="gara-form" method="POST" action="{{ url_for('admin.competition.create_gara_standalone') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <!-- STEP 1: DATI INFORMATIVI -->
                 <div class="wizard-step active" id="step-1">
                     <div class="card shadow-sm mb-4">

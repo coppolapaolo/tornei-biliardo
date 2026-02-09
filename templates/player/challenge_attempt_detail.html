@@ -131,6 +131,7 @@
                 </div>
                 <div class="card-body">
                     <form id="completeAttemptForm" method="POST" action="{{ url_for('challenge.complete_attempt', attempt_id=attempt.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
                             Hai completato la challenge? Inserisci il tuo risultato qui sotto.
@@ -272,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fetch(this.action, {
                 method: 'POST',
+                headers: {'X-CSRFToken': csrfToken()},
                 body: formData
             })
             .then(response => {

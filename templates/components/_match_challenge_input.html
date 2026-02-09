@@ -303,7 +303,7 @@ function recordChallengeAttempt(garaChallengeId, playerId, attemptNum) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -346,7 +346,7 @@ function recordChallengeAttempts(garaChallengeId, playerId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify({ attempts: attempts })
     })
     .then(response => response.json())

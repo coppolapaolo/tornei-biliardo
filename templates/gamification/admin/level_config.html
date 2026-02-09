@@ -23,6 +23,7 @@
         {% for config in level_params %}
         <div class="col-md-6">
           <form action="{{ url_for('gamification.admin_update_level_curve') }}" method="POST" class="card p-3 mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="key" value="{{ config.key }}">
             <h6>{{ config.description }}</h6>
             <div class="input-group">
@@ -118,6 +119,7 @@
               <form action="{{ url_for('gamification.admin_delete_level_unlock', unlock_id=unlock.id) }}"
                     method="POST" class="d-inline"
                     onsubmit="return confirmSubmit(this, {{ _('Eliminare questo unlock?')|tojson }})">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">
                   <i class="bi bi-trash"></i>
                 </button>
@@ -130,6 +132,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <form action="{{ url_for('gamification.admin_edit_level_unlock', unlock_id=unlock.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <div class="modal-header">
                     <h5 class="modal-title">{{ _('Modifica Unlock Lv.') }} {{ unlock.level }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -180,6 +183,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form action="{{ url_for('gamification.admin_add_level_unlock') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="modal-header">
           <h5 class="modal-title">{{ _('Aggiungi Nuovo Level Unlock') }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

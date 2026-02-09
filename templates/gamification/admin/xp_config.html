@@ -40,6 +40,7 @@
             <td>{{ config.description or '-' }}</td>
             <td>
               <form action="{{ url_for('gamification.admin_update_xp_config') }}" method="POST" class="d-flex gap-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="key" value="{{ config.key }}">
                 <input type="number" name="value" value="{{ config.value }}"
                        class="form-control form-control-sm" min="0" style="width: 80px;">
@@ -47,6 +48,7 @@
             </td>
             <td>
               <form action="{{ url_for('gamification.admin_update_xp_config') }}" method="POST" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="key" value="{{ config.key }}">
                 <input type="hidden" name="value" value="{{ config.value }}" class="xp-value-input">
                 <button type="submit" class="btn btn-sm btn-primary save-btn" disabled>

@@ -32,6 +32,7 @@
         </small>
       </div>
       <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=p.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% if p.is_full() %}
           <button type="submit" class="btn btn-warning">
             <i class="fas fa-clock"></i> Lista d'attesa

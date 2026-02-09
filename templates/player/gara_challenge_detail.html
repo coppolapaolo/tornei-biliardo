@@ -205,7 +205,7 @@ document.getElementById('attemptForm').addEventListener('submit', function(e) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify(data)
     })
     .then(response => response.json())

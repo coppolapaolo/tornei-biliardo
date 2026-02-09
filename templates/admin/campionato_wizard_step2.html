@@ -75,6 +75,7 @@
                     </p>
 
                     <form action="{{ url_for('admin.campionato.wizard_create') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <!-- Default Venue -->
                         <div class="mb-4">
                             <label for="default_venue_id" class="form-label">{{ _("Sede Predefinita") }}</label>

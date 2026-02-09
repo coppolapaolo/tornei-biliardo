@@ -98,6 +98,7 @@
                                                   action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}"
                                                   style="display: inline;"
                                                   onsubmit="return confirmSubmit(this, 'Approvi questa richiesta?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <input type="hidden" name="action" value="approve">
                                                 <button type="submit" class="btn btn-sm btn-success" title="Approva">
                                                     <i class="fas fa-check"></i>
@@ -122,6 +123,7 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <form method="POST" action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                         <div class="modal-body">
                                                             <p>Stai per rifiutare la richiesta di <strong>{{ request.user.username }}</strong> per gestire <strong>{{ request.venue.name }}</strong>.</p>
                                                             {% if request.is_contested %}

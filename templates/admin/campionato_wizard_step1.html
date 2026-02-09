@@ -44,6 +44,7 @@
                 </div>
                 <div class="card-body">
                     <form action="{{ url_for('admin.campionato.wizard_step2') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <!-- Nome -->
                         <div class="mb-4">
                             <label for="name" class="form-label">{{ _("Nome Campionato") }} *</label>

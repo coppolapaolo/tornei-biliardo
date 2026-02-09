@@ -373,6 +373,7 @@ function addChallengeToGara() {
 
     fetch(`/admin/gara/${garaId}/add_challenge`, {
         method: 'POST',
+        headers: {'X-CSRFToken': csrfToken()},
         body: formData
     })
     .then(response => response.json())
@@ -403,7 +404,7 @@ function removeChallengeFromGara(garaChallengeId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify({ gara_challenge_id: garaChallengeId })
     })
     .then(response => response.json())
@@ -429,6 +430,7 @@ function createNewChallenge() {
 
     fetch('/admin/gara/challenges/create', {
         method: 'POST',
+        headers: {'X-CSRFToken': csrfToken()},
         body: formData
     })
     .then(response => response.json())

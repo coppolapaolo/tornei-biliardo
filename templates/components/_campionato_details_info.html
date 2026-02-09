@@ -39,9 +39,9 @@
             <div class="col-md-4">
                 <strong>Stato:</strong>
                 {% if campionato.is_active %}
-                    <span class="badge bg-success">Attivo</span>
+                    <span class="badge bg-success">{{ _('Attivo') }}</span>
                 {% else %}
-                    <span class="badge bg-secondary">Inattivo</span>
+                    <span class="badge bg-secondary">{{ _('Inattivo') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -113,7 +113,7 @@
             <div class="col-md-2">
                 <small class="text-muted">Anti-rematch:</small><br>
                 {% if campionato.default_anti_rematch %}
-                    <span class="text-success"><i class="fas fa-check"></i> Attivo</span>
+                    <span class="text-success"><i class="fas fa-check"></i> {{ _('Attivo') }}</span>
                 {% else %}
                     <span class="text-secondary"><i class="fas fa-times"></i> Disattivo</span>
                 {% endif %}

@@ -32,6 +32,7 @@
                 </div>
                 <div class="card-body">
                     <form id="challengeForm" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                         <!-- Descrizione -->
                         <div class="mb-3">
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Submit form
         fetch(window.location.href, {
             method: 'POST',
+            headers: {'X-CSRFToken': csrfToken()},
             body: formData
         })
         .then(response => {

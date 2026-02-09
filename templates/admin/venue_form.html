@@ -21,6 +21,7 @@
 </div>
 
 <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="row">
         <!-- Informazioni Base -->
         <div class="col-lg-8">
@@ -323,7 +324,7 @@ function toggleVenueStatus(venueId, field, value, switchElement, labelElement) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify({
             field: field,
             value: value

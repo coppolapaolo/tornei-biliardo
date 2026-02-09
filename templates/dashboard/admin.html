@@ -16,7 +16,7 @@
     showConfirm({{ _("Sei sicuro di voler cambiare lo stato del campionato?")|tojson }}, () => {
       fetch(`/admin/campionato/${tournamentId}/toggle_active`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' , 'X-CSRFToken': csrfToken()}
       }).then(r => { if (r.ok) location.reload(); });
     });
   }
@@ -24,7 +24,7 @@
     showConfirm(`{{ _("Sei SICURO di voler eliminare il campionato \"{name}\"?\n\nQuesta azione è IRREVERSIBILE!") }}`.replace('{name}', tournamentName), () => {
       fetch(`/admin/campionato/${tournamentId}/delete`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' , 'X-CSRFToken': csrfToken()}
       }).then(r => { if (r.ok) location.reload(); });
     });
   }

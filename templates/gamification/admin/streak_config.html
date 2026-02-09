@@ -18,6 +18,7 @@
         {% for config in streak_config %}
         <div class="col-md-6">
           <form action="{{ url_for('gamification.admin_update_streak_config') }}" method="POST" class="card p-3 mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="key" value="{{ config.key }}">
             <h6>{{ config.description }}</h6>
             <div class="input-group">
@@ -93,6 +94,7 @@
               <form action="{{ url_for('gamification.admin_delete_streak_milestone', milestone_id=milestone.id) }}"
                     method="POST" class="d-inline"
                     onsubmit="return confirmSubmit(this, {{ _('Eliminare questo milestone?')|tojson }})">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">
                   <i class="bi bi-trash"></i>
                 </button>
@@ -105,6 +107,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <form action="{{ url_for('gamification.admin_edit_streak_milestone', milestone_id=milestone.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <div class="modal-header">
                     <h5 class="modal-title">{{ _('Modifica Milestone') }} {{ milestone.weeks }}w</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -236,6 +239,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form action="{{ url_for('gamification.admin_add_streak_milestone') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="modal-header">
           <h5 class="modal-title">{{ _('Aggiungi Nuovo Milestone') }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

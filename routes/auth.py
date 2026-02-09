@@ -5,11 +5,13 @@ from flask_login import login_user, logout_user, login_required
 from flask_babel import gettext as _
 from models.user.services import UserService
 from models.user.profile_service import UserProfileService
+from utils.rate_limiter import limiter
 
 auth_bp = Blueprint("auth", __name__)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10/minute", methods=["POST"])
 def login():
     """Pagina di login"""
     if request.method == "POST":
@@ -50,6 +52,7 @@ def login():
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("5/minute", methods=["POST"])
 def register():
     """Pagina di registrazione"""
     if request.method == "POST":
@@ -115,6 +118,7 @@ def verify_email(token):
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("3/minute", methods=["POST"])
 def forgot_password():
     """Richiesta reset password"""
     if request.method == "POST":

@@ -1,5 +1,5 @@
 # app.py - Clean application factory pattern
-from flask import Flask, request, session
+from flask import Flask, render_template, request, session
 from flask_babel import Babel
 from flask_login import LoginManager, current_user
 import os
@@ -32,6 +32,18 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
+    # GlitchTip/Sentry error tracking
+    dsn = app.config.get("GLITCHTIP_DSN")
+    if dsn:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        sentry_sdk.init(
+            dsn=dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=0.1,
+            environment=config_name,
+        )
+
     # Configura logging per debug
     if config_name == "development":
         logging.basicConfig(
@@ -49,6 +61,14 @@ def create_app(config_name=None):
     from models.base import mail
     if mail:
         mail.init_app(app)
+
+    # CSRF protection
+    from flask_wtf.csrf import CSRFProtect
+    csrf = CSRFProtect(app)  # noqa: F841
+
+    # Rate limiting
+    from utils.rate_limiter import limiter
+    limiter.init_app(app)
 
     register_soft_delete_filters(SASession)
 
@@ -145,15 +165,14 @@ def create_app(config_name=None):
         """Inject gamification stats into all templates for navbar badge."""
         stats = None
         if current_user.is_authenticated:
-            try:
-                from models.gamification.level_service import LevelService
-                # Use cached or lightweight query if possible used in every request
-                # For now using the service which does querying
-                progress = LevelService.get_level_progress(current_user.id)
-                stats = {"progress": progress}
-            except Exception:
-                pass
-        
+            from flask import g
+            if not hasattr(g, '_gamification_progress'):
+                try:
+                    from models.gamification.level_service import LevelService
+                    g._gamification_progress = LevelService.get_level_progress(current_user.id)
+                except Exception:
+                    g._gamification_progress = None
+            stats = {"progress": g._gamification_progress} if g._gamification_progress else None
         return {"gamification_context": stats}
 
     # Context processor per enum
@@ -221,6 +240,20 @@ def create_app(config_name=None):
             created, skipped = seed_achievements(db.session)
             if created > 0:
                 app.logger.info(f"Gamification: seeded {created} achievements")
+
+    # Custom error pages
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        db.session.rollback()
+        return render_template("errors/500.html"), 500
+
+    @app.errorhandler(429)
+    def ratelimit_error(e):
+        return render_template("errors/429.html"), 429
 
     return app
 

@@ -24,6 +24,7 @@ show_admin_management=False, show_director_management=False, users=[], can_manag
                 {{ dir_user.username }}
                 {% if can_manage_directors and dir_user.id != current_user.id %}
                 <form method="POST" action="{{ url_for(remove_director_route, **{entity_id_param: entity.id}) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="user_id" value="{{ dir_user.id }}">
                     <button class="btn btn-sm btn-danger">{{ _('Rimuovi') }}</button>
                 </form>
@@ -33,6 +34,7 @@ show_admin_management=False, show_director_management=False, users=[], can_manag
         </ul>
 
         <form method="POST" action="{{ url_for(add_director_route, **{entity_id_param: entity.id}) }}" class="mt-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <select class="form-select" name="user_id">
                     {% for user in users %}

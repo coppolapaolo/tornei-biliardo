@@ -11,6 +11,7 @@
       </div>
       <div class="card-body">
         <form method="POST" action="{{ url_for('player.privacy_settings') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
           <div class="mb-4">
             <h5><i class="fas fa-id-card me-2"></i>{{ _("Informazioni Personali") }}</h5>
@@ -113,6 +114,7 @@
         </div>
 
         <form method="POST" action="{{ url_for('player.request_gdpr_export') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-outline-primary">
             <i class="fas fa-file-archive me-1"></i> {{ _("Richiedi Export GDPR") }}
           </button>

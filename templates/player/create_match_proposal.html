@@ -11,6 +11,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" id="proposalForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <!-- Proposal Type -->
                     <div class="mb-3">
                         <label class="form-label">Tipo di Proposta</label>

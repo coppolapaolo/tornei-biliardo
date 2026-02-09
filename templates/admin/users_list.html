@@ -101,6 +101,7 @@
                                 <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}"
                                     method="POST" style="display: inline;"
                                     onsubmit="return confirmSubmit(this, 'Rimuovere il ruolo director a {{ user.username }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="fas fa-user-minus"></i> Rimuovi director
                                     </button>

@@ -1,0 +1,50 @@
+<!-- templates/components/_pagination.html - Generic pagination component
+     Usage: {% set pagination = ... %} {% include "components/_pagination.html" %}
+     Uses request.endpoint automatically for URL generation. -->
+{% if pagination and pagination.pages > 1 %}
+<nav aria-label="{{ _('Navigazione pagine') }}" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {{ 'disabled' if not pagination.has_prev else '' }}">
+            {% if pagination.has_prev %}
+                {% set prev_args = request.args.to_dict() %}
+                {% set _void = prev_args.update({'page': pagination.prev_num}) %}
+                <a class="page-link" href="{{ url_for(request.endpoint, **dict(request.view_args, **prev_args)) }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% else %}
+                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+            {% endif %}
+        </li>
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% set page_args = request.args.to_dict() %}
+                {% set _void = page_args.update({'page': page_num}) %}
+                <li class="page-item {{ 'active' if page_num == pagination.page else '' }}">
+                    <a class="page-link" href="{{ url_for(request.endpoint, **dict(request.view_args, **page_args)) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        <li class="page-item {{ 'disabled' if not pagination.has_next else '' }}">
+            {% if pagination.has_next %}
+                {% set next_args = request.args.to_dict() %}
+                {% set _void = next_args.update({'page': pagination.next_num}) %}
+                <a class="page-link" href="{{ url_for(request.endpoint, **dict(request.view_args, **next_args)) }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% else %}
+                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+            {% endif %}
+        </li>
+    </ul>
+    <p class="text-center text-muted small">
+        {{ _("Pagina") }} {{ pagination.page }} {{ _("di") }} {{ pagination.pages }}
+        ({{ pagination.total }} {{ _("risultati") }})
+    </p>
+</nav>
+{% endif %}

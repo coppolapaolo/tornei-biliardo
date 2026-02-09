@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     // Check for milestones
-    fetch('{{ url_for("admin.kpi.api_check_milestones") }}', { method: 'POST' })
+    fetch('{{ url_for("admin.kpi.api_check_milestones") }}', { method: 'POST', headers: {'X-CSRFToken': csrfToken()} })
         .then(response => response.json())
         .then(data => {
             if (data.success && data.milestones.length > 0) {

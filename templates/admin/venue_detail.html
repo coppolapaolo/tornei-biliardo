@@ -138,6 +138,7 @@
                             
                             <form action="{{ url_for('admin.venue.update_table_numbers', venue_id=venue.id) }}" 
                                   method="POST" class="mt-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <div class="input-group">
                                     <input type="text" 
                                            name="table_numbers" 
@@ -203,6 +204,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager.id) }}"
                           onsubmit="return confirmSubmit(this, 'Sei sicuro di voler revocare la gestione di questa sala?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                             <i class="fas fa-user-times"></i> Revoca Gestione
                         </button>
@@ -217,6 +219,7 @@
                 {% if eligible_users %}
                     <hr>
                     <form method="POST" action="{{ url_for('admin.venue.assign_venue_manager', venue_id=venue.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="user_id" class="form-label">
                                 {% if manager %}Cambia Gestore{% else %}Assegna Gestore{% endif %}
@@ -285,6 +288,7 @@
                       method="POST" 
                       enctype="multipart/form-data"
                       class="mt-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <input type="file" 
                                name="photo" 

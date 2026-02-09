@@ -15,20 +15,20 @@
 <script>
 function unsubscribeFromProva(provaId, provaNumber) {
   showConfirm(`Confermi di volerti disiscrivere dalla Gara ${provaNumber}?`, () => {
-    fetch(`/player/gara/${provaId}/unsubscribe`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+    fetch(`/player/gara/${provaId}/unsubscribe`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken()} })
       .then(r => { if (r.ok) location.reload(); else showError('Errore durante la disiscrizione'); })
       .catch(() => showError('Errore durante la disiscrizione'));
   });
 }
 function toggleActive(tournamentId) {
   showConfirm('Confermi di voler cambiare lo stato del campionato?', () => {
-    fetch(`/admin/campionato/${tournamentId}/toggle_active`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+    fetch(`/admin/campionato/${tournamentId}/toggle_active`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken()} })
       .then(r => { if (r.ok) location.reload(); });
   });
 }
 function deleteTournament(tournamentId, tournamentName) {
   showConfirm(`Confermi di voler eliminare il campionato "${tournamentName}"?\n\nQuesta azione è IRREVERSIBILE!`, () => {
-    fetch(`/admin/campionato/${tournamentId}/delete`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+    fetch(`/admin/campionato/${tournamentId}/delete`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken()} })
       .then(r => { if (r.ok) location.reload(); });
   });
 }

@@ -48,6 +48,7 @@
                     {% if match.status.value == MatchStatus.SCHEDULED.value %}
                     <div class="text-center mt-3">
                         <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-play"></i> {{ _('Inizia Match') }}
                             </button>
@@ -150,6 +151,7 @@
                         {% if match.status.value == MatchStatus.SCHEDULED.value %}
                         <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}"
                             class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="button" class="btn btn-outline-danger w-100"
                                 onclick='confirmSubmit(this.closest("form"), {{ _("Sei sicuro di voler annullare il match?")|tojson }})'>
                                 <i class="fas fa-times"></i> {{ _('Annulla Match') }}
@@ -241,7 +243,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            },
+            'X-CSRFToken': csrfToken()},
             body: JSON.stringify({ winner_id: winnerId })
         })
             .then(response => response.json())
@@ -264,7 +266,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            },
+            'X-CSRFToken': csrfToken()},
             body: JSON.stringify({ player_id: playerId })
         })
             .then(response => response.json())
@@ -288,7 +290,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            'X-CSRFToken': csrfToken()}
         })
             .then(response => response.json())
             .then(data => {
@@ -316,7 +318,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            'X-CSRFToken': csrfToken()}
         })
             .then(response => response.json())
             .then(data => {
@@ -340,7 +342,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                'X-CSRFToken': csrfToken()}
             })
             .then(response => response.json())
             .then(data => {
@@ -378,7 +380,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            },
+            'X-CSRFToken': csrfToken()},
             body: JSON.stringify(data)
         })
         .then(response => response.json())

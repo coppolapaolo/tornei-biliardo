@@ -7,6 +7,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('admin.competition.create_gara') }}" method="POST" id="newGaraForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="campionato_id" value="{{ campionato.id }}">
                 <div class="modal-body">
                     <!-- Step Indicator -->

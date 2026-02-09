@@ -60,6 +60,7 @@
                 class="mb-3" onsubmit="return validateScoreForm(this)"
                 data-is-race-to="{{ 'true' if match.distance_config.is_race_to_racks else 'false' }}"
                 data-winning-score="{{ match.effective_distance }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <h6>{{ _('Imposta Risultato') }}</h6>
                 <div class="row">
                     <div class="col-4">
@@ -211,6 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showConfirm({{ _("Confermi di voler impostare questo risultato?")|tojson }}, () => {
                 fetch(url, {
                     method: 'POST',
+                    headers: {'X-CSRFToken': csrfToken()},
                     body: new URLSearchParams(formData)
                 })
                 .then(response => response.json())
@@ -251,7 +253,7 @@ function updateMatchTimes(matchId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
+        'X-CSRFToken': csrfToken()},
         body: JSON.stringify(data)
     })
     .then(response => response.json())

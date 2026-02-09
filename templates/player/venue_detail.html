@@ -245,6 +245,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('player.request_venue_manager') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="venue_id" value="{{ venue.id }}">
                 <div class="modal-body">
                     <p>Vuoi diventare gestore di <strong>{{ venue.name }}</strong>?</p>

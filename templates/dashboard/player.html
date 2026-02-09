@@ -17,7 +17,7 @@ function unsubscribeFromProva(provaId, provaNumber) {
   showConfirm(`Sei sicuro di volerti disiscrivere dalla Gara ${provaNumber}?`, () => {
     fetch(`/player/gara/${provaId}/unsubscribe`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+      headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken()}
     }).then(r => { if (r.ok) location.reload(); else showError('Errore durante la disiscrizione'); })
       .catch(() => showError('Errore durante la disiscrizione'));
   });

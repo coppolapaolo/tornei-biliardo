@@ -120,6 +120,7 @@
                                             <form action="{{ url_for('admin.venue.delete_venue', venue_id=venue.id) }}"
                                                   method="POST" style="display: inline;"
                                                   onsubmit="return confirmSubmit(this, 'Disattivare la sala {{ venue.name }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                                     <i class="fas fa-times"></i> Disattiva
                                                 </button>
@@ -128,6 +129,7 @@
                                             <form action="{{ url_for('admin.venue.activate_venue', venue_id=venue.id) }}"
                                                   method="POST" style="display: inline;"
                                                   onsubmit="return confirmSubmit(this, 'Attivare la sala {{ venue.name }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                                     <i class="fas fa-check"></i> Attiva
                                                 </button>
@@ -148,6 +150,7 @@
                                                 <div class="btn-group" role="group">
                                                     <form action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}"
                                                           method="POST" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                         <input type="hidden" name="action" value="approve">
                                                         <button type="button" class="btn btn-sm btn-success"
                                                                 data-bs-toggle="tooltip" title="Approva richiesta"
@@ -157,6 +160,7 @@
                                                     </form>
                                                     <form action="{{ url_for('admin.venue.process_venue_manager_request', request_id=request.id) }}"
                                                           method="POST" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                         <input type="hidden" name="action" value="reject">
                                                         <button type="button" class="btn btn-sm btn-danger"
                                                                 data-bs-toggle="tooltip" title="Rifiuta richiesta"
@@ -176,6 +180,7 @@
                                             <form action="{{ url_for('admin.venue.revoke_venue_manager', assignment_id=manager_assignment.id) }}"
                                                   method="POST" style="display: inline;"
                                                   onsubmit="return confirmSubmit(this, 'Revocare la gestione di {{ venue.name }} a {{ manager.username }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-warning">
                                                     <i class="fas fa-user-times"></i> Revoca Gestore
                                                 </button>

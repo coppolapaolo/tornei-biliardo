@@ -38,6 +38,7 @@
                                         <form method="POST" action="{{ url_for('main.reset_database_confirm') }}" 
                                               style="display: inline-block;"
                                               onsubmit="return confirmReset('{{ reset_data.name }}')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="reset_type" value="{{ reset_id }}">
                                             <input type="hidden" name="password" id="password-{{ reset_id }}">
                                             <button type="submit" class="btn btn-sm btn-danger">
@@ -49,6 +50,7 @@
                                         <form method="POST" action="{{ url_for('main.delete_reset_snapshot', snapshot_id=reset_id) }}"
                                               style="display: inline-block;"
                                               onsubmit="return confirmSubmit(this, 'Sei sicuro di voler eliminare questo snapshot?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -72,6 +74,7 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('main.save_reset_snapshot') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="name" class="form-label">Nome Snapshot</label>
                             <input type="text" class="form-control" id="name" name="name" 
