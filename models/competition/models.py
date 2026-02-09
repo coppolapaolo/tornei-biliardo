@@ -477,7 +477,7 @@ class Gara(SoftDeleteMixin, db.Model):
     def can_use_trio(self) -> bool:
         """Check if trio matches are allowed for this gara.
 
-        Trio matches only allowed for distances 2-5 (per ADR-005).
+        Trio matches only allowed for distances 2-7 (per ADR-005).
         """
         return self.get_strategy_behavior().can_use_trio(self.distance)
 

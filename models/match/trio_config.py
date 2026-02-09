@@ -28,9 +28,9 @@ class TrioConfig:
 
     distance: int
 
-    # Trio is only allowed for distances 2-5
+    # Trio is only allowed for distances 2-7
     MIN_DISTANCE = 2
-    MAX_DISTANCE = 5
+    MAX_DISTANCE = 7
 
     @property
     def is_trio_allowed(self) -> bool:
@@ -45,6 +45,8 @@ class TrioConfig:
         - Distance 3: 1 round
         - Distance 4: 2 rounds
         - Distance 5: 2 rounds
+        - Distance 6: 3 rounds
+        - Distance 7: 3 rounds
         """
         if not self.is_trio_allowed:
             return 0
@@ -57,7 +59,7 @@ class TrioConfig:
     def bonus_racks(self) -> int:
         """Bonus racks to equalize with normal matches.
 
-        Added when distance is odd (3, 5) so trio players
+        Added when distance is odd (3, 5, 7) so trio players
         can achieve the same max racks as normal match players.
         """
         if not self.is_trio_allowed:

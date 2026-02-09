@@ -82,8 +82,8 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 
 | Sistema | NO | Trio | Bye semplice | Bye + Challenge | Bye + N rack |
 |---------|-----|------|--------------|-----------------|--------------|
-| **RACK** | ✅ | ✅ (dist. 2-5) | ❌ (0 rack = penalizzato) | ✅ | ✅ |
-| **WINS** | ✅ | ✅ (dist. 2-5) | ✅ (1 win, 0 diff) | ✅ | N/A |
+| **RACK** | ✅ | ✅ (dist. 2-7) | ❌ (0 rack = penalizzato) | ✅ | ✅ |
+| **WINS** | ✅ | ✅ (dist. 2-7) | ✅ (1 win, 0 diff) | ✅ | N/A |
 | **POSITION** | ❌ | N/A | Bye bracket | N/A | N/A |
 
 **NO**: Se abilitato, i giocatori che rendono il numero dispari vanno in lista d'attesa fino a quando non si iscrive un altro giocatore. Vedi [sezione 3.5](#35-no-nessuna-gestione-dispari).
@@ -435,9 +435,9 @@ Riepilogo di tutte le combinazioni valide.
 | # | Sistema | Distanza | Multi-set | Dispari | Forfait | Matchmaking |
 |---|---------|----------|-----------|---------|---------|-------------|
 | 1 | RACK | Exactly N | No | NO | EXCLUDE/FORFEIT | Random/Amalfi/RR |
-| 2 | RACK | Exactly N | No | Trio (dist 2-5) | EXCLUDE/FORFEIT | Random |
-| 3 | RACK | Exactly N | No | Trio (dist 2-5) | EXCLUDE/FORFEIT | Amalfi |
-| 4 | RACK | Exactly N | No | Trio (dist 2-5) | EXCLUDE/FORFEIT | Round Robin |
+| 2 | RACK | Exactly N | No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Random |
+| 3 | RACK | Exactly N | No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Amalfi |
+| 4 | RACK | Exactly N | No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Round Robin |
 | 5 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Random |
 | 6 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Amalfi |
 | 7 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Round Robin |
@@ -446,9 +446,9 @@ Riepilogo di tutte le combinazioni valide.
 | 10 | RACK | Exactly N | No | Bye+N rack | EXCLUDE/FORFEIT | Round Robin |
 | 11 | RACK | Race to N ⚠️ | No | NO/Trio/Bye+Ch/Bye+N | EXCLUDE/FORFEIT | Random/Amalfi/RR |
 | 12 | WINS | Race to N | Sì/No | NO | EXCLUDE/FORFEIT | Random/Amalfi/RR |
-| 13 | WINS | Race to N | Sì/No | Trio (dist 2-5) | EXCLUDE/FORFEIT | Random |
-| 14 | WINS | Race to N | Sì/No | Trio (dist 2-5) | EXCLUDE/FORFEIT | Amalfi |
-| 15 | WINS | Race to N | Sì/No | Trio (dist 2-5) | EXCLUDE/FORFEIT | Round Robin |
+| 13 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Random |
+| 14 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Amalfi |
+| 15 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Round Robin |
 | 16 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Random |
 | 17 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Amalfi |
 | 18 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Round Robin |
@@ -508,7 +508,7 @@ Riepilogo di tutte le combinazioni valide.
   │             │            │             │            │             │
   │ • NO        │            │ • NO        │            │ Bye bracket │
   │ • Trio      │            │ • Trio      │            │             │
-  │   (dist 2-5)│            │   (dist 2-5)│            │             │
+  │   (dist 2-7)│            │   (dist 2-7)│            │             │
   │ • Bye+Chall │            │ • Bye       │            │             │
   │ • Bye+N rack│            │ • Bye+Chall │            │             │
   └──────┬──────┘            └──────┬──────┘            └──────┬──────┘

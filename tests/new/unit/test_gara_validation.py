@@ -375,9 +375,9 @@ class TestPositionSystemValidation:
 class TestTrioValidation:
     """Test validazione Trio."""
 
-    @pytest.mark.parametrize("distance", [2, 3, 4, 5])
+    @pytest.mark.parametrize("distance", [2, 3, 4, 5, 6, 7])
     def test_trio_valid_distances(self, distance):
-        """Trio con distanza 2-5 = valido."""
+        """Trio con distanza 2-7 = valido."""
         errors, warnings = validate_gara_configuration(
             classification_system=ClassificationSystem.RACK,
             distance_type=DistanceType.EXACTLY,
@@ -389,9 +389,9 @@ class TestTrioValidation:
         )
         assert errors == []
 
-    @pytest.mark.parametrize("distance", [1, 6, 7, 8, 9, 10])
+    @pytest.mark.parametrize("distance", [1, 8, 9, 10])
     def test_trio_invalid_distances(self, distance):
-        """Trio con distanza <2 o >5 = errore."""
+        """Trio con distanza <2 o >7 = errore."""
         errors, warnings = validate_gara_configuration(
             classification_system=ClassificationSystem.RACK,
             distance_type=DistanceType.EXACTLY,
@@ -552,7 +552,7 @@ class TestValidateGaraIntegration:
         assert errors == []
 
     def test_validate_gara_with_trio_valid_distance(self):
-        """Trio con distanza 2-5 è valido."""
+        """Trio con distanza 2-7 è valido."""
 
         class MockGara:
             matchmaking_strategy = "random"
@@ -565,14 +565,14 @@ class TestValidateGaraIntegration:
         assert errors == []
 
     def test_validate_gara_with_trio_invalid_distance(self):
-        """Trio con distanza > 5 è errore."""
+        """Trio con distanza > 7 è errore."""
 
         class MockGara:
             matchmaking_strategy = "random"
             odd_number_policy = "trio"
             is_race_to = True
             is_multi_set = False
-            distance = 7
+            distance = 8
 
         errors, warnings = validate_gara(MockGara())
         assert len(errors) == 1
@@ -727,7 +727,7 @@ class TestGaraServiceValidationIntegration:
         assert "pari" in str(exc_info.value).lower()
 
     def test_create_gara_with_trio_valid_distance(self, app, db_session, director):
-        """create_gara() accetta Trio con distanza 2-5."""
+        """create_gara() accetta Trio con distanza 2-7."""
         from models.competition.services import GaraService
         from datetime import date, time, timedelta
 
@@ -747,7 +747,7 @@ class TestGaraServiceValidationIntegration:
         assert gara.odd_number_policy == "trio"
 
     def test_create_gara_rejects_trio_invalid_distance(self, app, db_session, director):
-        """create_gara() rifiuta Trio con distanza > 5."""
+        """create_gara() rifiuta Trio con distanza > 7."""
         from models.competition.services import GaraService
         from datetime import date, time, timedelta
 
@@ -757,7 +757,7 @@ class TestGaraServiceValidationIntegration:
                 name="Test Invalid Trio",
                 date=date.today() + timedelta(days=7),
                 discipline="palla_8",
-                distance=7,  # Troppo alto per trio
+                distance=8,  # Troppo alto per trio
                 director_id=director.id,
                 time=time(20, 0),
                 is_race_to=True,

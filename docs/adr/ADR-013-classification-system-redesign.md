@@ -8,7 +8,7 @@
 
 Il sistema di classificazione esistente aveva diverse ambiguità e configurazioni implicite:
 - Non era chiaro quali combinazioni di opzioni fossero valide
-- Il trio era documentato con distanze 3-7, ma in realtà funziona solo per 2-5
+- Il trio era documentato con distanze 3-7, ora supporta distanze 2-7
 - Mancava una visione complessiva delle dipendenze tra le varie opzioni
 - La gestione dispari aveva opzioni limitate
 
@@ -67,7 +67,7 @@ Quando abilitata:
 
 ### 5. Distanze Trio Corrette
 
-Il trio è possibile solo per distanze **2, 3, 4, 5** (non 3-7 come precedentemente documentato).
+Il trio è possibile per distanze **2, 3, 4, 5, 6, 7**.
 
 | Distanza | Mini gironi | Rack/giocatore | Punteggio RACK |
 |----------|-------------|----------------|----------------|
@@ -75,6 +75,8 @@ Il trio è possibile solo per distanze **2, 3, 4, 5** (non 3-7 come precedenteme
 | 3 | 1 | 2 | 1 + rack vinti |
 | 4 | 2 | 4 | rack vinti |
 | 5 | 2 | 4 | 1 + rack vinti |
+| 6 | 3 | 6 | rack vinti |
+| 7 | 3 | 6 | 1 + rack vinti |
 
 ### 6. Trio con Sistema WINS
 
@@ -163,7 +165,7 @@ Invece di permettere con warning, vietare completamente RACK + Race to N.
    - Schema decisionale
 
 2. **Modificato**: `docs/SPECIFICHE.md`
-   - Aggiornate distanze trio (2-5 invece di 3-7)
+   - Aggiornate distanze trio (2-7)
    - Aggiunta sezione sistemi di classifica
    - Aggiornata gestione dispari
    - Aggiornata gestione forfait

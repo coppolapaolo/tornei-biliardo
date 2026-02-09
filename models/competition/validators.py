@@ -30,7 +30,7 @@ class OddHandling(Enum):
     """Gestione numero dispari di giocatori."""
 
     NO = "NO"  # Lista attesa
-    TRIO = "TRIO"  # Trio (distanza 2-5)
+    TRIO = "TRIO"  # Trio (distanza 2-7)
     BYE = "BYE"  # Bye semplice (solo WINS)
     BYE_CHALLENGE = "BYE_CHALLENGE"  # Bye con challenge
     BYE_N_RACK = "BYE_N_RACK"  # Bye con N rack (solo RACK)
@@ -90,9 +90,9 @@ def validate_gara_configuration(
 
     # Validazione Trio (indipendente dal sistema)
     if odd_handling == OddHandling.TRIO:
-        if distance < 2 or distance > 5:
+        if distance < 2 or distance > 7:
             errors.append(
-                f"Trio richiede distanza tra 2 e 5, specificata: {distance}"
+                f"Trio richiede distanza tra 2 e 7, specificata: {distance}"
             )
 
     # Validazioni per sistema

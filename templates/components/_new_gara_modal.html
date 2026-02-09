@@ -256,7 +256,7 @@
                                         </option>
                                     </select>
                                     <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
-                                        <i class="fas fa-exclamation-triangle"></i> Trio disponibile solo per distanze 2-5
+                                        <i class="fas fa-exclamation-triangle"></i> Trio disponibile solo per distanze 2-7
                                     </small>
                                 </div>
                             </div>
@@ -596,12 +596,12 @@
             updateGameModeText();
         }
 
-        // Validate trio policy (only distances 2-5 per ADR-005)
+        // Validate trio policy (only distances 2-7 per ADR-005)
         function updateTrioWarning() {
             if (!distanceInput || !oddPolicySelect || !trioWarning) return;
             const distance = parseInt(distanceInput.value) || 0;
             const oddPolicy = oddPolicySelect.value;
-            if (oddPolicy === 'trio' && (distance < 2 || distance > 5)) {
+            if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
                 trioWarning.style.display = 'block';
                 oddPolicySelect.value = 'bye';
             } else {

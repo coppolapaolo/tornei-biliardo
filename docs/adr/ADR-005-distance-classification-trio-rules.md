@@ -36,7 +36,7 @@ Queste opzioni non sono tutte combinabili liberamente. Alcune combinazioni non h
 
 | Tipo Classifica | Distanze Valide | Multi-set | Pareggi | Trio |
 |-----------------|-----------------|-----------|---------|------|
-| **Rack vinti** | Solo "Exactly N" | No | Sì | Sì (se 2≤N≤5) |
+| **Rack vinti** | Solo "Exactly N" | No | Sì | Sì (se 2≤N≤7) |
 | **Vittorie match** | "Race to N", "Exactly N" | Sì | No | No |
 
 ### 2. Vincoli per Matchmaking
@@ -64,7 +64,9 @@ Per garantire equità con i match normali, si aggiunge un **bonus rack**:
 | 3 | ✅ Sì | 1 | +1 | 2+1=3 | 3 |
 | 4 | ✅ Sì | 2 | 0 | 4 | 4 |
 | 5 | ✅ Sì | 2 | +1 | 4+1=5 | 5 |
-| >5 | ❌ No | troppi gironi | - | - | - |
+| 6 | ✅ Sì | 3 | 0 | 6 | 6 |
+| 7 | ✅ Sì | 3 | +1 | 6+1=7 | 7 |
+| >7 | ❌ No | troppi gironi | - | - | - |
 
 **Formula**:
 - Gironi = ceil((distanza - 1) / 2)
@@ -108,6 +110,23 @@ Girone 1: 3 rack
 Girone 2: 3 rack
 Bonus: +1 per tutti
 Totale: 6 rack giocati, max 5 per giocatore
+```
+
+**Distanza 6 (3 gironi, 0 bonus):**
+```
+Girone 1: 3 rack
+Girone 2: 3 rack
+Girone 3: 3 rack
+Totale: 9 rack giocati, max 6 per giocatore
+```
+
+**Distanza 7 (3 gironi, 1 bonus):**
+```
+Girone 1: 3 rack
+Girone 2: 3 rack
+Girone 3: 3 rack
+Bonus: +1 per tutti
+Totale: 9 rack giocati, max 7 per giocatore
 ```
 
 ### 5. UI per Inserimento Risultati Trio
@@ -199,7 +218,7 @@ class TrioConfig:
 
     @property
     def is_trio_allowed(self) -> bool:
-        return 2 <= self.distance <= 5
+        return 2 <= self.distance <= 7
 
     @property
     def num_rounds(self) -> int:

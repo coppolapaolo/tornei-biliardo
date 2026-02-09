@@ -71,7 +71,7 @@ Se il numero di giocatori è dispari, si può gestire con diverse opzioni:
 - **Bye+N rack**: un giocatore ottiene automaticamente N rack (solo per sistema RACK)
 - **Trio**: tre giocatori giocano insieme mini gironi
 
-Il **trio** è possibile solo per le distanze da 2 a 5. I giocatori nel trio giocano uno o più mini gironi all'italiana (round robin) in cui tutti giocano con gli altri un solo rack:
+Il **trio** è possibile solo per le distanze da 2 a 7. I giocatori nel trio giocano uno o più mini gironi all'italiana (round robin) in cui tutti giocano con gli altri un solo rack:
 
 | Distanza | mini gironi | rack giocati da ogni giocatore | rack totali | punteggio (RACK) |
 | --- | --- | ---| ---| --- |
@@ -79,10 +79,12 @@ Il **trio** è possibile solo per le distanze da 2 a 5. I giocatori nel trio gio
 | 3 | 1 | 2 | 3 | 1 + rack vinti |
 | 4 | 2 | 4 | 6 | rack vinti |
 | 5 | 2 | 4 | 6 | 1 + rack vinti |
+| 6 | 3 | 6 | 9 | rack vinti |
+| 7 | 3 | 6 | 9 | 1 + rack vinti |
 
 Per il sistema WINS, nel trio vince chi ha il punteggio più alto (1 vittoria), gli altri ottengono 0 vittorie. Se c'è pareggio, tutti ottengono 0 vittorie. La differenza rack è sempre calcolata dai risultati effettivi.
 
-Per distanze superiori a 5, i rack totali da giocare diventano troppi rispetto a quelli che giocano le coppie e quindi il trio allungherebbe troppo i tempi della gara.
+Per distanze superiori a 7, i rack totali da giocare diventano troppi rispetto a quelli che giocano le coppie e quindi il trio allungherebbe troppo i tempi della gara.
 ### Gare amalfi
 
 Una gara **amalfi** è una gara in cui non c'è eliminazione e tutti i giocatori giocano lo stesso numero di turni.

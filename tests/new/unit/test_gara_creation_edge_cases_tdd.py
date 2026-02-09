@@ -337,10 +337,10 @@ class TestGaraCreationEdgeCasesTDD:
         assert "entry_fee" in errors
         assert "negativa" in errors["entry_fee"]
 
-    def test_trio_policy_with_distance_outside_2_5_should_fail(self, db_session):
-        """Test that trio policy with distance outside 2-5 fails validation.
+    def test_trio_policy_with_distance_outside_2_7_should_fail(self, db_session):
+        """Test that trio policy with distance outside 2-7 fails validation.
 
-        Per ADR-005: Trio matches are only allowed for distances 2-5.
+        Per ADR-005: Trio matches are only allowed for distances 2-7.
         """
         unique_id = str(uuid.uuid4())[:8]
         director = User(
@@ -354,9 +354,9 @@ class TestGaraCreationEdgeCasesTDD:
 
         tomorrow = date.today() + timedelta(days=1)
 
-        # Trio with distance > 5 should fail (per ADR-005)
+        # Trio with distance > 7 should fail (per ADR-005)
         with pytest.raises(
-            ValueError, match="Match a tre supportati solo per distanze da 2 a 5"
+            ValueError, match="Match a tre supportati solo per distanze da 2 a 7"
         ):
             GaraService.create_gara(
                 campionato_id=None,
@@ -364,11 +364,11 @@ class TestGaraCreationEdgeCasesTDD:
                 name="Invalid Trio Distance",
                 date=tomorrow,
                 discipline="palla 8",
-                distance=7,  # Greater than 5
+                distance=8,  # Greater than 7
                 is_race_to=True,
                 director_id=director.id,
                 matchmaking_strategy="amalfi",
-                odd_number_policy="trio",  # Should fail with distance > 5
+                odd_number_policy="trio",  # Should fail with distance > 7
                 rounds_count=3,
                 min_participants=4,
             )

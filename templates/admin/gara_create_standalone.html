@@ -290,7 +290,7 @@
                                                 <option value="no">Lista d'Attesa</option>
                                             </select>
                                             <small id="trio_warning" class="text-warning small" style="display: none;">
-                                                <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 5
+                                                <i class="fas fa-exclamation-triangle"></i> Il Trio è disponibile solo per distanze da 2 a 7
                                             </small>
                                         </div>
                                     </div>
@@ -637,8 +637,8 @@
             const distance = parseInt(distanceInput.value) || 0;
             const oddPolicy = oddPolicySelect.value;
 
-            // Trio only valid for distances 2-5 (ADR-005)
-            if (oddPolicy === 'trio' && (distance < 2 || distance > 5)) {
+            // Trio only valid for distances 2-7 (ADR-005)
+            if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
                 trioWarning.style.display = 'block';
             } else {
                 trioWarning.style.display = 'none';

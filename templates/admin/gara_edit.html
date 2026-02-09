@@ -113,8 +113,8 @@
         const distance = parseInt(distanceInput.value) || 0;
         const oddPolicy = oddPolicySelect.value;
 
-        // Trio only valid for distances 2-5 (ADR-005)
-        if (oddPolicy === 'trio' && (distance < 2 || distance > 5)) {
+        // Trio only valid for distances 2-7 (ADR-005)
+        if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
             trioWarning.style.display = 'block';
             // Find first valid option
             const system = classificationSelect ? classificationSelect.value : 'WINS';

@@ -70,7 +70,7 @@ Range corretto: **2-5** (non 3-7 come precedentemente documentato)
 - `scripts/verify_classification_configs.py` - Script verifica configurazioni ✅
 
 ### Modificati
-- `docs/SPECIFICHE.md` - Allineato con nuove specifiche, corretto trio 2-5
+- `docs/SPECIFICHE.md` - Allineato con nuove specifiche, trio distanze 2-7
 - `models/competition/models.py` - Aggiunto `classification_system`, `WaitlistReason`, `waitlist_reason`
 - `models/campionato/models.py` - Aggiunto `default_classification_system`
 - `models/campionato/services.py` - Aggiunto parametro `default_classification_system` ✅
