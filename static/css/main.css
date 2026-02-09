@@ -1,0 +1,86 @@
+/* Table Assignment Modal Styles - Mobile-first design */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.table-btn {
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid;
+    transition: all 0.2s ease;
+}
+
+.table-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.table-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.table-btn-current {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.table-btn-occupied {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.table-btn-occupied:hover {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.table-btn-available {
+    background-color: white;
+    border-color: #198754;
+    color: #198754;
+}
+
+.table-btn-available:hover {
+    background-color: #198754;
+    color: white;
+}
+
+.table-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.table-name {
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .table-grid {
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 8px;
+    }
+
+    .table-btn {
+        min-height: 70px;
+        font-size: 1rem;
+    }
+
+    .table-icon {
+        font-size: 1.2rem;
+    }
+}
