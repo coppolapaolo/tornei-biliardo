@@ -5,6 +5,7 @@ Purpose: Service for sending system emails (verification, password reset) via SM
 
 import os
 import logging
+import threading
 from flask import current_app
 from flask_mail import Message
 
@@ -16,7 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    """Service for sending emails using Flask-Mail (SMTP)."""
+    """Service for sending emails using Flask-Mail (SMTP).
+
+    Emails are sent asynchronously in a background thread to avoid
+    blocking the request. The send_email method returns True optimistically;
+    actual send failures are logged.
+    """
 
     @staticmethod
     def _get_sender() -> str:
@@ -31,7 +37,10 @@ class EmailService:
 
     @staticmethod
     def send_email(to_email: str, subject: str, html_content: str) -> bool:
-        """Send an email using SMTP.
+        """Send an email asynchronously using SMTP.
+
+        The email is dispatched in a background thread so the HTTP response
+        is not blocked by SMTP latency. Returns True optimistically.
 
         Args:
             to_email: Recipient email address
@@ -39,24 +48,34 @@ class EmailService:
             html_content: Email body (HTML)
 
         Returns:
-            bool: True if sent successfully, False otherwise
+            bool: True if the email was queued, False if mail is not configured
         """
         if not mail:
             logger.warning("Flask-Mail not initialized. Email not sent.")
             return False
 
         try:
+            app = current_app._get_current_object()
             msg = Message(
                 subject=subject,
                 sender=EmailService._get_sender(),
                 recipients=[to_email],
                 html=html_content
             )
-            mail.send(msg)
-            logger.info(f"Email sent to {to_email} with subject: {subject}")
+
+            def _send(app, msg):  # type: ignore[no-untyped-def]
+                with app.app_context():
+                    try:
+                        mail.send(msg)
+                        logger.info(f"Email sent to {to_email} with subject: {subject}")
+                    except Exception as e:
+                        logger.error(f"Failed to send email to {to_email}: {e}")
+
+            t = threading.Thread(target=_send, args=(app, msg), daemon=True)
+            t.start()
             return True
         except Exception as e:
-            logger.error(f"Failed to send email to {to_email}: {e}")
+            logger.error(f"Failed to prepare email to {to_email}: {e}")
             return False
 
     @staticmethod
