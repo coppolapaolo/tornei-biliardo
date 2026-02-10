@@ -32,7 +32,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          PYTHONPATH=. pytest tests/new/unit/ -n 4 --tb=short
+          PYTHONPATH=. pytest tests/new/unit/ -n auto --tb=short
 
       - name: Run type check
         run: pyright

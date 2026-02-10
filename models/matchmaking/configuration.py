@@ -241,7 +241,7 @@ class StrategyConfiguration:
         # Retrieve strategy-specific requirements and limitations
         constraints = STRATEGY_CONSTRAINTS.get(self.strategy)
         if not constraints:
-            errors.append(f"Strategia {self.strategy} non supportata")
+            errors.append(f"Strategia {self.strategy.value} non supportata")
             return errors
 
         # Ensure first-round seeding policy is supported by chosen strategy
@@ -250,15 +250,15 @@ class StrategyConfiguration:
             not in constraints["first_round_policies"]
         ):
             errors.append(
-                f"{self.strategy} non supporta la policy di "
-                f"primo turno {self.first_round_policy}"
+                f"{self.strategy.value} non supporta la policy di "
+                f"primo turno {self.first_round_policy.value}"
             )
 
         # Verify odd-player handling method is compatible with strategy
         if self.odd_number_policy.value not in constraints["odd_policies"]:
             errors.append(
-                f"{self.strategy} non supporta la policy per "
-                f"numero dispari {self.odd_number_policy}"
+                f"{self.strategy.value} non supporta la policy per "
+                f"numero dispari {self.odd_number_policy.value}"
             )
 
         # Check trio match feasibility against tournament format complexity
@@ -274,7 +274,7 @@ class StrategyConfiguration:
             "anti_rematch_required"
         ):
             errors.append(
-                f"{self.strategy} richiede anti-rematch abilitato"
+                f"{self.strategy.value} richiede anti-rematch abilitato"
             )
 
         # Verify round count matches strategy requirements for optimal
@@ -285,7 +285,7 @@ class StrategyConfiguration:
             )
             if self.rounds_count and self.rounds_count != required_rounds:
                 errors.append(
-                    f"{self.strategy} con {num_players} giocatori "
+                    f"{self.strategy.value} con {num_players} giocatori "
                     f"richiede esattamente {required_rounds} turni"
                 )
 
