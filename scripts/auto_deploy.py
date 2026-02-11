@@ -64,6 +64,20 @@ def git_pull() -> tuple:
     return success, output
 
 
+def deps_in_sync() -> bool:
+    """Check if all requirements.txt packages are installed."""
+    requirements = PROJECT_DIR / "requirements.txt"
+    if not requirements.exists():
+        return True
+
+    success, output = run_command(
+        [sys.executable, "-m", "pip", "install", "--dry-run", "-q",
+         "-r", str(requirements)],
+    )
+    # pip --dry-run outputs "Would install ..." if something is missing
+    return success and "Would install" not in output
+
+
 def install_dependencies() -> tuple:
     """Install/update Python dependencies."""
     print("Installing dependencies...")
@@ -122,9 +136,15 @@ def main():
         print("ERROR: Git pull failed, aborting")
         sys.exit(1)
 
-    if "Already up to date" in output:
-        print("\nNo changes to deploy.")
-        return
+    has_new_code = "Already up to date" not in output
+
+    if not has_new_code:
+        # No new commits, but check if deps are out of sync
+        # (e.g. manual git pull without pip install)
+        if deps_in_sync():
+            print("\nNo changes to deploy.")
+            return
+        print("\nNo new commits, but dependencies are out of sync.")
 
     print()
 
