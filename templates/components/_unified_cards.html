@@ -215,15 +215,18 @@
           {% endif %}
           {% endfor %}
           {% if not ns.inscribed %}
-          {% if item.entity.is_full() %}
-          <a href="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" class="btn btn-warning btn-sm">
-            <i class="fas fa-clock"></i> {{ _("Lista d'attesa") }}
-          </a>
-          {% else %}
-          <a href="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" class="btn btn-success btn-sm">
-            <i class="fas fa-user-plus"></i> {{ _('Iscriviti') }}
-          </a>
-          {% endif %}
+          <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=item.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if item.entity.is_full() %}
+            <button type="submit" class="btn btn-warning btn-sm">
+              <i class="fas fa-clock"></i> {{ _("Lista d'attesa") }}
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-success btn-sm">
+              <i class="fas fa-user-plus"></i> {{ _('Iscriviti') }}
+            </button>
+            {% endif %}
+          </form>
           {% elif ns.inscribed and ns.is_waitlist %}
           <span class="btn btn-secondary btn-sm disabled">
             <i class="fas fa-clock"></i> {{ _("In lista d'attesa") }}

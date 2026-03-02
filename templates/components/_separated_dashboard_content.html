@@ -620,6 +620,11 @@ function inscribeToGara(garaId) {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/player/gara/' + garaId + '/inscribe';
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'csrf_token';
+    csrf.value = csrfToken();
+    form.appendChild(csrf);
     document.body.appendChild(form);
     form.submit();
 }
@@ -629,6 +634,11 @@ function unsubscribeFromGara(garaId) {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/player/gara/' + garaId + '/unsubscribe';
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'csrf_token';
+    csrf.value = csrfToken();
+    form.appendChild(csrf);
     document.body.appendChild(form);
     form.submit();
 }
