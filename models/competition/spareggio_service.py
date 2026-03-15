@@ -3,10 +3,17 @@ Module: models/competition/spareggio_service.py
 Purpose: Handle spot shot rally (SSR) tiebreakers for top 3 positions
 """
 
-from typing import Dict, List, Optional, Tuple, TypedDict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict
+from sqlalchemy import func
 from models.base import db
 from models.classification.models import RoundClassification, GaraClassification
+from models.match.models import Match
 from models.transaction.manager import transactional
+
+if TYPE_CHECKING:
+    from models.competition.models import Gara
 
 
 class TiebreakerGroup(TypedDict):
@@ -18,6 +25,19 @@ class TiebreakerGroup(TypedDict):
 
 class SpareggioService:
     """Service for detecting and resolving tiebreakers in top 3 positions."""
+
+    @staticmethod
+    def _get_effective_final_round(gara: Gara) -> int:
+        """Get the effective final round for classification.
+
+        For Random strategy, all rounds are created at startup so
+        gara.current_round may lag behind. Use max(Match.round_number) instead.
+        For other strategies, fall back to gara.current_round or gara.rounds_count.
+        """
+        max_round = db.session.query(func.max(Match.round_number)).filter(
+            Match.gara_id == gara.id
+        ).scalar()
+        return max_round or gara.current_round or gara.rounds_count
 
     @staticmethod
     def detect_tiebreakers(gara_id: int) -> List[TiebreakerGroup]:
@@ -47,7 +67,7 @@ class SpareggioService:
         tiebreaker_limit = gara.tiebreaker_until_position or 3
 
         # Get final round classification
-        final_round = gara.current_round or gara.rounds_count
+        final_round = SpareggioService._get_effective_final_round(gara)
         classifications = (
             db.session.query(RoundClassification)
             .filter_by(gara_id=gara_id, round_number=final_round)
@@ -170,7 +190,7 @@ class SpareggioService:
         tiebreaker_limit = gara.tiebreaker_until_position or 3
 
         # Get final round classification
-        final_round = gara.current_round or gara.rounds_count
+        final_round = SpareggioService._get_effective_final_round(gara)
         classifications = (
             db.session.query(RoundClassification)
             .filter_by(gara_id=gara_id, round_number=final_round)
@@ -327,7 +347,7 @@ class SpareggioService:
 
         # Get or create GaraClassification entries for all players
         # First, ensure all players in the tiebreaker have GaraClassification entries
-        final_round = gara.current_round or gara.rounds_count
+        final_round = SpareggioService._get_effective_final_round(gara)
 
         for user_id, ssr_score in scores.items():
             # Get round classification to get stats
@@ -414,7 +434,7 @@ class SpareggioService:
                 return False, f"Giocatore {user_id} non appartiene a questo gruppo"
 
         # Get final round for stats lookup
-        final_round = gara.current_round or gara.rounds_count
+        final_round = SpareggioService._get_effective_final_round(gara)
 
         # Save scores for this group
         for user_id, ssr_score in scores.items():
@@ -472,7 +492,7 @@ class SpareggioService:
         if not gara:
             return False, "Gara non trovata"
 
-        final_round = gara.current_round or gara.rounds_count
+        final_round = SpareggioService._get_effective_final_round(gara)
 
         # Expire all to ensure we get fresh data from DB
         db.session.expire_all()

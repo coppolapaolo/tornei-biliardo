@@ -208,3 +208,104 @@ class TestSpareggioServiceHasUnresolved:
         """Should return False when no tiebreakers exist."""
         mock_detect.return_value = []
         assert SpareggioService.has_unresolved_tiebreakers(1) is False
+
+
+class TestSpareggioServiceRandomStrategyRound:
+    """Regression tests: SSR tiebreaker must use max(Match.round_number),
+    not gara.current_round, for Random strategy gare where all rounds
+    are created at startup and current_round may lag behind."""
+
+    @patch("models.competition.spareggio_service.db")
+    @patch("models.competition.spareggio_service.Match")
+    def test_detect_tiebreakers_uses_max_round_not_current_round(
+        self, mock_match_cls, mock_db
+    ):
+        """When current_round=2 but matches exist up to round 3,
+        detect_tiebreakers should query classification for round 3."""
+        mock_gara = MagicMock()
+        mock_gara.id = 1
+        mock_gara.current_round = 2  # Stale - lags behind
+        mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
+        mock_db.session.get.return_value = mock_gara
+
+        # _get_effective_final_round queries func.max(Match.round_number)
+        # Mock the chain: db.session.query(func.max(...)).filter(...).scalar()
+        mock_query = MagicMock()
+        mock_filter = MagicMock()
+        mock_filter.scalar.return_value = 3  # Max round from matches
+        mock_query.filter.return_value = mock_filter
+
+        # filter_by is used for RoundClassification query
+        mock_filter_by = MagicMock()
+        mock_filter_by.order_by.return_value.all.return_value = []
+        mock_query.filter_by.return_value = mock_filter_by
+
+        mock_db.session.query.return_value = mock_query
+
+        SpareggioService.detect_tiebreakers(1)
+
+        # Verify filter_by was called with round_number=3 (not 2)
+        mock_query.filter_by.assert_called_with(
+            gara_id=1, round_number=3
+        )
+
+    @patch("models.competition.spareggio_service.db")
+    @patch("models.competition.spareggio_service.Match")
+    def test_get_all_ssr_groups_uses_max_round(self, mock_match_cls, mock_db):
+        """get_all_ssr_groups should also use max(Match.round_number)."""
+        mock_gara = MagicMock()
+        mock_gara.id = 1
+        mock_gara.current_round = 2  # Stale
+        mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
+        mock_db.session.get.return_value = mock_gara
+
+        mock_query = MagicMock()
+        mock_filter = MagicMock()
+        mock_filter.scalar.return_value = 3
+        mock_query.filter.return_value = mock_filter
+
+        mock_filter_by = MagicMock()
+        mock_filter_by.order_by.return_value.all.return_value = []
+        mock_query.filter_by.return_value = mock_filter_by
+
+        mock_db.session.query.return_value = mock_query
+
+        SpareggioService.get_all_ssr_groups(1)
+
+        mock_query.filter_by.assert_called_with(
+            gara_id=1, round_number=3
+        )
+
+    @patch("models.competition.spareggio_service.db")
+    @patch("models.competition.spareggio_service.Match")
+    def test_fallback_when_no_matches_exist(self, mock_match_cls, mock_db):
+        """When no matches exist, should fall back to current_round/rounds_count."""
+        mock_gara = MagicMock()
+        mock_gara.id = 1
+        mock_gara.current_round = 0
+        mock_gara.rounds_count = 3
+        mock_gara.tiebreaker_enabled = True
+        mock_gara.tiebreaker_until_position = 3
+        mock_db.session.get.return_value = mock_gara
+
+        mock_query = MagicMock()
+        mock_filter = MagicMock()
+        mock_filter.scalar.return_value = None  # No matches
+        mock_query.filter.return_value = mock_filter
+
+        mock_filter_by = MagicMock()
+        mock_filter_by.order_by.return_value.all.return_value = []
+        mock_query.filter_by.return_value = mock_filter_by
+
+        mock_db.session.query.return_value = mock_query
+
+        SpareggioService.detect_tiebreakers(1)
+
+        # Should fall back to rounds_count=3 (since current_round=0 is falsy)
+        mock_query.filter_by.assert_called_with(
+            gara_id=1, round_number=3
+        )

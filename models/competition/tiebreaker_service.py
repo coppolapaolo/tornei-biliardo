@@ -7,8 +7,10 @@ the tiebreaker process (playoff match or challenge) based on gara configuration.
 
 from typing import List, Dict, Tuple
 from dataclasses import dataclass
+from sqlalchemy import func
 
 from models.base import db
+from models.match.models import Match
 from models.transaction.manager import transactional
 
 
@@ -47,8 +49,11 @@ class TiebreakerService:
         if not gara.tiebreaker_enabled:
             return []
 
-        # Get final round classification
-        final_round = gara.current_round
+        # Get final round classification - use max(Match.round_number) to handle
+        # Random strategy where all rounds are created at startup
+        final_round = db.session.query(func.max(Match.round_number)).filter(
+            Match.gara_id == gara_id
+        ).scalar() or gara.current_round
         if final_round == 0:
             return []
 
