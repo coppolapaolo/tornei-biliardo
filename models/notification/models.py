@@ -77,7 +77,7 @@ class NotificationStatus(Enum):
     EXPIRED = "expired"  # Expired without being read
 
 
-class Notification(BaseModel, TimestampMixin):
+class Notification(BaseModel):
     """User notification for various system events."""
 
     __tablename__ = "notification"
@@ -259,7 +259,7 @@ class Notification(BaseModel, TimestampMixin):
         return f"<Notification {self.user_id}: {self.notification_type.value}>"
 
 
-class NotificationPreference(BaseModel, TimestampMixin):
+class NotificationPreference(BaseModel):
     """User preferences for notification types."""
 
     __tablename__ = "notification_preference"
@@ -381,7 +381,7 @@ class NotificationPreference(BaseModel, TimestampMixin):
         return f"<NotificationPreference {self.user_id}: {self.notification_type.value}={self.enabled}>"
 
 
-class NotificationTemplate(BaseModel, TimestampMixin):
+class NotificationTemplate(BaseModel):
     """Templates for notification messages."""
 
     __tablename__ = "notification_template"

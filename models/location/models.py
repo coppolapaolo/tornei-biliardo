@@ -31,7 +31,7 @@ class DayOfWeek(Enum):
     SUNDAY = 7
 
 
-class BilliardHall(BaseModel, TimestampMixin):
+class BilliardHall(BaseModel):
     """A billiard hall where matches can be played."""
 
     __tablename__ = "billiard_hall"
@@ -230,7 +230,7 @@ class BilliardHall(BaseModel, TimestampMixin):
         return f"<BilliardHall {self.name}>"
 
 
-class UserLocationAvailability(BaseModel, TimestampMixin):
+class UserLocationAvailability(BaseModel):
     """User availability preferences for specific billiard halls."""
 
     __tablename__ = "user_location_availability"

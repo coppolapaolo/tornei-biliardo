@@ -34,7 +34,7 @@ class RatingSystem(Enum):
     INTERNAL = "internal"  # Club internal rating
 
 
-class PlayerCategory(BaseModel, TimestampMixin):
+class PlayerCategory(BaseModel):
     """Player category assignment for handicap purposes."""
 
     __tablename__ = "player_category"
@@ -81,7 +81,7 @@ class PlayerCategory(BaseModel, TimestampMixin):
         return f"<PlayerCategory {self.user_id}: {self.category.value}>"
 
 
-class PlayerRating(BaseModel, TimestampMixin):
+class PlayerRating(BaseModel):
     """Player rating in various rating systems."""
 
     __tablename__ = "player_rating"
@@ -162,7 +162,7 @@ class PlayerRating(BaseModel, TimestampMixin):
         return f"<PlayerRating {self.user_id}: {self.rating_system.value}={self.rating_value}>"
 
 
-class HandicapRule(BaseModel, TimestampMixin):
+class HandicapRule(BaseModel):
     """Handicap rules for matches between different categories/ratings."""
 
     __tablename__ = "handicap_rule"

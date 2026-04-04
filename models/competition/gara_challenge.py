@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     pass
 
 
-class GaraChallenge(BaseModel, TimestampMixin):
+class GaraChallenge(BaseModel):
     """Link between a gara (competition) and a challenge.
 
     This model lives in the Competition domain because the integration
@@ -104,7 +104,7 @@ class GaraChallenge(BaseModel, TimestampMixin):
         return f"<GaraChallenge gara_id={self.gara_id} challenge_id={self.challenge_id} round={self.round_number}>"
 
 
-class GaraChallengeAttempt(BaseModel, TimestampMixin):
+class GaraChallengeAttempt(BaseModel):
     """An attempt at a challenge within a specific gara context."""
 
     __tablename__ = "gara_challenge_attempt"

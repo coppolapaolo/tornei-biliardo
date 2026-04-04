@@ -7,7 +7,7 @@ from typing import Optional, List, Dict, Any
 from models.base import db, BaseModel, TimestampMixin, utc_now
 
 
-class Set(BaseModel, TimestampMixin):
+class Set(BaseModel):
     """A set within a multi-set match."""
 
     __tablename__ = "set"
@@ -333,7 +333,7 @@ class Set(BaseModel, TimestampMixin):
         ]
 
 
-class SetRack(BaseModel, TimestampMixin):
+class SetRack(BaseModel):
     """A rack within a set.
 
     Separato da Rack per contesti diversi: SetRack per multi-set matches

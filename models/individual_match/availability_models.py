@@ -7,7 +7,7 @@ Split from: models/individual_match/models.py (P3a refactoring)
 from ..base import db, BaseModel, TimestampMixin
 
 
-class PlayerAvailability(BaseModel, TimestampMixin):
+class PlayerAvailability(BaseModel):
     """Player availability preferences for match locations.
 
     DEPRECATED: This model uses string-based location for legacy compatibility.

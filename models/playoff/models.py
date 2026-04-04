@@ -38,7 +38,7 @@ class QualificationStatus(Enum):
     REPLACED = "replaced"  # Replaced by next eligible player
 
 
-class PlayoffConfiguration(BaseModel, TimestampMixin):
+class PlayoffConfiguration(BaseModel):
     """Configuration for campionato playoffs."""
 
     __tablename__ = "playoff_configuration"
@@ -258,7 +258,7 @@ class PlayoffConfiguration(BaseModel, TimestampMixin):
         return f"<PlayoffConfiguration {self.name} for Campionato {self.campionato_id}>"
 
 
-class PlayoffQualification(BaseModel, TimestampMixin):
+class PlayoffQualification(BaseModel):
     """Individual player qualification for a playoff."""
 
     __tablename__ = "playoff_qualification"
@@ -344,7 +344,7 @@ class PlayoffQualification(BaseModel, TimestampMixin):
         return f"<PlayoffQualification {self.user_id} -> {self.configuration.name}: {self.status.value}>"
 
 
-class PlayoffTournament(BaseModel, TimestampMixin):
+class PlayoffTournament(BaseModel):
     """The actual playoff campionato/gara."""
 
     __tablename__ = "playoff_campionato"

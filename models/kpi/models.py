@@ -12,7 +12,7 @@ from ..base import db, BaseModel, TimestampMixin, utc_now
 from .enums import FeatureName, MilestoneType
 
 
-class KpiFeatureUsage(BaseModel, TimestampMixin):
+class KpiFeatureUsage(BaseModel):
     """Aggregated feature usage tracking (anonymous/GDPR compliant)."""
 
     __tablename__ = "kpi_feature_usage"
@@ -77,7 +77,7 @@ class KpiFeatureUsage(BaseModel, TimestampMixin):
         return record
 
 
-class KpiDailySnapshot(BaseModel, TimestampMixin):
+class KpiDailySnapshot(BaseModel):
     """Daily snapshot of aggregate platform metrics."""
 
     __tablename__ = "kpi_daily_snapshot"

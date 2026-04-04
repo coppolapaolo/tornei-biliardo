@@ -42,7 +42,7 @@ class InvitationStatus(Enum):
     CANCELLED = "cancelled"
 
 
-class MatchProposal(BaseModel, TimestampMixin):
+class MatchProposal(BaseModel):
     """A proposal for a match, either direct or open."""
 
     __tablename__ = "match_proposal"
@@ -276,7 +276,7 @@ class MatchProposal(BaseModel, TimestampMixin):
         )
 
 
-class ProposalInvitation(BaseModel, TimestampMixin):
+class ProposalInvitation(BaseModel):
     """Individual invitation within a direct match proposal."""
 
     __tablename__ = "proposal_invitation"

@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     pass
 
 
-class Challenge(BaseModel, TimestampMixin):
+class Challenge(BaseModel):
     """
     Entità Challenge - Sfida di Abilità per Giocatori
 
@@ -260,7 +260,7 @@ class Challenge(BaseModel, TimestampMixin):
         return f"<Challenge #{self.id}: {self.get_display_name()}>"
 
 
-class ChallengeAttempt(BaseModel, TimestampMixin):
+class ChallengeAttempt(BaseModel):
     """
     Entità ChallengeAttempt - Tentativo di Sfida del Giocatore
 

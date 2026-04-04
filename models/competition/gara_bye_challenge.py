@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     pass
 
 
-class GaraByeChallenge(BaseModel, TimestampMixin):
+class GaraByeChallenge(BaseModel):
     """Links a challenge attempt to a gara round for bye replacement.
 
     This is a bridge entity owned by the Competition domain that creates

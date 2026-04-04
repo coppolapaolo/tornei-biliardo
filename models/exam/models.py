@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     pass
 
 
-class Exam(BaseModel, TimestampMixin):
+class Exam(BaseModel):
     """An exam consisting of multiple challenges with grading criteria."""
 
     __tablename__ = "exam"
@@ -185,7 +185,7 @@ class ExamChallenge(BaseModel):
         )
 
 
-class ExamAttempt(BaseModel, TimestampMixin):
+class ExamAttempt(BaseModel):
     """A student's attempt at an exam."""
 
     __tablename__ = "exam_attempt"
@@ -277,7 +277,7 @@ class ExamAttempt(BaseModel, TimestampMixin):
         return f"<ExamAttempt {self.user_id} -> {self.exam.name}: {self.final_grade}>"
 
 
-class ExamChallengeResult(BaseModel, TimestampMixin):
+class ExamChallengeResult(BaseModel):
     """Result of a specific challenge within an exam attempt."""
 
     __tablename__ = "exam_challenge_result"

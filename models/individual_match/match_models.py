@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from ..user.models import User
 
 
-class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
+class IndividualMatch(BaseModel, BaseMatchMixin):
     """
     An individual match between two players (casual match).
 
@@ -611,7 +611,7 @@ class IndividualSetStatus(Enum):
     COMPLETED = "completed"
 
 
-class IndividualSet(BaseModel, TimestampMixin):
+class IndividualSet(BaseModel):
     """A single set within a multi-set individual match.
 
     Follows the same pattern as Set model for tournament matches.
@@ -808,7 +808,7 @@ class IndividualSet(BaseModel, TimestampMixin):
         return f"<IndividualSet {self.match_id}-{self.set_number}: {self.player1_racks}-{self.player2_racks}>"
 
 
-class IndividualRack(BaseModel, TimestampMixin):
+class IndividualRack(BaseModel):
     """A single rack within an individual match.
 
     For multi-set matches, racks belong to a specific IndividualSet.

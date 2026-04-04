@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     pass
 
 
-class RoundConfiguration(BaseModel, TimestampMixin):
+class RoundConfiguration(BaseModel):
     """Configuration for a specific round in a gara."""
 
     __tablename__ = "round_configuration"
