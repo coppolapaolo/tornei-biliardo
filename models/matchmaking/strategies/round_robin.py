@@ -39,7 +39,9 @@ class RoundRobinStrategy(BaseStrategy):
             # Get active inscriptions
             inscriptions = getattr(gara, "inscriptions", [])
             active_inscriptions = [
-                i for i in inscriptions if not getattr(i, "is_withdrawn", False)
+                i for i in inscriptions
+                if not getattr(i, "is_withdrawn", False)
+                and not getattr(i, "is_waitlist", False)
             ]
             player_count = len(active_inscriptions)
 
@@ -80,7 +82,10 @@ class RoundRobinStrategy(BaseStrategy):
         try:
             # Get active players
             inscriptions = getattr(gara, "inscriptions", [])
-            active_inscriptions = [i for i in inscriptions if not i.is_withdrawn]
+            active_inscriptions = [
+                i for i in inscriptions
+                if not i.is_withdrawn and not getattr(i, "is_waitlist", False)
+            ]
             player_ids = [i.user_id for i in active_inscriptions]
 
             if len(player_ids) < 2:

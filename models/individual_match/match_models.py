@@ -413,16 +413,18 @@ class IndividualMatch(BaseModel, TimestampMixin, BaseMatchMixin):
         # Determine winner (opponent of forfeiting player)
         if user_id == self.player1_id:
             self.winner_id = self.player2_id
-            # Ensure winner has at least the winning score
-            winning_score = self.distance_config.get_winning_racks()
-            if self.player2_score < winning_score:
-                self.player2_score = winning_score
+            # Ensure winner has at least the winning score (if distance is set)
+            if self.distance_config:
+                winning_score = self.distance_config.get_winning_racks()
+                if self.player2_score < winning_score:
+                    self.player2_score = winning_score
             # Keep player1_score as-is (racks already won)
         else:
             self.winner_id = self.player1_id
-            winning_score = self.distance_config.get_winning_racks()
-            if self.player1_score < winning_score:
-                self.player1_score = winning_score
+            if self.distance_config:
+                winning_score = self.distance_config.get_winning_racks()
+                if self.player1_score < winning_score:
+                    self.player1_score = winning_score
             # Keep player2_score as-is (racks already won)
 
         # Complete the match

@@ -199,8 +199,13 @@ class RackService:
         # Aggiorna il punteggio del match
         if winner_id == match.player1_id:
             match.player1_score = max(0, match.player1_score - 1)
-        else:
+        elif winner_id == match.player2_id:
             match.player2_score = max(0, match.player2_score - 1)
+        else:
+            raise ValueError(
+                f"Rack winner {winner_id} is neither player1 ({match.player1_id}) "
+                f"nor player2 ({match.player2_id})"
+            )
 
         # Controlla sempre se il punteggio giustifica ancora il winner_id
         should_clear_winner = False
@@ -246,7 +251,7 @@ class RackService:
     @transactional(domain="match")
     def remove_last_rack(match_id: int) -> Optional[Rack]:
         last = (
-            Rack.query.filter_by(match_id=match_id)
+            Rack.query.filter_by(match_id=match_id, is_deleted=False)
             .order_by(Rack.rack_number.desc())
             .first()
         )

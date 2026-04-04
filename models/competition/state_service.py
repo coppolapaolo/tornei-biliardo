@@ -29,7 +29,11 @@ class StateService:
 
     @staticmethod
     def to_inscription(gara: Gara) -> Gara:
-        """setup → inscription"""
+        """setup → inscription
+
+        No @transactional: always called within a transactional context
+        (InscriptionService.open_inscriptions, GaraService).
+        """
         StateService._require(gara, GaraStatus.SETUP)
 
         # Validazione: le date di iscrizione devono essere impostate
@@ -51,7 +55,11 @@ class StateService:
 
     @staticmethod
     def start_playing(gara: Gara) -> Gara:
-        """inscription → playing"""
+        """inscription → playing
+
+        No @transactional: always called within a transactional context
+        (RoundService.start_first_round, RoundCreation).
+        """
         StateService._require(gara, GaraStatus.INSCRIPTION)
 
         # Controllo sul numero di iscritti attivi vs minimo richiesto

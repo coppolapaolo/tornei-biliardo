@@ -78,6 +78,12 @@ class MatchmakingOrchestrator:
             strategy_name=strategy_name, gara=gara, round_number=round_number
         )
 
+        if not pairings:
+            raise ValueError(
+                f"La strategia '{strategy_name}' non ha prodotto accoppiamenti "
+                f"per il turno {round_number}"
+            )
+
         # Apply handicaps if requested
         enhanced_pairings = []
         for pairing in pairings:

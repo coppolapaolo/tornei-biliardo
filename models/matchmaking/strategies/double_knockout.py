@@ -81,19 +81,14 @@ class DoubleKnockoutStrategy(BaseStrategy):
         self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Double Knockout."""
-        try:
-            from typing import cast
+        from typing import cast
 
-            if round_number == 1:
-                return self._generate_first_round_pairings(cast("Gara", gara))
-            else:
-                return self._generate_subsequent_round_pairings(
-                    cast("Gara", gara), round_number
-                )
-
-        except Exception as e:
-            print(f"Error generating Double Knockout pairings: {e}")
-            return []
+        if round_number == 1:
+            return self._generate_first_round_pairings(cast("Gara", gara))
+        else:
+            return self._generate_subsequent_round_pairings(
+                cast("Gara", gara), round_number
+            )
 
     def _generate_first_round_pairings(self, gara: "Gara") -> List[Pairing]:
         """Generate first round pairings (winners bracket only)."""

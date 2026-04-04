@@ -145,6 +145,11 @@ class BaseMatchMixin:
         if user_id not in [self.player1_id, self.player2_id]:
             raise ValueError("User is not part of this match")
 
+        from models.status_enum import MatchStatus
+
+        if self.status == MatchStatus.VALIDATED.value:
+            raise ValueError("Match already validated")
+
         # Set confirmation for the appropriate player
         if user_id == self.player1_id:
             self.player1_confirmed = True

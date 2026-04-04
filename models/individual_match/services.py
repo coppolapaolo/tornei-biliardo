@@ -493,7 +493,6 @@ class IndividualMatchService:
         return IndividualRackService.remove_rack_for_player(match_id, user_id, player_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def submit_rack_result(
         match_id: int,
         user_id: int,
@@ -501,13 +500,15 @@ class IndividualMatchService:
         rack_number: int,
         notes: Optional[str] = None,
     ) -> IndividualRack:
-        """Submit result for a rack - legacy method for backward compatibility."""
+        """Submit result for a rack - legacy method for backward compatibility.
+
+        No @transactional: delegates to IndividualRackService which owns the transaction.
+        """
         return IndividualRackService.submit_rack_result(
             match_id, user_id, winner_id, rack_number, notes
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def add_rack_result(
         match_id: int,
         rack_number: Optional[int] = None,
@@ -517,7 +518,10 @@ class IndividualMatchService:
         notes: Optional[str] = None,
         **kwargs,
     ) -> IndividualRack:
-        """Add a rack result with flexible parameters for test compatibility."""
+        """Add a rack result with flexible parameters for test compatibility.
+
+        No @transactional: delegates to IndividualRackService which owns the transaction.
+        """
         return IndividualRackService.add_rack_result(
             match_id=match_id,
             rack_number=rack_number,
@@ -529,33 +533,41 @@ class IndividualMatchService:
         )
 
     @staticmethod
-    @transactional(domain="individual_match")
     def _add_rack_result_original(
         match_id: int, winner_id: int, user_id: int
     ) -> IndividualRack:
-        """Original add_rack_result implementation."""
+        """Original add_rack_result implementation.
+
+        No @transactional: delegates to IndividualRackService which owns the transaction.
+        """
         return IndividualRackService._add_rack_result_original(match_id, winner_id, user_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def confirm_rack_result(rack_id: int, confirming_player_id: int) -> Dict[str, Any]:
-        """Confirm a rack result."""
+        """Confirm a rack result.
+
+        No @transactional: delegates to IndividualRackService which owns the transaction.
+        """
         return IndividualRackService.confirm_rack_result(rack_id, confirming_player_id)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def dispute_rack_result(
         rack_id: int, disputing_player_id: int, reason: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Dispute a rack result."""
+        """Dispute a rack result.
+
+        No @transactional: delegates to IndividualRackService which owns the transaction.
+        """
         return IndividualRackService.dispute_rack_result(rack_id, disputing_player_id, reason)
 
     @staticmethod
-    @transactional(domain="individual_match")
     def resolve_rack_dispute(
         rack_id: int, admin_user_id: int, resolution: str, reason: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Resolve a rack result dispute."""
+        """Resolve a rack result dispute.
+
+        No @transactional: delegates to IndividualRackService which owns the transaction.
+        """
         return IndividualRackService.resolve_rack_dispute(
             rack_id, admin_user_id, resolution, reason
         )

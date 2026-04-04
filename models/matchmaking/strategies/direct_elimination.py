@@ -170,6 +170,11 @@ class DirectEliminationStrategy(BaseStrategy):
                 winners.append(match.player1_id)
             elif match.is_bye and match.player2_id:
                 winners.append(match.player2_id)
+            else:
+                raise ValueError(
+                    f"Match {match.id} completato senza vincitore "
+                    f"(turno {previous_round})"
+                )
 
         # Pair winners
         pairings = []
@@ -195,7 +200,7 @@ class DirectEliminationStrategy(BaseStrategy):
         from ...classification.models import Classification
 
         # Try to get seeding from campionato classification
-        if hasattr(gara, "campionato_id"):
+        if hasattr(gara, "campionato_id") and gara.campionato_id is not None:
             classifications = (
                 Classification.query.filter_by(campionato_id=gara.campionato_id)
                 .order_by(Classification.position)
