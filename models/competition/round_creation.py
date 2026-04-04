@@ -197,6 +197,7 @@ class RoundCreationService:
                         status="completed",
                         discipline=effective_discipline,
                         match_distance=round_distance,
+                        is_multi_set=gara.is_multi_set,
                     )
                     db.session.add(match)
                 else:
@@ -209,6 +210,7 @@ class RoundCreationService:
                         is_bye=False,
                         discipline=effective_discipline,
                         match_distance=round_distance,
+                        is_multi_set=gara.is_multi_set,
                     )
                     db.session.add(match)
             elif len(pairing.players) == 3:

@@ -135,6 +135,7 @@ class RoundService:
                             is_bye=False,
                             discipline=round_discipline,
                             match_distance=round_distance,
+                            is_multi_set=gara.is_multi_set,
                         )
                         db.session.add(match)
                     elif len(pairing.players) == 3:
@@ -220,6 +221,7 @@ class RoundService:
                         is_bye=False,
                         discipline=round_discipline,
                         match_distance=round_distance,
+                        is_multi_set=gara.is_multi_set,
                     )
                     db.session.add(match)
                 elif len(pairing.players) == 3:

@@ -16,7 +16,8 @@ from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.match.services import MatchService, RackService
-from models.classification.models import RoundClassification, PlayerEncounter
+from models.classification.models import RoundClassification, PlayerEncounter, Classification
+from models.campionato.models import Campionato
 from models.base import db, utc_now
 
 
@@ -222,6 +223,110 @@ class TestFirstRoundPolicyClassification:
             first_round_policy="classification",
         )
         # Should not raise — falls back to random
+        RoundService.start_first_round(gara.id)
+        matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
+        assert len(matches) == 3
+
+    def test_classification_uses_campionato_standings(self, db_session):
+        """Classification policy uses existing campionato standings for seeding."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 6)
+
+        # Create campionato
+        campionato = Campionato(
+            name="Test Camp",
+            campionato_type="amalfi",
+            planned_gare_count=5,
+        )
+        db_session.add(campionato)
+        db_session.flush()
+
+        # Create campionato classification (standings from previous gare)
+        for i, player in enumerate(players):
+            cls = Classification(
+                campionato_id=campionato.id,
+                user_id=player.id,
+                position=i + 1,
+                total_matches_won=6 - i,
+                total_point_difference=10 - i * 3,
+            )
+            db_session.add(cls)
+        db_session.commit()
+
+        # Create gara IN the campionato with classification policy
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            campionato_id=campionato.id,
+            first_round_policy="classification",
+        )
+
+        RoundService.start_first_round(gara.id)
+        matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
+        assert len(matches) == 3
+
+        # With salto=3 for round 1 of 3, pos1 pairs with pos4
+        # Verify all 6 players are paired
+        paired = set()
+        for m in matches:
+            paired.add(m.player1_id)
+            if m.player2_id:
+                paired.add(m.player2_id)
+        assert len(paired) == 6
+
+    def test_classification_with_unclassified_players(self, db_session):
+        """Some players have campionato standings, others don't."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 6)
+
+        campionato = Campionato(
+            name="Test Camp 2",
+            campionato_type="amalfi",
+            planned_gare_count=5,
+        )
+        db_session.add(campionato)
+        db_session.flush()
+
+        # Only first 4 players have classification (2 are new)
+        for i in range(4):
+            cls = Classification(
+                campionato_id=campionato.id,
+                user_id=players[i].id,
+                position=i + 1,
+                total_matches_won=4 - i,
+            )
+            db_session.add(cls)
+        db_session.commit()
+
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            campionato_id=campionato.id,
+            first_round_policy="classification",
+        )
+
+        RoundService.start_first_round(gara.id)
+        matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
+        assert len(matches) == 3
+
+    def test_classification_no_standings_falls_back_to_random(self, db_session):
+        """First gara in campionato (no standings yet) falls back to random."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 6)
+
+        campionato = Campionato(
+            name="New Camp",
+            campionato_type="amalfi",
+            planned_gare_count=5,
+        )
+        db_session.add(campionato)
+        db_session.commit()
+
+        # No Classification records — first gara
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            campionato_id=campionato.id,
+            first_round_policy="classification",
+        )
+
         RoundService.start_first_round(gara.id)
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         assert len(matches) == 3
@@ -517,25 +622,39 @@ class TestAmalfiOddPolicies:
 
 @pytest.mark.integration
 class TestAmalfiMultiSet:
-    """Multi-set with Amalfi: document current behavior.
+    """Multi-set with Amalfi strategy."""
 
-    Note: multi-set is configured at Gara level but round creation
-    does not propagate is_multi_set to individual Match objects.
-    This is a known gap in the codebase.
-    """
-
-    def test_multiset_gara_creation_succeeds(self, db_session):
-        """Creating an Amalfi gara with multi-set flag succeeds."""
+    def test_multiset_propagated_to_matches(self, db_session):
+        """is_multi_set flag propagates from Gara to Match on round creation."""
         director = _create_director(db_session)
         players = _create_players(db_session, 4)
         gara = _create_amalfi_gara(
             director.id, players, db_session,
             rounds_count=2,
         )
-        # Set multi-set on gara directly (not via GaraService which may not support it)
         gara.is_multi_set = True
-        gara.match_distance = 3  # First to win 3 sets
         db.session.commit()
 
-        assert gara.is_multi_set is True
-        assert gara.match_distance == 3
+        RoundService.start_first_round(gara.id)
+
+        matches = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=False
+        ).all()
+        assert len(matches) == 2
+        for m in matches:
+            assert m.is_multi_set is True
+
+    def test_non_multiset_matches_default_false(self, db_session):
+        """Regular gara matches have is_multi_set=False."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 4)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session, rounds_count=2,
+        )
+        RoundService.start_first_round(gara.id)
+
+        matches = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=False
+        ).all()
+        for m in matches:
+            assert m.is_multi_set is False
