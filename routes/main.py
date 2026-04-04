@@ -303,6 +303,7 @@ def debug_complete_current_round(gara_id):
 
     from models.match.models import Match
     from models.status_enum import MatchStatus
+    from models.classification.encounter_service import PlayerEncounterService
     import random
 
     gara = Gara.query.get_or_404(gara_id)
@@ -371,6 +372,9 @@ def debug_complete_current_round(gara_id):
 
         match.status = MatchStatus.COMPLETED.value
         completed_count += 1
+
+        # Record encounter for anti-rematch logic
+        PlayerEncounterService.record_match_encounters(match)
 
     # Flask handles transaction commit automatically
     # Dopo aver completato i match, controlla se ci sono turni da aggiornare
