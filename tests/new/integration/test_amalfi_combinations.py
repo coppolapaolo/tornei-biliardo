@@ -480,27 +480,16 @@ class TestAmalfiOddPolicies:
         assert len(byes) == 1
         assert len(regular) == 2
 
-    def test_trio_policy_falls_back_to_bye_for_amalfi(self, db_session):
-        """Amalfi with trio policy: algorithm doesn't support trio natively,
-        so it falls back to creating a bye instead."""
+    def test_trio_policy_rejected_for_amalfi(self, db_session):
+        """Amalfi does not support trio — validation rejects it."""
         director = _create_director(db_session)
         players = _create_players(db_session, 5)
-        gara = _create_amalfi_gara(
-            director.id, players, db_session,
-            odd_number_policy="trio", distance=4,
-        )
-        RoundService.start_first_round(gara.id)
 
-        # Amalfi doesn't implement trio — produces bye instead
-        byes = Match.query.filter_by(
-            gara_id=gara.id, round_number=1, is_bye=True
-        ).all()
-        trios = Match.query.filter_by(
-            gara_id=gara.id, round_number=1, is_trio=True
-        ).all()
-        # Either bye or trio — document actual behavior
-        assert len(byes) + len(trios) == 1, \
-            f"Expected 1 bye or trio, got {len(byes)} byes and {len(trios)} trios"
+        with pytest.raises(ValueError, match="non supporta"):
+            _create_amalfi_gara(
+                director.id, players, db_session,
+                odd_number_policy="trio", distance=4,
+            )
 
     def test_waitlist_policy_even_count_no_waitlist(self, db_session):
         """Waitlist policy with even players: no one excluded."""

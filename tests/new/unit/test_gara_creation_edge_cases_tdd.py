@@ -31,16 +31,14 @@ from models.base import utc_now
 class TestGaraCreationEdgeCasesTDD:
     """TDD tests for edge cases in gara creation and validation."""
 
-    def test_strategy_amalfi_with_exact_number_and_trio_policy_should_succeed(
+    def test_strategy_amalfi_with_trio_policy_should_fail(
         self, db_session
     ):
-        """Test that Amalfi strategy with exact number and trio policy SUCCEEDS.
+        """Test that Amalfi strategy with trio policy is REJECTED.
 
-        Per ADR-005: Trio matches ARE compatible with exact number mode when
-        using rack-based classification. This is because:
-        - Rack-based classification only counts racks won, not match wins
-        - Ties are acceptable in rack-based classification
-        - Trio matches don't need a single winner in this scoring mode
+        Amalfi algorithm does not implement trio natively — it would
+        silently fall back to bye. To prevent confusion, the combination
+        is blocked at validation time. Trio is only supported by Random.
         """
         unique_id = str(uuid.uuid4())[:8]
         director = User(
@@ -54,29 +52,21 @@ class TestGaraCreationEdgeCasesTDD:
 
         tomorrow = date.today() + timedelta(days=1)
 
-        # Per ADR-005: This combination IS VALID:
-        # - Exact number scoring (is_race_to=False)
-        # - Trio policy
-        # - Distance 2-5 (within trio allowed range)
-        gara = GaraService.create_gara(
-            campionato_id=None,
-            number=1,
-            name="Valid Amalfi Exact Trio",
-            date=tomorrow,
-            discipline="palla 9",
-            distance=5,  # Within 2-5 range for trio
-            is_race_to=False,  # Exact number - compatible with trio per ADR-005
-            director_id=director.id,
-            matchmaking_strategy="amalfi",
-            odd_number_policy="trio",  # Valid with exact number
-            rounds_count=3,
-            min_participants=4,
-        )
-
-        assert gara is not None
-        assert gara.is_race_to is False
-        assert gara.odd_number_policy == "trio"
-        assert gara.distance == 5
+        with pytest.raises(ValueError, match="non supporta"):
+            GaraService.create_gara(
+                campionato_id=None,
+                number=1,
+                name="Invalid Amalfi Trio",
+                date=tomorrow,
+                discipline="palla 9",
+                distance=5,
+                is_race_to=False,
+                director_id=director.id,
+                matchmaking_strategy="amalfi",
+                odd_number_policy="trio",
+                rounds_count=3,
+                min_participants=4,
+            )
 
     def test_strategy_random_with_rating_based_first_round_should_fail(
         self, db_session
