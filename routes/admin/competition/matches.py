@@ -9,6 +9,7 @@ from flask_login import current_user, login_required
 
 from models.competition.trio_service import TrioMatchService
 from utils import trio_manager_required
+from utils.route_helpers import safe_json_error
 
 from . import competition_bp
 
@@ -31,7 +32,7 @@ def trio_add_rack(trio_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+        return safe_json_error(e, "trio add rack")
 
 
 @competition_bp.route("/trio/<int:trio_id>/remove_rack", methods=["POST"])
@@ -47,7 +48,7 @@ def trio_remove_rack(trio_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante rimozione rack: {str(e)}"}), 500
+        return safe_json_error(e, "trio remove rack")
 
 
 @competition_bp.route("/trio/<int:trio_id>/confirm", methods=["POST"])
@@ -62,7 +63,7 @@ def trio_confirm(trio_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante conferma risultato: {str(e)}"}), 500
+        return safe_json_error(e, "trio confirm")
 
 
 @competition_bp.route("/trio/<int:trio_id>/forfeit", methods=["POST"])
@@ -81,7 +82,7 @@ def trio_forfeit(trio_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante registrazione forfait: {str(e)}"}), 500
+        return safe_json_error(e, "trio forfeit")
 
 
 @competition_bp.route("/trio/<int:trio_id>/reset", methods=["POST"])
@@ -97,7 +98,7 @@ def trio_reset(trio_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 500
     except Exception as e:
-        return jsonify({"error": f"Errore durante reset trio: {str(e)}"}), 500
+        return safe_json_error(e, "trio reset")
 
 
 @competition_bp.route("/trio/<int:trio_id>/set_result", methods=["POST"])
@@ -128,4 +129,4 @@ def trio_set_result(trio_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante impostazione risultato: {str(e)}"}), 500
+        return safe_json_error(e, "trio set result")

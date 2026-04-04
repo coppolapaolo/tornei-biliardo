@@ -8,6 +8,7 @@ from models import db, Match
 from models.match.services import MatchService
 from models.competition.trio_service import TrioMatchService
 from utils import match_player_required, trio_player_required
+from utils.route_helpers import safe_json_error
 
 from . import player_bp
 
@@ -37,7 +38,7 @@ def add_trio_rack(match_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+        return safe_json_error(e, "player add rack")
 
 
 @player_bp.route("/match/<int:match_id>/trio/remove_rack", methods=["POST"])
@@ -60,7 +61,7 @@ def remove_trio_rack(match_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante rimozione rack: {str(e)}"}), 500
+        return safe_json_error(e, "player remove rack")
 
 
 @player_bp.route("/match/<int:match_id>/trio/confirm", methods=["POST"])
@@ -87,7 +88,7 @@ def confirm_trio_result(match_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante conferma risultato: {str(e)}"}), 500
+        return safe_json_error(e, "player confirm result")
 
 
 @player_bp.route("/match/<int:match_id>/trio/forfeit", methods=["POST"])
@@ -116,7 +117,7 @@ def forfeit_trio(match_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante registrazione forfait: {str(e)}"}), 500
+        return safe_json_error(e, "player forfeit")
 
 
 # ============ SIMPLIFIED UX - Match (Tournament) Rack Management ============
@@ -181,7 +182,7 @@ def add_rack_simplified(match_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore: {str(e)}"}), 500
+        return safe_json_error(e, "player match operation")
 
 
 @player_bp.route("/match/<int:match_id>/racks/remove", methods=["POST"])
@@ -240,7 +241,7 @@ def remove_rack_simplified(match_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore: {str(e)}"}), 500
+        return safe_json_error(e, "player match operation")
 
 
 @player_bp.route("/match/<int:match_id>/confirm", methods=["POST"])
@@ -296,7 +297,7 @@ def confirm_match_result(match_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore: {str(e)}"}), 500
+        return safe_json_error(e, "player match operation")
 
 
 @player_bp.route("/match/<int:match_id>/reject", methods=["POST"])
@@ -349,7 +350,7 @@ def reject_match_result(match_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore: {str(e)}"}), 500
+        return safe_json_error(e, "player match operation")
 
 
 @player_bp.route("/match/<int:match_id>/forfeit", methods=["POST"])
@@ -398,4 +399,4 @@ def forfeit_match(match_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore: {str(e)}"}), 500
+        return safe_json_error(e, "player match operation")

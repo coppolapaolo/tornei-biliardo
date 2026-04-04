@@ -283,6 +283,8 @@ def create_app(config_name=None):
     @app.errorhandler(500)
     def internal_error(e):
         db.session.rollback()
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"error": "Errore interno del server"}), 500
         return render_template("errors/500.html"), 500
 
     @app.errorhandler(429)

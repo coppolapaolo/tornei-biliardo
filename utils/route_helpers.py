@@ -7,11 +7,16 @@ Reduces boilerplate for common patterns:
 - AJAX vs regular request detection and response formatting
 """
 
+import logging
 from typing import Any, Callable, Optional
 
 from flask import abort, flash, jsonify, make_response, redirect, request
 
 from models.base import db
+
+logger = logging.getLogger(__name__)
+
+_GENERIC_ERROR = "Errore interno del server"
 
 
 def get_or_ajax_404(model_class: type, entity_id: int, entity_name: str = "Risorsa") -> Any:
@@ -91,10 +96,10 @@ def handle_ajax_service_action(
             return ajax_error(msg)
         flash(msg, "error")
     except Exception as e:
-        msg = f"Errore imprevisto: {e}"
+        logger.error("Unexpected error in AJAX service action: %s", e, exc_info=True)
         if is_json:
-            return ajax_error(msg, status=500)
-        flash(msg, "error")
+            return ajax_error(_GENERIC_ERROR, status=500)
+        flash(_GENERIC_ERROR, "error")
     return redirect(redirect_url)
 
 
@@ -130,5 +135,24 @@ def handle_service_action(
         msg = f"{error_prefix}: {e}" if error_prefix else str(e)
         flash(msg, "error")
     except Exception as e:
-        flash(f"Errore imprevisto: {e}", "error")
+        logger.error("Unexpected error in service action: %s", e, exc_info=True)
+        flash(_GENERIC_ERROR, "error")
     return redirect(redirect_url)
+
+
+def safe_json_error(e: Exception, context: str = "") -> tuple[Any, int]:
+    """Log an unexpected exception and return a generic JSON 500 response.
+
+    Use this in inline except Exception blocks that return jsonify.
+
+    Args:
+        e: The caught exception
+        context: Optional context string for the log message
+
+    Usage:
+        except Exception as e:
+            return safe_json_error(e, "adding rack")
+    """
+    log_msg = f"Unexpected error{f' ({context})' if context else ''}: {e}"
+    logger.error(log_msg, exc_info=True)
+    return jsonify({"error": _GENERIC_ERROR}), 500

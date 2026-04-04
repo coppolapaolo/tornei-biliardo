@@ -21,7 +21,7 @@ from utils import (
 from models.match.services import RackService
 from models.kpi import track_match_played
 from routes.sse import emit_gara_event
-from utils.route_helpers import handle_service_action
+from utils.route_helpers import handle_service_action, safe_json_error
 
 from . import match_bp
 
@@ -56,7 +56,7 @@ def add_rack_result(match_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante aggiunta rack: {str(e)}"}), 500
+        return safe_json_error(e, "admin add rack")
 
 
 @match_bp.route("/<int:match_id>/set_result", methods=["POST"])
@@ -211,7 +211,7 @@ def remove_rack_admin(rack_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante la rimozione: {str(e)}"}), 500
+        return safe_json_error(e, "admin remove rack")
 
 
 @match_bp.route("/rack/<int:rack_id>/validate", methods=["POST"])
@@ -230,4 +230,4 @@ def validate_rack_admin(rack_id):
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Errore durante la validazione: {str(e)}"}), 500
+        return safe_json_error(e, "admin validate rack")
