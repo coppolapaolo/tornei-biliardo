@@ -533,6 +533,7 @@ class InscriptionService:
                     # Promuovi dalla lista d'attesa
                     first_waitlist.is_waitlist = False
                     first_waitlist.waitlist_position = None
+                    first_waitlist.waitlist_reason = None
 
                     # Ricalcola le posizioni degli altri in lista d'attesa
                     remaining_waitlist = (

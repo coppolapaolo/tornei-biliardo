@@ -49,6 +49,10 @@ class ProposalService:
             is_multi_set: Whether match is multi-set
             match_distance: Number of sets to win (only for multi-set)
         """
+        from models.base import utc_now
+
+        if scheduled_at < utc_now():
+            raise ValueError("Non è possibile programmare un match nel passato")
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
@@ -133,6 +137,10 @@ class ProposalService:
         from ..notification.factory import NotificationFactory
         from ..notification.models import NotificationType, NotificationPriority
         from .availability_service import AvailabilityService
+        from models.base import utc_now
+
+        if scheduled_at < utc_now():
+            raise ValueError("Non è possibile programmare un match nel passato")
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)

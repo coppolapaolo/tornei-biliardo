@@ -63,6 +63,9 @@ class ProductionConfig(Config):
     TESTING = False
     ADMIN_PASSWORD_REQUIRED = True
 
+    # In produzione SECRET_KEY DEVE venire da env var
+    SECRET_KEY = os.environ.get("SECRET_KEY") or ""
+
     # Secure session cookies
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"

@@ -32,6 +32,11 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
+    # Validate critical config in production
+    if config_name == "production":
+        if not app.config.get("SECRET_KEY"):
+            raise RuntimeError("SECRET_KEY env var must be set in production")
+
     # GlitchTip/Sentry error tracking
     dsn = app.config.get("GLITCHTIP_DSN")
     if dsn:

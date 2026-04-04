@@ -1,7 +1,7 @@
 # routes/gamification/dashboard.py
 """User-facing gamification routes: dashboard, achievements, quests, streaks, leaderboards."""
 
-from flask import render_template, jsonify, request, flash, redirect, url_for
+from flask import render_template, jsonify, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
@@ -26,7 +26,11 @@ from . import gamification_bp
 
 @gamification_bp.route("/test")
 def test_gamification():
-    """Test page for gamification mascot integration - no login required."""
+    """Test page for gamification mascot integration - debug only."""
+    from config import Config
+
+    if not Config.DEBUG_MODE:
+        abort(404)
     return render_template("test_gamification.html")
 
 

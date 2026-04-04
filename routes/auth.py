@@ -135,6 +135,17 @@ def forgot_password():
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     """Pagina di reset password"""
+    # Validate token on GET to avoid showing form for expired/used tokens
+    if request.method == "GET":
+        from models.user.tokens import UserToken
+
+        token_obj = UserToken.query.filter_by(
+            token=token, token_type="password_reset"
+        ).first()
+        if not token_obj or not token_obj.is_valid():
+            flash("Token non valido o scaduto.", "error")
+            return redirect(url_for("auth.login"))
+
     if request.method == "POST":
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
