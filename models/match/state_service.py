@@ -101,6 +101,16 @@ class MatchStateService:
                 f"Transizione non ammessa: {match.status!r} → completed"
             )
 
+        if (
+            match.status == MatchStatus.PENDING.value
+            and not match.is_bye
+            and not match.is_trio
+            and not getattr(match, "validated_by_admin", False)
+        ):
+            raise InvalidTransitionError(
+                "Non è possibile completare un match che non è ancora iniziato"
+            )
+
         match.status = MatchStatus.COMPLETED.value
 
         # Auto-set ended_at if not already manually set

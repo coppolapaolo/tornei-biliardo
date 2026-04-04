@@ -103,10 +103,12 @@ class SetLifecycleService:
 
         if match.player1_score >= match.match_distance:
             match.winner_id = match.player1_id
-            match.status = "completed"
+            from .state_service import MatchStateService
+            MatchStateService.to_completed(match.id)
         elif match.player2_score >= match.match_distance:
             match.winner_id = match.player2_id
-            match.status = "completed"
+            from .state_service import MatchStateService
+            MatchStateService.to_completed(match.id)
         else:
             match.current_set_number += 1
 

@@ -54,12 +54,13 @@ class StateService:
         """inscription → playing"""
         StateService._require(gara, GaraStatus.INSCRIPTION)
 
-        # Controllo sul numero di iscritti vs minimo richiesto
+        # Controllo sul numero di iscritti attivi vs minimo richiesto
         min_required = gara.min_participants or 2
-        try:
-            count = len(gara.inscriptions)  # type: ignore[attr-defined]
-        except (AttributeError, TypeError):
-            count = 0
+        from models.competition.models import Inscription
+
+        count = Inscription.query.filter_by(
+            gara_id=gara.id, is_withdrawn=False, is_waitlist=False
+        ).count()
 
         if count < min_required:
             raise InvalidTransitionError(

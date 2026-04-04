@@ -324,6 +324,8 @@ class ScoringService:
     @staticmethod
     def _should_clear_winner(match: Match) -> bool:
         """Check if winner should be cleared based on current scores."""
+        if not match.gara:
+            return True
         if match.gara.is_race_to:
             winning_score = match.gara.distance_config.get_winning_racks()
             return max(match.player1_score, match.player2_score) < winning_score
