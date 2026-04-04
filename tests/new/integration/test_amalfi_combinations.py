@@ -585,6 +585,73 @@ class TestAmalfiOddPolicies:
         assert len(byes) == 1
         assert len(regular) == 2
 
+    def test_bye_with_challenge_full_flow(self, db_session):
+        """Full bye_with_challenge flow: bye -> challenge -> score update."""
+        from models.challenge.models import Challenge
+        from models.competition.gara_challenge import GaraChallenge
+        from models.competition.gara_challenge_service import GaraChallengeService
+        from models.matchmaking.amalfi_challenge_bye_service import (
+            AmalfiChallengeByeService,
+        )
+
+        director = _create_director(db_session)
+        players = _create_players(db_session, 5)
+
+        # Create a numeric challenge (for bye replacement scoring)
+        challenge = Challenge(
+            description="Spot Shot Rally",
+            image_path="test.jpg",
+            pass_fail_only=False,
+            created_by_id=director.id,
+            is_active=True,
+        )
+        db_session.add(challenge)
+        db_session.commit()
+
+        # Create gara with bye_with_challenge
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            odd_number_policy="bye_with_challenge",
+        )
+
+        # Link challenge to gara for round 1
+        gara_challenge = GaraChallengeService.add_challenge_to_gara(
+            gara_id=gara.id,
+            challenge_id=challenge.id,
+            round_number=1,
+            max_attempts=3,
+            added_by_id=director.id,
+        )
+
+        # Start round — creates bye match
+        RoundService.start_first_round(gara.id)
+
+        bye_match = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=True
+        ).first()
+        assert bye_match is not None
+        bye_player_id = bye_match.player1_id
+        original_score = bye_match.player1_score
+
+        # Bye player records a challenge attempt with score 12
+        attempt = GaraChallengeService.record_challenge_attempt(
+            gara_challenge_id=gara_challenge.id,
+            user_id=bye_player_id,
+            score=12,
+            round_when_attempted=1,
+        )
+
+        # Update bye match with challenge score
+        updated = AmalfiChallengeByeService.update_bye_match_from_challenge(
+            attempt.id
+        )
+        assert updated is True
+
+        # Verify bye match now has the challenge score
+        db_session.refresh(bye_match)
+        assert bye_match.player1_score == 12
+        assert bye_match.status == "completed"
+
     def test_trio_policy_rejected_for_amalfi(self, db_session):
         """Amalfi does not support trio — validation rejects it."""
         director = _create_director(db_session)
