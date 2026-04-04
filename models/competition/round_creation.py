@@ -5,11 +5,116 @@ Purpose: Round creation logic (create_round_with_strategy, start_next_round, _cr
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Set
 
 from models.base import db, transactional
 from models.status_enum import GaraStatus
 from .models import Gara
+
+
+def create_matches_from_pairings(
+    gara: Gara,
+    pairings: list,
+    round_number: int,
+    round_distance: int,
+    round_discipline: Optional[str] = None,
+    forfeit_user_ids: Optional[Set[int]] = None,
+) -> None:
+    """Create Match (and TrioMatch) objects from strategy pairings.
+
+    Centralizes match creation logic to avoid duplication across
+    round_service.py and round_creation.py.
+    """
+    from models.match.models import Match, TrioMatch
+
+    if forfeit_user_ids is None:
+        forfeit_user_ids = set()
+
+    for pairing in pairings:
+        if len(pairing.players) == 1 and pairing.is_bye:
+            bye_score = round_distance
+            match = Match(
+                gara_id=gara.id,
+                round_number=round_number,
+                player1_id=pairing.players[0],
+                player2_id=None,
+                is_bye=True,
+                player1_score=bye_score,
+                winner_id=pairing.players[0],
+                status="completed",
+                discipline=round_discipline,
+                match_distance=round_distance,
+            )
+            db.session.add(match)
+        elif len(pairing.players) == 2 and not pairing.is_bye:
+            player1_forfeit = pairing.players[0] in forfeit_user_ids
+            player2_forfeit = pairing.players[1] in forfeit_user_ids
+
+            if player1_forfeit or player2_forfeit:
+                winning_score = round_distance
+                if player1_forfeit and player2_forfeit:
+                    winner_id = pairing.players[0]
+                    player1_score = winning_score
+                    player2_score = 0
+                elif player1_forfeit:
+                    winner_id = pairing.players[1]
+                    player1_score = 0
+                    player2_score = winning_score
+                else:
+                    winner_id = pairing.players[0]
+                    player1_score = winning_score
+                    player2_score = 0
+
+                match = Match(
+                    gara_id=gara.id,
+                    round_number=round_number,
+                    player1_id=pairing.players[0],
+                    player2_id=pairing.players[1],
+                    is_bye=False,
+                    player1_score=player1_score,
+                    player2_score=player2_score,
+                    winner_id=winner_id,
+                    status="completed",
+                    discipline=round_discipline,
+                    match_distance=round_distance,
+                    is_multi_set=gara.is_multi_set,
+                )
+                db.session.add(match)
+            else:
+                match = Match(
+                    gara_id=gara.id,
+                    round_number=round_number,
+                    player1_id=pairing.players[0],
+                    player2_id=pairing.players[1],
+                    is_bye=False,
+                    discipline=round_discipline,
+                    match_distance=round_distance,
+                    is_multi_set=gara.is_multi_set,
+                )
+                db.session.add(match)
+        elif len(pairing.players) == 3:
+            match = Match(
+                gara_id=gara.id,
+                round_number=round_number,
+                player1_id=pairing.players[0],
+                player2_id=pairing.players[1],
+                is_bye=False,
+                is_trio=True,
+                discipline=round_discipline,
+                match_distance=round_distance,
+            )
+            db.session.add(match)
+            db.session.flush()
+
+            trio_match = TrioMatch(
+                match_id=match.id,
+                player1_id=pairing.players[0],
+                player2_id=pairing.players[1],
+                player3_id=pairing.players[2],
+            )
+            db.session.add(trio_match)
+            db.session.flush()
+            trio_match.initialize_matchup()
 
 
 class RoundCreationService:
@@ -143,101 +248,14 @@ class RoundCreationService:
         effective_discipline = discipline_override or (round_config.discipline if round_config else None)
 
         # Crea i match nel database
-        for pairing in pairings:
-            if len(pairing.players) == 1 and pairing.is_bye:
-                # Match con X - assegnalo come completato con punteggio pieno
-                bye_score = round_distance  # Use round-specific distance
-                match = Match(
-                    gara_id=gara_id,
-                    round_number=round_number,
-                    player1_id=pairing.players[0],
-                    player2_id=None,
-                    is_bye=True,
-                    player1_score=bye_score,
-                    winner_id=pairing.players[0],
-                    status="completed",
-                    discipline=effective_discipline,
-                    match_distance=round_distance,
-                )
-                db.session.add(match)
-            elif len(pairing.players) == 2 and not pairing.is_bye:
-                # Check if any player is forfeit - create completed match
-                player1_forfeit = pairing.players[0] in forfeit_user_ids
-                player2_forfeit = pairing.players[1] in forfeit_user_ids
-
-                if player1_forfeit or player2_forfeit:
-                    # At least one player forfeited - match is auto-completed
-                    winning_score = round_distance  # Use round-specific distance
-
-                    if player1_forfeit and player2_forfeit:
-                        # Both forfeit - player1 wins (arbitrary but consistent)
-                        winner_id = pairing.players[0]
-                        player1_score = winning_score
-                        player2_score = 0
-                    elif player1_forfeit:
-                        # Player1 forfeit - player2 wins
-                        winner_id = pairing.players[1]
-                        player1_score = 0
-                        player2_score = winning_score
-                    else:
-                        # Player2 forfeit - player1 wins
-                        winner_id = pairing.players[0]
-                        player1_score = winning_score
-                        player2_score = 0
-
-                    match = Match(
-                        gara_id=gara_id,
-                        round_number=round_number,
-                        player1_id=pairing.players[0],
-                        player2_id=pairing.players[1],
-                        is_bye=False,
-                        player1_score=player1_score,
-                        player2_score=player2_score,
-                        winner_id=winner_id,
-                        status="completed",
-                        discipline=effective_discipline,
-                        match_distance=round_distance,
-                        is_multi_set=gara.is_multi_set,
-                    )
-                    db.session.add(match)
-                else:
-                    # Match normale - nessun forfait
-                    match = Match(
-                        gara_id=gara_id,
-                        round_number=round_number,
-                        player1_id=pairing.players[0],
-                        player2_id=pairing.players[1],
-                        is_bye=False,
-                        discipline=effective_discipline,
-                        match_distance=round_distance,
-                        is_multi_set=gara.is_multi_set,
-                    )
-                    db.session.add(match)
-            elif len(pairing.players) == 3:
-                # Match trio
-                match = Match(
-                    gara_id=gara_id,
-                    round_number=round_number,
-                    player1_id=pairing.players[0],
-                    player2_id=pairing.players[1],
-                    is_bye=False,
-                    is_trio=True,
-                    discipline=effective_discipline,
-                    match_distance=round_distance,
-                )
-                db.session.add(match)
-                db.session.flush()  # Assicura che il match abbia un ID
-
-                # Crea il record TrioMatch con tutti e tre i giocatori
-                trio_match = TrioMatch(
-                    match_id=match.id,
-                    player1_id=pairing.players[0],
-                    player2_id=pairing.players[1],
-                    player3_id=pairing.players[2],
-                )
-                db.session.add(trio_match)
-                db.session.flush()  # Assicura che il TrioMatch sia visibile
-                trio_match.initialize_matchup()
+        create_matches_from_pairings(
+            gara=gara,
+            pairings=pairings,
+            round_number=round_number,
+            round_distance=round_distance,
+            round_discipline=effective_discipline,
+            forfeit_user_ids=forfeit_user_ids,
+        )
 
         # Conta i risultati
         matches = (

@@ -93,7 +93,7 @@ class RoundService:
                 raise ValueError(f"Strategia {registry_name} non trovata nel registry")
 
             # Crea tutti i turni contemporaneamente
-            from models.match.models import Match
+            from models.competition.round_creation import create_matches_from_pairings
 
             for round_num in range(1, gara.rounds_count + 1):
                 # Flush before generating pairings so anti-rematch can see previous rounds
@@ -102,65 +102,19 @@ class RoundService:
 
                 pairings = strategy.create_round(gara, round_num)
 
-                # Get round configuration for this round (discipline and distance overrides)
                 from models.competition.round_configuration import RoundConfiguration
 
                 round_config = RoundConfiguration.get_for_gara_round(gara_id, round_num)
                 round_discipline = round_config.discipline if round_config else None
                 round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
 
-                # Crea i match nel database
-                for pairing in pairings:
-                    if len(pairing.players) == 1 and pairing.is_bye:
-                        bye_score = round_distance
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_num,
-                            player1_id=pairing.players[0],
-                            player2_id=None,
-                            is_bye=True,
-                            player1_score=bye_score,
-                            winner_id=pairing.players[0],
-                            status="completed",
-                            discipline=round_discipline,
-                            match_distance=round_distance,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 2 and not pairing.is_bye:
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_num,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            discipline=round_discipline,
-                            match_distance=round_distance,
-                            is_multi_set=gara.is_multi_set,
-                        )
-                        db.session.add(match)
-                    elif len(pairing.players) == 3:
-                        from models.match.models import TrioMatch
-
-                        match = Match(
-                            gara_id=gara_id,
-                            round_number=round_num,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            is_bye=False,
-                            is_trio=True,
-                            discipline=round_discipline,
-                            match_distance=round_distance,
-                        )
-                        db.session.add(match)
-
-                        trio_match = TrioMatch(
-                            match=match,
-                            player1_id=pairing.players[0],
-                            player2_id=pairing.players[1],
-                            player3_id=pairing.players[2],
-                        )
-                        db.session.add(trio_match)
-                        trio_match.initialize_matchup()
+                create_matches_from_pairings(
+                    gara=gara,
+                    pairings=pairings,
+                    round_number=round_num,
+                    round_distance=round_distance,
+                    round_discipline=round_discipline,
+                )
 
             gara.current_round = 1
             from models.competition.state_service import StateService
@@ -170,7 +124,7 @@ class RoundService:
         else:
             # Per altre strategie: crea solo il primo turno
             from models.matchmaking.bootstrap import get_registry
-            from models.match.models import Match
+            from models.competition.round_creation import create_matches_from_pairings
 
             registry = get_registry()
 
@@ -196,57 +150,13 @@ class RoundService:
             round_discipline = round_config.discipline if round_config else None
             round_distance = round_config.get_effective_distance(gara.distance) if round_config else gara.distance
 
-            for pairing in pairings:
-                if len(pairing.players) == 1 and pairing.is_bye:
-                    bye_score = round_distance
-                    match = Match(
-                        gara_id=gara_id,
-                        round_number=1,
-                        player1_id=pairing.players[0],
-                        player2_id=None,
-                        is_bye=True,
-                        player1_score=bye_score,
-                        winner_id=pairing.players[0],
-                        status="completed",
-                        discipline=round_discipline,
-                        match_distance=round_distance,
-                    )
-                    db.session.add(match)
-                elif len(pairing.players) == 2 and not pairing.is_bye:
-                    match = Match(
-                        gara_id=gara_id,
-                        round_number=1,
-                        player1_id=pairing.players[0],
-                        player2_id=pairing.players[1],
-                        is_bye=False,
-                        discipline=round_discipline,
-                        match_distance=round_distance,
-                        is_multi_set=gara.is_multi_set,
-                    )
-                    db.session.add(match)
-                elif len(pairing.players) == 3:
-                    from models.match.models import TrioMatch
-
-                    match = Match(
-                        gara_id=gara_id,
-                        round_number=1,
-                        player1_id=pairing.players[0],
-                        player2_id=pairing.players[1],
-                        is_bye=False,
-                        is_trio=True,
-                        discipline=round_discipline,
-                        match_distance=round_distance,
-                    )
-                    db.session.add(match)
-
-                    trio_match = TrioMatch(
-                        match=match,
-                        player1_id=pairing.players[0],
-                        player2_id=pairing.players[1],
-                        player3_id=pairing.players[2],
-                    )
-                    db.session.add(trio_match)
-                    trio_match.initialize_matchup()
+            create_matches_from_pairings(
+                gara=gara,
+                pairings=pairings,
+                round_number=1,
+                round_distance=round_distance,
+                round_discipline=round_discipline,
+            )
 
             gara.current_round = 1
             from models.competition.state_service import StateService
