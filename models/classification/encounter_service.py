@@ -68,18 +68,35 @@ class PlayerEncounterService:
         """
         Record player encounters from a match with cache invalidation.
 
+        For trio matches, records all 3 pairwise encounters (P1-P2, P1-P3, P2-P3).
+
         Args:
             match: Match object to record encounters from
         """
         if match.is_bye or not match.player2_id:
             return
 
-        PlayerEncounter.record_encounter(
-            gara_id=match.gara_id,
-            player1_id=match.player1_id,
-            player2_id=match.player2_id,
-            round_number=match.round_number,
-        )
+        if match.is_trio and match.trio_match:
+            trio = match.trio_match
+            pairs = [
+                (trio.player1_id, trio.player2_id),
+                (trio.player1_id, trio.player3_id),
+                (trio.player2_id, trio.player3_id),
+            ]
+            for p1, p2 in pairs:
+                PlayerEncounter.record_encounter(
+                    gara_id=match.gara_id,
+                    player1_id=p1,
+                    player2_id=p2,
+                    round_number=match.round_number,
+                )
+        else:
+            PlayerEncounter.record_encounter(
+                gara_id=match.gara_id,
+                player1_id=match.player1_id,
+                player2_id=match.player2_id,
+                round_number=match.round_number,
+            )
 
     @staticmethod
     @cached(ttl_seconds=600, tags=["encounter", "gara"], key_generator="gara")
