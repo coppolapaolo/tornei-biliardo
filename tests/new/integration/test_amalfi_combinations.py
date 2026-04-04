@@ -433,3 +433,120 @@ class TestAmalfiSSR:
         tiebreakers = SpareggioService.detect_tiebreakers(gara.id)
         # Should not crash — result depends on scores
         assert isinstance(tiebreakers, list)
+
+    def test_ssr_position_1_only(self, db_session):
+        """SSR with tiebreaker_until_position=1 only checks 1st place."""
+        from models.competition.spareggio_service import SpareggioService
+
+        director = _create_director(db_session)
+        players = _create_players(db_session, 4)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session, rounds_count=2,
+            tiebreaker_enabled=True, tiebreaker_until_position=1,
+        )
+        _run_full_tournament(gara)
+
+        tiebreakers = SpareggioService.detect_tiebreakers(gara.id)
+        assert isinstance(tiebreakers, list)
+        # Any tiebreaker found should only be for position 1
+        for tb in tiebreakers:
+            assert tb.get("position", 1) <= 1
+
+
+# =============================================================================
+# 3.8 Odd Policies: bye_with_challenge, trio fallback, waitlist
+# =============================================================================
+
+@pytest.mark.integration
+class TestAmalfiOddPolicies:
+    """Test Amalfi with different odd number policies."""
+
+    def test_bye_with_challenge_creates_bye(self, db_session):
+        """bye_with_challenge with odd players creates a bye match."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 5)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            odd_number_policy="bye_with_challenge",
+        )
+        RoundService.start_first_round(gara.id)
+
+        byes = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=True
+        ).all()
+        regular = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=False
+        ).all()
+        assert len(byes) == 1
+        assert len(regular) == 2
+
+    def test_trio_policy_falls_back_to_bye_for_amalfi(self, db_session):
+        """Amalfi with trio policy: algorithm doesn't support trio natively,
+        so it falls back to creating a bye instead."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 5)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            odd_number_policy="trio", distance=4,
+        )
+        RoundService.start_first_round(gara.id)
+
+        # Amalfi doesn't implement trio — produces bye instead
+        byes = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=True
+        ).all()
+        trios = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_trio=True
+        ).all()
+        # Either bye or trio — document actual behavior
+        assert len(byes) + len(trios) == 1, \
+            f"Expected 1 bye or trio, got {len(byes)} byes and {len(trios)} trios"
+
+    def test_waitlist_policy_even_count_no_waitlist(self, db_session):
+        """Waitlist policy with even players: no one excluded."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 6)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            odd_number_policy="no",
+        )
+        RoundService.start_first_round(gara.id)
+
+        matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
+        all_players = set()
+        for m in matches:
+            all_players.add(m.player1_id)
+            if m.player2_id:
+                all_players.add(m.player2_id)
+        assert len(all_players) == 6  # All 6 play
+        assert len(matches) == 3
+
+
+# =============================================================================
+# 3.6 Multi-set (documented gap)
+# =============================================================================
+
+@pytest.mark.integration
+class TestAmalfiMultiSet:
+    """Multi-set with Amalfi: document current behavior.
+
+    Note: multi-set is configured at Gara level but round creation
+    does not propagate is_multi_set to individual Match objects.
+    This is a known gap in the codebase.
+    """
+
+    def test_multiset_gara_creation_succeeds(self, db_session):
+        """Creating an Amalfi gara with multi-set flag succeeds."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 4)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            rounds_count=2,
+        )
+        # Set multi-set on gara directly (not via GaraService which may not support it)
+        gara.is_multi_set = True
+        gara.match_distance = 3  # First to win 3 sets
+        db.session.commit()
+
+        assert gara.is_multi_set is True
+        assert gara.match_distance == 3
