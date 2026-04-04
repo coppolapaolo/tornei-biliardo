@@ -307,6 +307,9 @@ class AmalfiStrategy(BaseStrategy):
             # 1. p2 è già abbinato
             # 2. I due giocatori hanno già giocato insieme (anti-rematch)
             # 3. p1 ha già avuto un bye e p2 è BYE_PLAYER_ID (max 1 bye per giocatore)
+            # Safety: limit iterations to avoid infinite loop when all pairs exhausted
+            max_attempts = len(players)
+            attempts = 0
             while (
                 players[p2] in abbinati
                 or (
@@ -320,6 +323,17 @@ class AmalfiStrategy(BaseStrategy):
                 )
             ):
                 p2 = (p2 + 1) % len(players)
+                attempts += 1
+                if attempts >= max_attempts:
+                    # All partners exhausted — allow rematch with best available
+                    for candidate_idx in range(len(players)):
+                        if (
+                            players[candidate_idx] not in abbinati
+                            and players[candidate_idx] != players[p1]
+                        ):
+                            p2 = candidate_idx
+                            break
+                    break
 
             # Crea il pairing tra p1 e p2
             if players[p2] == self.BYE_PLAYER_ID:
