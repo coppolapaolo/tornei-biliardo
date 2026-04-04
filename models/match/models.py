@@ -744,24 +744,13 @@ class TrioMatch(db.Model):
 
         db.session.flush()
 
-        # Determine winner (forfeit player can't win)
-        scores = []
-        for pid, racks in [
-            (self.player1_id, self.player1_racks),
-            (self.player2_id, self.player2_racks),
-            (self.player3_id, self.player3_racks),
-        ]:
-            if pid != self.forfeit_player_id:
-                scores.append((racks, pid))
+        # Determine winner using Condorcet/Schulze (excluding forfeit player)
+        from models.match.trio_schulze import determine_trio_winner
 
-        scores.sort(reverse=True)
-
-        # Check for tie at the top (among non-forfeit players)
-        if len(scores) >= 2 and scores[0][0] > scores[1][0]:
-            self.winner_id = scores[0][1]
-        else:
-            # Tie or only one player left
-            self.winner_id = scores[0][1] if scores else None
+        remaining = [
+            pid for pid in self.player_ids if pid != self.forfeit_player_id
+        ]
+        self.winner_id = determine_trio_winner(self.active_racks, remaining)
 
         self.awaiting_confirmation = True
 

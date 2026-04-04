@@ -18,6 +18,7 @@ from typing import Optional, TYPE_CHECKING
 from models.base import db
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
+from models.match.trio_schulze import determine_trio_winner
 
 if TYPE_CHECKING:
     from .models import TrioMatch, TrioRack
@@ -258,18 +259,10 @@ class TrioScoringService:
         # Flush to ensure computed properties work
         db.session.flush()
 
-        # Determine winner
-        scores = [
-            (player1_racks, trio.player1_id),
-            (player2_racks, trio.player2_id),
-            (player3_racks, trio.player3_id),
-        ]
-        scores.sort(reverse=True)
-
-        if scores[0][0] > scores[1][0]:
-            trio.winner_id = scores[0][1]
-        else:
-            trio.winner_id = None  # Tie
+        # Determine winner using Condorcet/Schulze pairwise comparison
+        trio.winner_id = determine_trio_winner(
+            trio.active_racks, trio.player_ids
+        )
 
         # Update associated match and complete via service (emits SSE)
         match_obj = db.session.get(Match, trio.match_id)
@@ -374,20 +367,10 @@ class TrioScoringService:
         # Flush to ensure computed properties see all racks
         db.session.flush()
 
-        # Determine winner (highest racks, or None if tie)
-        scores = [
-            (trio.player1_racks, trio.player1_id),
-            (trio.player2_racks, trio.player2_id),
-            (trio.player3_racks, trio.player3_id),
-        ]
-        scores.sort(reverse=True)
-
-        # Check for tie at the top
-        if scores[0][0] > scores[1][0]:
-            trio.winner_id = scores[0][1]
-        else:
-            # Tie - no single winner (valid for rack-based classification)
-            trio.winner_id = None
+        # Determine winner using Condorcet/Schulze pairwise comparison
+        trio.winner_id = determine_trio_winner(
+            trio.active_racks, trio.player_ids
+        )
 
         # Enter awaiting confirmation state (don't complete yet)
         trio.awaiting_confirmation = True
