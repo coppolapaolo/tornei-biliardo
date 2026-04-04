@@ -652,16 +652,71 @@ class TestAmalfiOddPolicies:
         assert bye_match.player1_score == 12
         assert bye_match.status == "completed"
 
-    def test_trio_policy_rejected_for_amalfi(self, db_session):
-        """Amalfi does not support trio — validation rejects it."""
+    def test_trio_policy_creates_trio_match(self, db_session):
+        """Amalfi with trio policy: 3 lowest-ranked players get a trio match."""
         director = _create_director(db_session)
         players = _create_players(db_session, 5)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            odd_number_policy="trio", distance=4,
+        )
+        RoundService.start_first_round(gara.id)
 
-        with pytest.raises(ValueError, match="non supporta"):
-            _create_amalfi_gara(
-                director.id, players, db_session,
-                odd_number_policy="trio", distance=4,
-            )
+        trios = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_trio=True
+        ).all()
+        regular = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=False, is_trio=False
+        ).all()
+        byes = Match.query.filter_by(
+            gara_id=gara.id, round_number=1, is_bye=True
+        ).all()
+
+        assert len(trios) == 1, f"Expected 1 trio, got {len(trios)}"
+        assert len(regular) == 1, f"Expected 1 regular match, got {len(regular)}"
+        assert len(byes) == 0, f"Expected 0 byes, got {len(byes)}"
+
+        # Verify trio has 3 players via TrioMatch
+        trio_match = trios[0].trio_match
+        assert trio_match is not None
+        assert len(set([trio_match.player1_id, trio_match.player2_id, trio_match.player3_id])) == 3
+
+    def test_trio_no_repeat_across_rounds(self, db_session):
+        """Amalfi trio: player shouldn't be in trio twice if others available."""
+        director = _create_director(db_session)
+        players = _create_players(db_session, 7)
+        gara = _create_amalfi_gara(
+            director.id, players, db_session,
+            odd_number_policy="trio", distance=4,
+            rounds_count=2,
+        )
+
+        RoundService.start_first_round(gara.id)
+
+        # Get R1 trio players
+        from models.match.models import TrioMatch
+        r1_trio = (
+            TrioMatch.query.join(Match)
+            .filter(Match.gara_id == gara.id, Match.round_number == 1)
+            .first()
+        )
+        r1_trio_players = {r1_trio.player1_id, r1_trio.player2_id, r1_trio.player3_id}
+
+        _complete_round_matches(gara.id, 1)
+        RoundService.start_next_round(gara.id, 2)
+
+        # Get R2 trio players
+        r2_trio = (
+            TrioMatch.query.join(Match)
+            .filter(Match.gara_id == gara.id, Match.round_number == 2)
+            .first()
+        )
+        r2_trio_players = {r2_trio.player1_id, r2_trio.player2_id, r2_trio.player3_id}
+
+        # At most 1 player should overlap (7 players, 3 per trio, 4 non-trio)
+        overlap = r1_trio_players & r2_trio_players
+        assert len(overlap) <= 1, \
+            f"Too many repeat trio players: {overlap}"
 
     def test_waitlist_policy_even_count_no_waitlist(self, db_session):
         """Waitlist policy with even players: no one excluded."""

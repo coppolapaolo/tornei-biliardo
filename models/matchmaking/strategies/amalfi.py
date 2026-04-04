@@ -1,6 +1,6 @@
 from __future__ import annotations
 import random
-from typing import Sequence, Dict, Any, List, TYPE_CHECKING
+from typing import Optional, Sequence, Dict, Any, List, TYPE_CHECKING
 
 from .base import BaseStrategy, Pairing
 from models import db
@@ -103,7 +103,9 @@ class AmalfiStrategy(BaseStrategy):
             # Primo round: usa la policy configurata
             classification = self._get_first_round_classification(gara)
 
-        return self._amalfi_pairing(classification, round_number, gara.rounds_count)
+        return self._amalfi_pairing(
+            classification, round_number, gara.rounds_count, gara
+        )
 
     def _get_first_round_classification(
         self, gara: Gara
@@ -263,7 +265,11 @@ class AmalfiStrategy(BaseStrategy):
         return classification
 
     def _amalfi_pairing(
-        self, classifica: List["RoundClassification"], turno: int, max_turni: int
+        self,
+        classifica: List["RoundClassification"],
+        turno: int,
+        max_turni: int,
+        gara: Optional[Gara] = None,
     ) -> Sequence[Pairing]:
         """Implementa l'algoritmo Amalfi secondo lo pseudocodice fornito.
 
@@ -271,26 +277,46 @@ class AmalfiStrategy(BaseStrategy):
         precedente, utilizzando un "salto" che diminuisce man mano che il torneo avanza:
         - Salto = numero_turni_totali - turno_corrente
         - Cerca di evitare i rematch quando possibile
-        - Gestisce i numeri dispari aggiungendo temporaneamente BYE_PLAYER_ID
-        - Evita che un giocatore abbia più di un bye nel torneo
+        - Gestisce i numeri dispari con bye o trio (in base a odd_number_policy)
+        - Evita che un giocatore abbia più di un bye/trio nel torneo
         """
+        from models.matchmaking.configuration import OddNumberPolicy
+
         players = [c.user_id for c in classifica]
         abbinati: set[int] = set()
         coppie = []
         n = max_turni
         t = turno
-        # Salto = turni mancanti (incluso il turno corrente)
-        # Es: turno 2 di 3 → salto = 3-2+1 = 2 → 1° vs 3°
         salto_iniziale = n - t + 1
 
-        # Normalizza per algoritmo uniforme: aggiungi BYE_PLAYER_ID se dispari
         gara_id = classifica[0].gara_id if classifica else None
+        odd_policy = getattr(gara, "odd_number_policy", OddNumberPolicy.BYE.value) if gara else OddNumberPolicy.BYE.value
+        use_trio = odd_policy in (OddNumberPolicy.TRIO.value, "trio") and len(players) % 2 == 1
 
-        # Ottieni i giocatori che hanno già avuto un bye
+        # Ottieni i giocatori che hanno già avuto un bye o trio
         players_with_bye = self._get_players_with_bye(gara_id) if gara_id else set()
+        players_with_trio = self._get_players_with_trio(gara_id) if (gara_id and use_trio) else set()
 
         if len(players) % 2 == 1:
-            players = players + [self.BYE_PLAYER_ID]
+            if use_trio:
+                # Trio: extract 3 lowest-ranked players for a trio match
+                # Prefer players who haven't had a trio yet
+                trio_players = self._select_trio_players(
+                    players, players_with_trio
+                )
+                coppie.append(
+                    Pairing(
+                        players=tuple(trio_players),
+                        is_bye=False,
+                        round_number=turno,
+                    )
+                )
+                abbinati.update(trio_players)
+                # Remove trio players from regular pairing
+                players = [p for p in players if p not in abbinati]
+            else:
+                # Bye: add BYE_PLAYER_ID sentinel
+                players = players + [self.BYE_PLAYER_ID]
 
         p1 = 0
         while p1 < len(players):
@@ -374,6 +400,48 @@ class AmalfiStrategy(BaseStrategy):
         )
 
         return {match.player1_id for match in bye_matches if match.player1_id}
+
+    def _get_players_with_trio(self, gara_id: int) -> set[int]:
+        """Ottieni l'insieme dei giocatori che hanno già partecipato a un trio."""
+        from models.match.models import Match, TrioMatch
+
+        trio_matches = (
+            db.session.query(TrioMatch)
+            .join(Match)
+            .filter(Match.gara_id == gara_id, Match.is_trio == True)  # noqa: E712
+            .all()
+        )
+
+        players = set()
+        for trio in trio_matches:
+            players.add(trio.player1_id)
+            players.add(trio.player2_id)
+            players.add(trio.player3_id)
+        return players
+
+    def _select_trio_players(
+        self, players: List[int], players_with_trio: set[int]
+    ) -> List[int]:
+        """Select 3 players for a trio match from the end of the classification.
+
+        Prefers players who haven't been in a trio yet. Takes the 3
+        lowest-ranked players, but swaps in higher-ranked players if
+        all 3 lowest have already had a trio.
+        """
+        # Start with the 3 lowest-ranked
+        candidates = list(players[-3:])
+
+        # If all 3 already had a trio, try to swap one with a non-trio player
+        all_had_trio = all(p in players_with_trio for p in candidates)
+        if all_had_trio and len(players) > 3:
+            # Find highest-ranked player without a prior trio
+            for p in reversed(players[:-3]):
+                if p not in players_with_trio:
+                    # Swap with the highest-ranked of the 3 candidates
+                    candidates[0] = p
+                    break
+
+        return candidates
 
     def _get_classification(
         self, gara_id: int, round_number: int

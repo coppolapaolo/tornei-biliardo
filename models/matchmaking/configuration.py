@@ -372,7 +372,7 @@ STRATEGY_CONSTRAINTS = {
     },
     MatchmakingStrategy.AMALFI: {
         "first_round_policies": ["random", "rating", "classification"],
-        "odd_policies": ["no", "bye", "bye_with_challenge"],
+        "odd_policies": ["no", "bye", "bye_with_challenge", "trio"],
         "fixed_rounds": False,
         "anti_rematch": True,
         "anti_rematch_required": True,
