@@ -312,7 +312,23 @@ class ProposalInvitation(BaseModel):
     )
 
     def accept(self) -> "IndividualMatch":
-        """Accept this invitation."""
+        """Accept this invitation.
+
+        WARNING — Contract (ADR-025): this is a raw model-layer method. It
+        delegates to ``MatchProposal.accept()`` which creates an
+        ``IndividualMatch`` row subject to the ``uq_individual_match_proposal``
+        UNIQUE constraint. In a TOCTOU race (two acceptances of the same
+        proposal) the constraint fires at flush time and surfaces as
+        ``sqlalchemy.exc.IntegrityError`` here.
+
+        Callers are responsible for wrapping this call in the savepoint +
+        ``ValueError`` translation pattern (see
+        ``ProposalService.accept_proposal`` and
+        ``MatchLifecycleService.report_result`` for reference
+        implementations). The savepoint pattern is intentionally NOT applied
+        inside this model method to keep session/transaction machinery out of
+        the domain layer.
+        """
 
         if self.status != InvitationStatus.PENDING:
             raise ValueError("Invitation cannot be accepted")

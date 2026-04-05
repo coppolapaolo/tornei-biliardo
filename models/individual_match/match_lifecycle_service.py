@@ -9,6 +9,9 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Optional, List
 
+from flask_babel import _
+from sqlalchemy.exc import IntegrityError
+
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from ..status_enum import MatchStatus
@@ -119,7 +122,16 @@ class MatchLifecycleService:
             raise ValueError(f"Match proposal {match_id} not found")
 
         if proposal.status.value == "pending":
-            individual_match = proposal.accept(reporter_id)
+            # Savepoint forces UNIQUE(proposal_id) violation to surface at
+            # flush time so we translate it to ValueError. Fires only on
+            # TOCTOU race where another transaction already accepted this
+            # proposal. See ADR-025.
+            try:
+                with db.session.begin_nested():
+                    individual_match = proposal.accept(reporter_id)
+                    db.session.flush()
+            except IntegrityError as exc:
+                raise ValueError(_("Proposta già accettata")) from exc
         else:
             individual_match = IndividualMatch.query.filter_by(
                 proposal_id=match_id
