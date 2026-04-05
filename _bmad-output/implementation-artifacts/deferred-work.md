@@ -53,21 +53,44 @@ Low priority — no user-reported issues.
 
 **Effort**: ~2 hours total (including profiling)
 
-## Priority 5: Extend TOCTOU ValueError translation to other `proposal.accept()` callers
+## ~~Priority 5: Extend TOCTOU ValueError translation~~ ✅ DONE (2026-04-05)
 
-Surfaced during review of spec-unique-constraints-toctou. The new savepoint/ValueError
-guard covers `ProposalService.accept_proposal` only. Two other paths call
-`proposal.accept()` directly and would surface raw `IntegrityError` if the UNIQUE
-constraint fires:
+Spec `spec-extend-toctou-translation.md`. `report_result` wrappato con savepoint
+pattern ADR-025. `ProposalInvitation.accept` documentato con docstring contract
+(metodo model-layer, caller responsabili del wrapping).
 
-- `models/individual_match/match_lifecycle_service.py:122` (`report_result`) — niche
-  path that calls accept on a still-pending proposal during result reporting.
-- `models/individual_match/proposal_models.py:323` (`ProposalInvitation.accept`) —
-  currently dead from routes (all paths go through `respond_to_invitation` →
-  `accept_proposal`), but reachable via tests/direct calls.
+## Priority 5b: Add IntegrityError contract docstring to `MatchProposal.accept`
 
-**Approach**: Either (a) move savepoint/ValueError wrapping INTO `MatchProposal.accept()`
-itself, or (b) guard the two caller sites individually. Option (a) centralizes the
-contract but adds error-translation to a model method (architectural smell).
+Surfaced during review of spec-extend-toctou-translation. We added a contract
+docstring to `ProposalInvitation.accept` but `MatchProposal.accept()` itself is
+the method that actually creates the `IndividualMatch` and can fire the UNIQUE
+constraint. For consistency, its docstring should also cite ADR-025 and warn
+that direct callers (not going through `ProposalService.accept_proposal`) must
+wrap the call in the savepoint pattern.
 
-**Effort**: ~30min
+**Effort**: ~10min (pure docstring addition, no behavior change)
+
+## Priority 5c: `report_result` pending-branch is broken dead code
+
+Surfaced while writing tests for Priority 5. In `MatchLifecycleService.report_result`:
+
+```python
+if proposal.status.value == "pending":
+    individual_match = proposal.accept(reporter_id)  # creates SCHEDULED match
+...
+MatchLifecycleService.complete_match(...)  # requires IN_PROGRESS → raises
+```
+
+`proposal.accept()` creates an `IndividualMatch` with `status=SCHEDULED`, but the
+subsequent `complete_match` step requires `status=IN_PROGRESS`, so the pending
+branch always raises "Match is not in progress". The branch is never reached from
+routes (only `IndividualMatchService.report_result` delegates here, and no route
+calls it). This is dead code with an intrinsic bug.
+
+**Approaches**:
+- (a) Delete the pending branch entirely (simplest; confirm no external callers)
+- (b) Insert a state transition SCHEDULED → IN_PROGRESS before complete_match
+- (c) Replace complete_match call with a direct `match.complete_match(winner_id)`
+  that skips the status check for the freshly-accepted path
+
+**Effort**: ~30min (option a) or ~1h (option b/c with test coverage)
