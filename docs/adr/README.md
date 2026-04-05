@@ -38,6 +38,7 @@ Crea un ADR quando:
 | ADR-021 | [SSE to Polling Migration](ADR-021-sse-to-polling-migration.md) | Accepted | 2026-01 |
 | ADR-023 | [Match Status and Polling Fixes](ADR-023-match-status-and-polling-fixes.md) | Accepted | 2026-01 |
 | ADR-024 | [Wizard Campionato e Sistema Playoff](ADR-024-wizard-campionato-e-sistema-playoff.md) | Accepted | 2026-01-07 |
+| ADR-025 | [Savepoint + Flush per tradurre IntegrityError in ValueError](ADR-025-savepoint-integrity-error-translation.md) | Accepted | 2026-04-05 |
 
 ## Come Creare un Nuovo ADR
 
