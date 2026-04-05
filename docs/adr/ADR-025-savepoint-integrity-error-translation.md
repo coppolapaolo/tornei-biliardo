@@ -102,7 +102,7 @@ except IntegrityError as exc:
 ### Negative
 
 - Il pattern va applicato **a mano** in ogni call site interessato (no enforcement automatico).
-- Non tutti i caller di `proposal.accept()` sono coperti dal primo rollout (vedi P5 in `deferred-work.md`): `match_lifecycle_service.report_result` e `ProposalInvitation.accept` restano esposti a `IntegrityError` grezzo.
+- I model-layer `MatchProposal.accept` e `ProposalInvitation.accept` restano potenzialmente esposti a `IntegrityError` grezzo per chiamanti diretti: mitigato da docstring contract che obbliga i caller service-layer ad applicare il savepoint pattern (P5/P5b).
 
 ### Rischi
 
