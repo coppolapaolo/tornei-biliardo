@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, date, time as time_obj
 
+from sqlalchemy.exc import IntegrityError
+
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
@@ -176,15 +178,15 @@ class ProposalService:
             if billiard_hall_id:
                 # Venue-based: find players available at this venue
                 venue_players = AvailabilityService.get_available_players_at_venue(
-                    billiard_hall_id=billiard_hall_id,
-                    exclude_user_id=proposer_id
+                    billiard_hall_id=billiard_hall_id, exclude_user_id=proposer_id
                 )
                 eligible_user_ids = [p["user_id"] for p in venue_players]
             elif location:
                 # Location-based: find players available at this location string
-                location_players = AvailabilityService.get_available_players_at_location(
-                    location=location,
-                    exclude_user_id=proposer_id
+                location_players = (
+                    AvailabilityService.get_available_players_at_location(
+                        location=location, exclude_user_id=proposer_id
+                    )
                 )
                 eligible_user_ids = [p["user_id"] for p in location_players]
 
@@ -194,10 +196,12 @@ class ProposalService:
                     user_ids=eligible_user_ids,
                     notification_type=NotificationType.MATCH_PROPOSAL,
                     title=_("Nuova proposta di match"),
-                    message=_("%(username)s propone un match aperto%(location)s il %(date)s",
-                              username=proposer_name,
-                              location=f" a {location_text}" if location_text else "",
-                              date=scheduled_str),
+                    message=_(
+                        "%(username)s propone un match aperto%(location)s il %(date)s",
+                        username=proposer_name,
+                        location=f" a {location_text}" if location_text else "",
+                        date=scheduled_str,
+                    ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
                     action_text=_("Visualizza"),
@@ -263,7 +267,19 @@ class ProposalService:
             status=InvitationStatus.PENDING,
         )
 
-        db.session.add(invitation)
+        # Savepoint forces the UNIQUE violation to surface at flush time so
+        # we can translate IntegrityError into a user-friendly ValueError.
+        # (The outer @transactional will still roll back, which is correct —
+        # we don't want a partial invitation row.)
+        from flask_babel import _
+
+        try:
+            with db.session.begin_nested():
+                db.session.add(invitation)
+                db.session.flush()
+        except IntegrityError as exc:
+            raise ValueError(_("Giocatore già invitato a questa proposta")) from exc
+
         return invitation
 
     @staticmethod
@@ -413,7 +429,16 @@ class ProposalService:
         if not proposal.can_be_accepted_by(user_id):
             raise ValueError("User cannot accept this proposal")
 
-        individual_match = proposal.accept(user_id)
+        # Savepoint forces the UNIQUE(proposal_id) violation to surface at
+        # flush time so we can translate it to ValueError. Fires only if
+        # another transaction accepted first (TOCTOU). Outer @transactional
+        # still rolls back — correct, the partial acceptance must not persist.
+        try:
+            with db.session.begin_nested():
+                individual_match = proposal.accept(user_id)
+                db.session.flush()
+        except IntegrityError as exc:
+            raise ValueError(_("Proposta già accettata")) from exc
 
         # Notify proposer that their proposal was accepted
         try:
@@ -425,9 +450,11 @@ class ProposalService:
                 user_ids=[proposal.proposer_id],
                 notification_type=NotificationType.MATCH_ACCEPTED,
                 title=_("Proposta accettata!"),
-                message=_("%(player)s ha accettato la tua proposta di match%(location)s",
-                          player=accepter_name,
-                          location=f" a {location_text}" if location_text else ""),
+                message=_(
+                    "%(player)s ha accettato la tua proposta di match%(location)s",
+                    player=accepter_name,
+                    location=f" a {location_text}" if location_text else "",
+                ),
                 priority=NotificationPriority.HIGH,
                 action_url=f"/match/matches/{individual_match.id}",
                 action_text=_("Vai al match"),
@@ -488,8 +515,10 @@ class ProposalService:
                     user_ids=[proposal.proposer_id],
                     notification_type=NotificationType.MATCH_DECLINED,
                     title=_("Proposta scaduta"),
-                    message=_("La tua proposta di match%(location)s è scaduta senza accettazioni.",
-                              location=f" a {location_text}" if location_text else ""),
+                    message=_(
+                        "La tua proposta di match%(location)s è scaduta senza accettazioni.",
+                        location=f" a {location_text}" if location_text else "",
+                    ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
                     action_text=_("Visualizza"),
@@ -527,8 +556,10 @@ class ProposalService:
                     user_ids=[proposal.proposer_id],
                     notification_type=NotificationType.MATCH_DECLINED,
                     title=_("Proposta scaduta"),
-                    message=_("La tua proposta di match%(location)s è scaduta senza accettazioni.",
-                              location=f" a {location_text}" if location_text else ""),
+                    message=_(
+                        "La tua proposta di match%(location)s è scaduta senza accettazioni.",
+                        location=f" a {location_text}" if location_text else "",
+                    ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
                     action_text=_("Visualizza"),

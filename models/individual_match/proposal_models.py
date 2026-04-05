@@ -61,10 +61,14 @@ class MatchProposal(BaseModel):
     # Match details - Location
     # New: FK to BilliardHall (nullable for backward compatibility)
     billiard_hall_id = db.Column(
-        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+        db.Integer,
+        db.ForeignKey("billiard_hall.id", ondelete="SET NULL"),
+        nullable=True,
     )
     # Legacy: string-based location (kept for backward compatibility, will be deprecated)
-    location = db.Column(db.String(255), nullable=True)  # Made nullable - prefer billiard_hall_id
+    location = db.Column(
+        db.String(255), nullable=True
+    )  # Made nullable - prefer billiard_hall_id
     scheduled_at = db.Column(db.DateTime, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
 
@@ -299,6 +303,13 @@ class ProposalInvitation(BaseModel):
     # Relationships
     proposal = db.relationship("MatchProposal", back_populates="invitations")
     invited_user = db.relationship("User", foreign_keys=[invited_user_id])
+
+    # Prevents duplicate invites of same user to same proposal (TOCTOU guard).
+    __table_args__ = (
+        db.UniqueConstraint(
+            "proposal_id", "invited_user_id", name="uq_proposal_invitation_user"
+        ),
+    )
 
     def accept(self) -> "IndividualMatch":
         """Accept this invitation."""

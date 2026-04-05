@@ -46,10 +46,14 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     # Note: kept separate from proposal for matches created without proposal
     # New: FK to BilliardHall (nullable for backward compatibility)
     billiard_hall_id = db.Column(
-        db.Integer, db.ForeignKey("billiard_hall.id", ondelete="SET NULL"), nullable=True
+        db.Integer,
+        db.ForeignKey("billiard_hall.id", ondelete="SET NULL"),
+        nullable=True,
     )
     # Legacy: string-based location (kept for backward compatibility)
-    location = db.Column(db.String(255), nullable=True)  # Made nullable - prefer billiard_hall_id
+    location = db.Column(
+        db.String(255), nullable=True
+    )  # Made nullable - prefer billiard_hall_id
     scheduled_at = db.Column(db.DateTime, nullable=False)
     status = db.Column(
         db.Enum(MatchStatus), nullable=False, default=MatchStatus.SCHEDULED
@@ -96,6 +100,12 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
+
+    # UNIQUE on proposal_id prevents double-accept of same proposal (TOCTOU guard).
+    # SQLite allows multiple NULLs → matches without proposal remain valid.
+    __table_args__ = (
+        db.UniqueConstraint("proposal_id", name="uq_individual_match_proposal"),
+    )
 
     # Individual racks within this match
     racks = db.relationship(  # type: ignore[assignment]
