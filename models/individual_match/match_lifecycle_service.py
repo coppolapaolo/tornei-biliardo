@@ -12,7 +12,7 @@ from typing import Optional, List
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from ..status_enum import MatchStatus
-from .models import IndividualMatch, MatchProposal
+from .models import IndividualMatch
 
 
 class MatchLifecycleService:
@@ -103,32 +103,6 @@ class MatchLifecycleService:
 
         match.cancel_match(reason)
         return match
-
-    @staticmethod
-    @transactional(domain="individual_match")
-    def report_result(
-        match_id: int,
-        reporter_id: int,
-        winner_id: int,
-        player1_racks: int,
-        player2_racks: int,
-    ) -> None:
-        """Report final match result."""
-        proposal = db.session.get(MatchProposal, match_id)
-        if not proposal:
-            raise ValueError(f"Match proposal {match_id} not found")
-
-        individual_match = IndividualMatch.query.filter_by(
-            proposal_id=match_id
-        ).first()
-        if not individual_match:
-            raise ValueError("No individual match found for this proposal")
-
-        MatchLifecycleService.complete_match(
-            match_id=individual_match.id,
-            winner_id=winner_id,
-            user_id=reporter_id,
-        )
 
     @staticmethod
     @transactional(domain="individual_match")

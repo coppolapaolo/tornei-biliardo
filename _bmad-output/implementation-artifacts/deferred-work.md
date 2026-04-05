@@ -64,12 +64,10 @@ branch (`test_report_result_race_raises_value_error`,
 the contract docstrings on `MatchProposal.accept` / `ProposalInvitation.accept`
 to no longer cite `report_result` as a savepoint reference implementation.
 
-## Priority 5d: Orphan facade `report_result` (surfaced by 5c review)
+## ~~Priority 5d: Orphan facade `report_result`~~ ✅ DONE (2026-04-05)
 
-After 5c, `MatchLifecycleService.report_result` + its facade pass-through
-`IndividualMatchService.report_result` (services.py:442) have zero callers
-in the codebase (source and tests). Both methods are entirely dead public
-API. Candidates for deletion in a cleanup pass — requires confirming no
-external (extension/plugin) callers.
-
-**Effort**: ~15min (grep confirmation + deletion of both methods)
+Grep confirmed zero `.report_result(` callers across `*.py` (source + tests).
+Deleted both `MatchLifecycleService.report_result` and its facade
+pass-through `IndividualMatchService.report_result`, plus the now-unused
+`MatchProposal` import in `match_lifecycle_service.py`. Pyright clean,
+77 individual_match/toctou tests pass.

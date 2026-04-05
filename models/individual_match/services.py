@@ -440,20 +440,6 @@ class IndividualMatchService:
         return MatchLifecycleService.cancel_match(match_id, user_id, reason)
 
     @staticmethod
-    @transactional(domain="individual_match")
-    def report_result(
-        match_id: int,
-        reporter_id: int,
-        winner_id: int,
-        player1_racks: int,
-        player2_racks: int,
-    ) -> None:
-        """Report final match result."""
-        return MatchLifecycleService.report_result(
-            match_id, reporter_id, winner_id, player1_racks, player2_racks
-        )
-
-    @staticmethod
     def forfeit_match(match_id: int, user_id: int) -> IndividualMatch:
         """Forfeit a match - user loses, opponent wins.
 
