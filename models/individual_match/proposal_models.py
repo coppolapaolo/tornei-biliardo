@@ -193,7 +193,22 @@ class MatchProposal(BaseModel):
         return True
 
     def accept(self, user_id: int) -> "IndividualMatch":
-        """Accept the proposal and create an individual match."""
+        """Accept the proposal and create an individual match.
+
+        WARNING — Contract (ADR-025): this is a raw model-layer method. It
+        creates an ``IndividualMatch`` row subject to the
+        ``uq_individual_match_proposal`` UNIQUE constraint. In a TOCTOU race
+        (two acceptances of the same proposal) the constraint fires at flush
+        time and surfaces as ``sqlalchemy.exc.IntegrityError`` here.
+
+        Callers are responsible for wrapping this call in the savepoint +
+        ``ValueError`` translation pattern (see
+        ``ProposalService.accept_proposal`` and
+        ``MatchLifecycleService.report_result`` for reference
+        implementations). The savepoint pattern is intentionally NOT applied
+        inside this model method to keep session/transaction machinery out of
+        the domain layer.
+        """
         from .match_models import IndividualMatch
 
         if not self.can_be_accepted_by(user_id):

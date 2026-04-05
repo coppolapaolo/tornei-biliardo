@@ -44,16 +44,14 @@ Spec `spec-extend-toctou-translation.md`. `report_result` wrappato con savepoint
 pattern ADR-025. `ProposalInvitation.accept` documentato con docstring contract
 (metodo model-layer, caller responsabili del wrapping).
 
-## Priority 5b: Add IntegrityError contract docstring to `MatchProposal.accept`
+## ~~Priority 5b: Add IntegrityError contract docstring to `MatchProposal.accept`~~ ✅ DONE (2026-04-05)
 
-Surfaced during review of spec-extend-toctou-translation. We added a contract
-docstring to `ProposalInvitation.accept` but `MatchProposal.accept()` itself is
-the method that actually creates the `IndividualMatch` and can fire the UNIQUE
-constraint. For consistency, its docstring should also cite ADR-025 and warn
-that direct callers (not going through `ProposalService.accept_proposal`) must
-wrap the call in the savepoint pattern.
-
-**Effort**: ~10min (pure docstring addition, no behavior change)
+Added ADR-025 contract docstring to `MatchProposal.accept` modeled on the
+existing `ProposalInvitation.accept` docstring. Pure documentation, no
+behavior change. Cites `uq_individual_match_proposal` UNIQUE constraint and
+points callers to `ProposalService.accept_proposal` /
+`MatchLifecycleService.report_result` as reference implementations of the
+savepoint + ValueError translation pattern.
 
 ## Priority 5c: `report_result` pending-branch is broken dead code
 
