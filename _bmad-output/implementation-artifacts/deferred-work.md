@@ -23,26 +23,11 @@ Spec `spec-eventbus-error-monitoring.md`. Aggiunto `sentry_sdk.capture_exception
 flusso eventi in `EventBus.publish()`. Import guard con fallback no-op, safety net
 try/except attorno alle chiamate Sentry.
 
-## Priority 3b: Investigare double-capture logger.error + Sentry LoggingIntegration
+## ~~Priority 3b: Double-capture logger.error + Sentry LoggingIntegration~~ ✅ DONE (2026-04-05)
 
-Emerso durante review di spec-eventbus-error-monitoring. Sentry SDK ha `LoggingIntegration`
-abilitata di default che cattura i log ERROR come eventi Sentry. In `EventBus.publish()`:
-
-1. `EventHandler.__call__` chiama `logger.error(exc_info=True)` e rilancia (preesistente)
-2. `publish()` cattura il re-raise e chiama `logger.error(exc_info=True)` (preesistente)
-3. Il nuovo `_capture_handler_exception()` chiama `sentry_sdk.capture_exception()` esplicitamente
-
-Con LoggingIntegration attiva, lo stesso errore genera potenzialmente 2-3 eventi Sentry
-per singola failure di handler. Sentry dedupa per fingerprint (issue count stabile) ma
-event count gonfia il billing/rate-limit.
-
-**Approcci possibili**:
-- Demotare uno dei due `logger.error` a `logger.debug` (violazione boundary "logger.error
-  rimane invariato" dello spec originale)
-- Configurare `LoggingIntegration(event_level=CRITICAL)` in `app.py` per alzare la soglia
-- Aggiungere un filtro Python logging che marca i log già catturati esplicitamente
-
-**Effort**: ~1 hour (include verifica comportamento reale su GlitchTip)
+Spec `spec-eventbus-sentry-dedupe.md`. Risolto con `ignore_logger("models.events.base")`
+dentro il try/except import esistente. Net: 1 solo Sentry event per handler failure
+(da explicit capture) invece di 3 (2 auto-log + 1 explicit).
 
 ## Priority 4: Performance optimizations (profile first)
 
