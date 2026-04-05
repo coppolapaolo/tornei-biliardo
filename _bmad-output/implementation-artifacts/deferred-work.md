@@ -53,27 +53,23 @@ points callers to `ProposalService.accept_proposal` /
 `MatchLifecycleService.report_result` as reference implementations of the
 savepoint + ValueError translation pattern.
 
-## Priority 5c: `report_result` pending-branch is broken dead code
+## ~~Priority 5c: `report_result` pending-branch is broken dead code~~ ✅ DONE (2026-04-05)
 
-Surfaced while writing tests for Priority 5. In `MatchLifecycleService.report_result`:
+Option (a): deleted the pending branch from `MatchLifecycleService.report_result`
+along with its ADR-025 savepoint wrap (now unnecessary — the sole live path
+for `proposal.accept()` on a PENDING proposal remains `ProposalService.accept_proposal`,
+which keeps its own savepoint). Removed 2 tests that covered only the dead
+branch (`test_report_result_race_raises_value_error`,
+`test_report_result_savepoint_only_catches_integrity_error`). Also cleaned up
+the contract docstrings on `MatchProposal.accept` / `ProposalInvitation.accept`
+to no longer cite `report_result` as a savepoint reference implementation.
 
-```python
-if proposal.status.value == "pending":
-    individual_match = proposal.accept(reporter_id)  # creates SCHEDULED match
-...
-MatchLifecycleService.complete_match(...)  # requires IN_PROGRESS → raises
-```
+## Priority 5d: Orphan facade `report_result` (surfaced by 5c review)
 
-`proposal.accept()` creates an `IndividualMatch` with `status=SCHEDULED`, but the
-subsequent `complete_match` step requires `status=IN_PROGRESS`, so the pending
-branch always raises "Match is not in progress". The branch is never reached from
-routes (only `IndividualMatchService.report_result` delegates here, and no route
-calls it). This is dead code with an intrinsic bug.
+After 5c, `MatchLifecycleService.report_result` + its facade pass-through
+`IndividualMatchService.report_result` (services.py:442) have zero callers
+in the codebase (source and tests). Both methods are entirely dead public
+API. Candidates for deletion in a cleanup pass — requires confirming no
+external (extension/plugin) callers.
 
-**Approaches**:
-- (a) Delete the pending branch entirely (simplest; confirm no external callers)
-- (b) Insert a state transition SCHEDULED → IN_PROGRESS before complete_match
-- (c) Replace complete_match call with a direct `match.complete_match(winner_id)`
-  that skips the status check for the freshly-accepted path
-
-**Effort**: ~30min (option a) or ~1h (option b/c with test coverage)
+**Effort**: ~15min (grep confirmation + deletion of both methods)

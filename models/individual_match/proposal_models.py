@@ -203,9 +203,8 @@ class MatchProposal(BaseModel):
 
         Callers are responsible for wrapping this call in the savepoint +
         ``ValueError`` translation pattern (see
-        ``ProposalService.accept_proposal`` and
-        ``MatchLifecycleService.report_result`` for reference
-        implementations). The savepoint pattern is intentionally NOT applied
+        ``ProposalService.accept_proposal`` for a reference
+        implementation). The savepoint pattern is intentionally NOT applied
         inside this model method to keep session/transaction machinery out of
         the domain layer.
         """
@@ -338,9 +337,8 @@ class ProposalInvitation(BaseModel):
 
         Callers are responsible for wrapping this call in the savepoint +
         ``ValueError`` translation pattern (see
-        ``ProposalService.accept_proposal`` and
-        ``MatchLifecycleService.report_result`` for reference
-        implementations). The savepoint pattern is intentionally NOT applied
+        ``ProposalService.accept_proposal`` for a reference
+        implementation). The savepoint pattern is intentionally NOT applied
         inside this model method to keep session/transaction machinery out of
         the domain layer.
         """
