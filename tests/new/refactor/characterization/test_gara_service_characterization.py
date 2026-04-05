@@ -258,7 +258,7 @@ class TestGaraServiceCharacterization:
 
         # setup -> inscription (richiede date)
         start_time = utc_now() + timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
 
         # Rimuovi le date di iscrizione per testare la validazione
         # (create_gara le imposta automaticamente per prevenire errori di stato)
@@ -290,7 +290,7 @@ class TestGaraServiceCharacterization:
 
         # Con iscritti funziona (prima devo aprire le iscrizioni)
         start_time = utc_now() - timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
 
         # Ripristino lo stato setup se necessario
         if gara.status != GaraStatus.SETUP.value:
@@ -355,7 +355,7 @@ class TestGaraServiceCharacterization:
 
         # Date valide
         start_time = utc_now() + timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
 
         updated_gara = InscriptionService.open_inscriptions(
             gara.id, start_time, end_time
@@ -383,7 +383,7 @@ class TestGaraServiceCharacterization:
         )
 
         start_time = utc_now() + timedelta(minutes=30)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
 
         # Modifica date prima dell'apertura
         updated_gara = InscriptionService.modify_inscription_dates(
@@ -468,7 +468,7 @@ class TestGaraServiceCharacterization:
 
         # Apri iscrizioni prima
         start_time = utc_now() - timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         # Con iscritti sufficienti (6 totali)
@@ -504,7 +504,7 @@ class TestGaraServiceCharacterization:
 
         # Apri iscrizioni e iscrivi giocatori (6 per min_participants)
         start_time = utc_now() - timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
@@ -637,7 +637,7 @@ class TestInscriptionServiceCharacterization:
 
         # Apri iscrizioni prima
         start_time = utc_now() - timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         # Prima iscrizione
@@ -701,7 +701,7 @@ class TestInscriptionServiceCharacterization:
 
         # Apri iscrizioni e iscrivi utenti
         start_time = utc_now() - timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
@@ -738,7 +738,7 @@ class TestInscriptionServiceCharacterization:
 
         # Apri iscrizioni e iscrivi utente
         start_time = utc_now() - timedelta(minutes=10)
-        end_time = utc_now() + timedelta(days=1)
+        end_time = datetime.combine(date.today() + timedelta(days=1), time(17, 0))
         InscriptionService.open_inscriptions(gara.id, start_time, end_time)
 
         InscriptionService.inscribe_user(self.player2_user.id, gara.id)

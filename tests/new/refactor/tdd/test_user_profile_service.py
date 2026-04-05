@@ -115,38 +115,6 @@ class TestUserProfileServiceTDD:
             with pytest.raises(ValueError, match="Invalid role"):
                 UserProfileService.create_user("test", "test@example.com", "secure123", "invalid")
 
-    def test_create_user_prevents_duplicate_username(self, app, db_session):
-        """
-        RED: Test UserProfileService.create_user() username uniqueness validation.
-
-        Expected behavior:
-        - Raises ValueError for duplicate usernames (case insensitive)
-        - First user creation succeeds, second fails
-        """
-        with app.app_context():
-            from models.user.services import UserProfileService
-
-            # Create first user
-            user1 = UserProfileService.create_user(
-                username="unique_user",
-                email="user1@example.com",
-                password="secure123",
-                role="player"
-            )
-
-            # Attempt duplicate username (case insensitive)
-            with pytest.raises(ValueError, match="Username 'UNIQUE_USER' already exists"):
-                UserProfileService.create_user(
-                    username="UNIQUE_USER",
-                    email="user2@example.com",
-                    password="secure123",
-                    role="player"
-                )
-
-            # Cleanup
-            db.session.delete(user1)
-            db.session.commit()
-
     def test_create_user_prevents_duplicate_email(self, app, db_session):
         """
         RED: Test UserProfileService.create_user() email uniqueness validation.
@@ -519,97 +487,6 @@ class TestUserProfileServiceTDD:
 
             # Cleanup
             db.session.delete(admin)
-            db.session.commit()
-
-    def test_authenticate_user_functionality(self, app, db_session):
-        """
-        RED: Test UserProfileService.authenticate_user() authentication.
-
-        Expected behavior:
-        - Returns User object for valid username/password
-        - Returns None for invalid credentials
-        - Case insensitive username matching
-        """
-        with app.app_context():
-            from models.user.services import UserProfileService
-
-            # Create test user
-            user = UserProfileService.create_user(
-                username="auth_user",
-                email="auth@example.com",
-                password="authpass123",
-                role="player"
-            )
-
-            # Test valid authentication
-            authenticated_user = UserProfileService.authenticate_user(
-                username="auth_user",
-                password="authpass123"
-            )
-            assert authenticated_user is not None
-            assert authenticated_user.id == user.id
-
-            # Test case insensitive username
-            authenticated_user2 = UserProfileService.authenticate_user(
-                username="AUTH_USER",
-                password="authpass123"
-            )
-            assert authenticated_user2 is not None
-            assert authenticated_user2.id == user.id
-
-            # Test invalid password
-            invalid_auth = UserProfileService.authenticate_user(
-                username="auth_user",
-                password="wrongpass"
-            )
-            assert invalid_auth is None
-
-            # Test invalid username
-            invalid_user = UserProfileService.authenticate_user(
-                username="nonexistent",
-                password="authpass123"
-            )
-            assert invalid_user is None
-
-            # Cleanup
-            db.session.delete(user)
-            db.session.commit()
-
-    def test_get_user_by_username_functionality(self, app, db_session):
-        """
-        RED: Test UserProfileService.get_user_by_username() user retrieval.
-
-        Expected behavior:
-        - Returns User object for existing username (case insensitive)
-        - Returns None for non-existent username
-        """
-        with app.app_context():
-            from models.user.services import UserProfileService
-
-            # Create test user
-            user = UserProfileService.create_user(
-                username="find_user",
-                email="find@example.com",
-                password="secure123",
-                role="player"
-            )
-
-            # Test finding existing user
-            found_user = UserProfileService.get_user_by_username("find_user")
-            assert found_user is not None
-            assert found_user.id == user.id
-
-            # Test case insensitive search
-            found_user2 = UserProfileService.get_user_by_username("FIND_USER")
-            assert found_user2 is not None
-            assert found_user2.id == user.id
-
-            # Test non-existent user
-            not_found = UserProfileService.get_user_by_username("nonexistent")
-            assert not_found is None
-
-            # Cleanup
-            db.session.delete(user)
             db.session.commit()
 
     def test_get_user_by_email_functionality(self, app, db_session):

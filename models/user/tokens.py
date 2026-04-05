@@ -25,7 +25,9 @@ class UserToken(BaseModel):
     is_used = db.Column(db.Boolean, default=False)
 
     # Relationship
-    user = db.relationship("User", backref=db.backref("tokens", lazy=True))
+    user = db.relationship(
+        "User", backref=db.backref("tokens", lazy=True, cascade="all, delete-orphan")
+    )
 
     @classmethod
     def create_token(

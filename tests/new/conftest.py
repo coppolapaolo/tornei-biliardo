@@ -14,10 +14,19 @@ def app():
         flask_app = app_module.create_app()
 
     # Solo configurazione; NON creiamo l'admin qui.
+    # StaticPool: SQLite in-memory is per-connection. Without StaticPool,
+    # db.drop_all() in fixtures gets a new connection (empty DB), leaving
+    # stale data on the old connection. StaticPool forces one connection.
+    from sqlalchemy.pool import StaticPool
+
     flask_app.config.update(
         TESTING=True,
         WTF_CSRF_ENABLED=False,
         SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
+        SQLALCHEMY_ENGINE_OPTIONS={
+            "poolclass": StaticPool,
+            "connect_args": {"check_same_thread": False},
+        },
         ADMIN_USERNAME=flask_app.config.get("ADMIN_USERNAME", "admin"),
         ADMIN_EMAIL=flask_app.config.get("ADMIN_EMAIL", "admin@test.local"),
         ADMIN_PASSWORD=flask_app.config.get("ADMIN_PASSWORD", "admin123"),
@@ -25,6 +34,10 @@ def app():
         APPLICATION_ROOT="/",
         PREFERRED_URL_SCHEME="http",
     )
+
+    # Disable rate limiter in tests to avoid 429 errors from rapid login calls
+    from utils.rate_limiter import limiter
+    limiter.enabled = False
 
     ctx = flask_app.app_context()
     ctx.push()
@@ -51,8 +64,18 @@ def client(app):
 def db_session(app):
     from models import db
 
-    # Clear all existing data before each test
-    db.session.remove()
+    # Clear all existing data before each test.
+    # With StaticPool (single connection), we must ensure no pending
+    # transaction before DROP TABLE, otherwise SQLite silently ignores it.
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    db.session.close()
+
+    # Clear in-memory caches to prevent stale data between tests
+    from models.caching import cache_manager
+    cache_manager.clear_all()
 
     # Use test_request_context for setup (drop/create tables)
     # This provides session access for Flask-Babel translations during setup
@@ -60,7 +83,7 @@ def db_session(app):
         # Drop and recreate all tables to ensure complete isolation
         db.drop_all()
         db.create_all()
-        
+
         # Populate feature_config table with test data for ABAC
         _populate_test_features(db)
 
@@ -77,7 +100,7 @@ def db_session(app):
             # Clean up after test
             try:
                 db.session.rollback()
-            except:
+            except Exception:
                 pass
             db.session.remove()
 
