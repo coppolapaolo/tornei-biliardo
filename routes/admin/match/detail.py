@@ -16,6 +16,7 @@ from models import (
 from utils import match_manager_required
 from models.match.services import MatchService
 from routes.sse import emit_gara_event
+from utils.route_helpers import safe_json_error
 
 from . import match_bp
 
@@ -173,10 +174,7 @@ def update_match_times(match_id):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Errore durante l'aggiornamento: {str(e)}"
-        }), 500
+        return safe_json_error(e, "updating match times")
 
 
 @match_bp.route("/<int:match_id>/assign-table", methods=["POST"])
@@ -301,10 +299,4 @@ def assign_table(match_id):
         return jsonify(response), status_code
 
     except Exception as e:
-        logger.error(
-            f"Exception in assign_table for match {match_id}: {str(e)}", exc_info=True
-        )
-        return (
-            jsonify({"success": False, "message": f"Errore: {str(e)}"}),
-            500,
-        )
+        return safe_json_error(e, f"assigning table to match {match_id}")

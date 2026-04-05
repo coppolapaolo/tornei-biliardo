@@ -13,7 +13,7 @@ from models.rating.models import (
     CategoryLevel,
 )
 from utils import admin_required, director_required
-from utils.route_helpers import handle_ajax_service_action
+from utils.route_helpers import handle_ajax_service_action, safe_json_error
 
 # Blueprint initialization
 rating_bp = Blueprint("rating", __name__)
@@ -260,11 +260,10 @@ def rating_statistics():
             return render_template("rating/admin_statistics.html", statistics=stats)
 
     except Exception as e:
-        error_msg = f"Error loading statistics: {str(e)}"
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
+            return safe_json_error(e, "loading statistics")
         else:
-            flash(error_msg, "danger")
+            flash("Error loading statistics", "danger")
             return redirect(url_for("dashboard.dashboard"))
 
 
@@ -302,7 +301,7 @@ def get_user_category_api(user_id):
             return jsonify({"success": True, "category": None})
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+        return safe_json_error(e, "fetching user category")
 
 
 @rating_bp.route("/api/handicap/<int:player1_id>/<int:player2_id>")
@@ -313,7 +312,7 @@ def get_handicap_api(player1_id, player2_id):
         handicap = HandicapService.calculate_handicap(player1_id, player2_id)
         return jsonify({"success": True, "handicap": handicap})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+        return safe_json_error(e, "calculating handicap")
 
 
 # Error handlers

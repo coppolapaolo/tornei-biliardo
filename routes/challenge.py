@@ -27,7 +27,7 @@ from utils import (
     challenge_attempt_player_required,
 )
 from models.challenge.services import ChallengeService
-from utils.route_helpers import handle_ajax_service_action
+from utils.route_helpers import handle_ajax_service_action, safe_json_error
 from utils.image_paths import ImagePathManager
 
 # Blueprint initialization
@@ -281,11 +281,10 @@ def toggle_favorite(challenge_id):
             )
 
     except Exception as e:
-        error_msg = f"Error updating favorites: {str(e)}"
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
+            return safe_json_error(e, "toggling favorite")
         else:
-            flash(error_msg, "danger")
+            flash("Error updating favorites", "danger")
             return redirect(
                 url_for("challenge.challenge_detail", challenge_id=challenge_id)
             )
@@ -316,11 +315,10 @@ def challenge_statistics(challenge_id):
             )
 
     except Exception as e:
-        error_msg = f"Error loading statistics: {str(e)}"
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
+            return safe_json_error(e, "loading challenge statistics")
         else:
-            flash(error_msg, "danger")
+            flash("Error loading statistics", "danger")
             return redirect(url_for("challenge.challenge_catalog"))
 
 

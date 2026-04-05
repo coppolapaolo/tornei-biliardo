@@ -20,7 +20,7 @@ from models import (
 )
 from models.status_enum import GaraStatus
 from utils import gara_manager_required, admin_required
-from utils.route_helpers import get_or_ajax_404
+from utils.route_helpers import get_or_ajax_404, safe_json_error
 
 from . import competition_bp
 
@@ -72,7 +72,7 @@ def get_gara_challenges(gara_id):
         return jsonify({"success": True, "challenges": challenges_data})
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return safe_json_error(e, "fetching gara challenges")
 
 
 @competition_bp.route("/<int:gara_id>/add_challenge", methods=["POST"])
@@ -141,15 +141,7 @@ def add_challenge_to_gara(gara_id):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": f"Errore durante l'aggiunta della challenge: {str(e)}",
-                }
-            ),
-            500,
-        )
+        return safe_json_error(e, "adding challenge to gara")
 
 
 @competition_bp.route("/<int:gara_id>/remove_challenge", methods=["POST"])
@@ -202,15 +194,7 @@ def remove_challenge_from_gara(gara_id):
             return jsonify({"success": False, "error": "Challenge non trovata"}), 404
 
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": f"Errore durante la rimozione della challenge: {str(e)}",
-                }
-            ),
-            500,
-        )
+        return safe_json_error(e, "removing challenge from gara")
 
 
 @competition_bp.route("/<int:gara_id>/challenges/available")
@@ -262,7 +246,7 @@ def get_available_challenges_for_gara(gara_id):
         return jsonify({"success": True, "challenges": challenges_data})
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return safe_json_error(e, "fetching available challenges for gara")
 
 
 @competition_bp.route("/challenges/available")
@@ -302,7 +286,7 @@ def get_available_challenges():
         return jsonify({"success": True, "challenges": challenges_data})
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return safe_json_error(e, "fetching available challenges")
 
 
 @competition_bp.route("/challenges/create", methods=["POST"])
@@ -409,15 +393,7 @@ def create_new_challenge():
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": f"Errore durante la creazione della challenge: {str(e)}",
-                }
-            ),
-            500,
-        )
+        return safe_json_error(e, "creating challenge")
 
 
 @competition_bp.route("/<int:gara_id>/challenge_classification")

@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from models.individual_match.services import MatchProposalService
 from models.individual_match.models import MatchProposal, ProposalType
 from models.user.permissions import RoleRequirement
+from utils.route_helpers import safe_json_error
 
 from . import individual_match_bp
 
@@ -345,11 +346,10 @@ def decline_proposal(proposal_id):
             return redirect(url_for("individual_match.proposal_list"))
 
     except Exception as e:
-        error_msg = f"Errore nel rifiuto: {str(e)}"
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
+            return safe_json_error(e, "declining proposal")
         else:
-            flash(error_msg, "danger")
+            flash("Errore interno del server", "danger")
             return redirect(
                 url_for("individual_match.proposal_detail", proposal_id=proposal_id)
             )

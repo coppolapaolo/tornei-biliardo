@@ -27,7 +27,11 @@ from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
 from utils import gara_manager_required
-from utils.route_helpers import handle_service_action, get_or_ajax_404
+from utils.route_helpers import handle_service_action, get_or_ajax_404, safe_json_error
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 from . import competition_bp
 
@@ -50,12 +54,8 @@ def start_first_round(gara_id):
     except ValueError as ve:
         flash(str(ve), "error")
     except Exception as e:
-        # Log the full error for debugging
-        import traceback
-
-        print(f"ERROR starting first round: {str(e)}")
-        print(traceback.format_exc())
-        flash(f"Errore nell'avvio del turno: {str(e)}", "error")
+        logger.error(f"Error starting first round: {e}", exc_info=True)
+        flash("Errore interno del server", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -147,8 +147,9 @@ def terminate_gara(gara_id):
         flash("Gara terminata con successo! I risultati sono ora definitivi.", "success")
     except Exception as e:
         if is_ajax:
-            return jsonify({"success": False, "error": str(e)}), 500
-        flash(f"Errore durante la terminazione della gara: {str(e)}", "error")
+            return safe_json_error(e, "terminating gara")
+        logger.error(f"Error terminating gara: {e}", exc_info=True)
+        flash("Errore interno del server", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -208,8 +209,9 @@ def start_ssr(gara_id):
         flash("Fase SSR avviata. Inserire i punteggi per i parimerito.", "success")
     except Exception as e:
         if is_ajax:
-            return jsonify({"success": False, "error": str(e)}), 500
-        flash(f"Errore: {str(e)}", "error")
+            return safe_json_error(e, "starting SSR")
+        logger.error(f"Error starting SSR: {e}", exc_info=True)
+        flash("Errore interno del server", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -339,7 +341,7 @@ def save_ssr_scores(gara_id):
             "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id)
         })
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return safe_json_error(e, "completing gara after SSR")
 
 
 # ============ SISTEMA AMALFI ============
@@ -500,12 +502,7 @@ def amalfi_start_round(gara_id, round_number):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)})
     except Exception as e:
-        return jsonify(
-            {
-                "success": False,
-                "error": f"Errore durante la creazione del turno: {str(e)}",
-            }
-        )
+        return safe_json_error(e, "creating Amalfi round")
 
 
 @competition_bp.route("/<int:gara_id>/start_round/<int:round_number>", methods=["POST"])
@@ -621,12 +618,7 @@ def start_round_generic(gara_id, round_number):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)})
     except Exception as e:
-        return jsonify(
-            {
-                "success": False,
-                "error": f"Errore durante la creazione del turno: {str(e)}",
-            }
-        )
+        return safe_json_error(e, "creating round")
 
 
 # ====================================================================
@@ -690,7 +682,8 @@ def reset_match_advanced(gara_id, match_id):
         else:
             flash(message, "danger")
     except Exception as e:
-        flash(f"Errore nel reset del match: {str(e)}", "danger")
+        logger.error(f"Error resetting match: {e}", exc_info=True)
+        flash("Errore interno del server", "danger")
 
     return redirect(
         url_for("admin.competition.round_management_overview", gara_id=gara_id)
@@ -720,7 +713,8 @@ def cancel_round_advanced(gara_id, round_number):
         else:
             flash(message, "danger")
     except Exception as e:
-        flash(f"Errore nella cancellazione del turno: {str(e)}", "danger")
+        logger.error(f"Error cancelling round: {e}", exc_info=True)
+        flash("Errore interno del server", "danger")
 
     return redirect(
         url_for("admin.competition.round_management_overview", gara_id=gara_id)
@@ -750,7 +744,8 @@ def bulk_reset_round_matches(gara_id, round_number):
                 "warning",
             )
     except Exception as e:
-        flash(f"Errore nel reset bulk: {str(e)}", "danger")
+        logger.error(f"Error in bulk reset: {e}", exc_info=True)
+        flash("Errore interno del server", "danger")
 
     return redirect(
         url_for("admin.competition.round_management_overview", gara_id=gara_id)

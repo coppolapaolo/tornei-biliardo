@@ -7,6 +7,7 @@ from flask import (
 from flask_login import login_required
 
 from utils import match_manager_required
+from utils.route_helpers import safe_json_error
 
 from . import match_bp
 
@@ -82,15 +83,7 @@ def record_challenge_attempt():
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": f"Errore durante la registrazione: {str(e)}",
-                }
-            ),
-            500,
-        )
+        return safe_json_error(e, "recording challenge attempt")
 
 
 @match_bp.route("/record_challenge_attempts", methods=["POST"])
@@ -162,12 +155,4 @@ def record_challenge_attempts():
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": f"Errore durante la registrazione: {str(e)}",
-                }
-            ),
-            500,
-        )
+        return safe_json_error(e, "recording challenge attempts")

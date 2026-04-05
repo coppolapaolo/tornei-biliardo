@@ -13,7 +13,7 @@ from models.user.services import VenueManagementService
 from models.user.venue_manager_service import VenueManagerService
 from models.user.models import User
 from utils import admin_required, venue_manager_required
-from utils.route_helpers import handle_service_action
+from utils.route_helpers import handle_service_action, safe_json_error
 from flask_login import login_required
 from models.base import db, utc_now
 
@@ -369,7 +369,7 @@ def toggle_venue_status(venue_id):
     except ValueError as e:
         return jsonify({"success": False, "message": str(e)}), 404
     except Exception as e:
-        return jsonify({"success": False, "message": f"Errore: {str(e)}"}), 500
+        return safe_json_error(e, "toggling venue status")
 
 
 @venue_bp.route("/venues/<int:venue_id>/verify", methods=["POST"])

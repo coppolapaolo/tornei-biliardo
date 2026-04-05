@@ -9,7 +9,7 @@ from flask_login import login_required
 from models import Match
 from utils import match_manager_required
 from routes.sse import emit_gara_event
-from utils.route_helpers import get_or_ajax_404
+from utils.route_helpers import get_or_ajax_404, safe_json_error
 
 from . import match_bp
 
@@ -50,10 +50,7 @@ def start_next_set(match_id):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Errore durante l'avvio del set: {str(e)}"
-        }), 500
+        return safe_json_error(e, "starting set")
 
 
 @match_bp.route("/<int:match_id>/set/add_rack", methods=["POST"])
@@ -109,10 +106,7 @@ def add_set_rack(match_id):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Errore durante l'aggiunta del rack: {str(e)}"
-        }), 500
+        return safe_json_error(e, "adding rack to set")
 
 
 @match_bp.route("/<int:match_id>/set/remove_rack", methods=["POST"])
@@ -163,7 +157,4 @@ def remove_set_rack(match_id):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "error": f"Errore durante la rimozione del rack: {str(e)}"
-        }), 500
+        return safe_json_error(e, "removing rack from set")

@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from werkzeug.exceptions import abort
 
 from models import db, Inscription
+from utils.route_helpers import safe_json_error
 
 from . import player_bp
 
@@ -135,12 +136,4 @@ def record_challenge_attempt(gara_challenge_id):
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": f"Errore durante la registrazione: {str(e)}",
-                }
-            ),
-            500,
-        )
+        return safe_json_error(e, "recording player challenge attempt")
