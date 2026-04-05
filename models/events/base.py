@@ -17,7 +17,18 @@ from models.base import utc_now
 
 logger = logging.getLogger(__name__)
 
-EventType = TypeVar('EventType', bound='DomainEvent')
+# Optional Sentry/GlitchTip integration for EventBus error monitoring.
+# Init is owned by app.py via GLITCHTIP_DSN; here we only emit. When the
+# package is absent or the SDK is not initialized, sentry_sdk calls are no-op.
+try:
+    import sentry_sdk as _sentry_sdk
+
+    _sentry_available = True
+except ImportError:
+    _sentry_sdk = None  # type: ignore[assignment]
+    _sentry_available = False
+
+EventType = TypeVar("EventType", bound="DomainEvent")
 
 
 @dataclass
@@ -60,14 +71,14 @@ class DomainEvent(ABC):
     def to_dict(self) -> Dict[str, Any]:
         """Convert event to dictionary for serialization."""
         return {
-            'event_id': self.event_id,
-            'event_type': self.get_event_type(),
-            'occurred_at': self.occurred_at.isoformat(),
-            'domain': self.domain,
-            'source': self.source,
-            'correlation_id': self.correlation_id,
-            'metadata': self.metadata,
-            'data': self._get_event_data()
+            "event_id": self.event_id,
+            "event_type": self.get_event_type(),
+            "occurred_at": self.occurred_at.isoformat(),
+            "domain": self.domain,
+            "source": self.source,
+            "correlation_id": self.correlation_id,
+            "metadata": self.metadata,
+            "data": self._get_event_data(),
         }
 
     @abstractmethod
@@ -90,11 +101,36 @@ class EventHandler:
         try:
             self.handler_func(event)
         except Exception as e:
-            logger.error(f"Error in event handler {self.handler_name}: {e}", exc_info=True)
+            logger.error(
+                f"Error in event handler {self.handler_name}: {e}", exc_info=True
+            )
             raise
 
     def __repr__(self) -> str:
         return f"EventHandler(handler={self.handler_name}, priority={self.priority})"
+
+
+def _capture_handler_exception(
+    exc: Exception,
+    event: DomainEvent,
+    handler: "EventHandler",
+) -> None:
+    """Report a handler exception to Sentry/GlitchTip with enriched context.
+
+    Safety net: never let Sentry client errors break the publish flow. If the
+    SDK is unavailable or the capture itself raises, fall back to a warning log.
+    """
+    if not _sentry_available:
+        return
+    try:
+        with _sentry_sdk.push_scope() as scope:
+            scope.set_extra("event_type", event.get_event_type())
+            scope.set_extra("event_id", event.event_id)
+            scope.set_extra("handler_name", handler.handler_name)
+            scope.set_extra("event_domain", event.domain)
+            _sentry_sdk.capture_exception(exc)
+    except Exception as capture_error:
+        logger.warning("Sentry capture failed: %s", capture_error)
 
 
 class EventBus:
@@ -129,7 +165,7 @@ class EventBus:
         cls,
         event_type: Type[EventType],
         handler: Callable[[EventType], None],
-        priority: int = 0
+        priority: int = 0,
     ) -> None:
         """
         Register an event handler for a specific event type.
@@ -148,7 +184,9 @@ class EventBus:
         # Sort handlers by priority (descending)
         cls._handlers[event_type].sort(key=lambda h: h.priority, reverse=True)
 
-        logger.debug(f"Registered handler {event_handler.handler_name} for {event_type.__name__}")
+        logger.debug(
+            f"Registered handler {event_handler.handler_name} for {event_type.__name__}"
+        )
 
     @classmethod
     def subscribe(cls, event_type: Type[EventType], priority: int = 0):
@@ -164,9 +202,13 @@ class EventBus:
             def handle_user_registered(event):
                 pass
         """
-        def decorator(handler: Callable[[EventType], None]) -> Callable[[EventType], None]:
+
+        def decorator(
+            handler: Callable[[EventType], None],
+        ) -> Callable[[EventType], None]:
             cls.register_handler(event_type, handler, priority)
             return handler
+
         return decorator
 
     @classmethod
@@ -186,6 +228,21 @@ class EventBus:
 
         logger.debug(f"Publishing {event.get_event_type()} to {len(handlers)} handlers")
 
+        if _sentry_available:
+            try:
+                _sentry_sdk.add_breadcrumb(
+                    category="event_bus",
+                    level="info",
+                    message=f"publish {event.get_event_type()}",
+                    data={
+                        "event_type": event.get_event_type(),
+                        "event_id": event.event_id,
+                        "handler_count": len(handlers),
+                    },
+                )
+            except Exception as e:  # pragma: no cover - defensive
+                logger.warning("Sentry add_breadcrumb failed: %s", e)
+
         for handler in handlers:
             try:
                 handler(event)
@@ -193,8 +250,9 @@ class EventBus:
                 logger.error(
                     f"Error in event handler {handler.handler_name} "
                     f"for event {event.get_event_type()}: {e}",
-                    exc_info=True
+                    exc_info=True,
                 )
+                _capture_handler_exception(e, event, handler)
                 # Continue with other handlers despite individual failures
 
         logger.debug(f"Completed publishing {event.get_event_type()}")
@@ -241,11 +299,11 @@ class EventBus:
         """Get EventBus statistics for monitoring."""
         total_handlers = sum(len(handlers) for handlers in cls._handlers.values())
         return {
-            'enabled': cls._enabled,
-            'event_types': len(cls._handlers),
-            'total_handlers': total_handlers,
-            'handlers_by_type': {
+            "enabled": cls._enabled,
+            "event_types": len(cls._handlers),
+            "total_handlers": total_handlers,
+            "handlers_by_type": {
                 event_type.__name__: len(handlers)
                 for event_type, handlers in cls._handlers.items()
-            }
+            },
         }

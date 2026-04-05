@@ -27,10 +27,7 @@ class TestDomainEvent:
     def test_event_creation_with_defaults(self):
         """Test that events are created with proper defaults."""
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1, 2]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1, 2]
         )
 
         assert event.request_id == 1
@@ -44,10 +41,7 @@ class TestDomainEvent:
     def test_event_to_dict(self):
         """Test event serialization to dictionary."""
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1, 2]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1, 2]
         )
         event.source = "test_service"
 
@@ -68,7 +62,7 @@ class TestDomainEvent:
             target_user_id=789,
             target_username="Player2",
             location_name="Pool Hall",
-            is_public=False
+            is_public=False,
         )
 
         assert event.proposal_id == 456
@@ -92,6 +86,7 @@ class TestEventBus:
 
     def test_handler_registration(self):
         """Test registering and retrieving event handlers."""
+
         def test_handler(event):
             pass
 
@@ -103,6 +98,7 @@ class TestEventBus:
 
     def test_handler_registration_with_decorator(self):
         """Test registering handlers with decorator syntax."""
+
         @EventBus.subscribe(DirectorRequestCreatedEvent, priority=5)
         def test_handler(event):
             pass
@@ -122,10 +118,7 @@ class TestEventBus:
         EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
 
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
         )
 
         EventBus.publish(event)
@@ -147,14 +140,15 @@ class TestEventBus:
             call_order.append("medium")
 
         EventBus.register_handler(DirectorRequestCreatedEvent, handler_low, priority=1)
-        EventBus.register_handler(DirectorRequestCreatedEvent, handler_high, priority=10)
-        EventBus.register_handler(DirectorRequestCreatedEvent, handler_medium, priority=5)
+        EventBus.register_handler(
+            DirectorRequestCreatedEvent, handler_high, priority=10
+        )
+        EventBus.register_handler(
+            DirectorRequestCreatedEvent, handler_medium, priority=5
+        )
 
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
         )
 
         EventBus.publish(event)
@@ -171,10 +165,7 @@ class TestEventBus:
         EventBus.register_handler(DirectorRequestCreatedEvent, test_handler)
 
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
         )
 
         # Disable and publish
@@ -197,22 +188,141 @@ class TestEventBus:
         def working_handler(event):
             handler_calls.append("success")
 
-        EventBus.register_handler(DirectorRequestCreatedEvent, failing_handler, priority=10)
-        EventBus.register_handler(DirectorRequestCreatedEvent, working_handler, priority=5)
+        EventBus.register_handler(
+            DirectorRequestCreatedEvent, failing_handler, priority=10
+        )
+        EventBus.register_handler(
+            DirectorRequestCreatedEvent, working_handler, priority=5
+        )
 
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
         )
 
         # Should not raise exception, working handler should still be called
         EventBus.publish(event)
         assert handler_calls == ["success"]
 
+    def test_handler_error_captured_by_sentry(self):
+        """Failing handler triggers sentry_sdk.capture_exception with extra context."""
+
+        def failing_handler(event):
+            raise RuntimeError("boom")
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, failing_handler)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
+        )
+
+        fake_scope = MagicMock()
+        scope_cm = MagicMock()
+        scope_cm.__enter__.return_value = fake_scope
+        scope_cm.__exit__.return_value = False
+
+        with patch("models.events.base._sentry_available", True), patch(
+            "models.events.base._sentry_sdk"
+        ) as mock_sdk:
+            mock_sdk.push_scope.return_value = scope_cm
+            EventBus.publish(event)
+
+            assert mock_sdk.capture_exception.call_count == 1
+            captured_exc = mock_sdk.capture_exception.call_args[0][0]
+            assert isinstance(captured_exc, RuntimeError)
+
+            extras = {
+                call.args[0]: call.args[1]
+                for call in fake_scope.set_extra.call_args_list
+            }
+            assert extras["event_type"] == "user.director_request_created"
+            assert extras["event_id"] == event.event_id
+            assert extras["handler_name"].endswith("failing_handler")
+            assert extras["event_domain"] == "user"
+
+    def test_publish_adds_breadcrumb(self):
+        """Successful publish emits an event_bus breadcrumb with handler_count."""
+
+        def handler_one(event):
+            pass
+
+        def handler_two(event):
+            pass
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, handler_one)
+        EventBus.register_handler(DirectorRequestCreatedEvent, handler_two)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
+        )
+
+        with patch("models.events.base._sentry_available", True), patch(
+            "models.events.base._sentry_sdk"
+        ) as mock_sdk:
+            EventBus.publish(event)
+
+            assert mock_sdk.add_breadcrumb.call_count == 1
+            kwargs = mock_sdk.add_breadcrumb.call_args.kwargs
+            assert kwargs["category"] == "event_bus"
+            assert kwargs["level"] == "info"
+            assert kwargs["data"]["handler_count"] == 2
+            assert kwargs["data"]["event_type"] == "user.director_request_created"
+            assert kwargs["data"]["event_id"] == event.event_id
+
+    def test_capture_failure_does_not_break_publish(self):
+        """Sentry client errors must not propagate out of publish()."""
+        handler_calls = []
+
+        def failing_handler(event):
+            raise RuntimeError("handler boom")
+
+        def working_handler(event):
+            handler_calls.append("ok")
+
+        EventBus.register_handler(
+            DirectorRequestCreatedEvent, failing_handler, priority=10
+        )
+        EventBus.register_handler(
+            DirectorRequestCreatedEvent, working_handler, priority=5
+        )
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
+        )
+
+        with patch("models.events.base._sentry_available", True), patch(
+            "models.events.base._sentry_sdk"
+        ) as mock_sdk:
+            mock_sdk.push_scope.side_effect = RuntimeError("sentry exploded")
+            # Must not raise
+            EventBus.publish(event)
+
+        assert handler_calls == ["ok"]
+
+    def test_sentry_not_available_skips_capture(self):
+        """When _sentry_available=False, no Sentry API is invoked even on handler failure."""
+
+        def failing_handler(event):
+            raise RuntimeError("boom")
+
+        EventBus.register_handler(DirectorRequestCreatedEvent, failing_handler)
+
+        event = DirectorRequestCreatedEvent(
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1]
+        )
+
+        with patch("models.events.base._sentry_available", False), patch(
+            "models.events.base._sentry_sdk"
+        ) as mock_sdk:
+            # Must not raise and must not touch sentry
+            EventBus.publish(event)
+
+            mock_sdk.add_breadcrumb.assert_not_called()
+            mock_sdk.capture_exception.assert_not_called()
+            mock_sdk.push_scope.assert_not_called()
+
     def test_clear_handlers(self):
         """Test clearing event handlers."""
+
         def test_handler(event):
             pass
 
@@ -230,6 +340,7 @@ class TestEventBus:
 
     def test_event_bus_stats(self):
         """Test EventBus statistics."""
+
         def test_handler(event):
             pass
 
@@ -258,14 +369,13 @@ class TestNotificationEventHandlers:
         """Clean up after each test."""
         EventBus.clear_handlers()
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
     def test_director_request_created_handler(self, mock_create_notification):
         """Test director request created event handler."""
         event = DirectorRequestCreatedEvent(
-            request_id=1,
-            user_id=123,
-            username="testuser",
-            admin_user_ids=[1, 2]
+            request_id=1, user_id=123, username="testuser", admin_user_ids=[1, 2]
         )
 
         EventBus.publish(event)
@@ -286,8 +396,12 @@ class TestNotificationEventHandlers:
         second_call = calls[1][1]  # kwargs
         assert second_call["user_id"] == 2
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
-    def test_director_request_processed_approved_handler(self, mock_create_notification):
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
+    def test_director_request_processed_approved_handler(
+        self, mock_create_notification
+    ):
         """Test director request approved event handler."""
         event = DirectorRequestProcessedEvent(
             request_id=1,
@@ -295,7 +409,7 @@ class TestNotificationEventHandlers:
             username="testuser",
             status="approved",
             processed_by_id=999,
-            notes="Well qualified"
+            notes="Well qualified",
         )
 
         EventBus.publish(event)
@@ -311,8 +425,12 @@ class TestNotificationEventHandlers:
         assert "Well qualified" in call_kwargs["message"]
         assert call_kwargs["priority"] == NotificationPriority.HIGH
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
-    def test_director_request_processed_rejected_handler(self, mock_create_notification):
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
+    def test_director_request_processed_rejected_handler(
+        self, mock_create_notification
+    ):
         """Test director request rejected event handler."""
         event = DirectorRequestProcessedEvent(
             request_id=1,
@@ -320,7 +438,7 @@ class TestNotificationEventHandlers:
             username="testuser",
             status="rejected",
             processed_by_id=999,
-            notes="Insufficient experience"
+            notes="Insufficient experience",
         )
 
         EventBus.publish(event)
@@ -336,7 +454,9 @@ class TestNotificationEventHandlers:
         assert "Insufficient experience" in call_kwargs["message"]
         assert call_kwargs["priority"] == NotificationPriority.NORMAL
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
     def test_venue_manager_request_processed_handler(self, mock_create_notification):
         """Test venue manager request processed event handler."""
         event = VenueManagerRequestProcessedEvent(
@@ -347,7 +467,7 @@ class TestNotificationEventHandlers:
             venue_name="Test Pool Hall",
             status="approved",
             processed_by_id=789,
-            notes="Great candidate"
+            notes="Great candidate",
         )
 
         EventBus.publish(event)
@@ -363,7 +483,9 @@ class TestNotificationEventHandlers:
         assert "Congratulazioni" in call_kwargs["message"]
         assert call_kwargs["priority"] == NotificationPriority.HIGH
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
     def test_venue_manager_request_contested_handler(self, mock_create_notification):
         """Test contested venue manager request creates high priority notification."""
         event = VenueManagerRequestCreatedEvent(
@@ -374,7 +496,7 @@ class TestNotificationEventHandlers:
             venue_name="Test Pool Hall",
             motivation="I want to manage this venue",
             admin_user_ids=[1],
-            is_contested=True
+            is_contested=True,
         )
 
         EventBus.publish(event)
@@ -386,7 +508,9 @@ class TestNotificationEventHandlers:
         assert "(CONTESA)" in call_kwargs["title"]
         assert "ATTENZIONE" in call_kwargs["message"]
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
     def test_match_proposal_created_handler(self, mock_create_notification):
         """Test match proposal created event handler."""
         event = MatchProposalCreatedEvent(
@@ -397,7 +521,7 @@ class TestNotificationEventHandlers:
             target_username="Player2",
             location_name="Pool Hall",
             scheduled_time=datetime(2025, 10, 15, 20, 0),
-            notes="Let's play!"
+            notes="Let's play!",
         )
 
         EventBus.publish(event)
@@ -412,7 +536,9 @@ class TestNotificationEventHandlers:
         assert "Pool Hall" in call_kwargs["message"]
         assert "Let's play!" in call_kwargs["message"]
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
     def test_match_proposal_public_no_notification(self, mock_create_notification):
         """Test that public match proposals don't create notifications."""
         event = MatchProposalCreatedEvent(
@@ -420,7 +546,7 @@ class TestNotificationEventHandlers:
             proposer_id=123,
             proposer_name="Player1",
             target_user_id=None,  # No specific target
-            is_public=True
+            is_public=True,
         )
 
         EventBus.publish(event)
@@ -428,7 +554,9 @@ class TestNotificationEventHandlers:
         # Should not create any notifications for public proposals
         mock_create_notification.assert_not_called()
 
-    @patch('models.events.notification_handlers.NotificationService.create_notification')
+    @patch(
+        "models.events.notification_handlers.NotificationService.create_notification"
+    )
     def test_match_accepted_handler(self, mock_create_notification):
         """Test match accepted event handler."""
         event = MatchAcceptedEvent(
@@ -439,7 +567,7 @@ class TestNotificationEventHandlers:
             accepter_id=456,
             accepter_name="Player2",
             location_name="Pool Hall",
-            scheduled_time=datetime(2025, 10, 15, 20, 0)
+            scheduled_time=datetime(2025, 10, 15, 20, 0),
         )
 
         EventBus.publish(event)
