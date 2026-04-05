@@ -31,6 +31,15 @@ The test suite follows a modern pytest-based approach with clear separation betw
 - Common test utilities and fixtures
 - Test environment configuration
 
+**Key fixture behaviors** (tests/new/conftest.py):
+- **StaticPool**: `SQLALCHEMY_ENGINE_OPTIONS` uses `StaticPool` so all DB connections share the same SQLite in-memory database. Without this, `db.drop_all()` and the Flask test client would get different connections (= different databases), breaking test isolation.
+- **Rate limiter disabled**: `limiter.enabled = False` in setup — prevents `429 Too Many Requests` from test scenarios that log in repeatedly (e.g. e2e tests).
+- **Cache cleared per test**: `cache_manager.clear_all()` runs in the `db_session` fixture. Services like `ClassificationService.update_campionato_classification` are `@cached` for 5 minutes — without clearing, stale data from previous tests leaks into subsequent ones.
+- **Session close vs remove**: Uses `db.session.close()` + explicit commit/rollback before `drop_all()` to ensure no pending transaction blocks DROP TABLE on the StaticPool connection.
+
+**E2E fixture override** (tests/new/e2e/conftest.py):
+- E2E tests have their own session-scoped `app` fixture that also sets `StaticPool`. The Flask test client would otherwise create its own DB connection (different from the fixture's), causing all E2E tests after the first to fail with empty databases.
+
 ## Test Categories
 
 ### Unit Tests (`new/unit/`)
