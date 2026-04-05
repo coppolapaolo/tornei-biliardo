@@ -22,7 +22,14 @@ logger = logging.getLogger(__name__)
 # package is absent or the SDK is not initialized, sentry_sdk calls are no-op.
 try:
     import sentry_sdk as _sentry_sdk
+    from sentry_sdk.integrations.logging import ignore_logger as _sentry_ignore_logger
 
+    # Prevent Sentry's LoggingIntegration (default event_level=ERROR) from
+    # auto-capturing our logger.error calls. We do explicit capture_exception
+    # with rich extra context in _capture_handler_exception() — without this,
+    # a single handler failure would create 3 Sentry events (2 log-path +
+    # 1 explicit), all grouped to the same issue but inflating event counts.
+    _sentry_ignore_logger(__name__)
     _sentry_available = True
 except ImportError:
     _sentry_sdk = None  # type: ignore[assignment]

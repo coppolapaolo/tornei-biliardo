@@ -320,6 +320,16 @@ class TestEventBus:
             mock_sdk.capture_exception.assert_not_called()
             mock_sdk.push_scope.assert_not_called()
 
+    def test_eventbus_logger_is_ignored_by_sentry_logging_integration(self):
+        """The EventBus logger is excluded from Sentry's LoggingIntegration
+        so that logger.error calls in publish() / EventHandler.__call__ do
+        NOT produce duplicate Sentry events on top of our explicit
+        capture_exception in _capture_handler_exception().
+        """
+        from sentry_sdk.integrations.logging import _IGNORED_LOGGERS
+
+        assert "models.events.base" in _IGNORED_LOGGERS
+
     def test_clear_handlers(self):
         """Test clearing event handlers."""
 
