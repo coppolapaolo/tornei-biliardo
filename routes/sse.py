@@ -53,6 +53,33 @@ _events_lock = Lock()
 # Max age for events (60 seconds) - auto-cleanup
 MAX_EVENT_AGE = 60
 
+# Throttled scope_id sweep: without this, _events[scope][scope_id] keys
+# accumulate indefinitely even after their event lists go stale (memory
+# leak mitigated previously only by PythonAnywhere daily restarts).
+SWEEP_INTERVAL = 30.0
+_last_sweep: float = 0.0
+
+
+def _maybe_sweep_stale_scope_ids(now: float) -> None:
+    """Prune scope_id keys whose events are all older than MAX_EVENT_AGE.
+
+    Runs at most once every SWEEP_INTERVAL to keep the cost amortized —
+    otherwise a hot event source would trigger an O(N) sweep per emit.
+    Caller must hold `_events_lock`.
+    """
+    global _last_sweep
+    if now - _last_sweep < SWEEP_INTERVAL:
+        return
+    _last_sweep = now
+    for scope_dict in _events.values():
+        stale_ids = [
+            sid
+            for sid, events in scope_dict.items()
+            if not events or now - events[-1][2] >= MAX_EVENT_AGE
+        ]
+        for sid in stale_ids:
+            del scope_dict[sid]
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Emit Functions
@@ -86,6 +113,8 @@ def emit_event(scope: EventScope, scope_id: int, event_type: str, data: dict) ->
             for et, d, ts in _events[scope_key][scope_id]
             if now - ts < MAX_EVENT_AGE
         ]
+        # Prune scope_id keys whose event lists are entirely stale
+        _maybe_sweep_stale_scope_ids(now)
 
 
 def emit_trio_event(trio_id: int, event_type: str, data: dict) -> None:
@@ -303,11 +332,15 @@ def _get_events_since(scope: EventScope, scope_id: int, since: float) -> List[di
     scope_key = scope.value
     with _events_lock:
         events = _events[scope_key].get(scope_id, [])
-        return [
+        result = [
             {"type": event_type, "data": data, "timestamp": ts}
             for event_type, data, ts in events
             if ts > since
         ]
+        # Polling is the main sustained traffic source — emits may stop while
+        # polls continue, so trigger sweep from here too.
+        _maybe_sweep_stale_scope_ids(time.time())
+        return result
 
 
 @sse_bp.route("/poll/trio/<int:trio_id>")

@@ -33,7 +33,12 @@ dentro il try/except import esistente. Net: 1 solo Sentry event per handler fail
 
 Low priority — no user-reported issues.
 
-- **SSE memory leak** (AR-10): `routes/sse.py` — dict keys for scope_ids never deleted. Add periodic cleanup or prune on poll. Mitigated by PythonAnywhere daily restarts.
+- ~~**SSE memory leak** (AR-10)~~ ✅ DONE (2026-04-05): `routes/sse.py` —
+  added throttled `_maybe_sweep_stale_scope_ids` (max once per 30s)
+  that prunes `scope_id` keys whose event lists are entirely stale
+  (older than `MAX_EVENT_AGE`). Triggered from both `emit_event` and
+  `_get_events_since` (polling is sustained even when emits stop).
+  5 unit tests in `test_sse_event_store_cleanup.py`.
 - **N+1 queries** (AR-12): Add `joinedload()` for `gara.inscriptions`, `user.director_assignments`, `gara.matches` in hot paths. Need profiling to identify actual bottlenecks first.
 
 **Effort**: ~2 hours total (including profiling)
