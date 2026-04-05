@@ -4,7 +4,7 @@ Purpose: Campionato-level classification services with caching and optimization
 """
 
 from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from models.base import db
 from .models import Classification
 from ..caching import cached, cache_invalidate, cache_manager
@@ -38,7 +38,14 @@ class ClassificationService:
         """
         from models.competition.models import Gara
 
-        gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
+        # selectinload avoids N+1: one IN-query loads all matches for all gare,
+        # instead of one lazy-load per gara when accessing `gara.matches` below.
+        gare = (
+            db.session.query(Gara)
+            .filter_by(campionato_id=campionato_id)
+            .options(selectinload(Gara.matches))
+            .all()
+        )
         player_gare: Dict[int, set] = {}
 
         for gara in gare:

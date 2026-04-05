@@ -88,8 +88,16 @@ class ScoreAggregator:
         """
         from models.competition.models import Gara
         from models.base import db
+        from sqlalchemy.orm import selectinload
 
-        gare = db.session.query(Gara).filter_by(campionato_id=campionato_id).all()
+        # selectinload avoids N+1: one IN-query loads all matches for all gare,
+        # instead of one lazy-load per gara when accessing `gara.matches` below.
+        gare = (
+            db.session.query(Gara)
+            .filter_by(campionato_id=campionato_id)
+            .options(selectinload(Gara.matches))
+            .all()
+        )
 
         player_stats: Dict[int, Dict[str, int]] = {}
 

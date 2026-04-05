@@ -39,7 +39,14 @@ Low priority — no user-reported issues.
   (older than `MAX_EVENT_AGE`). Triggered from both `emit_event` and
   `_get_events_since` (polling is sustained even when emits stop).
   5 unit tests in `test_sse_event_store_cleanup.py`.
-- **N+1 queries** (AR-12): Add `joinedload()` for `gara.inscriptions`, `user.director_assignments`, `gara.matches` in hot paths. Need profiling to identify actual bottlenecks first.
+- ~~**N+1 queries** (AR-12)~~ ✅ DONE (2026-04-05): Fixed via inspection
+  (no profiling needed — three loops were blatant):
+  - `ClassificationService._count_gare_played` — `for gara in gare: gara.matches` → `selectinload(Gara.matches)`
+  - `ScoreAggregator.aggregate_campionato_scores` — same pattern → `selectinload(Gara.matches)`
+  - `CommunityService.get_director_performance` — `for g in managed_garas: g.inscriptions` → re-query with `selectinload(Gara.inscriptions)` after dedup
+  Each loop went from O(n_gare) lazy queries to 1 batched IN-query.
+  `user.director_assignments` was not touched: only used as direct
+  attribute access per-request, no obvious N+1 loop.
 
 **Effort**: ~2 hours total (including profiling)
 

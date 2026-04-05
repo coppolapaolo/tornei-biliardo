@@ -67,6 +67,18 @@ class CommunityService:
             if not managed_garas:
                 continue
 
+            # Re-query with selectinload to avoid N+1 on `g.inscriptions` below.
+            # `managed_garas` was assembled from multiple sources with lazy
+            # relationships, so each g.inscriptions access would fire its own
+            # SELECT otherwise.
+            from sqlalchemy.orm import selectinload
+            gara_ids = [g.id for g in managed_garas]
+            managed_garas = (
+                Gara.query.filter(Gara.id.in_(gara_ids))
+                .options(selectinload(Gara.inscriptions))
+                .all()
+            )
+
             total_garas = len(managed_garas)
             completed_garas = sum(1 for g in managed_garas if g.status == "completed")
 
