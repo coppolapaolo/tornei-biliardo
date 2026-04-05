@@ -9,34 +9,40 @@ Migrated all `except Exception` blocks that exposed `str(e)` in JSON responses a
 `routes/player/privacy.py` only had `except ValueError` (intentional user-facing messages) — no change needed.
 Also cleaned up flash messages in dual AJAX/flash routes and removed legacy `print`/`traceback` debugging.
 
-## Priority 2: UNIQUE constraints for TOCTOU race conditions (requires migration)
+## ~~Priority 2: UNIQUE constraints for TOCTOU race conditions~~ ✅ DONE (2026-04-05)
 
-Two race conditions from ECH analysis. SQLite single-writer mitigates risk but constraints provide DB-level safety.
+Spec `spec-unique-constraints-toctou.md` (status: done, commit `1d0a486`). Migrazione
+`20260405_unique_constraints_toctou.py` + UniqueConstraint su `individual_match.proposal_id`
+e `proposal_invitation(proposal_id, invited_user_id)` + traduzione `IntegrityError` →
+`ValueError` nei service. Test integration coprono tutte le race condition.
 
-1. **`individual_match` table** — add UNIQUE on `proposal_id` to prevent double-accept of same proposal
-   - ECH-1: Two users accept same OPEN proposal concurrently → 2 matches created
-   - ECH-6: Proposal accepted after expiration (TOCTOU)
+## ~~Priority 3: EventBus error monitoring~~ ✅ DONE (2026-04-05)
 
-2. **`proposal_invitation` table** — add UNIQUE on `(proposal_id, invited_user_id)` to prevent duplicate invitations
-   - ECH-21: No duplicate check on `invite_player_to_match`
+Spec `spec-eventbus-error-monitoring.md`. Aggiunto `sentry_sdk.capture_exception` con
+`extra` context (event_type, event_id, handler_name, domain) + `add_breadcrumb` per il
+flusso eventi in `EventBus.publish()`. Import guard con fallback no-op, safety net
+try/except attorno alle chiamate Sentry.
 
-**Implementation**:
-- Create migration `migrations/20260405_unique_constraints_toctou.py`
-- Add `UniqueConstraint` to models
-- Handle `IntegrityError` in services as fallback
+## Priority 3b: Investigare double-capture logger.error + Sentry LoggingIntegration
 
-**Effort**: ~1 hour (migration + model + service error handling)
+Emerso durante review di spec-eventbus-error-monitoring. Sentry SDK ha `LoggingIntegration`
+abilitata di default che cattura i log ERROR come eventi Sentry. In `EventBus.publish()`:
 
-## Priority 3: EventBus error monitoring
+1. `EventHandler.__call__` chiama `logger.error(exc_info=True)` e rilancia (preesistente)
+2. `publish()` cattura il re-raise e chiama `logger.error(exc_info=True)` (preesistente)
+3. Il nuovo `_capture_handler_exception()` chiama `sentry_sdk.capture_exception()` esplicitamente
 
-AR-8: `EventBus.publish()` catches handler exceptions, logs them, but has no monitoring.
-If a handler fails repeatedly (e.g., the rating handler bug we fixed), no alert is raised.
+Con LoggingIntegration attiva, lo stesso errore genera potenzialmente 2-3 eventi Sentry
+per singola failure di handler. Sentry dedupa per fingerprint (issue count stabile) ma
+event count gonfia il billing/rate-limit.
 
-**Approach options**:
-- Add error counter per handler + log WARNING after N failures
-- Or integrate with GlitchTip/Sentry (already configured in app.py)
+**Approcci possibili**:
+- Demotare uno dei due `logger.error` a `logger.debug` (violazione boundary "logger.error
+  rimane invariato" dello spec originale)
+- Configurare `LoggingIntegration(event_level=CRITICAL)` in `app.py` per alzare la soglia
+- Aggiungere un filtro Python logging che marca i log già catturati esplicitamente
 
-**Effort**: ~1 hour
+**Effort**: ~1 hour (include verifica comportamento reale su GlitchTip)
 
 ## Priority 4: Performance optimizations (profile first)
 
