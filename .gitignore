@@ -99,7 +99,10 @@ instance/
 .agent/
 .codegraph/
 _bmad/
-_bmad-output/
+_bmad-output/*
+!_bmad-output/project-context.md
+!_bmad-output/implementation-artifacts/
+!_bmad-output/planning-artifacts/
 messages.mo
 
 

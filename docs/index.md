@@ -32,6 +32,13 @@
 
 ---
 
+## Artefatti BMad
+
+- [Project Context](../_bmad-output/project-context.md) — Contesto progetto ottimizzato per LLM (GPC)
+- [Implementation Artifacts](../_bmad-output/implementation-artifacts/) — Spec e deferred work
+
+---
+
 ## Documentazione Esistente
 
 ### Guide Principali
