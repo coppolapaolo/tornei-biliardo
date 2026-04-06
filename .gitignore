@@ -86,8 +86,25 @@ instance/
 .bash_history
 .python_history
 
-# Claude Code
-.claude/
+# Claude Code — track settings + custom skills, ignore plugin-installed
+.claude/*
+!.claude/settings.json
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/adr/
+!.claude/skills/interview/
+!.claude/skills/regression-guard/
+!.claude/skills/translate/
+!.claude/skills/ui-conventions/
+.agent/
+_bmad/bmm/
+_bmad/bmb/
+_bmad/core/
+_bmad/gds/
+_bmad/tea/
+_bmad/wds/
+_bmad/cis/
+
 
 ---
 export_script.py
