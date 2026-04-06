@@ -232,10 +232,12 @@ class PlayoffService:
                 qualification.expire_qualification()
                 expired_count += 1
 
-                # Find replacement
+                # Find replacement and notify
                 replacement = PlayoffService.find_replacement_player(config.id)
                 if replacement:
-                    PlayoffService.notify_qualified_players(config.id)
+                    replacement.invited_at = utc_now()
+                    replacement.expires_at = config.response_deadline
+                    PlayoffService._send_playoff_invitations(config, [replacement])
 
         return expired_count
 
@@ -551,12 +553,45 @@ class PlayoffService:
 
             results[config.name] = qualifications
 
-        # Notify all qualified players
+        # Notify all qualified players via NotificationFactory
         db.session.flush()
         for config in configs:
-            PlayoffService.notify_qualified_players(config.id)
+            PlayoffService._send_playoff_invitations(config, results.get(config.name, []))
 
         return results
+
+    @staticmethod
+    def _send_playoff_invitations(
+        config: PlayoffConfiguration,
+        qualifications: List[PlayoffQualification],
+    ) -> None:
+        """Send in-app notifications to qualified players."""
+        from ..notification.factory import NotificationFactory
+        from ..notification.models import NotificationType, NotificationPriority
+
+        if not qualifications:
+            return
+
+        user_ids = [q.user_id for q in qualifications]
+        campionato_name = config.campionato.name if config.campionato else ""
+
+        NotificationFactory.create_bulk_notification(
+            user_ids=user_ids,
+            notification_type=NotificationType.PLAYOFF_INVITATION,
+            title=f"Invito Playoff — {config.name}",
+            message=(
+                f"Sei stato qualificato per {config.name} "
+                f"del campionato {campionato_name}. "
+                f"Conferma o rifiuta la partecipazione."
+            ),
+            priority=NotificationPriority.HIGH,
+            related_entities={
+                "campionato_id": config.campionato_id,
+                "configuration_id": config.id,
+                "configuration_name": config.name,
+            },
+            continue_on_error=True,
+        )
 
     # ── Creazione gara playoff ───────────────────────────────────
 

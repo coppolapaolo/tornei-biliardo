@@ -361,6 +361,19 @@ def compute_campionato_status(campionato: Campionato) -> str:
     """
     if getattr(campionato, "terminated_at", None):
         if hasattr(campionato, "has_playoff_configurations") and campionato.has_playoff_configurations():
+            # TERMINATED until all playoffs completed, then COMPLETED
+            from models.playoff.models import PlayoffTournament, PlayoffConfiguration
+            active_configs = PlayoffConfiguration.query.filter_by(
+                campionato_id=campionato.id, is_active=True
+            ).all()
+            if active_configs:
+                all_completed = all(
+                    (t := PlayoffTournament.query.filter_by(configuration_id=cfg.id).first())
+                    is not None and t.status == "completed"
+                    for cfg in active_configs
+                )
+                if all_completed:
+                    return TournamentStatus.COMPLETED.value
             return TournamentStatus.TERMINATED.value
         return TournamentStatus.COMPLETED.value
 

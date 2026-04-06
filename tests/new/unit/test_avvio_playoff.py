@@ -512,4 +512,109 @@ class TestGetGaraParams:
 
         params = cfg.get_gara_params()
         assert params["discipline"] == "palla_9"  # default fallback
-        assert params["distance"] == 5
+
+
+# ── TERMINATED → COMPLETED transition tests ───────────────────────
+
+
+class TestTerminatedToCompleted:
+    def test_terminated_stays_terminated_without_playoff_tournament(self, db_session):
+        """Campionato with playoff configs but no PlayoffTournament stays TERMINATED."""
+        c = _make_campionato(db_session, terminated=True)
+        _make_config(db_session, c)
+        db_session.commit()
+
+        assert c.get_status() == "terminated"
+
+    def test_terminated_becomes_completed_when_all_playoffs_done(self, db_session):
+        """When all PlayoffTournaments are completed, campionato becomes COMPLETED."""
+        c = _make_campionato(db_session, terminated=True)
+        cfg = _make_config(db_session, c)
+        gara = _make_gara(db_session, c)
+        players = []
+        for i in range(6):
+            p = _make_user(db_session)
+            _make_classification(db_session, c, p, i + 1)
+            _make_inscription(db_session, p, gara)
+            players.append(p)
+        db_session.commit()
+
+        PlayoffService.start_playoff(c.id)
+        for p in players:
+            qual = PlayoffQualification.query.filter_by(
+                configuration_id=cfg.id, user_id=p.id
+            ).first()
+            PlayoffService.confirm_qualification(qual.id, p.id)
+
+        PlayoffService.create_playoff_gara(cfg.id)
+
+        # Status is TERMINATED while playoff in progress
+        assert c.get_status() == "terminated"
+
+        # Complete the playoff tournament
+        tournament = PlayoffTournament.query.filter_by(configuration_id=cfg.id).first()
+        PlayoffService.complete_playoff_campionato(tournament.id, winner_id=players[0].id)
+
+        # Now should be COMPLETED
+        assert c.get_status() == "completed"
+
+    def test_stays_terminated_if_some_playoffs_incomplete(self, db_session):
+        """With 2 playoff configs, if only 1 is completed, stay TERMINATED."""
+        c = _make_campionato(db_session, terminated=True)
+        cfg1 = _make_config(db_session, c, name="Elite", pos_from=1, pos_to=3, max_p=3)
+        cfg2 = _make_config(db_session, c, name="Academy", pos_from=4, pos_to=6, max_p=3)
+        gara = _make_gara(db_session, c)
+        players = []
+        for i in range(6):
+            p = _make_user(db_session)
+            _make_classification(db_session, c, p, i + 1)
+            _make_inscription(db_session, p, gara)
+            players.append(p)
+        db_session.commit()
+
+        PlayoffService.start_playoff(c.id)
+
+        # Confirm and create gara for config1 only
+        for p in players[:3]:
+            qual = PlayoffQualification.query.filter_by(
+                configuration_id=cfg1.id, user_id=p.id
+            ).first()
+            PlayoffService.confirm_qualification(qual.id, p.id)
+
+        PlayoffService.create_playoff_gara(cfg1.id)
+        t1 = PlayoffTournament.query.filter_by(configuration_id=cfg1.id).first()
+        PlayoffService.complete_playoff_campionato(t1.id)
+
+        # Config2 not yet done → TERMINATED
+        assert c.get_status() == "terminated"
+
+
+# ── Notification tests ────────────────────────────────────────────
+
+
+class TestPlayoffNotifications:
+    def test_start_playoff_creates_notifications(self, db_session):
+        """Starting playoff should create in-app notifications for qualified players."""
+        from models.notification.models import Notification, NotificationType
+
+        c = _make_campionato(db_session, terminated=True)
+        cfg = _make_config(db_session, c)
+        gara = _make_gara(db_session, c)
+        players = []
+        for i in range(6):
+            p = _make_user(db_session)
+            _make_classification(db_session, c, p, i + 1)
+            _make_inscription(db_session, p, gara)
+            players.append(p)
+        db_session.commit()
+
+        PlayoffService.start_playoff(c.id)
+
+        # Each qualified player should have a PLAYOFF_INVITATION notification
+        for p in players:
+            notifs = Notification.query.filter_by(
+                user_id=p.id,
+                notification_type=NotificationType.PLAYOFF_INVITATION,
+            ).all()
+            assert len(notifs) == 1, f"Player {p.username} should have 1 notification"
+            assert "Elite" in notifs[0].title

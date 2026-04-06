@@ -425,6 +425,10 @@ def campionato_detail(campionato_id):
     campionato_players = []
     if campionato.terminated_at and campionato.has_playoff_configurations():
         from models.playoff.services import PlayoffService
+
+        # Lazy expiration: check deadlines on page load
+        PlayoffService.expire_old_qualifications()
+
         playoff_status = PlayoffService.get_campionato_playoff_status(campionato_id)
 
         # Get campionato players for manual add dropdown

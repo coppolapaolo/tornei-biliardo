@@ -133,6 +133,20 @@ class Campionato(db.Model):
         """Restituisce lo status del campionato"""
         if self.terminated_at:
             if self.has_playoff_configurations():
+                # TERMINATED until all playoffs completed, then COMPLETED
+                from models.playoff.models import PlayoffConfiguration, PlayoffTournament
+                active_configs = PlayoffConfiguration.query.filter_by(
+                    campionato_id=self.id, is_active=True
+                ).all()
+                if active_configs:
+                    # Every active config must have a completed tournament
+                    all_completed = all(
+                        (t := PlayoffTournament.query.filter_by(configuration_id=cfg.id).first())
+                        is not None and t.status == "completed"
+                        for cfg in active_configs
+                    )
+                    if all_completed:
+                        return TournamentStatus.COMPLETED.value
                 return TournamentStatus.TERMINATED.value
             return TournamentStatus.COMPLETED.value
 
