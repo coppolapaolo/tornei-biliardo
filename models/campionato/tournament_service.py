@@ -709,3 +709,13 @@ class TournamentService(TournamentStatisticsService):
         if config.campionato_id != campionato_id:
             raise ValueError("Configurazione non appartiene a questo campionato")
         config.min_garas_played = new_min
+
+    def start_playoff(self, campionato_id: int) -> Dict[str, Any]:
+        """Facade: start playoffs for a terminated campionato.
+
+        Delegates to PlayoffService.start_playoff().
+        """
+        self._track_domain_access()
+        from models.playoff.services import PlayoffService
+
+        return PlayoffService.start_playoff(campionato_id)

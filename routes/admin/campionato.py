@@ -361,7 +361,7 @@ def create_campionato():
 
 @campionato_bp.route("/<int:campionato_id>")
 @login_required
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def campionato_detail(campionato_id):
     """Dettaglio campionato con gare"""
     # Use the service layer instead of direct database access
@@ -420,6 +420,29 @@ def campionato_detail(campionato_id):
     if campionato.has_playoff_configurations() and not campionato.terminated_at:
         playoff_feasibility = campionato_service.check_playoff_feasibility(campionato_id)
 
+    # Playoff status (for terminated campionati with playoff configs)
+    playoff_status = None
+    campionato_players = []
+    if campionato.terminated_at and campionato.has_playoff_configurations():
+        from models.playoff.services import PlayoffService
+        playoff_status = PlayoffService.get_campionato_playoff_status(campionato_id)
+
+        # Get campionato players for manual add dropdown
+        from models.competition.models import Inscription, Gara
+        from models.user.models import User
+        player_ids = (
+            db.session.query(Inscription.user_id)
+            .join(Gara)
+            .filter(Gara.campionato_id == campionato_id)
+            .distinct()
+            .all()
+        )
+        campionato_players = (
+            User.query.filter(User.id.in_([pid for (pid,) in player_ids]))
+            .order_by(User.username)
+            .all()
+        )
+
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
@@ -435,11 +458,13 @@ def campionato_detail(campionato_id):
         discipline_choices=Discipline.get_choices(),
         default_discipline=Discipline.NINE_BALL.value,
         playoff_feasibility=playoff_feasibility,
+        playoff_status=playoff_status,
+        campionato_players=campionato_players,
     )
 
 
 @campionato_bp.route("/<int:campionato_id>/edit", methods=["GET", "POST"])
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def edit_campionato(campionato_id):
     """Modifica campionato - allineato al wizard di creazione"""
     from models.location.models import BilliardHall
@@ -522,7 +547,7 @@ def edit_campionato(campionato_id):
 
 
 @campionato_bp.route("/<int:campionato_id>/delete", methods=["POST"])
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def delete_campionato(campionato_id):
     """Elimina campionato (service layer, gestione errori user-friendly)"""
     try:
@@ -589,7 +614,7 @@ def soft_delete_campionato(campionato_id):
 
 @campionato_bp.route("/<int:campionato_id>/terminate", methods=["POST"])
 @login_required
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def terminate_campionato(campionato_id):
     """Termina manualmente il campionato."""
     campionato = db.get_or_404(Campionato, campionato_id)
@@ -613,7 +638,7 @@ def terminate_campionato(campionato_id):
 
 @campionato_bp.route("/<int:campionato_id>/update-playoff-min", methods=["POST"])
 @login_required
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def update_playoff_min(campionato_id):
     """Aggiorna min_garas_played di una configurazione playoff."""
     config_id = request.form.get("config_id", type=int)
@@ -636,8 +661,230 @@ def update_playoff_min(campionato_id):
     )
 
 
+# ── Playoff routes ──────────────────────────────────────────────
+
+
+@campionato_bp.route("/<int:campionato_id>/start-playoff", methods=["POST"])
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def start_playoff(campionato_id):
+    """Avvia i playoff: genera qualificazioni dalla classifica."""
+    try:
+        results = campionato_service.start_playoff(campionato_id)
+        total = sum(len(qs) for qs in results.values())
+        if total == 0:
+            flash(
+                _("Playoff avviati ma nessun giocatore qualificato. Verifica la classifica."),
+                "warning",
+            )
+        else:
+            flash(
+                _("Playoff avviati: %(count)s giocatori qualificati.", count=total),
+                "success",
+            )
+    except ValueError as ve:
+        msg = str(ve)
+        if "già avviati" in msg:
+            flash(msg, "info")
+        else:
+            flash(msg, "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/create-playoff-gara/<int:config_id>", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def create_playoff_gara(campionato_id, config_id):
+    """Crea la gara playoff e iscrive i giocatori confermati."""
+    from models.playoff.services import PlayoffService
+    from models.playoff.models import PlayoffConfiguration
+
+    config = db.session.get(PlayoffConfiguration, config_id)
+    if not config or config.campionato_id != campionato_id:
+        flash(_("Configurazione playoff non trovata."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    # If gara already exists, redirect to it
+    if config.gara is not None:
+        return redirect(
+            url_for("admin.competition.gara_detail", gara_id=config.gara.id)
+        )
+
+    try:
+        gara = PlayoffService.create_playoff_gara(config_id)
+        flash(
+            _('Gara playoff "%(name)s" creata con successo.', name=gara.name),
+            "success",
+        )
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/add-player", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_add_player(campionato_id, config_id):
+    """Aggiunge manualmente un giocatore alla lista playoff."""
+    from models.playoff.services import PlayoffService
+
+    user_id = request.form.get("user_id", type=int)
+    if not user_id:
+        flash(_("Seleziona un giocatore."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    try:
+        PlayoffService.admin_add_player(config_id, user_id, current_user.username)
+        flash(_("Giocatore aggiunto ai playoff."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/remove-player", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_remove_player(campionato_id, config_id):
+    """Rimuove un giocatore dalla lista playoff."""
+    from models.playoff.services import PlayoffService
+
+    qualification_id = request.form.get("qualification_id", type=int)
+    if not qualification_id:
+        flash(_("Qualificazione non specificata."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    try:
+        PlayoffService.admin_remove_player(qualification_id, current_user.username)
+        flash(_("Giocatore rimosso dai playoff."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/config/<int:config_id>/edit", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_edit_config(campionato_id, config_id):
+    """Modifica una configurazione playoff (solo pre-avvio)."""
+    from models.playoff.services import PlayoffService
+
+    fields = {}
+    for key in ("name", "positions_from", "positions_to", "max_participants",
+                "min_garas_played", "discipline", "distance", "rounds_count",
+                "strategy_type", "odd_number_policy"):
+        val = request.form.get(key)
+        if val is not None and val != "":
+            if key in ("positions_from", "positions_to", "max_participants",
+                       "min_garas_played", "distance", "rounds_count"):
+                fields[key] = int(val)
+            else:
+                fields[key] = val
+        elif val == "" and key in ("discipline", "strategy_type", "odd_number_policy",
+                                    "min_garas_played", "distance", "rounds_count"):
+            fields[key] = None  # Clear override → inherit from campionato
+
+    try:
+        PlayoffService.update_configuration(config_id, **fields)
+        flash(_("Configurazione playoff aggiornata."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/config/add", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_add_config(campionato_id):
+    """Aggiunge una nuova configurazione playoff."""
+    from models.playoff.services import PlayoffService
+
+    name = request.form.get("name", "").strip()
+    positions_from = request.form.get("positions_from", type=int)
+    positions_to = request.form.get("positions_to", type=int)
+    max_participants = request.form.get("max_participants", type=int)
+
+    if not name or not positions_from or not positions_to or not max_participants:
+        flash(_("Tutti i campi obbligatori devono essere compilati."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    kwargs = {}
+    min_garas = request.form.get("min_garas_played", type=int)
+    if min_garas is not None:
+        kwargs["min_garas_played"] = min_garas
+
+    try:
+        PlayoffService.add_configuration(
+            campionato_id=campionato_id,
+            name=name,
+            positions_from=positions_from,
+            positions_to=positions_to,
+            max_participants=max_participants,
+            **kwargs,
+        )
+        flash(_("Configurazione playoff aggiunta."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/config/<int:config_id>/deactivate", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_deactivate_config(campionato_id, config_id):
+    """Disattiva una configurazione playoff."""
+    from models.playoff.services import PlayoffService
+
+    try:
+        PlayoffService.deactivate_configuration(config_id)
+        flash(_("Configurazione playoff disattivata."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
 @campionato_bp.route("/<int:campionato_id>/toggle_active", methods=["POST"])
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def toggle_campionato_active(campionato_id):
     """Attiva/disattiva campionato"""
     # Usa il service layer invece del direct database access
@@ -650,7 +897,7 @@ def toggle_campionato_active(campionato_id):
 
 @campionato_bp.route("/<int:campionato_id>/add_director", methods=["POST"])
 @login_required
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def add_director(campionato_id):
     """Aggiunge un co‑direttore"""
     new_director_id = int(request.form["user_id"])
@@ -678,7 +925,7 @@ def add_director(campionato_id):
 
 @campionato_bp.route("/<int:campionato_id>/remove_director", methods=["POST"])
 @login_required
-@campionato_manager_required(lambda campionato_id: campionato_id)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def remove_director(campionato_id):
     """Rimuove un co‑direttore"""
     director_id = int(request.form["user_id"])

@@ -49,7 +49,7 @@
     <div>
         <strong>{{ _("Campionato terminato") }}</strong>
         {% if campionato.has_playoff_configurations() %}
-        — {{ _("Playoff in attesa di avvio") }}
+        — {% if playoff_status and (playoff_status.total_confirmed > 0 or playoff_status.total_qualified > 0) %}{{ _("Playoff in corso") }}{% else %}{{ _("Playoff in attesa di avvio") }}{% endif %}
         {% endif %}
     </div>
 </div>
@@ -57,14 +57,234 @@
 
 {% if campionato.terminated_at and campionato.has_playoff_configurations() %}
 <div class="card mb-4">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-medal"></i> {{ _("Playoff") }}</h5>
     </div>
     <div class="card-body">
-        <button class="btn btn-secondary" disabled
-                data-bs-toggle="tooltip" title="{{ _('Funzionalità in arrivo') }}">
-            <i class="fas fa-play"></i> {{ _("Avvia Playoff") }}
-        </button>
+
+        {% if playoff_status and playoff_status.has_playoffs %}
+            {# Check if any config has qualifications (= playoff started) #}
+            {% set playoff_started = playoff_status.total_qualified > 0 %}
+
+            {% if not playoff_started %}
+            {# ── PRE-AVVIO: config management ── #}
+            {% for cs in playoff_status.configurations %}
+                {% set cfg = cs.configuration %}
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>{{ cfg.name }}</strong>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse"
+                                    data-bs-target="#edit-config-{{ cfg.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form method="POST" class="d-inline"
+                                  action='{{ url_for("admin.campionato.playoff_deactivate_config", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick='return confirm({{ _("Disattivare questa configurazione?")|tojson }})'>
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">{{ _("Posizioni") }}: {{ cfg.positions_from }} — {{ cfg.positions_to }} | {{ _("Max partecipanti") }}: {{ cfg.max_participants }}</p>
+                        {% if cfg.min_garas_played %}
+                        <p class="mb-1 text-muted">{{ _("Min. gare giocate") }}: {{ cfg.min_garas_played }}</p>
+                        {% endif %}
+
+                        <div id="edit-config-{{ cfg.id }}" class="collapse mt-3">
+                            <form method="POST"
+                                  action='{{ url_for("admin.campionato.playoff_edit_config", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">{{ _("Nome") }}</label>
+                                        <input type="text" name="name" class="form-control form-control-sm" value="{{ cfg.name }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Da pos.") }}</label>
+                                        <input type="number" name="positions_from" class="form-control form-control-sm" value="{{ cfg.positions_from or '' }}" min="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("A pos.") }}</label>
+                                        <input type="number" name="positions_to" class="form-control form-control-sm" value="{{ cfg.positions_to or '' }}" min="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Max") }}</label>
+                                        <input type="number" name="max_participants" class="form-control form-control-sm" value="{{ cfg.max_participants }}" min="2">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Min gare") }}</label>
+                                        <input type="number" name="min_garas_played" class="form-control form-control-sm" value="{{ cfg.min_garas_played or '' }}" min="0">
+                                    </div>
+                                </div>
+                                <div class="row g-2 mt-1">
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Distance") }}</label>
+                                        <input type="number" name="distance" class="form-control form-control-sm" value="{{ cfg.distance or '' }}" min="1" placeholder="{{ _('Eredita') }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Turni") }}</label>
+                                        <input type="number" name="rounds_count" class="form-control form-control-sm" value="{{ cfg.rounds_count or '' }}" min="1" placeholder="{{ _('Eredita') }}">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fas fa-save"></i> {{ _("Salva") }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {# Add new config form #}
+            <div class="mb-3">
+                <button class="btn btn-sm btn-outline-success" data-bs-toggle="collapse" data-bs-target="#add-playoff-config">
+                    <i class="fas fa-plus"></i> {{ _("Aggiungi configurazione") }}
+                </button>
+                <div id="add-playoff-config" class="collapse mt-2">
+                    <form method="POST" action='{{ url_for("admin.campionato.playoff_add_config", campionato_id=campionato.id) }}'>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="{{ _('Nome') }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="positions_from" class="form-control form-control-sm" placeholder="{{ _('Da pos.') }}" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="positions_to" class="form-control form-control-sm" placeholder="{{ _('A pos.') }}" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="max_participants" class="form-control form-control-sm" placeholder="{{ _('Max') }}" min="2" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-plus"></i> {{ _("Aggiungi") }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {# Avvia Playoff button #}
+            <form method="POST" action='{{ url_for("admin.campionato.start_playoff", campionato_id=campionato.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success"
+                        onclick='return confirm({{ _("Avviare i playoff? Le configurazioni verranno bloccate e i giocatori qualificati riceveranno un invito.")|tojson }})'>
+                    <i class="fas fa-play"></i> {{ _("Avvia Playoff") }}
+                </button>
+            </form>
+
+            {% else %}
+            {# ── POST-AVVIO: qualifications management ── #}
+            {% for cs in playoff_status.configurations %}
+                {% set cfg = cs.configuration %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <strong>{{ cfg.name }}</strong>
+                        <span class="badge bg-info ms-2">{{ cs.confirmed }} / {{ cfg.max_participants }} {{ _("confermati") }}</span>
+                        {% if cs.pending > 0 %}
+                        <span class="badge bg-warning ms-2">{{ cs.pending }} {{ _("in attesa") }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {# Qualifications table #}
+                        {% set quals = cfg.qualifications %}
+                        {% if quals %}
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ _("Giocatore") }}</th>
+                                    <th>{{ _("Posizione") }}</th>
+                                    <th>{{ _("Stato") }}</th>
+                                    <th>{{ _("Motivo") }}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for q in quals %}
+                                <tr class="{% if q.status.value == 'confirmed' %}table-success{% elif q.status.value == 'declined' %}table-danger{% elif q.status.value == 'expired' %}table-secondary{% endif %}">
+                                    <td>{{ q.user.username }}</td>
+                                    <td>{{ q.qualifying_position }}</td>
+                                    <td>
+                                        {% if q.status.value == 'pending' %}
+                                            <span class="badge bg-warning">{{ _("In attesa") }}</span>
+                                        {% elif q.status.value == 'confirmed' %}
+                                            <span class="badge bg-success">{{ _("Confermato") }}</span>
+                                        {% elif q.status.value == 'declined' %}
+                                            <span class="badge bg-danger">{{ _("Rifiutato") }}</span>
+                                        {% elif q.status.value == 'expired' %}
+                                            <span class="badge bg-secondary">{{ _("Scaduto") }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small class="text-muted">{{ q.qualification_reason }}</small></td>
+                                    <td>
+                                        {% if cfg.gara is none and q.status.value in ('pending', 'confirmed') %}
+                                        <form method="POST" class="d-inline"
+                                              action='{{ url_for("admin.campionato.playoff_remove_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick='return confirm({{ _("Rimuovere questo giocatore?")|tojson }})'>
+                                                <i class="fas fa-user-minus"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+
+                        {# Add player form (only if gara not yet created) #}
+                        {% if cfg.gara is none and campionato_players %}
+                        <form method="POST" class="d-inline-flex align-items-center gap-2 mt-2"
+                              action='{{ url_for("admin.campionato.playoff_add_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="user_id" class="form-select form-select-sm" style="width: auto;" required>
+                                <option value="">{{ _("Aggiungi giocatore...") }}</option>
+                                {% for p in campionato_players %}
+                                <option value="{{ p.id }}">{{ p.username }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        {# Create gara button #}
+                        {% if cfg.gara is none %}
+                        <div class="mt-3">
+                            <form method="POST"
+                                  action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-primary"
+                                        onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
+                                    <i class="fas fa-trophy"></i> {{ _("Crea Gara Playoff") }}
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="mt-3">
+                            <a href='{{ url_for("admin.competition.gara_detail", gara_id=cfg.gara.id) }}' class="btn btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> {{ _("Vai alla gara playoff") }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            {% endif %}
+
+        {% else %}
+            <p class="text-muted">{{ _("Nessuna configurazione playoff attiva.") }}</p>
+        {% endif %}
     </div>
 </div>
 {% endif %}

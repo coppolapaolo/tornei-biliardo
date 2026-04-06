@@ -36,7 +36,11 @@ class InscriptionService:
 
     @staticmethod
     @transactional(domain="competition")
-    def inscribe_user(user_id: int, gara_id: int) -> Optional[Inscription]:
+    def inscribe_user(
+        user_id: int,
+        gara_id: int,
+        _bypass_playoff_check: bool = False,
+    ) -> Optional[Inscription]:
         """Registra un utente a una gara se non già iscritto.
 
         Gestisce due tipi di waitlist:
@@ -46,6 +50,10 @@ class InscriptionService:
         Con policy NO, ordine di controllo:
         1. Prima verifica capacità (max_participants)
         2. Poi verifica parità (odd_number_policy="no")
+
+        Args:
+            _bypass_playoff_check: Internal flag used by PlayoffService
+                to inscribe qualified players into playoff gare.
         """
         from models.competition.models import Gara, WaitlistReason
         from models.user.models import User
@@ -62,6 +70,12 @@ class InscriptionService:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             return None
+
+        # Playoff gare: inscription reserved to qualified players only
+        if gara.is_playoff and not _bypass_playoff_check:
+            raise ValueError(
+                "Gara playoff — iscrizione riservata ai qualificati"
+            )
 
         user = db.session.get(User, user_id)
         if not user:

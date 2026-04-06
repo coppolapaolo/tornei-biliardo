@@ -80,6 +80,13 @@ class PlayoffConfiguration(BaseModel):
     # Response deadline
     response_deadline = db.Column(db.DateTime, nullable=True)
 
+    # Gara parameters (NULL = inherit from campionato's first completed gara)
+    discipline = db.Column(db.String(50), nullable=True)
+    distance = db.Column(db.Integer, nullable=True)
+    rounds_count = db.Column(db.Integer, nullable=True)
+    strategy_type = db.Column(db.String(50), nullable=True)
+    odd_number_policy = db.Column(db.String(20), nullable=True)
+
     # Relationships
     campionato = db.relationship("Campionato")
     qualifications = db.relationship(
@@ -94,6 +101,64 @@ class PlayoffConfiguration(BaseModel):
     gara = db.relationship(
         "Gara", back_populates="playoff_config", uselist=False
     )
+
+    def has_qualifications(self) -> bool:
+        """Check if qualifications have been generated for this config."""
+        return PlayoffQualification.query.filter_by(
+            configuration_id=self.id
+        ).first() is not None
+
+    def get_gara_params(self) -> Dict[str, Any]:
+        """Return gara creation parameters, falling back to campionato defaults.
+
+        Explicit values on this config override; NULL fields inherit from
+        the first completed gara of the campionato.
+        """
+        from ..competition.models import Gara
+        from ..status_enum import GaraStatus
+
+        # Find first completed gara in campionato for defaults
+        default_gara = (
+            Gara.query.filter_by(campionato_id=self.campionato_id)
+            .filter(Gara.status == GaraStatus.COMPLETED.value)
+            .filter(Gara.deleted_at.is_(None))
+            .order_by(Gara.number)
+            .first()
+        )
+
+        params: Dict[str, Any] = {}
+
+        # Resolve each param: explicit override or campionato default
+        params["discipline"] = (
+            self.discipline if self.discipline is not None
+            else (default_gara.discipline if default_gara else "palla_9")
+        )
+        params["distance"] = (
+            self.distance if self.distance is not None
+            else (default_gara.distance if default_gara else 5)
+        )
+        params["rounds_count"] = (
+            self.rounds_count if self.rounds_count is not None
+            else (default_gara.rounds_count if default_gara else 1)
+        )
+        if self.strategy_type is not None:
+            params["matchmaking_strategy"] = self.strategy_type
+        elif default_gara and default_gara.matchmaking_strategy:
+            params["matchmaking_strategy"] = default_gara.matchmaking_strategy
+        if self.odd_number_policy is not None:
+            params["odd_number_policy"] = self.odd_number_policy
+        elif default_gara and hasattr(default_gara, "odd_number_policy") and default_gara.odd_number_policy:
+            params["odd_number_policy"] = default_gara.odd_number_policy
+
+        # Additional fields from config
+        if self.location:
+            params["location"] = self.location
+        elif default_gara and default_gara.location:
+            params["location"] = default_gara.location
+        if self.entry_fee is not None:
+            params["entry_fee"] = float(self.entry_fee)
+
+        return params
 
     def get_qualification_criteria(self) -> Dict[str, Any]:
         """Parse qualification criteria from JSON."""
@@ -388,39 +453,16 @@ class PlayoffTournament(BaseModel):
     winner = db.relationship("User", foreign_keys=[winner_id])
 
     def start_registration(self) -> None:
-        """Start the registration process for confirmed qualifiers.
+        """Mark tournament as in registration phase.
 
-        Not yet fully implemented — see docs/TODO_PLAYOFF_IMPLEMENTATION.md.
+        Note: player inscriptions are handled by PlayoffService.create_playoff_gara(),
+        not by this method. This only updates the tournament status.
         """
         if self.status != "setup":
             raise ValueError("Can only start registration from setup status")
 
         self.status = "registration"
         self.registration_start = utc_now()
-
-        # Get confirmed qualifications
-        confirmed_qualifications = [
-            q for q in self.configuration.qualifications
-            if q.status == QualificationStatus.CONFIRMED
-        ]
-
-        if not self.gara_id:
-            raise NotImplementedError(
-                "Playoff gara creation not implemented. "
-                "See docs/TODO_PLAYOFF_IMPLEMENTATION.md"
-            )
-
-        # Auto-inscribe confirmed players
-        # Currently raises NotImplementedError above, so this won't execute yet
-        # When implemented, use:
-        #
-        # from models.competition.inscription_service import InscriptionService
-        # for qualification in confirmed_qualifications:
-        #     InscriptionService.inscribe_user(
-        #         user_id=qualification.user_id,
-        #         gara_id=self.gara_id
-        #     )
-        #     self.confirmed_participants += 1
 
     def complete_campionato(self, winner_id: Optional[int] = None) -> None:
         """Mark campionato as completed."""
@@ -431,11 +473,13 @@ class PlayoffTournament(BaseModel):
 
     def get_qualified_players(self) -> List["PlayoffQualification"]:
         """Get all qualified players for this campionato."""
-        confirmed_quals = self.configuration.qualifications.filter_by(
-            status=QualificationStatus.CONFIRMED
+        confirmed_quals = PlayoffQualification.query.filter_by(
+            configuration_id=self.configuration_id,
+            status=QualificationStatus.CONFIRMED,
         ).all()
-        pending_quals = self.configuration.qualifications.filter_by(
-            status=QualificationStatus.PENDING
+        pending_quals = PlayoffQualification.query.filter_by(
+            configuration_id=self.configuration_id,
+            status=QualificationStatus.PENDING,
         ).all()
         all_quals = confirmed_quals + pending_quals
         all_quals.sort(key=lambda q: q.qualifying_position)

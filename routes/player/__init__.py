@@ -25,6 +25,7 @@ from . import (
     notifications,
     challenges,
     geo,
+    playoff,
 )
 
 __all__ = ["player_bp"]
