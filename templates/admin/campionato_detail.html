@@ -21,6 +21,11 @@
             <i class="fas fa-edit"></i> Modifica Campionato
         </a>
         {% endif %}
+        {% if not campionato.terminated_at and campionato.get_status() != 'completed' %}
+        <button type="button" class="btn btn-danger" id="btn-terminate-campionato">
+            <i class="fas fa-stop-circle"></i> {{ _("Termina Campionato") }}
+        </button>
+        {% endif %}
     </div>
 </div>
 
@@ -37,6 +42,32 @@
 
 <!-- Classifica Generale del Campionato -->
 {% include "components/_campionato_general_classification.html" %}
+
+{% if campionato.terminated_at %}
+<div class="alert alert-dark d-flex align-items-center mb-4" role="alert">
+    <i class="fas fa-stop-circle me-2"></i>
+    <div>
+        <strong>{{ _("Campionato terminato") }}</strong>
+        {% if campionato.has_playoff_configurations() %}
+        — {{ _("Playoff in attesa di avvio") }}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if campionato.terminated_at and campionato.has_playoff_configurations() %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-medal"></i> {{ _("Playoff") }}</h5>
+    </div>
+    <div class="card-body">
+        <button class="btn btn-secondary" disabled
+                data-bs-toggle="tooltip" title="{{ _('Funzionalità in arrivo') }}">
+            <i class="fas fa-play"></i> {{ _("Avvia Playoff") }}
+        </button>
+    </div>
+</div>
+{% endif %}
 
 <!-- Gare del Campionato -->
 {% include "components/_campionato_garas.html" %}
@@ -73,6 +104,30 @@
                 if (response.ok) {
                     location.reload();
                 }
+            });
+        });
+    }
+
+    // Terminazione campionato
+    const btnTerminate = document.getElementById('btn-terminate-campionato');
+    if (btnTerminate) {
+        btnTerminate.addEventListener('click', function() {
+            let msg = {{ _("Sei sicuro di voler terminare il campionato? Le gare non completate verranno eliminate.")|tojson }};
+            {% if playoff_feasibility and not playoff_feasibility.feasible %}
+            msg = {{ _("Attenzione: alcuni playoff hanno un requisito minimo gare non raggiungibile. Vuoi terminare comunque?")|tojson }}
+                + "\n\n" + msg;
+            {% endif %}
+            showConfirm(msg, function() {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url_for("admin.campionato.terminate_campionato", campionato_id=campionato.id) }}';
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = 'csrf_token';
+                csrf.value = csrfToken();
+                form.appendChild(csrf);
+                document.body.appendChild(form);
+                form.submit();
             });
         });
     }

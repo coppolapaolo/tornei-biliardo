@@ -118,6 +118,7 @@ class StatusPresenter:
             TournamentStatus.REGISTRATION_OPEN.value: ("bg-info", _("Iscrizioni Aperte")),
             TournamentStatus.IN_PROGRESS.value: ("bg-primary", _("In Corso")),
             TournamentStatus.COMPLETED.value: ("bg-success", _("Completato")),
+            TournamentStatus.TERMINATED.value: ("bg-dark", _("Terminato")),
         }
         return mapping.get(
             s or TournamentStatus.SETUP.value, ("bg-secondary", "Sconosciuto")

@@ -79,6 +79,7 @@ class TournamentStatus(_StrEnum):
     REGISTRATION_OPEN = "registration_open"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
+    TERMINATED = "terminated"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

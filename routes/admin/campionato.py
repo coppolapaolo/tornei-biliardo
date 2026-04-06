@@ -415,6 +415,11 @@ def campionato_detail(campionato_id):
         .all()
     )
 
+    # Playoff feasibility check (for terminate button warning)
+    playoff_feasibility = None
+    if campionato.has_playoff_configurations() and not campionato.terminated_at:
+        playoff_feasibility = campionato_service.check_playoff_feasibility(campionato_id)
+
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
@@ -429,6 +434,7 @@ def campionato_detail(campionato_id):
         default_distance=DEFAULT_DISTANCE,
         discipline_choices=Discipline.get_choices(),
         default_discipline=Discipline.NINE_BALL.value,
+        playoff_feasibility=playoff_feasibility,
     )
 
 
@@ -579,6 +585,55 @@ def soft_delete_campionato(campionato_id):
         )
 
     return redirect(url_for("dashboard.dashboard"))
+
+
+@campionato_bp.route("/<int:campionato_id>/terminate", methods=["POST"])
+@login_required
+@campionato_manager_required(lambda campionato_id: campionato_id)
+def terminate_campionato(campionato_id):
+    """Termina manualmente il campionato."""
+    campionato = db.get_or_404(Campionato, campionato_id)
+    campionato_name = campionato.name
+    try:
+        success = campionato_service.terminate_campionato(campionato_id)
+        if success:
+            flash(
+                _('Campionato "%(name)s" terminato con successo.', name=campionato_name),
+                "success",
+            )
+        else:
+            flash(_("Il campionato è già stato terminato."), "warning")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route("/<int:campionato_id>/update-playoff-min", methods=["POST"])
+@login_required
+@campionato_manager_required(lambda campionato_id: campionato_id)
+def update_playoff_min(campionato_id):
+    """Aggiorna min_garas_played di una configurazione playoff."""
+    config_id = request.form.get("config_id", type=int)
+    new_min = request.form.get("new_min", type=int)
+
+    if not config_id or new_min is None or new_min < 0:
+        flash(_("Parametri non validi."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    try:
+        campionato_service.update_playoff_min_garas(campionato_id, config_id, new_min)
+        flash(_("Requisito minimo gare aggiornato."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
 
 
 @campionato_bp.route("/<int:campionato_id>/toggle_active", methods=["POST"])

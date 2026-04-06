@@ -66,6 +66,9 @@ class Campionato(db.Model):
         db.DateTime, default=utc_now, onupdate=utc_now
     )
 
+    # Termination (manual close before all gare completed)
+    terminated_at = db.Column(db.DateTime, nullable=True)
+
     # Soft delete functionality
     is_deleted = db.Column(db.Boolean, default=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -128,6 +131,11 @@ class Campionato(db.Model):
 
     def get_status(self):
         """Restituisce lo status del campionato"""
+        if self.terminated_at:
+            if self.has_playoff_configurations():
+                return TournamentStatus.TERMINATED.value
+            return TournamentStatus.COMPLETED.value
+
         gare = getattr(self, "gare", [])
         if not gare:
             return TournamentStatus.SETUP.value
@@ -148,6 +156,10 @@ class Campionato(db.Model):
             return TournamentStatus.REGISTRATION_OPEN.value
         else:
             return TournamentStatus.SETUP.value
+
+    def can_create_gara(self) -> bool:
+        """Verifica se è possibile creare nuove gare sotto questo campionato."""
+        return not self.terminated_at and not self.is_deleted
 
     def can_be_hard_deleted(self) -> bool:
         """Check if campionato permanently deletable (no matches)."""
@@ -173,6 +185,7 @@ class Campionato(db.Model):
             TournamentStatus.REGISTRATION_OPEN.value: "bg-info",
             TournamentStatus.IN_PROGRESS.value: "bg-primary",
             TournamentStatus.COMPLETED.value: "bg-success",
+            TournamentStatus.TERMINATED.value: "bg-dark",
         }.get(status, "bg-secondary")
 
     def get_status_text(self):
@@ -183,6 +196,7 @@ class Campionato(db.Model):
             TournamentStatus.REGISTRATION_OPEN.value: "Iscrizioni Aperte",
             TournamentStatus.IN_PROGRESS.value: "In Corso",
             TournamentStatus.COMPLETED.value: "Completato",
+            TournamentStatus.TERMINATED.value: "Terminato",
         }.get(status, "Sconosciuto")
 
     def has_playoff_configurations(self) -> bool:

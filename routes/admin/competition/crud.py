@@ -11,6 +11,7 @@ from flask import (
     jsonify,
 )
 from flask_login import login_required, current_user
+from flask_babel import _
 
 from models import (
     db,
@@ -169,6 +170,12 @@ def create_gara():
 
     campionato_id = int(campionato_id)
     campionato = db.get_or_404(Campionato, campionato_id)
+
+    if not campionato.can_create_gara():
+        flash(_("Non è possibile creare gare in un campionato terminato."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
 
     # Verifica permessi sul campionato
     from models.user.models import DirectorAssignment

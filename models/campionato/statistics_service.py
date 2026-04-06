@@ -349,7 +349,8 @@ class TournamentStatisticsService(DomainService):
 def compute_campionato_status(campionato: Campionato) -> str:
     """Calcola lo stato derivato del campionato in base agli stati delle Gare.
 
-    Regole (soft, aderenti al comportamento attuale):
+    Regole:
+    - Se terminated_at → TERMINATED (se playoff config) o COMPLETED (altrimenti)
     - Se non ci sono Gare → SETUP
     - Se almeno una Gara è in PLAYING → IN_PROGRESS
     - Altrimenti, se almeno una Gara è in INSCRIPTION → REGISTRATION_OPEN
@@ -358,6 +359,11 @@ def compute_campionato_status(campionato: Campionato) -> str:
 
     Ritorna la stringa dello stato (compat con UI/template esistenti).
     """
+    if getattr(campionato, "terminated_at", None):
+        if hasattr(campionato, "has_playoff_configurations") and campionato.has_playoff_configurations():
+            return TournamentStatus.TERMINATED.value
+        return TournamentStatus.COMPLETED.value
+
     gare = getattr(campionato, "gare", []) or []
     if not gare:
         return TournamentStatus.SETUP.value

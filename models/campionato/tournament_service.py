@@ -610,3 +610,102 @@ class TournamentService(TournamentStatisticsService):
         )
         db.session.add(config)
         return config
+
+    @transactional(domain="campionato")
+    def terminate_campionato(self, campionato_id: int) -> bool:
+        """Termina manualmente un campionato.
+
+        Soft-elimina tutte le gare non-completed e marca il campionato
+        come terminato. Idempotente: ritorna False se già terminato.
+
+        Raises:
+            ValueError: se campionato non trovato o soft-deleted
+        """
+        self._track_domain_access()
+
+        campionato = self._execute_with_tracking(
+            lambda: db.session.get(Campionato, campionato_id)
+        )
+        if not campionato:
+            raise ValueError("Campionato not found")
+        if campionato.is_deleted:
+            raise ValueError("Campionato già eliminato")
+        if campionato.terminated_at:
+            return False
+
+        from models.status_enum import GaraStatus
+
+        for gara in campionato.gare:
+            if not gara.is_deleted and gara.status != GaraStatus.COMPLETED.value:
+                gara.soft_delete("Campionato terminato")
+
+        campionato.terminated_at = utc_now()
+        campionato.updated_at = utc_now()
+        campionato.is_active = False
+        return True
+
+    @read_only(domain="campionato")
+    def check_playoff_feasibility(self, campionato_id: int) -> Dict[str, Any]:
+        """Verifica se i playoff configurati sono fattibili.
+
+        Confronta min_garas_played di ogni PlayoffConfiguration
+        con il numero di gare completed del campionato.
+
+        Returns:
+            {"feasible": bool, "configs": [...], "completed_count": int}
+        """
+        self._track_domain_access()
+
+        campionato = self._execute_with_tracking(
+            lambda: db.session.get(Campionato, campionato_id)
+        )
+        if not campionato:
+            raise ValueError("Campionato not found")
+
+        from models.status_enum import GaraStatus
+
+        completed_count = sum(
+            1 for g in campionato.gare
+            if not g.is_deleted and g.status == GaraStatus.COMPLETED.value
+        )
+
+        configs_info: List[Dict[str, Any]] = []
+        all_feasible = True
+
+        for config in campionato.playoff_configurations:
+            if not config.is_active:
+                continue
+            min_req = config.min_garas_played or 0
+            feasible = completed_count >= min_req
+            if not feasible:
+                all_feasible = False
+            configs_info.append({
+                "id": config.id,
+                "name": config.name,
+                "min_garas_played": min_req,
+                "feasible": feasible,
+            })
+
+        return {
+            "feasible": all_feasible,
+            "configs": configs_info,
+            "completed_count": completed_count,
+        }
+
+    @transactional(domain="campionato")
+    def update_playoff_min_garas(
+        self, campionato_id: int, config_id: int, new_min: int
+    ) -> None:
+        """Aggiorna min_garas_played di una PlayoffConfiguration."""
+        self._track_domain_access()
+
+        from models.playoff.models import PlayoffConfiguration
+
+        config = self._execute_with_tracking(
+            lambda: db.session.get(PlayoffConfiguration, config_id)
+        )
+        if not config:
+            raise ValueError("PlayoffConfiguration not found")
+        if config.campionato_id != campionato_id:
+            raise ValueError("Configurazione non appartiene a questo campionato")
+        config.min_garas_played = new_min

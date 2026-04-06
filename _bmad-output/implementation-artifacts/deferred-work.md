@@ -83,3 +83,9 @@ Deleted both `MatchLifecycleService.report_result` and its facade
 pass-through `IndividualMatchService.report_result`, plus the now-unused
 `MatchProposal` import in `match_lifecycle_service.py`. Pyright clean,
 77 individual_match/toctou tests pass.
+
+## Deferred: Unify `get_status()` and `compute_campionato_status()`
+
+Source: Review of terminate-campionato feature (2026-04-06).
+
+`Campionato.get_status()` (in `models.py`) and `compute_campionato_status()` (in `statistics_service.py`) implement the same logic independently. Both were modified to add the `terminated_at` short-circuit. Any future change to one risks silent divergence from the other. Consider making `get_status()` delegate to `compute_campionato_status()` or vice versa.
