@@ -97,13 +97,10 @@ instance/
 !.claude/skills/translate/
 !.claude/skills/ui-conventions/
 .agent/
-_bmad/bmm/
-_bmad/bmb/
-_bmad/core/
-_bmad/gds/
-_bmad/tea/
-_bmad/wds/
-_bmad/cis/
+.codegraph/
+_bmad/
+_bmad-output/
+messages.mo
 
 
 ---

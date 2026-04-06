@@ -1,0 +1,69 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-04-04T20:30:00Z",
+    "last_updated": "2026-04-04T21:00:00Z",
+    "completed": "2026-04-04T21:00:00Z"
+  },
+  "mode": "initial_scan",
+  "scan_level": "exhaustive",
+  "project_root": "/Users/paolo/GDrive/Programming/Python/tornei-biliardo",
+  "project_knowledge": "docs",
+  "project_types": [
+    {
+      "part_id": "main",
+      "project_type_id": "backend",
+      "display_name": "Flask Backend (Server-side rendered)"
+    }
+  ],
+  "completed_steps": [
+    {"step": "step_1", "status": "completed", "timestamp": "2026-04-04T20:25:00Z", "summary": "Classified as monolith, 1 part, backend type (Flask + SQLAlchemy + SSR)"},
+    {"step": "step_2", "status": "completed", "timestamp": "2026-04-04T20:27:00Z", "summary": "Found 50+ existing docs (20 CLAUDE.md, 18 ADR, 12+ docs/)"},
+    {"step": "step_3", "status": "completed", "timestamp": "2026-04-04T20:29:00Z", "summary": "Tech stack: Flask 2.3.3 on Python 3.11, SQLite/SQLAlchemy, Jinja2 SSR"},
+    {"step": "step_4", "status": "completed", "timestamp": "2026-04-04T20:45:00Z", "summary": "Exhaustive scan: 50 models, 50 services, 27 domains, 5 matchmaking strategies, event system mapped"},
+    {"step": "step_5", "status": "completed", "timestamp": "2026-04-04T20:40:00Z", "summary": "Source tree documented with 775 files, 27 domains annotated"},
+    {"step": "step_6", "status": "completed", "timestamp": "2026-04-04T20:48:00Z", "summary": "Dev/deployment guides written (CI/CD, PythonAnywhere, scripts)"},
+    {"step": "step_8", "status": "completed", "timestamp": "2026-04-04T20:52:00Z", "summary": "Architecture doc with DDD diagram, strategy pattern, event system"},
+    {"step": "step_9", "status": "completed", "timestamp": "2026-04-04T20:55:00Z", "summary": "Project overview, development guide, source tree written"},
+    {"step": "step_10", "status": "completed", "timestamp": "2026-04-04T20:58:00Z", "summary": "Master index generated with all doc links"},
+    {"step": "step_12", "status": "completed", "timestamp": "2026-04-04T21:00:00Z", "summary": "Workflow complete"}
+  ],
+  "current_step": "completed",
+  "findings": {
+    "project_classification": "Monolith, 1 part, Flask backend with SSR",
+    "technology_stack": "Python 3.11, Flask 2.3.3, SQLAlchemy, SQLite, Jinja2, Flask-Babel i18n",
+    "codebase_stats": {
+      "total_files": 775,
+      "python_loc": 116106,
+      "html_templates_loc": 29419,
+      "models_loc": 52265,
+      "routes_loc": 12534,
+      "tests_loc": 39013,
+      "utils_loc": 2298,
+      "migrations_loc": 6368,
+      "codegraph_nodes": 9042,
+      "codegraph_edges": 21079,
+      "model_classes": 50,
+      "service_classes": 50,
+      "template_files": 160,
+      "js_files": 4,
+      "css_files": 3,
+      "translations": ["it", "en"],
+      "adr_count": 18,
+      "matchmaking_strategies": 5,
+      "domains": 27
+    }
+  },
+  "outputs_generated": [
+    "project-scan-report.json",
+    "index.md",
+    "project-overview.md",
+    "architecture.md",
+    "source-tree-analysis.md",
+    "development-guide.md",
+    "api-contracts.md",
+    "data-models.md"
+  ],
+  "incomplete_docs": [],
+  "resume_instructions": "Workflow fully complete. All documents generated."
+}
